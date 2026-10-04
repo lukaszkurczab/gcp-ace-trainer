@@ -1,0 +1,156 @@
+{
+  "result": "PASS",
+  "scope": "Mechanical schema/count/taxonomy/identity correspondence, actual scoring/reversal and exact wrong-diagnostic bindings only; no semantic or identity-action acceptance",
+  "unit": "OOD-N06-B07",
+  "proposal": "N06-B07.json",
+  "proposalSha256": "77fd48660671d6ac4e57eaa212f98a8114670de4c3078cf2835e346876a9e342",
+  "manifestSha256": "be9cb40617caaaa8e18a41d06039c5bab3bc56eeb911b273bf21c7523569c5c3",
+  "wholeObjectCount": 18,
+  "optionsChecked": 90,
+  "items": [
+    {
+      "beforeQuestionId": "ood-n06-b07-i001",
+      "questionId": "ood-n06-b07-i001",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "af724d50645be9780de1657e64de3db40d324337bc2e2ffcb5fa7b2ba0b9333d",
+      "currentWholeObjectSha256": "377d544b0a686efa8b5a4e64d6e33734f69a75ad05a6eea86ae2752a03dcfa6e",
+      "acceptedOptionId": "n06b07_i001_route_conflict_summary"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i002",
+      "questionId": "ood-n06-b07-i002",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "750b171cdf30eb0af52a2a4f86e7a38a0285de860f36dc696c62fda220e2a183",
+      "currentWholeObjectSha256": "183f38ff124704002c7c536d1842273794db1eb4d3fb795546d9fe29d4025fe9",
+      "acceptedOptionId": "n06b07_i002_legal_reward_calculation"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i003",
+      "questionId": "ood-n06-b07-i003",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "721311264e511c4d3cbf7ee98799721103724af9e5ee70a8189478139dc2a948",
+      "currentWholeObjectSha256": "4b85fb11e2764e835070e1aa3b4c3dbcb4572055ab3b5c20b41467a954bf47f5",
+      "acceptedOptionId": "n06b07_i003_carrier_handoff_conversion"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i004",
+      "questionId": "ood-n06-b07-i004",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "03882ac80bc6ead8cf673fa2a5d9d8db6fce2ac98c53eda9f1f60b330d35bd3c",
+      "currentWholeObjectSha256": "f34bb6fbeb1cdabdba579654e158c03a43a83d3acc76199c161f8f0cc0c4b250",
+      "acceptedOptionId": "n06b07_i004_repayment_distribution"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i005",
+      "questionId": "ood-n06-b07-i005",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "0215ae967a5a37062feb8f9c2027c6a4a2818d00ea715ad04533e7a204c5e6e9",
+      "currentWholeObjectSha256": "3e59888687bd2769d13e14e00d5fe4d37856f79053653d3ab6728fd2b22f5104",
+      "acceptedOptionId": "n06b07_i005_legal_timeout_forfeit"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i006",
+      "questionId": "ood-n06-b07-i006",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "b88b903fa307ece0b888ae12b6f8d023473887e6319cbec8950e1fa23f1d297c",
+      "currentWholeObjectSha256": "bb8fcd281e027b171f56cd40cd7756af41902b65fdee38f90064e7dd8ee24eae",
+      "acceptedOptionId": "n06b07_i006_item_condition_classification"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i007",
+      "questionId": "ood-n06-b07-i007",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "2eabf69598e2812e5e868e1a12a24f6c08c5b37d9b8e72e71162c8a44491805b",
+      "currentWholeObjectSha256": "88dd713f38d3554757071126397ec151cb428e5fff4242f99613c0ae7f865494",
+      "acceptedOptionId": "n06b07_i007_immutable_result_capture"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i008",
+      "questionId": "ood-n06-b07-i008",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "3cb2d27f98832199cd68c62deeaddb9e0ed2428b56dee1aa2b30b2404472701d",
+      "currentWholeObjectSha256": "a5a5b49c7c8e104890e4a111373e781326409cf8194f05cea05d2de745e3df48",
+      "acceptedOptionId": "n06b07_i008_attributed_comment_notice"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i009",
+      "questionId": "ood-n06-b07-i009",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "9323494f088f4a45d1e066167170cfb368584d82821940aa535639e0300df235",
+      "currentWholeObjectSha256": "5ae03b587323acff2e56a9232fac001d2045453f541154b311306d9fc8198441",
+      "acceptedOptionId": "n06b07_i009_complete_offline_submission"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i010",
+      "questionId": "ood-n06-b07-i010",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "c3fbfa2fab446ace85f0f4b432198345f257a2cedb3f471d1478174d75a3a8a2",
+      "currentWholeObjectSha256": "5c7ea56d6911cff02cccc26cff923e3b798e03860d4e3ef5f0ad2b6cfbca0e06",
+      "acceptedOptionId": "n06b07_i010_traceable_invoice_reissue"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i011",
+      "questionId": "ood-n06-b07-i011",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "97a73f8fc82e62ca83c80549a2a70282584b09a4c4bc5e0ef7c86c3f8d019c6b",
+      "currentWholeObjectSha256": "9f713bee977f5e4a2c16a7d505e23fa52f957da9129981ac2caaae03d53a4130",
+      "acceptedOptionId": "n06b07_i011_visible_badge_revocation"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i012",
+      "questionId": "ood-n06-b07-i012",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "57aa9a3ac553752f416976860c10f995dbe3f8f0ccf44ea5eb4fec05917e932d",
+      "currentWholeObjectSha256": "bdb2d678bca4c2301c602cab929d62875d52354cd044bb5010bf9ee406198796",
+      "acceptedOptionId": "n06b07_i012_verified_carrier_label"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i013",
+      "questionId": "ood-n06-b07-i013",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "bc0df93105ee6cb1ad6b7bf1238baee60b6601470d4ec8a72c2cd0e737cfc0bc",
+      "currentWholeObjectSha256": "e944814ca5b84fe55868851404b209c4b19a518518ed456bd570f92596731aef",
+      "acceptedOptionId": "n06b07_i013_eligible_room_transfer"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i014",
+      "questionId": "ood-n06-b07-i014",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "ea4d109998016e1220bfcfa43a516ddd28d644ab2113f8134d02db7208c807a2",
+      "currentWholeObjectSha256": "06d91b210f4d20079c10acd52deb9302c044c218ba7794e2452eede1c42c0d68",
+      "acceptedOptionId": "n06b07_i014_maintenance_safety_decision"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i015",
+      "questionId": "ood-n06-b07-i015",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "4e152c1905199eb22bc3b1dabaa292d9dd20f249d68862279712c2a819f74c9c",
+      "currentWholeObjectSha256": "dce3dbc7ffce015b683cc234e205b17dc74ea75e893615853afc5e736cf2c653",
+      "acceptedOptionId": "n06b07_i015_stable_progress_retirement"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i016",
+      "questionId": "ood-n06-b07-i016",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "86969420f86b02087db2ccd0d8df70ada186a0601221412e45ad969b6e66b23c",
+      "currentWholeObjectSha256": "bcbde2cce3f2f7365633563c8c2408aa2bde644c327bad89813a30cdb01e907d",
+      "acceptedOptionId": "n06b07_i016_captured_history_export"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i017",
+      "questionId": "ood-n06-b07-i017",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "5717b372b36b9aa4599a57fac8ca38e155120a8a3247a1fe0b2a774fde7ff96e",
+      "currentWholeObjectSha256": "36822f00d826435b5840d5d10a885cd327e4dc9fa7bb94087d4b0f3b09e21caa",
+      "acceptedOptionId": "n06b07_i017_deadline_tier_escalation"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i018",
+      "questionId": "ood-n06-b07-i018",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "515fca3e728fac8703fe33cd8c7c9d739dd0f2c53e1b63761869871016575696",
+      "currentWholeObjectSha256": "d471efa2f1d24bd362616795ad44248ac45a37dcb56980f112712cb0d00ea8ea",
+      "acceptedOptionId": "n06b07_i018_validated_listing_publication"
+    }
+  ]
+}

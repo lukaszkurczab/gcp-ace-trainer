@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "patternly-bizq01-n06-independent-semantic-review-v1",
+  "unit": "OOD-N06-B10",
+  "verdict": "REVISE",
+  "proposal": {
+    "path": "review-inputs/N06-B10-v2.json",
+    "sha256": "e28bbec531913c2015a2ee18bbd219670bb848db5aa2e3505634a31b3b7fd690"
+  },
+  "notes": {
+    "path": "review-inputs/N06-B10-v2-NOTES.json",
+    "sha256": "d6de3cdbe2a120652b551540e8d747d8e5e9279de3ffaa5e2295ec30daa60935"
+  },
+  "criteria": {
+    "specPath": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sections": ["4.1", "4.2", "4.3", "4.4", "5B", "5C"],
+    "rule": "Key, constraints, and explanations must match visible workflow outcomes; do not add external delivery, payment capture, or retry guarantees absent from the case."
+  },
+  "warningReceipt": {
+    "path": "ROOT-B10-v2-WARNINGS.json",
+    "flaggedItems": 0,
+    "disposition": "Non-blocking; semantic option review still performed."
+  },
+  "findings": [
+    {
+      "id": "N06-B10-I001-CHARGE-VS-AUTHORIZATION",
+      "severity": "blocking",
+      "questionId": "ood-n06-b10-i001",
+      "field": "feedback.details.errorCorrection",
+      "evidence": "Alt2 authorizes payment before securing a charger slot. The prompt distinguishes authorization from charging; the feedback's claim that this may debit the driver is unsupported.",
+      "requiredCorrection": "Diagnose the risk of an authorization without capacity, and retain the separate diagnosis of a hold stranded after decline."
+    },
+    {
+      "id": "N06-B10-I005-UNSTATED-DELIVERY-STATUS",
+      "severity": "blocking",
+      "questionId": "ood-n06-b10-i005",
+      "field": "feedback.details.scenarioApplication",
+      "evidence": "The prompt does not state delayed receipt or a way to determine whether the external clinic received the send. The statement that the identifier can be checked against the prior send adds delivery-status knowledge.",
+      "requiredCorrection": "Keep the same local referral identity on a retry but do not imply the ID alone proves delivery or recipient-side deduplication; alternatively make delivery-status behavior visible in the stem."
+    },
+    {
+      "id": "N06-B10-I011-SETTLEMENT-AND-ID-SCOPE",
+      "severity": "blocking",
+      "questionId": "ood-n06-b10-i011",
+      "fields": ["constraints", "interaction.options[answer.optionId]"],
+      "evidence": "The scenario says the order remains settled but unpaid after bank rejection, so 'Settle only on bank confirmation' is ambiguous or contradictory. The constraint applies the payout ID to delayed-response retries generally, while the stem and wrong-option feedback limit it to report-update retries.",
+      "requiredCorrection": "Clarify that payout completion/release is recorded only on bank confirmation, and limit same-ID retry language to the report update without implying bank-side deduplication."
+    }
+  ],
+  "identityReview": {
+    "questionIds": "Preserve all 18: the orchestration, sequencing, compensation, and post-commit retry objective remains the same.",
+    "correctOptionIds": "Use current case-specific IDs; these options have new, scenario-specific meanings relative to the generic predecessor."
+  },
+  "itemDispositions": [
+    {"questionId": "ood-n06-b10-i001", "decision": "revise-errorCorrection"},
+    {"questionId": "ood-n06-b10-i002", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i003", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i004", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i005", "decision": "revise-scenarioApplication"},
+    {"questionId": "ood-n06-b10-i006", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i007", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i008", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i009", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i010", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i011", "decision": "revise-constraints-and-key-wording"},
+    {"questionId": "ood-n06-b10-i012", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i013", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i014", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i015", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i016", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i017", "decision": "pass"},
+    {"questionId": "ood-n06-b10-i018", "decision": "pass"}
+  ],
+  "limitations": ["Proposal-only review; no source integration, runtime, producer/consumer, admission, native, or full-N06/BIZQ-01 acceptance claimed."]
+}

@@ -1,0 +1,1172 @@
+[
+  {
+    "questionId": "ood-n06-b03-i001",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A catalog manager adds a regional bundle whose price must equal the sum of its current components. The requested component set and policy version must be captured for review; a rejected bundle leaves the catalog unchanged. Which representation gives the proposed operation a stable reviewable identity?",
+    "difficulty": "foundational",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i001_policy",
+          "text": "Capture components and policy version in a reviewable command; validate before applying."
+        },
+        {
+          "optionId": "n06_b03_i001_alt1",
+          "text": "Mutate the live bundle while reviewers are still choosing components, then roll it back if they reject it."
+        },
+        {
+          "optionId": "n06_b03_i001_alt2",
+          "text": "Store only the bundle ID and read whatever component set is current when a reviewer eventually opens it."
+        },
+        {
+          "optionId": "n06_b03_i001_alt3",
+          "text": "Ask each review screen to calculate the bundle price independently and submit its own total."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i001_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The review concerns one proposed operation, not a mutable live bundle. Capturing its inputs lets the system validate that exact change and apply it only after approval.",
+      "details": {
+        "mechanismOrProperty": "A command packages an operation and its arguments as an identifiable value. The receiver can validate or defer that value before it changes the catalog.",
+        "scenarioApplication": "The proposal carries components and policy version together; rejection changes nothing, while acceptance applies the validated bundle change.",
+        "errorCorrection": "Reading components later from the live catalog is the closest lightweight alternative, but it changes the object under review if the catalog changes meanwhile.",
+        "boundaryOrTradeoff": "The command representation does not itself make review durable or transactional; those guarantees must come from the surrounding storage and approval contract.",
+        "transfer": "Use an operation value when a review or delayed decision must remain tied to the exact inputs originally proposed."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i001_alt1",
+          "text": "The prompt requires a rejected proposal to leave the catalog unchanged and a stable component set for review; mutating live data exposes an unapproved intermediate value."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i001_alt2",
+          "text": "That loses the exact proposed components and policy version the reviewer is meant to assess."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i001_alt3",
+          "text": "Independent screens can use different component or policy versions, so the submitted price may not match the proposal under review."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i002",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A station operator reserves a charger only if capacity remains and the requested expiry fits the station's limit. A client may retry the same reservation request after losing its response; the retry must return the original reservation rather than consume capacity again. What should identify the request?",
+    "difficulty": "foundational_boundary",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i002_policy",
+          "text": "Give the reservation command a stable request identity and return the result already associated with that identity on retry."
+        },
+        {
+          "optionId": "n06_b03_i002_alt1",
+          "text": "Retry by sending the same charger and expiry values as a fresh reservation with no request identity."
+        },
+        {
+          "optionId": "n06_b03_i002_alt2",
+          "text": "Decrement capacity when the first request is sent and decrement it again when the client retries."
+        },
+        {
+          "optionId": "n06_b03_i002_alt3",
+          "text": "Treat any later request for the same charger as a duplicate, even when it has a different request identity."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i002_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The client may not know whether its first request succeeded. A stable command identity lets the receiver recognize the same intent and return its original reservation outcome rather than consume capacity again.",
+      "details": {
+        "mechanismOrProperty": "An operation object can carry a request identifier and the inputs needed to execute it. Deduplication is keyed to that stated identity, not merely equal business values.",
+        "scenarioApplication": "The station evaluates capacity and expiry for the identified request, then a retry using that identity receives the associated reservation result.",
+        "errorCorrection": "Equal-value matching is the tempting alternative, but two independent requests can ask for the same charger and expiry and still represent separate intents.",
+        "boundaryOrTradeoff": "The scenario specifies a local retry identity contract; it does not establish durable exactly-once behavior across process or storage failures.",
+        "transfer": "Distinguish repeated delivery of one operation from a new operation by carrying explicit intent identity when retries are possible."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i002_alt1",
+          "text": "The same values could be an intentional second reservation; without identity, the receiver cannot know this is the original attempt."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i002_alt2",
+          "text": "That consumes a second capacity slot for the same requested reservation, contrary to the retry contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i002_alt3",
+          "text": "A distinct identified request may be a separate reservation; matching the charger alone conflates separate intents."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i003",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "An archivist merges duplicate metadata while the asset's identity remains stable. The edit must be reviewable before commit, and an approved undo must restore the prior descriptive values without replacing the asset itself. Which representation supports that history?",
+    "difficulty": "intermediate",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i003_policy",
+          "text": "Record asset ID and before/after values so approved undo restores the same asset."
+        },
+        {
+          "optionId": "n06_b03_i003_alt1",
+          "text": "Replace the asset with a new object on undo and assign it a new identity containing the old metadata."
+        },
+        {
+          "optionId": "n06_b03_i003_alt2",
+          "text": "Keep only the latest metadata values and ask an archivist to reconstruct the prior values if undo is requested."
+        },
+        {
+          "optionId": "n06_b03_i003_alt3",
+          "text": "Allow the review screen to edit the asset directly and infer undo by reversing whatever fields changed last."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i003_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The merge must be reviewable and reversible, but the asset itself is not being replaced. Recording the exact before-and-after values gives the operation enough information to apply or undo its own change.",
+      "details": {
+        "mechanismOrProperty": "A command can retain target identity and the values needed for execution and reversal. The receiver applies those values to the existing asset rather than replacing its identity.",
+        "scenarioApplication": "Approval writes the proposed metadata; undo restores the captured prior metadata on the same asset ID.",
+        "errorCorrection": "A whole-object replacement is the nearest alternative, but it would replace identity along with descriptive data, contrary to the preservation fact.",
+        "boundaryOrTradeoff": "This local reversible edit does not imply a general audit-retention or multi-user conflict policy beyond the prompt.",
+        "transfer": "For reversible edits, preserve the operation's target identity and the exact prior values needed to reverse its effect."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i003_alt1",
+          "text": "The prompt requires the asset identity to remain stable; replacing the asset violates that condition even if its values look restored."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i003_alt2",
+          "text": "That loses the prior descriptive values required for a reliable approved undo."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i003_alt3",
+          "text": "Without a captured change, the system cannot tell which prior values belong to this reviewed merge."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i004",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A licensing analyst approves use in one territory until a stated expiration. The approval can wait in a review queue; authorization must be checked when it is executed, and the record must retain the analyst, territory, and expiry used. What should the queue hold?",
+    "difficulty": "intermediate_transfer",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i004_policy",
+          "text": "Queue territory and expiry; recheck authority at execution and record the actor and approved scope."
+        },
+        {
+          "optionId": "n06_b03_i004_alt1",
+          "text": "Queue only the analyst's name and ask the worker to infer the territory and expiry from current defaults."
+        },
+        {
+          "optionId": "n06_b03_i004_alt2",
+          "text": "Check authority when the request is enqueued and never recheck when the delayed command executes."
+        },
+        {
+          "optionId": "n06_b03_i004_alt3",
+          "text": "Let the worker grant the default territory indefinitely and add the analyst attribution afterward."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i004_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The queued operation must preserve the analyst's requested scope until execution, where the scenario requires authorization. Capturing its fields and recording the actor makes the executed approval attributable to the actual decision.",
+      "details": {
+        "mechanismOrProperty": "A command object carries operation arguments through a queue and can be inspected before execution. The receiver still performs the stated authorization check when it acts.",
+        "scenarioApplication": "Territory and expiry travel with the queued approval; the executing analyst is checked and recorded when that exact scope is granted.",
+        "errorCorrection": "Checking only at enqueue is plausible for immediate work, but the prompt says the request can wait and requires authorization at execution.",
+        "boundaryOrTradeoff": "The command carries intent; the scenario does not promise that an external licensing registry remains current or that queue delivery is durable.",
+        "transfer": "Queued operations should carry the arguments that define their intent, while execution-time rules are evaluated at the point specified by the contract."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i004_alt1",
+          "text": "The worker would not have the scope that the analyst requested, so the eventual approval could authorize different use."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i004_alt2",
+          "text": "The prompt assigns the check to execution; an enqueue-time decision may no longer reflect the executing analyst's authority."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i004_alt3",
+          "text": "That changes both the requested scope and expiration before execution, then records attribution too late to constrain the approval."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i005",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A fleet coordinator schedules a battery replacement. Each battery may belong to only one aircraft, and an approved replacement can be undone only if that battery is still assigned to the aircraft recorded by the operation. What must the replacement record contain?",
+    "difficulty": "advanced_tradeoff",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i005_policy",
+          "text": "Record the battery and both aircraft IDs; undo only if its replacement assignment still matches."
+        },
+        {
+          "optionId": "n06_b03_i005_alt1",
+          "text": "Undo by clearing the battery's current aircraft assignment regardless of who assigned it afterward."
+        },
+        {
+          "optionId": "n06_b03_i005_alt2",
+          "text": "Store only the replacement aircraft and infer the prior aircraft from the current fleet roster at undo time."
+        },
+        {
+          "optionId": "n06_b03_i005_alt3",
+          "text": "Undo by creating a second battery record for the former aircraft and leaving the original assignment in place."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i005_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A replacement can be reversed only while its own resulting assignment remains current. Capturing both ends makes that precondition check possible and avoids clearing a later reassignment.",
+      "details": {
+        "mechanismOrProperty": "A command stores the target and the before-and-after values it changes. Conditional undo compares current state with the command's expected result before applying its inverse.",
+        "scenarioApplication": "The record carries the battery and both aircraft IDs; undo restores the prior relationship only if the replacement relationship is still present.",
+        "errorCorrection": "Unconditional clearing is the tempting inverse, but it can overwrite a later assignment that the original operation did not create.",
+        "boundaryOrTradeoff": "This scenario explicitly supplies the compare-before-undo condition; it does not imply a general concurrency-control implementation.",
+        "transfer": "An inverse operation should verify that the state it plans to reverse is still the state produced by the original command."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i005_alt1",
+          "text": "That can erase a later valid assignment; the prompt permits undo only while the recorded replacement association still holds."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i005_alt2",
+          "text": "The current roster may have changed, so it cannot supply the prior association captured when this operation was approved."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i005_alt3",
+          "text": "A battery cannot belong to two aircraft, and a duplicate record does not reverse the original assignment."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i006",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A care navigator routes a referral only after the patient consents to external disclosure. The routing request can be prepared in advance, but execution must use the exact recipient approved by the patient; if consent is withdrawn before execution, no disclosure occurs. What should represent the pending action?",
+    "difficulty": "advanced_failure",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i006_policy",
+          "text": "Queue the approved recipient; recheck consent at execution before disclosure."
+        },
+        {
+          "optionId": "n06_b03_i006_alt1",
+          "text": "Queue a referral ID and resolve whichever specialist is currently assigned when the worker executes it."
+        },
+        {
+          "optionId": "n06_b03_i006_alt2",
+          "text": "Send the referral immediately when consent is granted and ignore a withdrawal that occurs before the queued work completes."
+        },
+        {
+          "optionId": "n06_b03_i006_alt3",
+          "text": "Let each routing worker choose a recipient and record consent status after sending."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i006_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The pending route has a fixed approved recipient but a revocable prerequisite. Capturing the recipient and checking consent when the action executes preserves both parts of that intent.",
+      "details": {
+        "mechanismOrProperty": "A command carries the arguments that define an operation across delay. The receiver evaluates current execution-time conditions before performing the requested effect.",
+        "scenarioApplication": "The command uses the approved specialist and makes no disclosure if consent has been withdrawn by execution time.",
+        "errorCorrection": "Resolving the recipient later is convenient, but it changes the approved destination and therefore changes the action the patient consented to.",
+        "boundaryOrTradeoff": "The scenario specifies this consent check and recipient binding; it does not promise transactional coordination with an external specialist system.",
+        "transfer": "For delayed sensitive actions, preserve the approved target and re-evaluate any stated revocable prerequisite before execution."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i006_alt1",
+          "text": "The recipient could change after approval, so the worker may disclose to a specialist the patient did not approve."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i006_alt2",
+          "text": "The prompt requires execution to check current consent and prohibits disclosure after withdrawal."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i006_alt3",
+          "text": "That makes the recipient choice independent of the one approved by the patient and checks consent only after disclosure."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i007",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A learner completes a timed exercise. The completion record must use the exercise revision and scoring policy visible when the attempt began, even if the instructor publishes a new revision before grading finishes. How should completion carry its intent?",
+    "difficulty": "foundational",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i007_policy",
+          "text": "Bind grading to the attempt’s exercise and scoring-policy versions."
+        },
+        {
+          "optionId": "n06_b03_i007_alt1",
+          "text": "Resolve the current exercise and scoring policy when the grading callback runs."
+        },
+        {
+          "optionId": "n06_b03_i007_alt2",
+          "text": "Store only the learner and exercise ID, then ask the instructor to reconstruct which revision was active."
+        },
+        {
+          "optionId": "n06_b03_i007_alt3",
+          "text": "Copy the new revision into every in-progress attempt as soon as it is published."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i007_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The grading work may finish after the exercise changes. The completion operation must carry the versions that defined the attempt so later execution cannot silently switch its scoring contract.",
+      "details": {
+        "mechanismOrProperty": "A command packages a deferred operation with the values that determine its meaning. Recording version identifiers makes the requested evaluation independent of later defaults.",
+        "scenarioApplication": "The attempt starts with a specific exercise and policy revision; completion carries those IDs to the grader and uses them after the instructor publishes a new version.",
+        "errorCorrection": "Looking up the latest version is the common shortcut, but it changes the evaluation after the learner has already performed the attempt.",
+        "boundaryOrTradeoff": "The prompt assumes those referenced versions remain available; it does not specify a long-term retention or archive policy.",
+        "transfer": "When deferred work must preserve the conditions under which it began, capture the relevant version identities with the operation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i007_alt1",
+          "text": "The current values may have changed after the attempt began and would grade work under rules the learner did not use."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i007_alt2",
+          "text": "That omits the exact revision and policy the attempt must retain, so the later grader cannot reliably select them."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i007_alt3",
+          "text": "That changes the rules of an attempt already underway, contradicting the requirement to use its start-time versions."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i008",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A purchasing manager requests an exception approval. The record must identify the manager and rationale, enforce the required controls, and leave the request pending if a control rejects it. What should the approval queue store and execute?",
+    "difficulty": "foundational_boundary",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i008_policy",
+          "text": "Queue manager, rationale, and scope; approve only after controls pass, otherwise leave pending."
+        },
+        {
+          "optionId": "n06_b03_i008_alt1",
+          "text": "Mark the request approved when it enters the queue, then run controls as background cleanup."
+        },
+        {
+          "optionId": "n06_b03_i008_alt2",
+          "text": "Store only the manager ID and have the worker infer a standard rationale and broadest available scope."
+        },
+        {
+          "optionId": "n06_b03_i008_alt3",
+          "text": "Let each control approve the request independently and retain any approvals even when another control rejects it."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i008_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The queue must preserve who requested which bounded exception and its rationale. Controls run before approval, so rejection leaves a pending request rather than a partially applied result.",
+      "details": {
+        "mechanismOrProperty": "A command makes the requested action and its parameters explicit, allowing a worker to execute the same intent later and report its acceptance or rejection.",
+        "scenarioApplication": "The manager, rationale, and scope travel together; required controls run first and any rejection keeps the request pending.",
+        "errorCorrection": "Approving at enqueue is the closest shortcut, but it reverses the required ordering between controls and approval.",
+        "boundaryOrTradeoff": "The command records and executes intent; it does not establish how controls are implemented or guarantee a durable queue.",
+        "transfer": "For queued approvals, preserve the actor's scoped request and do not report success before required validation completes."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i008_alt1",
+          "text": "That creates an approved state before the required controls finish and turns a rejection into cleanup rather than a blocked approval."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i008_alt2",
+          "text": "The queued operation would no longer express the manager's actual rationale or requested scope."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i008_alt3",
+          "text": "The request must remain pending if a required control rejects it; partial approvals would violate the specified outcome."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i009",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "An episode producer replaces a source recording. Existing annotations point to stable segment identities, not file offsets; review must compare the old and proposed mapping, and a rejected replacement keeps the current recording. Which operation representation best fits?",
+    "difficulty": "intermediate",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i009_policy",
+          "text": "Carry the proposed recording and stable-segment map; replace only after review approval."
+        },
+        {
+          "optionId": "n06_b03_i009_alt1",
+          "text": "Replace the recording immediately and recalculate annotations from their old file offsets after review."
+        },
+        {
+          "optionId": "n06_b03_i009_alt2",
+          "text": "Store only the new file and ask reviewers to inspect whichever annotation mapping is current at review time."
+        },
+        {
+          "optionId": "n06_b03_i009_alt3",
+          "text": "Let each reviewer apply their preferred segment mapping directly to the live recording."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i009_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The producer proposes a recording and a mapping that must be reviewed together. Capturing them in one operation prevents a rejected proposal from altering the current source or annotation associations.",
+      "details": {
+        "mechanismOrProperty": "A command packages the operation's inputs for review and later execution. Stable segment identifiers remain the association key; the command does not recalculate them from file positions.",
+        "scenarioApplication": "The proposed file and segment mapping are inspected as one change; acceptance applies them, while rejection keeps the existing source and annotations.",
+        "errorCorrection": "Immediate replacement is the tempting path, but it exposes a new source before reviewers accept how annotations map to it.",
+        "boundaryOrTradeoff": "The scenario defines review and stable segment identity, not automatic semantic alignment between two recordings.",
+        "transfer": "When review covers a change and its associations together, keep both inputs in the same operation until the decision is made."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i009_alt1",
+          "text": "Annotations use stable segment identities, not offsets, and rejection must preserve the existing recording."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i009_alt2",
+          "text": "That does not preserve the exact proposed mapping being reviewed and could compare against a different proposal."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i009_alt3",
+          "text": "Reviewers would mutate the current recording before an accepted mapping exists, so a rejected proposal could still change annotations."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i010",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A security reviewer grants a temporary role under a specific approval. The grant request may be queued, and the role must expire at the approval's stated time; a retry must not create a second active grant for that approval. What should identify the operation?",
+    "difficulty": "intermediate_transfer",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i010_policy",
+          "text": "Bind the grant to approval ID and expiry; retries return the same grant."
+        },
+        {
+          "optionId": "n06_b03_i010_alt1",
+          "text": "Resolve whichever approval is newest at execution time and grant its role until a default date."
+        },
+        {
+          "optionId": "n06_b03_i010_alt2",
+          "text": "Create a new role grant for every delivery of the queued request and let cleanup remove duplicates later."
+        },
+        {
+          "optionId": "n06_b03_i010_alt3",
+          "text": "Store only the user and role, then ask the worker to infer the approval and expiry from current account settings."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i010_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The role grant is a delayed, approval-bound operation whose expiry cannot be replaced by current defaults. A stable operation identity also lets retry refer to the same grant rather than create another.",
+      "details": {
+        "mechanismOrProperty": "A command carries the approval, role, and expiry that define the requested action. Its identity can distinguish repeated delivery of that intent from another grant request.",
+        "scenarioApplication": "Execution applies the grant under the original approval and expiry; retry recognizes the same approval-scoped grant.",
+        "errorCorrection": "Resolving the newest approval at execution is convenient, but it changes the authorization basis of the earlier request.",
+        "boundaryOrTradeoff": "The scenario specifies duplicate handling for the same approval; it does not promise global exactly-once delivery or automatic expiry scheduling.",
+        "transfer": "Delayed authorization changes should carry the exact approval and expiry that the actor requested, not infer them from mutable defaults."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i010_alt1",
+          "text": "The queued operation is tied to a specific approval and expiry, not whichever approval happens to be newest later."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i010_alt2",
+          "text": "That creates multiple active grants for the same approval before cleanup, violating the retry condition."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i010_alt3",
+          "text": "The operation loses both the approval attribution and the stated expiry that define this temporary grant."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i011",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A notary seals an immutable document revision. The seal request can wait in a queue; before sealing, the worker must verify that the requested revision is still the current immutable revision, and a mismatch must leave the document unsealed. What must the queued request preserve?",
+    "difficulty": "advanced_tradeoff",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i011_policy",
+          "text": "Queue the exact revision and seal only if it remains current and immutable."
+        },
+        {
+          "optionId": "n06_b03_i011_alt1",
+          "text": "Queue the document ID and always seal the latest revision when the worker runs."
+        },
+        {
+          "optionId": "n06_b03_i011_alt2",
+          "text": "Seal the requested revision when enqueued and ignore a later mismatch found by the worker."
+        },
+        {
+          "optionId": "n06_b03_i011_alt3",
+          "text": "If the revision differs, silently change the request to the new revision and complete the seal."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i011_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A delayed seal must not drift to content the notary did not inspect. Carrying the exact revision lets execution verify the requested target before any seal is applied.",
+      "details": {
+        "mechanismOrProperty": "A command records the operation arguments at request time. The receiver can validate those same arguments at execution rather than substituting current values.",
+        "scenarioApplication": "The worker compares the requested immutable revision to the current one, seals only if they match, and leaves the document unsealed on mismatch.",
+        "errorCorrection": "Fetching the latest revision is a convenient way to avoid stale IDs, but it silently changes the approved content target.",
+        "boundaryOrTradeoff": "The scenario assumes a current-revision check is available at execution; it does not claim a transaction with external document storage.",
+        "transfer": "For delayed actions on versioned content, preserve and validate the target revision rather than silently retargeting to latest."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i011_alt1",
+          "text": "The latest revision may differ from the one the notary inspected, so this can seal unapproved content."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i011_alt2",
+          "text": "The prompt requires the mismatch check before sealing and says a mismatch leaves the document unsealed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i011_alt3",
+          "text": "That changes the notary's requested target instead of rejecting the mismatched operation."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i012",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A finance operator releases a payout only for a settled order. The release record uses one payout ID, and repeating the same release request must return that record; a different order must not reuse its ID. What should the release operation carry?",
+    "difficulty": "advanced_failure",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i012_policy",
+          "text": "Use a distinct payout ID per order; same-order retries return its record."
+        },
+        {
+          "optionId": "n06_b03_i012_alt1",
+          "text": "Release whichever order is currently outstanding for the seller when the worker runs."
+        },
+        {
+          "optionId": "n06_b03_i012_alt2",
+          "text": "Reuse one seller-level payout ID for all orders and create a new payout on every retry."
+        },
+        {
+          "optionId": "n06_b03_i012_alt3",
+          "text": "Release before settlement and mark the payout pending until the order later settles."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i012_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The release intent belongs to one settled order and one payout identity. Carrying both lets a retry return the same record without confusing another order for the original request.",
+      "details": {
+        "mechanismOrProperty": "A command contains the target and operation identity needed to execute or recognize the same request. The receiver still checks the stated settled-order prerequisite.",
+        "scenarioApplication": "The order ID identifies the eligible order; the payout ID identifies its release result. Repeating that operation returns the same payout record.",
+        "errorCorrection": "A seller-level ID is tempting because sellers own payouts, but it collapses separate order intents and cannot identify the specific settled release.",
+        "boundaryOrTradeoff": "The prompt defines local release identity and settlement eligibility, not remote payment-provider exactly-once behavior.",
+        "transfer": "Bind a retriable operation to its exact business target and result identity instead of a broader owner that may have multiple targets."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i012_alt1",
+          "text": "The command would no longer identify the settled order the operator requested and could release a different order."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i012_alt2",
+          "text": "That conflates distinct orders and fails to return the existing payout result for the same release request."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i012_alt3",
+          "text": "The prompt permits release only for a settled order, so this advances a payout before its prerequisite."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i013",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A transit controller announces platform changes. Each announcement has an effective sequence number; passenger displays must apply announcements in that sequence even when messages arrive out of order. A rejected sequence leaves the last applied platform unchanged. How should the announcement be represented?",
+    "difficulty": "foundational",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i013_policy",
+          "text": "Carry sequence and platform; apply only the next sequence, preserving current platform on rejection."
+        },
+        {
+          "optionId": "n06_b03_i013_alt1",
+          "text": "Apply announcements in network arrival order and overwrite the platform whenever a message is received."
+        },
+        {
+          "optionId": "n06_b03_i013_alt2",
+          "text": "Keep only the platform string and discard the sequence so each display chooses its own ordering."
+        },
+        {
+          "optionId": "n06_b03_i013_alt3",
+          "text": "Apply every message and repair out-of-order platform values during the next station refresh."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i013_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The scenario defines a sequence protocol because transport arrival order is not sufficient. The command must carry that effective sequence so the receiver can accept the next valid change and leave state unchanged on rejection.",
+      "details": {
+        "mechanismOrProperty": "The command captures the effective sequence and target value. A receiver-side rule compares the sequence before changing platform state; ordering is an explicit scenario contract, not a guarantee of a notification mechanism.",
+        "scenarioApplication": "Passenger displays apply the next allowed sequence and ignore a rejected one without replacing the last platform.",
+        "errorCorrection": "Arrival order is the closest shortcut, but messages may arrive out of order and would let an older effective announcement overwrite a newer one.",
+        "boundaryOrTradeoff": "This question states the sequencing rule explicitly; it does not claim that Observer or pub/sub delivery itself preserves order.",
+        "transfer": "When business order differs from message arrival, carry the business sequence in the command and validate it before applying state."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i013_alt1",
+          "text": "Arrival order can differ from the stated effective sequence, so a late older message could replace a newer platform."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i013_alt2",
+          "text": "Without the effective sequence, displays cannot determine which announcement is older or whether it may be applied."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i013_alt3",
+          "text": "The platform is temporarily wrong, and rejection is required to preserve the last applied value immediately."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i014",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A meter operator reserves a discharge window. A meter cannot be committed twice for overlapping windows; a proposed reservation can be reviewed before commit, and rejection leaves existing reservations untouched. What should the review queue retain?",
+    "difficulty": "foundational_boundary",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i014_policy",
+          "text": "Queue meter and interval; check overlap against current reservations before commit."
+        },
+        {
+          "optionId": "n06_b03_i014_alt1",
+          "text": "Reserve the meter for the whole day and let the operator narrow the interval after approval."
+        },
+        {
+          "optionId": "n06_b03_i014_alt2",
+          "text": "Store only the meter ID and reserve whichever free interval is available when the worker runs."
+        },
+        {
+          "optionId": "n06_b03_i014_alt3",
+          "text": "Add the proposed interval immediately and remove it later if a reviewer rejects the request."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i014_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Overlap must be evaluated for the requested meter and interval at commit time. Capturing those inputs preserves the reviewer's target and allows rejection without changing current reservations.",
+      "details": {
+        "mechanismOrProperty": "A command packages the requested reservation so validation can occur before it mutates the receiver. The receiver compares the captured interval to the current reservation set.",
+        "scenarioApplication": "The queue retains meter and interval; commit checks overlap and then adds the reservation, while rejection leaves the existing set intact.",
+        "errorCorrection": "Choosing a free interval later looks flexible, but it changes the request the operator asked to review.",
+        "boundaryOrTradeoff": "The scenario specifies validation against current reservations; it does not establish a transaction or locking implementation for concurrent commits.",
+        "transfer": "A deferred operation should retain the user's requested target instead of silently substituting a currently convenient one."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i014_alt1",
+          "text": "That commits a different interval from the one requested and may block unrelated windows before review completes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i014_alt2",
+          "text": "The worker would silently retarget the request instead of reviewing the operator's requested interval."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i014_alt3",
+          "text": "The prompt requires rejection to leave existing reservations untouched; exposing a pending interval as committed can block other valid work."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i015",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A shift manager swaps two volunteer assignments. Both volunteers must remain qualified and available for their new shifts; if either validation fails, neither assignment changes. What should the swap request contain?",
+    "difficulty": "intermediate",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i015_policy",
+          "text": "Use one command for both volunteers and shifts; validate both before either assignment moves."
+        },
+        {
+          "optionId": "n06_b03_i015_alt1",
+          "text": "Apply the first assignment change, then validate the second and leave the first in place if it fails."
+        },
+        {
+          "optionId": "n06_b03_i015_alt2",
+          "text": "Let the manager's screen validate qualifications and have the service apply both assignments without checking availability."
+        },
+        {
+          "optionId": "n06_b03_i015_alt3",
+          "text": "Swap the volunteer names first and ask supervisors to repair any qualification mismatch afterward."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i015_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A successful swap depends on both new placements being valid, and either failure must leave the original assignments intact. One command carries the paired change for validation before mutation.",
+      "details": {
+        "mechanismOrProperty": "A command represents one requested operation with all of its inputs. The receiver validates the complete operation before applying its effects, rather than decomposing a coupled request into unrelated commands.",
+        "scenarioApplication": "Both volunteer/shift pairs travel together; the service checks qualification and availability for each, then applies both or neither.",
+        "errorCorrection": "Two independent updates seem reusable, but the first can succeed while the second fails, violating the stated paired outcome.",
+        "boundaryOrTradeoff": "The prompt supplies all-or-nothing behavior as a scenario guarantee; it does not dictate a database transaction or locking strategy.",
+        "transfer": "When one user intent is valid only as a complete set of changes, represent and validate that set as one operation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i015_alt1",
+          "text": "The prompt requires neither assignment to change when either validation fails, so partial application is invalid."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i015_alt2",
+          "text": "Availability is also required for each new placement, and another caller could bypass the screen's partial validation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i015_alt3",
+          "text": "That exposes an invalid assignment before the required two-placement validation succeeds."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i016",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A cartographer submits an offline route edit based on a named geometry revision. If that revision is no longer current, the merge must create an explicit conflict and must not overwrite accepted geometry. What must the merge request preserve?",
+    "difficulty": "intermediate_transfer",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i016_policy",
+          "text": "Carry base revision with route edit; report conflict rather than overwrite on mismatch."
+        },
+        {
+          "optionId": "n06_b03_i016_alt1",
+          "text": "Apply the route edit to the latest geometry regardless of which revision the cartographer edited."
+        },
+        {
+          "optionId": "n06_b03_i016_alt2",
+          "text": "Store the route edit without its base revision and let a reviewer guess whether it conflicts."
+        },
+        {
+          "optionId": "n06_b03_i016_alt3",
+          "text": "Overwrite accepted geometry and keep a note that an offline edit occurred."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i016_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The merge decision depends on the revision the offline edit started from. Carrying that base lets the receiver detect staleness before mutation and preserve accepted geometry when a conflict exists.",
+      "details": {
+        "mechanismOrProperty": "A command packages the edit and its expected base. The receiver compares that expected version to current state before applying the change.",
+        "scenarioApplication": "Matching base permits the merge; a mismatch yields an explicit conflict and leaves accepted route geometry unchanged.",
+        "errorCorrection": "Applying to latest is the tempting retry behavior, but it hides the fact that the user edited a different accepted version.",
+        "boundaryOrTradeoff": "The scenario requires conflict detection, not automatic geometric conflict resolution or a particular version-control algorithm.",
+        "transfer": "For delayed edits, include the version they were based on and reject silent retargeting when the base has changed."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i016_alt1",
+          "text": "That can silently combine work based on stale geometry and bypass the required explicit conflict."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i016_alt2",
+          "text": "Without the original revision, the system cannot determine which accepted geometry the offline edit assumed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i016_alt3",
+          "text": "A note does not preserve the accepted geometry or report the explicit conflict required for a stale base."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i017",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A campaign host applies a reward to a character only while the campaign is in a legal reward phase. The host's request records the chosen reward and character, and a rejected phase check must leave both campaign and character unchanged. How should the request be modeled?",
+    "difficulty": "advanced_tradeoff",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i017_policy",
+          "text": "Queue character and reward; apply only after campaign-phase validation succeeds."
+        },
+        {
+          "optionId": "n06_b03_i017_alt1",
+          "text": "Apply the reward to the character first and check campaign phase afterward."
+        },
+        {
+          "optionId": "n06_b03_i017_alt2",
+          "text": "Have the campaign screen choose the character and reward again when processing the request."
+        },
+        {
+          "optionId": "n06_b03_i017_alt3",
+          "text": "Let the character infer which reward to apply from the campaign's current phase."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i017_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Reward application has explicit targets and a campaign-phase prerequisite. A command keeps those inputs together so the phase is checked before either object changes.",
+      "details": {
+        "mechanismOrProperty": "An operation object represents the requested action and arguments. The receiver validates its precondition before performing the operation's effects.",
+        "scenarioApplication": "The character ID and reward travel with the request; an invalid phase rejects it without changing campaign or character.",
+        "errorCorrection": "Checking after mutation is the closest shortcut, but it cannot honor the stated no-change outcome on rejection.",
+        "boundaryOrTradeoff": "The prompt provides the phase check and no-partial-effect behavior as facts; it does not imply a cross-store transaction design.",
+        "transfer": "Keep an operation's chosen targets explicit and validate its stated preconditions before applying its effects."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i017_alt1",
+          "text": "A rejected phase check must leave both objects unchanged, so applying first creates a forbidden partial effect."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i017_alt2",
+          "text": "That can change the target from the host's recorded choice and no longer execute the submitted intent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i017_alt3",
+          "text": "The operation's chosen reward is part of the host request; deriving it later changes the requested action."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b03-i018",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B03",
+    "prompt": "A planner reassigns a cold-chain shipment to a carrier. Temperature restrictions and current hand-off ownership must remain attached to the shipment; a carrier that rejects the hand-off must not become its owner. What should represent the reassignment?",
+    "difficulty": "advanced_failure",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b03_i018_policy",
+          "text": "Bind shipment, prior owner, proposed carrier, and temperature limits; transfer only on acceptance."
+        },
+        {
+          "optionId": "n06_b03_i018_alt1",
+          "text": "Replace the owner field before requesting acceptance, then restore the prior carrier if the request fails."
+        },
+        {
+          "optionId": "n06_b03_i018_alt2",
+          "text": "Create a new shipment record for the proposed carrier and copy only the delivery destination."
+        },
+        {
+          "optionId": "n06_b03_i018_alt3",
+          "text": "Ask the proposed carrier to apply its default temperature rules after taking ownership."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b03_i018_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Reassignment is one operation that must preserve the existing shipment and its restrictions while crossing an acceptance boundary. Capturing both owners and the shipment constraints keeps the pending action explicit.",
+      "details": {
+        "mechanismOrProperty": "A command packages the hand-off intent and its target. It can be accepted or rejected before the receiver performs the ownership transition.",
+        "scenarioApplication": "The request names the current owner, proposed carrier, and temperature limits; rejection leaves ownership unchanged, while acceptance changes it without dropping those limits.",
+        "errorCorrection": "Updating first and compensating later is the tempting alternative, but it exposes an unaccepted owner and requires a second operation to repair a rejected request.",
+        "boundaryOrTradeoff": "The scenario defines acceptance and constraint preservation; it does not promise atomic coordination across carrier systems.",
+        "transfer": "For a hand-off that can be refused, represent proposal and acceptance before changing the authoritative owner."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i018_alt1",
+          "text": "During the pending or rejected hand-off, the shipment would temporarily show an owner that has not accepted it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i018_alt2",
+          "text": "That loses the existing hand-off history and the temperature restrictions attached to the original shipment."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b03_i018_alt3",
+          "text": "The shipment's restrictions must travel with it; replacing them with carrier defaults changes its handling contract."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  }
+]

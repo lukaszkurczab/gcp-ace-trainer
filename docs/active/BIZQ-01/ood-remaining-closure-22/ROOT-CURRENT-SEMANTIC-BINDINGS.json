@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "scope": "Root read final report and verified actual input/report/map preparation bindings; semantic-only acceptance, no producer or runtime acceptance",
+  "bindings": [
+    {
+      "path": "SEMANTIC-CURRENT-ACCEPTED-QA.md",
+      "sha256": "1b1c7fe24b091b6d3c18ce8635701d863966eb8ff512d0834786d156a6afb062"
+    },
+    {
+      "path": "SEMANTIC-CURRENT-ACCEPTED-QA.json",
+      "sha256": "3ddac680b864069af4295ac5c2f90d8a83564431b996188b85bdc49effe84ff8"
+    },
+    {
+      "path": "ROOT-CURRENT-N06-INPUTS.json",
+      "sha256": "fe693c44f41e3f923764d44eb587ad97ce95a9fc3e1293b96c08bfd72e046a9c"
+    }
+  ],
+  "producerMapSha256": "9369a886d8c091b4ee68bbb34818ec2001f1ff42698e59721548074729ef9e68"
+}

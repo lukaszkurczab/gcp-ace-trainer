@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "patternly-bizq01-n06-independent-semantic-review-v1",
+  "unit": "OOD-N06-B07",
+  "verdict": "PASS",
+  "proposal": {
+    "path": "review-inputs/N06-B07-v4.json",
+    "sha256": "77fd48660671d6ac4e57eaa212f98a8114670de4c3078cf2835e346876a9e342"
+  },
+  "notes": {
+    "path": "review-inputs/N06-B07-v4-NOTES.json",
+    "sha256": "74817c3962e4818e872af50bd02fdca2ee35237f40407f5ad7706e44ee7e4f2d"
+  },
+  "criteria": {
+    "specPath": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sections": ["4.1", "4.2", "4.3", "4.4", "5B", "5C"],
+    "principle": "Assess the keyed decision from the visible host contract; do not treat a general design alternative as wrong unless it conflicts with this case's stated integration constraints."
+  },
+  "sourceClaimLimits": [
+    "The Template Method reference supports a base operation with deferred subclass steps; the scenario-specific public API and supported hook are authored premises.",
+    "No claim is made that Strategy is generally unsuitable or that every host provides the stated extension contract."
+  ],
+  "identityReview": {
+    "questionIds": "Preserve the 18 question IDs: each retains the Template Method/invariant-workflow decision for its scenario.",
+    "correctOptionIds": "Use the current case-specific option IDs; they describe the authored accepted implementations. Do not infer that question-ID preservation implies option-ID preservation."
+  },
+  "itemDispositions": [
+    {"questionId": "ood-n06-b07-i001", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i002", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i003", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i004", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i005", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i006", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i007", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i008", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i009", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i010", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i011", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i012", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i013", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i014", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i015", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i016", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i017", "decision": "pass"},
+    {"questionId": "ood-n06-b07-i018", "decision": "pass"}
+  ],
+  "limitations": ["Proposal-only semantic review. No source, producer, runtime, consumer, admission, native, or full-N06 acceptance claim."]
+}

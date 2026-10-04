@@ -1,0 +1,2040 @@
+{
+  "result": "PASS",
+  "scope": "Exact18 QIDs/answerIDs/optionIDs and untouched fields preserved; choices/aligned feedback corrections only, no semantic approval",
+  "items": [
+    {
+      "questionId": "ood-n06-b08-i001",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i001_ordered_payout_entries",
+          "text": "Scan settled orders through an iterator; keep payout eligibility and idempotent release with Finance."
+        },
+        {
+          "optionId": "n06b08_i001_alt1",
+          "text": "Let each orders record accept visitors for payout and reconciliation, with the record dispatching its own work during the ordered pass."
+        },
+        {
+          "optionId": "n06b08_i001_alt2",
+          "text": "Return the mutable settlement-ordered batch so each payout and reconciliation consumer can filter or reorder entries during its own scan."
+        },
+        {
+          "optionId": "n06b08_i001_alt3",
+          "text": "Add separate payout and reconciliation commands to Finance; each command owns a private traversal and returns its result."
+        },
+        {
+          "optionId": "n06b08_i001_alt4",
+          "text": "Have each payout and reconciliation consumer implement its own loop over settled-order, rather than reuse a collection traversal contract."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i001_ordered_payout_entries",
+          "text": "Iterate settled orders; keep release and reconciliation outside storage."
+        },
+        {
+          "optionId": "n06b08_i001_alt1",
+          "text": "Let each Order dispatch payout and reconciliation visitors, while the batch controls sequence."
+        },
+        {
+          "optionId": "n06b08_i001_alt2",
+          "text": "Expose the mutable batch so Finance can sort and filter each scan itself."
+        },
+        {
+          "optionId": "n06b08_i001_alt3",
+          "text": "Have Finance run separate payout and reconciliation commands, each with a private scan."
+        },
+        {
+          "optionId": "n06b08_i001_alt4",
+          "text": "Duplicate settlement-time loops in the payout job and reconciliation job."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: the entries have one record type and settlement order must be shared by the payout run and reconciliation scan. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "The entries have one record type and settlement order must be shared by the payout run and reconciliation scan. The payout owner still enforces settled-order eligibility and the idempotency key. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Return the mutable settlement-ordered batch so each payout and reconciliation consumer can filter or reorder entries during its own scan.” A writable settlement-ordered batch lets consumers change membership or settled-order, exposing representation that the prompt keeps with Finance. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "If reconciliation later needs another ordered pass over settled orders, reuse the iterator; keep release eligibility and idempotency with the payout owner."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i001_alt1",
+            "text": "Per-record visitors add dispatch to one homogeneous orders type; collection order still belongs to the sequence owner."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i001_alt2",
+            "text": "A writable settlement-ordered batch lets consumers change membership or settled-order, exposing representation that the prompt keeps with Finance."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i001_alt3",
+            "text": "Separate owner commands couple each payout and reconciliation scan to storage even though both can share one traversal contract."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i001_alt4",
+            "text": "Independent payout and reconciliation loops can diverge on settled-order; the iterator centralizes the sequence while leaving operations separate."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: the entries have one record type and settlement order must be shared by the payout run and reconciliation scan. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "The entries have one record type and settlement order must be shared by the payout run and reconciliation scan. The payout owner still enforces settled-order eligibility and the idempotency key. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Expose the mutable batch so Finance can sort and filter each scan itself.” Finance needs the stable batch order; writable storage lets either scan reorder membership. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "If reconciliation later needs another ordered pass over settled orders, reuse the iterator; keep release eligibility and idempotency with the payout owner."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i001_alt1",
+            "text": "Per-record visitors place two batch operations on Order; the iterator should govern settlement order."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i001_alt2",
+            "text": "Finance needs the stable batch order; writable storage lets either scan reorder membership."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i001_alt3",
+            "text": "Separate commands keep storage hidden but couple both consumers to Finance instead of sharing traversal."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i001_alt4",
+            "text": "Two loops can drift on settlement-time ordering, producing different payout and reconciliation sequences."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i002",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i002_alt1",
+          "text": "Let each feed changes record accept visitors for announcement, audit, and replay, with the record dispatching its own work during the ordered pass."
+        },
+        {
+          "optionId": "n06b08_i002_alt2",
+          "text": "Return the mutable effective-time feed so each announcement, audit, and replay consumer can filter or reorder entries during its own scan."
+        },
+        {
+          "optionId": "n06b08_i002_alt3",
+          "text": "Add separate announcement, audit, and replay commands to disruption board; each command owns a private traversal and returns its result."
+        },
+        {
+          "optionId": "n06b08_i002_alt4",
+          "text": "Have each announcement, audit, and replay consumer implement its own loop over effective-time, rather than reuse a collection traversal contract."
+        },
+        {
+          "optionId": "n06b08_i002_effective_time_feed",
+          "text": "Iterate the effective-time feed; keep announcement, audit export, and replay as separate consumers."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i002_alt1",
+          "text": "Let each FeedChange dispatch announcement, audit, and replay visitors in feed order."
+        },
+        {
+          "optionId": "n06b08_i002_alt2",
+          "text": "Return the mutable feed so each consumer can choose its own event ordering."
+        },
+        {
+          "optionId": "n06b08_i002_alt3",
+          "text": "Put three scan commands on the disruption board and keep traversal private to each command."
+        },
+        {
+          "optionId": "n06b08_i002_alt4",
+          "text": "Reimplement effective-time sorting in announcement, audit, and replay."
+        },
+        {
+          "optionId": "n06b08_i002_effective_time_feed",
+          "text": "Iterate the effective-time feed for announcement, audit, and replay."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: each feed entry has the same shape and every operation must observe effective-time order. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Each feed entry has the same shape and every operation must observe effective-time order. Announcement, audit, and replay do not own or expose feed storage. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Have each announcement, audit, and replay consumer implement its own loop over effective-time, rather than reuse a collection traversal contract.” Independent announcement, audit, and replay loops can diverge on effective-time; the iterator centralizes the sequence while leaving operations separate. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For a new ordered-feed consumer, reuse effective-time iteration and keep feed membership with the disruption board."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i002_alt1",
+            "text": "Per-record visitors add dispatch to one homogeneous feed changes type; collection order still belongs to the sequence owner."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i002_alt2",
+            "text": "A writable effective-time feed lets consumers change membership or effective-time, exposing representation that the prompt keeps with disruption board."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i002_alt3",
+            "text": "Separate owner commands couple each announcement, audit, and replay scan to storage even though both can share one traversal contract."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i002_alt4",
+            "text": "Independent announcement, audit, and replay loops can diverge on effective-time; the iterator centralizes the sequence while leaving operations separate."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: each feed entry has the same shape and every operation must observe effective-time order. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Each feed entry has the same shape and every operation must observe effective-time order. Announcement, audit, and replay do not own or expose feed storage. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Reimplement effective-time sorting in announcement, audit, and replay.” Independent sorting can diverge, so the same platform change may be announced and replayed in different orders. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For a new ordered-feed consumer, reuse effective-time iteration and keep feed membership with the disruption board."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i002_alt1",
+            "text": "The feed is homogeneous; per-entry dispatch does not add type-specific behavior or own feed iteration."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i002_alt2",
+            "text": "Each operation must use the same effective-time order; a mutable feed exposes ordering to consumers."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i002_alt3",
+            "text": "These commands couple separate consumers to the board even though all need one shared sequence."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i002_alt4",
+            "text": "Independent sorting can diverge, so the same platform change may be announced and replayed in different orders."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i003",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i003_alt1",
+          "text": "Give each Reservation and CalendarGroup operation a generic iterator and branch on overlap and capacity node types inside its own traversal."
+        },
+        {
+          "optionId": "n06b08_i003_alt2",
+          "text": "Add Reservation and CalendarGroup methods to the overlap and capacity classes so each node computes its part of every operation."
+        },
+        {
+          "optionId": "n06b08_i003_alt3",
+          "text": "Expose the live schedule tree to each Reservation and CalendarGroup operation and let that operation own traversal and containment checks."
+        },
+        {
+          "optionId": "n06b08_i003_schedule_tree_operations",
+          "text": "Use visitors for overlap and capacity; the schedule retains node membership and order."
+        },
+        {
+          "optionId": "n06b08_i003_alt4",
+          "text": "Build a private copy of the schedule tree for each operation and maintain a separate traversal over each copy."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i003_alt1",
+          "text": "Use one generic node iterator and put Reservation/CalendarGroup switches in both reports."
+        },
+        {
+          "optionId": "n06b08_i003_alt2",
+          "text": "Add overlap and capacity methods to Reservation and CalendarGroup."
+        },
+        {
+          "optionId": "n06b08_i003_alt3",
+          "text": "Give each report the live schedule tree and let it manage containment and traversal."
+        },
+        {
+          "optionId": "n06b08_i003_schedule_tree_operations",
+          "text": "Visit stable schedule nodes for overlap and capacity; schedule owns links and order."
+        },
+        {
+          "optionId": "n06b08_i003_alt4",
+          "text": "Copy the schedule tree for each report so its traversal can evolve independently."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The stable schedule has several node types, and the node types are stable and each new operation needs different type-specific facts; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "The node types are stable and each new operation needs different type-specific facts. Schedule membership, containment, and order remain owned by the schedule. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Give each Reservation and CalendarGroup operation a generic iterator and branch on overlap and capacity node types inside its own traversal.” Each Reservation and CalendarGroup operation would own branches for overlap and capacity; stable node types and changing operations make that dispatch spread across visitors. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For a new schedule-wide operation over Reservation and CalendarGroup, add a visitor while the schedule keeps containment and order."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i003_alt1",
+            "text": "Each Reservation and CalendarGroup operation would own branches for overlap and capacity; stable node types and changing operations make that dispatch spread across visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i003_alt2",
+            "text": "This adds every new Reservation and CalendarGroup operation to every node API even though the node set is stable."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i003_alt3",
+            "text": "The operations would own traversal/containment instead of schedule, risking disagreement about the authoritative schedule tree."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i003_alt4",
+            "text": "Separate schedule tree copies can go stale from authoritative membership and links before an operation reports its result."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The stable schedule has several node types, and the node types are stable and each new operation needs different type-specific facts; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "The node types are stable and each new operation needs different type-specific facts. Schedule membership, containment, and order remain owned by the schedule. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Use one generic node iterator and put Reservation/CalendarGroup switches in both reports.” Each report would repeat type dispatch; the stable node set and changing operations suit visitors. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For a new schedule-wide operation over Reservation and CalendarGroup, add a visitor while the schedule keeps containment and order."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i003_alt1",
+            "text": "Each report would repeat type dispatch; the stable node set and changing operations suit visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i003_alt2",
+            "text": "Every new schedule operation would expand both node APIs despite their stable types."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i003_alt3",
+            "text": "The reports could disagree about membership or order that the schedule owns."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i003_alt4",
+            "text": "Report copies can become stale relative to the live reservations and calendar groups."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i004",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i004_alt1",
+          "text": "Let each caption segments record accept visitors for subtitle export and timing analysis, with the record dispatching its own work during the ordered pass."
+        },
+        {
+          "optionId": "n06b08_i004_alt2",
+          "text": "Return the mutable provider sequence so each subtitle export and timing analysis consumer can filter or reorder entries during its own scan."
+        },
+        {
+          "optionId": "n06b08_i004_caption_segment_traversal",
+          "text": "Read CaptionSegments in order; keep export and timing analysis outside provider storage."
+        },
+        {
+          "optionId": "n06b08_i004_alt3",
+          "text": "Add separate subtitle export and timing analysis commands to caption provider; each command owns a private traversal and returns its result."
+        },
+        {
+          "optionId": "n06b08_i004_alt4",
+          "text": "Have each subtitle export and timing analysis consumer implement its own loop over stream order, rather than reuse a collection traversal contract."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i004_alt1",
+          "text": "Let each CaptionSegment dispatch subtitle-export and timing-analysis visitors."
+        },
+        {
+          "optionId": "n06b08_i004_alt2",
+          "text": "Give export and drift analysis a writable provider sequence to scan independently."
+        },
+        {
+          "optionId": "n06b08_i004_caption_segment_traversal",
+          "text": "Iterate CaptionSegments; keep export and drift analysis outside provider storage."
+        },
+        {
+          "optionId": "n06b08_i004_alt3",
+          "text": "Add separate export and drift commands to the provider, each traversing its own view."
+        },
+        {
+          "optionId": "n06b08_i004_alt4",
+          "text": "Keep a separate CaptionSegment loop in the exporter and timing analyzer."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: the output has one record type and stream order is authoritative for both scans. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "The output has one record type and stream order is authoritative for both scans. Provider timing/error behavior remains owned by the stream provider. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Let each caption segments record accept visitors for subtitle export and timing analysis, with the record dispatching its own work during the ordered pass.” Per-record visitors add dispatch to one homogeneous caption segments type; collection order still belongs to the sequence owner. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another segment-based scan, reuse stream order and keep timing/error behavior with the provider."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i004_alt1",
+            "text": "Per-record visitors add dispatch to one homogeneous caption segments type; collection order still belongs to the sequence owner."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i004_alt2",
+            "text": "A writable provider sequence lets consumers change membership or stream order, exposing representation that the prompt keeps with caption provider."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i004_alt3",
+            "text": "Separate owner commands couple each subtitle export and timing analysis scan to storage even though both can share one traversal contract."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i004_alt4",
+            "text": "Independent subtitle export and timing analysis loops can diverge on stream order; the iterator centralizes the sequence while leaving operations separate."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: the output has one record type and stream order is authoritative for both scans. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "The output has one record type and stream order is authoritative for both scans. Provider timing/error behavior remains owned by the stream provider. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Let each CaptionSegment dispatch subtitle-export and timing-analysis visitors.” All entries share one record type; per-record visitors add dispatch without owning stream order. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another segment-based scan, reuse stream order and keep timing/error behavior with the provider."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i004_alt1",
+            "text": "All entries share one record type; per-record visitors add dispatch without owning stream order."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i004_alt2",
+            "text": "Both scans need provider order; writable storage lets a consumer disturb the sequence."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i004_alt3",
+            "text": "This couples separate analysis operations to provider commands instead of exposing traversal."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i004_alt4",
+            "text": "The exporter and analyzer can disagree on segment order if each maintains its own loop."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i005",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i005_alt1",
+          "text": "Give each Volunteer, Shift, and Credential operation a generic iterator and branch on fairness and qualification node types inside its own traversal."
+        },
+        {
+          "optionId": "n06b08_i005_roster_audit_operations",
+          "text": "Use visitors for fairness and qualification; the roster retains its nodes and relationships."
+        },
+        {
+          "optionId": "n06b08_i005_alt2",
+          "text": "Add Volunteer, Shift, and Credential methods to the fairness and qualification classes so each node computes its part of every operation."
+        },
+        {
+          "optionId": "n06b08_i005_alt3",
+          "text": "Expose the live roster tree to each Volunteer, Shift, and Credential operation and let that operation own traversal and containment checks."
+        },
+        {
+          "optionId": "n06b08_i005_alt4",
+          "text": "Build a private copy of the roster tree for each operation and maintain a separate traversal over each copy."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i005_alt1",
+          "text": "Give each report a generic traversal with its own Volunteer/Shift/Credential type switches."
+        },
+        {
+          "optionId": "n06b08_i005_roster_audit_operations",
+          "text": "Use visitors for fairness and qualification; roster owns membership and links."
+        },
+        {
+          "optionId": "n06b08_i005_alt2",
+          "text": "Add fairness and qualification methods to Volunteer, Shift, and Credential."
+        },
+        {
+          "optionId": "n06b08_i005_alt3",
+          "text": "Expose the live roster tree and let each report walk its relationships itself."
+        },
+        {
+          "optionId": "n06b08_i005_alt4",
+          "text": "Maintain a separate roster copy for fairness and for qualification audits."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The stable roster has several node types, and stable heterogeneous nodes supply different facts to separately evolving operations; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "Stable heterogeneous nodes supply different facts to separately evolving operations. The roster retains authoritative membership and links while those reports are added. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Give each Volunteer, Shift, and Credential operation a generic iterator and branch on fairness and qualification node types inside its own traversal.” Each Volunteer, Shift, and Credential operation would own branches for fairness and qualification; stable node types and changing operations make that dispatch spread across visitors. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another report over Volunteer, Shift, and Credential, add a visitor without moving roster membership or links."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i005_alt1",
+            "text": "Each Volunteer, Shift, and Credential operation would own branches for fairness and qualification; stable node types and changing operations make that dispatch spread across visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i005_alt2",
+            "text": "This adds every new Volunteer, Shift, and Credential operation to every node API even though the node set is stable."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i005_alt3",
+            "text": "The operations would own traversal/containment instead of roster, risking disagreement about the authoritative roster tree."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i005_alt4",
+            "text": "Separate roster tree copies can go stale from authoritative membership and links before an operation reports its result."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The stable roster has several node types, and stable heterogeneous nodes supply different facts to separately evolving operations; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "Stable heterogeneous nodes supply different facts to separately evolving operations. The roster retains authoritative membership and links while those reports are added. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Give each report a generic traversal with its own Volunteer/Shift/Credential type switches.” Each report would repeat node-type branches; visitors isolate those changing operations. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another report over Volunteer, Shift, and Credential, add a visitor without moving roster membership or links."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i005_alt1",
+            "text": "Each report would repeat node-type branches; visitors isolate those changing operations."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i005_alt2",
+            "text": "New reports would force changes across every stable roster-node API."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i005_alt3",
+            "text": "Report code could misread the authoritative membership or relationship links."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i005_alt4",
+            "text": "Copied rosters can diverge from current volunteer assignments and credentials."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i006",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i006_route_tree_operations",
+          "text": "Use visitors for merge and conflict reports; the route model owns geometry and tree structure."
+        },
+        {
+          "optionId": "n06b08_i006_alt1",
+          "text": "Give each Route, Segment, and ConflictMarker operation a generic iterator and branch on merge and conflict reporting node types inside its own traversal."
+        },
+        {
+          "optionId": "n06b08_i006_alt2",
+          "text": "Add Route, Segment, and ConflictMarker methods to the merge and conflict reporting classes so each node computes its part of every operation."
+        },
+        {
+          "optionId": "n06b08_i006_alt3",
+          "text": "Expose the live route tree to each Route, Segment, and ConflictMarker operation and let that operation own traversal and containment checks."
+        },
+        {
+          "optionId": "n06b08_i006_alt4",
+          "text": "Build a private copy of the route tree for each operation and maintain a separate traversal over each copy."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i006_route_tree_operations",
+          "text": "Add visitors for merge and conflict reports; route model owns geometry and tree."
+        },
+        {
+          "optionId": "n06b08_i006_alt1",
+          "text": "Put a generic iterator in each report and branch on Route, Segment, or ConflictMarker."
+        },
+        {
+          "optionId": "n06b08_i006_alt2",
+          "text": "Add merge and conflict-report methods to every route-node class."
+        },
+        {
+          "optionId": "n06b08_i006_alt3",
+          "text": "Let each report traverse the live route tree and decide how containment works."
+        },
+        {
+          "optionId": "n06b08_i006_alt4",
+          "text": "Clone the route tree separately for merge execution and conflict reporting."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The stable route tree has several node types, and the node types and route tree are stable while operations can be added independently; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "The node types and route tree are stable while operations can be added independently. Conflicts remain explicit and accepted geometry is not silently overwritten. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Give each Route, Segment, and ConflictMarker operation a generic iterator and branch on merge and conflict reporting node types inside its own traversal.” Each Route, Segment, and ConflictMarker operation would own branches for merge and conflict reporting; stable node types and changing operations make that dispatch spread across visitors. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another route operation over the same node types, add a visitor and keep geometry/conflict ownership with the route model."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i006_alt1",
+            "text": "Each Route, Segment, and ConflictMarker operation would own branches for merge and conflict reporting; stable node types and changing operations make that dispatch spread across visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i006_alt2",
+            "text": "This adds every new Route, Segment, and ConflictMarker operation to every node API even though the node set is stable."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i006_alt3",
+            "text": "The operations would own traversal/containment instead of route model, risking disagreement about the authoritative route tree."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i006_alt4",
+            "text": "Separate route tree copies can go stale from authoritative membership and links before an operation reports its result."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The stable route tree has several node types, and the node types and route tree are stable while operations can be added independently; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "The node types and route tree are stable while operations can be added independently. Conflicts remain explicit and accepted geometry is not silently overwritten. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Put a generic iterator in each report and branch on Route, Segment, or ConflictMarker.” Each operation would repeat route-node dispatch instead of extending behavior through visitors. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another route operation over the same node types, add a visitor and keep geometry/conflict ownership with the route model."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i006_alt1",
+            "text": "Each operation would repeat route-node dispatch instead of extending behavior through visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i006_alt2",
+            "text": "Every new operation would alter all route-node APIs, although the node types are stable."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i006_alt3",
+            "text": "The route model owns geometry and containment; report code should not redefine its tree walk."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i006_alt4",
+            "text": "Separate clones can lose accepted geometry or conflict markers added to the live route."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i007",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i007_alt1",
+          "text": "Give each Character, Item, and RuleReference operation a generic iterator and branch on reward calculation and eligibility explanation node types inside its own traversal."
+        },
+        {
+          "optionId": "n06b08_i007_alt2",
+          "text": "Add Character, Item, and RuleReference methods to the reward calculation and eligibility explanation classes so each node computes its part of every operation."
+        },
+        {
+          "optionId": "n06b08_i007_alt3",
+          "text": "Expose the live campaign tree to each Character, Item, and RuleReference operation and let that operation own traversal and containment checks."
+        },
+        {
+          "optionId": "n06b08_i007_alt4",
+          "text": "Build a private copy of the campaign tree for each operation and maintain a separate traversal over each copy."
+        },
+        {
+          "optionId": "n06b08_i007_campaign_node_analysis",
+          "text": "Use visitors for reward calculation and explanation; the campaign owner applies transitions."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i007_alt1",
+          "text": "Use a generic walk and duplicate Character/Item/RuleReference switches in both operations."
+        },
+        {
+          "optionId": "n06b08_i007_alt2",
+          "text": "Add reward and eligibility-explanation methods to each campaign node class."
+        },
+        {
+          "optionId": "n06b08_i007_alt3",
+          "text": "Give each operation the live campaign tree and let it manage traversal and membership."
+        },
+        {
+          "optionId": "n06b08_i007_alt4",
+          "text": "Keep separate campaign-tree copies for reward calculation and eligibility explanation."
+        },
+        {
+          "optionId": "n06b08_i007_campaign_node_analysis",
+          "text": "Visit campaign nodes for reward and eligibility; campaign owner applies transitions."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The stable campaign has several node types, and the heterogeneous structure is stable and the two read/calculation operations need different node facts; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "The heterogeneous structure is stable and the two read/calculation operations need different node facts. Reward eligibility uses current legal state and state changes remain with the campaign. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Give each Character, Item, and RuleReference operation a generic iterator and branch on reward calculation and eligibility explanation node types inside its own traversal.” Each Character, Item, and RuleReference operation would own branches for reward calculation and eligibility explanation; stable node types and changing operations make that dispatch spread across visitors. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another campaign calculation, add a visitor but let the campaign owner perform any legal state transition."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i007_alt1",
+            "text": "Each Character, Item, and RuleReference operation would own branches for reward calculation and eligibility explanation; stable node types and changing operations make that dispatch spread across visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i007_alt2",
+            "text": "This adds every new Character, Item, and RuleReference operation to every node API even though the node set is stable."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i007_alt3",
+            "text": "The operations would own traversal/containment instead of campaign owner, risking disagreement about the authoritative campaign tree."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i007_alt4",
+            "text": "Separate campaign tree copies can go stale from authoritative membership and links before an operation reports its result."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The stable campaign has several node types, and the heterogeneous structure is stable and the two read/calculation operations need different node facts; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "The heterogeneous structure is stable and the two read/calculation operations need different node facts. Reward eligibility uses current legal state and state changes remain with the campaign. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Use a generic walk and duplicate Character/Item/RuleReference switches in both operations.” Repeated type switches spread campaign-node knowledge across operations; visitors keep each operation together. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another campaign calculation, add a visitor but let the campaign owner perform any legal state transition."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i007_alt1",
+            "text": "Repeated type switches spread campaign-node knowledge across operations; visitors keep each operation together."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i007_alt2",
+            "text": "Adding another campaign operation would change every stable node class."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i007_alt3",
+            "text": "The campaign owner controls membership and legal transitions, not the calculation visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i007_alt4",
+            "text": "Copied trees can omit a current item or rule reference used by the legal campaign state."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i008",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i008_alt1",
+          "text": "Let each package units record accept visitors for restriction scans, with the record dispatching its own work during the ordered pass."
+        },
+        {
+          "optionId": "n06b08_i008_alt2",
+          "text": "Return the mutable shipment package sequence so each restriction scans consumer can filter or reorder entries during its own scan."
+        },
+        {
+          "optionId": "n06b08_i008_alt3",
+          "text": "Add separate restriction scans commands to shipment operation; each command owns a private traversal and returns its result."
+        },
+        {
+          "optionId": "n06b08_i008_shipment_package_iteration",
+          "text": "Iterate PackageUnits read-only; keep reassignment and hand-off rules with the shipment operation."
+        },
+        {
+          "optionId": "n06b08_i008_alt4",
+          "text": "Have each restriction scans consumer implement its own loop over package order, rather than reuse a collection traversal contract."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i008_alt1",
+          "text": "Let every PackageUnit dispatch restriction-scan visitors before and after carrier selection."
+        },
+        {
+          "optionId": "n06b08_i008_alt2",
+          "text": "Expose the writable package list so planner scans can filter or reorder units."
+        },
+        {
+          "optionId": "n06b08_i008_alt3",
+          "text": "Add two restriction-scan commands to shipment reassignment and traverse privately in each."
+        },
+        {
+          "optionId": "n06b08_i008_shipment_package_iteration",
+          "text": "Read PackageUnits in order; shipment operation owns reassignment and hand-off rules."
+        },
+        {
+          "optionId": "n06b08_i008_alt4",
+          "text": "Write one package-order loop before selection and another after it."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: package units share one record type and both scans must preserve shipment order. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Package units share one record type and both scans must preserve shipment order. Carrier selection does not gain direct access to mutate shipment storage. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Return the mutable shipment package sequence so each restriction scans consumer can filter or reorder entries during its own scan.” A writable shipment package sequence lets consumers change membership or package order, exposing representation that the prompt keeps with shipment operation. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another package scan, reuse ordered read-only traversal and keep reassignment/handoff rules with the shipment operation."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i008_alt1",
+            "text": "Per-record visitors add dispatch to one homogeneous package units type; collection order still belongs to the sequence owner."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i008_alt2",
+            "text": "A writable shipment package sequence lets consumers change membership or package order, exposing representation that the prompt keeps with shipment operation."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i008_alt3",
+            "text": "Separate owner commands couple each restriction scans scan to storage even though both can share one traversal contract."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i008_alt4",
+            "text": "Independent restriction scans loops can diverge on package order; the iterator centralizes the sequence while leaving operations separate."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: package units share one record type and both scans must preserve shipment order. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Package units share one record type and both scans must preserve shipment order. Carrier selection does not gain direct access to mutate shipment storage. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Expose the writable package list so planner scans can filter or reorder units.” The prompt requires read-only scans; writable shipment storage lets scans change hand-off inputs. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another package scan, reuse ordered read-only traversal and keep reassignment/handoff rules with the shipment operation."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i008_alt1",
+            "text": "PackageUnit is homogeneous; dispatching each record does not own the shared ordered sequence."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i008_alt2",
+            "text": "The prompt requires read-only scans; writable shipment storage lets scans change hand-off inputs."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i008_alt3",
+            "text": "Separate commands couple both scans to reassignment even though neither performs the hand-off."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i008_alt4",
+            "text": "The two loops may inspect different package order around carrier selection."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i009",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i009_alt1",
+          "text": "Let each installments record accept visitors for allocation planning and aging, with the record dispatching its own work during the ordered pass."
+        },
+        {
+          "optionId": "n06b08_i009_alt2",
+          "text": "Return the mutable due-date installment list so each allocation planning and aging consumer can filter or reorder entries during its own scan."
+        },
+        {
+          "optionId": "n06b08_i009_ordered_due_date_iteration",
+          "text": "Iterate installments by due date; let the ledger command alone apply repayment writes."
+        },
+        {
+          "optionId": "n06b08_i009_alt3",
+          "text": "Add separate allocation planning and aging commands to ledger; each command owns a private traversal and returns its result."
+        },
+        {
+          "optionId": "n06b08_i009_alt4",
+          "text": "Have each allocation planning and aging consumer implement its own loop over due-date order, rather than reuse a collection traversal contract."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i009_alt1",
+          "text": "Let each Installment dispatch planning and aging visitors in due-date order."
+        },
+        {
+          "optionId": "n06b08_i009_alt2",
+          "text": "Return the writable installment list so planning and aging can reorder it."
+        },
+        {
+          "optionId": "n06b08_i009_ordered_due_date_iteration",
+          "text": "Iterate installments by due date; ledger command alone applies repayment writes."
+        },
+        {
+          "optionId": "n06b08_i009_alt3",
+          "text": "Add separate planning and aging commands to the ledger, each with a private scan."
+        },
+        {
+          "optionId": "n06b08_i009_alt4",
+          "text": "Implement a due-date traversal separately in allocation planning and aging."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: installments are homogeneous and both planning and aging need due-date order. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Installments are homogeneous and both planning and aging need due-date order. The ledger remains responsible for writes and the nonnegative-balance rule. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Return the mutable due-date installment list so each allocation planning and aging consumer can filter or reorder entries during its own scan.” A writable due-date installment list lets consumers change membership or due-date order, exposing representation that the prompt keeps with ledger. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another due-date scan, reuse the read-only iterator and keep balance-changing writes with the ledger command."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i009_alt1",
+            "text": "Per-record visitors add dispatch to one homogeneous installments type; collection order still belongs to the sequence owner."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i009_alt2",
+            "text": "A writable due-date installment list lets consumers change membership or due-date order, exposing representation that the prompt keeps with ledger."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i009_alt3",
+            "text": "Separate owner commands couple each allocation planning and aging scan to storage even though both can share one traversal contract."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i009_alt4",
+            "text": "Independent allocation planning and aging loops can diverge on due-date order; the iterator centralizes the sequence while leaving operations separate."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: installments are homogeneous and both planning and aging need due-date order. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Installments are homogeneous and both planning and aging need due-date order. The ledger remains responsible for writes and the nonnegative-balance rule. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Return the writable installment list so planning and aging can reorder it.” Reordering the list could change which installments the planner considers first. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another due-date scan, reuse the read-only iterator and keep balance-changing writes with the ledger command."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i009_alt1",
+            "text": "One installment type does not need per-node dispatch; the list should supply its due-date order."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i009_alt2",
+            "text": "Reordering the list could change which installments the planner considers first."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i009_alt3",
+            "text": "Separate ledger commands bind read-only consumers to the write owner rather than share traversal."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i009_alt4",
+            "text": "Independent loops may disagree on due-date order even though both reports use the same ledger."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i010",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i010_alt1",
+          "text": "Give each Match, Bye, and Round operation a generic iterator and branch on rendering and forfeit auditing node types inside its own traversal."
+        },
+        {
+          "optionId": "n06b08_i010_bracket_tree_operations",
+          "text": "Use visitors for rendering and audit; the bracket owner controls transitions and advancement."
+        },
+        {
+          "optionId": "n06b08_i010_alt2",
+          "text": "Add Match, Bye, and Round methods to the rendering and forfeit auditing classes so each node computes its part of every operation."
+        },
+        {
+          "optionId": "n06b08_i010_alt3",
+          "text": "Expose the live bracket tree to each Match, Bye, and Round operation and let that operation own traversal and containment checks."
+        },
+        {
+          "optionId": "n06b08_i010_alt4",
+          "text": "Build a private copy of the bracket tree for each operation and maintain a separate traversal over each copy."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i010_alt1",
+          "text": "Give rendering and auditing generic walks with Match/Bye/Round switches in each operation."
+        },
+        {
+          "optionId": "n06b08_i010_bracket_tree_operations",
+          "text": "Use visitors for rendering and audit; bracket owner controls transitions and advancement."
+        },
+        {
+          "optionId": "n06b08_i010_alt2",
+          "text": "Add render and forfeit-audit methods to every Match, Bye, and Round class."
+        },
+        {
+          "optionId": "n06b08_i010_alt3",
+          "text": "Expose the bracket tree so each operation decides its own round containment and traversal."
+        },
+        {
+          "optionId": "n06b08_i010_alt4",
+          "text": "Clone the bracket for rendering and forfeit auditing, then maintain both copies."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The stable bracket has several node types, and the structure is heterogeneous and stable while rendering and auditing need different per-node data; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "The structure is heterogeneous and stable while rendering and auditing need different per-node data. A forfeit still advances only through the bracket’s legal transition. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Give each Match, Bye, and Round operation a generic iterator and branch on rendering and forfeit auditing node types inside its own traversal.” Each Match, Bye, and Round operation would own branches for rendering and forfeit auditing; stable node types and changing operations make that dispatch spread across visitors. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another bracket report, add a visitor while the bracket owner remains responsible for legal transitions and advancement."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i010_alt1",
+            "text": "Each Match, Bye, and Round operation would own branches for rendering and forfeit auditing; stable node types and changing operations make that dispatch spread across visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i010_alt2",
+            "text": "This adds every new Match, Bye, and Round operation to every node API even though the node set is stable."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i010_alt3",
+            "text": "The operations would own traversal/containment instead of bracket owner, risking disagreement about the authoritative bracket tree."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i010_alt4",
+            "text": "Separate bracket tree copies can go stale from authoritative membership and links before an operation reports its result."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The stable bracket has several node types, and the structure is heterogeneous and stable while rendering and auditing need different per-node data; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "The structure is heterogeneous and stable while rendering and auditing need different per-node data. A forfeit still advances only through the bracket’s legal transition. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Give rendering and auditing generic walks with Match/Bye/Round switches in each operation.” The operations would duplicate type dispatch over a stable bracket node set. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another bracket report, add a visitor while the bracket owner remains responsible for legal transitions and advancement."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i010_alt1",
+            "text": "The operations would duplicate type dispatch over a stable bracket node set."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i010_alt2",
+            "text": "Every new bracket operation would require methods on each stable node type."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i010_alt3",
+            "text": "The bracket owner, not the renderer or auditor, owns round relationships and order."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i010_alt4",
+            "text": "Cloned brackets can diverge from the legal match state the owner advances."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i011",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i011_condition_finding_iteration",
+          "text": "Iterate ConditionFindings in order; keep classification and evidence export separate from list storage."
+        },
+        {
+          "optionId": "n06b08_i011_alt1",
+          "text": "Let each condition findings record accept visitors for classification and evidence export, with the record dispatching its own work during the ordered pass."
+        },
+        {
+          "optionId": "n06b08_i011_alt2",
+          "text": "Return the mutable ordered evidence list so each classification and evidence export consumer can filter or reorder entries during its own scan."
+        },
+        {
+          "optionId": "n06b08_i011_alt3",
+          "text": "Add separate classification and evidence export commands to inspector; each command owns a private traversal and returns its result."
+        },
+        {
+          "optionId": "n06b08_i011_alt4",
+          "text": "Have each classification and evidence export consumer implement its own loop over finding order, rather than reuse a collection traversal contract."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i011_condition_finding_iteration",
+          "text": "Iterate ConditionFindings in order; keep classification and export separate from list storage."
+        },
+        {
+          "optionId": "n06b08_i011_alt1",
+          "text": "Let each ConditionFinding dispatch classification and evidence-export visitors."
+        },
+        {
+          "optionId": "n06b08_i011_alt2",
+          "text": "Expose a writable finding list so classification and export can reorder evidence."
+        },
+        {
+          "optionId": "n06b08_i011_alt3",
+          "text": "Add separate classification and evidence-export commands to the inspector."
+        },
+        {
+          "optionId": "n06b08_i011_alt4",
+          "text": "Maintain independent finding loops for classification and evidence export."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: evidence is a homogeneous ordered list and classification/export are separate consumers. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Evidence is a homogeneous ordered list and classification/export are separate consumers. Refund eligibility remains a separate decision. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Return the mutable ordered evidence list so each classification and evidence export consumer can filter or reorder entries during its own scan.” A writable ordered evidence list lets consumers change membership or finding order, exposing representation that the prompt keeps with inspector. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another evidence consumer, reuse ordered findings and keep refund eligibility separate from classification."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i011_alt1",
+            "text": "Per-record visitors add dispatch to one homogeneous condition findings type; collection order still belongs to the sequence owner."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i011_alt2",
+            "text": "A writable ordered evidence list lets consumers change membership or finding order, exposing representation that the prompt keeps with inspector."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i011_alt3",
+            "text": "Separate owner commands couple each classification and evidence export scan to storage even though both can share one traversal contract."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i011_alt4",
+            "text": "Independent classification and evidence export loops can diverge on finding order; the iterator centralizes the sequence while leaving operations separate."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: evidence is a homogeneous ordered list and classification/export are separate consumers. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Evidence is a homogeneous ordered list and classification/export are separate consumers. Refund eligibility remains a separate decision. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Expose a writable finding list so classification and export can reorder evidence.” Reordering findings can change the evidence sequence used by inspection and export. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another evidence consumer, reuse ordered findings and keep refund eligibility separate from classification."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i011_alt1",
+            "text": "All findings have one type; record-level visitors do not add useful node-specific dispatch."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i011_alt2",
+            "text": "Reordering findings can change the evidence sequence used by inspection and export."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i011_alt3",
+            "text": "Commands couple both reads to the inspector instead of exposing the shared ordered list."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i011_alt4",
+            "text": "Separate loops can produce different evidence order for the same inspected item."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i012",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i012_alt1",
+          "text": "Give each Dataset, Configuration, and CodeArtifact operation a generic iterator and branch on provenance audit and retention analysis node types inside its own traversal."
+        },
+        {
+          "optionId": "n06b08_i012_alt2",
+          "text": "Add Dataset, Configuration, and CodeArtifact methods to the provenance audit and retention analysis classes so each node computes its part of every operation."
+        },
+        {
+          "optionId": "n06b08_i012_alt3",
+          "text": "Expose the live snapshot tree to each Dataset, Configuration, and CodeArtifact operation and let that operation own traversal and containment checks."
+        },
+        {
+          "optionId": "n06b08_i012_alt4",
+          "text": "Build a private copy of the snapshot tree for each operation and maintain a separate traversal over each copy."
+        },
+        {
+          "optionId": "n06b08_i012_artifact_node_audits",
+          "text": "Use visitors for provenance and retention; the snapshot owner keeps input/code identity."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i012_alt1",
+          "text": "Use a generic tree walk and repeat Dataset/Configuration/CodeArtifact switches in both analyses."
+        },
+        {
+          "optionId": "n06b08_i012_alt2",
+          "text": "Add provenance and retention methods to every artifact class."
+        },
+        {
+          "optionId": "n06b08_i012_alt3",
+          "text": "Give each analysis the live snapshot tree and let it traverse and check membership."
+        },
+        {
+          "optionId": "n06b08_i012_alt4",
+          "text": "Copy the snapshot tree for provenance and retention so each audit has its own walk."
+        },
+        {
+          "optionId": "n06b08_i012_artifact_node_audits",
+          "text": "Visit artifact types for provenance and retention; snapshot owner keeps input/code identity."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The stable snapshot has several node types, and artifact types stay stable while audit and retention operations vary independently; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "Artifact types stay stable while audit and retention operations vary independently. Both operations inspect the same snapshot without changing its input/code identity. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Give each Dataset, Configuration, and CodeArtifact operation a generic iterator and branch on provenance audit and retention analysis node types inside its own traversal.” Each Dataset, Configuration, and CodeArtifact operation would own branches for provenance audit and retention analysis; stable node types and changing operations make that dispatch spread across visitors. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another snapshot analysis, add a visitor while snapshot identity remains bound to the same inputs and code version."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i012_alt1",
+            "text": "Each Dataset, Configuration, and CodeArtifact operation would own branches for provenance audit and retention analysis; stable node types and changing operations make that dispatch spread across visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i012_alt2",
+            "text": "This adds every new Dataset, Configuration, and CodeArtifact operation to every node API even though the node set is stable."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i012_alt3",
+            "text": "The operations would own traversal/containment instead of snapshot owner, risking disagreement about the authoritative snapshot tree."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i012_alt4",
+            "text": "Separate snapshot tree copies can go stale from authoritative membership and links before an operation reports its result."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The stable snapshot has several node types, and artifact types stay stable while audit and retention operations vary independently; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "Artifact types stay stable while audit and retention operations vary independently. Both operations inspect the same snapshot without changing its input/code identity. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Use a generic tree walk and repeat Dataset/Configuration/CodeArtifact switches in both analyses.” Both analyses would repeat artifact-type dispatch instead of defining separate visitors. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another snapshot analysis, add a visitor while snapshot identity remains bound to the same inputs and code version."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i012_alt1",
+            "text": "Both analyses would repeat artifact-type dispatch instead of defining separate visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i012_alt2",
+            "text": "Every new analysis would expand all stable artifact APIs."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i012_alt3",
+            "text": "The snapshot owner controls artifact membership and identity; analyses should not redefine traversal."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i012_alt4",
+            "text": "Copies can detach an audit from the immutable input/code pair bound to the published snapshot."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i013",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i013_alt1",
+          "text": "Give each Paragraph, Figure, and CommentAnchor operation a generic iterator and branch on anchor-integrity and redaction audits node types inside its own traversal."
+        },
+        {
+          "optionId": "n06b08_i013_alt2",
+          "text": "Add Paragraph, Figure, and CommentAnchor methods to the anchor-integrity and redaction audits classes so each node computes its part of every operation."
+        },
+        {
+          "optionId": "n06b08_i013_alt3",
+          "text": "Expose the live revision tree to each Paragraph, Figure, and CommentAnchor operation and let that operation own traversal and containment checks."
+        },
+        {
+          "optionId": "n06b08_i013_revision_tree_audits",
+          "text": "Use visitors for anchor integrity and redaction; the review workflow owns comments and notices."
+        },
+        {
+          "optionId": "n06b08_i013_alt4",
+          "text": "Build a private copy of the revision tree for each operation and maintain a separate traversal over each copy."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i013_alt1",
+          "text": "Put a Paragraph/Figure/CommentAnchor switch in each audit loop."
+        },
+        {
+          "optionId": "n06b08_i013_alt2",
+          "text": "Add anchor-integrity and redaction methods to every revision-node class."
+        },
+        {
+          "optionId": "n06b08_i013_alt3",
+          "text": "Let each audit traverse the live revision tree and define its own anchor containment."
+        },
+        {
+          "optionId": "n06b08_i013_revision_tree_audits",
+          "text": "Add visitors for anchor and redaction audits; review workflow owns comments/notices."
+        },
+        {
+          "optionId": "n06b08_i013_alt4",
+          "text": "Create one copied revision tree for anchor checking and another for redaction."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The stable revision has several node types, and stable heterogeneous revision nodes supply different facts to two independently added audits; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "Stable heterogeneous revision nodes supply different facts to two independently added audits. The review workflow retains comment attribution and notification responsibilities. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Give each Paragraph, Figure, and CommentAnchor operation a generic iterator and branch on anchor-integrity and redaction audits node types inside its own traversal.” Each Paragraph, Figure, and CommentAnchor operation would own branches for anchor-integrity and redaction audits; stable node types and changing operations make that dispatch spread across visitors. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another revision audit, add a visitor while comment acceptance and notification stay with the review workflow."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i013_alt1",
+            "text": "Each Paragraph, Figure, and CommentAnchor operation would own branches for anchor-integrity and redaction audits; stable node types and changing operations make that dispatch spread across visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i013_alt2",
+            "text": "This adds every new Paragraph, Figure, and CommentAnchor operation to every node API even though the node set is stable."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i013_alt3",
+            "text": "The operations would own traversal/containment instead of review workflow, risking disagreement about the authoritative revision tree."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i013_alt4",
+            "text": "Separate revision tree copies can go stale from authoritative membership and links before an operation reports its result."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The stable revision has several node types, and stable heterogeneous revision nodes supply different facts to two independently added audits; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "Stable heterogeneous revision nodes supply different facts to two independently added audits. The review workflow retains comment attribution and notification responsibilities. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Put a Paragraph/Figure/CommentAnchor switch in each audit loop.” The audits would duplicate node dispatch instead of adding independent operations through visitors. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another revision audit, add a visitor while comment acceptance and notification stay with the review workflow."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i013_alt1",
+            "text": "The audits would duplicate node dispatch instead of adding independent operations through visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i013_alt2",
+            "text": "New review audits would require changing each stable revision-node API."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i013_alt3",
+            "text": "The revision owns anchor containment; each audit should not invent its own tree rules."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i013_alt4",
+            "text": "Copied revisions can miss comments or anchors added to the authoritative document."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i014",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i014_alt1",
+          "text": "Let each section results record accept visitors for completeness validation and export, with the record dispatching its own work during the ordered pass."
+        },
+        {
+          "optionId": "n06b08_i014_alt2",
+          "text": "Return the mutable ordered result list so each completeness validation and export consumer can filter or reorder entries during its own scan."
+        },
+        {
+          "optionId": "n06b08_i014_ordered_section_results",
+          "text": "Read SectionResults through a read-only iterator; submission owns complete-or-retryable status."
+        },
+        {
+          "optionId": "n06b08_i014_alt3",
+          "text": "Add separate completeness validation and export commands to submission operation; each command owns a private traversal and returns its result."
+        },
+        {
+          "optionId": "n06b08_i014_alt4",
+          "text": "Have each completeness validation and export consumer implement its own loop over section order, rather than reuse a collection traversal contract."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i014_alt1",
+          "text": "Let each SectionResult dispatch completion-validation and export visitors."
+        },
+        {
+          "optionId": "n06b08_i014_alt2",
+          "text": "Return the mutable result list so export can reorder or alter submission sections."
+        },
+        {
+          "optionId": "n06b08_i014_ordered_section_results",
+          "text": "Read SectionResults through an iterator; submission owns complete-or-retryable status."
+        },
+        {
+          "optionId": "n06b08_i014_alt3",
+          "text": "Add separate validation and export commands to submission, each traversing privately."
+        },
+        {
+          "optionId": "n06b08_i014_alt4",
+          "text": "Duplicate section-order loops in validation and export."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: sections share one record type and validation/export both need the same order. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Sections share one record type and validation/export both need the same order. Export cannot change the complete-or-retryable submission outcome. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Return the mutable ordered result list so each completeness validation and export consumer can filter or reorder entries during its own scan.” A writable ordered result list lets consumers change membership or section order, exposing representation that the prompt keeps with submission operation. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another section scan, reuse ordered read-only traversal and keep complete/retryable status with the submission operation."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i014_alt1",
+            "text": "Per-record visitors add dispatch to one homogeneous section results type; collection order still belongs to the sequence owner."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i014_alt2",
+            "text": "A writable ordered result list lets consumers change membership or section order, exposing representation that the prompt keeps with submission operation."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i014_alt3",
+            "text": "Separate owner commands couple each completeness validation and export scan to storage even though both can share one traversal contract."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i014_alt4",
+            "text": "Independent completeness validation and export loops can diverge on section order; the iterator centralizes the sequence while leaving operations separate."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: sections share one record type and validation/export both need the same order. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Sections share one record type and validation/export both need the same order. Export cannot change the complete-or-retryable submission outcome. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Return the mutable result list so export can reorder or alter submission sections.” Export must not mutate results or affect whether a partial submission is accepted. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another section scan, reuse ordered read-only traversal and keep complete/retryable status with the submission operation."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i014_alt1",
+            "text": "One SectionResult type does not need per-node dispatch to provide the ordered list."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i014_alt2",
+            "text": "Export must not mutate results or affect whether a partial submission is accepted."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i014_alt3",
+            "text": "These read operations become coupled to submission commands instead of sharing traversal."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i014_alt4",
+            "text": "Independent loops can disagree about section order or omit a result."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i015",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i015_alt1",
+          "text": "Let each invoice lines record accept visitors for reconciliation, with the record dispatching its own work during the ordered pass."
+        },
+        {
+          "optionId": "n06b08_i015_invoice_line_iteration",
+          "text": "Iterate invoice lines in order; keep reissue, charges, and replacement identity with the ledger."
+        },
+        {
+          "optionId": "n06b08_i015_alt2",
+          "text": "Return the mutable ordered invoice lines so each reconciliation consumer can filter or reorder entries during its own scan."
+        },
+        {
+          "optionId": "n06b08_i015_alt3",
+          "text": "Add separate reconciliation commands to ledger; each command owns a private traversal and returns its result."
+        },
+        {
+          "optionId": "n06b08_i015_alt4",
+          "text": "Have each reconciliation consumer implement its own loop over invoice-line order, rather than reuse a collection traversal contract."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i015_alt1",
+          "text": "Let each invoice line dispatch reconciliation visitors in line order."
+        },
+        {
+          "optionId": "n06b08_i015_invoice_line_iteration",
+          "text": "Iterate invoice lines in order; ledger owns reissue and charging."
+        },
+        {
+          "optionId": "n06b08_i015_alt2",
+          "text": "Expose writable invoice lines so reconciliation can sort and filter its own pass."
+        },
+        {
+          "optionId": "n06b08_i015_alt3",
+          "text": "Add a reconciliation scan command to the ledger and keep its traversal private."
+        },
+        {
+          "optionId": "n06b08_i015_alt4",
+          "text": "Keep a separate invoice-line loop in every reconciliation consumer."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: invoice lines have one type and reconciliation is a separate ordered read. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Invoice lines have one type and reconciliation is a separate ordered read. The ledger continues to enforce traceable replacement identity and charge behavior. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Return the mutable ordered invoice lines so each reconciliation consumer can filter or reorder entries during its own scan.” A writable ordered invoice lines lets consumers change membership or invoice-line order, exposing representation that the prompt keeps with ledger. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another invoice-line report, reuse ordered iteration and keep charging and replacement identity with the ledger."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i015_alt1",
+            "text": "Per-record visitors add dispatch to one homogeneous invoice lines type; collection order still belongs to the sequence owner."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i015_alt2",
+            "text": "A writable ordered invoice lines lets consumers change membership or invoice-line order, exposing representation that the prompt keeps with ledger."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i015_alt3",
+            "text": "Separate owner commands couple each reconciliation scan to storage even though both can share one traversal contract."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i015_alt4",
+            "text": "Independent reconciliation loops can diverge on invoice-line order; the iterator centralizes the sequence while leaving operations separate."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: invoice lines have one type and reconciliation is a separate ordered read. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Invoice lines have one type and reconciliation is a separate ordered read. The ledger continues to enforce traceable replacement identity and charge behavior. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Expose writable invoice lines so reconciliation can sort and filter its own pass.” Changing line order could affect traceability between the rejected and replacement invoice. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another invoice-line report, reuse ordered iteration and keep charging and replacement identity with the ledger."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i015_alt1",
+            "text": "Invoice lines share one type; record dispatch does not own the sequence needed for reconciliation."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i015_alt2",
+            "text": "Changing line order could affect traceability between the rejected and replacement invoice."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i015_alt3",
+            "text": "The read scan becomes coupled to ledger reissue even though the line sequence can be traversed separately."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i015_alt4",
+            "text": "Duplicated loops can disagree on the line order used to reconcile a replacement."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i016",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i016_session_graph_audits",
+          "text": "Use visitors for access audit and session inspection; the graph owner controls revocation/access."
+        },
+        {
+          "optionId": "n06b08_i016_alt1",
+          "text": "Give each Credential, RoleGrant, and ActiveSession operation a generic iterator and branch on access audit and stale-session inspection node types inside its own traversal."
+        },
+        {
+          "optionId": "n06b08_i016_alt2",
+          "text": "Add Credential, RoleGrant, and ActiveSession methods to the access audit and stale-session inspection classes so each node computes its part of every operation."
+        },
+        {
+          "optionId": "n06b08_i016_alt3",
+          "text": "Expose the live access graph to each Credential, RoleGrant, and ActiveSession operation and let that operation own traversal and containment checks."
+        },
+        {
+          "optionId": "n06b08_i016_alt4",
+          "text": "Build a private copy of the access graph for each operation and maintain a separate traversal over each copy."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i016_session_graph_audits",
+          "text": "Use visitors for access audits; graph owner retains revocation decisions."
+        },
+        {
+          "optionId": "n06b08_i016_alt1",
+          "text": "Give each audit a generic graph walk with Credential/RoleGrant/ActiveSession switches."
+        },
+        {
+          "optionId": "n06b08_i016_alt2",
+          "text": "Add audit and stale-session methods to Credential, RoleGrant, and ActiveSession."
+        },
+        {
+          "optionId": "n06b08_i016_alt3",
+          "text": "Expose the live access graph and let each inspection own traversal and link checks."
+        },
+        {
+          "optionId": "n06b08_i016_alt4",
+          "text": "Keep a separate copied access graph for audit and stale-session inspection."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The stable access graph has several node types, and heterogeneous node types remain stable while new inspections need different node-specific facts; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "Heterogeneous node types remain stable while new inspections need different node-specific facts. Audits do not replace the authoritative revocation/access operation. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Give each Credential, RoleGrant, and ActiveSession operation a generic iterator and branch on access audit and stale-session inspection node types inside its own traversal.” Each Credential, RoleGrant, and ActiveSession operation would own branches for access audit and stale-session inspection; stable node types and changing operations make that dispatch spread across visitors. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another access-graph inspection, add a visitor while the graph owner controls revocation and access."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i016_alt1",
+            "text": "Each Credential, RoleGrant, and ActiveSession operation would own branches for access audit and stale-session inspection; stable node types and changing operations make that dispatch spread across visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i016_alt2",
+            "text": "This adds every new Credential, RoleGrant, and ActiveSession operation to every node API even though the node set is stable."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i016_alt3",
+            "text": "The operations would own traversal/containment instead of graph owner, risking disagreement about the authoritative access graph."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i016_alt4",
+            "text": "Separate access graph copies can go stale from authoritative membership and links before an operation reports its result."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The stable access graph has several node types, and heterogeneous node types remain stable while new inspections need different node-specific facts; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "Heterogeneous node types remain stable while new inspections need different node-specific facts. Audits do not replace the authoritative revocation/access operation. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Give each audit a generic graph walk with Credential/RoleGrant/ActiveSession switches.” The audits would duplicate stable-node dispatch instead of adding operations through visitors. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another access-graph inspection, add a visitor while the graph owner controls revocation and access."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i016_alt1",
+            "text": "The audits would duplicate stable-node dispatch instead of adding operations through visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i016_alt2",
+            "text": "Every new inspection would change all access-node APIs."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i016_alt3",
+            "text": "The graph owner controls links and revocation; consumers should not define graph traversal."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i016_alt4",
+            "text": "A copied graph can retain a revoked grant or miss the current active session."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i017",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i017_alt1",
+          "text": "Give each Package, HazardFlag, and ServiceLevel operation a generic iterator and branch on compliance review and label rendering node types inside its own traversal."
+        },
+        {
+          "optionId": "n06b08_i017_alt2",
+          "text": "Add Package, HazardFlag, and ServiceLevel methods to the compliance review and label rendering classes so each node computes its part of every operation."
+        },
+        {
+          "optionId": "n06b08_i017_alt3",
+          "text": "Expose the live shipment tree to each Package, HazardFlag, and ServiceLevel operation and let that operation own traversal and containment checks."
+        },
+        {
+          "optionId": "n06b08_i017_alt4",
+          "text": "Build a private copy of the shipment tree for each operation and maintain a separate traversal over each copy."
+        },
+        {
+          "optionId": "n06b08_i017_shipment_node_audits",
+          "text": "Use visitors for compliance and label rendering; the shipment model owns structure and approved data."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i017_alt1",
+          "text": "Put a Package/HazardFlag/ServiceLevel switch in both compliance and rendering loops."
+        },
+        {
+          "optionId": "n06b08_i017_alt2",
+          "text": "Add compliance and label-rendering methods to every shipment-node class."
+        },
+        {
+          "optionId": "n06b08_i017_alt3",
+          "text": "Give each operation the live shipment tree and make it manage traversal and containment."
+        },
+        {
+          "optionId": "n06b08_i017_alt4",
+          "text": "Build independent shipment-tree copies for compliance and label rendering."
+        },
+        {
+          "optionId": "n06b08_i017_shipment_node_audits",
+          "text": "Visit shipment types for compliance and rendering; model owns approved structure."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The stable shipment tree has several node types, and the heterogeneous tree is stable and type-specific operations can be added separately; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "The heterogeneous tree is stable and type-specific operations can be added separately. Rendering uses the current approved shipment while the model retains node structure. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Give each Package, HazardFlag, and ServiceLevel operation a generic iterator and branch on compliance review and label rendering node types inside its own traversal.” Each Package, HazardFlag, and ServiceLevel operation would own branches for compliance review and label rendering; stable node types and changing operations make that dispatch spread across visitors. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another shipment-tree operation, add a visitor while approved-data and structure ownership stay with the shipment model."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i017_alt1",
+            "text": "Each Package, HazardFlag, and ServiceLevel operation would own branches for compliance review and label rendering; stable node types and changing operations make that dispatch spread across visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i017_alt2",
+            "text": "This adds every new Package, HazardFlag, and ServiceLevel operation to every node API even though the node set is stable."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i017_alt3",
+            "text": "The operations would own traversal/containment instead of shipment model, risking disagreement about the authoritative shipment tree."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i017_alt4",
+            "text": "Separate shipment tree copies can go stale from authoritative membership and links before an operation reports its result."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The stable shipment tree has several node types, and the heterogeneous tree is stable and type-specific operations can be added separately; add operations without moving structure ownership.",
+        "details": {
+          "mechanismOrProperty": "A visitor adds an operation over stable concrete node types through type-specific dispatch. The structure retains membership/containment, while each visitor supplies a separate behavior.",
+          "scenarioApplication": "The heterogeneous tree is stable and type-specific operations can be added separately. Rendering uses the current approved shipment while the model retains node structure. Separate visitors can use each node type’s facts without requiring a new method on every stable node.",
+          "errorCorrection": "The closest competing model is “Put a Package/HazardFlag/ServiceLevel switch in both compliance and rendering loops.” Both operations would repeat stable-node dispatch rather than use separate visitors. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+          "transfer": "For another shipment-tree operation, add a visitor while approved-data and structure ownership stay with the shipment model."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i017_alt1",
+            "text": "Both operations would repeat stable-node dispatch rather than use separate visitors."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i017_alt2",
+            "text": "New shipment operations would alter each node class although the structure is stable."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i017_alt3",
+            "text": "The shipment model owns its relationships and approved data; operations should not define traversal."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i017_alt4",
+            "text": "Copies can go stale when approved shipment data or a hazard flag changes."
+          }
+        ]
+      }
+    },
+    {
+      "questionId": "ood-n06-b08-i018",
+      "beforeOptions": [
+        {
+          "optionId": "n06b08_i018_alt1",
+          "text": "Let each room bookings record accept visitors for overlap detection and utilization, with the record dispatching its own work during the ordered pass."
+        },
+        {
+          "optionId": "n06b08_i018_alt2",
+          "text": "Return the mutable ordered booking list so each overlap detection and utilization consumer can filter or reorder entries during its own scan."
+        },
+        {
+          "optionId": "n06b08_i018_alt3",
+          "text": "Add separate overlap detection and utilization commands to schedule; each command owns a private traversal and returns its result."
+        },
+        {
+          "optionId": "n06b08_i018_ordered_room_bookings",
+          "text": "Iterate bookings in room order; keep overlap, utilization, and mutations with the schedule owner."
+        },
+        {
+          "optionId": "n06b08_i018_alt4",
+          "text": "Have each overlap detection and utilization consumer implement its own loop over booking order, rather than reuse a collection traversal contract."
+        }
+      ],
+      "afterOptions": [
+        {
+          "optionId": "n06b08_i018_alt1",
+          "text": "Let every Booking dispatch overlap and utilization visitors during the ordered pass."
+        },
+        {
+          "optionId": "n06b08_i018_alt2",
+          "text": "Return a mutable booking list so overlap and utilization scans can reorder entries."
+        },
+        {
+          "optionId": "n06b08_i018_alt3",
+          "text": "Add separate overlap and utilization commands to the schedule owner."
+        },
+        {
+          "optionId": "n06b08_i018_ordered_room_bookings",
+          "text": "Iterate room bookings in order; schedule owns changes while scans stay separate."
+        },
+        {
+          "optionId": "n06b08_i018_alt4",
+          "text": "Repeat the room-order loop in both overlap detection and utilization reporting."
+        }
+      ],
+      "beforeFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: bookings are homogeneous and both scans need the schedule’s order without mutable-list access. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Bookings are homogeneous and both scans need the schedule’s order without mutable-list access. The schedule remains the authority for room booking changes. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Return the mutable ordered booking list so each overlap detection and utilization consumer can filter or reorder entries during its own scan.” A writable ordered booking list lets consumers change membership or booking order, exposing representation that the prompt keeps with schedule. The selected boundary follows the case's existing ownership and traversal facts while keeping the operation outside the collection representation.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another booking scan, reuse the ordered iterator and keep booking changes with the schedule."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i018_alt1",
+            "text": "Per-record visitors add dispatch to one homogeneous room bookings type; collection order still belongs to the sequence owner."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i018_alt2",
+            "text": "A writable ordered booking list lets consumers change membership or booking order, exposing representation that the prompt keeps with schedule."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i018_alt3",
+            "text": "Separate owner commands couple each overlap detection and utilization scan to storage even though both can share one traversal contract."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i018_alt4",
+            "text": "Independent overlap detection and utilization loops can diverge on booking order; the iterator centralizes the sequence while leaving operations separate."
+          }
+        ]
+      },
+      "afterFeedback": {
+        "type": "choice_single",
+        "reason": "The records share one type and one traversal contract: bookings are homogeneous and both scans need the schedule’s order without mutable-list access. The operation can be separate without exposing collection storage.",
+        "details": {
+          "mechanismOrProperty": "An iterator exposes sequential access through a controlled traversal contract. Consumers can perform distinct scans while the collection owner retains storage, order, and mutations.",
+          "scenarioApplication": "Bookings are homogeneous and both scans need the schedule’s order without mutable-list access. The schedule remains the authority for room booking changes. A read-only iterator supplies the shared order without giving consumers the backing collection.",
+          "errorCorrection": "The closest competing model is “Return a mutable booking list so overlap and utilization scans can reorder entries.” Reordering bookings can change overlap comparisons and utilization results. The selected boundary follows the case's stated traversal, ordering, and ownership facts.",
+          "boundaryOrTradeoff": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+          "transfer": "For another booking scan, reuse the ordered iterator and keep booking changes with the schedule."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i018_alt1",
+            "text": "Bookings share one type; per-record dispatch does not own room order or membership."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i018_alt2",
+            "text": "Reordering bookings can change overlap comparisons and utilization results."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i018_alt3",
+            "text": "This couples both read scans to the mutation owner rather than sharing traversal."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "n06b08_i018_alt4",
+            "text": "Separate loops can compute overlap and utilization from inconsistent booking order."
+          }
+        ]
+      }
+    }
+  ]
+}

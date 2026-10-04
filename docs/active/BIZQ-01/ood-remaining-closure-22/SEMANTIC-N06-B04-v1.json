@@ -1,0 +1,293 @@
+{
+  "schemaVersion": "patternly-bizq01-independent-semantic-review-v1",
+  "reviewId": "N06-B04-v1",
+  "verdict": "PASS",
+  "frozenProposal": {
+    "path": "review-inputs/N06-B04-v1.json",
+    "sha256": "7a31f2f34c67f5614f6c46a64c88fd113e732b07d56d702cddeafa3b5b7c2eda"
+  },
+  "frozenAuthorNotes": {
+    "path": "review-inputs/AUTHOR-NOTES-N06-B04-v1.json",
+    "sha256": "e4941f160041c9db114a406463eac020b40e68bdb239be8f5603b7bac482a766"
+  },
+  "manifest": {
+    "path": "N06-MANIFEST.json",
+    "sha256": "be9cb40617caaaa8e18a41d06039c5bab3bc56eeb911b273bf21c7523569c5c3"
+  },
+  "contract": {
+    "path": "N06-CONTRACT.json",
+    "sha256": "c6b5612e21fb66a540eba31514510df49b302f8f1089cf474f2ac5880b4205fb"
+  },
+  "specification": {
+    "path": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sha256": "67aba008969eb570c86e1fbefc5b88a5e65f422d160fc7dcfd38084b59ff67d5"
+  },
+  "baseline": {
+    "gitCommit": "b7034f16bb77db4dde2ae27c13ef706b0301f6bb",
+    "sourcePath": "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B04.json",
+    "sourceSha256": "cb71a1a07e4db211e6ea65fd7dcff68cfc66d7c1c72624386b020b3b8d569ddb",
+    "fingerprintEncoding": "SHA-256 of compact insertion-order JSON (ensure_ascii=False; separators comma/colon)."
+  },
+  "summary": {
+    "itemsReviewed": 18,
+    "pass": 18,
+    "identityPreserve": 18,
+    "identityReplace": 0,
+    "optionShapeAdvisory": {
+      "count": 11,
+      "questionIds": [
+        "ood-n06-b04-i001",
+        "ood-n06-b04-i002",
+        "ood-n06-b04-i004",
+        "ood-n06-b04-i005",
+        "ood-n06-b04-i008",
+        "ood-n06-b04-i009",
+        "ood-n06-b04-i010",
+        "ood-n06-b04-i011",
+        "ood-n06-b04-i013",
+        "ood-n06-b04-i014",
+        "ood-n06-b04-i018"
+      ],
+      "assessment": "Qualitative §4.3 review: the key tends to include the payload and timing facts while distractors may be shorter. No numeric length gate; judge plausibility from each whole scenario."
+    }
+  },
+  "items": [
+    {
+      "questionId": "ood-n06-b04-i001",
+      "currentQuestionId": "ood-n06-b04-i001",
+      "beforeFingerprint": "9e7da299d3db7e708dab0eb5b3e7fd1caf817e65495b948c6c27503bc533c881",
+      "currentFingerprint": "23f30745dd6fd26ceda2decc91164bd16c5046ec357fb1df6ad61b7c2415bf1e",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “export observes a stable session state” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i001_policy",
+      "currentAcceptedMeaning": "Publish a closure notification after committing the final session snapshot, and let the export and search modules subscribe independently.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i002",
+      "currentQuestionId": "ood-n06-b04-i002",
+      "beforeFingerprint": "504138e9742aab5f836907cc48de8049ae2fdf7c134ab151d07d61fb3c97d564",
+      "currentFingerprint": "65ced6dac5205ca263abf746410f997f2efef30a62c1a7a44bf0d26294eb4972",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “the escalation keeps ownership and response deadlines” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i002_policy",
+      "currentAcceptedMeaning": "Notify both subscribers with one accepted escalation fact containing the new owner and deadline; keep their update implementations independent.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i003",
+      "currentQuestionId": "ood-n06-b04-i003",
+      "beforeFingerprint": "3c4a52901600a973f93cc165b5c0c8b9b4869c72d97a2584b130532e582dddb4",
+      "currentFingerprint": "d3bd3d808b1490fc7ccf12142fec056839f3d0eb8c95acb9b62a67cfef67c8cd",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “a listing cannot become visible before its price and stock rule are valid” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i003_policy",
+      "currentAcceptedMeaning": "Notify search and seller-dashboard subscribers after both validations pass and the listing is published as one valid change.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i004",
+      "currentQuestionId": "ood-n06-b04-i004",
+      "beforeFingerprint": "5b17bd3442156b20150c354568f876752731b0bebad51d6e7717d0655ee32264",
+      "currentFingerprint": "a77da3a0fc5a6e4f4d4897d7dc969abcbdf5d119c783173c9df47e927f70664b",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “each split retains the original request identity and delivery promise” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i004_policy",
+      "currentAcceptedMeaning": "Publish the accepted split with the original request ID and delivery promise to the inventory, vendor, and customer-status subscribers.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i005",
+      "currentQuestionId": "ood-n06-b04-i005",
+      "beforeFingerprint": "55848aed92a64999f5fbb6558654ade0a74071a12417541ea85f2e5fd895ed93",
+      "currentFingerprint": "bcf9300f01f2253781aeb131f854e608d5d9aec82d45f4d7939b0c4d84863842",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “transfer preserves the plot boundary and approval history” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i005_policy",
+      "currentAcceptedMeaning": "After approval, notify both views with the old and new reserver, unchanged plot boundary, and approval record; keep the reservation as decision owner.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i006",
+      "currentQuestionId": "ood-n06-b04-i006",
+      "beforeFingerprint": "1f19c4a4a2892a72e93c960c79eb30da22fb0d170a16a05fbae974129ccd7317",
+      "currentFingerprint": "10c2860e71a1a4a16b2ad3421481963a64ed17a8d33acdf9e412763c1d1cafc8",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “the bundle pricing policy remains consistent with its components” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i006_policy",
+      "currentAcceptedMeaning": "Publish the validated bundle-version change to billing and catalog subscribers after component rules pass validation.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i007",
+      "currentQuestionId": "ood-n06-b04-i007",
+      "beforeFingerprint": "0a79aca732a74fa4dbbcaf8501ab84855971fb97e5a479f57c451ddc7fedf28c",
+      "currentFingerprint": "cabc07bcc3cf6bbb82b678e7a414b7d4e935a85f003579cb4366d1eb693dbfc9",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “charger capacity and reservation expiry are coordinated” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i007_policy",
+      "currentAcceptedMeaning": "Notify both subscribers of the reservation ID after capacity and expiry validation confirm the reservation.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i008",
+      "currentQuestionId": "ood-n06-b04-i008",
+      "beforeFingerprint": "6f4375f62e400b505e330c0807486c3c7421993555fa7cc2b5b334de3478a9df",
+      "currentFingerprint": "11e542645a95587996a3490162085780322b7b076c1c36b9f87ebe142d14b9f2",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “asset identity remains stable while descriptive values are replaced” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i008_policy",
+      "currentAcceptedMeaning": "Publish the committed asset ID and descriptive revision; let search indexing and thumbnail generation subscribe and perform their own work.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i009",
+      "currentQuestionId": "ood-n06-b04-i009",
+      "beforeFingerprint": "7f8ddcf8dc6d8d0bcb4e31875f9c1c6e0dd07e0ddba2f29d3c2163d0653c215d",
+      "currentFingerprint": "87543f7a61ced0444e1df2064ec927b333a1f43d330e4f9535ab5d4aba4c948b",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “approval requires an explicit territory and expiration” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i009_policy",
+      "currentAcceptedMeaning": "After approval, publish territory, expiry, and analyst attribution to both subscribers; keep licensing as the decision owner.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i010",
+      "currentQuestionId": "ood-n06-b04-i010",
+      "beforeFingerprint": "bad4f3fad90ed217a9489f6d6524a5e52db94a1b35796cc9fb474ee849bf1695",
+      "currentFingerprint": "e21733c109127f6d1704acde86d2396be8edb0c3aca3c499af8dd9f9b641540c",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “a battery cannot be assigned to two aircraft at once” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i010_policy",
+      "currentAcceptedMeaning": "After the assignment check and replacement succeed, notify both consumers with the stable battery ID and new aircraft assignment.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i011",
+      "currentQuestionId": "ood-n06-b04-i011",
+      "beforeFingerprint": "91f07265a69ff5daea8ef5d40803dc84e8e8320f00f53c399d7ca595232776d4",
+      "currentFingerprint": "d15a4581fbf636378703b5c7effb8ebcc1cc3ecd3410d43e704c7719b9c8efe5",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “privacy and consent rules apply before external disclosure” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i011_policy",
+      "currentAcceptedMeaning": "After consent and routing are accepted, publish the named specialist and consent revision to the planner and audit subscribers.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i012",
+      "currentQuestionId": "ood-n06-b04-i012",
+      "beforeFingerprint": "25070ae1a1e215f2e8cdd61105908770af4274e7eac5c0a25cc7303911093ec3",
+      "currentFingerprint": "76190090d18ac8d571c26536f1818a94834282d3c766c6d72411ad17dc7b8970",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “completion records the exercise version and score policy” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i012_policy",
+      "currentAcceptedMeaning": "Publish a completion notification carrying attempt ID, exercise revision, and score-policy version to progress and analytics subscribers.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i013",
+      "currentQuestionId": "ood-n06-b04-i013",
+      "beforeFingerprint": "bba2c227fd16e950ed69211004a10ef782b9180041f8728447c0d545c9950bf3",
+      "currentFingerprint": "d312ad4e82e413f2f069329588d9580b439d6338257e1613fbab4b3c1a2ed4db",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “approval is attributable, bounded, and cannot bypass required controls” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i013_policy",
+      "currentAcceptedMeaning": "After the required checks pass and purchasing approves, notify both subscribers with the manager, rationale, and scope.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i014",
+      "currentQuestionId": "ood-n06-b04-i014",
+      "beforeFingerprint": "d4cd859e805c8480c804a29ff975f91692c5d2e331aecc9777b857eff4cdb304",
+      "currentFingerprint": "acbcb187646bb0dedc28c57aa464f7965380444196d63c88acd699dfbcbeef0b",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “annotations follow stable segments rather than file offsets” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i014_policy",
+      "currentAcceptedMeaning": "Publish the accepted recording ID and annotation-map revision to search and transcript subscribers after review accepts the mapping.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i015",
+      "currentQuestionId": "ood-n06-b04-i015",
+      "beforeFingerprint": "d6a798f40bb07eef01b515ebb968f1acd033e9e1fbd98eca4efce60eac8041e7",
+      "currentFingerprint": "f4b48338ebdaef1263708ca8a9bd3e0eab8be6bcea887649069c9a887abac26b",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “the role expires and is attributable to a specific approval” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i015_policy",
+      "currentAcceptedMeaning": "Publish the role's approved expiry fact to access, audit, and administrator subscribers, which update their separate responsibilities.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i016",
+      "currentQuestionId": "ood-n06-b04-i016",
+      "beforeFingerprint": "9bd064bf58886dcfdaac7ea4d8f967c5b2e3e3bc5d1878cd57df907d6ffd2424",
+      "currentFingerprint": "429c71642b11ddd4b9a9f24f548c31114b932752cd9e85c17aa5f5fafd88c12d",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “the seal covers the exact immutable revision” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i016_policy",
+      "currentAcceptedMeaning": "After sealing, publish the seal ID and exact revision ID to the archive and verification subscribers.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i017",
+      "currentQuestionId": "ood-n06-b04-i017",
+      "beforeFingerprint": "141c16ac78aa76bef89315f5eb45b5b34d3150fbf9befc00c6fddc85fda9494e",
+      "currentFingerprint": "58c3d9ec65e3ef13f3f3ab288327cbd6f6153ac3b6413eb6d1c8749c412fce5d",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i017_policy",
+      "currentAcceptedMeaning": "After release, notify both subscribers with the payout ID and settled-order ID; leave release authority in the payout service.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    },
+    {
+      "questionId": "ood-n06-b04-i018",
+      "currentQuestionId": "ood-n06-b04-i018",
+      "beforeFingerprint": "d4454aa639d936c2a07fbcff3473b65744bc2817ab55269a697b54840d7ba57c",
+      "currentFingerprint": "1a32b63a22fc6f2f9fb1f6ac0e755a0fa90e88cdb72265b871afe59f5a2e1276",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use notifications when subscribers are independently owned, and define subscription lifetime and delivery semantics. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "n06_b04_i018_policy",
+      "currentAcceptedMeaning": "On subscription provide the current platform snapshot, then notify the display of later accepted changes without replaying prior changes as new.",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Both accepted keys select Observer-style notification to independently owned subscribers; current scenario adds concrete trigger, payload and commit/approval boundary without changing the primary decision."
+    }
+  ],
+  "limits": [
+    "Proposal-only semantic review; does not accept source integration, N06 cohort, native execution, consumer/admission or full BIZQ-01."
+  ]
+}

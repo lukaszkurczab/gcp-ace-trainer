@@ -1,0 +1,260 @@
+{
+  "scope": "Unit author hypotheses at corrected submission; independent review required",
+  "sourceNotes": "AUTHOR-NOTES-B01-B05.json",
+  "sourceNotesSha256": "d52194f78a5f194b2479e62b990a5353795f5e71167e7deac0bd6827eea797ad",
+  "unit": "OOD-N06-B05",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n06-b05-i001",
+      "questionId": "ood-n06-b05-i001",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces three components own separate rules but currently coordinate through inconsistent direct calls around one badge revocation.",
+      "decisiveFact": "Three components own separate rules but currently choose inconsistent call orders around one badge revocation; a coordinator can standardize the sequence without guaranteeing race-free access denial.",
+      "nearestAlternative": "A single access manager that owns every component's rules would centralize the protocol but also absorb their distinct domain responsibilities.",
+      "changedCondition": "If only two components interacted through one stable call, a dedicated coordination object might add needless indirection.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source badge-revocation domain and visibility invariant remain; the revised decision is whether a narrow coordinator can resolve the actual multi-party call protocol.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i002",
+      "questionId": "ood-n06-b05-i002",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces four separate modules participate in a fixed cross-module sequence and current peer calls form loops.",
+      "decisiveFact": "Four separate modules participate in a fixed cross-module sequence and current peer calls form loops.",
+      "nearestAlternative": "A label renderer can call the carrier and shipment modules, but that makes a presentation component own validation and workflow sequencing.",
+      "changedCondition": "If label generation were a simple call to one carrier module, direct collaboration could remain clear.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source label-after-correction workflow is retained; the candidate targets its loop-producing multi-module protocol rather than generic central ownership.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i003",
+      "questionId": "ood-n06-b05-i003",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces four participants have separate policies but a many-to-many interaction around one move workflow.",
+      "decisiveFact": "Four participants have separate policies but a many-to-many interaction around one move workflow.",
+      "nearestAlternative": "The room calendar could become the coordinator, but it does not own cancellation fees or participant notification policy.",
+      "changedCondition": "If the calendar alone validated and stored room availability, no separate mediator would be needed for that single responsibility.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source rehearsal-room move and capacity/cancellation facts remain; the proposed decision is coordination of independently owned policies, not ownership transfer.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i004",
+      "questionId": "ood-n06-b05-i004",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces three separate owners must participate in a maintenance transition, and cyclic peer calls make the sequence unclear.",
+      "decisiveFact": "Three separate owners must participate in a maintenance transition, and cyclic peer calls make the sequence unclear.",
+      "nearestAlternative": "The control panel can coordinate the flow, but it does not own equipment safety or technician assignment.",
+      "changedCondition": "If one equipment module performed all three responsibilities itself, a separate collaboration object would be unnecessary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source exhibit-maintenance domain and unsafe-command condition are retained; the proposal makes the three-party interaction order decisive.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i005",
+      "questionId": "ood-n06-b05-i005",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces three modules must coordinate one retirement while progress identity remains stable and each module owns separate records.",
+      "decisiveFact": "Three modules must coordinate one retirement while progress identity remains stable and each module owns separate records.",
+      "nearestAlternative": "The catalog can call the progress service and curriculum service, but then every future consumer becomes another catalog dependency.",
+      "changedCondition": "If retirement only removed one catalog entry and had no cross-module effects, a direct catalog operation would be adequate.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source lesson-retirement and stable-progress facts remain; this version focuses on the circular coordination among modules.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i006",
+      "questionId": "ood-n06-b05-i006",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces three consumers react to one close operation after a final revision is frozen, and peer-initiated calls form a cycle.",
+      "decisiveFact": "Three consumers react to one close operation after a final revision is frozen, and peer-initiated calls form a cycle.",
+      "nearestAlternative": "The exporter can call the session list and messaging modules after export, but it does not own closure or participant messaging.",
+      "changedCondition": "If export were the only reaction to closure, a direct subject-to-export call could be enough.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source whiteboard close/export facts are retained; the new decision concerns the multi-module close protocol and frozen revision boundary.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i007",
+      "questionId": "ood-n06-b05-i007",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces three separately owned modules react to one paired owner/deadline change, and a chain would make each consumer dispatch the next.",
+      "decisiveFact": "Three separately owned modules react to one paired owner/deadline change, and a chain would make each consumer dispatch the next.",
+      "nearestAlternative": "The queue can notify messaging and monitoring, but it would become a coordinator for modules outside its ownership.",
+      "changedCondition": "If only the queue record changed and no consumers depended on it, direct update would be enough.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source escalation's owner/deadline invariant remains; the revised decision is the narrow boundary for coordinating its separate reactions.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i008",
+      "questionId": "ood-n06-b05-i008",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces a listing owner validates two prerequisites before coordinating three separately owned publication effects.",
+      "decisiveFact": "A listing owner validates two prerequisites before coordinating three separately owned publication effects.",
+      "nearestAlternative": "The search index can trigger the other updates after indexing, but it does not own seller messaging or market feeds.",
+      "changedCondition": "If the listing only needed a single search-index write, a direct call would remain simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source produce-listing validity facts are retained; the proposal focuses on coordinating prerequisite validation and separate publication consumers.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i009",
+      "questionId": "ood-n06-b05-i009",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces three modules coordinate one split, and all must use one original identity and delivery promise.",
+      "decisiveFact": "Three modules coordinate one split, and all must use one original identity and delivery promise.",
+      "nearestAlternative": "The vendor-message module can tell the customer-status module when each vendor responds, but it would own another team's delivery view.",
+      "changedCondition": "If only vendor notification followed a split, no mediator would be needed for a single outgoing message.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source parts-split identity and promise are retained; the new case focuses on coordination among its three independent participants.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i010",
+      "questionId": "ood-n06-b05-i010",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces three modules participate in an approved transfer, while plot boundary and approval history must remain one shared change.",
+      "decisiveFact": "Three modules participate in an approved transfer, while plot boundary and approval history must remain one shared change.",
+      "nearestAlternative": "The allocation board can call the other two, but then it must understand directory and audit APIs beyond its reservation role.",
+      "changedCondition": "If the board were the only record affected by transfer, a direct operation would be adequate.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source plot transfer and approval-history invariants remain; the proposal focuses on breaking direct links among the three owners.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i011",
+      "questionId": "ood-n06-b05-i011",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces four independently owned operations must run in a defined order to create one regional bundle.",
+      "decisiveFact": "Four independently owned operations must run in a defined order to create one regional bundle.",
+      "nearestAlternative": "The billing module can trigger setup and catalog checks, but billing does not own entitlement or catalog policy.",
+      "changedCondition": "If the bundle were only one catalog record with no other effects, a mediator would not be warranted.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source regional bundle and component pricing invariant remain; the candidate makes the actual four-party protocol the decision.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i012",
+      "questionId": "ood-n06-b05-i012",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces four participants coordinate one reservation and adding a consumer currently changes several peer relationships.",
+      "decisiveFact": "Four participants coordinate one reservation and adding a consumer currently changes several peer relationships.",
+      "nearestAlternative": "The reservation store could call all consumers, but then it must own operator and grid communication protocols.",
+      "changedCondition": "If the only follow-up were one stable update to the grid schedule, direct calls could be simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source capacity/expiry reservation case remains; the proposal tests the concrete many-peer coordination cost when adding a consumer.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i013",
+      "questionId": "ood-n06-b05-i013",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces three modules depend on one accepted metadata revision but must retain separate data ownership.",
+      "decisiveFact": "Three modules depend on one accepted metadata revision but must retain separate data ownership.",
+      "nearestAlternative": "Search can update catalog and rights checks after indexing, but search does not own either peer's data or validation rule.",
+      "changedCondition": "If only the catalog were affected, a direct metadata method would be enough.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source metadata merge and stable asset identity remain; the new decision targets the direct peer graph around a shared revision.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i014",
+      "questionId": "ood-n06-b05-i014",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces four modules need one exact approved territory/expiry, while each retains a distinct responsibility.",
+      "decisiveFact": "Four modules need one exact approved territory/expiry, while each retains a distinct responsibility.",
+      "nearestAlternative": "The notification module can fan out the decision, but it should not become the owner of rights evaluation or catalog updates.",
+      "changedCondition": "If the approval only updated a single rights record, a direct rights-service call could suffice.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source territory/expiration case remains; this revision concerns routing its unchanged approved scope across four owners.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i015",
+      "questionId": "ood-n06-b05-i015",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces three owners participate in one replacement flow and their current direct references form a cycle.",
+      "decisiveFact": "Three owners participate in one replacement flow and their current direct references form a cycle.",
+      "nearestAlternative": "The availability board can initiate the replacement because it shows free batteries, but it does not own fleet allocation or maintenance history.",
+      "changedCondition": "If the operation only changed one assignment record, a direct allocation-service call would be sufficient.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source battery-assignment uniqueness case is retained; the candidate targets the cyclic collaboration rather than redefining which battery is valid.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i016",
+      "questionId": "ood-n06-b05-i016",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces four owners collaborate on one consent-bound route and the current call loops obscure its named recipient.",
+      "decisiveFact": "Four owners collaborate on one consent-bound route and the current call loops obscure its named recipient.",
+      "nearestAlternative": "The audit module can coordinate routing because it records decisions, but it does not own consent or external transmission.",
+      "changedCondition": "If the navigator alone checked consent and sent the referral, direct calls could remain simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source referral privacy and consent boundary remain; the revised decision is where to coordinate its four distinct owners without changing recipient authority.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i017",
+      "questionId": "ood-n06-b05-i017",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces one completion with fixed version references triggers two independently owned updates, without making the tracker know their storage.",
+      "decisiveFact": "One completion with fixed version references triggers two independently owned updates, without making the tracker know their storage.",
+      "nearestAlternative": "The progress view can call analytics after saving its state, but it would make one consumer dispatch another and may pass a different version.",
+      "changedCondition": "If the tracker owned both outputs, direct sequencing within it could be simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source exercise-version and score-policy facts remain; the candidate focuses on a narrow cross-module completion protocol.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b05-i018",
+      "questionId": "ood-n06-b05-i018",
+      "mentalUnitId": "OOD-N06-B05",
+      "learningObjective": "Choose a design that enforces two independent approval owners decide one attributed request, and a rejection must keep it pending without merging their records.",
+      "decisiveFact": "Two independent approval owners decide one attributed request, and a rejection must keep it pending without merging their records.",
+      "nearestAlternative": "Compliance can call budget control, but it would become the dispatcher for a peer whose decision it does not own.",
+      "changedCondition": "If one team owned both controls and the same record, a direct local workflow could be appropriate.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source procurement exception's actor/rationale/control facts remain; the proposal focuses on coordination between its separate approval owners.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    }
+  ]
+}

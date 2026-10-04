@@ -1,0 +1,33 @@
+{
+  "result": "PASS",
+  "scope": "Exact four accuracy fields in three objects; other15whole objects unchanged, all question/option IDs and answer bindings unchanged; independent rereview pending",
+  "beforeInput": "review-inputs/N06-B10-v2.json",
+  "beforeSha256": "e28bbec531913c2015a2ee18bbd219670bb848db5aa2e3505634a31b3b7fd690",
+  "afterProposalSha256": "e959f3b8c5a843f0fdc917784c24cb83cf2b3b87a26e28fbd996d55cc8f22c72",
+  "changes": [
+    {
+      "questionId": "ood-n06-b10-i001",
+      "field": "feedback.details.errorCorrection",
+      "before": "Charging before securing capacity can debit a driver without a charger; retaining the hold after a decline violates the stated availability outcome.",
+      "after": "Authorizing payment before securing a slot can leave an authorization without booking capacity. Retaining the hold after a decline strands capacity despite the required availability outcome; authorization alone does not establish that the driver was debited."
+    },
+    {
+      "questionId": "ood-n06-b10-i005",
+      "field": "feedback.details.scenarioApplication",
+      "before": "A delayed receipt does not justify another disclosure because the ID can be checked against the prior send.",
+      "after": "Keep a retry associated with the same local referral rather than creating another disclosure. The referral ID alone proves neither delivery nor recipient-side deduplication; a delayed receipt does not authorize a new send."
+    },
+    {
+      "questionId": "ood-n06-b10-i011",
+      "field": "constraints.0",
+      "before": "Confirmed transfer rejection releases the funds hold; delayed response retries use the same payout ID.",
+      "after": "Confirmed transfer rejection releases the funds hold; delayed report-update retries use the same payout ID."
+    },
+    {
+      "questionId": "ood-n06-b10-i011",
+      "field": "interaction.options.0.text",
+      "before": "Settle only on bank confirmation; free the hold on rejection and retry reporting by payout ID.",
+      "after": "Record payout release only on bank confirmation; free the hold on rejection and retry reporting by payout ID."
+    }
+  ]
+}

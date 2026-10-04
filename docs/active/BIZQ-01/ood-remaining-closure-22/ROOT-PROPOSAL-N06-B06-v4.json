@@ -1,0 +1,156 @@
+{
+  "result": "PASS",
+  "scope": "Mechanical schema/count/taxonomy/identity correspondence, actual scoring/reversal and exact wrong-diagnostic bindings only; no semantic or identity-action acceptance",
+  "unit": "OOD-N06-B06",
+  "proposal": "N06-B06.json",
+  "proposalSha256": "b7333dfb35f9b1f0066e4d0ad8144f8ea41264470cfca6c27ac82ca8895fa8ef",
+  "manifestSha256": "be9cb40617caaaa8e18a41d06039c5bab3bc56eeb911b273bf21c7523569c5c3",
+  "wholeObjectCount": 18,
+  "optionsChecked": 90,
+  "items": [
+    {
+      "beforeQuestionId": "ood-n06-b06-i001",
+      "questionId": "ood-n06-b06-i001",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "aad18d9cb7eb5c629338a3095ec197af6495b9074984cd842f0585116f4db04b",
+      "currentWholeObjectSha256": "4238a888ec2d77db8d3713255bc5253a62da16628180456f9addd3f9f7939dbb",
+      "acceptedOptionId": "n06b06_i001_return_classification"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i002",
+      "questionId": "ood-n06-b06-i002",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "e9885245189399f202a25b0d8c8266535fa70651f565a13c172b2ad61a084169",
+      "currentWholeObjectSha256": "46f0bb48b6ac45bd297d5018f2a23376a09c53bf96858a368f49c05ed1747b05",
+      "acceptedOptionId": "n06b06_i002_version_pair_preferred_backend"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i003",
+      "questionId": "ood-n06-b06-i003",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "c902e0477258685280f5d5d2a8494fab34886903a74f921e55ef32db08f3158d",
+      "currentWholeObjectSha256": "6c79befd50c22c7c040552e4137f7d636bc4c1dac5c55489a4c0afff9bf5a501",
+      "acceptedOptionId": "n06b06_i003_single_author_notice"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i004",
+      "questionId": "ood-n06-b06-i004",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "0ff38c0549b8b58d006d865475ee73860d782bc35b2668f308c8fa2165c9a877",
+      "currentWholeObjectSha256": "fb8c2d89318c27830cd47ed85ba8900bda122892189666f5d0e280a82ef5e367",
+      "acceptedOptionId": "n06b06_i004_complete_local_submission"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i005",
+      "questionId": "ood-n06-b06-i005",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "391146c8cfb0ade754e7d2b16d1717c7514565641f466a648da55a53462e2673",
+      "currentWholeObjectSha256": "58b97767f97fc5f587f19126b25a0ef9a3e29661cf07f4852aefe215afffcd11",
+      "acceptedOptionId": "n06b06_i005_traceable_reissue"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i006",
+      "questionId": "ood-n06-b06-i006",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "3bfce86133ef64f66e373e2e12a454440193f5c3934d0d2fe450c9acc77f741f",
+      "currentWholeObjectSha256": "3ac88d8d0bfc05cc9261419e57401de12d96c07ee20fd06be4a70101abe0091e",
+      "acceptedOptionId": "n06b06_i006_revocation_precedence"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i007",
+      "questionId": "ood-n06-b06-i007",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "fa06bbaa623e2f030c719e125fc054cb046431bdf0d3f60e7238accc107b2b64",
+      "currentWholeObjectSha256": "4c4deaba390dc66c94257c529efd25fb36c03859d9107d02d6e70e9bd980eba8",
+      "acceptedOptionId": "n06b06_i007_approved_carrier_service_label"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i008",
+      "questionId": "ood-n06-b06-i008",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "216250b837e768c7c5727f5924004d719bfd2338d20e5f4c646bfe782f027449",
+      "currentWholeObjectSha256": "6b1655509471471c3c639029291e09d8a7a83b6966382795a1aa62beae732d72",
+      "acceptedOptionId": "n06b06_i008_prioritized_room_move"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i009",
+      "questionId": "ood-n06-b06-i009",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "b6af499eeb5f6140d6724f27ee43d3c09855842393ba042d233265375790b4ef",
+      "currentWholeObjectSha256": "e819337993064376516b3c52fbf79ded7b3e018e515c57624fbce67b30d4e436",
+      "acceptedOptionId": "n06b06_i009_maintenance_denial"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i010",
+      "questionId": "ood-n06-b06-i010",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "967ba262de9447ad3d4b2e5d419979de4c292ba296c84677c0d6c112948f21a3",
+      "currentWholeObjectSha256": "d6dffecdfe0a0daf0f667dab7478103c28448841fa27ecac50aaa3acbe327562",
+      "acceptedOptionId": "n06b06_i010_stable_lesson_progress"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i011",
+      "questionId": "ood-n06-b06-i011",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "c2059886e5c57f255dd56d051c6eefe2976895fecaf8ce662fc24b03d237d6b8",
+      "currentWholeObjectSha256": "2f848199457eefa8975e2b0cb9488fc9378fef81fe1507f86a96b5f94838bd9f",
+      "acceptedOptionId": "n06b06_i011_preferred_signed_export"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i012",
+      "questionId": "ood-n06-b06-i012",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "01ba27493210001fe1ede91b60e56559fef80c3b868ea50d06f17ac4821b3c93",
+      "currentWholeObjectSha256": "b9f94c258d367d3d7d2a29b4f9e7dfa81cb5ed2db8b1fe872d887d22ad0b417f",
+      "acceptedOptionId": "n06b06_i012_deadline_tier_owner"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i013",
+      "questionId": "ood-n06-b06-i013",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "b1ae8ecaaf131ad2654522460bf0639ebad8a8e89be9ea8aa3c1247bf42595c8",
+      "currentWholeObjectSha256": "286b83a73bd8c28c826e39f37dde4a718346d49fbbe62be3d3d800e71045584b",
+      "acceptedOptionId": "n06b06_i013_eligible_category_listing"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i014",
+      "questionId": "ood-n06-b06-i014",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "c97e1db71ea6cf91fdcdcc5864ad608446b53a24e87eac0aff03ce132c8906b4",
+      "currentWholeObjectSha256": "e5eaad06dfc449b8e99051072cef4c20c34a2b90d4f3dd31e42c5f58415c39e6",
+      "acceptedOptionId": "n06b06_i014_remaining_quantity_split"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i015",
+      "questionId": "ood-n06-b06-i015",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "f0a0933211717a9f0e131961e02bace14b02b4077a2ffaf5e2d597ae4946572e",
+      "currentWholeObjectSha256": "616e40345192219da43c3a59a27f5de99974a58344d53f58a10c0e3f653688c2",
+      "acceptedOptionId": "n06b06_i015_covered_transfer_authority"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i016",
+      "questionId": "ood-n06-b06-i016",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "8102af062bf9df209cd93ddc1b887f27dad1d6188d562824ae07897dbce5c451",
+      "currentWholeObjectSha256": "88ff0534421268bae0abc8de27d83a11fbef026b8768cdc68db23dd863b55e61",
+      "acceptedOptionId": "n06b06_i016_current_component_price"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i017",
+      "questionId": "ood-n06-b06-i017",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "8b6ac83668beb40801f44d96ddd14b04234b3fc648c18011053600f40ea48b6d",
+      "currentWholeObjectSha256": "bc2831332a1641d04944d3a5e7704fe6361ef84be8e3273cda7aa670c0440c16",
+      "acceptedOptionId": "n06b06_i017_eligible_charger_slot"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i018",
+      "questionId": "ood-n06-b06-i018",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "dbcfab9509bc946b4ca219e257afe5f994f7c4b4fa83c293992992db80c07e70",
+      "currentWholeObjectSha256": "ba05607dc49369282e9c331ad2ced26452c23a40a60f0b23723f076142ebab90",
+      "acceptedOptionId": "n06b06_i018_owned_metadata_conflict"
+    }
+  ]
+}

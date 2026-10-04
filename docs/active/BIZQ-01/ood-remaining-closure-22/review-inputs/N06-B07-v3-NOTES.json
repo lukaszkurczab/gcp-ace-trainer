@@ -1,0 +1,294 @@
+{
+  "sourceNotes": "AUTHOR-NOTES-B06-B10.json",
+  "sourceNotesSha256": "365351fa49fa839347a5ce9706417b1014f848c295ed1db81368fe3f7a432373",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n06-b07-i001",
+      "questionId": "ood-n06-b07-i001",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "accepted base, overlap conflicts, resulting geometry, and provenance are all part of the merge outcome",
+      "nearestAlternative": "Select a separate complete merge strategy for each map source, repeating the common checks and recording. — Repeating each common merge step in separate source strategies can let provenance or overlap handling drift.",
+      "changedCondition": "If a source required different conflict or provenance semantics, it would no longer be just a formatting variation.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i001_route_conflict_summary"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i002",
+      "questionId": "ood-n06-b07-i002",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "campaign-specific reward calculation depends on a legal current state and produces the amount recorded in the ledger",
+      "nearestAlternative": "Choose a separate complete reward workflow for each campaign, repeating validation and ledger updates. — A separate workflow per campaign duplicates the legality and ledger steps where one variant can drift.",
+      "changedCondition": "If a campaign used a different legality or ledger rule, the common reward workflow would need a different contract.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i002_legal_reward_calculation"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i003",
+      "questionId": "ood-n06-b07-i003",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "temperature eligibility and receiver confirmation precede the shipment ownership transfer",
+      "nearestAlternative": "Choose a separate complete hand-off workflow for each carrier, repeating the common checks. — Separate per-carrier workflows repeat receiver and temperature checks and can drift on the transfer preconditions.",
+      "changedCondition": "If a carrier changed when ownership transfers or what temperature eligibility means, it would require a distinct hand-off contract.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i003_carrier_handoff_conversion"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i004",
+      "questionId": "ood-n06-b07-i004",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "distribution varies by loan product, but the nonnegative-balance condition and allocation record apply to each accepted repayment",
+      "nearestAlternative": "Choose a separate complete repayment workflow for each product, repeating its common checks and records. — A separate full workflow per loan product repeats the balance guard and can let it diverge.",
+      "changedCondition": "If a product redefined what counts toward the outstanding balance, the shared allocation contract would need review.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i004_repayment_distribution"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i005",
+      "questionId": "ood-n06-b07-i005",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "timeout eligibility varies by competition format, while the legal match transition must precede bracket advancement",
+      "nearestAlternative": "Choose a separate complete forfeit workflow for each competition format, repeating validation and advancement. — Separate format workflows duplicate match legality and advancement, which can diverge.",
+      "changedCondition": "If a format used a different match state machine or advancement rule, it would need its own transition contract.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i005_legal_timeout_forfeit"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i006",
+      "questionId": "ood-n06-b07-i006",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "item-family classification criteria vary; classification still uses the inspection facts and does not decide refund eligibility",
+      "nearestAlternative": "Choose a separate complete inspection workflow for each item family, repeating condition gathering and recording. — Separate inspection workflows duplicate condition gathering and can produce inconsistent classification records.",
+      "changedCondition": "If inspection were also authorized to decide refunds, the operation boundary would have to change.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i006_item_condition_classification"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i007",
+      "questionId": "ood-n06-b07-i007",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "each publication identifies exact immutable input and code references even when storage capture differs",
+      "nearestAlternative": "Choose a separate complete publication workflow for each adapter, repeating identity checks and reference recording. — Separate publication strategies repeat identity checks and can publish inconsistent source references.",
+      "changedCondition": "If an adapter could not preserve the immutable references, it would not satisfy the publication contract.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i007_immutable_result_capture"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i008",
+      "questionId": "ood-n06-b07-i008",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "author and document revision are bound to the persisted comment before a channel notification is sent",
+      "nearestAlternative": "Choose a separate complete comment-acceptance workflow for each channel, repeating attribution and persistence. — Separate channel workflows repeat comment acceptance and can bind different revisions.",
+      "changedCondition": "If a channel were allowed to decide whether the comment itself is accepted, notification would no longer be a later step.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i008_attributed_comment_notice"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i009",
+      "questionId": "ood-n06-b07-i009",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "storage adapters differ, but the user-visible outcome remains one complete inspection or an explicitly retryable submission",
+      "nearestAlternative": "Choose a separate complete submission workflow for each storage adapter, repeating validation and acknowledgment. — Separate storage workflows repeat completeness validation and may disagree about what counts as complete.",
+      "changedCondition": "If partial progress became an allowed result, submission would need a different contract and recovery model.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i009_complete_offline_submission"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i010",
+      "questionId": "ood-n06-b07-i010",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "the rejected original and replacement remain linked, and reissue must not create another charge",
+      "nearestAlternative": "Choose a separate complete reissue workflow for each invoice format, repeating rejection and accounting checks. — Separate format workflows duplicate rejection verification and charge accounting, inviting inconsistent links.",
+      "changedCondition": "If a format changed charge ownership or invoice identity, it would require a different reissue contract.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i010_traceable_invoice_reissue"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i011",
+      "questionId": "ood-n06-b07-i011",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "door policy sees the recorded revocation before a protected access decision can grant entry",
+      "nearestAlternative": "Choose a separate complete revocation workflow for each store, repeating policy publication and acknowledgment. — Separate revocation workflows can disagree on when the door policy sees the new state.",
+      "changedCondition": "If a store cannot make revocation visible before access, it does not satisfy the stated security outcome.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i011_visible_badge_revocation"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i012",
+      "questionId": "ood-n06-b07-i012",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "carrier formatting happens before the rendered label’s revision is checked and before printing",
+      "nearestAlternative": "Choose a separate complete print workflow for each carrier, repeating approval checks and recording. — A separate full workflow per carrier can omit the check on the actual rendered label.",
+      "changedCondition": "If a carrier formatter changed shipment revision selection rather than label representation, it would need a different contract.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i012_verified_carrier_label"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i013",
+      "questionId": "ood-n06-b07-i013",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "capacity and cancellation checks precede a new reservation, and the old booking remains until that reservation succeeds",
+      "nearestAlternative": "Choose a separate complete room-move workflow for each room, repeating eligibility and reservation steps. — Separate room workflows repeat the checks and may release old bookings under different conditions.",
+      "changedCondition": "If a room used a different cancellation lifecycle or transfer invariant, it would require a different move contract.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i013_eligible_room_transfer"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i014",
+      "questionId": "ood-n06-b07-i014",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "maintenance state is checked before execution, and the decision is audited whether a command is rejected or allowed",
+      "nearestAlternative": "Choose a separate complete command workflow for each exhibit, repeating maintenance and audit steps. — Separate exhibit workflows repeat the maintenance and audit steps and may disagree on either.",
+      "changedCondition": "If maintenance mode no longer governed command execution, the common precondition would need a new contract.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i014_maintenance_safety_decision"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i015",
+      "questionId": "ood-n06-b07-i015",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "retirement preserves progress under the stable lesson ID while changing availability for new study",
+      "nearestAlternative": "Choose a separate complete retirement workflow for each storage format, repeating identity and availability changes. — Separate retirement workflows repeat identity preservation and can leave progress on divergent IDs.",
+      "changedCondition": "If lesson retirement merged identities or discarded progress, the learner-history contract would need to change.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i015_stable_progress_retirement"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i016",
+      "questionId": "ood-n06-b07-i016",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "the export represents a captured pre-close state even though the board is closed before serialization",
+      "nearestAlternative": "Choose a separate complete close/export workflow for each format, repeating state capture and close. — Separate export workflows can capture at different times and represent different session states.",
+      "changedCondition": "If export needed to include edits made during or after close, the snapshot boundary would need a different contract.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i016_captured_history_export"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i017",
+      "questionId": "ood-n06-b07-i017",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "eligibility determines one tier, and ownership transfer and notice use that same tier",
+      "nearestAlternative": "Choose a separate complete escalation workflow for each domain, repeating tier selection and ownership transfer. — Separate domain workflows can duplicate selection and produce a different tier in the transfer and notice.",
+      "changedCondition": "If more than one tier jointly owned an escalation, the single-tier transfer and notice contract would change.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i017_deadline_tier_escalation"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b07-i018",
+      "questionId": "ood-n06-b07-i018",
+      "mentalUnitId": "OOD-N06-B07",
+      "learningObjective": "Template method and invariant algorithm structure",
+      "decisiveFact": "price and stock validation precede visibility, and the published revision identifies the accepted listing",
+      "nearestAlternative": "Choose a separate complete publication workflow for each product, repeating validation and revision recording. — Separate product workflows repeat validation and publication and can expose a listing under inconsistent rules.",
+      "changedCondition": "If one product family were allowed to publish before both validations, the visibility contract would need to change.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and proposed answer both assess the Template Method decision: retain the operation boundary and common invariant while varying a bounded step. The revised stem removes the fixed-skeleton/only-hook conclusion and presents observable business order and outcome facts instead.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b07_i018_validated_listing_publication"
+    }
+  ]
+}

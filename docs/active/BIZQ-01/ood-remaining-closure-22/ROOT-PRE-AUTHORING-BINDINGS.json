@@ -1,0 +1,18 @@
+{
+  "result": "PASS",
+  "scope": "Root actual pre-authoring prerequisites only; no proposal/identity/source/runtime acceptance",
+  "runtime": "v22.22.3",
+  "questionCount": 180,
+  "sourceFiles": 10,
+  "confirmed": 159,
+  "contractGaps": 21,
+  "currentWholeBindings": 180,
+  "reservedCorrespondingUnused": 180,
+  "manifestSha256": "be9cb40617caaaa8e18a41d06039c5bab3bc56eeb911b273bf21c7523569c5c3",
+  "preflightSha256": "3f6cd0037e97dfde6f65fd7e416353440dfd752dd4b2d2ff77c27e0eeceaf319",
+  "briefingSha256": "57088ab5eeb0e64e67557153290aa66bba2508515baded6fe922686155fbfa72",
+  "contractSha256": "c6b5612e21fb66a540eba31514510df49b302f8f1089cf474f2ac5880b4205fb",
+  "designQaSha256": "21dc5e01a76de8cb7ce3cd33cfc8f0cd295289d9b59e5a55d51e61d415671e5c",
+  "canonicalUnchangedPrefix": true,
+  "proposalAuthoringPrerequisites": "resolved"
+}

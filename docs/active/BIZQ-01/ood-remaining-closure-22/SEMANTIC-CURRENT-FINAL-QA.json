@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "patternly-bizq01-n06-independent-whole-cohort-review-v1",
+  "verdict": "REVISE",
+  "scope": "Proposal-level semantic and identity review of the frozen 180-object N06 cohort; no source or runtime acceptance",
+  "registry": {
+    "path": "ROOT-CURRENT-N06-INPUTS.json",
+    "sha256": "d72b6e023e823f47ebfb9be10a6cab256e012fa67b4fd123ef312190e24f948e",
+    "manifestSha256": "be9cb40617caaaa8e18a41d06039c5bab3bc56eeb911b273bf21c7523569c5c3",
+    "beforeQuestionSetSha256": "6d19a75e8eae86869b3ce31b63ad57a6be13fc30532c22e993db6fbc3d0d4d12",
+    "prospectiveQuestionSetSha256": "ee08ad10a8351c05ab89e202f5f084bed127c3cfc519ec2df348bd446e7cc20d",
+    "questionCount": 1413,
+    "n06Count": 180,
+    "preservedOtherOodCount": 1233,
+    "acceptedN01N05ComparisonCount": 765,
+    "n06QuestionIdentity": "180 current question IDs match their before IDs",
+    "n06AcceptedOptionIdentity": "180 case-specific accepted option IDs; none reuse the old generic owner_preserves_contract ID"
+  },
+  "criteria": {
+    "contractPath": "N06-CONTRACT.json",
+    "contractSha256": "c6b5612e21fb66a540eba31514510df49b302f8f1089cf474f2ac5880b4205fb",
+    "specPath": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sections": ["4.1", "4.2", "4.3", "4.4", "5B", "5C"]
+  },
+  "advisoryReceipt": {
+    "path": "ROOT-FINAL-N06-WARNINGS.json",
+    "sha256": "29f8652b922b71ffe72e57939185789eb7a49235e367c65ae00f09657d3a4784",
+    "questionCount": 180,
+    "soleLongestWarningCount": 93,
+    "interpretation": "Warnings are advisory; no numeric threshold is used. Manual review identified a systematic answer-form cue in the four groups below."
+  },
+  "blockingFindings": [
+    {
+      "requirement": "Existing quality specification §4.3: options should have comparable concreteness and must remove a systematic longest-is-correct signal.",
+      "finding": "The keyed response repeatedly contains the only complete policy while its distractors are abbreviated alternatives. Across these groups, the longest-choice form is a reliable shortcut independent of the scenario facts.",
+      "minimalCorrection": "Tighten keyed choices to the already-visible mechanism decision, or make nearest wrong alternatives comparably concrete and retain their specific error. Do not pad options or change the underlying accepted meaning merely to alter length.",
+      "units": [
+        {
+          "unit": "OOD-N06-B01",
+          "flaggedQuestionIds": ["ood-n06-b01-i001", "ood-n06-b01-i002", "ood-n06-b01-i003", "ood-n06-b01-i005", "ood-n06-b01-i006", "ood-n06-b01-i007", "ood-n06-b01-i008", "ood-n06-b01-i009", "ood-n06-b01-i010", "ood-n06-b01-i011", "ood-n06-b01-i012", "ood-n06-b01-i013", "ood-n06-b01-i015", "ood-n06-b01-i017", "ood-n06-b01-i018"],
+          "example": "i003 key 155 characters, longest distractor 102; the two-part policy-interface/stable-workflow form recurs across the flagged cases."
+        },
+        {
+          "unit": "OOD-N06-B03",
+          "flaggedQuestionIds": ["ood-n06-b03-i001", "ood-n06-b03-i003", "ood-n06-b03-i004", "ood-n06-b03-i005", "ood-n06-b03-i006", "ood-n06-b03-i007", "ood-n06-b03-i008", "ood-n06-b03-i009", "ood-n06-b03-i010", "ood-n06-b03-i011", "ood-n06-b03-i012", "ood-n06-b03-i013", "ood-n06-b03-i014", "ood-n06-b03-i015", "ood-n06-b03-i016", "ood-n06-b03-i017", "ood-n06-b03-i018"],
+          "example": "i001 key 170 characters, longest distractor 106; the key repeats captured inputs, validation and unchanged-on-rejection as a complete recipe."
+        },
+        {
+          "unit": "OOD-N06-B05",
+          "flaggedQuestionIds": ["ood-n06-b05-i001", "ood-n06-b05-i002", "ood-n06-b05-i003", "ood-n06-b05-i004", "ood-n06-b05-i005", "ood-n06-b05-i006", "ood-n06-b05-i007", "ood-n06-b05-i008", "ood-n06-b05-i009", "ood-n06-b05-i010", "ood-n06-b05-i012", "ood-n06-b05-i013", "ood-n06-b05-i014", "ood-n06-b05-i016", "ood-n06-b05-i017", "ood-n06-b05-i018"],
+          "example": "i001 key 155 characters, longest distractor 122; the keyed choice repeatedly names participants and preserves their local ownership in a longer complete policy."
+        },
+        {
+          "unit": "OOD-N06-B08",
+          "flaggedQuestionIds": ["ood-n06-b08-i001", "ood-n06-b08-i002", "ood-n06-b08-i003", "ood-n06-b08-i004", "ood-n06-b08-i005", "ood-n06-b08-i006", "ood-n06-b08-i007", "ood-n06-b08-i008", "ood-n06-b08-i009", "ood-n06-b08-i010", "ood-n06-b08-i011", "ood-n06-b08-i012", "ood-n06-b08-i013", "ood-n06-b08-i014", "ood-n06-b08-i015", "ood-n06-b08-i016", "ood-n06-b08-i017", "ood-n06-b08-i018"],
+          "example": "All 18 answers are sole-longest. In i001 the key is 138 characters versus a 78-character longest distractor; the repeated distractors are generic 43–99-character fragments while the keyed choice states the scenario-specific complete boundary."
+        }
+      ]
+    }
+  ],
+  "crossUnitReview": {
+    "verdict": "No material duplicate decision found in the reviewed N06 cohort or nearest accepted N01-N05 controls.",
+    "distinctions": [
+      "B01 Strategy selects replaceable behavior at a stable workflow seam; B07 Template Method keeps an invariant host-owned skeleton and varies a designated step.",
+      "B03 Command captures a proposed operation and inputs before execution; B09 event publishes an accepted persisted fact.",
+      "B04 Observer subscribers react to subject changes; B09 domain events communicate accepted business facts to retryable consumers.",
+      "B05 Mediator coordinates peer calls while participants retain domain rules; B10 Saga sequences external effects and handles permitted compensation/retry.",
+      "B06 Chain tries ordered handlers with applicability/pass/stop outcomes; B07 Template Method runs a fixed algorithm with a variation point.",
+      "B09 event publication and B10 workflow orchestration reuse some domain settings, but ask about different boundaries: accepted-fact publication versus multi-step failure/compensation decisions."
+    ],
+    "acceptedControls": "Compared to the 765 accepted N01-N05 objects through the existing accepted evidence and the frozen current registry; this report does not claim a fresh review of every accepted object."
+  },
+  "unitReviews": [
+    {"unit": "OOD-N06-B01", "proposalSha256": "259cc143512849ffc408879253d4ee622494938a9b8172ee9b59917d1ce890eb", "report": "SEMANTIC-N06-B01-v1.md", "reportSha256": "66e9ad1c52080be9ebfc6e69fcf083ac81609477f7bdd2f4b836b5619d4ec6b0"},
+    {"unit": "OOD-N06-B02", "proposalSha256": "2bcb129d105b26b8b84ed9c2898df5a85e062a650103995ab4264952868e674e", "report": "SEMANTIC-N06-B02-v2.md", "reportSha256": "ff29d7f519a0c63d558d74a5c91595a818853236bbaf54afa988b2e87fcb841e"},
+    {"unit": "OOD-N06-B03", "proposalSha256": "6cb88be1e41095f3d02f548c0b9531d3db7061aff597f868eb5eee019e2bfcdd", "report": "SEMANTIC-N06-B03-v1.md", "reportSha256": "cd4406b670c0914de0f9f38c766e8d3b98bbab3738c3e259f81902baf3801f04"},
+    {"unit": "OOD-N06-B04", "proposalSha256": "7a31f2f34c67f5614f6c46a64c88fd113e732b07d56d702cddeafa3b5b7c2eda", "report": "SEMANTIC-N06-B04-v1.md", "reportSha256": "52381332ea18923d36bbd1cb0f89771262be16af72b6cbd8ca6c4b2f37811dd4"},
+    {"unit": "OOD-N06-B05", "proposalSha256": "51db77ba7356e461968b9550ed6f808341f4510fea5c2e372602180ab4299608", "report": "SEMANTIC-N06-B05-v2.md", "reportSha256": "d5491bb5cbe8b3b204065c4b9c3177de107d3aa6ebda1782eca960092e0666e1"},
+    {"unit": "OOD-N06-B06", "proposalSha256": "b7333dfb35f9b1f0066e4d0ad8144f8ea41264470cfca6c27ac82ca8895fa8ef", "report": "SEMANTIC-N06-B06-v3.md", "reportSha256": "0f10486a52f02324c6b7e62edddf5484266128618a11a6328d2559869141b0a4"},
+    {"unit": "OOD-N06-B07", "proposalSha256": "77fd48660671d6ac4e57eaa212f98a8114670de4c3078cf2835e346876a9e342", "report": "SEMANTIC-N06-B07-v4.md", "reportSha256": "fab49c754ccca9b25e9c6dacad9807091bc006a9974fd4100c372343d2999c5a"},
+    {"unit": "OOD-N06-B08", "proposalSha256": "f08cf6ed81fbdeb50b9af418960a57cab0c91fdcd38fc6125b7fb50e8d2c078f", "report": "SEMANTIC-N06-B08-v2.md", "reportSha256": "4540e21c35e063ab65812cae6fb9d79eb4a41d8ea0215c6f75fd29db69cea454"},
+    {"unit": "OOD-N06-B09", "proposalSha256": "ed9c57ba6289e07441455deaabb6526d35277ca7fcfb0ac4ae2cb93cda38efbe", "report": "SEMANTIC-N06-B09-v3.md", "reportSha256": "a82fcd1491ebf70da853e7182f25936b59a9332301836617c5cd715c17281037"},
+    {"unit": "OOD-N06-B10", "proposalSha256": "e959f3b8c5a843f0fdc917784c24cb83cf2b3b87a26e28fbd996d55cc8f22c72", "report": "SEMANTIC-N06-B10-v3.md", "reportSha256": "0d38b3c3af05eafa27a60b58c87be6ce76f9af9a28425f0045c40ccbcbb83ea2"}
+  ],
+  "limitations": [
+    "The report is a semantic and identity review of proposals only.",
+    "It does not accept source integration, producer migration, consumer implementation, app admission, runtime/native/Premium behavior, full-bank eligibility, or full BIZQ-01 closure.",
+    "The current registry is a frozen input binding, not approval of the identity map or source activation."
+  ]
+}

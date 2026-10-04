@@ -1,0 +1,258 @@
+{
+  "sourceNotes": "AUTHOR-NOTES-B06-B10.json",
+  "sourceNotesSha256": "7a57d78093866278ad7925ab597275aaec0a83aa466234d94a0b8f7dd14822a0",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n06-b10-i001",
+      "questionId": "ood-n06-b10-i001",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "The hold expires if payment is declined; an expired or declined attempt must leave the slot available and must not charge the driver. What should coordinate these steps?",
+      "nearestAlternative": "Charge first, then try to reserve a charger; refund only if no slot remains. — Charging before securing capacity can debit a driver without a charger; retaining the hold after a decline violates the stated availability outcome.",
+      "changedCondition": "For another resource-backed booking, identify temporary holds and release them when a required later step fails.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i002",
+      "questionId": "ood-n06-b10-i002",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "The canonical record is committed before a search index refresh. If indexing is unavailable, the merge remains accepted and the index can retry from the committed revision. Which workflow fits?",
+      "nearestAlternative": "Update the search index first and use its result to decide which metadata becomes canonical. — Deleting canonical metadata because a projection is unavailable confuses a derived view with the accepted record.",
+      "changedCondition": "For another derived index, retry from the accepted revision and preserve canonical state when only the projection is unavailable.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i003",
+      "questionId": "ood-n06-b10-i003",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "A license must have an explicit territory and expiry, and the recipient must be authorized for both. A failed check must not disclose the work. What sequence should the clearance workflow enforce?",
+      "nearestAlternative": "Release the work while authorization checks run, then retract access if a check fails. — Post-delivery checks and revocation do not undo the disclosure that the prompt forbids.",
+      "changedCondition": "For another external release, identify irreversible effects and complete their authorization preconditions first.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i004",
+      "questionId": "ood-n06-b10-i004",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "If the aircraft slot conflicts, the battery must return to the available pool and neither assignment is recorded. Which design preserves the pair?",
+      "nearestAlternative": "Record the battery assignment before checking aircraft availability and leave it for an operator to repair. — Leaving the battery assigned after the aircraft slot fails creates exactly the partial plan the prompt rejects.",
+      "changedCondition": "For another multi-resource plan, list each temporary claim and the compensation needed if a later claim fails.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i005",
+      "questionId": "ood-n06-b10-i005",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "Once sent, the external clinic may act immediately; a later cancellation cannot erase disclosure. What should the workflow do?",
+      "nearestAlternative": "Send first and rely on a later cancellation if consent or specialty validation fails. — Cancellation cannot restore privacy after the clinic has received the information, and sending duplicates compounds the exposure.",
+      "changedCondition": "For another external referral, preserve the consent and recipient checks and use an operation ID across uncertain retries.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i006",
+      "questionId": "ood-n06-b10-i006",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "Badge and analytics updates may lag; an invalid score must create no completion. Which sequence matches these facts?",
+      "nearestAlternative": "Award the badge before checking the score, then revoke it if validation fails. — A badge or analytics projection cannot be the authority that turns an invalid score into a completion.",
+      "changedCondition": "For another achievement side effect, emit from the accepted version-bound completion and retry by its stable ID.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i007",
+      "questionId": "ood-n06-b10-i007",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "The first control may pass, but if the second denies the request there must be no partial approval record. Search indexing and requester notice happen only after the decision. Which workflow fits?",
+      "nearestAlternative": "Persist a provisional approval after the first control and let the second control revoke it if needed. — A provisional approval exposes a state the scenario expressly forbids if control two later denies.",
+      "changedCondition": "For another bounded exception, finish every required control before persisting and notifying one decision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i008",
+      "questionId": "ood-n06-b10-i008",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "The producer validates the new segment map before switching the canonical recording reference. A search refresh can retry afterward. If map validation fails, the old recording remains active. What workflow should coordinate the replacement?",
+      "nearestAlternative": "Switch the recording first and let search infer how old annotation IDs map to new segments. — Deleting or switching before validating can strand annotations on a reference that was never safe to accept.",
+      "changedCondition": "For another source replacement, validate identity mapping before switching and refresh derived views from the accepted revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i009",
+      "questionId": "ood-n06-b10-i009",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "After the grant is persisted, notification may fail and be retried. Authorization checks expiry on each request, so cleanup timing cannot extend access. Which workflow fits?",
+      "nearestAlternative": "Grant access when the review is submitted and let a later approval event revoke it if denied. — Requiring successful notification for an access decision can reject a valid grant for an unrelated delivery outage.",
+      "changedCondition": "For another temporary access grant, bind approval/expiry before persistence, and make notification retries refer to its grant ID.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i010",
+      "questionId": "ood-n06-b10-i010",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "Once recorded, the seal is authoritative; a public index refresh may fail and retry, but the seal must not be removed for that failure. What sequence is appropriate?",
+      "nearestAlternative": "Publish a seal event before selecting the immutable revision it covers. — Deleting a valid seal to repair a lagging index reverses the authority relationship stated in the case.",
+      "changedCondition": "For another notarized revision, bind the exact immutable target before sealing and keep indexes downstream.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i011",
+      "questionId": "ood-n06-b10-i011",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "If the bank rejects the transfer, the reservation is released and the order remains settled but unpaid. A successful transfer is recorded under one payout ID, and a report update may retry by that same ID. Which workflow preserves these outcomes?",
+      "nearestAlternative": "Mark the payout released when the transfer is requested, then amend it if the bank rejects. — Recording success at request time can claim a payout that the bank never made; repeating an uncertain transfer can double-pay.",
+      "changedCondition": "For another external payment, separate request from confirmation and define what happens to the hold on each outcome.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i012",
+      "questionId": "ood-n06-b10-i012",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "A platform is temporarily reserved while the change is checked for conflicts. If the sequence/conflict check fails, release the reservation and do not notify passengers; after acceptance, displays may refresh later by sequence.",
+      "nearestAlternative": "Notify passengers as soon as a platform is tentatively reserved, then correct the display after a conflict. — An early notice exposes a change that may be rejected, and consumer-assigned sequence values would not be one authoritative order.",
+      "changedCondition": "For another disruption, validate and assign the authoritative sequence before notice, and release temporary resources on rejection.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i013",
+      "questionId": "ood-n06-b10-i013",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "A participant notification is sent after reservation; notification failure may retry by reservation ID and must not create another window. What should coordinate the operation?",
+      "nearestAlternative": "Send the notification first and let the participant identify overlapping windows afterward. — Using notice delivery as a reservation command can create duplicates or shift the invariant to an external recipient.",
+      "changedCondition": "For another participant alert, retry delivery for the existing reservation ID rather than rerunning allocation.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i014",
+      "questionId": "ood-n06-b10-i014",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "If the test fails, the old provider remains active and the staged configuration is discarded. After a successful switch, monitoring may catch up later. Which workflow fits?",
+      "nearestAlternative": "Switch traffic first and let monitoring decide whether the provider meets the contract. — Switching before validation exposes the live stream to a provider that may violate timing or error behavior.",
+      "changedCondition": "For another provider change, test before activation and retain the active implementation if the candidate fails.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i015",
+      "questionId": "ood-n06-b10-i015",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "Temporary holds are placed on both assignments; if either check fails, release both holds and keep the original roster unchanged. Which workflow preserves the swap?",
+      "nearestAlternative": "Move the first volunteer immediately, then ask the second volunteer to accept later. — Committing the first move before checking the second exposes a partial state the prompt forbids.",
+      "changedCondition": "For another multi-party change, make the complete participant set explicit and release temporary claims on any failed precondition.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i016",
+      "questionId": "ood-n06-b10-i016",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "Search is a derived projection and may retry. If storage rejects the merge, no new geometry is accepted; a search outage after commit must not undo it.",
+      "nearestAlternative": "Update search first and let its index decide which geometry is canonical. — Publishing geometry without its markers/provenance can silently overwrite conflicts, while undoing for a search outage reverses an accepted change unnecessarily.",
+      "changedCondition": "For another offline merge, commit all conflict/provenance data with the route revision and rebuild search afterward.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i017",
+      "questionId": "ood-n06-b10-i017",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "If reward validation fails after the item is reserved, restore the item; once the reward ledger entry commits, achievement summaries may retry without changing the ledger.",
+      "nearestAlternative": "Consume the item before checking whether the reward is legal and leave it spent on failure. — Treating a projection as the authority for campaign legality can duplicate or invalidate the reward after the owner has committed it.",
+      "changedCondition": "For another resource-backed reward, define the pre-commit reservation and rollback separately from post-commit summary work.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b10-i018",
+      "questionId": "ood-n06-b10-i018",
+      "mentalUnitId": "OOD-N06-B10",
+      "learningObjective": "Coordinate multi-step changes across owners: sequence required checks and effects, compensate reversible work on failure, and preserve the stated invariant.",
+      "decisiveFact": "If the temperature test fails, the old carrier keeps the shipment and the new carrier reservation is released. After hand-off is accepted, tracking can retry from the shipment revision.",
+      "nearestAlternative": "Transfer ownership to the new carrier before checking temperature and repair the shipment record afterward. — Changing ownership before temperature validation can place the shipment with an ineligible carrier.",
+      "changedCondition": "For another carrier change, validate constraints before transfer and release candidate reservations when the check fails.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old and proposed item both test coordinating a multi-step workflow to preserve its stated invariant across boundaries. The updated case specifies the required ordering and failure outcome without changing that orchestration/compensation decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+      ]
+    }
+  ]
+}

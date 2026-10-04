@@ -1,0 +1,1406 @@
+[
+  {
+    "answer": {
+      "optionId": "n06b07_i001_route_conflict_summary",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "conflicts are explicit and never silently overwrite accepted geometry",
+      "accepted base, overlap conflicts, resulting geometry, and provenance are all part of the merge outcome"
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Accepted base, overlap conflicts, resulting geometry, and provenance are all part of the merge outcome. The design should accommodate conflict-summary format without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "A map-source format affects the conflict summary, while the route result still needs the accepted base and provenance for later review.",
+        "errorCorrection": "Repeating the complete merge separately per source can let overlap reporting or provenance drift as one copy changes.",
+        "boundaryOrTradeoff": "Use the same route lifecycle when only the summary representation changes; a different merge lifecycle needs a distinct contract.",
+        "transfer": "For another map source, change the summary representation while preserving accepted geometry and revision provenance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i001_strategy",
+          "text": "Repeating each common merge step in separate source strategies can let provenance or overlap handling drift."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i001_override",
+          "text": "Replacing the whole workflow permits a source-specific merge to omit accepted-base or conflict handling."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i001_caller",
+          "text": "If each caller formats summaries itself, the same conflict may be rendered inconsistently across entry points."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i001_copy",
+          "text": "Copied merge flows can diverge on the route revision/provenance they preserve."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i001_route_conflict_summary",
+          "text": "Keep the merge sequence fixed; vary only the conflict-summary hook after overlap detection."
+        },
+        {
+          "optionId": "n06b07_i001_strategy",
+          "text": "Select a separate complete merge strategy for each map source, repeating the common checks and recording."
+        },
+        {
+          "optionId": "n06b07_i001_override",
+          "text": "Let each map source replace the entire workflow, including accepted-base and conflict handling."
+        },
+        {
+          "optionId": "n06b07_i001_caller",
+          "text": "Put conflict-summary formatting in every caller before it invokes the merge operation."
+        },
+        {
+          "optionId": "n06b07_i001_copy",
+          "text": "Copy the merge workflow into each source variant and edit its summary step independently."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a local-first map editor, accepted geometry must remain the basis for an offline merge: overlap conflicts are surfaced, and provenance identifies the resulting route revision. Merges from different map sources use different conflict-summary formats. How should the workflow accommodate those formats without losing the route contract?",
+    "questionId": "ood-n06-b07-i001",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i002_legal_reward_calculation",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "reward rules depend on the current legal campaign state",
+      "campaign-specific reward calculation depends on a legal current state and produces the amount recorded in the ledger"
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Campaign-specific reward calculation depends on a legal current state and produces the amount recorded in the ledger. The design should accommodate reward formula without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "The campaign changes the reward calculation, but a valid state and a recorded reward remain required for every campaign.",
+        "errorCorrection": "A campaign-specific full workflow can bypass legality checks or ledger recording in one variant.",
+        "boundaryOrTradeoff": "Keep legal-state and ledger responsibilities common while reward formulas vary; a different campaign transition is a different workflow.",
+        "transfer": "For a new campaign, substitute its formula without changing the legal-state precondition or ledger result."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i002_strategy",
+          "text": "A separate workflow per campaign duplicates the legality and ledger steps where one variant can drift."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i002_override",
+          "text": "Replacing the full operation allows one formula variant to skip the legal-state precondition."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i002_caller",
+          "text": "Putting formulas in callers makes each caller responsible for returning the same ledger-compatible amount."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i002_copy",
+          "text": "Copied campaign workflows can diverge in how a reward is validated or recorded."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i002_strategy",
+          "text": "Choose a separate complete reward workflow for each campaign, repeating validation and ledger updates."
+        },
+        {
+          "optionId": "n06b07_i002_override",
+          "text": "Let each campaign replace the whole operation, including legal-state checks and recording."
+        },
+        {
+          "optionId": "n06b07_i002_caller",
+          "text": "Put the campaign reward formula in every caller before the operation runs."
+        },
+        {
+          "optionId": "n06b07_i002_copy",
+          "text": "Copy the reward workflow for each campaign and change its formula in the copy."
+        },
+        {
+          "optionId": "n06b07_i002_legal_reward_calculation",
+          "text": "Keep state validation and ledger recording in the shared workflow; vary only reward calculation."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a board-game campaign manager, a reward is recorded only for a legal current campaign state, and the ledger must reflect the calculated reward. Campaigns use different reward formulas. What structure can support those formulas while preserving a valid ledger entry?",
+    "questionId": "ood-n06-b07-i002",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i003_carrier_handoff_conversion",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "temperature restrictions and hand-off ownership travel with the shipment",
+      "temperature eligibility and receiver confirmation precede the shipment ownership transfer"
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Temperature eligibility and receiver confirmation precede the shipment ownership transfer. The design should accommodate carrier temperature-data conversion without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "The carrier format affects how temperature data is interpreted; it must not change which checks precede the ownership change.",
+        "errorCorrection": "A carrier-specific replacement for the whole hand-off can transfer ownership before temperature and receiver checks finish.",
+        "boundaryOrTradeoff": "Vary carrier-data conversion while retaining the hand-off preconditions and ownership transition.",
+        "transfer": "For another carrier format, convert its temperature data without moving ownership before the shipment is eligible."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i003_strategy",
+          "text": "Separate per-carrier workflows repeat receiver and temperature checks and can drift on the transfer preconditions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i003_override",
+          "text": "Replacing the whole hand-off can transfer the shipment without a valid temperature or receiver result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i003_caller",
+          "text": "Caller-specific conversions can produce inconsistent temperature inputs for the same shipment decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i003_copy",
+          "text": "Copied hand-off flows can diverge on when the carrier becomes the shipment owner."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i003_strategy",
+          "text": "Choose a separate complete hand-off workflow for each carrier, repeating the common checks."
+        },
+        {
+          "optionId": "n06b07_i003_override",
+          "text": "Let each carrier replace the whole hand-off, including temperature and receiver checks."
+        },
+        {
+          "optionId": "n06b07_i003_caller",
+          "text": "Convert carrier temperature data in every caller before invoking reassignment."
+        },
+        {
+          "optionId": "n06b07_i003_carrier_handoff_conversion",
+          "text": "Keep temperature validation and hand-off transfer ordered; vary only carrier-specific conversion."
+        },
+        {
+          "optionId": "n06b07_i003_copy",
+          "text": "Copy the hand-off workflow for each carrier and change the conversion step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a cold-chain logistics console, a shipment hand-off requires a valid temperature check and receiver confirmation before ownership changes. Carrier systems represent temperature data differently. How should reassignment support those carrier formats while preserving the shipment hand-off rules?",
+    "questionId": "ood-n06-b07-i003",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i004_repayment_distribution",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "a repayment cannot reduce the outstanding balance below zero",
+      "distribution varies by loan product, but the nonnegative-balance condition and allocation record apply to each accepted repayment"
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Distribution varies by loan product, but the nonnegative-balance condition and allocation record apply to each accepted repayment. The design should accommodate repayment distribution formula without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "Product rules determine how an eligible amount is distributed; they do not remove the balance limit or the allocation record.",
+        "errorCorrection": "Allowing every product to replace the operation can let one formula skip the balance limit.",
+        "boundaryOrTradeoff": "Keep the balance check and allocation result common while substituting the distribution calculation.",
+        "transfer": "For another loan product, vary distribution without permitting an allocation below zero."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i004_strategy",
+          "text": "A separate full workflow per loan product repeats the balance guard and can let it diverge."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i004_override",
+          "text": "Replacing the operation lets a product-specific formula bypass the nonnegative-balance condition."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i004_caller",
+          "text": "Caller formulas risk producing amounts that are not checked consistently against the balance."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i004_copy",
+          "text": "Copied repayment flows can differ in their balance check or allocation record."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i004_strategy",
+          "text": "Choose a separate complete repayment workflow for each product, repeating its common checks and records."
+        },
+        {
+          "optionId": "n06b07_i004_override",
+          "text": "Let each product replace the entire operation, including balance validation and allocation recording."
+        },
+        {
+          "optionId": "n06b07_i004_repayment_distribution",
+          "text": "Keep balance validation and allocation recording fixed; vary only the distribution formula."
+        },
+        {
+          "optionId": "n06b07_i004_caller",
+          "text": "Put product-specific distribution in every caller before it submits the repayment."
+        },
+        {
+          "optionId": "n06b07_i004_copy",
+          "text": "Copy the repayment workflow for each product and change the distribution formula locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a cooperative lending ledger, different loan products distribute repayment amounts differently. No allocation may reduce the outstanding balance below zero, and every accepted allocation is recorded. How should the design support the product-specific distribution rule?",
+    "questionId": "ood-n06-b07-i004",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i005_legal_timeout_forfeit",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the bracket advances only from a legal match state",
+      "timeout eligibility varies by competition format, while the legal match transition must precede bracket advancement"
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Timeout eligibility varies by competition format, while the legal match transition must precede bracket advancement. The design should accommodate timeout-eligibility rule without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "Formats may decide when a timeout qualifies, but they still advance the bracket only after a legal match transition.",
+        "errorCorrection": "A full per-format operation can advance the bracket without recording a legal forfeit transition.",
+        "boundaryOrTradeoff": "Keep the state transition and advancement relationship common while the timeout criterion varies.",
+        "transfer": "For another competition format, supply its timeout criterion without advancing an illegal match state."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i005_strategy",
+          "text": "Separate format workflows duplicate match legality and advancement, which can diverge."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i005_override",
+          "text": "Replacing the full operation permits a timeout rule to advance the bracket without a legal state change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i005_caller",
+          "text": "Callers should not decide different timeout rules independently for the same competition format."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i005_copy",
+          "text": "Copied bracket workflows can disagree on whether advancement follows an accepted forfeit."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i005_strategy",
+          "text": "Choose a separate complete forfeit workflow for each competition format, repeating validation and advancement."
+        },
+        {
+          "optionId": "n06b07_i005_legal_timeout_forfeit",
+          "text": "Keep legal-transition validation before bracket advancement; vary only timeout eligibility."
+        },
+        {
+          "optionId": "n06b07_i005_override",
+          "text": "Let each format replace the whole operation, including the legal match transition and bracket advancement."
+        },
+        {
+          "optionId": "n06b07_i005_caller",
+          "text": "Put timeout eligibility in every caller before it invokes the forfeit operation."
+        },
+        {
+          "optionId": "n06b07_i005_copy",
+          "text": "Copy the forfeit workflow for each format and edit the timeout rule in the copy."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a tournament bracket service, competition formats define different timeout-eligibility rules. A match can be forfeited only from a legal match state, and the bracket advances from that accepted transition. How should the design support the format-specific timeout rule?",
+    "questionId": "ood-n06-b07-i005",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i006_item_condition_classification",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "classification and refund eligibility are not the same responsibility",
+      "item-family classification criteria vary; classification still uses the inspection facts and does not decide refund eligibility"
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Item-family classification criteria vary; classification still uses the inspection facts and does not decide refund eligibility. The design should accommodate item-family classification criteria without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "Item families affect which facts determine the return class; refund eligibility is still decided separately.",
+        "errorCorrection": "A family-specific full operation could turn the classification result into an unauthorized refund decision.",
+        "boundaryOrTradeoff": "Vary classification criteria while preserving a distinct refund decision.",
+        "transfer": "For another returned-item family, change its classification criterion without absorbing refund authorization."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i006_strategy",
+          "text": "Separate inspection workflows duplicate condition gathering and can produce inconsistent classification records."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i006_override",
+          "text": "Replacing the whole operation can collapse classification into refund authorization, which the case separates."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i006_caller",
+          "text": "Caller-owned criteria can classify the same family differently across entry points."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i006_copy",
+          "text": "Copied inspection flows can drift on which condition facts support the returned-item class."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i006_item_condition_classification",
+          "text": "Keep condition gathering and classification order fixed; vary criteria without absorbing refund eligibility."
+        },
+        {
+          "optionId": "n06b07_i006_strategy",
+          "text": "Choose a separate complete inspection workflow for each item family, repeating condition gathering and recording."
+        },
+        {
+          "optionId": "n06b07_i006_override",
+          "text": "Let each item family replace the whole inspection, including condition collection and refund eligibility."
+        },
+        {
+          "optionId": "n06b07_i006_caller",
+          "text": "Put item-family classification rules in every caller before inspection."
+        },
+        {
+          "optionId": "n06b07_i006_copy",
+          "text": "Copy the inspection workflow for each family and change its classification rule locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a returns inspection workflow, item families use different condition criteria to determine classification. Refund eligibility remains a separate decision, and the classification is based on the gathered condition facts. How should the design accommodate family-specific criteria?",
+    "questionId": "ood-n06-b07-i006",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i007_immutable_result_capture",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "published outputs reference immutable inputs and code versions",
+      "each publication identifies exact immutable input and code references even when storage capture differs"
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Each publication identifies exact immutable input and code references even when storage capture differs. The design should accommodate storage-specific snapshot capture without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "Storage adapters provide different capture mechanisms, but the published result still names the precise inputs and code that produced it.",
+        "errorCorrection": "A full adapter-specific publication flow can omit or substitute source references in one variant.",
+        "boundaryOrTradeoff": "Keep source identity verification and publication result common while delegating capture details.",
+        "transfer": "For another storage adapter, preserve exact input/code references in the published snapshot."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i007_strategy",
+          "text": "Separate publication strategies repeat identity checks and can publish inconsistent source references."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i007_override",
+          "text": "Replacing the full operation lets an adapter publish a result without the required immutable input/code identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i007_caller",
+          "text": "If every caller implements capture, source-reference checks can differ by entry point."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i007_copy",
+          "text": "Copied publication flows can drift on the versions named by the resulting snapshot."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i007_strategy",
+          "text": "Choose a separate complete publication workflow for each adapter, repeating identity checks and reference recording."
+        },
+        {
+          "optionId": "n06b07_i007_override",
+          "text": "Let each adapter replace the entire publication operation, including input/version verification."
+        },
+        {
+          "optionId": "n06b07_i007_caller",
+          "text": "Put snapshot capture and source-reference logic in every caller."
+        },
+        {
+          "optionId": "n06b07_i007_copy",
+          "text": "Copy the publication workflow for each adapter and change its capture step locally."
+        },
+        {
+          "optionId": "n06b07_i007_immutable_result_capture",
+          "text": "Keep input/version verification before capture and publication; vary only storage capture."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a research-notebook platform, every published result must identify its exact immutable input and code version. Different storage adapters support different ways to capture a result. What design can support those storage differences without losing the source references?",
+    "questionId": "ood-n06-b07-i007",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i008_attributed_comment_notice",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "accepted comments must retain their author and document revision",
+      "author and document revision are bound to the persisted comment before a channel notification is sent"
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Author and document revision are bound to the persisted comment before a channel notification is sent. The design should accommodate notification channel without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "Channels vary how the author is reached; they do not determine the identity or revision of the persisted comment.",
+        "errorCorrection": "A channel-specific whole workflow can notify before the comment’s required attribution has been persisted.",
+        "boundaryOrTradeoff": "Keep attribution and persistence common, and vary only how the assigned author is notified.",
+        "transfer": "For another notification channel, notify from the same persisted author/revision-bound comment."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i008_strategy",
+          "text": "Separate channel workflows repeat comment acceptance and can bind different revisions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i008_override",
+          "text": "Replacing the operation lets a channel notify before required attribution is stored."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i008_caller",
+          "text": "Caller-owned notification branching risks bypassing the same persisted comment identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i008_copy",
+          "text": "Copied acceptance paths can diverge on whether persistence precedes notification."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i008_strategy",
+          "text": "Choose a separate complete comment-acceptance workflow for each channel, repeating attribution and persistence."
+        },
+        {
+          "optionId": "n06b07_i008_override",
+          "text": "Let each channel replace the whole acceptance operation, including author/revision binding."
+        },
+        {
+          "optionId": "n06b07_i008_caller",
+          "text": "Put notification-channel branching in every caller before it accepts the comment."
+        },
+        {
+          "optionId": "n06b07_i008_attributed_comment_notice",
+          "text": "Keep author/revision binding and persistence before notification; vary only the channel step."
+        },
+        {
+          "optionId": "n06b07_i008_copy",
+          "text": "Copy the comment workflow for each channel and change notification locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a collaborative annotation workspace, an accepted comment must retain its author and document revision. Different notification channels reach assigned authors, and notification follows comment persistence. What design accommodates those channels while preserving attribution?",
+    "questionId": "ood-n06-b07-i008",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i009_complete_offline_submission",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "a submission is either complete or explicitly retryable",
+      "storage adapters differ, but the user-visible outcome remains one complete inspection or an explicitly retryable submission"
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Storage adapters differ, but the user-visible outcome remains one complete inspection or an explicitly retryable submission. The design should accommodate offline persistence mechanism without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "An adapter may change how the complete record is stored, but cannot turn partial data into an accepted inspection.",
+        "errorCorrection": "A full adapter-specific workflow may acknowledge a partial inspection even though only complete or retryable outcomes are allowed.",
+        "boundaryOrTradeoff": "Keep completeness validation and outcome reporting common while varying offline persistence.",
+        "transfer": "For another offline store, preserve the complete-or-retryable result without exposing partial records."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i009_strategy",
+          "text": "Separate storage workflows repeat completeness validation and may disagree about what counts as complete."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i009_override",
+          "text": "Replacing the full operation lets an adapter accept a partial inspection."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i009_caller",
+          "text": "Caller-owned storage logic can make the same payload complete in one entry point and partial in another."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i009_copy",
+          "text": "Copied submission flows can diverge on retry acknowledgment or whole-record persistence."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i009_strategy",
+          "text": "Choose a separate complete submission workflow for each storage adapter, repeating validation and acknowledgment."
+        },
+        {
+          "optionId": "n06b07_i009_override",
+          "text": "Let each adapter replace the entire submission, including completeness and retry decisions."
+        },
+        {
+          "optionId": "n06b07_i009_complete_offline_submission",
+          "text": "Keep completeness validation and whole-record outcome fixed; vary only offline persistence."
+        },
+        {
+          "optionId": "n06b07_i009_caller",
+          "text": "Put offline persistence branching in every caller before it submits an inspection."
+        },
+        {
+          "optionId": "n06b07_i009_copy",
+          "text": "Copy the submission workflow for each adapter and change its storage step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a mobile field-inspection app, an offline submission must end as either one complete inspection or an explicitly retryable result; partial records are not accepted. Offline storage adapters differ. How should submission accommodate those adapters?",
+    "questionId": "ood-n06-b07-i009",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i010_traceable_invoice_reissue",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the new issue is traceable and does not double-charge the customer",
+      "the rejected original and replacement remain linked, and reissue must not create another charge"
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The rejected original and replacement remain linked, and reissue must not create another charge. The design should accommodate replacement invoice rendering without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "The invoice format changes the replacement representation, not the confirmed rejection or accounting link.",
+        "errorCorrection": "A separate format workflow can render a replacement without the source link or no-double-charge record.",
+        "boundaryOrTradeoff": "Keep rejection verification and charge-link recording common while varying invoice representation.",
+        "transfer": "For another invoice format, confirm the rejection, create the traceable replacement, and record its no-double-charge link in that operation order."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i010_strategy",
+          "text": "Separate format workflows duplicate rejection verification and charge accounting, inviting inconsistent links."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i010_override",
+          "text": "Replacing the entire reissue operation lets a format bypass the confirmed-rejection or charge-link checks."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i010_caller",
+          "text": "Caller-specific rendering can associate the invoice with inconsistent source or charge records."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i010_copy",
+          "text": "Copied invoice flows can create different source links or charge behavior as formats evolve."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i010_strategy",
+          "text": "Choose a separate complete reissue workflow for each invoice format, repeating rejection and accounting checks."
+        },
+        {
+          "optionId": "n06b07_i010_traceable_invoice_reissue",
+          "text": "Keep rejection verification and charge-link recording fixed; vary only replacement rendering."
+        },
+        {
+          "optionId": "n06b07_i010_override",
+          "text": "Let each format replace the whole operation, including rejection confirmation and charge linkage."
+        },
+        {
+          "optionId": "n06b07_i010_caller",
+          "text": "Put replacement-format branching in every caller before it reissues an invoice."
+        },
+        {
+          "optionId": "n06b07_i010_copy",
+          "text": "Copy the reissue workflow for each format and change the rendering step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a digital invoice exchange, an invoice can be reissued only after its rejection is confirmed. The replacement must be traceable to the original and must not create a second charge. Invoice formats differ. How should the design support those formats?",
+    "questionId": "ood-n06-b07-i010",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i011_visible_badge_revocation",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "revocation is visible to the door policy before access is granted",
+      "door policy sees the recorded revocation before a protected access decision can grant entry"
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Door policy sees the recorded revocation before a protected access decision can grant entry. The design should accommodate credential-store recording without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "Credential stores vary how they record revocation, but the access policy must see it before allowing entry.",
+        "errorCorrection": "A store-specific full workflow may acknowledge revocation while the door policy still accepts the badge.",
+        "boundaryOrTradeoff": "Keep revocation visibility and acknowledgment ordered while allowing store-specific recording.",
+        "transfer": "For another credential store, preserve policy visibility before the next access grant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i011_strategy",
+          "text": "Separate revocation workflows can disagree on when the door policy sees the new state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i011_override",
+          "text": "Replacing the entire operation may acknowledge a revocation that is not yet enforced at the door."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i011_caller",
+          "text": "Callers cannot safely choose separate recording paths if policy visibility is required before access."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i011_copy",
+          "text": "Copied store flows can drift on whether acknowledgment follows visibility."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i011_visible_badge_revocation",
+          "text": "Keep revocation visibility before acknowledgment; vary only credential-store recording."
+        },
+        {
+          "optionId": "n06b07_i011_strategy",
+          "text": "Choose a separate complete revocation workflow for each store, repeating policy publication and acknowledgment."
+        },
+        {
+          "optionId": "n06b07_i011_override",
+          "text": "Let each store replace the whole operation, including when revocation becomes visible to doors."
+        },
+        {
+          "optionId": "n06b07_i011_caller",
+          "text": "Put credential-store recording branches in each caller before revoking the badge."
+        },
+        {
+          "optionId": "n06b07_i011_copy",
+          "text": "Copy the revocation workflow per store and change its write step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a smart-building access controller, badge revocation must reach the door policy before a later access attempt can be granted. Credential stores use different recording mechanisms. How should revocation accommodate those stores?",
+    "questionId": "ood-n06-b07-i011",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i012_verified_carrier_label",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the printed label represents the current approved shipment data",
+      "carrier formatting happens before the rendered label’s revision is checked and before printing"
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Carrier formatting happens before the rendered label’s revision is checked and before printing. The design should accommodate carrier label formatting without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "The verifier checks the rendered label against the approved revision after formatting; it cannot be moved before formatting and still inspect that output.",
+        "errorCorrection": "A workflow that verifies before formatting never checks whether the actual rendered label retains the approved revision.",
+        "boundaryOrTradeoff": "Keep revision verification after formatting and before print; vary carrier presentation only.",
+        "transfer": "For another carrier, format the label, verify its approved revision, then print."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i012_strategy",
+          "text": "A separate full workflow per carrier can omit the check on the actual rendered label."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i012_override",
+          "text": "Replacing the whole print flow can move verification before formatting and miss stale output."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i012_caller",
+          "text": "Caller-owned format branches may not verify the resulting label against the same approved revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i012_copy",
+          "text": "Copied print flows can disagree about whether revision verification follows formatting."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i012_strategy",
+          "text": "Choose a separate complete print workflow for each carrier, repeating approval checks and recording."
+        },
+        {
+          "optionId": "n06b07_i012_override",
+          "text": "Let each carrier replace the entire print operation, including revision verification."
+        },
+        {
+          "optionId": "n06b07_i012_caller",
+          "text": "Put carrier formatting branches in every caller before the shared label operation."
+        },
+        {
+          "optionId": "n06b07_i012_copy",
+          "text": "Copy the print workflow for each carrier and change label formatting locally."
+        },
+        {
+          "optionId": "n06b07_i012_verified_carrier_label",
+          "text": "Keep approved-revision verification before printing; vary only carrier formatting."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a package-label generation service, the printed label must reference the current approved shipment revision. The label is formatted for a carrier, then its revision is checked before printing; carrier formats differ. How should the design support those formats while preventing a stale label from printing?",
+    "questionId": "ood-n06-b07-i012",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i013_eligible_room_transfer",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the room capacity and cancellation policy must remain consistent",
+      "capacity and cancellation checks precede a new reservation, and the old booking remains until that reservation succeeds"
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Capacity and cancellation checks precede a new reservation, and the old booking remains until that reservation succeeds. The design should accommodate room-specific capacity calculation without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "Room-specific capacity calculation changes one input to eligibility; it does not change the order protecting the existing booking.",
+        "errorCorrection": "A room-specific full workflow can release the old booking before the new reservation is secured.",
+        "boundaryOrTradeoff": "Keep eligibility and reservation-transfer order common while varying capacity calculation.",
+        "transfer": "For another room, calculate capacity using its model but retain the old booking until the new reservation succeeds."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i013_strategy",
+          "text": "Separate room workflows repeat the checks and may release old bookings under different conditions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i013_override",
+          "text": "Replacing the entire operation can release the existing booking before the new room is reserved."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i013_caller",
+          "text": "Callers that calculate capacity independently can apply different cancellation terms."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i013_copy",
+          "text": "Copied move flows can drift on when the old reservation is released."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i013_strategy",
+          "text": "Choose a separate complete room-move workflow for each room, repeating eligibility and reservation steps."
+        },
+        {
+          "optionId": "n06b07_i013_override",
+          "text": "Let each room replace the whole operation, including cancellation checks and reservation order."
+        },
+        {
+          "optionId": "n06b07_i013_caller",
+          "text": "Put room capacity calculation and cancellation branching in every caller."
+        },
+        {
+          "optionId": "n06b07_i013_eligible_room_transfer",
+          "text": "Keep capacity and cancellation checks before reservation transfer; vary only room-specific capacity calculation."
+        },
+        {
+          "optionId": "n06b07_i013_copy",
+          "text": "Copy the move workflow for each room and change its capacity calculation locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a multi-tenant rehearsal scheduler, a room move must satisfy capacity and cancellation terms before the new room is reserved; the old booking is released only after the new reservation succeeds. Rooms calculate capacity differently. How should the design support those room differences?",
+    "questionId": "ood-n06-b07-i013",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i014_maintenance_safety_decision",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "unsafe commands are rejected while maintenance is active",
+      "maintenance state is checked before execution, and the decision is audited whether a command is rejected or allowed"
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Maintenance state is checked before execution, and the decision is audited whether a command is rejected or allowed. The design should accommodate exhibit-specific safety predicate without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "Exhibit-specific criteria determine whether a command is safe; maintenance checking and outcome auditing apply across exhibit types.",
+        "errorCorrection": "Replacing the whole operation for one exhibit can skip the maintenance state or omit the audit outcome.",
+        "boundaryOrTradeoff": "Keep the maintenance and audit steps in the common operation while varying the safety predicate.",
+        "transfer": "For another exhibit type, change its safety criterion without bypassing maintenance checks or outcome audit."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i014_strategy",
+          "text": "Separate exhibit workflows repeat the maintenance and audit steps and may disagree on either."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i014_override",
+          "text": "Replacing the whole operation lets a safety variant bypass maintenance or the audit record."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i014_caller",
+          "text": "Caller-specific predicates can classify the same command differently across entry points."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i014_copy",
+          "text": "Copied command flows can drift on whether rejected and allowed outcomes are audited."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i014_strategy",
+          "text": "Choose a separate complete command workflow for each exhibit, repeating maintenance and audit steps."
+        },
+        {
+          "optionId": "n06b07_i014_override",
+          "text": "Let each exhibit replace the whole operation, including maintenance checks and audit."
+        },
+        {
+          "optionId": "n06b07_i014_maintenance_safety_decision",
+          "text": "Keep maintenance check and audit order fixed; vary only the exhibit-specific safety predicate."
+        },
+        {
+          "optionId": "n06b07_i014_caller",
+          "text": "Put each exhibit safety predicate in every caller before executing a command."
+        },
+        {
+          "optionId": "n06b07_i014_copy",
+          "text": "Copy the command workflow for each exhibit and edit the safety rule locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a museum exhibit controller, maintenance mode blocks commands that the exhibit’s safety rule classifies as unsafe; each command outcome is audited. Exhibit types use different safety criteria. How should the design accommodate those criteria?",
+    "questionId": "ood-n06-b07-i014",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i015_stable_progress_retirement",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "progress refers to a stable lesson identity",
+      "retirement preserves progress under the stable lesson ID while changing availability for new study"
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Retirement preserves progress under the stable lesson ID while changing availability for new study. The design should accommodate progress-record migration without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "Storage migration can differ by progress format; it cannot substitute a new lesson identity or erase linked progress.",
+        "errorCorrection": "A store-specific full retirement workflow can change the lesson ID or drop history for one format.",
+        "boundaryOrTradeoff": "Keep identity and availability transitions common while varying progress migration.",
+        "transfer": "For another progress format, migrate the records without changing the retired lesson’s identity."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i015_strategy",
+          "text": "Separate retirement workflows repeat identity preservation and can leave progress on divergent IDs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i015_override",
+          "text": "Replacing the whole operation may omit history retention or availability change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i015_caller",
+          "text": "Caller-owned migration can attach progress to different lesson identities."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i015_copy",
+          "text": "Copied retirement paths can drift on which old lesson ID owns the history."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i015_strategy",
+          "text": "Choose a separate complete retirement workflow for each storage format, repeating identity and availability changes."
+        },
+        {
+          "optionId": "n06b07_i015_stable_progress_retirement",
+          "text": "Keep stable identity and retirement order fixed; vary only progress-record migration."
+        },
+        {
+          "optionId": "n06b07_i015_override",
+          "text": "Let each format replace the whole operation, including lesson identity and progress retention."
+        },
+        {
+          "optionId": "n06b07_i015_caller",
+          "text": "Put progress migration branches in every caller before retiring a lesson."
+        },
+        {
+          "optionId": "n06b07_i015_copy",
+          "text": "Copy the retirement workflow for each format and edit migration locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a video-learning library, retiring a lesson must keep learner progress attached to the same lesson identity while making the lesson unavailable for new study. Progress stores use different record formats. How should retirement support those formats?",
+    "questionId": "ood-n06-b07-i015",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i016_captured_history_export",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "export observes a stable session state",
+      "the export represents a captured pre-close state even though the board is closed before serialization"
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The export represents a captured pre-close state even though the board is closed before serialization. The design should accommodate history serialization format without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "Serialization varies by format, but every exporter receives the same captured session state rather than reading a closed or later-changing board.",
+        "errorCorrection": "A format-specific whole workflow can close before capturing and lose the state the export is required to represent.",
+        "boundaryOrTradeoff": "Keep capture-before-close common and vary only how the captured history is serialized.",
+        "transfer": "For another format, serialize the captured state after close rather than reading the live board again."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i016_strategy",
+          "text": "Separate export workflows can capture at different times and represent different session states."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i016_override",
+          "text": "Replacing the full operation may close the board before capture, losing the required snapshot."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i016_caller",
+          "text": "Caller-side serialization may read the board after close instead of using the captured state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i016_copy",
+          "text": "Copied export flows can drift on whether capture precedes close."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i016_captured_history_export",
+          "text": "Keep state capture before close and export; vary only history serialization."
+        },
+        {
+          "optionId": "n06b07_i016_strategy",
+          "text": "Choose a separate complete close/export workflow for each format, repeating state capture and close."
+        },
+        {
+          "optionId": "n06b07_i016_override",
+          "text": "Let each export format replace the whole operation, including capture and close order."
+        },
+        {
+          "optionId": "n06b07_i016_caller",
+          "text": "Put history serialization and state capture in every caller."
+        },
+        {
+          "optionId": "n06b07_i016_copy",
+          "text": "Copy the close/export workflow for each format and edit serialization locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a shared whiteboard application, an export must represent the session state captured before the board closes. The host closes the board after capture, and export formats serialize history differently. How should the design support those formats?",
+    "questionId": "ood-n06-b07-i016",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i017_deadline_tier_escalation",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the escalation keeps ownership and response deadlines",
+      "eligibility determines one tier, and ownership transfer and notice use that same tier"
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Eligibility determines one tier, and ownership transfer and notice use that same tier. The design should accommodate support-domain tier eligibility without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "Different domains choose eligible tiers differently, but transfer and notice must agree on one selected tier and deadline.",
+        "errorCorrection": "A separate domain workflow can select one tier for ownership and name another in the notice.",
+        "boundaryOrTradeoff": "Keep the selected-tier result flowing through transfer and notice while varying its eligibility criterion.",
+        "transfer": "For another support domain, preserve the same selected tier in both the owner record and deadline notice."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i017_strategy",
+          "text": "Separate domain workflows can duplicate selection and produce a different tier in the transfer and notice."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i017_override",
+          "text": "Replacing the full operation may change tier selection without updating ownership or deadline notice."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i017_caller",
+          "text": "Caller-side eligibility can give different callers inconsistent tier decisions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i017_copy",
+          "text": "Copied escalation flows can drift on which tier receives the conversation."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i017_strategy",
+          "text": "Choose a separate complete escalation workflow for each domain, repeating tier selection and ownership transfer."
+        },
+        {
+          "optionId": "n06b07_i017_override",
+          "text": "Let each support domain replace the entire operation, including selection, transfer, and notice."
+        },
+        {
+          "optionId": "n06b07_i017_caller",
+          "text": "Put tier-eligibility rules in every caller before escalation."
+        },
+        {
+          "optionId": "n06b07_i017_copy",
+          "text": "Copy the escalation workflow for each domain and change tier selection locally."
+        },
+        {
+          "optionId": "n06b07_i017_deadline_tier_escalation",
+          "text": "Keep tier selection before ownership transfer and notice; vary only tier eligibility."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a customer-support escalation desk, the selected tier must meet the response deadline; the same tier receives ownership and is named in the notice. Support domains use different tier-eligibility rules. How should the design support those rules?",
+    "questionId": "ood-n06-b07-i017",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n06b07_i018_validated_listing_publication",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "a listing cannot become visible before its price and stock rule are valid",
+      "price and stock validation precede visibility, and the published revision identifies the accepted listing"
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Price and stock validation precede visibility, and the published revision identifies the accepted listing. The design should accommodate product-family validation criterion without weakening that outcome.",
+      "details": {
+        "mechanismOrProperty": "A template method keeps the shared operation and its invariant in one algorithm while a bounded step is supplied by a variant. The scenario facts, rather than a pattern label, determine whether that structure fits.",
+        "scenarioApplication": "Product criteria affect validation details, not the requirement that price and stock are valid before the listing becomes visible.",
+        "errorCorrection": "A product-specific full workflow can expose the listing before both required checks pass.",
+        "boundaryOrTradeoff": "Keep validation-before-publication and revision recording common while varying a product-specific criterion.",
+        "transfer": "For another product family, apply its criterion before visibility and record the accepted revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i018_strategy",
+          "text": "Separate product workflows repeat validation and publication and can expose a listing under inconsistent rules."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i018_override",
+          "text": "Replacing the full operation lets a family publish before price or stock is valid."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i018_caller",
+          "text": "Caller-owned validation can make the same product visible under different checks."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i018_copy",
+          "text": "Copied publication flows can diverge on when visibility or revision recording occurs."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i018_strategy",
+          "text": "Choose a separate complete publication workflow for each product, repeating validation and revision recording."
+        },
+        {
+          "optionId": "n06b07_i018_override",
+          "text": "Let each product family replace the whole operation, including validation and visibility."
+        },
+        {
+          "optionId": "n06b07_i018_caller",
+          "text": "Put product-specific validation in every caller before publishing a listing."
+        },
+        {
+          "optionId": "n06b07_i018_validated_listing_publication",
+          "text": "Keep price/stock validation before visibility; vary only product-specific validation."
+        },
+        {
+          "optionId": "n06b07_i018_copy",
+          "text": "Copy the publication workflow for each product and edit its validation locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a regional produce marketplace, a listing becomes visible only after its price and stock rules are valid. Product families use different validation criteria, and each publication records a revision. How should the design support those product differences?",
+    "questionId": "ood-n06-b07-i018",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

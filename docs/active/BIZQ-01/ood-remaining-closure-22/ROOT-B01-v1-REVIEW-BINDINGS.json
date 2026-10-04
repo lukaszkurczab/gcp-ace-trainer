@@ -1,0 +1,13 @@
+{
+  "result": "PASS",
+  "scope": "Actual exact review-to-frozen-input bindings; semantic acceptance remains scoped to B01 proposal and final cross-unit review pending",
+  "questionCount": 18,
+  "proposalSha256": "259cc143512849ffc408879253d4ee622494938a9b8172ee9b59917d1ce890eb",
+  "manifestSha256": "be9cb40617caaaa8e18a41d06039c5bab3bc56eeb911b273bf21c7523569c5c3",
+  "reviewFiles": {
+    "SEMANTIC-N06-B01-v1.md": "66e9ad1c52080be9ebfc6e69fcf083ac81609477f7bdd2f4b836b5619d4ec6b0",
+    "SEMANTIC-N06-B01-v1.json": "9a0d7c3c643ece188b7c79789d794e2ac187360fa77ebdc422dc575e4a4b1fdf",
+    "SEMANTIC-N06-B01-v1-IDENTITY-CLARIFICATION.md": "29fa4b2b07ae4ab27d39c9a571e94972be68680b3158324d5b37db90bec9e094",
+    "SEMANTIC-N06-B01-v1-IDENTITY-CLARIFICATION.json": "843337d132e94e54ad20582dd24197effd5991f66f029c13fa905ac556c7e5cd"
+  }
+}

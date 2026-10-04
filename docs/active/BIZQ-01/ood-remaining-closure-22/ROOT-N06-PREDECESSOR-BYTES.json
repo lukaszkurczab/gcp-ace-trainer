@@ -1,0 +1,67 @@
+{
+  "result": "PASS",
+  "scope": "Existing v21 source and fixed private predecessor serialization only; no new-map, semantic or producer-design acceptance",
+  "manifestSha256": "be9cb40617caaaa8e18a41d06039c5bab3bc56eeb911b273bf21c7523569c5c3",
+  "files": [
+    {
+      "sourcePath": "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B01.json",
+      "sha256": "3f3fdf9bb4263c4a5e402008b0aa66f940cd132aa18724a316f50b18824d45dd",
+      "questionCount": 18,
+      "serialization": "questionId lexical order; JSON.stringify; no trailing newline"
+    },
+    {
+      "sourcePath": "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B02.json",
+      "sha256": "9201e8880000b15c65b02dde6998ce1917058fd83c2d9a31461635e4e604587d",
+      "questionCount": 18,
+      "serialization": "questionId lexical order; JSON.stringify; no trailing newline"
+    },
+    {
+      "sourcePath": "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B03.json",
+      "sha256": "315f5d83438f3284e78eade108993bcbdce1c7f10a721a1119fef7901b0b3407",
+      "questionCount": 18,
+      "serialization": "questionId lexical order; JSON.stringify; no trailing newline"
+    },
+    {
+      "sourcePath": "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B04.json",
+      "sha256": "cb71a1a07e4db211e6ea65fd7dcff68cfc66d7c1c72624386b020b3b8d569ddb",
+      "questionCount": 18,
+      "serialization": "questionId lexical order; JSON.stringify; no trailing newline"
+    },
+    {
+      "sourcePath": "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B05.json",
+      "sha256": "4a0aee5f70dcb85568eb4285ef60779c696fe7d8d5391a72f731d199902b35a5",
+      "questionCount": 18,
+      "serialization": "questionId lexical order; JSON.stringify; no trailing newline"
+    },
+    {
+      "sourcePath": "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B06.json",
+      "sha256": "c059c30bbd366cf6cb75eba815533de9706e62679c05f62608d4260647e0ed3f",
+      "questionCount": 18,
+      "serialization": "questionId lexical order; JSON.stringify; no trailing newline"
+    },
+    {
+      "sourcePath": "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B07.json",
+      "sha256": "5b9c728b937ccfec9985afb755f0aadcfdd7cc53920c749060f0d1e0b583dbe3",
+      "questionCount": 18,
+      "serialization": "questionId lexical order; JSON.stringify; no trailing newline"
+    },
+    {
+      "sourcePath": "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B08.json",
+      "sha256": "210561c412df23a7326b4077b59db688a734c042a4052968e18aae8e8b730497",
+      "questionCount": 18,
+      "serialization": "questionId lexical order; JSON.stringify; no trailing newline"
+    },
+    {
+      "sourcePath": "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B09.json",
+      "sha256": "31a6050f8b90a7b3220bd4e1e055a91962c4188663bab3b7d180d61bf8539d83",
+      "questionCount": 18,
+      "serialization": "questionId lexical order; JSON.stringify; no trailing newline"
+    },
+    {
+      "sourcePath": "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B10.json",
+      "sha256": "d2ab6a0c9d9e69ab95ebf6c0d366c3b5b8d2d6b310a23f92c24151b2a9f27750",
+      "questionCount": 18,
+      "serialization": "questionId lexical order; JSON.stringify; no trailing newline"
+    }
+  ]
+}

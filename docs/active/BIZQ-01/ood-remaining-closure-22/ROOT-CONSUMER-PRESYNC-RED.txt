@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: OOD22 producer proof binds the frozen 180-item same-ID map and exact source files
+ok 1 - OOD22 producer proof binds the frozen 180-item same-ID map and exact source files
+  ---
+  duration_ms: 55.443125
+  type: 'test'
+  ...
+# Subtest: OOD22 loaded runtime matches every fixed same-ID question object
+not ok 2 - OOD22 loaded runtime matches every fixed same-ID question object
+  ---
+  duration_ms: 806.460666
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/content/bizq01OodNodeClosure22.test.ts:2:7450'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'object-oriented-design-interview-authoring-v2026.10.04-bizq01-21'
+    - 'object-oriented-design-interview-authoring-v2026.10.04-bizq01-22'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'object-oriented-design-interview-authoring-v2026.10.04-bizq01-22'
+  actual: 'object-oriented-design-interview-authoring-v2026.10.04-bizq01-21'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/src/content/bizq01OodNodeClosure22.test.ts:162:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: OOD22 scoring, option-order reversal, feedback targets and pre-answer view use fixed IDs
+ok 3 - OOD22 scoring, option-order reversal, feedback targets and pre-answer view use fixed IDs
+  ---
+  duration_ms: 26.853667
+  type: 'test'
+  ...
+# Subtest: OOD22 preserves accepted N01-N05 node counts and the exact ordinary N01 pools
+ok 4 - OOD22 preserves accepted N01-N05 node counts and the exact ordinary N01 pools
+  ---
+  duration_ms: 13.612375
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1992.541958

@@ -1,0 +1,180 @@
+{
+  "verdict": "REVISE",
+  "scope": "Independent whole-object semantic/identity review of frozen N06-B06 v2 only; no source/producer/consumer/admission/native/full-N06/full-BIZQ acceptance.",
+  "proposalPath": "review-inputs/N06-B06-v2.json",
+  "proposalSha256": "cd965a76a2c2a98d05def9e738a2ecc8470f8d1a0bdb28e72dd713fef827d2ae",
+  "authorNotesPath": "review-inputs/AUTHOR-NOTES-N06-B06-v2.json",
+  "authorNotesSha256": "991c9ed7d9e0483a1d43aeaa016eac731aa54e1eb1dcf86b990b2d8a694f650b",
+  "manifestSha256": "be9cb40617caaaa8e18a41d06039c5bab3bc56eeb911b273bf21c7523569c5c3",
+  "contractSha256": "c6b5612e21fb66a540eba31514510df49b302f8f1089cf474f2ac5880b4205fb",
+  "specPath": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+  "specSha256": "67aba008969eb570c86e1fbefc5b88a5e65f422d160fc7dcfd38084b59ff67d5",
+  "method": "Read all 18 full frozen objects and matched baseline whole objects. Fingerprints are SHA-256 of compact UTF-8 JSON preserving object insertion order (ensure_ascii=False, separators=(",
+  ", ": ")).",
+  "itemsReviewed": 18,
+  "identityActions": {
+    "preserve_question_id": 18,
+    "new_question_id": 0
+  },
+  "summaryFindings": [
+    {
+      "criterion": "BIZQ-01 §4.2 meaningful learner decision",
+      "finding": "The stems in i001, i003-i010, and i012-i018 specify the core ordered-handler/pass/accept/first-owner workflow that the keyed answer repeats. This is answer disclosure by the scenario, even without naming Chain of Responsibility; the learner mostly matches the stated algorithm to its paraphrase."
+    },
+    {
+      "criterion": "BIZQ-01 §4.1 unique answer grounded in visible facts",
+      "finding": "i002 requires a complete snapshot for a supported immutable input/code pair but specifies no backend precedence; i011 allows a complete export from a stable snapshot but specifies neither target format nor precedence. The keyed first-in-order selection is valid but not selected by the facts."
+    },
+    {
+      "criterion": "BIZQ-01 §4.3 and §4.4 current answer/feedback alignment",
+      "finding": "The v2 choices and diagnostics are now distinct and generally align to their current scenarios. i014 correctly teaches passing only the unfilled remainder with preserved request identity and promise. No numeric option-length threshold is applied."
+    }
+  ],
+  "identityFinding": "Preserve the 18 question IDs: the accepted objective remains Chain of Responsibility/ordered handling and the accepted owner_preserves_contract key still denotes ordered handlers with a clear stop rule. The corrections required are prompt quality and visible selection facts, not a new primary decision. Current distractor IDs distinguish their meanings.",
+  "items": [
+    {
+      "questionId": "ood-n06-b06-i001",
+      "beforeWholeObjectSha256": "aad18d9cb7eb5c629338a3095ec197af6495b9074984cd842f0585116f4db04b",
+      "currentWholeObjectSha256": "3222df685ae0542cba5c055b963e4cbe41878fccd87ceec0bd3c93dbdc2242ca",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i002",
+      "beforeWholeObjectSha256": "e9885245189399f202a25b0d8c8266535fa70651f565a13c172b2ad61a084169",
+      "currentWholeObjectSha256": "27dc8c1e9f7efb525ae2da9b7ee79124db6e638435fc0d1581f7b358e74f3035",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts. The stem also lacks a backend precedence rule, so first-in-order is not uniquely justified."
+    },
+    {
+      "questionId": "ood-n06-b06-i003",
+      "beforeWholeObjectSha256": "c902e0477258685280f5d5d2a8494fab34886903a74f921e55ef32db08f3158d",
+      "currentWholeObjectSha256": "1b9c87aaec6caae0e0e12ec7be31811b9ad9c2a42fe40eca277db0eeab672145",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i004",
+      "beforeWholeObjectSha256": "0ff38c0549b8b58d006d865475ee73860d782bc35b2668f308c8fa2165c9a877",
+      "currentWholeObjectSha256": "fc96e3e3188220ed115ba652f3ae2f9cb2da816b69147744e3ccab40ffa8145b",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i005",
+      "beforeWholeObjectSha256": "391146c8cfb0ade754e7d2b16d1717c7514565641f466a648da55a53462e2673",
+      "currentWholeObjectSha256": "66992bd337125e50b529cb7aefa7d49d03460430bb4d2288381707f111ad3168",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i006",
+      "beforeWholeObjectSha256": "3bfce86133ef64f66e373e2e12a454440193f5c3934d0d2fe450c9acc77f741f",
+      "currentWholeObjectSha256": "a9071f1411d25147c619a76a6d12993950566e20968b8389bdaf444aafa24d0b",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i007",
+      "beforeWholeObjectSha256": "fa06bbaa623e2f030c719e125fc054cb046431bdf0d3f60e7238accc107b2b64",
+      "currentWholeObjectSha256": "b9c76584971a4b3d335a8722850743e549370686e510d1014de90a8822e5bb38",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i008",
+      "beforeWholeObjectSha256": "216250b837e768c7c5727f5924004d719bfd2338d20e5f4c646bfe782f027449",
+      "currentWholeObjectSha256": "44e57666c130187e8ebdfd64ebbb02351f19d0a0e4cde8358794598991303ed7",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i009",
+      "beforeWholeObjectSha256": "b6af499eeb5f6140d6724f27ee43d3c09855842393ba042d233265375790b4ef",
+      "currentWholeObjectSha256": "1ec7105f30cb92f1974103a8803aead638c328c83a3bf22c693ea0379f6eb6a5",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i010",
+      "beforeWholeObjectSha256": "967ba262de9447ad3d4b2e5d419979de4c292ba296c84677c0d6c112948f21a3",
+      "currentWholeObjectSha256": "1205d306138a33ae82e3f24701f392c17bf083ae74b93216b4fa79790118eaf1",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i011",
+      "beforeWholeObjectSha256": "c2059886e5c57f255dd56d051c6eefe2976895fecaf8ce662fc24b03d237d6b8",
+      "currentWholeObjectSha256": "d735d03793c9c884fc93cf8933122ea4fedb2967b1a2ce14bc3e322cf783d2e8",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts. The stem also lacks a target export format or precedence rule, so first-in-order is not uniquely justified."
+    },
+    {
+      "questionId": "ood-n06-b06-i012",
+      "beforeWholeObjectSha256": "01ba27493210001fe1ede91b60e56559fef80c3b868ea50d06f17ac4821b3c93",
+      "currentWholeObjectSha256": "b0834c732bff86568ac1b9f3e9d2a66fea2cc2feb3cf4f809ffb69aae166927f",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i013",
+      "beforeWholeObjectSha256": "b1ae8ecaaf131ad2654522460bf0639ebad8a8e89be9ea8aa3c1247bf42595c8",
+      "currentWholeObjectSha256": "13de5e995c72cfe2a95258aeff976efae2ed0b2a98ae8d78f65c65d10ac92752",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i014",
+      "beforeWholeObjectSha256": "c97e1db71ea6cf91fdcdcc5864ad608446b53a24e87eac0aff03ce132c8906b4",
+      "currentWholeObjectSha256": "49a24f81f41b5b4071db93580428d5052901df80ccf7f210431972ced9d76cb0",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i015",
+      "beforeWholeObjectSha256": "f0a0933211717a9f0e131961e02bace14b02b4077a2ffaf5e2d597ae4946572e",
+      "currentWholeObjectSha256": "8236c61acf7d7bd34a03167efb1e091a71bab057ab5d035be47885cdd1480195",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i016",
+      "beforeWholeObjectSha256": "8102af062bf9df209cd93ddc1b887f27dad1d6188d562824ae07897dbce5c451",
+      "currentWholeObjectSha256": "82008e3c02c206033a8baa5f2240ec1217bc5572d45186fbba735267e64b7abf",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i017",
+      "beforeWholeObjectSha256": "8b6ac83668beb40801f44d96ddd14b04234b3fc648c18011053600f40ea48b6d",
+      "currentWholeObjectSha256": "ab78c346a09b2a3f8b5be68e9d0f3dc0c55b89f3b36475aebebea20aee20819f",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i018",
+      "beforeWholeObjectSha256": "dbcfab9509bc946b4ca219e257afe5f994f7c4b4fa83c293992992db80c07e70",
+      "currentWholeObjectSha256": "38c0e61040f2c3d720adcd37ef168eed2cc5d8033caef0a7e0bcf1ccc4bf099a",
+      "questionIdentityAction": "preserve_question_id",
+      "verdict": "REVISE",
+      "finding": "The prompt supplies the ordered-handler/pass/accept/first-owner mechanism that the keyed option repeats; reduce this answer disclosure while retaining the scenario outcome facts."
+    }
+  ]
+}

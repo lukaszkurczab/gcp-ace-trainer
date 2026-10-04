@@ -1,0 +1,5 @@
+{
+  "result": "PASS",
+  "scope": "Actual existing app canonicalSerialize and producer canonicalJson agree for all1413 current v21 artifact questions; supports current-QSet consumer assertion, no v22 sync acceptance",
+  "questionSetSha256": "6d19a75e8eae86869b3ce31b63ad57a6be13fc30532c22e993db6fbc3d0d4d12"
+}

@@ -1,0 +1,260 @@
+{
+  "schemaVersion": "patternly-bizq01-n06-independent-semantic-review-v1",
+  "unit": "OOD-N06-B09",
+  "verdict": "REVISE",
+  "proposal": {
+    "path": "review-inputs/N06-B09-v1.json",
+    "sha256": "1418a98fc46496a70f680214422f1bfea50e043663de73791ce392e26b61ea61"
+  },
+  "criteria": {
+    "specPath": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sections": [
+      "4.1",
+      "4.2",
+      "4.3",
+      "4.4",
+      "5B",
+      "5C"
+    ],
+    "rule": "Options should be comparable in concreteness and remove a systematic longest-is-correct cue; no equal-word-count threshold. Existing correct option IDs may be retained only when the answer meaning is preserved."
+  },
+  "findings": [
+    {
+      "id": "N06-B09-OPTION-COMPARABILITY",
+      "severity": "blocking",
+      "questionIds": [
+        "ood-n06-b09-i001",
+        "ood-n06-b09-i002",
+        "ood-n06-b09-i003",
+        "ood-n06-b09-i004",
+        "ood-n06-b09-i005",
+        "ood-n06-b09-i006",
+        "ood-n06-b09-i007",
+        "ood-n06-b09-i008",
+        "ood-n06-b09-i009",
+        "ood-n06-b09-i010",
+        "ood-n06-b09-i011",
+        "ood-n06-b09-i012",
+        "ood-n06-b09-i013",
+        "ood-n06-b09-i014",
+        "ood-n06-b09-i015",
+        "ood-n06-b09-i016",
+        "ood-n06-b09-i017",
+        "ood-n06-b09-i018"
+      ],
+      "evidence": "The frozen console receipt flags the correct option as the sole longest in all 18 questions. Whole-option review confirms that each key is a complete multi-clause implementation recipe, while distractors repeatedly use four shorter stock models: publish before validation, delegate the invariant to a consumer, wait for every projection, or broadcast a write command. In several stems the key's owner/validation boundary is already made explicit, so the answer-shape cue can substitute for selecting the event contract.",
+      "requiredCorrection": "Revise the affected choice sets coherently with complete, credible competing event contracts and comparable concreteness. Distinguish the wrong models by their actual mistaken boundary or consequence. Avoid filler and equal-length rules; retain IDs where meaning is unchanged."
+    }
+  ],
+  "identityReview": {
+    "questionIds": "preserve all 18: old and current keyed decisions remain domain-event boundary decisions, with the synchronous invariant owned by the state-changing operation and downstream effects handled by an event",
+    "correctOptionIds": "preserve owner_preserves_contract for all 18: predecessor and current keyed texts express the same response meaning; the new text instantiates that rule for the visible scenario rather than changing the decision",
+    "wrongOptionIds": "current case-specific distractor IDs are distinct and target-specific feedback matches them"
+  },
+  "itemDispositions": [
+    {
+      "questionId": "ood-n06-b09-i001",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i002",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i003",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i004",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i005",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i006",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i007",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i008",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i009",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i010",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i011",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i012",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i013",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i014",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i015",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i016",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i017",
+      "decision": "same-meaning; revise-cohort-options"
+    },
+    {
+      "questionId": "ood-n06-b09-i018",
+      "decision": "same-meaning; revise-cohort-options"
+    }
+  ],
+  "limitations": [
+    "Proposal-only semantic review; no source activation, runtime, producer, consumer, admission, native, or full-BIZQ acceptance is claimed.",
+    "No delivery durability, exactly-once, or distributed transaction guarantee is inferred."
+  ],
+  "wholeObjectBindings": [
+    {
+      "questionId": "ood-n06-b09-i001",
+      "beforeSha256": "ca121ddba979be4dbc00cfb350d52fbdc4cb886e23cf30e9417a60cbfe7ac37b",
+      "proposedSha256": "0f8d6f91afe84968a95cb8b3076352fdabdccf1ee160cfeab624bd1ce00f0fa6",
+      "currentSourceSha256": "ca121ddba979be4dbc00cfb350d52fbdc4cb886e23cf30e9417a60cbfe7ac37b",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i002",
+      "beforeSha256": "22631cdb6e142f18ca495b92a3db6434ba6759ef0afb87636cd2e4ea33a2a2f1",
+      "proposedSha256": "e09937b036170a299d435d4099991db23cd021646b88bb0bd9f1fbd8f9a6997a",
+      "currentSourceSha256": "22631cdb6e142f18ca495b92a3db6434ba6759ef0afb87636cd2e4ea33a2a2f1",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i003",
+      "beforeSha256": "85868b0be93b584606940537c8c104cccdd1a74e022c3c7f02520db6dca0f070",
+      "proposedSha256": "775227fcd049c952958e70f4bbc50c95967bb6a75a0580928185d08793b703fd",
+      "currentSourceSha256": "85868b0be93b584606940537c8c104cccdd1a74e022c3c7f02520db6dca0f070",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i004",
+      "beforeSha256": "4a0a0c38066305b8b086d32ba352ae48f3f8cbce2b276062a85b21a61763cb63",
+      "proposedSha256": "7e8c73fb82e0a042151d88dc2a59d8ad8a198584df80cf924534e4c3549337f8",
+      "currentSourceSha256": "4a0a0c38066305b8b086d32ba352ae48f3f8cbce2b276062a85b21a61763cb63",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i005",
+      "beforeSha256": "668165502911d6cc1724389016a21cad7d99904cbe42c4ca7e64fc4657507ea7",
+      "proposedSha256": "bf9711bb0f008f7372f46b6b937ad0126d0e229cee87365f899d066f32da6642",
+      "currentSourceSha256": "668165502911d6cc1724389016a21cad7d99904cbe42c4ca7e64fc4657507ea7",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i006",
+      "beforeSha256": "1fd53b013cde5f57a2571f706a3646dc39af4137ef9a7310e14d71d766603655",
+      "proposedSha256": "f16e4f382b3705bbd17e0fef0659c6cf5963931e17f489675b468561e0981db2",
+      "currentSourceSha256": "1fd53b013cde5f57a2571f706a3646dc39af4137ef9a7310e14d71d766603655",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i007",
+      "beforeSha256": "670d634b5db9486a06842dbf58deba64ffe9af4663434d47f2423b801a0b2f93",
+      "proposedSha256": "7f82e914972f7951887df174131fd738b141e1333d74f70a3eac08667c6384a4",
+      "currentSourceSha256": "670d634b5db9486a06842dbf58deba64ffe9af4663434d47f2423b801a0b2f93",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i008",
+      "beforeSha256": "651840c01bfccbc214aa8c8835f8a2be4951213fdc71f879215df9233b2cc3a5",
+      "proposedSha256": "49d76e7b953c04ee824ec6cb212dea3cf639de8de3e9d10fc49cd4fd1b2b52d6",
+      "currentSourceSha256": "651840c01bfccbc214aa8c8835f8a2be4951213fdc71f879215df9233b2cc3a5",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i009",
+      "beforeSha256": "35d0d62d7059c9fb683697ada45ec2b6ced08c1fe4ea3eae523194a1bdd027fb",
+      "proposedSha256": "2235f73a26f192e757f2f4ce2336c0796461b8adc4b4cb7fa40ca1672fd71951",
+      "currentSourceSha256": "35d0d62d7059c9fb683697ada45ec2b6ced08c1fe4ea3eae523194a1bdd027fb",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i010",
+      "beforeSha256": "99792fb09513efc9571478362f81390c7c969a4e42b18e74473ae64aa07aa66e",
+      "proposedSha256": "099b8f4426b3be8cf714f15bce1d0bdfc9f0d9c6da6e51bc7e2cbf72667cfb10",
+      "currentSourceSha256": "99792fb09513efc9571478362f81390c7c969a4e42b18e74473ae64aa07aa66e",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i011",
+      "beforeSha256": "88c36e9bcac6d3456c19fd7e135d93488471b4b88fadc4d37e43b670eba68b27",
+      "proposedSha256": "4680fa58e8b3bb3f0b43b83b45ff2e45c62c9a65861d2940e4046bf15872bbf3",
+      "currentSourceSha256": "88c36e9bcac6d3456c19fd7e135d93488471b4b88fadc4d37e43b670eba68b27",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i012",
+      "beforeSha256": "c00a0ceebdd7d5b1e83183782c1339bfb958f7d5567071d4f5ae8c0518c27447",
+      "proposedSha256": "ce30ee7dbf8763f2c182c5c89565fd7bf376c89447bfb4c10fae65a5ce72f807",
+      "currentSourceSha256": "c00a0ceebdd7d5b1e83183782c1339bfb958f7d5567071d4f5ae8c0518c27447",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i013",
+      "beforeSha256": "0f533c4d17c9282de87db6bdb7b5a76e9d25cec2c4eb403a1d6cca989a7e85ae",
+      "proposedSha256": "ae7f4de7cae73bd1c5fff22a8816ff06d96938b34ff61b9d83d04fc3aa84e270",
+      "currentSourceSha256": "0f533c4d17c9282de87db6bdb7b5a76e9d25cec2c4eb403a1d6cca989a7e85ae",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i014",
+      "beforeSha256": "09fa6ecd5571fdd45f66f947e4a635ea4de6e8320a2b9f4ae0a10da31624a8fc",
+      "proposedSha256": "0b1bf5bac6548b39b0226c8589679b702c7fb8003884c8dbf60a3d5b7f39b8be",
+      "currentSourceSha256": "09fa6ecd5571fdd45f66f947e4a635ea4de6e8320a2b9f4ae0a10da31624a8fc",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i015",
+      "beforeSha256": "b08eaab9c3788f2e466553d4fc894800b9d3e79a4729fd4e26924fdddbff3741",
+      "proposedSha256": "2998cafdf22de3a276cab04ca03399e90893f246240f6c175421a7b031b59b6f",
+      "currentSourceSha256": "b08eaab9c3788f2e466553d4fc894800b9d3e79a4729fd4e26924fdddbff3741",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i016",
+      "beforeSha256": "056e79602bff7157bc4d7ac2a13c6891767885f4efd4ed29700c23b8e63c1b68",
+      "proposedSha256": "c0f42a1ee524a012db8b0b80f4750221c0b844010a949984c731e89adeeec3aa",
+      "currentSourceSha256": "056e79602bff7157bc4d7ac2a13c6891767885f4efd4ed29700c23b8e63c1b68",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i017",
+      "beforeSha256": "4467d25b09cca9584efc1b9d6e12923304150bdfb2d211da976f415f12a78c89",
+      "proposedSha256": "48e9db5eaaae4bbafb80eec6df2c4476b76fcd7bbc4bac78d8bd9302368e3047",
+      "currentSourceSha256": "4467d25b09cca9584efc1b9d6e12923304150bdfb2d211da976f415f12a78c89",
+      "answerOptionId": "owner_preserves_contract"
+    },
+    {
+      "questionId": "ood-n06-b09-i018",
+      "beforeSha256": "8b26b3143600a11ee85cb72c4bbab0f0dc468fc3850b5f73fec329bc67ed52c4",
+      "proposedSha256": "8c34c93b543f8227578a859174740660c414942f2666cf3209ca0f01a62095b0",
+      "currentSourceSha256": "8b26b3143600a11ee85cb72c4bbab0f0dc468fc3850b5f73fec329bc67ed52c4",
+      "answerOptionId": "owner_preserves_contract"
+    }
+  ]
+}

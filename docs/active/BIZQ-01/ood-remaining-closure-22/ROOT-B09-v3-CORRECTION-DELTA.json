@@ -1,0 +1,13 @@
+{
+  "result": "PASS",
+  "scope": "Exact one Details field correction only; semantic rereview pending",
+  "beforeFrozenInput": "review-inputs/N06-B09-v2.json",
+  "beforeSha256": "6cdbac47db537da135533c8cbaba250bc9b7d0b2e52fee1ed03c864f5a245d16",
+  "afterProposalSha256": "ed9c57ba6289e07441455deaabb6526d35277ca7fcfb0ac4ae2cb93cda38efbe",
+  "questionId": "ood-n06-b09-i001",
+  "onlyChangedField": "feedback.details.errorCorrection",
+  "before": "The tempting event-before-validation option publishes “completed” while the score may still fail. That would let a consumer award a badge for a result the completion owner rejected.",
+  "after": "Publishing ExerciseAttempted delegates score validation and completion awarding to subscribers before the completion owner has accepted the version-bound result. An attempt event does not establish a valid completion.",
+  "unchangedWholeObjects": 17,
+  "unchangedInteractionAndAnswerAll18": true
+}

@@ -1,0 +1,1190 @@
+[
+  {
+    "questionId": "ood-n06-b04-i001",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A whiteboard session closes after its final revision is committed. Independent export and search modules need to react to closure, and the exporter must observe the committed session snapshot. The host must not call either module directly. How should closure reach them?",
+    "difficulty": "foundational",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i001_policy",
+          "text": "Publish a closure notification after committing the final session snapshot, and let the export and search modules subscribe independently."
+        },
+        {
+          "optionId": "n06_b04_i001_alt1",
+          "text": "Have the session host call export and search methods before committing the final revision."
+        },
+        {
+          "optionId": "n06_b04_i001_alt2",
+          "text": "Give the exporter references to the search module and every future closure consumer."
+        },
+        {
+          "optionId": "n06_b04_i001_alt3",
+          "text": "Let each consumer poll the session forever and infer closure from an empty board."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i001_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The host must publish one committed fact without knowing which independent modules react. Subscribers can observe the closure after the stable snapshot exists, avoiding both pre-commit reads and direct host-to-consumer dependencies.",
+      "details": {
+        "mechanismOrProperty": "Observer-style notification lets a subject publish a change to registered consumers without calling each consumer's domain operation by name. The event boundary can occur after the scenario's commit point.",
+        "scenarioApplication": "The session emits closure with its committed revision; export and search each react using their own responsibilities.",
+        "errorCorrection": "Calling consumers before commit is the closest direct design, but it exposes a snapshot the prompt says is not stable yet.",
+        "boundaryOrTradeoff": "The pattern does not itself guarantee durable delivery or notification order; the scenario only requires independent reaction after the commit point.",
+        "transfer": "Publish a committed fact to independent consumers when the subject must not own or name their follow-up work."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i001_alt1",
+          "text": "The consumers would observe a session that is not yet committed, contrary to the snapshot requirement, and the host would own their calls."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i001_alt2",
+          "text": "That creates direct coupling among consumers and requires the exporter to change when another independent module subscribes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i001_alt3",
+          "text": "An empty board is not the stated closure event and polling does not distinguish the committed final snapshot from an ordinary empty session."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i002",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A support escalation changes conversation owner and response deadline together. The service-level monitor and the agent's worklist are maintained by different teams; each must update from the same accepted escalation, and neither may call the other. What should notify them?",
+    "difficulty": "foundational_boundary",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i002_policy",
+          "text": "Notify both subscribers with one accepted escalation fact containing the new owner and deadline; keep their update implementations independent."
+        },
+        {
+          "optionId": "n06_b04_i002_alt1",
+          "text": "Let the worklist call the service-level monitor after changing its own copy of the escalation."
+        },
+        {
+          "optionId": "n06_b04_i002_alt2",
+          "text": "Add monitor-specific and worklist-specific branches to the escalation service and update it whenever a consumer changes."
+        },
+        {
+          "optionId": "n06_b04_i002_alt3",
+          "text": "Send only the new owner and have each subscriber infer the corresponding response deadline independently."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i002_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Ownership and deadline form one accepted escalation fact, while the monitor and worklist have separate owners. Publishing both values lets each react without one team calling or deriving another's state.",
+      "details": {
+        "mechanismOrProperty": "A subject can notify multiple subscribers with the relevant change data. The subscribers implement their own reactions while depending on the published contract rather than each other.",
+        "scenarioApplication": "The service notifies both consumers of the owner/deadline pair after accepting the escalation, and each updates its own projection.",
+        "errorCorrection": "Having the worklist update the monitor is plausible as a chain, but it couples independent teams and makes one consumer the dispatcher for another.",
+        "boundaryOrTradeoff": "The notification establishes the accepted facts; it does not promise that two separate systems commit their updates atomically.",
+        "transfer": "Publish one coherent domain change to independent consumers instead of making one subscriber coordinate the others."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i002_alt1",
+          "text": "That makes one consumer responsible for another team's update and can leave the two views based on different accepted changes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i002_alt2",
+          "text": "The service would have to know the concrete consumers, defeating the separate ownership described in the prompt."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i002_alt3",
+          "text": "The deadline is part of the same accepted change; independently deriving it can produce inconsistent escalation facts."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i003",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A produce listing becomes visible only after its price and stock rule have both passed validation. Search and seller dashboards need to react to publication, but must never observe a half-configured listing. Where should the notification occur?",
+    "difficulty": "intermediate",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i003_policy",
+          "text": "Notify search and seller-dashboard subscribers after both validations pass and the listing is published as one valid change."
+        },
+        {
+          "optionId": "n06_b04_i003_alt1",
+          "text": "Notify search when price is entered and notify the dashboard when stock is entered, before the other rule is checked."
+        },
+        {
+          "optionId": "n06_b04_i003_alt2",
+          "text": "Let search call the seller dashboard after indexing and ask it to determine whether the listing is valid."
+        },
+        {
+          "optionId": "n06_b04_i003_alt3",
+          "text": "Publish immediately and send a correction notification if price or stock validation later fails."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i003_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Publication is the first point at which the listing has both valid price and stock rules. Notifying before that point exposes partial data; a single post-validation change gives both subscribers the same valid fact.",
+      "details": {
+        "mechanismOrProperty": "Notifications communicate a subject's change to consumers. Choosing the publication boundary ensures the event describes an accepted state rather than an intermediate edit.",
+        "scenarioApplication": "After validation succeeds, the marketplace publishes and notifies search and seller views; failed validation produces no visible publication event.",
+        "errorCorrection": "Per-field updates seem responsive, but they notify different consumers before the complete validity condition is known.",
+        "boundaryOrTradeoff": "The notification does not guarantee search indexing or dashboard update completion; it communicates the valid publication to their owners.",
+        "transfer": "Emit a domain change only at the point when its stated invariants hold, not while its required parts are still being assembled."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i003_alt1",
+          "text": "Each consumer could observe a listing that has only one validated field, although visibility requires both validations."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i003_alt2",
+          "text": "Search is not the owner of seller validation, and the listing may already have been exposed before the dashboard checks it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i003_alt3",
+          "text": "A later correction cannot undo the initial exposure of a listing the prompt says must not become visible before validation."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i004",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A fulfillment specialist splits a backordered parts request across vendors. Inventory, vendor communication, and customer-status views are owned separately; all three must react to the accepted split while retaining the original request identity and delivery promise. How should they learn of it?",
+    "difficulty": "intermediate_transfer",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i004_policy",
+          "text": "Publish the accepted split with the original request ID and delivery promise to the inventory, vendor, and customer-status subscribers."
+        },
+        {
+          "optionId": "n06_b04_i004_alt1",
+          "text": "Create three separate split operations, each with a new request ID and its own delivery estimate."
+        },
+        {
+          "optionId": "n06_b04_i004_alt2",
+          "text": "Have the inventory service call vendor communications and then customer status in sequence."
+        },
+        {
+          "optionId": "n06_b04_i004_alt3",
+          "text": "Publish only the vendor list and let each subscriber reconstruct the original request and promise from current data."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i004_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The split becomes one accepted change that three separate owners must interpret consistently. Publishing its stable identity and promise avoids making inventory or vendors coordinate the other consumers.",
+      "details": {
+        "mechanismOrProperty": "A notification carries the relevant change facts to registered consumers. Each subscriber can update its own responsibility without needing a direct reference to its peers.",
+        "scenarioApplication": "All three subscribers receive the same request identity, vendor split, and delivery promise and perform only their own follow-up.",
+        "errorCorrection": "A chained call sequence is the closest alternative, but it gives inventory responsibility for unrelated vendor and customer views.",
+        "boundaryOrTradeoff": "The event fan-out does not guarantee all external systems finish together; no cross-system atomicity is stated.",
+        "transfer": "When one accepted change has several independent reactions, publish the shared facts once and let each owner handle its own reaction."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i004_alt1",
+          "text": "That breaks the original request identity and delivery promise that must travel with every split."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i004_alt2",
+          "text": "This makes inventory own two independent consumers and couples their changes to its own implementation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i004_alt3",
+          "text": "The event omits two facts the scenario requires all consumers to retain, so each may derive a different value."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i005",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A garden reservation transfers only after the plot steward approves it. The prior and new reserver, plot boundary, and approval history must be visible to the allocation board and audit view; neither view owns the reservation decision. What should carry the accepted transfer?",
+    "difficulty": "advanced_tradeoff",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i005_policy",
+          "text": "After approval, notify both views with the old and new reserver, unchanged plot boundary, and approval record; keep the reservation as decision owner."
+        },
+        {
+          "optionId": "n06_b04_i005_alt1",
+          "text": "Let the allocation board change the reserver first and ask the steward to approve it afterward."
+        },
+        {
+          "optionId": "n06_b04_i005_alt2",
+          "text": "Have the audit view infer the previous reserver from the current reservation after the board updates it."
+        },
+        {
+          "optionId": "n06_b04_i005_alt3",
+          "text": "Create a replacement plot reservation for the new person and omit the original approval history."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i005_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The reservation owns approval; the allocation and audit views only react. Publishing the accepted before/after facts lets both update without moving the decision into either view.",
+      "details": {
+        "mechanismOrProperty": "Observers receive a subject's accepted change and update their own projections. The subject remains responsible for its decision and can publish the details consumers need.",
+        "scenarioApplication": "After steward approval, allocation and audit receive both reserver identities, the plot boundary, and approval history.",
+        "errorCorrection": "Letting the board apply first may look convenient, but it reverses the required approval order and assigns the decision to a view.",
+        "boundaryOrTradeoff": "The event communicates an approved transfer; it does not promise atomic updates of the two views.",
+        "transfer": "Keep decision authority in the domain owner and publish enough accepted facts for independent projections to react."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i005_alt1",
+          "text": "The prompt permits transfer only after steward approval, so the board cannot publish or apply the transfer first."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i005_alt2",
+          "text": "The old reserver is no longer available from the current value alone, but the transfer history requires it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i005_alt3",
+          "text": "The transfer must preserve the plot boundary and approval history rather than replace them with an unrelated reservation."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i006",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A subscription bundle changes price only after every component's pricing rule is valid. Billing and the customer catalog are separate modules; each needs the accepted bundle version, but neither should query or call the other. How should the change reach them?",
+    "difficulty": "advanced_failure",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i006_policy",
+          "text": "Publish the validated bundle-version change to billing and catalog subscribers after component rules pass validation."
+        },
+        {
+          "optionId": "n06_b04_i006_alt1",
+          "text": "Notify billing as soon as the first component rule is updated and let it calculate the final bundle price."
+        },
+        {
+          "optionId": "n06_b04_i006_alt2",
+          "text": "Let billing read catalog tables directly and notify the catalog only after a successful charge."
+        },
+        {
+          "optionId": "n06_b04_i006_alt3",
+          "text": "Have the customer catalog call billing to install its pricing rule and then publish the new version itself."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i006_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Both modules react to one validated bundle version, but neither owns the other's implementation. Publishing after the component rules pass avoids direct calls and premature billing reads.",
+      "details": {
+        "mechanismOrProperty": "A subject notification gives independent consumers the relevant version change after the subject's validity boundary. Consumers need not query one another's internals.",
+        "scenarioApplication": "The bundle owner validates all component rules, publishes the version, and billing and catalog each update their own module.",
+        "errorCorrection": "Direct table reads can appear efficient, but they couple billing to catalog storage and do not establish when the bundle version is valid.",
+        "boundaryOrTradeoff": "Notification does not itself synchronize billing and catalog commits; it exposes the accepted version for their separate reactions.",
+        "transfer": "Publish a validated version to separate consumers rather than making one consumer read another's private storage."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i006_alt1",
+          "text": "The bundle is not valid until every component rule passes, so this lets billing react to an incomplete version."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i006_alt2",
+          "text": "This makes billing depend on catalog storage and delays catalog reaction until a separate billing event."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i006_alt3",
+          "text": "The catalog becomes a dispatcher for billing and may publish before billing has accepted the validated bundle version."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i007",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A fleet charging coordinator confirms a reservation after checking charger capacity and expiry. The mobile status view and grid operations dashboard are maintained independently and both need the confirmed reservation ID. How should confirmation reach them?",
+    "difficulty": "foundational",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i007_policy",
+          "text": "Notify both subscribers of the reservation ID after capacity and expiry validation confirm the reservation."
+        },
+        {
+          "optionId": "n06_b04_i007_alt1",
+          "text": "Notify both views when a reservation is requested, before checking capacity or expiry."
+        },
+        {
+          "optionId": "n06_b04_i007_alt2",
+          "text": "Let the mobile view invent a reservation ID and send it to the grid dashboard before coordinator confirmation."
+        },
+        {
+          "optionId": "n06_b04_i007_alt3",
+          "text": "Have the coordinator expose its internal capacity table for each view to poll and infer confirmations."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i007_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The views need a reservation only after capacity and expiry checks succeed. Publishing that stable ID from the coordinator keeps confirmation authority there while allowing both views to react independently.",
+      "details": {
+        "mechanismOrProperty": "A subject notifies registered consumers when its accepted state changes; the change data lets consumers update their own projections without reading internal tables.",
+        "scenarioApplication": "The coordinator confirms the reservation and then publishes its ID to mobile and grid views.",
+        "errorCorrection": "Publishing at request time is tempting for responsiveness, but it exposes a reservation before the deciding service accepts it.",
+        "boundaryOrTradeoff": "The event informs the views; it does not promise that both display updates complete at the same instant.",
+        "transfer": "Notify consumers of accepted outcomes, not unvalidated requests that may fail the subject's own rules."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i007_alt1",
+          "text": "A requested reservation is not yet confirmed; the views would display a reservation that may be rejected."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i007_alt2",
+          "text": "The ID must identify the accepted reservation, not a mobile-generated request that may never be confirmed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i007_alt3",
+          "text": "The views would depend on coordinator internals and duplicate confirmation logic rather than reacting to an accepted reservation."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i008",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "An archivist merges metadata while asset identity stays stable. A search index and thumbnail generator update independently; each needs the committed descriptive revision, and the asset service must not call either implementation. What should the asset service expose?",
+    "difficulty": "foundational_boundary",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i008_policy",
+          "text": "Publish the committed asset ID and descriptive revision; let search indexing and thumbnail generation subscribe and perform their own work."
+        },
+        {
+          "optionId": "n06_b04_i008_alt1",
+          "text": "Have each subscriber read the asset's latest values later and infer which merge revision it should process."
+        },
+        {
+          "optionId": "n06_b04_i008_alt2",
+          "text": "Let the search index call the thumbnail generator directly after indexing each asset."
+        },
+        {
+          "optionId": "n06_b04_i008_alt3",
+          "text": "Notify consumers before the asset metadata commit so they can prepare the new descriptions."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i008_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The asset service owns the committed metadata change; search and thumbnail modules own separate reactions. Publishing the exact revision lets both process the same accepted change without direct implementation coupling.",
+      "details": {
+        "mechanismOrProperty": "A notification carries the subject change to multiple subscribers. Including a revision identifies which committed change they are reacting to.",
+        "scenarioApplication": "The asset service commits descriptive values and publishes asset ID plus revision; search and thumbnail consumers each handle that event.",
+        "errorCorrection": "Reading latest later is a small interface, but it can cause a subscriber to process a different merge than the one that triggered its work.",
+        "boundaryOrTradeoff": "Subscribers may process at different times; the scenario requires revision identity, not synchronized completion or event replay guarantees.",
+        "transfer": "Include a stable change identifier when independent consumers must react to the same committed revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i008_alt1",
+          "text": "A later merge could replace the current values, so the subscribers may no longer be reacting to the same committed revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i008_alt2",
+          "text": "This couples two independently owned consumers and makes thumbnail updates depend on search-index behavior."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i008_alt3",
+          "text": "The event would describe an uncommitted revision that may never become the asset's accepted metadata."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i009",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A licensing analyst approves a territory-specific use until an expiration. The attribution report and usage dashboard are maintained by different teams; both need the approved territory, expiry, and analyst, but neither owns the approval decision. How should they receive it?",
+    "difficulty": "intermediate",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i009_policy",
+          "text": "After approval, publish territory, expiry, and analyst attribution to both subscribers; keep licensing as the decision owner."
+        },
+        {
+          "optionId": "n06_b04_i009_alt1",
+          "text": "Publish the requested territory before approval and let the report decide later whether it was authorized."
+        },
+        {
+          "optionId": "n06_b04_i009_alt2",
+          "text": "Send only the analyst ID and have each consumer infer territory and expiry from current defaults."
+        },
+        {
+          "optionId": "n06_b04_i009_alt3",
+          "text": "Let the usage dashboard grant the license and ask the attribution report to record its decision."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i009_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The two consumers need the same approved scope and actor, while licensing retains decision authority. Publishing after approval carries those facts without turning one view into another's coordinator.",
+      "details": {
+        "mechanismOrProperty": "The subject can notify registered observers of an accepted decision. The event contains facts consumers need, while they retain their separate responsibilities.",
+        "scenarioApplication": "The licensing service approves and publishes territory, expiry, and analyst; report and dashboard update their own views.",
+        "errorCorrection": "Publishing at request time seems responsive, but the event would represent an unapproved use rather than a licensing decision.",
+        "boundaryOrTradeoff": "The notification does not authorize usage or guarantee that either consumer updates successfully; approval remains with licensing.",
+        "transfer": "Keep a decision with its authoritative owner and publish the accepted facts needed by independently owned views."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i009_alt1",
+          "text": "Consumers must receive the approved use, not an unaccepted request that might fail licensing review."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i009_alt2",
+          "text": "That omits the approved scope, allowing the report and dashboard to display different territory or expiry values."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i009_alt3",
+          "text": "The dashboard does not own licensing approval and would move decision authority into a consumer."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i010",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A fleet coordinator replaces a battery on an aircraft after verifying that the battery is unassigned elsewhere. Maintenance history and the availability board are separate consumers; both need the new assignment and stable battery ID. When should they be notified?",
+    "difficulty": "intermediate_transfer",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i010_policy",
+          "text": "After the assignment check and replacement succeed, notify both consumers with the stable battery ID and new aircraft assignment."
+        },
+        {
+          "optionId": "n06_b04_i010_alt1",
+          "text": "Notify consumers as soon as the replacement is proposed, before checking whether the battery is already assigned."
+        },
+        {
+          "optionId": "n06_b04_i010_alt2",
+          "text": "Let maintenance history notify the availability board after recording its own copy of the assignment."
+        },
+        {
+          "optionId": "n06_b04_i010_alt3",
+          "text": "Send only the aircraft ID and let each consumer choose a battery with matching model attributes."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i010_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The assignment is valid only after checking the battery's existing relationship. Notifying after that decision gives both consumers one accepted battery/aircraft fact without making either view the source of truth.",
+      "details": {
+        "mechanismOrProperty": "The subject publishes an accepted change to multiple observers. Stable identity in the event lets each subscriber update the same battery rather than infer a substitute.",
+        "scenarioApplication": "The coordinator checks uniqueness, changes the assignment, and publishes the battery ID and aircraft to maintenance history and availability.",
+        "errorCorrection": "Proposal-time notification is the nearest alternative, but it exposes a replacement that may fail the single-aircraft condition.",
+        "boundaryOrTradeoff": "The event informs independent views; it does not guarantee their updates are atomic with the assignment write.",
+        "transfer": "Notify consumers after a decisive invariant check succeeds, carrying stable identity so they update the same entity."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i010_alt1",
+          "text": "That can publish an assignment the coordinator must reject because the battery belongs to another aircraft."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i010_alt2",
+          "text": "This makes one consumer the coordinator for another and permits the two views to represent different accepted assignments."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i010_alt3",
+          "text": "The notification must identify the actual stable battery; attribute matching could select a different battery."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i011",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A referral leaves a clinic only after the patient approves disclosure to a named specialist. The care navigator owns consent and routing; the appointment planner and audit view are independent consumers. Both need the approved recipient and consent revision. How should they be updated?",
+    "difficulty": "advanced_tradeoff",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i011_policy",
+          "text": "After consent and routing are accepted, publish the named specialist and consent revision to the planner and audit subscribers."
+        },
+        {
+          "optionId": "n06_b04_i011_alt1",
+          "text": "Notify the planner before checking consent and let it choose the specialist from availability."
+        },
+        {
+          "optionId": "n06_b04_i011_alt2",
+          "text": "Send only a referral ID and let each consumer read current consent fields independently."
+        },
+        {
+          "optionId": "n06_b04_i011_alt3",
+          "text": "Let the audit view approve disclosure and tell the navigator which recipient to use."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i011_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The navigator remains the consent authority, while appointment and audit consumers need the same approved recipient and revision. Publishing those facts after approval avoids both premature disclosure and consumer-to-consumer coordination.",
+      "details": {
+        "mechanismOrProperty": "An observer notification distributes a subject's accepted change to independent consumers. Including the consent revision identifies the approval that supports the route.",
+        "scenarioApplication": "The navigator approves and routes to the named specialist, then publishes recipient and revision for planning and audit updates.",
+        "errorCorrection": "Sending only the referral ID is convenient, but separate current-state reads can diverge from the specific consent decision that authorized this route.",
+        "boundaryOrTradeoff": "The event carries an already-approved disclosure fact; it does not authorize disclosure or promise a transaction with the external specialist.",
+        "transfer": "For sensitive downstream work, publish the exact approved scope and revision after the authority makes its decision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i011_alt1",
+          "text": "The patient approved a named specialist; an availability-driven choice before consent can disclose to another recipient."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i011_alt2",
+          "text": "Consent can change, so the consumers may read different recipient or revision values from the one accepted route."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i011_alt3",
+          "text": "The navigator owns consent and routing; the audit consumer records that decision but does not make it."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i012",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A learner's timed exercise completion records the exercise revision and score policy. The progress view and analytics service are separately maintained; each needs the same completed attempt identity, and the practice tracker must not call either service. What should it publish?",
+    "difficulty": "advanced_failure",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i012_policy",
+          "text": "Publish a completion notification carrying attempt ID, exercise revision, and score-policy version to progress and analytics subscribers."
+        },
+        {
+          "optionId": "n06_b04_i012_alt1",
+          "text": "Publish only the learner ID and let consumers calculate completion under the current exercise policy."
+        },
+        {
+          "optionId": "n06_b04_i012_alt2",
+          "text": "Have the progress view call analytics after updating its own display."
+        },
+        {
+          "optionId": "n06_b04_i012_alt3",
+          "text": "Notify both consumers when the learner starts the exercise and let them infer whether it later completed."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i012_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Completion is one accepted attempt with specific version references. Publishing those values lets each consumer react consistently without making the tracker call its implementation or asking a consumer to infer the result.",
+      "details": {
+        "mechanismOrProperty": "The subject notifies registered consumers with the change data they need. Stable attempt and version IDs connect each reaction to the same completed work.",
+        "scenarioApplication": "The tracker publishes the completed attempt once; progress and analytics update their own models using the recorded exercise and scoring versions.",
+        "errorCorrection": "Publishing only the learner ID is the closest lightweight event, but it makes subscribers reconstruct an outcome and policy that the tracker already knows.",
+        "boundaryOrTradeoff": "Notification does not guarantee analytics or progress processing order; no such ordering requirement is stated here.",
+        "transfer": "Publish a completed domain fact with its stable identity and relevant version context rather than asking subscribers to infer it from current state."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i012_alt1",
+          "text": "That loses the completed attempt identity and can use a scoring policy different from the one recorded for the attempt."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i012_alt2",
+          "text": "This couples two separately maintained consumers and makes analytics depend on progress-view behavior."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i012_alt3",
+          "text": "Starting is not a completion result; consumers would be told an outcome before it exists."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i013",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A purchasing manager's exception request is approved only after required compliance and budget checks pass. Compliance audit and the budget dashboard are maintained separately; both need the accepted manager, rationale, and scope, but neither makes the approval decision. What should tell them?",
+    "difficulty": "foundational",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i013_policy",
+          "text": "After the required checks pass and purchasing approves, notify both subscribers with the manager, rationale, and scope."
+        },
+        {
+          "optionId": "n06_b04_i013_alt1",
+          "text": "Let the compliance audit consumer approve the exception and ask purchasing to record that decision afterward."
+        },
+        {
+          "optionId": "n06_b04_i013_alt2",
+          "text": "Notify both views before compliance and budget checks finish, then send corrections if a check rejects."
+        },
+        {
+          "optionId": "n06_b04_i013_alt3",
+          "text": "Have compliance call the budget dashboard to update the view after it records its own result."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i013_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Purchasing makes the approval decision after both controls pass; audit and dashboard are consumers of that accepted outcome. Publishing afterward keeps the scope consistent without turning either view into an approver.",
+      "details": {
+        "mechanismOrProperty": "Observer-style notification exposes an accepted change to independently maintained consumers. Subscribers react but do not make or reinterpret the approval.",
+        "scenarioApplication": "Purchasing validates both controls, approves the scoped exception, and then sends the manager, rationale, and scope to audit and dashboard views.",
+        "errorCorrection": "Having audit approve is a plausible confusion because it records compliance, but recording an approval is different from making the purchasing decision.",
+        "boundaryOrTradeoff": "The prompt does not specify notification ordering or delivery reliability; it establishes which decision is published and to whom.",
+        "transfer": "Publish an accepted decision to independent views after the authority makes it, keeping observation separate from approval."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i013_alt1",
+          "text": "Purchasing owns approval; audit records the accepted decision but does not grant the exception."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i013_alt2",
+          "text": "That exposes a request the prompt says is not approved until both required checks pass."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i013_alt3",
+          "text": "This makes one consumer dispatch another and bypasses purchasing, which owns the final decision."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i014",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A producer replaces a podcast recording only after reviewers approve its stable-segment annotation map. Search and transcript-rendering modules are independently maintained and must process the same accepted map revision. What should be notified?",
+    "difficulty": "foundational_boundary",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i014_policy",
+          "text": "Publish the accepted recording ID and annotation-map revision to search and transcript subscribers after review accepts the mapping."
+        },
+        {
+          "optionId": "n06_b04_i014_alt1",
+          "text": "Notify consumers when the new recording is uploaded, before the annotation map is accepted."
+        },
+        {
+          "optionId": "n06_b04_i014_alt2",
+          "text": "Send the latest recording URL and have each consumer derive its own segment alignment."
+        },
+        {
+          "optionId": "n06_b04_i014_alt3",
+          "text": "Let the transcript renderer update search records after it completes its own rendering."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i014_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The annotation map is the reviewed change both consumers must share. Publishing its accepted revision after approval gives each independent module the same mapping identity.",
+      "details": {
+        "mechanismOrProperty": "An observer event communicates a subject's accepted version to registered subscribers. The event identifies which version each consumer should process.",
+        "scenarioApplication": "After review accepts the map, the producer publishes its revision; search and transcript rendering handle their own updates.",
+        "errorCorrection": "Deriving alignment independently is the closest alternative, but it duplicates mapping logic and cannot guarantee both consumers use the approved map.",
+        "boundaryOrTradeoff": "The notification does not guarantee both modules finish together or that either automatically retries failures.",
+        "transfer": "When consumers must share one reviewed mapping, publish its accepted revision rather than asking each consumer to recreate it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i014_alt1",
+          "text": "The upload does not yet have the approved stable-segment mapping that both consumers must process."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i014_alt2",
+          "text": "Consumers may derive different mappings and the event omits the accepted revision that should bind their work."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i014_alt3",
+          "text": "The renderer is not the owner of search and may finish or fail independently; it should not coordinate its peer."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i015",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A temporary access role expires at its approved time. The access-control view removes it, the audit view records expiry, and an administrator view refreshes; each is independently maintained. What should happen at the expiry boundary?",
+    "difficulty": "intermediate",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i015_policy",
+          "text": "Publish the role's approved expiry fact to access, audit, and administrator subscribers, which update their separate responsibilities."
+        },
+        {
+          "optionId": "n06_b04_i015_alt1",
+          "text": "Let the administrator view remove the role and infer the audit entry from its refreshed display."
+        },
+        {
+          "optionId": "n06_b04_i015_alt2",
+          "text": "Have the audit view poll the administrator view and ask the access-control view to remove any role it finds expired."
+        },
+        {
+          "optionId": "n06_b04_i015_alt3",
+          "text": "Publish an expiry event when the role is granted, before its approved expiry time arrives."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i015_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "One expiry fact triggers separate access, audit, and display reactions. Publishing it to their independent subscribers keeps role enforcement with access control without turning that module into a coordinator for their implementations.",
+      "details": {
+        "mechanismOrProperty": "Observer-style notification distributes a subject change to registered consumers; each subscriber owns its own reaction and does not need to query peer modules.",
+        "scenarioApplication": "At the approved expiry, access removes the role, audit records the event, and the administrator view refreshes its own state.",
+        "errorCorrection": "Polling through the administrator view is a tempting chain, but that view does not own access removal or audit records.",
+        "boundaryOrTradeoff": "The prompt assumes an expiry trigger occurs; the notification pattern does not itself schedule or guarantee that trigger.",
+        "transfer": "Separate the trigger/authority from the independent reactions that follow it; notifications distribute the accepted change, not the scheduling policy."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i015_alt1",
+          "text": "A display refresh is not the authority for expiry and may not retain the exact approval needed by audit."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i015_alt2",
+          "text": "This chains independent consumers and makes audit and display modules coordinate access enforcement."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i015_alt3",
+          "text": "That announces the boundary before the role has expired and can cause consumers to remove it prematurely."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i016",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A notary seals one immutable document revision. The archive catalog and verification portal are separately maintained; both must display the same seal-to-revision association, and the notary service must not call either UI. How should the seal result be exposed?",
+    "difficulty": "intermediate_transfer",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i016_policy",
+          "text": "After sealing, publish the seal ID and exact revision ID to the archive and verification subscribers."
+        },
+        {
+          "optionId": "n06_b04_i016_alt1",
+          "text": "Publish the document ID before sealing and let each portal look up the current revision later."
+        },
+        {
+          "optionId": "n06_b04_i016_alt2",
+          "text": "Have the archive catalog decide which revision to seal and send that choice to the notary service."
+        },
+        {
+          "optionId": "n06_b04_i016_alt3",
+          "text": "Let the verification portal call the archive catalog to reconstruct the seal ID and revision pair."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i016_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A completed seal binds a specific immutable revision. Publishing both IDs lets the archive and verification views show the same result without giving either UI authority over sealing.",
+      "details": {
+        "mechanismOrProperty": "The subject notifies independent observers with the accepted change facts. Stable identifiers let each consumer refer to the same completed association.",
+        "scenarioApplication": "The notary service seals the revision and publishes seal ID plus revision ID for archive and verification views.",
+        "errorCorrection": "Sending only a document ID is simpler, but each consumer could look up a different current revision rather than the one sealed.",
+        "boundaryOrTradeoff": "The event reports the completed seal; it does not provide a cryptographic guarantee or a delivery-order contract beyond this scenario.",
+        "transfer": "Publish both sides of an important association when independent consumers must represent the same completed result."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i016_alt1",
+          "text": "The current revision could change and would not identify the immutable revision that the notary actually sealed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i016_alt2",
+          "text": "The notary service owns the seal decision; the archive catalog is a consumer of the completed association."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i016_alt3",
+          "text": "This couples two consumers and asks the portal to infer data the notary service already knows when the seal completes."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i017",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A seller payout is released only for a settled order. Seller history and finance reporting are separately owned; both need the same payout ID and settled-order reference, while the payout service retains release authority. What should it do after release?",
+    "difficulty": "advanced_tradeoff",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i017_policy",
+          "text": "After release, notify both subscribers with the payout ID and settled-order ID; leave release authority in the payout service."
+        },
+        {
+          "optionId": "n06_b04_i017_alt1",
+          "text": "Notify the consumers as soon as release is requested, before confirming the order is settled."
+        },
+        {
+          "optionId": "n06_b04_i017_alt2",
+          "text": "Have the finance report call seller history and let the history view infer the payout ID from the order."
+        },
+        {
+          "optionId": "n06_b04_i017_alt3",
+          "text": "Publish only the seller ID and let each consumer choose whichever settled order is newest."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i017_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The payout service decides whether the settled-order release succeeds. Publishing the payout and order IDs afterward gives each independent consumer the same completed association.",
+      "details": {
+        "mechanismOrProperty": "The subject's notification distributes a completed change to subscribers. It does not transfer decision authority to a reporting or history view.",
+        "scenarioApplication": "The service checks settlement, releases the payout, and publishes both IDs for seller history and finance reporting.",
+        "errorCorrection": "Publishing at request time is the closest fast path, but it exposes an outcome before the order prerequisite and release decision are satisfied.",
+        "boundaryOrTradeoff": "The notification does not promise provider settlement or an atomic update across the two views.",
+        "transfer": "Let the authority publish a completed financial fact to independent consumers, including identifiers that tie its related entities together."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i017_alt1",
+          "text": "The consumers would record a payout that the service may reject because settlement has not occurred."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i017_alt2",
+          "text": "That makes one consumer coordinate another and omits the stable payout identity both need."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i017_alt3",
+          "text": "The event must identify the order that was actually released; choosing newest can select another order."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b04-i018",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B04",
+    "prompt": "A transit display subscribes to disruption-board changes. A display that joins after a platform change needs the current platform once and then each later accepted change; it must not replay earlier announcements as new changes. What should the subscription boundary provide?",
+    "difficulty": "advanced_failure",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b04_i018_policy",
+          "text": "On subscription provide the current platform snapshot, then notify the display of later accepted changes without replaying prior changes as new."
+        },
+        {
+          "optionId": "n06_b04_i018_alt1",
+          "text": "Start the display with the oldest announcement and apply every historical change as if it just happened."
+        },
+        {
+          "optionId": "n06_b04_i018_alt2",
+          "text": "Provide only future notifications and require the display to guess the platform that was current before it subscribed."
+        },
+        {
+          "optionId": "n06_b04_i018_alt3",
+          "text": "Let the display poll and call another display to find whichever platform it currently shows."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b04_i018_policy"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A late live view needs a baseline and then incremental changes. Replaying history as fresh platform changes risks showing obsolete values, while future-only notification leaves the initial view undefined.",
+      "details": {
+        "mechanismOrProperty": "A subscription API can pair an initial snapshot with later change notifications. That distinguishes initializing a consumer from delivering a new event to an already initialized one.",
+        "scenarioApplication": "A joining display receives current platform once, then observes later accepted changes; audit consumers can use a separate historical mechanism if they need replay.",
+        "errorCorrection": "Full replay is the nearest alternative because it preserves history, but the live-display requirement is current-state initialization, not historical presentation.",
+        "boundaryOrTradeoff": "Observer itself does not specify snapshot/replay semantics; the prompt explicitly defines them for this subscription contract.",
+        "transfer": "For late subscribers, state whether they need a current snapshot, a historical replay, or only future changes; these are different contracts."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i018_alt1",
+          "text": "A live display can temporarily show obsolete platforms, although the requirement is one current snapshot followed by future changes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i018_alt2",
+          "text": "The late subscriber needs the current platform once before it can render subsequent changes correctly."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b04_i018_alt3",
+          "text": "Another display is a consumer, not the source of current board state, and it may itself have stale state."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+    ]
+  }
+]

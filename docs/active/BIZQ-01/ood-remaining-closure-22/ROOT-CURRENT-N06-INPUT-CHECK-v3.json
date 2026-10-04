@@ -1,0 +1,8 @@
+{
+  "result": "PASS",
+  "scope": "Actual current180 frozen proposal/notes/mechanical bindings, historical prepared registries and foreign footer preservation; no semantic/source/runtime acceptance",
+  "registrySha256": "fe693c44f41e3f923764d44eb587ad97ce95a9fc3e1293b96c08bfd72e046a9c",
+  "questionCount": 180,
+  "units": 10,
+  "foreignFooterMatchesHead": true
+}

@@ -1,0 +1,31 @@
+{
+  "result": "PASS_RESOLVED",
+  "scope": "Required canonical test coverage resolved with actual176matching passes plus3 targeted post-checkpoint passes; not a claim of a fresh178/178 single run. Initial failures retained.",
+  "initial": {
+    "tests": 178,
+    "passed": 176,
+    "failed": 2,
+    "logSha256": "5030d696e9bd945edb6d0b7bd792e02626e0f0d42f6ec3371c6b0f2ba913030e"
+  },
+  "resolution": {
+    "tests": 3,
+    "passed": 3,
+    "failed": 0,
+    "resolvedTestNames": [
+      "candidate draft v2 binds all nine canonical artifacts and exact ODK-096 AWS identity deterministically",
+      "Codex candidate decision v2 binds exact candidate, source snapshot, release and nine artifact hashes"
+    ],
+    "logSha256": "00704756ffa90a4f06883c3b0f37d8f95627516829c46fd87a53f029f9615b9b"
+  },
+  "sourceCheckpoint": "7648782e57ef6927b90c687f7ae67c62b8ae5ed2",
+  "cause": "Existing clean-source snapshot prerequisite; canonical content now committed, code/bytes unchanged between initial run and targeted resolution",
+  "migration": {
+    "result": "passed",
+    "questions": 16077,
+    "historicalQuestions": 16041,
+    "replacements": 594,
+    "sameIdCorrections": 351,
+    "reasonAmendments": 25
+  },
+  "contentValidation": "Changed OOD1413 PASS with explicit --track; initial bare command rejected due missing CLI argument, no content defect"
+}

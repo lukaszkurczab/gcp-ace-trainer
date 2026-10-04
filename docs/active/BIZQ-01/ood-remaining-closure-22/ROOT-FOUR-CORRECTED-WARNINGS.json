@@ -1,0 +1,28 @@
+{
+  "scope": "Existing console advisory flags on frozen proposals only; no canonical source, approval outcome or semantic acceptance",
+  "inputs": [
+    {
+      "path": "review-inputs/N06-B01-v2.json",
+      "sha256": "4170cbff0600f28b0989faf1c476e0a20c4c235b03ad33b83eafd210e6477705",
+      "mentalUnitId": "OOD-N06-B01"
+    },
+    {
+      "path": "review-inputs/N06-B03-v2.json",
+      "sha256": "f6914b67481515b1a1c6b1b7bd190c8ced85beeeae9fcf13c1834a7e4acc3667",
+      "mentalUnitId": "OOD-N06-B03"
+    },
+    {
+      "path": "review-inputs/N06-B05-v3.json",
+      "sha256": "4dd9d2657b754c3c73b353aa8348af44b78545e14c251f36bf14ac97d73e3add",
+      "mentalUnitId": "OOD-N06-B05"
+    },
+    {
+      "path": "review-inputs/N06-B08-v4.json",
+      "sha256": "165231fc935ec9bcbba5f80fe24c95f45ac18e3e66b0d2381155f35d3f1de0ef",
+      "mentalUnitId": "OOD-N06-B08"
+    }
+  ],
+  "questionCount": 72,
+  "warningItemCount": 0,
+  "warnings": []
+}

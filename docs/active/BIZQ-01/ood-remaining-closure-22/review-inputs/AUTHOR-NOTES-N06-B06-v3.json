@@ -1,0 +1,260 @@
+{
+  "scope": "Unit author identity hypotheses at v3 submission; not independent acceptance",
+  "sourceNotes": "AUTHOR-NOTES-B06-B10.json",
+  "sourceNotesSha256": "076f3db0db69b5ddf96623582b2209b3feca05e63f8347859a4febd5daa35d77",
+  "unit": "OOD-N06-B06",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n06-b06-i001",
+      "questionId": "ood-n06-b06-i001",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for classify a returned item.",
+      "decisiveFact": "Seal evidence sets the ordinary classification; a recalled item receives the unsafe classification, and refund eligibility is decided separately.",
+      "nearestAlternative": "Let the caller select a reviewer from the return category before either reviewer checks the seal or recall facts. — The category alone does not establish which reviewer can decide this item; choosing before eligibility bypasses the stated ordered checks.",
+      "changedCondition": "If the case changes so that seal evidence sets the ordinary classification; a recalled item receives the unsafe classification, and refund eligibility is decided separately. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i002",
+      "questionId": "ood-n06-b06-i002",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for publish a result snapshot.",
+      "decisiveFact": "A snapshot is valid only for its exact immutable input and code-version pair; configuration ranks compatible backends.",
+      "nearestAlternative": "Choose one snapshot backend from the experiment type before checking support for its input and code version. — Experiment type does not prove backend support for this exact immutable pair; a preselected backend can reject when another ordered backend supports it.",
+      "changedCondition": "If the case changes so that a snapshot is valid only for its exact immutable input and code-version pair; configuration ranks compatible backends. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i003",
+      "questionId": "ood-n06-b06-i003",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for accept a comment and notify the assigned author.",
+      "decisiveFact": "The preferred destination is used when available; the configured fallback is allowed otherwise, and one notice is sent.",
+      "nearestAlternative": "Let the assigned author choose a channel after acceptance without checking which channel handles that assignment. — The scenario puts channel eligibility in the handlers; a recipient choice bypasses those independent channel rules.",
+      "changedCondition": "If the case changes so that the preferred destination is used when available; the configured fallback is allowed otherwise, and one notice is sent. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i004",
+      "questionId": "ood-n06-b06-i004",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for submit an offline inspection.",
+      "decisiveFact": "Local storage is preferred when it can accept the complete inspection; online submission is the fallback, and partial records are forbidden.",
+      "nearestAlternative": "Choose local queue or online submission from a connectivity flag before either handler examines the payload. — Connectivity alone does not establish which handler can accept this offline payload; the prompt assigns that test to the handlers.",
+      "changedCondition": "If the case changes so that local storage is preferred when it can accept the complete inspection; online submission is the fallback, and partial records are forbidden. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i005",
+      "questionId": "ood-n06-b06-i005",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for reissue a rejected invoice.",
+      "decisiveFact": "Overlapping rejection categories have a finance-defined priority; one replacement must remain traceable and must not cause a second charge.",
+      "nearestAlternative": "Have the caller map the rejection label to one handler before the handler checks its rejection-class coverage. — A label-to-handler guess can bypass the stated coverage test; an ineligible handler must be able to pass.",
+      "changedCondition": "If the case changes so that overlapping rejection categories have a finance-defined priority; one replacement must remain traceable and must not cause a second charge. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i006",
+      "questionId": "ood-n06-b06-i006",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for revoke a badge.",
+      "decisiveFact": "A badge revocation denies access before ordinary schedule access; a later schedule allowance cannot reverse that denial.",
+      "nearestAlternative": "Check the schedule first and stop on its allow before looking for a badge revocation. — That reverses the specified priority and can grant access to a revoked badge.",
+      "changedCondition": "If the case changes so that a badge revocation denies access before ordinary schedule access; a later schedule allowance cannot reverse that denial. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i007",
+      "questionId": "ood-n06-b06-i007",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for print a label after address correction.",
+      "decisiveFact": "Only a formatter supporting both carrier and service may produce the one label, using the approved shipment revision; configuration ranks compatible formatters.",
+      "nearestAlternative": "Select a formatter from the carrier alone, then use its label even if it does not support the selected service. — The prompt requires support for both carrier and service; a carrier-only match can produce an unsupported label.",
+      "changedCondition": "If the case changes so that only a formatter supporting both carrier and service may produce the one label, using the approved shipment revision; configuration ranks compatible formatters. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i008",
+      "questionId": "ood-n06-b06-i008",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for move a booked rehearsal to a different room.",
+      "decisiveFact": "A destination room must have capacity and permit the booking cancellation policy; configured priority selects among eligible rooms, and only one room is reserved.",
+      "nearestAlternative": "Choose the room with the most capacity before checking whether its cancellation terms permit this booking. — Capacity alone is not sufficient; a larger room can fail the second stated eligibility check.",
+      "changedCondition": "If the case changes so that a destination room must have capacity and permit the booking cancellation policy; configured priority selects among eligible rooms, and only one room is reserved. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i009",
+      "questionId": "ood-n06-b06-i009",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for switch an exhibit into maintenance mode.",
+      "decisiveFact": "A command covered by an active maintenance restriction is invalid even if an unrelated safety rule allows it.",
+      "nearestAlternative": "Treat the maintenance result as another pass so a later handler may execute the same unsafe command. — Maintenance makes covered commands terminally invalid; passing that result would let later execution bypass the safety decision.",
+      "changedCondition": "If the case changes so that a command covered by an active maintenance restriction is invalid even if an unrelated safety rule allows it. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i010",
+      "questionId": "ood-n06-b06-i010",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for retire a lesson while preserving learner progress.",
+      "decisiveFact": "A lesson retirement must preserve linked progress under the stable lesson identity; unsupported progress formats leave the lesson available for retry.",
+      "nearestAlternative": "Have the caller choose a progress handler from the lesson category before checking which record form it supports. — Lesson category does not establish record-form support; the selected handler must be allowed to pass when the form is unsupported.",
+      "changedCondition": "If the case changes so that a lesson retirement must preserve linked progress under the stable lesson identity; unsupported progress formats leave the lesson available for retry. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i011",
+      "questionId": "ood-n06-b06-i011",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for close a board and export its history.",
+      "decisiveFact": "The export must be a complete signed audit bundle for the state captured before the board closes; compatible exporters have a configured preference.",
+      "nearestAlternative": "Close the board first and ask export handlers to read the live session afterward. — The prompt says capture precedes close; reading after closure may no longer represent the captured session state.",
+      "changedCondition": "If the case changes so that the export must be a complete signed audit bundle for the state captured before the board closes; compatible exporters have a configured preference. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i012",
+      "questionId": "ood-n06-b06-i012",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for escalate a conversation.",
+      "decisiveFact": "The highest-priority tier that can meet the deadline owns the conversation; the ownership transfer and notice must identify that same tier.",
+      "nearestAlternative": "Choose an escalation tier from the queue label before checking whether it can meet the response deadline. — Queue label does not establish deadline eligibility; a tier that cannot meet the deadline must pass.",
+      "changedCondition": "If the case changes so that the highest-priority tier that can meet the deadline owns the conversation; the ownership transfer and notice must identify that same tier. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i013",
+      "questionId": "ood-n06-b06-i013",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for publish a seasonal inventory change.",
+      "decisiveFact": "A listing is visible only after both price and stock checks pass; configured category priority resolves overlapping categories.",
+      "nearestAlternative": "Publish when the matching category handler validates price, then check stock after the listing is visible. — The prompt requires both price and stock validity before visibility; a later stock check is too late.",
+      "changedCondition": "If the case changes so that a listing is visible only after both price and stock checks pass; configured category priority resolves overlapping categories. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i014",
+      "questionId": "ood-n06-b06-i014",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for split a backordered request across vendors.",
+      "decisiveFact": "Vendors receive the remaining quantity in priority order; accepted portions reduce it, and every split retains request identity and delivery promise.",
+      "nearestAlternative": "Stop after the first vendor accepts any quantity and leave the rest outside the request. — The contract explicitly passes the unfilled remainder onward; stopping loses the remaining quantity and promise.",
+      "changedCondition": "If the case changes so that vendors receive the remaining quantity in priority order; accepted portions reduce it, and every split retains request identity and delivery promise. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i015",
+      "questionId": "ood-n06-b06-i015",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for transfer a plot reservation.",
+      "decisiveFact": "Only an authority covering the plot boundary may approve or deny the transfer; the most specific overlapping boundary takes precedence and history is retained.",
+      "nearestAlternative": "Accept the first authority response even when that authority does not cover this plot boundary. — An uncovered authority must pass; accepting its result gives a decision to the wrong boundary owner.",
+      "changedCondition": "If the case changes so that only an authority covering the plot boundary may approve or deny the transfer; the most specific overlapping boundary takes precedence and history is retained. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i016",
+      "questionId": "ood-n06-b06-i016",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for add a regional bundle.",
+      "decisiveFact": "Catalog ranks overlapping regions; the selected regional rule calculates from current component inputs rather than a stale bundle total.",
+      "nearestAlternative": "Use the bundle price cached when it was first created, regardless of current component pricing inputs. — The prompt requires the matching region handler to compute from current component inputs, so a stale cached price can violate that basis.",
+      "changedCondition": "If the case changes so that catalog ranks overlapping regions; the selected regional rule calculates from current component inputs rather than a stale bundle total. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i017",
+      "questionId": "ood-n06-b06-i017",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for reserve a charger.",
+      "decisiveFact": "A station is eligible only when both charger capacity and reservation expiry permit the requested slot; station priority determines preference.",
+      "nearestAlternative": "Claim the first slot with capacity, then check whether its reservation expiry permits the requested time. — Capacity alone is insufficient; the claim must satisfy both facts before reserving.",
+      "changedCondition": "If the case changes so that a station is eligible only when both charger capacity and reservation expiry permit the requested slot; station priority determines preference. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i018",
+      "questionId": "ood-n06-b06-i018",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Choose an ordered-handler boundary for merge duplicate metadata.",
+      "decisiveFact": "Only the highest-priority rule that recognizes a metadata conflict may change the records; a nonmatching rule leaves both records unchanged and asset identity remains stable.",
+      "nearestAlternative": "Let every metadata handler apply its changes even when it does not recognize the conflict, then roll back if needed. — The prompt requires non-owning handlers to pass without changing either record; later rollback is not that pass contract.",
+      "changedCondition": "If the case changes so that only the highest-priority rule that recognizes a metadata conflict may change the records; a nonmatching rule leaves both records unchanged and asset identity remains stable. no longer holds, revisit whether an ordered eligibility design is still needed; the current choice follows these stated domain outcomes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and current answer both assess an ordered eligibility decision: the question's primary choice is how to honor the stated priority, qualification, and single-result or remainder outcome while rule owners remain separate. The revised prompt and constraints state those domain facts without prescribing a handler, pass, or stop implementation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "verdict": "REVISE",
+  "scope": "Frozen N06-B06 v1 whole-object semantic and identity review only; no source/producer/consumer/admission/native/full-N06/full-BIZQ acceptance.",
+  "proposalPath": "review-inputs/N06-B06-v1.json",
+  "proposalSha256": "9614602a58acfb90adf38b7ef76831f5c8732795161dd87885dbac419b2c0002",
+  "manifestSha256": "be9cb40617caaaa8e18a41d06039c5bab3bc56eeb911b273bf21c7523569c5c3",
+  "contractSha256": "fd6ff0821df81f558aa7a5a3fb46ac0b2d72570ff583f7564fd379d37998d8a4",
+  "specPath": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+  "specSha256": "67aba008969eb570c86e1fbefc5b88a5e65f422d160fc7dcfd38084b59ff67d5",
+  "itemsReviewed": 18,
+  "identityActionCounts": {
+    "preserve_question_id": 18,
+    "new_question_id": 0
+  },
+  "summaryFindings": [
+    "All 18 Details.scenarioApplication values reuse meta-authoring text (“The added handler facts...”) instead of explaining how the scenario’s own coverage, pass, precedence and terminal/partial result select the chain behavior. This fails the required mechanism → scenario application narrative.",
+    "Wrong-option text duplicates make distinct answers indistinguishable for i004, i006–i011, i013–i018. The largest cases have three or four identical wrong choices; IDs alone do not make them different plausible alternatives.",
+    "Many errorCorrection fields are stale from the previous source objects (exact item IDs in the per-item findings), including research importer/decoder, access revocation, invoice validation, provider streams, queues, reviewers, parsers, fees, notification channels, repositories and formatters. These are not merely repetitive; they explain different cases and can misteach the current case.",
+    "i014 changes from terminal Chain behavior to partial fulfillment that passes only the unfilled remainder; the answer can fit an ordered chain, but the mechanism and feedback must explain continued processing and preserved request identity."
+  ],
+  "identityFinding": "Preserve the existing question IDs because both full before and current objects remain Chain-of-Responsibility/ordered-handler exercises and the accepted keyed idea is the same ordered-handler decision. The current proposal retains the old correct option ID owner_preserves_contract; for i014, explicitly assess the partial-accept/remainder continuation meaning when correcting its explanation, and mint a fresh option ID if its answer semantics are changed beyond the original generic clear-stop meaning.",
+  "criteria": "Existing BIZQ-01 §§4.1, 4.3 and 4.4: one answer grounded in visible facts; realistic alternatives with distinct decision content; causal Reason/Details and feedback tied to current option IDs. No numeric similarity threshold, option-count quota or new product rule is applied.",
+  "items": [
+    {
+      "questionId": "ood-n06-b06-i001",
+      "beforeWholeObjectSha256": "aad18d9cb7eb5c629338a3095ec197af6495b9074984cd842f0585116f4db04b",
+      "currentWholeObjectSha256": "cf1f8c4399b4053750cad7e8b7aeb114e6db4fe7380407580241b568f744952a",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "scenarioApplication is the repeated “added handler facts” meta-template; it does not apply pass/terminal behavior to seal condition then recall. The errorCorrection otherwise aligns."
+    },
+    {
+      "questionId": "ood-n06-b06-i002",
+      "beforeWholeObjectSha256": "e9885245189399f202a25b0d8c8266535fa70651f565a13c172b2ad61a084169",
+      "currentWholeObjectSha256": "64882eb5ccd0ab5a02b7ca2800d4093d74a42b02bc72b25a7c2810aa51b00c5e",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "errorCorrection references a file header, importer, and decoders absent from the snapshot-backend prompt; scenarioApplication is meta-template."
+    },
+    {
+      "questionId": "ood-n06-b06-i003",
+      "beforeWholeObjectSha256": "c902e0477258685280f5d5d2a8494fab34886903a74f921e55ef32db08f3158d",
+      "currentWholeObjectSha256": "5868b343279aab1b024234b044da5f0a2f481899e63291793d6c285a508b0965",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "errorCorrection references severity queues, tickets, and queue coverage absent from the notification scenario; scenarioApplication is meta-template."
+    },
+    {
+      "questionId": "ood-n06-b06-i004",
+      "beforeWholeObjectSha256": "0ff38c0549b8b58d006d865475ee73860d782bc35b2668f308c8fa2165c9a877",
+      "currentWholeObjectSha256": "3466a7adb50bf45efa858f33b843cde2981e49012595a512b7219122cc35470b",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "Duplicate wrong choices and stale access-control Details make the presented alternatives/diagnoses unusable for offline submission."
+    },
+    {
+      "questionId": "ood-n06-b06-i005",
+      "beforeWholeObjectSha256": "391146c8cfb0ade754e7d2b16d1717c7514565641f466a648da55a53462e2673",
+      "currentWholeObjectSha256": "9bb45808bfb60787ff067ec7c879e299b3e48bd6c379de960b0d338ca2684df1",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "scenarioApplication is meta-template; the surrounding fields mostly fit invoice reissue and retry identity, but must state what an eligible reissue handler does and when later handlers receive the invoice."
+    },
+    {
+      "questionId": "ood-n06-b06-i006",
+      "beforeWholeObjectSha256": "3bfce86133ef64f66e373e2e12a454440193f5c3934d0d2fe450c9acc77f741f",
+      "currentWholeObjectSha256": "876517ed90f2bb88dd79b3a641571f00049e089ebc954b2b37c4b35bb3835beb",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "Duplicate wrong choices; errorCorrection talks about invoice checks instead of terminal revocation before schedule access."
+    },
+    {
+      "questionId": "ood-n06-b06-i007",
+      "beforeWholeObjectSha256": "fa06bbaa623e2f030c719e125fc054cb046431bdf0d3f60e7238accc107b2b64",
+      "currentWholeObjectSha256": "773050b1683071a7f771ee5077ea13fe0dd72ab51c9b350d92aec32ae244bbab",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "Duplicate wrong choices; errorCorrection’s exporter/client sentence does not explain the selected wrong alternative; details remain generic for label formatting."
+    },
+    {
+      "questionId": "ood-n06-b06-i008",
+      "beforeWholeObjectSha256": "216250b837e768c7c5727f5924004d719bfd2338d20e5f4c646bfe782f027449",
+      "currentWholeObjectSha256": "000796ab52524a67495586a4b672d2517550a7393bca0c10d2fcafef33fec834",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "Duplicate caller choices; the account-type line in errorCorrection is unsupported and irrelevant to ordered room selection."
+    },
+    {
+      "questionId": "ood-n06-b06-i009",
+      "beforeWholeObjectSha256": "b6af499eeb5f6140d6724f27ee43d3c09855842393ba042d233265375790b4ef",
+      "currentWholeObjectSha256": "c571642c58f75cfc432240dfb90414f058f9f2a1cb9aaf679ed8555fa2fd944e",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "Duplicate concurrent choices; errorCorrection’s gateway/plugin/representation claims are not established by the safety-handler scenario."
+    },
+    {
+      "questionId": "ood-n06-b06-i010",
+      "beforeWholeObjectSha256": "967ba262de9447ad3d4b2e5d419979de4c292ba296c84677c0d6c112948f21a3",
+      "currentWholeObjectSha256": "6adea73f1abe0543fab934c470b7bc895a93dd8373275e29c1cc56dfbd469d31",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "Duplicate concurrent choices; errorCorrection’s provider capability, stream owner and timing claims are not about the stable progress identity."
+    },
+    {
+      "questionId": "ood-n06-b06-i011",
+      "beforeWholeObjectSha256": "c2059886e5c57f255dd56d051c6eefe2976895fecaf8ce662fc24b03d237d6b8",
+      "currentWholeObjectSha256": "e1a91f07a0065158134341036358ac07ed278578c231afd87299a1bd6ccae72c",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "Three duplicate choices; errorCorrection’s reviewer regional authority is unrelated to exporting one stable board snapshot."
+    },
+    {
+      "questionId": "ood-n06-b06-i012",
+      "beforeWholeObjectSha256": "01ba27493210001fe1ede91b60e56559fef80c3b868ea50d06f17ac4821b3c93",
+      "currentWholeObjectSha256": "83b8e5fa7b2ad7de06b10d19323ef28d67a522b63b63b4cb2d924d56c89b6cd1",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "errorCorrection is about parsing headers, typed parser results and field counts; none is visible in support escalation."
+    },
+    {
+      "questionId": "ood-n06-b06-i013",
+      "beforeWholeObjectSha256": "b1ae8ecaaf131ad2654522460bf0639ebad8a8e89be9ea8aa3c1247bf42595c8",
+      "currentWholeObjectSha256": "d86943e25ff539915561bcc3d05173d7a46c30d24a2a3e2ae58d7a32240a7edd",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "Four indistinguishable distractors; errorCorrection is about fee-first evaluation/majority voting, not the listing’s category owner and validation."
+    },
+    {
+      "questionId": "ood-n06-b06-i014",
+      "beforeWholeObjectSha256": "c97e1db71ea6cf91fdcdcc5864ad608446b53a24e87eac0aff03ce132c8906b4",
+      "currentWholeObjectSha256": "f438dc29f80486051e12b37f5a2d2cfda1db9acca990876b933947bc4157b59f",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "Partial consumption requires a remainder-continuation explanation, but mechanism and wrong feedback assert terminal acceptance; Details instead describe duplicate notification channels."
+    },
+    {
+      "questionId": "ood-n06-b06-i015",
+      "beforeWholeObjectSha256": "f0a0933211717a9f0e131961e02bace14b02b4077a2ffaf5e2d597ae4946572e",
+      "currentWholeObjectSha256": "7e4fc9c5b233ceb1b185e67047d3eba0db53165abd3a534259abd1593489a827",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "Duplicate concurrent choices; specific-first/code/jurisdiction claims are not the garden’s stated decision facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i016",
+      "beforeWholeObjectSha256": "8102af062bf9df209cd93ddc1b887f27dad1d6188d562824ae07897dbce5c451",
+      "currentWholeObjectSha256": "b328cdaf0d5c2f759a67910c43f793acaa779b0274c5ad4eea59e195819fc769",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "Three duplicate choices; errorCorrection describes repository lookup and endpoint changes, not bundle pricing from component inputs."
+    },
+    {
+      "questionId": "ood-n06-b06-i017",
+      "beforeWholeObjectSha256": "8b6ac83668beb40801f44d96ddd14b04234b3fc648c18011053600f40ea48b6d",
+      "currentWholeObjectSha256": "ae25d190c3c93f5c54f53b0f7bf990e3d119d527072d6627c4bae1fbbc515b24",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "Four indistinguishable distractors; errorCorrection discusses formatter support and request formats rather than station capacity/expiry."
+    },
+    {
+      "questionId": "ood-n06-b06-i018",
+      "beforeWholeObjectSha256": "dbcfab9509bc946b4ca219e257afe5f994f7c4b4fa83c293992992db80c07e70",
+      "currentWholeObjectSha256": "b690a638b91c57a67b98556c73561d6062c5f4104e66541fb12d9dcc228c10a2",
+      "questionIdentityAction": "preserve_question_id",
+      "optionIdentityNote": "The accepted Chain-of-Responsibility decision remains; i014 is the partial-consumption variant of the same chain archetype, but its continuation semantics must be reflected accurately.",
+      "verdict": "REVISE",
+      "finding": "Duplicate rollback/events choices; otherwise the errorCorrection is directionally relevant, but scenarioApplication remains meta-template."
+    }
+  ]
+}

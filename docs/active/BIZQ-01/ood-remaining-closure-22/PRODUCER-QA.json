@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "review": "independent-producer-acceptance",
+  "verdict": "PASS",
+  "scope": "N06/22 fixed producer implementation: exact 180 same-ID corrections, v21 predecessor reconstruction and unchanged historical proof chain.",
+  "sourceCheckpoint": "7648782e57ef6927b90c687f7ae67c62b8ae5ed2",
+  "inputs": {
+    "briefing": {
+      "path": "PRODUCER-BRIEFING.md",
+      "sha256": "b20aa77ae5c1753f944fe69bb1d84a76db6e9ac2cd57b5bd6b00742d295a209b"
+    },
+    "semanticAcceptance": {
+      "path": "SEMANTIC-CURRENT-ACCEPTED-QA.json",
+      "sha256": "3ddac680b864069af4295ac5c2f90d8a83564431b996188b85bdc49effe84ff8"
+    },
+    "producerMap": {
+      "path": "ROOT-N06-PRODUCER-MAP.json",
+      "sha256": "9369a886d8c091b4ee68bbb34818ec2001f1ff42698e59721548074729ef9e68"
+    },
+    "fixedProof": {
+      "path": "PREPARED-FIXED-PROOF22.json",
+      "sha256": "5987128d427d0362b2fe83f6ab62bf2483169374c51941bf23fc3b192f0e089c"
+    }
+  },
+  "implementationFiles": [
+    {"path":"patternly-content/scripts/content/verify-migration.mjs","sha256":"a40af4fab77754dab1690375081ce55be35f7d20200546c8c9c20e1b013af3e6"},
+    {"path":"patternly-content/evidence/business-quality/bizq-01-ood-node-closure-22.json","sha256":"5987128d427d0362b2fe83f6ab62bf2483169374c51941bf23fc3b192f0e089c"},
+    {"path":"patternly-content/tests/bizq01-ood-node-closure-22.test.mjs","sha256":"ef1414d4f88e546ac317fe8d02b9aed0ec570d2c12c3b2b3cd87639d05cbb5d0"},
+    {"path":"patternly-content/tests/ood-cohort16-historical-fixture.mjs","sha256":"5e7570922792e9902899dd72fe4b58d113ff7c9a0c86d20bcc9768372204259f"},
+    {"path":"patternly-content/tests/bizq01-ood-node-closure-21.test.mjs","sha256":"a13751304b10be337f22d5a36b854ed914f1698272549c9a245fc2ef60c0700e"},
+    {"path":"patternly-content/tests/bizq01-migration-proof.test.mjs","sha256":"e7b20db8474b50884fd6be687ce4f8f251f3ad883336c4bb1e87bf9098c1516d"},
+    {"path":"patternly-content/tests/content-builder.test.mjs","sha256":"98a79892396bb8b61cb49cde44002d409ea00514e328f91f7c4c6b5bcdcd5713"},
+    {"path":"patternly-content/tests/odk097-design-session-matrix.test.mjs","sha256":"4ebeb3cc8cd8c5f090bd094f93577ac367e2090451a0aef47161e8af48db84d1"},
+    {"path":"patternly-content/package.json","sha256":"53b99e9ae6f40f621b9ef2ab41fe3acf76054c9f776dd003f93f19b12f117f7e"}
+  ],
+  "producerContract": {
+    "currentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-22",
+    "predecessorVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
+    "sourceFiles": 10,
+    "itemsPerSource": 18,
+    "sameIdCorrections": 180,
+    "questionReplacements": 0,
+    "currentQuestionSetSha256": "c6cf903178b823fb71ac29040f3c5fa5f72c619d3adbb525fc7791756654ac3e",
+    "predecessorQuestionSetSha256": "6d19a75e8eae86869b3ce31b63ad57a6be13fc30532c22e993db6fbc3d0d4d12",
+    "historicalTotals": {
+      "questions": 16077,
+      "historicalQuestions": 16041,
+      "replacements": 594,
+      "sameIdCorrections": 351,
+      "reasonAmendments": 25
+    }
+  },
+  "preservation": {
+    "sourceReceipt": {
+      "path": "ROOT-SOURCE-PRESERVATION-POST-IMPLEMENTATION.json",
+      "sha256": "da2a16b1f1986ce98297a7f1ca63d78ef3492168d727879ce3dbc09dac0c8de4",
+      "preservedOtherOOD": 1233,
+      "preservedAcceptedN01ToN05": 765,
+      "untouchedContentFiles": 943,
+      "priorImmutableProofFiles": 13,
+      "otherArtifacts": 8
+    },
+    "previousGuards": {
+      "path": "ROOT-PREVIOUS-GUARDS-FINAL.json",
+      "sha256": "20c032b647b935ab62c2dedb8e2f5ce419abe8a33447a20b8f5f7652d3a16b81",
+      "unchangedDescriptors": 12,
+      "unchangedPrivateGuardFunctions": 4
+    }
+  },
+  "verification": {
+    "independentFocusedTest": {
+      "command": "/opt/homebrew/opt/node@22/bin/node --test tests/bizq01-ood-node-closure-22.test.mjs",
+      "runtime": "Node v22.22.3",
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "coverage": [
+        "positive exact 22-to-21 reconstruction through the unchanged historical proof chain",
+        "required predecessor proofs",
+        "tampered proof identity, objects, membership, source hashes and accepted keys",
+        "tampered current source, catalog version and missing v21 predecessor",
+        "symlink substitution for proof and source paths",
+        "all accepted and rejected options scored in original and reversed order"
+      ]
+    },
+    "syntaxAndDiff": "node --check on verifier/test/fixture helper and git diff --check passed",
+    "canonicalCoverage": {
+      "initialRun": {
+        "path": "ROOT-PRODUCER-CANONICAL.log",
+        "sha256": "5030d696e9bd945edb6d0b7bd792e02626e0f0d42f6ec3371c6b0f2ba913030e",
+        "tests": 178,
+        "passed": 176,
+        "failed": 2,
+        "failureCause": "Both candidate snapshot tests reached the existing assertCanonicalSourceSnapshot guard before candidate building while the authorized N06 source/catalog was uncommitted."
+      },
+      "postCheckpointResolution": {
+        "path": "ROOT-CANONICAL-SNAPSHOT-RESOLUTION.log",
+        "sha256": "00704756ffa90a4f06883c3b0f37d8f95627516829c46fd87a53f029f9615b9b",
+        "tests": 3,
+        "passed": 3,
+        "failed": 0,
+        "includesBothPreviouslyFailingTests": true,
+        "checkpoint": "7648782e57ef6927b90c687f7ae67c62b8ae5ed2"
+      },
+      "aggregateReceipt": {
+        "path": "ROOT-PRODUCER-CANONICAL.json",
+        "sha256": "684daabbc5cba5a2b1f5c0758aa9434b214d6ec0e01835c5c74a169cfca41d62",
+        "claim": "176 matching passes plus 3 targeted post-checkpoint passes; not a fresh 178/178 single run"
+      }
+    },
+    "migration": {
+      "path": "ROOT-MIGRATION.log",
+      "sha256": "4ac8eee9a6d4c4ef94d181a7b1337e6aae043e037feaf67c2496c8c3b28bddb9",
+      "result": "passed"
+    },
+    "oodContentValidation": {
+      "path": "ROOT-CONTENT-VALIDATION-OOD.log",
+      "sha256": "6a66772a3eb93f463484d52f0fd54e64e587fb3c2f9cfa44f33aef3da980cb1d",
+      "questionCount": 1413,
+      "result": "passed"
+    }
+  },
+  "excludedAcceptance": [
+    "app consumer synchronization or runtime behavior",
+    "candidate readiness or admission",
+    "web provenance or external publication",
+    "native or Premium availability",
+    "full BIZQ-01 completion"
+  ],
+  "errata": [
+    {
+      "field": "implementationFiles[7].sha256",
+      "file": "patternly-content/tests/odk097-design-session-matrix.test.mjs",
+      "oldTranscription": "4ebeb3cc8cd8c5f090bd094f93577ac367e209451a0aef47161e8af48db84d1",
+      "verifiedSha256": "4ebeb3cc8cd8c5f090bd094f93577ac367e2090451a0aef47161e8af48db84d1",
+      "scope": "Metadata-only correction; the reviewed file and verdict are unchanged."
+    }
+  ]
+}

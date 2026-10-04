@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "patternly-bizq01-n06-independent-semantic-review-v1",
+  "unit": "OOD-N06-B10",
+  "verdict": "PASS",
+  "proposal": {
+    "path": "review-inputs/N06-B10-v3.json",
+    "sha256": "e959f3b8c5a843f0fdc917784c24cb83cf2b3b87a26e28fbd996d55cc8f22c72"
+  },
+  "notes": {
+    "path": "review-inputs/N06-B10-v3-NOTES.json",
+    "sha256": "059b4211b5c78b12bbb17497b1dfe3584dd1366d346ff5a3ee5fb8ab8f428a95"
+  },
+  "reusedReview": {
+    "path": "SEMANTIC-N06-B10-v2.md",
+    "scope": "15 unchanged whole objects and all unchanged fields of i001, i005, and i011; prior option, identity, and qualitative cue assessment."
+  },
+  "criteria": {
+    "specPath": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sections": ["4.1", "4.2", "4.3", "4.4", "5B", "5C"]
+  },
+  "changedFieldAssessments": [
+    {
+      "questionId": "ood-n06-b10-i001",
+      "field": "feedback.details.errorCorrection",
+      "decision": "pass",
+      "rationale": "It diagnoses an authorization without booking capacity and no longer asserts that authorization debited the driver."
+    },
+    {
+      "questionId": "ood-n06-b10-i005",
+      "field": "feedback.details.scenarioApplication",
+      "decision": "pass",
+      "rationale": "It preserves local referral identity while explicitly stating that the identifier alone proves neither delivery nor recipient-side deduplication."
+    },
+    {
+      "questionId": "ood-n06-b10-i011",
+      "field": "constraints[0]",
+      "decision": "pass",
+      "rationale": "The same-ID retry requirement is limited to report updates and does not imply bank-side deduplication."
+    },
+    {
+      "questionId": "ood-n06-b10-i011",
+      "field": "interaction.options[answer.optionId].text",
+      "decision": "pass-with-nonblocking-clarity-note",
+      "rationale": "The option distinguishes recording payout release after confirmation from freeing the funds hold on rejection. In context it is decidable; 'record a successful payout only after bank confirmation' would be slightly more direct."
+    }
+  ],
+  "identityReview": {
+    "questionIds": "Preserve all 18; the sequencing, compensation, and projection-retry objectives remain unchanged.",
+    "correctOptionIds": "No identity changes in this correction; the current scenario-specific option IDs remain valid."
+  },
+  "itemDispositions": [
+    {"questionId": "ood-n06-b10-i001", "decision": "pass-corrected"},
+    {"questionId": "ood-n06-b10-i002", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i003", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i004", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i005", "decision": "pass-corrected"},
+    {"questionId": "ood-n06-b10-i006", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i007", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i008", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i009", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i010", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i011", "decision": "pass-corrected"},
+    {"questionId": "ood-n06-b10-i012", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i013", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i014", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i015", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i016", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i017", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b10-i018", "decision": "pass-reused-v2"}
+  ],
+  "limitations": ["Proposal-only semantic review; no source, producer, consumer, runtime, admission, native, or full N06/BIZQ-01 acceptance claim."]
+}

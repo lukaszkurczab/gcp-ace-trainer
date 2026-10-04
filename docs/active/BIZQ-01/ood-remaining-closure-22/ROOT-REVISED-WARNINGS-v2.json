@@ -1,0 +1,157 @@
+{
+  "scope": "Existing console advisory flags on frozen proposals only; no canonical source, approval outcome or semantic acceptance",
+  "inputs": [
+    {
+      "path": "review-inputs/N06-B02-v2.json",
+      "sha256": "2bcb129d105b26b8b84ed9c2898df5a85e062a650103995ab4264952868e674e",
+      "mentalUnitId": "OOD-N06-B02"
+    },
+    {
+      "path": "review-inputs/N06-B07-v2.json",
+      "sha256": "8b2d6da8201b0093809c5f608606867c28ca78c0bfafaeaf70ec4e2557016b13",
+      "mentalUnitId": "OOD-N06-B07"
+    },
+    {
+      "path": "review-inputs/N06-B10-v1.json",
+      "sha256": "16b91e2845748d26aef9f509af728d952d5e2f6918c95a5d0af730f9b9e4ce9b",
+      "mentalUnitId": "OOD-N06-B10"
+    }
+  ],
+  "questionCount": 54,
+  "warningItemCount": 19,
+  "warnings": [
+    {
+      "questionId": "ood-n06-b02-i001",
+      "mentalUnitId": "OOD-N06-B02",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i001",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i002",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i003",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i004",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i005",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i006",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i007",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i008",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i009",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i010",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i011",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i012",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i013",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i014",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i015",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i016",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i017",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    },
+    {
+      "questionId": "ood-n06-b10-i018",
+      "mentalUnitId": "OOD-N06-B10",
+      "riskFlags": [
+        "correct_option_sole_longest"
+      ]
+    }
+  ]
+}

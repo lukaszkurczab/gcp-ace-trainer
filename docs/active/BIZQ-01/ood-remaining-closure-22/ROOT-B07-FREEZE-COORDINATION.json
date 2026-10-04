@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "scope": "Actual freeze coordination and metadata correction, not semantic acceptance",
+  "actualFrozenInputSha256": "77fd48660671d6ac4e57eaa212f98a8114670de4c3078cf2835e346876a9e342",
+  "v4AndV5AndCurrentRawBytesIdentical": true,
+  "notesSha256": "74817c3962e4818e872af50bd02fdca2ee35237f40407f5ad7706e44ee7e4f2d",
+  "earlierAuthorReportedSha256": "66bf04716f8611d3294120a1f5c8ff1dc6bff579f28562df91bf57d27d8e6083",
+  "correction": "Root initially messaged the older author-reported SHA without inspecting the redirected freeze receipt. Author precision edit had already arrived before freeze. Both immutable frozen versions actually bind 77fd; there is no frozen 66bf input, and no historical file was rewritten. Final registry uses v5 and reuses matching v4 bytes if reviewed."
+}

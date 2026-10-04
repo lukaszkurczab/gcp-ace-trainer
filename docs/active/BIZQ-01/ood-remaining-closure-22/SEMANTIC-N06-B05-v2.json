@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "patternly-bizq01-n06-independent-semantic-review-v1",
+  "unit": "OOD-N06-B05",
+  "verdict": "PASS",
+  "proposal": {
+    "path": "review-inputs/N06-B05-v2.json",
+    "sha256": "51db77ba7356e461968b9550ed6f808341f4510fea5c2e372602180ab4299608"
+  },
+  "notes": {
+    "path": "review-inputs/N06-B05-v2-NOTES.json",
+    "sha256": "98b0ad6d333833eef7d159bfc375b50af3b4745a208286ead58e64ac525e74a5"
+  },
+  "reusedReview": {
+    "path": "SEMANTIC-N06-B05-v1.md",
+    "scope": "17 unchanged whole objects; i001 unchanged except scenarioApplication; prior keyed-answer, option, and qualitative longest-answer review."
+  },
+  "criteria": {
+    "sections": ["4.1", "4.2", "4.3", "4.4", "5B", "5C"],
+    "rule": "The explanation must match the visible case and keyed choice; scenario claims must not add unstated guarantees."
+  },
+  "changedFieldAssessment": {
+    "questionId": "ood-n06-b05-i001",
+    "field": "feedback.details.scenarioApplication",
+    "decision": "pass",
+    "rationale": "It limits the coordinator's effect to consistent call sequencing and expressly does not claim that access is denied throughout the update. This matches the prompt and the existing disclaimer of distributed atomicity/rollback."
+  },
+  "identityReview": {
+    "questionIds": "Preserve all 18; the correction does not alter the primary Mediator decision.",
+    "correctOptionIds": "Unchanged; the keyed option remains the narrow coordination boundary supported by the scenario."
+  },
+  "itemDispositions": [
+    {"questionId": "ood-n06-b05-i001", "decision": "pass-corrected-scenarioApplication"},
+    {"questionId": "ood-n06-b05-i002", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i003", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i004", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i005", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i006", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i007", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i008", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i009", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i010", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i011", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i012", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i013", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i014", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i015", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i016", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i017", "decision": "pass-reused-v1"},
+    {"questionId": "ood-n06-b05-i018", "decision": "pass-reused-v1"}
+  ],
+  "limitations": ["Proposal-only review; no source, producer, runtime, consumer, admission, native, or full-N06 acceptance claim."]
+}

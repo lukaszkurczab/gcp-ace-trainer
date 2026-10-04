@@ -1,0 +1,633 @@
+{
+  "scope": "Actual exact retained option IDs with changed text; semantic identity review required, text difference alone is not a defect verdict. No global option-ID uniqueness gate.",
+  "frozenInputs": [
+    {
+      "unit": "B01",
+      "version": "v1",
+      "sha256": "259cc143512849ffc408879253d4ee622494938a9b8172ee9b59917d1ce890eb"
+    },
+    {
+      "unit": "B02",
+      "version": "v2",
+      "sha256": "2bcb129d105b26b8b84ed9c2898df5a85e062a650103995ab4264952868e674e"
+    },
+    {
+      "unit": "B03",
+      "version": "v1",
+      "sha256": "6cb88be1e41095f3d02f548c0b9531d3db7061aff597f868eb5eee019e2bfcdd"
+    },
+    {
+      "unit": "B04",
+      "version": "v1",
+      "sha256": "7a31f2f34c67f5614f6c46a64c88fd113e732b07d56d702cddeafa3b5b7c2eda"
+    },
+    {
+      "unit": "B05",
+      "version": "v2",
+      "sha256": "51db77ba7356e461968b9550ed6f808341f4510fea5c2e372602180ab4299608"
+    },
+    {
+      "unit": "B06",
+      "version": "v3",
+      "sha256": "d9b5b93e41445b8faf6b1d5f554d0eac45ce455d6a0e8963d4d3b7b65778dedd"
+    },
+    {
+      "unit": "B07",
+      "version": "v2",
+      "sha256": "8b2d6da8201b0093809c5f608606867c28ca78c0bfafaeaf70ec4e2557016b13"
+    },
+    {
+      "unit": "B08",
+      "version": "v2",
+      "sha256": "7800c2a9bb1baa3fcfbb88f6120d7f28eb038c4059922f3f18baf1a032d1e702"
+    },
+    {
+      "unit": "B09",
+      "version": "v1",
+      "sha256": "1418a98fc46496a70f680214422f1bfea50e043663de73791ce392e26b61ea61"
+    },
+    {
+      "unit": "B10",
+      "version": "v1",
+      "sha256": "16b91e2845748d26aef9f509af728d952d5e2f6918c95a5d0af730f9b9e4ce9b"
+    }
+  ],
+  "items": [
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i001",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it.",
+      "currentText": "Run classification handlers in order; each returns a class or passes, while refund eligibility stays separate.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i002",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it.",
+      "currentText": "Try snapshot backends in order; return a complete version-bound snapshot or pass without publishing.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i003",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it.",
+      "currentText": "Offer the accepted comment to ordered notification handlers; stop when one accepts the assigned-author notice.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i004",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “a submission is either complete or explicitly retryable” inside the owner that can observe and enforce it.",
+      "currentText": "Try submission handlers in order; one accepts the whole inspection or passes it unchanged for retry.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i005",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “the new issue is traceable and does not double-charge the customer” inside the owner that can observe and enforce it.",
+      "currentText": "Offer the rejected invoice to its ordered reissue handlers; the first eligible one issues its traceable replacement.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i006",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “revocation is visible to the door policy before access is granted” inside the owner that can observe and enforce it.",
+      "currentText": "Evaluate the access rules in order; revocation is terminal, and an inapplicable rule passes.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i007",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “the printed label represents the current approved shipment data” inside the owner that can observe and enforce it.",
+      "currentText": "Try carrier/service label formatters in order; return the first label for approved shipment data.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i008",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “the room capacity and cancellation policy must remain consistent” inside the owner that can observe and enforce it.",
+      "currentText": "Offer the room move to prioritized room handlers; the first that meets both conditions claims it.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i009",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “unsafe commands are rejected while maintenance is active” inside the owner that can observe and enforce it.",
+      "currentText": "Pass the command through ordered safety handlers; the first applicable unsafe-command rule denies it.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i010",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “progress refers to a stable lesson identity” inside the owner that can observe and enforce it.",
+      "currentText": "Try progress handlers by supported record form; the first retires the lesson while preserving identity.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i011",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “export observes a stable session state” inside the owner that can observe and enforce it.",
+      "currentText": "Try export handlers in order; return the first complete history for the stable session state.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i012",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “the escalation keeps ownership and response deadlines” inside the owner that can observe and enforce it.",
+      "currentText": "Offer escalation to ordered tiers; the first that can meet the deadline owns the conversation.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i013",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “a listing cannot become visible before its price and stock rule are valid” inside the owner that can observe and enforce it.",
+      "currentText": "Pass the listing through ordered product rules; publish only after its matching rule validates price and stock.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i014",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “each split retains the original request identity and delivery promise” inside the owner that can observe and enforce it.",
+      "currentText": "Offer each vendor the remaining quantity; accept a split or pass the remainder while retaining request identity.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i015",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “transfer preserves the plot boundary and approval history” inside the owner that can observe and enforce it.",
+      "currentText": "Evaluate transfer authorities in order; the first applicable decision approves or denies without losing history.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i016",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “the bundle pricing policy remains consistent with its components” inside the owner that can observe and enforce it.",
+      "currentText": "Try regional pricing handlers in order; the matching handler computes from the bundle’s component inputs.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i017",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “charger capacity and reservation expiry are coordinated” inside the owner that can observe and enforce it.",
+      "currentText": "Offer the slot to station handlers in priority order; the first with capacity and a valid expiry claims it.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B06",
+      "questionId": "ood-n06-b06-i018",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “asset identity remains stable while descriptive values are replaced” inside the owner that can observe and enforce it.",
+      "currentText": "Offer each conflict to its metadata handler; the first matching handler resolves it without changing asset identity.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i001",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “conflicts are explicit and never silently overwrite accepted geometry” inside the owner that can observe and enforce it.",
+      "currentText": "Keep the merge sequence fixed; vary only the conflict-summary hook after overlap detection.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i002",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it.",
+      "currentText": "Keep state validation and ledger recording in the shared workflow; vary only reward calculation.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i003",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it.",
+      "currentText": "Keep temperature validation and hand-off transfer ordered; vary only carrier-specific conversion.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i004",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “a repayment cannot reduce the outstanding balance below zero” inside the owner that can observe and enforce it.",
+      "currentText": "Keep balance validation and allocation recording fixed; vary only the distribution formula.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i005",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “the bracket advances only from a legal match state” inside the owner that can observe and enforce it.",
+      "currentText": "Keep legal-transition validation before bracket advancement; vary only timeout eligibility.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i006",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it.",
+      "currentText": "Keep condition gathering and classification order fixed; vary criteria without absorbing refund eligibility.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i007",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it.",
+      "currentText": "Keep input/version verification before capture and publication; vary only storage capture.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i008",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it.",
+      "currentText": "Keep author/revision binding and persistence before notification; vary only the channel step.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i009",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “a submission is either complete or explicitly retryable” inside the owner that can observe and enforce it.",
+      "currentText": "Keep completeness validation and whole-record outcome fixed; vary only offline persistence.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i010",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “the new issue is traceable and does not double-charge the customer” inside the owner that can observe and enforce it.",
+      "currentText": "Keep rejection verification and charge-link recording fixed; vary only replacement rendering.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i011",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “revocation is visible to the door policy before access is granted” inside the owner that can observe and enforce it.",
+      "currentText": "Keep revocation visibility before acknowledgment; vary only credential-store recording.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i012",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “the printed label represents the current approved shipment data” inside the owner that can observe and enforce it.",
+      "currentText": "Keep approved-revision verification before printing; vary only carrier formatting.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i013",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “the room capacity and cancellation policy must remain consistent” inside the owner that can observe and enforce it.",
+      "currentText": "Keep capacity and cancellation checks before reservation transfer; vary only room-specific capacity calculation.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i014",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “unsafe commands are rejected while maintenance is active” inside the owner that can observe and enforce it.",
+      "currentText": "Keep maintenance check and audit order fixed; vary only the exhibit-specific safety predicate.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i015",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “progress refers to a stable lesson identity” inside the owner that can observe and enforce it.",
+      "currentText": "Keep stable identity and retirement order fixed; vary only progress-record migration.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i016",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “export observes a stable session state” inside the owner that can observe and enforce it.",
+      "currentText": "Keep state capture before close and export; vary only history serialization.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i017",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “the escalation keeps ownership and response deadlines” inside the owner that can observe and enforce it.",
+      "currentText": "Keep tier selection before ownership transfer and notice; vary only tier eligibility.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B07",
+      "questionId": "ood-n06-b07-i018",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Fix the invariant algorithm skeleton only when subclasses can vary bounded steps without violating the skeleton. In this case, that keeps the rule “a listing cannot become visible before its price and stock rule are valid” inside the owner that can observe and enforce it.",
+      "currentText": "Keep price/stock validation before visibility; vary only product-specific validation.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i001",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.",
+      "currentText": "Expose an ordered iterator over settled-order entries; keep payout release and reconciliation separate from the collection representation.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i002",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.",
+      "currentText": "Expose an iterator over the effective-time feed; let announcement, replay, and audit consume that sequence separately.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i003",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it.",
+      "currentText": "Use separate visitors for overlap and capacity operations over the stable nodes; keep schedule membership and ordering with the schedule.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i004",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “the current stream keeps its timing and error contract” inside the owner that can observe and enforce it.",
+      "currentText": "Expose read-only ordered traversal of CaptionSegment records; keep subtitle export and timing analysis separate from the provider.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i005",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “skills and availability constraints hold for both assignments” inside the owner that can observe and enforce it.",
+      "currentText": "Add visitor operations for fairness and qualification over the stable roster nodes; leave membership and relationships with the roster.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i006",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “conflicts are explicit and never silently overwrite accepted geometry” inside the owner that can observe and enforce it.",
+      "currentText": "Use visitors for merge and conflict-report operations over the stable route tree; keep geometry and tree ownership with the route model.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i007",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it.",
+      "currentText": "Use visitors to calculate rewards and explain eligibility over stable campaign nodes; keep the legal state transition with the campaign owner.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i008",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it.",
+      "currentText": "Provide an ordered iterator over PackageUnit records; keep reassignment and its hand-off rules with the shipment operation.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i009",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “a repayment cannot reduce the outstanding balance below zero” inside the owner that can observe and enforce it.",
+      "currentText": "Expose a read-only due-date iterator for planning and aging; let the ledger-owned command apply the allocation.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i010",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “the bracket advances only from a legal match state” inside the owner that can observe and enforce it.",
+      "currentText": "Use visitors for bracket rendering and forfeit auditing over stable node types; keep match transitions and advancement with the bracket owner.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i011",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it.",
+      "currentText": "Expose an ordered iterator over ConditionFinding records; keep classification and evidence export outside the list representation.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i012",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it.",
+      "currentText": "Use separate visitors for provenance audit and retention analysis over stable artifact nodes; keep snapshot identity with the snapshot owner.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i013",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it.",
+      "currentText": "Use visitors for anchor-integrity and redaction audits over the stable revision tree; keep comment acceptance and notification with the workflow.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i014",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “a submission is either complete or explicitly retryable” inside the owner that can observe and enforce it.",
+      "currentText": "Expose a read-only iterator over ordered SectionResult records; keep completion status with the submission operation.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i015",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “the new issue is traceable and does not double-charge the customer” inside the owner that can observe and enforce it.",
+      "currentText": "Expose ordered iteration over invoice lines for reconciliation; keep reissue and charging with the ledger owner.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i016",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “revocation is visible to the door policy before access is granted” inside the owner that can observe and enforce it.",
+      "currentText": "Use visitors for access audit and stale-session inspection over stable graph nodes; keep revocation and access control with the graph owner.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i017",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “the printed label represents the current approved shipment data” inside the owner that can observe and enforce it.",
+      "currentText": "Use visitors for compliance review and label rendering over stable shipment nodes; leave shipment structure and approved-data ownership with the shipment model.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B08",
+      "questionId": "ood-n06-b08-i018",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Separate traversal from an operation only when traversal or operations vary independently and ownership stays clear. In this case, that keeps the rule “the room capacity and cancellation policy must remain consistent” inside the owner that can observe and enforce it.",
+      "currentText": "Expose an ordered iterator over room bookings; keep overlap checks, utilization, and mutations outside the list representation.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i001",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “completion records the exercise version and score policy” inside the owner that can observe and enforce it.",
+      "currentText": "Persist the valid version-bound completion first, then record a completion event for retryable badge and analytics consumers; keep score validation in the completion owner.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i002",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “approval is attributable, bounded, and cannot bypass required controls” inside the owner that can observe and enforce it.",
+      "currentText": "Have the approval owner validate scope and controls, persist the attributed approval, then record an ExceptionApproved event for retryable indexing and notice.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i003",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “annotations follow stable segments rather than file offsets” inside the owner that can observe and enforce it.",
+      "currentText": "After the validated reference switch, record a RecordingReferenceReplaced event with stable segment identifiers for the retryable search refresh.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i004",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “the role expires and is attributable to a specific approval” inside the owner that can observe and enforce it.",
+      "currentText": "Validate the approval and expiry in the grant owner, persist the attributable grant, and record RoleGranted for audit indexing; authorization must still check expiry directly.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i005",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “the seal covers the exact immutable revision” inside the owner that can observe and enforce it.",
+      "currentText": "Record the seal for the exact immutable revision, then emit RevisionSealed for the retryable public-index refresh.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i006",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.",
+      "currentText": "Keep settlement and idempotency checks in the payout owner, record the release result, then publish PayoutReleased for the deduplicating report.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i007",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.",
+      "currentText": "Record PlatformChangeAccepted with its assigned sequence after the board accepts it; let displays apply events by that sequence and retry refreshes.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i008",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it.",
+      "currentText": "Keep the no-overlap check and reservation in the schedule owner, then publish DischargeWindowReserved for notice consumers to deduplicate by reservation ID.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i009",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “the current stream keeps its timing and error contract” inside the owner that can observe and enforce it.",
+      "currentText": "Validate and switch the provider in the stream owner, then record CaptionProviderChanged for monitoring consumers.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i010",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “skills and availability constraints hold for both assignments” inside the owner that can observe and enforce it.",
+      "currentText": "Validate and apply the two-assignment swap in the roster owner, then publish AssignmentsSwapped with its swap ID for the audit feed.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i011",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “conflicts are explicit and never silently overwrite accepted geometry” inside the owner that can observe and enforce it.",
+      "currentText": "After the route owner commits the validated merge, record RouteMergeAccepted for the retryable search projection; do not let that projection resolve conflicts.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i012",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it.",
+      "currentText": "Validate and record the reward with the campaign transition, then publish RewardApplied for achievement-summary consumers keyed by reward ID.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i013",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it.",
+      "currentText": "Validate and record the hand-off in the shipment owner, then publish CarrierHandoffAccepted with the shipment revision for tracking.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i014",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “a repayment cannot reduce the outstanding balance below zero” inside the owner that can observe and enforce it.",
+      "currentText": "Keep the balance check and allocation in the ledger, then publish RepaymentAllocated with its allocation ID for report and notice consumers.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i015",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “the bracket advances only from a legal match state” inside the owner that can observe and enforce it.",
+      "currentText": "Validate and advance the bracket in one legal transition, then publish MatchForfeited for standings and notice consumers keyed by match ID.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i016",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it.",
+      "currentText": "Record the accepted ReturnClassified fact after inspection, then let the routing dashboard refresh; keep refund eligibility as a separate decision.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i017",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it.",
+      "currentText": "Persist the snapshot identity with its immutable input and code references, then publish SnapshotRecorded for catalog and retention consumers.",
+      "isAccepted": true
+    },
+    {
+      "unit": "B09",
+      "questionId": "ood-n06-b09-i018",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Publish a domain event for meaningful state change and side-effect decoupling, not to hide a required synchronous invariant. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it.",
+      "currentText": "Persist the attributed comment first, then publish CommentAccepted with its comment ID for the retryable notification consumer.",
+      "isAccepted": true
+    }
+  ]
+}

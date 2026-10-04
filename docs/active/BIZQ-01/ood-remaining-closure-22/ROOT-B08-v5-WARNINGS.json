@@ -1,0 +1,13 @@
+{
+  "scope": "Existing console advisory flags on frozen proposals only; no canonical source, approval outcome or semantic acceptance",
+  "inputs": [
+    {
+      "path": "review-inputs/N06-B08-v5.json",
+      "sha256": "6a6c6f39eb91c3f80117ed9b55f223977e9d670c734452701299ba111a945baa",
+      "mentalUnitId": "OOD-N06-B08"
+    }
+  ],
+  "questionCount": 18,
+  "warningItemCount": 0,
+  "warnings": []
+}

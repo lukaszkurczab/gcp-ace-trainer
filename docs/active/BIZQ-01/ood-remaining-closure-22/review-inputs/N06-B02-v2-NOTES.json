@@ -1,0 +1,258 @@
+{
+  "sourceNotes": "AUTHOR-NOTES-B01-B05.json",
+  "sourceNotesSha256": "d52194f78a5f194b2479e62b990a5353795f5e71167e7deac0bd6827eea797ad",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n06-b02-i001",
+      "questionId": "ood-n06-b02-i001",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces the same operation has different legal outcomes by lifecycle stage, and an early request must not advance the referral.",
+      "decisiveFact": "The same operation has different legal outcomes by lifecycle stage, and an early request must not advance the referral.",
+      "nearestAlternative": "A guard in the coordinator can reject early calls, but it leaves each caller responsible for stage-specific behavior as the workflow grows.",
+      "changedCondition": "If only transmission were allowed and all other operations were stage-independent, a simple guard could be enough.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a clinic referral coordinator, the care navigator must route a referral to a specialist. Privacy and consent rules apply before external disclosure. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “privacy and consent rules apply before external disclosure” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “The same operation has different legal outcomes by lifecycle stage, and an early request must not advance the referral.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i002",
+      "questionId": "ood-n06-b02-i002",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces three operations have different allowed outcomes across three stages, including operations that must leave the order unchanged.",
+      "decisiveFact": "Three operations have different allowed outcomes across three stages, including operations that must leave the order unchanged.",
+      "nearestAlternative": "A status switch in the API can cover the current cases, but the rules are already spread across three operations and will change with new stages.",
+      "changedCondition": "If only one operation checked a single status, a local guard would be simpler than separate state behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a music practice tracker, the learner must complete a timed exercise. Completion records the exercise version and score policy. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “completion records the exercise version and score policy” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Three operations have different allowed outcomes across three stages, including operations that must leave the order unchanged.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i003",
+      "questionId": "ood-n06-b02-i003",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces archive is legal only after decision, and repetition in that terminal stage returns an existing result without another record.",
+      "decisiveFact": "Archive is legal only after decision, and repetition in that terminal stage returns an existing result without another record.",
+      "nearestAlternative": "An application-service guard is plausible, but the archive response itself depends on whether the application is decided or already archived.",
+      "changedCondition": "If archival were a one-off command with no repeated call or stage-specific operations, a service-level guard could suffice.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a procurement approval queue, the purchasing manager must approve an exception. Approval is attributable, bounded, and cannot bypass required controls. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “approval is attributable, bounded, and cannot bypass required controls” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Archive is legal only after decision, and repetition in that terminal stage returns an existing result without another record.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i004",
+      "questionId": "ood-n06-b02-i004",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces cancellation has a permitted transition during scanning but must not alter an already published asset.",
+      "decisiveFact": "Cancellation has a permitted transition during scanning but must not alter an already published asset.",
+      "nearestAlternative": "A cancel endpoint condition could guard the published state, but adding scan and rejection outcomes makes the lifecycle rule span several transitions.",
+      "changedCondition": "If only published assets could ever be canceled, one local endpoint check might be sufficient.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a podcast production desk, the episode producer must replace a source recording while preserving annotations. Annotations follow stable segments rather than file offsets. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “annotations follow stable segments rather than file offsets” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Cancellation has a permitted transition during scanning but must not alter an already published asset.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i005",
+      "questionId": "ood-n06-b02-i005",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces renew and reactivate are distinct legal operations, and expired memberships require a check before reactivation.",
+      "decisiveFact": "Renew and reactivate are distinct legal operations, and expired memberships require a check before reactivation.",
+      "nearestAlternative": "A single membership service can branch on status, but the active and expired paths have materially different operations and prerequisites.",
+      "changedCondition": "If all stages supported the same renewal operation and only the price differed, a policy parameter would be simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a permissions review service, the security reviewer must grant a temporary role. The role expires and is attributable to a specific approval. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “the role expires and is attributable to a specific approval” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Renew and reactivate are distinct legal operations, and expired memberships require a check before reactivation.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i006",
+      "questionId": "ood-n06-b02-i006",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces measurement is permitted only from prepared, and discarded is an irreversible terminal state.",
+      "decisiveFact": "Measurement is permitted only from prepared, and discarded is an irreversible terminal state.",
+      "nearestAlternative": "A station-side status check is plausible, but the prompt says the station does not inspect status before invoking the operation.",
+      "changedCondition": "If measurement were always legal and only its numeric algorithm changed, behavior substitution would be a separate concern.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a document notarization service, the notary must seal a document revision. The seal covers the exact immutable revision. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “the seal covers the exact immutable revision” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Measurement is permitted only from prepared, and discarded is an irreversible terminal state.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i007",
+      "questionId": "ood-n06-b02-i007",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces check-in is allowed only after confirmation, and a released reservation must remain released on retries.",
+      "decisiveFact": "Check-in is allowed only after confirmation, and a released reservation must remain released on retries.",
+      "nearestAlternative": "Endpoint code can reject a released ID, but the other transitions and expiry rules also depend on the reservation's stage.",
+      "changedCondition": "If clients issued only one operation with a single eligibility condition, one validation rule could suffice.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a marketplace payout service, the finance operator must release a seller payout. Release is idempotent and tied to a settled order. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Check-in is allowed only after confirmation, and a released reservation must remain released on retries.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i008",
+      "questionId": "ood-n06-b02-i008",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces the same response operation is permitted in two stages but prohibited when resolved; reopen is the transition back to work.",
+      "decisiveFact": "The same response operation is permitted in two stages but prohibited when resolved; reopen is the transition back to work.",
+      "nearestAlternative": "The agent interface can hide buttons, but older or automated callers may still invoke the case operations.",
+      "changedCondition": "If the UI were the only caller and all case operations were stage-independent, hiding controls might suffice.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a public-transit disruption board, the service controller must announce a platform change. Passengers receive the change in the order in which it becomes effective. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “The same response operation is permitted in two stages but prohibited when resolved; reopen is the transition back to work.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i009",
+      "questionId": "ood-n06-b02-i009",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces cancellation has three distinct stage-specific outcomes, and success is a terminal state that preserves the result.",
+      "decisiveFact": "Cancellation has three distinct stage-specific outcomes, and success is a terminal state that preserves the result.",
+      "nearestAlternative": "One job service could switch on status, but it must coordinate three different outcomes with later state changes.",
+      "changedCondition": "If cancel were only allowed while queued, a single local precondition could be enough.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a neighborhood energy-sharing service, the meter operator must reserve a discharge window. A meter cannot be committed twice for an overlapping window. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Cancellation has three distinct stage-specific outcomes, and success is a terminal state that preserves the result.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i010",
+      "questionId": "ood-n06-b02-i010",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces both operations vary by lifecycle stage, and signed is explicitly irreversible.",
+      "decisiveFact": "Both operations vary by lifecycle stage, and signed is explicitly irreversible.",
+      "nearestAlternative": "A document controller can check status before each call, but the rules must remain consistent for every caller and both operations.",
+      "changedCondition": "If only one operation had one invariant across all stages, a direct method guard might remain clearer.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a live captioning studio, the caption supervisor must switch the active language provider. The current stream keeps its timing and error contract. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “the current stream keeps its timing and error contract” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Both operations vary by lifecycle stage, and signed is explicitly irreversible.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i011",
+      "questionId": "ood-n06-b02-i011",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces capture needs approval, repeats return an existing result, and declined is a terminal non-capture outcome.",
+      "decisiveFact": "Capture needs approval, repeats return an existing result, and declined is a terminal non-capture outcome.",
+      "nearestAlternative": "The payment gateway can branch on a status enum, but retries and distinct terminal outcomes must stay consistent for every entry point.",
+      "changedCondition": "If capture were invoked once from a single known state and no repeated result mattered, a small explicit command guard might suffice.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a volunteer coordination hub, the shift manager must swap two volunteer assignments. Skills and availability constraints hold for both assignments. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “skills and availability constraints hold for both assignments” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Capture needs approval, repeats return an existing result, and declined is a terminal non-capture outcome.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i012",
+      "questionId": "ood-n06-b02-i012",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces return is allowed from two stages but has a defined repeated outcome after return; check-out is available-only.",
+      "decisiveFact": "Return is allowed from two stages but has a defined repeated outcome after return; check-out is available-only.",
+      "nearestAlternative": "A rental service could own a matrix, but each operation has multiple state-specific outcomes and clients should not reproduce them.",
+      "changedCondition": "If the process had only check-out and no overdue or repeat-return behavior, a single guard may be sufficient.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a local-first map editor, the cartographer must merge an offline route edit. Conflicts are explicit and never silently overwrite accepted geometry. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “conflicts are explicit and never silently overwrite accepted geometry” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Return is allowed from two stages but has a defined repeated outcome after return; check-out is available-only.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i013",
+      "questionId": "ood-n06-b02-i013",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces review, appeal, and reopening differ by stage, and dismissed items are explicitly terminal.",
+      "decisiveFact": "Review, appeal, and reopening differ by stage, and dismissed items are explicitly terminal.",
+      "nearestAlternative": "Role-specific screens can hide actions, but both reviewer and appeal callers need the same lifecycle rule at the item itself.",
+      "changedCondition": "If appeal eligibility depended only on a caller's role and not item stage, a separate authorization policy would be central.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a board-game campaign manager, the campaign host must apply a reward to a character. Reward rules depend on the current legal campaign state. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Review, appeal, and reopening differ by stage, and dismissed items are explicitly terminal.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i014",
+      "questionId": "ood-n06-b02-i014",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces operations have different stage prerequisites and success is an immutable terminal state.",
+      "decisiveFact": "Operations have different stage prerequisites and success is an immutable terminal state.",
+      "nearestAlternative": "A scheduler switch could check the stage, but the build API is also called by diagnostic and retry tools.",
+      "changedCondition": "If the scheduler were the sole caller and only configuration were checked once, local validation could be enough.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a cold-chain logistics console, the dispatch planner must reassign a shipment to a carrier. Temperature restrictions and hand-off ownership travel with the shipment. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Operations have different stage prerequisites and success is an immutable terminal state.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i015",
+      "questionId": "ood-n06-b02-i015",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces the correction operation changes meaning after carrier acceptance, and delivered parcels cannot return to transit.",
+      "decisiveFact": "The correction operation changes meaning after carrier acceptance, and delivered parcels cannot return to transit.",
+      "nearestAlternative": "The shipping screen can track carrier status, but scanners and support tools also invoke parcel operations.",
+      "changedCondition": "If all corrections were handled before any carrier handoff, a simpler mutable-address model could work.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a cooperative lending ledger, the account steward must record a repayment allocation. A repayment cannot reduce the outstanding balance below zero. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “a repayment cannot reduce the outstanding balance below zero” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “The correction operation changes meaning after carrier acceptance, and delivered parcels cannot return to transit.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i016",
+      "questionId": "ood-n06-b02-i016",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces confirmation depends on a seat assignment, waitlist acceptance is a distinct transition, and withdrawal is terminal.",
+      "decisiveFact": "Confirmation depends on a seat assignment, waitlist acceptance is a distinct transition, and withdrawal is terminal.",
+      "nearestAlternative": "Registration logic can branch on enrollment status, but support uses the same methods and must not implement a separate transition table.",
+      "changedCondition": "If all callers used one operation whose outcome was independent of status, a state-specific boundary would add little.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a tournament bracket service, the match official must forfeit a match after a timeout. The bracket advances only from a legal match state. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “the bracket advances only from a legal match state” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Confirmation depends on a seat assignment, waitlist acceptance is a distinct transition, and withdrawal is terminal.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i017",
+      "questionId": "ood-n06-b02-i017",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces receive and refund have ordered prerequisites, with a distinct existing-result response after refund.",
+      "decisiveFact": "Receive and refund have ordered prerequisites, with a distinct existing-result response after refund.",
+      "nearestAlternative": "A warehouse or finance screen can validate the stage, but both systems call the return record and may retry requests.",
+      "changedCondition": "If refund had one caller and no prior receive prerequisite, service-level validation might suffice.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a returns inspection workflow, the warehouse inspector must classify a returned item. Classification and refund eligibility are not the same responsibility. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Receive and refund have ordered prerequisites, with a distinct existing-result response after refund.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i018",
+      "questionId": "ood-n06-b02-i018",
+      "mentalUnitId": "OOD-N06-B02",
+      "learningObjective": "Choose a design that enforces confirmation depends on a live hold, cancellation is terminal, and repeating cancellation returns a prior result.",
+      "decisiveFact": "Confirmation depends on a live hold, cancellation is terminal, and repeating cancellation returns a prior result.",
+      "nearestAlternative": "A booking controller can check the hold deadline, but it must also preserve the terminal cancellation behavior across all callers.",
+      "changedCondition": "If the booking only transitioned once and had no terminal retry behavior, a single conditional could be enough.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original item asks about In a research-notebook platform, the experiment owner must publish a result snapshot. Published outputs reference immutable inputs and code versions. Its accepted key says “Represent legal state transitions explicitly when allowed operations and outcomes depend on current state. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it.” and assesses explicit lifecycle-stage behavior. This version retains that same State-machine decision while making the allowed operations and outcomes case-specific: “Confirmation depends on a live hold, cancellation is terminal, and repeating cancellation returns a prior result.” Preserve the original question ID.",
+      "sourceRefs": [
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+
+> patternly-content@1.0.0 content:validate
+> node scripts/build.mjs validate
+
+--track is required for validate
+Usage: node scripts/build.mjs <validate|test|build> --track <trackId> [--root <dir>] [--output-root <dir>] | build-all [--root <dir>] [--output-root <dir>]

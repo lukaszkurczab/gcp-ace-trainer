@@ -1,0 +1,206 @@
+{
+  "schemaVersion": "patternly-bizq01-independent-semantic-review-v1",
+  "reviewId": "N06-B02-v1",
+  "verdict": "REVISE",
+  "frozenProposal": {
+    "path": "review-inputs/N06-B02-v1.json",
+    "sha256": "4821f373e08c36feb7e066f7abe532aac0bb26ec11ce63e9824f83d82e178dd8"
+  },
+  "frozenAuthorNotes": {
+    "path": "review-inputs/AUTHOR-NOTES-N06-B02-v1.json",
+    "sha256": "a3f388cafe3fd9cb7754c75e07a5f183f2f5d08548807c60e6ae6772e0fd782a"
+  },
+  "manifest": {
+    "path": "N06-MANIFEST.json",
+    "sha256": "be9cb40617caaaa8e18a41d06039c5bab3bc56eeb911b273bf21c7523569c5c3"
+  },
+  "contract": {
+    "path": "N06-CONTRACT.json",
+    "sha256": "c6b5612e21fb66a540eba31514510df49b302f8f1089cf474f2ac5880b4205fb"
+  },
+  "specification": {
+    "path": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sha256": "67aba008969eb570c86e1fbefc5b88a5e65f422d160fc7dcfd38084b59ff67d5"
+  },
+  "baseline": {
+    "gitCommit": "b7034f16bb77db4dde2ae27c13ef706b0301f6bb",
+    "sourcePath": "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B02.json",
+    "sourceSha256": "9201e8880000b15c65b02dde6998ce1917058fd83c2d9a31461635e4e604587d",
+    "wholeObjectHashEncoding": "SHA-256 of compact insertion-order JSON (ensure_ascii=False; separators comma-colon, comma-colon)"
+  },
+  "summary": {
+    "itemsReviewed": 18,
+    "pass": 15,
+    "revise": 3,
+    "identityDecision": "Preserve question IDs i001–i018: all current items retain the accepted State-pattern primary decision. New option IDs remain appropriate only where individual answer meaning changed.",
+    "optionShapeAdvisory": "Existing console flags sole-longest keyed option in 15 items: i019–i021, i023–i027, i029–i031, i033–i036. Qualitative §4.3 risk only; no count/length gate."
+  },
+  "items": [
+    {
+      "beforeQuestionId": "ood-n06-b02-i001",
+      "beforeCompactInsertionOrderSha256": "bf4201dd9a76441dc601eb0debdc3760c1fb76391e29b32d22a122a2967732fc",
+      "proposedQuestionId": "ood-n06-b02-i019",
+      "currentCompactInsertionOrderSha256": "84c0770bcad8a14e833cbd72f202261a796ef1871e66e4d08a0a299782de2ae1",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "REVISE",
+      "rationale": "Same primary State-pattern decision; preserve existing question ID. The scenario supports state-specific behavior at the lifecycle owner, but not the stronger separate-State-object requirement stated in Details: one transmit operation can use an owner-local status conditional or transition table."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i002",
+      "beforeCompactInsertionOrderSha256": "837fdae265a4dd9255164b9d62c2c8145f60f94f1d006172d3ab4344a6f71de8",
+      "proposedQuestionId": "ood-n06-b02-i020",
+      "currentCompactInsertionOrderSha256": "c96dac0c3c85e3abf131ec8f205dd4e2bd1c2e8081fb8619eff5c5f083c1c8d5",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i003",
+      "beforeCompactInsertionOrderSha256": "dfd98f78bcca1cd8a2ae456675acfd6c4bfa6d1df0671a388975282027988d78",
+      "proposedQuestionId": "ood-n06-b02-i021",
+      "currentCompactInsertionOrderSha256": "3f070dcbd0234adfa99bb0d561035fc8aaa2f30dd1f8f796aa2dba5553e391df",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "REVISE",
+      "rationale": "Same primary decision; preserve existing question ID. The key relies on an archived stage absent from the listed received/under-review/decided lifecycle; add it visibly or remove the dependency."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i004",
+      "beforeCompactInsertionOrderSha256": "0b8f5ca0860f78ade0918a49916c974e29ef57ae6656fbd1b94fc98fd030e5b7",
+      "proposedQuestionId": "ood-n06-b02-i022",
+      "currentCompactInsertionOrderSha256": "e7c220fe3112ec396396c00f154984edb1a6ac06bd8f8b5c9574b251b78a43b9",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i005",
+      "beforeCompactInsertionOrderSha256": "4009aa7c317b2721493afae36a62efc1265dfe9c5f910abdafe63b5bc0c08991",
+      "proposedQuestionId": "ood-n06-b02-i023",
+      "currentCompactInsertionOrderSha256": "cc921dc17ceef771a3dad78ef849ff29f76f23d633ab31886d364f8136687500",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i006",
+      "beforeCompactInsertionOrderSha256": "fb0ec68432f6c1c602da34bae16d353a8b3e74195c2de1dc92d051e1f8328fab",
+      "proposedQuestionId": "ood-n06-b02-i024",
+      "currentCompactInsertionOrderSha256": "43e0847b3f86317c69d95937f9caecd2a61c8a8e5801d49eccc63748267b7004",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i007",
+      "beforeCompactInsertionOrderSha256": "4fa39776257dafbbc3fdf50b9726b8ca006d896a298f184c2297f6a0d8abf28b",
+      "proposedQuestionId": "ood-n06-b02-i025",
+      "currentCompactInsertionOrderSha256": "bcebc70c2be43f69528d7815fd3fefd7738657c76a5dbbc586061dc73bd95509",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "REVISE",
+      "rationale": "Same primary decision; preserve existing question ID. The prompt mentions retries but does not state the result after successful check-in; the key adds that outcome."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i008",
+      "beforeCompactInsertionOrderSha256": "77328d43101fd0fb66f1e51c15d3c7565e12f5dce14edf70cb5a9c0938ce43eb",
+      "proposedQuestionId": "ood-n06-b02-i026",
+      "currentCompactInsertionOrderSha256": "e835360eecaa43efc5a7bb0f6b24cd4dace50164631d31f6292f7e95170a21a5",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i009",
+      "beforeCompactInsertionOrderSha256": "9655b291aa7044f503f71d6ad5641ee2dc0d39481ae910feeb8f03b3518a2322",
+      "proposedQuestionId": "ood-n06-b02-i027",
+      "currentCompactInsertionOrderSha256": "8dcb413b0ce5f014a577302fc78a805067b81d769bbdcab44d0561920a4c8f89",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i010",
+      "beforeCompactInsertionOrderSha256": "7900211349e3d9b2cfe2c3f6fef86b77a90e60d30c7ebaabccd38878d019758e",
+      "proposedQuestionId": "ood-n06-b02-i028",
+      "currentCompactInsertionOrderSha256": "da934fbf151447e11ab633ac92b6925f1f3d107c044a68d0a19f1a6c6dfa342c",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i011",
+      "beforeCompactInsertionOrderSha256": "584fa079495b8283f937884f64db64ed7128d389204631877ae803bc5240bd24",
+      "proposedQuestionId": "ood-n06-b02-i029",
+      "currentCompactInsertionOrderSha256": "1d7b1dc3e62a988bad77e3c68cbaed51953521820fc4ce61d91545a2b3061bcc",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i012",
+      "beforeCompactInsertionOrderSha256": "c5307c561efcbae7dcf967ec54f212fc62eca5e9bf021cc6661fc3a12775ab56",
+      "proposedQuestionId": "ood-n06-b02-i030",
+      "currentCompactInsertionOrderSha256": "3f9bf9be91d75aef88b819cd112c46b6c655cbff39cd4b1d073c84c3330cf146",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i013",
+      "beforeCompactInsertionOrderSha256": "7d0dbcd02f0a4bf59bc0adda18f6fb8ad7b66e42506ecfd2c82525d5e931daeb",
+      "proposedQuestionId": "ood-n06-b02-i031",
+      "currentCompactInsertionOrderSha256": "cd2b1eb3cf0743ccba2755a5c3721fc1bb7dd7c62b177584fa88bbc51f74c8d8",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i014",
+      "beforeCompactInsertionOrderSha256": "c6fae35df5ccf213a7591f395f5cdf2bee8513e49e783c3249f52948ebc44e6e",
+      "proposedQuestionId": "ood-n06-b02-i032",
+      "currentCompactInsertionOrderSha256": "ebcfdac55e0e6cfae6a569a97fc4f341fd7cfa85bbb0bd2d84d26caa7ae9f04e",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i015",
+      "beforeCompactInsertionOrderSha256": "916d349fa6c9de2ee2663b9644a000130d6f8936d49d1af6acd60b565cb6c48b",
+      "proposedQuestionId": "ood-n06-b02-i033",
+      "currentCompactInsertionOrderSha256": "e4d5b4b2d800ea16191524b12a2cc38b60bc57ec4e94203596f9091afe001799",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i016",
+      "beforeCompactInsertionOrderSha256": "f7a9efb3d4ebc7d36c50dc5168cba9911291d9792e28479dd7340230caee6dc2",
+      "proposedQuestionId": "ood-n06-b02-i034",
+      "currentCompactInsertionOrderSha256": "b9e54c28e40a5e9002538871dff75b802e6d187623ca9cee223e562c6203fb67",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i017",
+      "beforeCompactInsertionOrderSha256": "937a9fa811495e614e1359a87eb95223e0b729ed270e3052c14bc9e359f3a9d0",
+      "proposedQuestionId": "ood-n06-b02-i035",
+      "currentCompactInsertionOrderSha256": "4d03ff5b3a2671ac7b15d249c5eb2d48fe91d61f7f9b893f0809c0d928bf6f50",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    },
+    {
+      "beforeQuestionId": "ood-n06-b02-i018",
+      "beforeCompactInsertionOrderSha256": "180d9a9ec9e4920cb997e86cd142f43ea866db8746db29640d4f4190c5fbbdab",
+      "proposedQuestionId": "ood-n06-b02-i036",
+      "currentCompactInsertionOrderSha256": "0f5530839e74a5de7bfb1f076ce678076a8d85c625d7c8caee1e4f60eb5af9b2",
+      "identityRecommendation": "preserve_question_id",
+      "finding": "PASS",
+      "rationale": "Current scenario, key, explanations and keyed distractor diagnoses are supported by visible lifecycle facts; the State-pattern decision remains the same as the accepted predecessor."
+    }
+  ],
+  "limits": [
+    "Proposal-level semantic review only; no source activation, migration, consumer/admission, native, or full N06/BIZQ-01 acceptance.",
+    "Whole-object fingerprints bind exact compared objects but do not substitute for item-level semantic rationale."
+  ]
+}

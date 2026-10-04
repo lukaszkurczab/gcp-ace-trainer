@@ -1,0 +1,23 @@
+{
+  "result": "WRITTEN_FOR_VERIFICATION",
+  "scope": "Exact reviewed180 source/proof writes only; no producer/consumer/source/admission acceptance",
+  "beforeProducerCommit": "b7034f16bb77db4dde2ae27c13ef706b0301f6bb",
+  "sourceFiles": [
+    "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B01.json",
+    "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B02.json",
+    "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B03.json",
+    "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B04.json",
+    "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B05.json",
+    "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B06.json",
+    "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B07.json",
+    "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B08.json",
+    "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B09.json",
+    "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B10.json"
+  ],
+  "sameIdCorrections": 180,
+  "replacements": 0,
+  "contentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-22",
+  "questionSetSha256": "c6cf903178b823fb71ac29040f3c5fa5f72c619d3adbb525fc7791756654ac3e",
+  "proofSha256": "5987128d427d0362b2fe83f6ab62bf2483169374c51941bf23fc3b192f0e089c",
+  "designReviewSha256": "536926e5d6d860a8987f358249bd69e167ce22cfe2e06fb27992f84d51b3d86a"
+}

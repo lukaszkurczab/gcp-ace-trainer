@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "patternly-bizq01-n06-independent-semantic-review-v1",
+  "unit": "OOD-N06-B09",
+  "verdict": "PASS",
+  "proposal": {
+    "path": "review-inputs/N06-B09-v3.json",
+    "sha256": "ed9c57ba6289e07441455deaabb6526d35277ca7fcfb0ac4ae2cb93cda38efbe"
+  },
+  "notes": {
+    "path": "review-inputs/N06-B09-v3-NOTES.json",
+    "sha256": "470e0b34f45e0f352831544545d2995eb856334a287e8769635f1e17f9e50e7c"
+  },
+  "reusedReview": {
+    "path": "SEMANTIC-N06-B09-v2.md",
+    "scope": "17 unchanged whole question objects; i001 unchanged except feedback.details.errorCorrection; prior qualitative assessment of 13 longest-answer advisories."
+  },
+  "criteria": {
+    "specPath": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sections": ["4.1", "4.2", "4.3", "4.4", "5B", "5C"]
+  },
+  "changedFieldAssessment": {
+    "questionId": "ood-n06-b09-i001",
+    "field": "feedback.details.errorCorrection",
+    "decision": "pass",
+    "rationale": "The corrected explanation matches alt1's ExerciseAttempted publication and subscriber-owned validation/award before completion-owner acceptance; it no longer describes a completed event absent from the distractor."
+  },
+  "identityReview": {
+    "questionIds": "Preserve all 18; this correction does not change the primary decision.",
+    "correctOptionIds": "No changes in this correction; v2's case-specific IDs remain aligned with current keyed meanings."
+  },
+  "itemDispositions": [
+    {"questionId": "ood-n06-b09-i001", "decision": "pass-corrected-errorCorrection"},
+    {"questionId": "ood-n06-b09-i002", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i003", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i004", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i005", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i006", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i007", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i008", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i009", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i010", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i011", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i012", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i013", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i014", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i015", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i016", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i017", "decision": "pass-reused-v2"},
+    {"questionId": "ood-n06-b09-i018", "decision": "pass-reused-v2"}
+  ],
+  "limitations": ["Proposal-only semantic review; no source, producer, runtime, consumer, admission, native, or full-N06 acceptance claim."]
+}

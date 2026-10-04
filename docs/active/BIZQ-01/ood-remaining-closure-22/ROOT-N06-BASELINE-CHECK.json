@@ -1,0 +1,1 @@
+{"result":"PASS","scope":"Actual readonly pre-N06 source/consumer baseline; no semantic, producer or package acceptance","scoped":180,"preserved":1233,"accepted":765,"otherArtifacts":8,"immutableProofs":13,"sourceConsumerObjects":"byte-equivalent canonical objects"}

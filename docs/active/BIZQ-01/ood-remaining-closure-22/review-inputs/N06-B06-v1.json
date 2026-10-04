@@ -1,0 +1,1406 @@
+[
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "classification and refund eligibility are not the same responsibility",
+      "For this item class, separate reviewers check seal condition and safety recall in that order. Each may return a final classification or pass; refund eligibility remains a separate decision."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The rule order selects the classification, while the prompt keeps refund eligibility outside that chain.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may classify the returned item; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a returns inspection workflow, the warehouse inspector must classify a returned item. Classification and refund eligibility are not the same responsibility. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "Preselection cannot fall through when that rule passes, so a later terminal return rule is skipped. Combining results lets later rules change the first terminal decision the contract makes authoritative. That makes every separately owned rule addition require the dispatcher edit the case forbids. Response speed is not the published rule order and can select a lower-priority result.",
+        "boundaryOrTradeoff": "Keep this ordered path while return rules have separate owners and precedence. If classification becomes one fixed check and refund is always a separate direct step, a chain is unnecessary.",
+        "transfer": "For a new return class, retain pass-versus-terminal behavior only if the class rule has a defined precedence and does not absorb refund eligibility."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i001_select",
+          "text": "Preselecting one rule for classify the returned item prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i001_all",
+          "text": "Combining every result for classify the returned item can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i001_switch",
+          "text": "A central branch for each addition couples classify the returned item to the dispatcher, although the scenario assigns the rule to independent handlers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i001_race",
+          "text": "Response speed does not implement the required precedence for classify the returned item; a later handler could win before an earlier eligible one."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Run classification handlers in order; each returns a class or passes, while refund eligibility stays separate."
+        },
+        {
+          "optionId": "n06b06_i001_select",
+          "text": "Have the caller choose one rule for classify the returned item before that rule can inspect the request-specific facts."
+        },
+        {
+          "optionId": "n06b06_i001_all",
+          "text": "Run every rule for classify the returned item and combine the results after all handlers finish."
+        },
+        {
+          "optionId": "n06b06_i001_switch",
+          "text": "Add each new rule for classify the returned item as another branch in the central operation."
+        },
+        {
+          "optionId": "n06b06_i001_race",
+          "text": "Run the rules for classify the returned item concurrently and use whichever response arrives first."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a returns inspection workflow, the warehouse inspector must classify a returned item. Classification and refund eligibility are not the same responsibility. For this item class, separate reviewers check seal condition and safety recall in that order. Each may return a final classification or pass; refund eligibility remains a separate decision. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i001",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "published outputs reference immutable inputs and code versions",
+      "Snapshot publication uses independently maintained backends. A backend returns a complete snapshot only when it supports the exact immutable input and code version; otherwise it passes without publishing."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "reason": "Only a backend that supports the exact immutable inputs can publish; pass allows another supported backend to try.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may publish the result snapshot; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a research-notebook platform, the experiment owner must publish a result snapshot. Published outputs reference immutable inputs and code versions. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "The caller lacks the format fact that is available only after reading the header. The contract assigns one first-success result, not a merged record with competing parser ownership. The importer would need code changes for independent decoder additions. Completion time can select a decoder later than the required configured order.",
+        "boundaryOrTradeoff": "Use fallback while several backends may accept the exact snapshot inputs. If the snapshot carries a definitive backend ID, resolve that backend directly.",
+        "transfer": "For another immutable snapshot format, reuse this boundary only when backend support is checked against the exact input and code-version pair."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i002_caller",
+          "text": "Preselecting one rule for publish the result snapshot prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i002_merge",
+          "text": "Combining every result for publish the result snapshot can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i002_switch",
+          "text": "A central branch for each addition couples publish the result snapshot to the dispatcher, although the scenario assigns the rule to independent handlers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i002_fastest",
+          "text": "Response speed does not implement the required precedence for publish the result snapshot; a later handler could win before an earlier eligible one."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i002_caller",
+          "text": "Have the caller choose one rule for publish the result snapshot before that rule can inspect the request-specific facts."
+        },
+        {
+          "optionId": "n06b06_i002_merge",
+          "text": "Run every rule for publish the result snapshot and combine the results after all handlers finish."
+        },
+        {
+          "optionId": "n06b06_i002_switch",
+          "text": "Add each new rule for publish the result snapshot as another branch in the central operation."
+        },
+        {
+          "optionId": "n06b06_i002_fastest",
+          "text": "Run the rules for publish the result snapshot concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Try snapshot backends in order; return a complete version-bound snapshot or pass without publishing."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a research-notebook platform, the experiment owner must publish a result snapshot. Published outputs reference immutable inputs and code versions. Snapshot publication uses independently maintained backends. A backend returns a complete snapshot only when it supports the exact immutable input and code version; otherwise it passes without publishing. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i002",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "accepted comments must retain their author and document revision",
+      "Independent notification handlers may support different assigned-author channels. A handler either accepts the notification or declines; the first acceptance owns delivery, while the comment must keep its author and revision."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "reason": "Channel ownership is local to each handler, and stop-on-accept avoids asking a later handler to send the same notice.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may accept the comment and notify its assigned author; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a collaborative annotation workspace, the review editor must accept a comment and notify the assigned author. Accepted comments must retain their author and document revision. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "A queue lacking severity coverage would receive ownership even though both facts are required to claim. Reconciliation permits multiple owners and discards the first-eligible ownership contract. Every team addition would require changing shared routing code instead of registering an independent handler. Load does not establish eligibility; an uncovered queue could be assigned the ticket.",
+        "boundaryOrTradeoff": "This chain selects one notification channel. If policy changes to require all assigned-author channels to send, use an explicit fan-out contract instead.",
+        "transfer": "For a second notification channel, the first-acceptance rule transfers only if the caller still requests one delivery destination."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i003_product",
+          "text": "Preselecting one rule for accept the comment and notify its assigned author prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i003_all",
+          "text": "Combining every result for accept the comment and notify its assigned author can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i003_matrix",
+          "text": "A central branch for each addition couples accept the comment and notify its assigned author to the dispatcher, although the scenario assigns the rule to independent handlers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i003_load",
+          "text": "Response speed does not implement the required precedence for accept the comment and notify its assigned author; a later handler could win before an earlier eligible one."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i003_product",
+          "text": "Have the caller choose one rule for accept the comment and notify its assigned author before that rule can inspect the request-specific facts."
+        },
+        {
+          "optionId": "n06b06_i003_all",
+          "text": "Run every rule for accept the comment and notify its assigned author and combine the results after all handlers finish."
+        },
+        {
+          "optionId": "n06b06_i003_matrix",
+          "text": "Add each new rule for accept the comment and notify its assigned author as another branch in the central operation."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Offer the accepted comment to ordered notification handlers; stop when one accepts the assigned-author notice."
+        },
+        {
+          "optionId": "n06b06_i003_load",
+          "text": "Run the rules for accept the comment and notify its assigned author concurrently and use whichever response arrives first."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a collaborative annotation workspace, the review editor must accept a comment and notify the assigned author. Accepted comments must retain their author and document revision. Independent notification handlers may support different assigned-author channels. A handler either accepts the notification or declines; the first acceptance owns delivery, while the comment must keep its author and revision. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i003",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "a submission is either complete or explicitly retryable",
+      "Local-queue and online-submit handlers each test whether they can accept this offline payload. A handler either accepts the complete inspection or passes without partial submission; the result stays complete or explicitly retryable."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "reason": "Pass must leave the inspection intact, so another submitter may accept it without creating a partial record.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may submit the offline inspection; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a mobile field-inspection app, the inspector must submit an offline inspection. A submission is either complete or explicitly retryable. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "A later schedule allow could erase an earlier lockdown or revocation denial. Any-allow aggregation can override the terminal denial the access contract requires. Duplicated caller checks make safety order inconsistent and require caller edits for site rules. It skips the shared emergency and revocation checks that precede site access.",
+        "boundaryOrTradeoff": "Fall-through is useful only while one submission handler may accept the whole inspection. If the inspection must be split among upload stages, model that multi-step transaction explicitly.",
+        "transfer": "For a different offline inspection form, pass unchanged only when the next submitter can consume the same complete payload."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i004_last",
+          "text": "Response speed does not implement the required precedence for submit the offline inspection; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i004_any",
+          "text": "Response speed does not implement the required precedence for submit the offline inspection; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i004_callers",
+          "text": "Response speed does not implement the required precedence for submit the offline inspection; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i004_single",
+          "text": "Preselecting one rule for submit the offline inspection prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i004_last",
+          "text": "Run the rules for submit the offline inspection concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i004_any",
+          "text": "Run the rules for submit the offline inspection concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Try submission handlers in order; one accepts the whole inspection or passes it unchanged for retry."
+        },
+        {
+          "optionId": "n06b06_i004_callers",
+          "text": "Run the rules for submit the offline inspection concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i004_single",
+          "text": "Have the caller choose one rule for submit the offline inspection before that rule can inspect the request-specific facts."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a mobile field-inspection app, the inspector must submit an offline inspection. A submission is either complete or explicitly retryable. Local-queue and online-submit handlers each test whether they can accept this offline payload. A handler either accepts the complete inspection or passes without partial submission; the result stays complete or explicitly retryable. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i004",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the new issue is traceable and does not double-charge the customer",
+      "Reissue handlers own distinct rejection classes and may pass when they do not cover the invoice. The first eligible handler issues one traceable replacement; a retry must not charge the customer again."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "reason": "Rejection class determines which handler may reissue; retaining one invoice identity path prevents an ineligible handler from issuing another charge.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may reissue the rejected invoice; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a digital invoice exchange, the billing operator must reissue a rejected invoice. The new issue is traceable and does not double-charge the customer. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "Caller selection bypasses the destination-owned eligibility decision. A later response can replace the first terminal outcome, and combined ownership is not defined. Each destination addition would require editing the central service rather than registering its rule. Negotiation is not the fixed order and may yield multiple competing owners.",
+        "boundaryOrTradeoff": "Use ordered rejection-class handlers while an invoice may be handled by different reissue rules. If one authoritative rejection code maps to one handler, use direct dispatch.",
+        "transfer": "For a different invoice rejection category, preserve one traceable reissue owner and verify that retry identity still prevents a second charge."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i005_choose",
+          "text": "Preselecting one rule for reissue the rejected invoice prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i005_combine",
+          "text": "Combining every result for reissue the rejected invoice can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i005_central",
+          "text": "A central branch for each addition couples reissue the rejected invoice to the dispatcher, although the scenario assigns the rule to independent handlers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i005_negotiate",
+          "text": "Response speed does not implement the required precedence for reissue the rejected invoice; a later handler could win before an earlier eligible one."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i005_choose",
+          "text": "Have the caller choose one rule for reissue the rejected invoice before that rule can inspect the request-specific facts."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Offer the rejected invoice to its ordered reissue handlers; the first eligible one issues its traceable replacement."
+        },
+        {
+          "optionId": "n06b06_i005_combine",
+          "text": "Run every rule for reissue the rejected invoice and combine the results after all handlers finish."
+        },
+        {
+          "optionId": "n06b06_i005_central",
+          "text": "Add each new rule for reissue the rejected invoice as another branch in the central operation."
+        },
+        {
+          "optionId": "n06b06_i005_negotiate",
+          "text": "Run the rules for reissue the rejected invoice concurrently and use whichever response arrives first."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a digital invoice exchange, the billing operator must reissue a rejected invoice. The new issue is traceable and does not double-charge the customer. Reissue handlers own distinct rejection classes and may pass when they do not cover the invoice. The first eligible handler issues one traceable replacement; a retry must not charge the customer again. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i005",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "revocation is visible to the door policy before access is granted",
+      "Access rules run in the stated order: a revoked badge is a terminal denial before ordinary schedule access. A rule passes when it does not apply; a later allow cannot reverse that denial."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "reason": "Revocation must win before schedule access; terminal deny cannot be treated as an ordinary pass.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may revoke the badge before access; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a smart-building access controller, the facilities administrator must revoke a badge. Revocation is visible to the door policy before access is granted. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "Severity ranking changes the specified first-rejection result. Caller-specific sequences can omit or reorder checks, making the contract inconsistent. The invoice must pass all applicable checks, not just one selected check. Execution timing does not preserve the fixed validation sequence.",
+        "boundaryOrTradeoff": "Terminal access outcomes fit this priority list. If an administrator instead needs every applicable denial reason in one audit report, evaluate all rules and aggregate reasons.",
+        "transfer": "For another access rule, add it at the policy-defined precedence position; do not let a later allow override a terminal revocation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i006_severity",
+          "text": "Response speed does not implement the required precedence for revoke the badge before access; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i006_caller",
+          "text": "Preselecting one rule for revoke the badge before access prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i006_one",
+          "text": "Preselecting one rule for revoke the badge before access prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i006_parallel",
+          "text": "Response speed does not implement the required precedence for revoke the badge before access; a later handler could win before an earlier eligible one."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Evaluate the access rules in order; revocation is terminal, and an inapplicable rule passes."
+        },
+        {
+          "optionId": "n06b06_i006_severity",
+          "text": "Run the rules for revoke the badge before access concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i006_caller",
+          "text": "Have the caller choose one rule for revoke the badge before access before that rule can inspect the request-specific facts."
+        },
+        {
+          "optionId": "n06b06_i006_one",
+          "text": "Have the caller choose one rule for revoke the badge before access before that rule can inspect the request-specific facts."
+        },
+        {
+          "optionId": "n06b06_i006_parallel",
+          "text": "Run the rules for revoke the badge before access concurrently and use whichever response arrives first."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a smart-building access controller, the facilities administrator must revoke a badge. Revocation is visible to the door policy before access is granted. Access rules run in the stated order: a revoked badge is a terminal denial before ordinary schedule access. A rule passes when it does not apply; a later allow cannot reverse that denial. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i006",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the printed label represents the current approved shipment data",
+      "Label formatters are independently maintained for carrier and service combinations. Each can return a label for approved shipment data or pass; the first matching formatter owns the printed label."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "reason": "The formatter that supports both carrier and service owns the label, while caller code stays independent of format details.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may print the corrected shipment label; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a package-label generation service, the shipping operator must print a label after address correction. The printed label represents the current approved shipment data. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "Every exporter addition would change client code, contrary to the stable endpoint contract. The case defines one complete-result owner; fragment merging changes both output and ownership. Response speed may defeat configured precedence and choose a different result. It omits the required fallback to a later exporter that can complete the request.",
+        "boundaryOrTradeoff": "Fallback fits while carrier/service support can vary by formatter. A validated one-to-one carrier map supports direct formatter lookup.",
+        "transfer": "For another label service, add a formatter only when it preserves the approved shipment data and the returned carrier identity."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i007_clients",
+          "text": "Response speed does not implement the required precedence for print the corrected shipment label; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i007_fragments",
+          "text": "Combining every result for print the corrected shipment label can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i007_broadcast",
+          "text": "Response speed does not implement the required precedence for print the corrected shipment label; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i007_one",
+          "text": "Preselecting one rule for print the corrected shipment label prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i007_clients",
+          "text": "Run the rules for print the corrected shipment label concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i007_fragments",
+          "text": "Run every rule for print the corrected shipment label and combine the results after all handlers finish."
+        },
+        {
+          "optionId": "n06b06_i007_broadcast",
+          "text": "Run the rules for print the corrected shipment label concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i007_one",
+          "text": "Have the caller choose one rule for print the corrected shipment label before that rule can inspect the request-specific facts."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Try carrier/service label formatters in order; return the first label for approved shipment data."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a package-label generation service, the shipping operator must print a label after address correction. The printed label represents the current approved shipment data. Label formatters are independently maintained for carrier and service combinations. Each can return a label for approved shipment data or pass; the first matching formatter owns the printed label. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i007",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the room capacity and cancellation policy must remain consistent",
+      "Candidate-room handlers run in coordinator priority order. Each checks room capacity and its cancellation rule, then claims the move or passes; the first claim owns the booking."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "reason": "A room is eligible only after both capacity and cancellation checks; the first qualifying room owns the move.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may move the booked rehearsal; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a multi-tenant rehearsal scheduler, the studio coordinator must move a booked rehearsal to a different room. The room capacity and cancellation policy must remain consistent. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "Any-clear aggregation reverses the terminal rejection the case protects. The precedence becomes caller policy and may differ between entry points. Control additions require centralized source changes, against independent ownership. An account type does not make other applicable controls irrelevant in the stated order.",
+        "boundaryOrTradeoff": "First fit applies only while coordinator priority decides among suitable rooms. If the policy changes to optimize globally across capacity and cancellation costs, use a matching operation.",
+        "transfer": "For another rehearsal room, reuse the claim rule only if both capacity and cancellation policy remain the eligibility facts."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i008_any_clear",
+          "text": "Response speed does not implement the required precedence for move the booked rehearsal; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i008_caller",
+          "text": "Preselecting one rule for move the booked rehearsal prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i008_central",
+          "text": "A central branch for each addition couples move the booked rehearsal to the dispatcher, although the scenario assigns the rule to independent handlers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i008_select",
+          "text": "Preselecting one rule for move the booked rehearsal prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i008_any_clear",
+          "text": "Run the rules for move the booked rehearsal concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i008_caller",
+          "text": "Have the caller choose one rule for move the booked rehearsal before that rule can inspect the request-specific facts."
+        },
+        {
+          "optionId": "n06b06_i008_central",
+          "text": "Add each new rule for move the booked rehearsal as another branch in the central operation."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Offer the room move to prioritized room handlers; the first that meets both conditions claims it."
+        },
+        {
+          "optionId": "n06b06_i008_select",
+          "text": "Have the caller choose one rule for move the booked rehearsal before that rule can inspect the request-specific facts."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a multi-tenant rehearsal scheduler, the studio coordinator must move a booked rehearsal to a different room. The room capacity and cancellation policy must remain consistent. Candidate-room handlers run in coordinator priority order. Each checks room capacity and its cancellation rule, then claims the move or passes; the first claim owns the booking. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i008",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "unsafe commands are rejected while maintenance is active",
+      "Safety handlers inspect exhibit commands in priority order. A handler denies a command it classifies as unsafe while maintenance is active, or passes if its rule does not cover that command."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "reason": "Maintenance makes covered unsafe commands terminally invalid; only an unrelated safety rule may pass to the next handler.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may switch the exhibit into maintenance mode; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a museum exhibit controller, the exhibit operator must switch an exhibit into maintenance mode. Unsafe commands are rejected while maintenance is active. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "Broadcasting can execute a command multiple times, violating single-handler ownership. The gateway must change for independent plugin additions, contrary to the extension contract. The caller lacks the handler’s recognition fact and loses fallback behavior. Private plugin representations leak and exceptions replace the ordinary pass result.",
+        "boundaryOrTradeoff": "Short-circuiting is right when a covered unsafe command must be denied immediately. If all active safety checks must report findings, collect their results instead.",
+        "transfer": "For a new command type, a safety handler may pass only when its rule does not cover the command; covered unsafe commands remain terminal."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i009_broadcast",
+          "text": "Response speed does not implement the required precedence for switch the exhibit into maintenance mode; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i009_switch",
+          "text": "A central branch for each addition couples switch the exhibit into maintenance mode to the dispatcher, although the scenario assigns the rule to independent handlers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i009_caller",
+          "text": "Preselecting one rule for switch the exhibit into maintenance mode prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i009_casts",
+          "text": "Response speed does not implement the required precedence for switch the exhibit into maintenance mode; a later handler could win before an earlier eligible one."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i009_broadcast",
+          "text": "Run the rules for switch the exhibit into maintenance mode concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i009_switch",
+          "text": "Add each new rule for switch the exhibit into maintenance mode as another branch in the central operation."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Pass the command through ordered safety handlers; the first applicable unsafe-command rule denies it."
+        },
+        {
+          "optionId": "n06b06_i009_caller",
+          "text": "Have the caller choose one rule for switch the exhibit into maintenance mode before that rule can inspect the request-specific facts."
+        },
+        {
+          "optionId": "n06b06_i009_casts",
+          "text": "Run the rules for switch the exhibit into maintenance mode concurrently and use whichever response arrives first."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a museum exhibit controller, the exhibit operator must switch an exhibit into maintenance mode. Unsafe commands are rejected while maintenance is active. Safety handlers inspect exhibit commands in priority order. A handler denies a command it classifies as unsafe while maintenance is active, or passes if its rule does not cover that command. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i009",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "progress refers to a stable lesson identity",
+      "Progress-retention handlers support different stored progress record forms. Each either retires the lesson while retaining its stable identity and linked progress, or passes unchanged to the next handler."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "reason": "Record-form support determines which handler can preserve the stable lesson identity; pass leaves the progress record available to the next one.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may retire the lesson while preserving progress; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a video-learning library, the curriculum editor must retire a lesson while preserving learner progress. Progress refers to a stable lesson identity. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "Provider capability knowledge would leak into clients and their choices could differ. The first opener may not be first in saved order. That spreads provider-specific mapping across clients and requires client edits on change. The contract assigns one stream owner and does not define a merge of timing or errors.",
+        "boundaryOrTradeoff": "Use record-form fallback while one handler fully owns each progress representation. If retirement must transform every linked record in multiple stages, define an explicit migration workflow.",
+        "transfer": "For another stored progress form, the new handler must retain the same stable lesson identity before the retirement can complete."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i010_caller",
+          "text": "Preselecting one rule for retire the lesson while preserving progress prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i010_race",
+          "text": "Response speed does not implement the required precedence for retire the lesson while preserving progress; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i010_client_if",
+          "text": "Response speed does not implement the required precedence for retire the lesson while preserving progress; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i010_merge",
+          "text": "Combining every result for retire the lesson while preserving progress can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i010_caller",
+          "text": "Have the caller choose one rule for retire the lesson while preserving progress before that rule can inspect the request-specific facts."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Try progress handlers by supported record form; the first retires the lesson while preserving identity."
+        },
+        {
+          "optionId": "n06b06_i010_race",
+          "text": "Run the rules for retire the lesson while preserving progress concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i010_client_if",
+          "text": "Run the rules for retire the lesson while preserving progress concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i010_merge",
+          "text": "Run every rule for retire the lesson while preserving progress and combine the results after all handlers finish."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a video-learning library, the curriculum editor must retire a lesson while preserving learner progress. Progress refers to a stable lesson identity. Progress-retention handlers support different stored progress record forms. Each either retires the lesson while retaining its stable identity and linked progress, or passes unchanged to the next handler. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i010",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "export observes a stable session state",
+      "Export handlers support different history formats. Each either returns one complete export from the stable session state or passes; a returned export includes the session identity."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "reason": "A complete export is terminal, and the stable session state prevents the handler choice from changing the exported history.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may close the board and export its history; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a shared whiteboard application, the session host must close a board and export its history. Export observes a stable session state. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "The reviewer may lack regional authority, so type-only assignment violates the claim condition. Parallel claims can create multiple owners instead of the required first eligible owner. A central matrix must change for each reviewer-owned coverage update. That moves eligibility and order out of the reviewer-owned rules and duplicates policy in clerks.",
+        "boundaryOrTradeoff": "First complete export is appropriate while export formats are alternatives. If the user requests multiple exports from the same snapshot, invoke those exporters as separate requested outputs.",
+        "transfer": "For another history format, the exporter must read the same stable session snapshot and return a complete history under that format."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i011_type_only",
+          "text": "Response speed does not implement the required precedence for close the board and export its history; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i011_parallel",
+          "text": "Response speed does not implement the required precedence for close the board and export its history; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i011_matrix",
+          "text": "A central branch for each addition couples close the board and export its history to the dispatcher, although the scenario assigns the rule to independent handlers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i011_clerk",
+          "text": "Response speed does not implement the required precedence for close the board and export its history; a later handler could win before an earlier eligible one."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Try export handlers in order; return the first complete history for the stable session state."
+        },
+        {
+          "optionId": "n06b06_i011_type_only",
+          "text": "Run the rules for close the board and export its history concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i011_parallel",
+          "text": "Run the rules for close the board and export its history concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i011_matrix",
+          "text": "Add each new rule for close the board and export its history as another branch in the central operation."
+        },
+        {
+          "optionId": "n06b06_i011_clerk",
+          "text": "Run the rules for close the board and export its history concurrently and use whichever response arrives first."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a shared whiteboard application, the session host must close a board and export its history. Export observes a stable session state. Export handlers support different history formats. Each either returns one complete export from the stable session state or passes; a returned export includes the session identity. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i011",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the escalation keeps ownership and response deadlines",
+      "Escalation tiers are ordered by responsibility. A tier claims a conversation only if it can meet the stated response deadline; otherwise it passes, leaving ownership with the first qualifying tier."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "reason": "A tier may claim only when it can meet the stated deadline; ordered pass-through preserves a single conversation owner.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may escalate the conversation; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a customer-support escalation desk, the support lead must escalate a conversation. The escalation keeps ownership and response deadlines. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "The central parser couples independently maintained formats and requires changes for each reader. The contract asks for the first typed result, not a merged record with overlapping fields. Private parser types leak into clients and turn normal not-mine into representation-dependent probing. Field count is not the stated ownership rule; a later result could replace the first successful parse.",
+        "boundaryOrTradeoff": "Ordered tiers decide one escalation owner under the stated deadline. If several teams must jointly own a case, use an explicit shared assignment contract.",
+        "transfer": "For a new escalation tier, insert it according to the deadline priority; it may claim only when it can meet the stated response target."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i012_central",
+          "text": "A central branch for each addition couples escalate the conversation to the dispatcher, although the scenario assigns the rule to independent handlers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i012_merge",
+          "text": "Combining every result for escalate the conversation can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i012_caller",
+          "text": "Preselecting one rule for escalate the conversation prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i012_fields",
+          "text": "Response speed does not implement the required precedence for escalate the conversation; a later handler could win before an earlier eligible one."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i012_central",
+          "text": "Add each new rule for escalate the conversation as another branch in the central operation."
+        },
+        {
+          "optionId": "n06b06_i012_merge",
+          "text": "Run every rule for escalate the conversation and combine the results after all handlers finish."
+        },
+        {
+          "optionId": "n06b06_i012_caller",
+          "text": "Have the caller choose one rule for escalate the conversation before that rule can inspect the request-specific facts."
+        },
+        {
+          "optionId": "n06b06_i012_fields",
+          "text": "Run the rules for escalate the conversation concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Offer escalation to ordered tiers; the first that can meet the deadline owns the conversation."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a customer-support escalation desk, the support lead must escalate a conversation. The escalation keeps ownership and response deadlines. Escalation tiers are ordered by responsibility. A tier claims a conversation only if it can meet the stated response deadline; otherwise it passes, leaving ownership with the first qualifying tier. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i012",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "a listing cannot become visible before its price and stock rule are valid",
+      "Product-rule handlers cover distinct seasonal listing categories. Each passes categories it does not own; the matching rule may publish only after both price and stock are valid."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "reason": "The rule owning this listing category decides whether it may be visible; a price or stock failure cannot be hidden by a later rule.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may publish the seasonal listing; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a regional produce marketplace, the seller operations lead must publish a seasonal inventory change. A listing cannot become visible before its price and stock rule are valid. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "Fee-first evaluation can deny before the higher-priority exemption is considered. Majority voting discards the explicit order and can reverse a terminal denial. Client-side precedence duplicates internals and can diverge across callers. Pass means the rule is irrelevant, not that it vetoes the permit.",
+        "boundaryOrTradeoff": "First matching product rule works while product categories have one owning rule. If multiple rules must all approve the listing, aggregate all required checks before publication.",
+        "transfer": "For another seasonal category, keep visibility gated on that category’s own valid price and stock rule."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i013_fee_first",
+          "text": "Response speed does not implement the required precedence for publish the seasonal listing; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i013_vote",
+          "text": "Response speed does not implement the required precedence for publish the seasonal listing; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i013_clients",
+          "text": "Response speed does not implement the required precedence for publish the seasonal listing; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i013_pass_denies",
+          "text": "Response speed does not implement the required precedence for publish the seasonal listing; a later handler could win before an earlier eligible one."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i013_fee_first",
+          "text": "Run the rules for publish the seasonal listing concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i013_vote",
+          "text": "Run the rules for publish the seasonal listing concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i013_clients",
+          "text": "Run the rules for publish the seasonal listing concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Pass the listing through ordered product rules; publish only after its matching rule validates price and stock."
+        },
+        {
+          "optionId": "n06b06_i013_pass_denies",
+          "text": "Run the rules for publish the seasonal listing concurrently and use whichever response arrives first."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a regional produce marketplace, the seller operations lead must publish a seasonal inventory change. A listing cannot become visible before its price and stock rule are valid. Product-rule handlers cover distinct seasonal listing categories. Each passes categories it does not own; the matching rule may publish only after both price and stock are valid. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i013",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "each split retains the original request identity and delivery promise",
+      "Vendor handlers are ordered by fulfillment priority. A vendor may accept part of the remaining quantity and return the unfilled remainder to the next handler; every split keeps the original request identity and promise."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "reason": "Each vendor may fulfill only part of the remaining quantity; passing the unfilled remainder preserves the original delivery commitment.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may split the backordered request across vendors; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a repair-parts marketplace, the fulfillment specialist must split a backordered request across vendors. Each split retains the original request identity and delivery promise. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "Sending later channels after acceptance creates the duplicate the scenario forbids. Concurrent starts can send duplicates before cancellation and discard saved order. Duplicated loops can diverge and disagree about when delivery becomes terminal. This omits the required fall-through to later channels.",
+        "boundaryOrTradeoff": "Passing only the remaining quantity preserves the split operation. If every vendor allocation must commit atomically, use an explicit transaction/coordinator rather than independent claims.",
+        "transfer": "For another vendor, pass only the quantity not accepted and carry the original request identity and delivery promise with each split."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i014_all",
+          "text": "Combining every result for split the backordered request across vendors can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i014_race",
+          "text": "Response speed does not implement the required precedence for split the backordered request across vendors; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i014_clients",
+          "text": "Response speed does not implement the required precedence for split the backordered request across vendors; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i014_primary",
+          "text": "Response speed does not implement the required precedence for split the backordered request across vendors; a later handler could win before an earlier eligible one."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i014_all",
+          "text": "Run every rule for split the backordered request across vendors and combine the results after all handlers finish."
+        },
+        {
+          "optionId": "n06b06_i014_race",
+          "text": "Run the rules for split the backordered request across vendors concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Offer each vendor the remaining quantity; accept a split or pass the remainder while retaining request identity."
+        },
+        {
+          "optionId": "n06b06_i014_clients",
+          "text": "Run the rules for split the backordered request across vendors concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i014_primary",
+          "text": "Run the rules for split the backordered request across vendors concurrently and use whichever response arrives first."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a repair-parts marketplace, the fulfillment specialist must split a backordered request across vendors. Each split retains the original request identity and delivery promise. Vendor handlers are ordered by fulfillment priority. A vendor may accept part of the remaining quantity and return the unfilled remainder to the next handler; every split keeps the original request identity and promise. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i014",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "transfer preserves the plot boundary and approval history",
+      "Transfer authorities cover distinct plot boundaries. An authority returns a terminal approve or deny for a transfer it owns, or passes; the approval history and boundary remain attached to the reservation."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "reason": "Only an authority covering this plot boundary may decide the transfer; keeping the history with the reservation preserves its audit context.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may transfer the plot reservation; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a community garden allocation tool, the plot steward must transfer a plot reservation. Transfer preserves the plot boundary and approval history. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "That reverses the stated specific-first authority. The result contract specifies one code, not a combined set. This duplicates hierarchy resolution across clients and may produce inconsistent codes. The relevant jurisdiction varies per transaction, not per process.",
+        "boundaryOrTradeoff": "An ordered authority list fits when only one authority owns the transfer. If all boundary authorities must consent, collect and verify each required approval.",
+        "transfer": "For another plot boundary, add an authority only if its approval result can be attached to the same reservation history."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i015_general",
+          "text": "Response speed does not implement the required precedence for transfer the plot reservation; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i015_merge",
+          "text": "Combining every result for transfer the plot reservation can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i015_caller",
+          "text": "Preselecting one rule for transfer the plot reservation prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i015_startup",
+          "text": "Response speed does not implement the required precedence for transfer the plot reservation; a later handler could win before an earlier eligible one."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i015_general",
+          "text": "Run the rules for transfer the plot reservation concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Evaluate transfer authorities in order; the first applicable decision approves or denies without losing history."
+        },
+        {
+          "optionId": "n06b06_i015_merge",
+          "text": "Run every rule for transfer the plot reservation and combine the results after all handlers finish."
+        },
+        {
+          "optionId": "n06b06_i015_caller",
+          "text": "Have the caller choose one rule for transfer the plot reservation before that rule can inspect the request-specific facts."
+        },
+        {
+          "optionId": "n06b06_i015_startup",
+          "text": "Run the rules for transfer the plot reservation concurrently and use whichever response arrives first."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a community garden allocation tool, the plot steward must transfer a plot reservation. Transfer preserves the plot boundary and approval history. Transfer authorities cover distinct plot boundaries. An authority returns a terminal approve or deny for a transfer it owns, or passes; the approval history and boundary remain attached to the reservation. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i015",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the bundle pricing policy remains consistent with its components",
+      "Regional pricing handlers own different bundle regions. The first matching handler computes the bundle from its components’ current pricing inputs; handlers for other regions pass."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "reason": "Region selects the pricing owner, and the selected handler must use component inputs to preserve bundle-price consistency.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may add the regional bundle; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a subscription packaging service, the catalog manager must add a regional bundle. The bundle pricing policy remains consistent with its components. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "Merging changes the single first-match result and may combine different source identities. A fast not-found or lower-priority match can beat the required per-query order. Repository additions would require endpoint edits. The priority is supplied for each query and cannot be captured by a fixed startup choice.",
+        "boundaryOrTradeoff": "Regional handler selection fits alternative regional pricing rules. If a bundle price is a combination of independent component adjustments, compose those adjustments rather than stop at the first region.",
+        "transfer": "For another bundle region, use its regional handler only when component pricing inputs remain available at that boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i016_merge",
+          "text": "Combining every result for add the regional bundle can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i016_race",
+          "text": "Response speed does not implement the required precedence for add the regional bundle; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i016_branch",
+          "text": "Response speed does not implement the required precedence for add the regional bundle; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i016_fixed",
+          "text": "Response speed does not implement the required precedence for add the regional bundle; a later handler could win before an earlier eligible one."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Try regional pricing handlers in order; the matching handler computes from the bundle’s component inputs."
+        },
+        {
+          "optionId": "n06b06_i016_merge",
+          "text": "Run every rule for add the regional bundle and combine the results after all handlers finish."
+        },
+        {
+          "optionId": "n06b06_i016_race",
+          "text": "Run the rules for add the regional bundle concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i016_branch",
+          "text": "Run the rules for add the regional bundle concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i016_fixed",
+          "text": "Run the rules for add the regional bundle concurrently and use whichever response arrives first."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a subscription packaging service, the catalog manager must add a regional bundle. The bundle pricing policy remains consistent with its components. Regional pricing handlers own different bundle regions. The first matching handler computes the bundle from its components’ current pricing inputs; handlers for other regions pass. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i016",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "charger capacity and reservation expiry are coordinated",
+      "Charger handlers are ordered by station priority. A handler claims only when its capacity and reservation-expiry facts permit the requested slot; otherwise it passes without reserving it."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "reason": "A station claims only a slot whose capacity and expiry facts both qualify; decline cannot reserve the slot accidentally.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may reserve the charger; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a fleet charging coordinator, the station operator must reserve a charger. Charger capacity and reservation expiry are coordinated. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "Address does not establish formatter support for the selected service level. The prompt defines one first-accepting result, not a set of competing labels. This leaks independent formatter capabilities into every caller. Response time can defeat configured precedence and select a formatter that does not own the request.",
+        "boundaryOrTradeoff": "Priority fallback applies while the first eligible station is the intended owner. If the contract optimizes a slot across all stations, rank eligible slots globally.",
+        "transfer": "For another charger station, preserve the paired capacity-and-expiry eligibility test before it claims the slot."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i017_address",
+          "text": "Response speed does not implement the required precedence for reserve the charger; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i017_operator",
+          "text": "Response speed does not implement the required precedence for reserve the charger; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i017_clients",
+          "text": "Response speed does not implement the required precedence for reserve the charger; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i017_race",
+          "text": "Response speed does not implement the required precedence for reserve the charger; a later handler could win before an earlier eligible one."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i017_address",
+          "text": "Run the rules for reserve the charger concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i017_operator",
+          "text": "Run the rules for reserve the charger concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i017_clients",
+          "text": "Run the rules for reserve the charger concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i017_race",
+          "text": "Run the rules for reserve the charger concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Offer the slot to station handlers in priority order; the first with capacity and a valid expiry claims it."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a fleet charging coordinator, the station operator must reserve a charger. Charger capacity and reservation expiry are coordinated. Charger handlers are ordered by station priority. A handler claims only when its capacity and reservation-expiry facts permit the requested slot; otherwise it passes without reserving it. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i017",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "asset identity remains stable while descriptive values are replaced",
+      "Merge handlers own distinct metadata conflict kinds. A handler resolves only a conflict it recognizes and otherwise passes without changing either record; the merge must retain the asset identity."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "reason": "Conflict ownership stays with the handler that recognizes that metadata conflict; a pass leaves both assets and their identity intact.",
+      "details": {
+        "mechanismOrProperty": "The ordered handlers decide who may merge duplicate metadata; a local pass permits the next handler, and a terminal result ends the chain.",
+        "scenarioApplication": "In a photo-archive curation tool, the archivist must merge duplicate metadata. Asset identity remains stable while descriptive values are replaced. The added handler facts preserve that operation while making its local qualification and ordering observable.",
+        "errorCorrection": "A declining handler would have observable intermediate effects, so pass would not preserve the next handler’s input. Several plugins may mutate one record, violating first-owner semantics. The switch must change for every plugin addition, contrary to the independent extension boundary. Broadcast creates multiple participants; the contract gives one first-applying owner.",
+        "boundaryOrTradeoff": "First matching metadata rule fits a single conflict owner. If several metadata policies must jointly transform one asset, define a composed merge operation with an explicit order.",
+        "transfer": "For another metadata field, add a handler only if a pass leaves both source records unchanged and asset identity remains stable."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i018_mutate_rollback",
+          "text": "Response speed does not implement the required precedence for merge duplicate metadata; a later handler could win before an earlier eligible one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i018_all",
+          "text": "Combining every result for merge duplicate metadata can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i018_switch",
+          "text": "A central branch for each addition couples merge duplicate metadata to the dispatcher, although the scenario assigns the rule to independent handlers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b06_i018_events",
+          "text": "Response speed does not implement the required precedence for merge duplicate metadata; a later handler could win before an earlier eligible one."
+        }
+      ],
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b06_i018_mutate_rollback",
+          "text": "Run the rules for merge duplicate metadata concurrently and use whichever response arrives first."
+        },
+        {
+          "optionId": "n06b06_i018_all",
+          "text": "Run every rule for merge duplicate metadata and combine the results after all handlers finish."
+        },
+        {
+          "optionId": "n06b06_i018_switch",
+          "text": "Add each new rule for merge duplicate metadata as another branch in the central operation."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Offer each conflict to its metadata handler; the first matching handler resolves it without changing asset identity."
+        },
+        {
+          "optionId": "n06b06_i018_events",
+          "text": "Run the rules for merge duplicate metadata concurrently and use whichever response arrives first."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B06",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a photo-archive curation tool, the archivist must merge duplicate metadata. Asset identity remains stable while descriptive values are replaced. Merge handlers own distinct metadata conflict kinds. A handler resolves only a conflict it recognizes and otherwise passes without changing either record; the merge must retain the asset identity. Which design best meets these requirements?",
+    "questionId": "ood-n06-b06-i018",
+    "sourceRefs": [
+      "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

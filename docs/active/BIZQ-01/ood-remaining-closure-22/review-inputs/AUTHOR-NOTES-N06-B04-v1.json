@@ -1,0 +1,278 @@
+{
+  "scope": "Unit author identity hypotheses at submission; not independent acceptance",
+  "sourceNotes": "AUTHOR-NOTES-B01-B05.json",
+  "sourceNotesSha256": "794b64464f7992d995316db0601256a9c6419f5235772b4ee47e254816f43fff",
+  "unit": "OOD-N06-B04",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n06-b04-i001",
+      "questionId": "ood-n06-b04-i001",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces two independently owned consumers react to a committed closure snapshot, while the host cannot know or call them directly.",
+      "decisiveFact": "Two independently owned consumers react to a committed closure snapshot, while the host cannot know or call them directly.",
+      "nearestAlternative": "Direct calls work for a fixed pair, but they couple the session host to both modules and violate the stated ownership boundary.",
+      "changedCondition": "If export were the only synchronous step and the host owned it, a direct call could be simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original whiteboard close/export domain and stable-session fact remain; this revision makes independently owned subscribers and post-commit observation the decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i002",
+      "questionId": "ood-n06-b04-i002",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces two separately owned consumers need the same accepted ownership/deadline change without a direct dependency between them.",
+      "decisiveFact": "Two separately owned consumers need the same accepted ownership/deadline change without a direct dependency between them.",
+      "nearestAlternative": "A coordinator can call both systems, but it would become a shared owner of two team-specific update APIs.",
+      "changedCondition": "If only one worklist were part of the service, a direct update could be sufficient.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source escalation and paired ownership/deadline facts are retained; the item now targets fan-out to independently maintained consumers.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i003",
+      "questionId": "ood-n06-b04-i003",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces consumers may react only after both listing validations succeed and the listing is ready to publish.",
+      "decisiveFact": "Consumers may react only after both listing validations succeed and the listing is ready to publish.",
+      "nearestAlternative": "Notifying as each field changes gives faster updates, but exposes incomplete listing state to both consumers.",
+      "changedCondition": "If consumers were meant to display draft progress, interim field notifications could be appropriate.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source marketplace listing and price/stock facts are retained; the new focus is the valid publication boundary seen by independent subscribers.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i004",
+      "questionId": "ood-n06-b04-i004",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces three independent consumers need the same accepted split facts, including the stable request identity and delivery promise.",
+      "decisiveFact": "Three independent consumers need the same accepted split facts, including the stable request identity and delivery promise.",
+      "nearestAlternative": "Letting inventory notify vendors and vendors notify customer status creates a chain where one consumer becomes another's dispatcher.",
+      "changedCondition": "If one service owned all three follow-up actions, direct sequencing could be simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source backorder-split case and its identity/promise invariant are retained; this version asks how independent systems receive one accepted split.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i005",
+      "questionId": "ood-n06-b04-i005",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces two read models need the same approved transfer details, but the reservation remains the owner of the decision.",
+      "decisiveFact": "Two read models need the same approved transfer details, but the reservation remains the owner of the decision.",
+      "nearestAlternative": "Letting the allocation board make the transfer and then inform the audit view would move decision ownership into a consumer.",
+      "changedCondition": "If the board owned both approval and audit behavior, it could coordinate them directly.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source plot-transfer facts remain, while the candidate makes the separation between decision owner and two reacting views concrete.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i006",
+      "questionId": "ood-n06-b04-i006",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces two modules need the same validated bundle version after its component rules are valid.",
+      "decisiveFact": "Two modules need the same validated bundle version after its component rules are valid.",
+      "nearestAlternative": "Having billing poll the catalog couples billing to catalog storage and may expose a version before validation finishes.",
+      "changedCondition": "If billing were the only consumer and owned bundle changes, a direct call could be simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source bundle pricing-policy fact is retained; the revised question tests how separately owned modules react to one validated version.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i007",
+      "questionId": "ood-n06-b04-i007",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces two independently maintained views need the same reservation identity after capacity and expiry checks succeed.",
+      "decisiveFact": "Two independently maintained views need the same reservation identity after capacity and expiry checks succeed.",
+      "nearestAlternative": "The mobile view can call the grid dashboard after confirmation, but it does not own grid operations and would become its relay.",
+      "changedCondition": "If one view were owned by the coordinator and there were no separate dashboard, a direct update might suffice.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source charger reservation/capacity/expiry case is preserved; the revised decision is the post-validation fan-out of a stable confirmation fact.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i008",
+      "questionId": "ood-n06-b04-i008",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces independent downstream modules need the committed descriptive revision, while asset identity remains stable and service code must not name them.",
+      "decisiveFact": "Independent downstream modules need the committed descriptive revision, while asset identity remains stable and service code must not name them.",
+      "nearestAlternative": "A search-index update can call thumbnail generation afterward, but the index does not own thumbnails and can fail before its peer runs.",
+      "changedCondition": "If both modules were part of one synchronous asset-service operation, a direct call could be adequate.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source photo-archive metadata and stable identity are retained; the new focus is independent consumers reacting to the same committed revision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i009",
+      "questionId": "ood-n06-b04-i009",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces two independent consumers need the same approved scope and attribution after the licensing decision.",
+      "decisiveFact": "Two independent consumers need the same approved scope and attribution after the licensing decision.",
+      "nearestAlternative": "The report can call the dashboard with its computed view, but that couples two consumers and makes the report own approval distribution.",
+      "changedCondition": "If the dashboard were the only consumer and part of the approval service, a direct call could be sufficient.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source territory/expiry approval facts remain; this revision tests publication of the accepted scope and attribution to independent teams.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i010",
+      "questionId": "ood-n06-b04-i010",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces both consumers need the accepted battery assignment only after the single-aircraft check succeeds.",
+      "decisiveFact": "Both consumers need the accepted battery assignment only after the single-aircraft check succeeds.",
+      "nearestAlternative": "The availability board can announce the assignment first and let maintenance catch up, but it does not own the replacement decision.",
+      "changedCondition": "If a battery's assignment had no dependent views, a direct update without notification might be adequate.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source battery replacement and unique aircraft-assignment fact are retained; the item now specifies how independent views learn the accepted assignment.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i011",
+      "questionId": "ood-n06-b04-i011",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces two separate consumers need the named recipient and exact consent revision only after the navigator approves disclosure.",
+      "decisiveFact": "Two separate consumers need the named recipient and exact consent revision only after the navigator approves disclosure.",
+      "nearestAlternative": "The appointment planner can ask the audit view for consent details, but the audit view is not the consent authority.",
+      "changedCondition": "If appointment planning were part of the navigator's own workflow, a direct call might fit.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source referral/privacy boundary is retained; the revision emphasizes fan-out of the consented recipient and revision to independent consumers.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i012",
+      "questionId": "ood-n06-b04-i012",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces two consumers need one completed attempt tied to its exercise and scoring versions, while the tracker cannot call their implementations.",
+      "decisiveFact": "Two consumers need one completed attempt tied to its exercise and scoring versions, while the tracker cannot call their implementations.",
+      "nearestAlternative": "Letting analytics poll current learner progress loses the exact attempt and may observe a later policy version.",
+      "changedCondition": "If the tracker owned both views and completion were synchronous, direct updates could be simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source timed-exercise and version/policy facts remain; the candidate asks how independent consumers react to the same completed attempt.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i013",
+      "questionId": "ood-n06-b04-i013",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces two independent consumers need the same accepted, attributable exception after approval, while purchasing retains decision authority.",
+      "decisiveFact": "Two independent consumers need the same accepted, attributable exception after approval, while purchasing retains decision authority.",
+      "nearestAlternative": "Letting compliance call the dashboard would make an audit consumer responsible for another team's view.",
+      "changedCondition": "If the dashboard were the only consumer and part of the purchasing service, a direct update could suffice.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source bounded/attributable procurement exception remains; the case now separates approval authority from post-approval notification to two independently owned views.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i014",
+      "questionId": "ood-n06-b04-i014",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces two consumers need the exact annotation-map revision after reviewers accept the recording replacement.",
+      "decisiveFact": "Two consumers need the exact annotation-map revision after reviewers accept the recording replacement.",
+      "nearestAlternative": "Search can call transcript rendering after indexing, but that couples consumers and does not identify the accepted map revision.",
+      "changedCondition": "If transcript rendering were part of the search module and had one owner, direct sequencing could suffice.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source recording replacement and stable-segment map are retained; this version focuses on consistent reaction to one approved mapping revision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i015",
+      "questionId": "ood-n06-b04-i015",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces three independent consumers react to one approved role expiry, each for its own view or record.",
+      "decisiveFact": "Three independent consumers react to one approved role expiry, each for its own view or record.",
+      "nearestAlternative": "The access-control view can call audit and administrator modules, but it would become the dispatcher for other teams' responsibilities.",
+      "changedCondition": "If the access-control module owned all three updates, direct calls could be simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source temporary-role/approval case is retained; the revised learner decision is fan-out of one expiry fact to independent consumers.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i016",
+      "questionId": "ood-n06-b04-i016",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces independent consumers need the same exact association between a completed seal and its immutable revision.",
+      "decisiveFact": "Independent consumers need the same exact association between a completed seal and its immutable revision.",
+      "nearestAlternative": "The archive catalog can call the portal after saving, but one consumer should not own another consumer's UI update.",
+      "changedCondition": "If the portal were just a view inside the archive catalog, a direct local refresh could be sufficient.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source notarization case's exact immutable revision remains; the proposal focuses on notifying two independent views of the completed association.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i017",
+      "questionId": "ood-n06-b04-i017",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces two independent consumers need one accepted payout/order association after the payout owner releases it.",
+      "decisiveFact": "Two independent consumers need one accepted payout/order association after the payout owner releases it.",
+      "nearestAlternative": "Seller history can ask finance reporting to update after it records the payout, but neither consumer should dispatch the other's work.",
+      "changedCondition": "If finance reporting were part of seller history's own module, direct sequencing could work.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source payout's settled-order and release facts remain; the proposal tests how independent consumers receive the completed association.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b04-i018",
+      "questionId": "ood-n06-b04-i018",
+      "mentalUnitId": "OOD-N06-B04",
+      "learningObjective": "Choose a design that enforces a late subscriber needs one current snapshot followed by future changes, not the full historical stream as fresh changes.",
+      "decisiveFact": "A late subscriber needs one current snapshot followed by future changes, not the full historical stream as fresh changes.",
+      "nearestAlternative": "Replaying every old announcement is useful for an archive, but it can make a live display show obsolete platforms before the current one.",
+      "changedCondition": "If the consumer were an audit log that must reconstruct history, full historical replay could be appropriate.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The source transit disruption domain remains; this item distinguishes a live subscriber's initial current view from historical replay.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/events/observer-design-pattern",
+        "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/"
+      ]
+    }
+  ]
+}

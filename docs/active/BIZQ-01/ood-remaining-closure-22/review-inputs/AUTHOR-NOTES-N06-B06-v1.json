@@ -1,0 +1,260 @@
+{
+  "scope": "Unit author identity hypotheses at submission; not independent acceptance",
+  "sourceNotes": "AUTHOR-NOTES-B06-B10.json",
+  "sourceNotesSha256": "e1741ca49e5b761213f952c6b7501705daa781aae6bf696b912edf8fd8740728",
+  "unit": "OOD-N06-B06",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n06-b06-i001",
+      "questionId": "ood-n06-b06-i001",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "classification and refund eligibility are not the same responsibility",
+      "nearestAlternative": "Run every rule for classify the returned item and combine the results after all handlers finish. Combining every result for classify the returned item can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision.",
+      "changedCondition": "Keep this ordered path while return rules have separate owners and precedence. If classification becomes one fixed check and refund is always a separate direct step, a chain is unnecessary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i002",
+      "questionId": "ood-n06-b06-i002",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "published outputs reference immutable inputs and code versions",
+      "nearestAlternative": "Have the caller choose one rule for publish the result snapshot before that rule can inspect the request-specific facts. Preselecting one rule for publish the result snapshot prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through.",
+      "changedCondition": "Use fallback while several backends may accept the exact snapshot inputs. If the snapshot carries a definitive backend ID, resolve that backend directly.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i003",
+      "questionId": "ood-n06-b06-i003",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "accepted comments must retain their author and document revision",
+      "nearestAlternative": "Have the caller choose one rule for accept the comment and notify its assigned author before that rule can inspect the request-specific facts. Preselecting one rule for accept the comment and notify its assigned author prevents a later handler from deciding when the selected rule passes; this case requires local qualification and fall-through.",
+      "changedCondition": "This chain selects one notification channel. If policy changes to require all assigned-author channels to send, use an explicit fan-out contract instead.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i004",
+      "questionId": "ood-n06-b06-i004",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "a submission is either complete or explicitly retryable",
+      "nearestAlternative": "Run the rules for submit the offline inspection concurrently and use whichever response arrives first. Response speed does not implement the required precedence for submit the offline inspection; a later handler could win before an earlier eligible one.",
+      "changedCondition": "Fall-through is useful only while one submission handler may accept the whole inspection. If the inspection must be split among upload stages, model that multi-step transaction explicitly.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i005",
+      "questionId": "ood-n06-b06-i005",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "the new issue is traceable and does not double-charge the customer",
+      "nearestAlternative": "Run every rule for reissue the rejected invoice and combine the results after all handlers finish. Combining every result for reissue the rejected invoice can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision.",
+      "changedCondition": "Use ordered rejection-class handlers while an invoice may be handled by different reissue rules. If one authoritative rejection code maps to one handler, use direct dispatch.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i006",
+      "questionId": "ood-n06-b06-i006",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "revocation is visible to the door policy before access is granted",
+      "nearestAlternative": "Run the rules for revoke the badge before access concurrently and use whichever response arrives first. Response speed does not implement the required precedence for revoke the badge before access; a later handler could win before an earlier eligible one.",
+      "changedCondition": "Terminal access outcomes fit this priority list. If an administrator instead needs every applicable denial reason in one audit report, evaluate all rules and aggregate reasons.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i007",
+      "questionId": "ood-n06-b06-i007",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "the printed label represents the current approved shipment data",
+      "nearestAlternative": "Run every rule for print the corrected shipment label and combine the results after all handlers finish. Combining every result for print the corrected shipment label can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision.",
+      "changedCondition": "Fallback fits while carrier/service support can vary by formatter. A validated one-to-one carrier map supports direct formatter lookup.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i008",
+      "questionId": "ood-n06-b06-i008",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "the room capacity and cancellation policy must remain consistent",
+      "nearestAlternative": "Run the rules for move the booked rehearsal concurrently and use whichever response arrives first. Response speed does not implement the required precedence for move the booked rehearsal; a later handler could win before an earlier eligible one.",
+      "changedCondition": "First fit applies only while coordinator priority decides among suitable rooms. If the policy changes to optimize globally across capacity and cancellation costs, use a matching operation.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i009",
+      "questionId": "ood-n06-b06-i009",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "unsafe commands are rejected while maintenance is active",
+      "nearestAlternative": "Run the rules for switch the exhibit into maintenance mode concurrently and use whichever response arrives first. Response speed does not implement the required precedence for switch the exhibit into maintenance mode; a later handler could win before an earlier eligible one.",
+      "changedCondition": "Short-circuiting is right when a covered unsafe command must be denied immediately. If all active safety checks must report findings, collect their results instead.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i010",
+      "questionId": "ood-n06-b06-i010",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "progress refers to a stable lesson identity",
+      "nearestAlternative": "Run the rules for retire the lesson while preserving progress concurrently and use whichever response arrives first. Response speed does not implement the required precedence for retire the lesson while preserving progress; a later handler could win before an earlier eligible one.",
+      "changedCondition": "Use record-form fallback while one handler fully owns each progress representation. If retirement must transform every linked record in multiple stages, define an explicit migration workflow.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i011",
+      "questionId": "ood-n06-b06-i011",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "export observes a stable session state",
+      "nearestAlternative": "Run the rules for close the board and export its history concurrently and use whichever response arrives first. Response speed does not implement the required precedence for close the board and export its history; a later handler could win before an earlier eligible one.",
+      "changedCondition": "First complete export is appropriate while export formats are alternatives. If the user requests multiple exports from the same snapshot, invoke those exporters as separate requested outputs.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i012",
+      "questionId": "ood-n06-b06-i012",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "the escalation keeps ownership and response deadlines",
+      "nearestAlternative": "Run every rule for escalate the conversation and combine the results after all handlers finish. Combining every result for escalate the conversation can let a later handler change a terminal outcome or create competing effects; the stated order selects one decision.",
+      "changedCondition": "Ordered tiers decide one escalation owner under the stated deadline. If several teams must jointly own a case, use an explicit shared assignment contract.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i013",
+      "questionId": "ood-n06-b06-i013",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "a listing cannot become visible before its price and stock rule are valid",
+      "nearestAlternative": "Run the rules for publish the seasonal listing concurrently and use whichever response arrives first. Response speed does not implement the required precedence for publish the seasonal listing; a later handler could win before an earlier eligible one.",
+      "changedCondition": "First matching product rule works while product categories have one owning rule. If multiple rules must all approve the listing, aggregate all required checks before publication.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i014",
+      "questionId": "ood-n06-b06-i014",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "each split retains the original request identity and delivery promise",
+      "nearestAlternative": "Run the rules for split the backordered request across vendors concurrently and use whichever response arrives first. Response speed does not implement the required precedence for split the backordered request across vendors; a later handler could win before an earlier eligible one.",
+      "changedCondition": "Passing only the remaining quantity preserves the split operation. If every vendor allocation must commit atomically, use an explicit transaction/coordinator rather than independent claims.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i015",
+      "questionId": "ood-n06-b06-i015",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "transfer preserves the plot boundary and approval history",
+      "nearestAlternative": "Run the rules for transfer the plot reservation concurrently and use whichever response arrives first. Response speed does not implement the required precedence for transfer the plot reservation; a later handler could win before an earlier eligible one.",
+      "changedCondition": "An ordered authority list fits when only one authority owns the transfer. If all boundary authorities must consent, collect and verify each required approval.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i016",
+      "questionId": "ood-n06-b06-i016",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "the bundle pricing policy remains consistent with its components",
+      "nearestAlternative": "Run the rules for add the regional bundle concurrently and use whichever response arrives first. Response speed does not implement the required precedence for add the regional bundle; a later handler could win before an earlier eligible one.",
+      "changedCondition": "Regional handler selection fits alternative regional pricing rules. If a bundle price is a combination of independent component adjustments, compose those adjustments rather than stop at the first region.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i017",
+      "questionId": "ood-n06-b06-i017",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "charger capacity and reservation expiry are coordinated",
+      "nearestAlternative": "Run the rules for reserve the charger concurrently and use whichever response arrives first. Response speed does not implement the required precedence for reserve the charger; a later handler could win before an earlier eligible one.",
+      "changedCondition": "Priority fallback applies while the first eligible station is the intended owner. If the contract optimizes a slot across all stations, rank eligible slots globally.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n06-b06-i018",
+      "questionId": "ood-n06-b06-i018",
+      "mentalUnitId": "OOD-N06-B06",
+      "learningObjective": "Chain of responsibility and ordered handling",
+      "decisiveFact": "asset identity remains stable while descriptive values are replaced",
+      "nearestAlternative": "Run the rules for merge duplicate metadata concurrently and use whichever response arrives first. Response speed does not implement the required precedence for merge duplicate metadata; a later handler could win before an earlier eligible one.",
+      "changedCondition": "First matching metadata rule fits a single conflict owner. If several metadata policies must jointly transform one asset, define a composed merge operation with an explicit order.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision remains the existing Chain of Responsibility/ordered handling objective. This proposal preserves the original operation and invariant, then states the handler-local qualification, pass/terminal behavior and ordering needed to decide whether one ordered chain is appropriate. The answer keeps the same core accept-or-pass handler meaning; distractor meanings were replaced and therefore use fresh IDs.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ]
+    }
+  ]
+}

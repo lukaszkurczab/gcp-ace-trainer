@@ -1,0 +1,1388 @@
+[
+  {
+    "questionId": "ood-n06-b10-i001",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a fleet charging coordinator, a charger is held before payment authorization. The hold expires if payment is declined; an expired or declined attempt must leave the slot available and must not charge the driver. What should coordinate these steps?",
+    "difficulty": "foundational",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i001_workflow",
+          "text": "Hold the slot, authorize payment, then confirm the reservation; if authorization fails or the hold expires, release the hold and record no charge."
+        },
+        {
+          "optionId": "n06_b10_i001_alt1",
+          "text": "Charge first, then try to reserve a charger; refund only if no slot remains."
+        },
+        {
+          "optionId": "n06_b10_i001_alt2",
+          "text": "Hold the slot and leave it reserved after a declined payment for the driver to retry later."
+        },
+        {
+          "optionId": "n06_b10_i001_alt3",
+          "text": "Commit the reservation and charge together in every charger and payment service, then reconcile copies."
+        },
+        {
+          "optionId": "n06_b10_i001_alt4",
+          "text": "Notify the driver that charging is confirmed when the hold is created, before payment completes."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i001_workflow"
+    },
+    "constraints": [
+      "A failed or expired payment attempt frees the slot and does not charge the driver."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Payment approval is a prerequisite to the reservation, and a failed attempt must release its temporary capacity without charging.",
+      "details": {
+        "mechanismOrProperty": "The coordinator owns the sequence across slot holding and payment authorization; releasing the hold is the defined compensation for a failed authorization.",
+        "scenarioApplication": "The slot hold is temporary, so a declined or expired payment cannot strand capacity or create a confirmed booking.",
+        "errorCorrection": "Charging before securing capacity can debit a driver without a charger; retaining the hold after a decline violates the stated availability outcome.",
+        "boundaryOrTradeoff": "Compensate the temporary hold because it is reversible. Do not treat a failed attempt as a completed reservation.",
+        "transfer": "For another resource-backed booking, identify temporary holds and release them when a required later step fails."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i001_alt1",
+          "text": "A driver can be charged without securing a charger, contrary to the hold-before-authorization sequence."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i001_alt2",
+          "text": "A declined or expired attempt must free the slot; retaining the hold blocks another driver."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i001_alt3",
+          "text": "Separate service writes do not establish the one confirmed booking/payment outcome required here."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i001_alt4",
+          "text": "A slot hold is tentative, so a confirmation notice would precede successful payment authorization."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i002",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a photo archive, a metadata merge must preserve the asset ID while replacing approved descriptive fields. The canonical record is committed before a search index refresh. If indexing is unavailable, the merge remains accepted and the index can retry from the committed revision. Which workflow fits?",
+    "difficulty": "foundational_boundary",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i002_workflow",
+          "text": "Validate and commit the merge with the stable asset ID, then retry indexing from that revision without undoing the accepted merge."
+        },
+        {
+          "optionId": "n06_b10_i002_alt1",
+          "text": "Update the search index first and use its result to decide which metadata becomes canonical."
+        },
+        {
+          "optionId": "n06_b10_i002_alt2",
+          "text": "Commit the merge, then delete it whenever the index refresh fails."
+        },
+        {
+          "optionId": "n06_b10_i002_alt3",
+          "text": "Ask the index and archive to write independent metadata copies and reconcile their asset IDs later."
+        },
+        {
+          "optionId": "n06_b10_i002_alt4",
+          "text": "Report success only after the index refresh, even though an outage must not undo or invalidate the merge."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i002_workflow"
+    },
+    "constraints": [
+      "The canonical merge remains accepted if a derived search refresh is unavailable."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The record merge is the accepted change; a delayed derived index can retry and must not reverse that canonical result.",
+      "details": {
+        "mechanismOrProperty": "The workflow distinguishes the canonical write from a retryable projection update. No compensation is appropriate for an index outage because the case says the merge remains accepted.",
+        "scenarioApplication": "The committed revision and stable asset ID provide the source for a later index retry.",
+        "errorCorrection": "Deleting canonical metadata because a projection is unavailable confuses a derived view with the accepted record.",
+        "boundaryOrTradeoff": "Compensation is for a failed required step whose effects must be undone; a retryable post-commit projection is not such a step here.",
+        "transfer": "For another derived index, retry from the accepted revision and preserve canonical state when only the projection is unavailable."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i002_alt1",
+          "text": "The search index is derived from the canonical record; letting it decide the merge reverses the stated authority."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i002_alt2",
+          "text": "The case says an indexing outage leaves the accepted merge in force, so deleting it is the wrong recovery."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i002_alt3",
+          "text": "The required sequence is canonical commit followed by a retryable index refresh, not waiting for projection success."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i002_alt4",
+          "text": "The index update is not a merge command; each consumer must not independently create canonical metadata."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i003",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a digital rights clearance tool, external delivery is irreversible. A license must have an explicit territory and expiry, and the recipient must be authorized for both. A failed check must not disclose the work. What sequence should the clearance workflow enforce?",
+    "difficulty": "intermediate",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i003_workflow",
+          "text": "Check license territory, expiry, and recipient authorization before releasing the work; record the clearance only for a permitted delivery."
+        },
+        {
+          "optionId": "n06_b10_i003_alt1",
+          "text": "Release the work while authorization checks run, then retract access if a check fails."
+        },
+        {
+          "optionId": "n06_b10_i003_alt2",
+          "text": "Record a successful clearance for any territory and narrow the recipient list afterward."
+        },
+        {
+          "optionId": "n06_b10_i003_alt3",
+          "text": "Let each recipient confirm its own rights after receiving the work."
+        },
+        {
+          "optionId": "n06_b10_i003_alt4",
+          "text": "Compensate a failed release by sending a revocation notice, treating disclosure as undone."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i003_workflow"
+    },
+    "constraints": [
+      "No external work is disclosed before the rights checks pass."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The permission facts govern whether an irreversible disclosure may occur, so the workflow must establish them before delivery.",
+      "details": {
+        "mechanismOrProperty": "The coordinator sequences all required authorization checks before the external effect. A revocation message cannot restore confidentiality after disclosure.",
+        "scenarioApplication": "Territory, expiry, and recipient scope are all necessary preconditions; no work is sent while any remains unresolved.",
+        "errorCorrection": "Post-delivery checks and revocation do not undo the disclosure that the prompt forbids.",
+        "boundaryOrTradeoff": "Use compensation only when the earlier effect can actually be reversed. Put non-reversible effects after all required checks.",
+        "transfer": "For another external release, identify irreversible effects and complete their authorization preconditions first."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i003_alt1",
+          "text": "This discloses work before recipient authorization is established, and disclosure cannot be taken back."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i003_alt2",
+          "text": "A territory/expiry check alone does not establish the recipient is authorized."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i003_alt3",
+          "text": "The prompt allows no release until all checks pass; waiting for consumers is unrelated to that decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i003_alt4",
+          "text": "Revocation cannot erase information already disclosed to an external recipient."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i004",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a drone maintenance planner, a battery is reserved before an aircraft maintenance slot is assigned. If the aircraft slot conflicts, the battery must return to the available pool and neither assignment is recorded. Which design preserves the pair?",
+    "difficulty": "intermediate_transfer",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i004_workflow",
+          "text": "Reserve the battery, claim the aircraft slot, and confirm both assignments together; release the battery reservation if the slot cannot be claimed."
+        },
+        {
+          "optionId": "n06_b10_i004_alt1",
+          "text": "Record the battery assignment before checking aircraft availability and leave it for an operator to repair."
+        },
+        {
+          "optionId": "n06_b10_i004_alt2",
+          "text": "Claim the aircraft slot, then reserve any battery later without checking that it remains available."
+        },
+        {
+          "optionId": "n06_b10_i004_alt3",
+          "text": "Ask both services to assign independently and accept whichever assignment finishes first."
+        },
+        {
+          "optionId": "n06_b10_i004_alt4",
+          "text": "Keep the battery reserved after a slot conflict so that a retry cannot see it."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i004_workflow"
+    },
+    "constraints": [
+      "A failed aircraft-slot claim leaves neither assignment recorded."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The battery and aircraft slot form one accepted maintenance plan; a slot conflict must undo the temporary battery hold.",
+      "details": {
+        "mechanismOrProperty": "A coordinator sequences the two resource claims and compensates the first reversible hold if the second cannot be acquired.",
+        "scenarioApplication": "The case forbids a one-sided assignment; only the combined plan is recorded as complete.",
+        "errorCorrection": "Leaving the battery assigned after the aircraft slot fails creates exactly the partial plan the prompt rejects.",
+        "boundaryOrTradeoff": "Temporary reservations can be released on failure; do not label a partial reservation as the completed maintenance schedule.",
+        "transfer": "For another multi-resource plan, list each temporary claim and the compensation needed if a later claim fails."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i004_alt1",
+          "text": "The battery can be assigned without a valid aircraft slot, leaving a partial plan."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i004_alt2",
+          "text": "The slot must be secured before the combined plan can be recorded; an unchecked later battery reservation can fail."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i004_alt3",
+          "text": "Independent writes can each succeed without the paired maintenance assignment the case requires."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i004_alt4",
+          "text": "A failed slot check requires releasing the battery hold; otherwise the resource remains stranded."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i005",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a clinic referral coordinator, a referral may be sent externally only after consent, destination specialty, and recipient identity are confirmed. Once sent, the external clinic may act immediately; a later cancellation cannot erase disclosure. What should the workflow do?",
+    "difficulty": "advanced_tradeoff",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i005_workflow",
+          "text": "Verify consent, specialty, and recipient before sending once; record the referral ID so a retry can detect an already-sent referral."
+        },
+        {
+          "optionId": "n06_b10_i005_alt1",
+          "text": "Send first and rely on a later cancellation if consent or specialty validation fails."
+        },
+        {
+          "optionId": "n06_b10_i005_alt2",
+          "text": "Send the referral to every possible specialist and ask the patient to select afterward."
+        },
+        {
+          "optionId": "n06_b10_i005_alt3",
+          "text": "Send once per retry attempt because delivery receipts can be delayed."
+        },
+        {
+          "optionId": "n06_b10_i005_alt4",
+          "text": "Let the external clinic decide whether the patient consented after receiving the referral."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i005_workflow"
+    },
+    "constraints": [
+      "The external referral is sent once only after consent, specialty, and recipient checks."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Disclosure is irreversible, while the three stated facts are prerequisites; retries must not create duplicate referrals.",
+      "details": {
+        "mechanismOrProperty": "The coordinator performs authorization before the external effect and uses the stable referral ID to distinguish a retry from a new referral.",
+        "scenarioApplication": "A delayed receipt does not justify another disclosure because the ID can be checked against the prior send.",
+        "errorCorrection": "Cancellation cannot restore privacy after the clinic has received the information, and sending duplicates compounds the exposure.",
+        "boundaryOrTradeoff": "For irreversible steps, validate first and make retries refer to the same operation identity.",
+        "transfer": "For another external referral, preserve the consent and recipient checks and use an operation ID across uncertain retries."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i005_alt1",
+          "text": "Sending before consent and recipient checks makes a later cancellation too late to protect privacy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i005_alt2",
+          "text": "Specialty alone does not establish consent or the intended recipient."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i005_alt3",
+          "text": "A delayed delivery receipt is not a basis for creating a second disclosure; use the referral identity on retry."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i005_alt4",
+          "text": "The receiving clinic cannot retroactively provide the patient’s consent for disclosure."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i006",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a music practice tracker, completing an exercise requires a valid score for the recorded exercise version. Badge and analytics updates may lag; an invalid score must create no completion. Which sequence matches these facts?",
+    "difficulty": "advanced_failure",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i006_workflow",
+          "text": "Validate the version-bound score and persist the completion first; then retry badge and analytics updates from the accepted completion ID."
+        },
+        {
+          "optionId": "n06_b10_i006_alt1",
+          "text": "Award the badge before checking the score, then revoke it if validation fails."
+        },
+        {
+          "optionId": "n06_b10_i006_alt2",
+          "text": "Mark the exercise complete immediately and let analytics reject invalid scores later."
+        },
+        {
+          "optionId": "n06_b10_i006_alt3",
+          "text": "Require every badge and analytics service to respond before accepting a valid completion."
+        },
+        {
+          "optionId": "n06_b10_i006_alt4",
+          "text": "Run each consumer as a separate completion writer with its own score calculation."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i006_workflow"
+    },
+    "constraints": [
+      "A completion requires a valid score for the recorded exercise version."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A valid score determines completion, while badges and analytics are later effects that may lag.",
+      "details": {
+        "mechanismOrProperty": "The workflow keeps the synchronous acceptance invariant at the completion owner and gives downstream consumers a stable accepted completion to retry.",
+        "scenarioApplication": "An invalid score yields no completion; a delayed badge update does not change that result.",
+        "errorCorrection": "A badge or analytics projection cannot be the authority that turns an invalid score into a completion.",
+        "boundaryOrTradeoff": "Do not compensate or retract a completion for a downstream delay when that delay is explicitly permitted.",
+        "transfer": "For another achievement side effect, emit from the accepted version-bound completion and retry by its stable ID."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i006_alt1",
+          "text": "A badge would be awarded for a result that might fail the version-bound score check."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i006_alt2",
+          "text": "Analytics is downstream and cannot decide whether the completion itself is valid."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i006_alt3",
+          "text": "The scenario permits those consumers to lag, so their response is not a prerequisite for a valid completion."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i006_alt4",
+          "text": "Independent consumers must not create separate completion records or recalculate the score independently."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i007",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a procurement approval queue, two controls are mandatory before an exception is approved. The first control may pass, but if the second denies the request there must be no partial approval record. Search indexing and requester notice happen only after the decision. Which workflow fits?",
+    "difficulty": "foundational",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i007_workflow",
+          "text": "Evaluate both mandatory controls, persist one attributed approval only if both pass, then update search and notice; a denial leaves no approval."
+        },
+        {
+          "optionId": "n06_b10_i007_alt1",
+          "text": "Persist a provisional approval after the first control and let the second control revoke it if needed."
+        },
+        {
+          "optionId": "n06_b10_i007_alt2",
+          "text": "Skip the second control when the first passes and notify the requester immediately."
+        },
+        {
+          "optionId": "n06_b10_i007_alt3",
+          "text": "Have search indexing decide whether the exception passes the required controls."
+        },
+        {
+          "optionId": "n06_b10_i007_alt4",
+          "text": "Wait for search and notice to complete before deciding whether to create the approval."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i007_workflow"
+    },
+    "constraints": [
+      "No approval record exists unless both mandatory controls pass."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Approval requires both controls and must be recorded as one attributed decision; indexing and notice are downstream effects.",
+      "details": {
+        "mechanismOrProperty": "The approval boundary sequences required checks before persistence. A denied request has no partial approval state to compensate.",
+        "scenarioApplication": "The workflow can proceed to search and notice only after one final approval record exists.",
+        "errorCorrection": "A provisional approval exposes a state the scenario expressly forbids if control two later denies.",
+        "boundaryOrTradeoff": "Separate mandatory preconditions from post-decision projections; only the former determine approval.",
+        "transfer": "For another bounded exception, finish every required control before persisting and notifying one decision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i007_alt1",
+          "text": "A provisional approval exists before the second mandatory control may deny the request."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i007_alt2",
+          "text": "Skipping a required control can approve an exception that does not meet the stated conditions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i007_alt3",
+          "text": "Search is a projection and does not evaluate the approval controls."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i007_alt4",
+          "text": "Notice and indexing follow the decision; waiting for them does not determine whether controls passed."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i008",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a podcast production desk, a replacement recording must preserve annotations by stable segment ID. The producer validates the new segment map before switching the canonical recording reference. A search refresh can retry afterward. If map validation fails, the old recording remains active. What workflow should coordinate the replacement?",
+    "difficulty": "foundational_boundary",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i008_workflow",
+          "text": "Validate the segment map, switch the canonical reference only on success, and refresh search from that accepted revision; leave the old reference active on validation failure."
+        },
+        {
+          "optionId": "n06_b10_i008_alt1",
+          "text": "Switch the recording first and let search infer how old annotation IDs map to new segments."
+        },
+        {
+          "optionId": "n06_b10_i008_alt2",
+          "text": "Delete the old recording before validating the replacement map."
+        },
+        {
+          "optionId": "n06_b10_i008_alt3",
+          "text": "Undo the accepted recording switch if only the later search refresh fails."
+        },
+        {
+          "optionId": "n06_b10_i008_alt4",
+          "text": "Let each search index choose its own segment mapping and update the annotations independently."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i008_workflow"
+    },
+    "constraints": [
+      "A failed segment-map validation leaves the previous recording active."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The mapping is a precondition of the canonical switch; search is a retryable projection after the accepted revision.",
+      "details": {
+        "mechanismOrProperty": "The workflow stages and validates the replacement before changing the authoritative reference, then treats indexing as a separate retryable effect.",
+        "scenarioApplication": "A failed map check leaves the prior recording and its stable annotation references intact.",
+        "errorCorrection": "Deleting or switching before validating can strand annotations on a reference that was never safe to accept.",
+        "boundaryOrTradeoff": "Compensate a reversible staged switch only if that switch has occurred; do not undo a valid canonical switch for a projection delay.",
+        "transfer": "For another source replacement, validate identity mapping before switching and refresh derived views from the accepted revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i008_alt1",
+          "text": "The new segment map must be valid before the canonical reference changes; search cannot choose annotation identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i008_alt2",
+          "text": "Deleting the prior source before validation can leave no usable recording when the replacement fails."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i008_alt3",
+          "text": "A post-commit index failure is retryable and does not invalidate the accepted reference switch."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i008_alt4",
+          "text": "The archive owner validates one mapping; independent index mappings could disagree with stable annotations."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i009",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a permissions review service, a temporary grant requires an approved decision and an expiry. After the grant is persisted, notification may fail and be retried. Authorization checks expiry on each request, so cleanup timing cannot extend access. Which workflow fits?",
+    "difficulty": "intermediate",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i009_workflow",
+          "text": "Validate approval and expiry before persisting the grant, then retry notification by grant ID; keep request-time expiry checks independent of cleanup."
+        },
+        {
+          "optionId": "n06_b10_i009_alt1",
+          "text": "Grant access when the review is submitted and let a later approval event revoke it if denied."
+        },
+        {
+          "optionId": "n06_b10_i009_alt2",
+          "text": "Rely on the cleanup job to remove expired roles before authorization denies access."
+        },
+        {
+          "optionId": "n06_b10_i009_alt3",
+          "text": "Revoke a valid persisted grant whenever notification delivery fails."
+        },
+        {
+          "optionId": "n06_b10_i009_alt4",
+          "text": "Wait for notification delivery before making the approval and grant decision."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i009_workflow"
+    },
+    "constraints": [
+      "The grant is valid only when its approval and expiry are recorded."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The grant’s approval and expiry define its accepted state; notification failure does not invalidate it, and authorization must enforce expiry directly.",
+      "details": {
+        "mechanismOrProperty": "The workflow separates grant acceptance from retryable notification and cleanup. Expiry is checked in the request path, not inferred from a scheduled removal.",
+        "scenarioApplication": "A late cleanup job cannot make an expired grant usable, and a notification retry cannot create a second grant.",
+        "errorCorrection": "Requiring successful notification for an access decision can reject a valid grant for an unrelated delivery outage.",
+        "boundaryOrTradeoff": "Keep the authorization fact with the grant decision; retry delivery separately and enforce expiry where access is checked.",
+        "transfer": "For another temporary access grant, bind approval/expiry before persistence, and make notification retries refer to its grant ID."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i009_alt1",
+          "text": "A submitted request is not yet an approved grant, so granting first can expose unauthorized access."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i009_alt2",
+          "text": "Cleanup may run late; authorization itself must check expiry on each request."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i009_alt3",
+          "text": "Notification failure is retryable and does not invalidate an otherwise accepted grant."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i009_alt4",
+          "text": "Waiting for notice confuses delivery with the approval and expiry that define the grant."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i010",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a document notarization service, the notary seals one exact immutable revision. Once recorded, the seal is authoritative; a public index refresh may fail and retry, but the seal must not be removed for that failure. What sequence is appropriate?",
+    "difficulty": "intermediate_transfer",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i010_workflow",
+          "text": "Verify and record the seal for the exact immutable revision, then retry public indexing from that seal record without compensating the seal."
+        },
+        {
+          "optionId": "n06_b10_i010_alt1",
+          "text": "Publish a seal event before selecting the immutable revision it covers."
+        },
+        {
+          "optionId": "n06_b10_i010_alt2",
+          "text": "Remove the seal whenever the public index is unavailable."
+        },
+        {
+          "optionId": "n06_b10_i010_alt3",
+          "text": "Let the public index choose which revision the notary should seal."
+        },
+        {
+          "optionId": "n06_b10_i010_alt4",
+          "text": "Wait for every public index to refresh before making the authoritative seal record."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i010_workflow"
+    },
+    "constraints": [
+      "The seal remains authoritative when public indexing is unavailable."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The exact revision is part of seal acceptance; public indexing is a retryable view and cannot reverse an authoritative seal.",
+      "details": {
+        "mechanismOrProperty": "The workflow records the irreversible authoritative fact only after resolving its immutable target, then retries derived publication independently.",
+        "scenarioApplication": "An index outage does not change which revision was sealed or make the seal invalid.",
+        "errorCorrection": "Deleting a valid seal to repair a lagging index reverses the authority relationship stated in the case.",
+        "boundaryOrTradeoff": "Do not compensate an authoritative irreversible fact for a failed projection; retry the projection from the fact.",
+        "transfer": "For another notarized revision, bind the exact immutable target before sealing and keep indexes downstream."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i010_alt1",
+          "text": "The seal must identify an exact immutable revision before it is recorded."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i010_alt2",
+          "text": "An index outage does not invalidate the authoritative seal and must not remove it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i010_alt3",
+          "text": "The notary, not the derived index, selects and records the revision being sealed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i010_alt4",
+          "text": "Public-index refresh is allowed to lag; it is not a precondition to creating the seal."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i011",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a marketplace payout service, funds are reserved before an external transfer. If the bank rejects the transfer, the reservation is released and the order remains settled but unpaid. A successful transfer is recorded under one payout ID, and a report update may retry by that same ID. Which workflow preserves these outcomes?",
+    "difficulty": "advanced_tradeoff",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i011_workflow",
+          "text": "Reserve funds, request the transfer, and mark the payout released only on confirmation; release the reservation on rejection and retry reporting by payout ID."
+        },
+        {
+          "optionId": "n06_b10_i011_alt1",
+          "text": "Mark the payout released when the transfer is requested, then amend it if the bank rejects."
+        },
+        {
+          "optionId": "n06_b10_i011_alt2",
+          "text": "Keep funds reserved indefinitely after a confirmed rejection so retries remain possible."
+        },
+        {
+          "optionId": "n06_b10_i011_alt3",
+          "text": "Issue a second transfer on every retry when the first response is delayed."
+        },
+        {
+          "optionId": "n06_b10_i011_alt4",
+          "text": "Make the finance report perform the transfer and decide whether the order settled."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i011_workflow"
+    },
+    "constraints": [
+      "Confirmed transfer rejection releases the funds hold; delayed response retries use the same payout ID."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The settled order permits a payout attempt, but release is recorded only after transfer confirmation; a rejected transfer must free the reservation.",
+      "details": {
+        "mechanismOrProperty": "The coordinator uses a reversible funds hold around an external action, commits release on confirmation, and compensates the hold on rejection.",
+        "scenarioApplication": "The report is downstream, while the transfer outcome distinguishes an accepted payout from a rejected attempt.",
+        "errorCorrection": "Recording success at request time can claim a payout that the bank never made; repeating an uncertain transfer can double-pay.",
+        "boundaryOrTradeoff": "Retry report updates with the payout ID and release reversible holds on confirmed rejection.",
+        "transfer": "For another external payment, separate request from confirmation and define what happens to the hold on each outcome."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i011_alt1",
+          "text": "A request is not a confirmed transfer; marking release before bank confirmation can report unpaid funds as paid."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i011_alt2",
+          "text": "A confirmed rejection requires releasing the hold; keeping it blocks funds without a transfer."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i011_alt3",
+          "text": "A delayed response must not cause a second transfer; retries must retain payout identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i011_alt4",
+          "text": "The report is downstream and has no authority to settle the order or issue the external transfer."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i012",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a public-transit disruption board, a platform change receives an authoritative effective-time sequence. A platform is temporarily reserved while the change is checked for conflicts. If the sequence/conflict check fails, release the reservation and do not notify passengers; after acceptance, displays may refresh later by sequence.",
+    "difficulty": "advanced_failure",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i012_workflow",
+          "text": "Reserve the platform, validate and assign the effective sequence, then accept and notify; release the reservation without notification if validation fails."
+        },
+        {
+          "optionId": "n06_b10_i012_alt1",
+          "text": "Notify passengers as soon as a platform is tentatively reserved, then correct the display after a conflict."
+        },
+        {
+          "optionId": "n06_b10_i012_alt2",
+          "text": "Let each display assign its own effective-time sequence after receiving the change."
+        },
+        {
+          "optionId": "n06_b10_i012_alt3",
+          "text": "Keep the platform reserved after a rejected conflict check for a later manual decision."
+        },
+        {
+          "optionId": "n06_b10_i012_alt4",
+          "text": "Wait for every display to refresh before determining whether the change is valid."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i012_workflow"
+    },
+    "constraints": [
+      "Rejected platform changes release their reservation and are not announced."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The sequence and conflict check determine whether the platform change is accepted; a failed attempt must release its temporary reservation and remain undisclosed.",
+      "details": {
+        "mechanismOrProperty": "The workflow sequences a reversible platform hold before acceptance and compensates that hold on failed validation; later displays consume the assigned sequence.",
+        "scenarioApplication": "Passenger notification follows one accepted, sequenced change, while display refresh can lag without owning validity.",
+        "errorCorrection": "An early notice exposes a change that may be rejected, and consumer-assigned sequence values would not be one authoritative order.",
+        "boundaryOrTradeoff": "Keep temporary reservation compensation and acceptance with the board; later views should use the board’s sequence.",
+        "transfer": "For another disruption, validate and assign the authoritative sequence before notice, and release temporary resources on rejection."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i012_alt1",
+          "text": "Passengers must not be told about a platform change that the conflict check may reject."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i012_alt2",
+          "text": "Displays consume the board’s accepted sequence; they do not allocate separate authoritative values."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i012_alt3",
+          "text": "A rejected change must free its temporary reservation rather than strand the platform."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i012_alt4",
+          "text": "Display refresh may lag; it cannot determine whether the underlying conflict check passed."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i013",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a neighborhood energy-sharing service, a meter window is reserved only if no overlapping reservation exists. A participant notification is sent after reservation; notification failure may retry by reservation ID and must not create another window. What should coordinate the operation?",
+    "difficulty": "foundational",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i013_workflow",
+          "text": "Check and persist one non-overlapping reservation, then notify by its stable ID; retry notice delivery without repeating the reservation."
+        },
+        {
+          "optionId": "n06_b10_i013_alt1",
+          "text": "Send the notification first and let the participant identify overlapping windows afterward."
+        },
+        {
+          "optionId": "n06_b10_i013_alt2",
+          "text": "Create a new reservation on each notice retry because delivery may have failed."
+        },
+        {
+          "optionId": "n06_b10_i013_alt3",
+          "text": "Revoke the accepted reservation whenever a participant notice cannot be delivered."
+        },
+        {
+          "optionId": "n06_b10_i013_alt4",
+          "text": "Let each notification channel reserve its own meter window and merge their results."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i013_workflow"
+    },
+    "constraints": [
+      "A notice retry must not create a second meter window."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The no-overlap rule governs the reservation itself; notifications report one accepted window and can retry by its ID.",
+      "details": {
+        "mechanismOrProperty": "The schedule owner checks and records the invariant once, then identifies the accepted reservation for downstream retry.",
+        "scenarioApplication": "A failed notice does not make the reservation absent, and a retry cannot allocate the same meter twice.",
+        "errorCorrection": "Using notice delivery as a reservation command can create duplicates or shift the invariant to an external recipient.",
+        "boundaryOrTradeoff": "Keep reservation uniqueness at the schedule boundary; make notification idempotent against the accepted reservation identity.",
+        "transfer": "For another participant alert, retry delivery for the existing reservation ID rather than rerunning allocation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i013_alt1",
+          "text": "A notification cannot detect/prevent an overlap before the schedule records the reservation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i013_alt2",
+          "text": "A retry repeats notice delivery for the same reservation ID; creating a new reservation duplicates the window."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i013_alt3",
+          "text": "Delivery failure does not invalidate the schedule’s accepted reservation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i013_alt4",
+          "text": "Channels deliver notices; they do not each allocate independent meter reservations."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i014",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a live captioning studio, a new provider is configured and tested against timing/error requirements before traffic is switched. If the test fails, the old provider remains active and the staged configuration is discarded. After a successful switch, monitoring may catch up later. Which workflow fits?",
+    "difficulty": "foundational_boundary",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i014_workflow",
+          "text": "Stage and test the new provider, switch traffic only after it passes, and discard the staged configuration on failure; refresh monitoring after the accepted switch."
+        },
+        {
+          "optionId": "n06_b10_i014_alt1",
+          "text": "Switch traffic first and let monitoring decide whether the provider meets the contract."
+        },
+        {
+          "optionId": "n06_b10_i014_alt2",
+          "text": "Discard the old provider before testing the replacement."
+        },
+        {
+          "optionId": "n06_b10_i014_alt3",
+          "text": "Keep the failed staged configuration as active so the supervisor can retry without reconfiguration."
+        },
+        {
+          "optionId": "n06_b10_i014_alt4",
+          "text": "Undo a valid provider switch whenever the monitoring dashboard is delayed."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i014_workflow"
+    },
+    "constraints": [
+      "The previous provider remains active if the staged candidate fails its test."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The new provider must pass the stream contract before it becomes active; failed staging is reversible, while later monitoring is not part of acceptance.",
+      "details": {
+        "mechanismOrProperty": "The coordinator stages a candidate, validates it, and makes one activation decision. Failure discards the candidate and preserves the current provider.",
+        "scenarioApplication": "Only a tested provider receives traffic, and a dashboard delay cannot undo an accepted switch.",
+        "errorCorrection": "Switching before validation exposes the live stream to a provider that may violate timing or error behavior.",
+        "boundaryOrTradeoff": "Compensate reversible staging on failure; keep the last known-good provider until validation succeeds.",
+        "transfer": "For another provider change, test before activation and retain the active implementation if the candidate fails."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i014_alt1",
+          "text": "Traffic must not move to a provider before it passes the explicit timing/error test."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i014_alt2",
+          "text": "The old provider must remain available until the candidate passes and is activated."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i014_alt3",
+          "text": "Failed staging is discarded; retaining it as active would make a failed candidate serve traffic."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i014_alt4",
+          "text": "A delayed monitoring view does not invalidate a provider switch that passed its test."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i015",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a volunteer coordination hub, a two-person assignment swap requires both volunteers to pass skill and availability checks. Temporary holds are placed on both assignments; if either check fails, release both holds and keep the original roster unchanged. Which workflow preserves the swap?",
+    "difficulty": "intermediate",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i015_workflow",
+          "text": "Hold both assignments, validate both volunteers, and commit the swap as one roster change; release both holds if either check fails."
+        },
+        {
+          "optionId": "n06_b10_i015_alt1",
+          "text": "Move the first volunteer immediately, then ask the second volunteer to accept later."
+        },
+        {
+          "optionId": "n06_b10_i015_alt2",
+          "text": "Commit whichever half of the swap passes and leave the other assignment open."
+        },
+        {
+          "optionId": "n06_b10_i015_alt3",
+          "text": "Hold both assignments but retain the first hold indefinitely if the second check fails."
+        },
+        {
+          "optionId": "n06_b10_i015_alt4",
+          "text": "Ask an audit consumer to complete the second assignment after the first move is published."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i015_workflow"
+    },
+    "constraints": [
+      "A failed check on either volunteer leaves the original roster unchanged."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The roster swap is one all-or-nothing change; both eligibility checks must pass before it is committed.",
+      "details": {
+        "mechanismOrProperty": "The coordinator acquires reversible holds, checks both sides, and either commits the pair or compensates all holds.",
+        "scenarioApplication": "No half-swap is visible, and a failed check restores both assignments to the original roster.",
+        "errorCorrection": "Committing the first move before checking the second exposes a partial state the prompt forbids.",
+        "boundaryOrTradeoff": "Use compensation for temporary locks/holds; persist the paired state only after both conditions succeed.",
+        "transfer": "For another multi-party change, make the complete participant set explicit and release temporary claims on any failed precondition."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i015_alt1",
+          "text": "Moving one volunteer before validating the other exposes a partial swap."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i015_alt2",
+          "text": "The case requires both assignments to change together; a half-swap is not an accepted result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i015_alt3",
+          "text": "If the second check fails, both holds must be released, not leave the first resource locked."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i015_alt4",
+          "text": "The audit feed records a completed swap; it is not authorized to perform the second assignment."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i016",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a local-first map editor, a merge is accepted only when geometry, conflict markers, and provenance are stored together. Search is a derived projection and may retry. If storage rejects the merge, no new geometry is accepted; a search outage after commit must not undo it.",
+    "difficulty": "intermediate_transfer",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i016_workflow",
+          "text": "Validate and commit the geometry, conflict markers, and provenance as one route revision; retry search from that revision, but make no change if the commit fails."
+        },
+        {
+          "optionId": "n06_b10_i016_alt1",
+          "text": "Update search first and let its index decide which geometry is canonical."
+        },
+        {
+          "optionId": "n06_b10_i016_alt2",
+          "text": "Commit geometry before its conflict markers and provenance, then repair missing data later."
+        },
+        {
+          "optionId": "n06_b10_i016_alt3",
+          "text": "Undo a successfully committed route revision whenever search is unavailable."
+        },
+        {
+          "optionId": "n06_b10_i016_alt4",
+          "text": "Ask each projection to merge its own geometry and resolve conflicts independently."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i016_workflow"
+    },
+    "constraints": [
+      "The route revision includes geometry, conflict markers, and provenance as one accepted change."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The route revision is valid only as the complete stored set; after that commit, search is retryable and not authoritative.",
+      "details": {
+        "mechanismOrProperty": "The workflow has one atomic acceptance boundary for the route records, then treats search as a post-commit projection. No partial route state is published.",
+        "scenarioApplication": "A storage failure leaves the old route authoritative; a search failure after commit does not roll back accepted geometry.",
+        "errorCorrection": "Publishing geometry without its markers/provenance can silently overwrite conflicts, while undoing for a search outage reverses an accepted change unnecessarily.",
+        "boundaryOrTradeoff": "Use the storage transaction for the stated all-record invariant; retry the projection from committed state.",
+        "transfer": "For another offline merge, commit all conflict/provenance data with the route revision and rebuild search afterward."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i016_alt1",
+          "text": "Search is derived and cannot choose canonical geometry or resolve a merge conflict."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i016_alt2",
+          "text": "Committing geometry without its markers and provenance creates a partial route revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i016_alt3",
+          "text": "A search outage occurs after commit and must not undo the accepted canonical route."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i016_alt4",
+          "text": "Separate projections cannot independently define which geometry is canonical."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i017",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a board-game campaign manager, consuming a rare item and granting its reward must be one accepted ledger change. If reward validation fails after the item is reserved, restore the item; once the reward ledger entry commits, achievement summaries may retry without changing the ledger.",
+    "difficulty": "advanced_tradeoff",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i017_workflow",
+          "text": "Reserve the item, validate and commit its consumption with the reward entry, restore the reservation on validation failure, then refresh summaries from the committed reward ID."
+        },
+        {
+          "optionId": "n06_b10_i017_alt1",
+          "text": "Consume the item before checking whether the reward is legal and leave it spent on failure."
+        },
+        {
+          "optionId": "n06_b10_i017_alt2",
+          "text": "Grant the reward in every achievement summary and reconcile duplicate entries later."
+        },
+        {
+          "optionId": "n06_b10_i017_alt3",
+          "text": "Undo a committed reward whenever a summary refresh fails."
+        },
+        {
+          "optionId": "n06_b10_i017_alt4",
+          "text": "Let an achievement projection decide whether the campaign state permits consuming the item."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i017_workflow"
+    },
+    "constraints": [
+      "Before ledger commit, failed reward validation restores the temporary item reservation."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The item and reward form one campaign decision; pre-commit failure restores the temporary reservation, while post-commit projections cannot change the ledger.",
+      "details": {
+        "mechanismOrProperty": "The workflow compensates a reversible item hold when validation fails, commits the paired ledger change once, and retries summaries from its stable reward identity.",
+        "scenarioApplication": "The campaign has neither a spent item without a reward nor a reward without item consumption; summary lag leaves the accepted ledger unchanged.",
+        "errorCorrection": "Treating a projection as the authority for campaign legality can duplicate or invalidate the reward after the owner has committed it.",
+        "boundaryOrTradeoff": "Compensate only the pre-commit reservation; once the paired ledger transition is committed, repair projections rather than reversing gameplay state.",
+        "transfer": "For another resource-backed reward, define the pre-commit reservation and rollback separately from post-commit summary work."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i017_alt1",
+          "text": "The item could be consumed even though campaign-state validation rejects the reward."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i017_alt2",
+          "text": "Achievement projections report rewards; they do not decide whether the ledger may consume an item."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i017_alt3",
+          "text": "A committed ledger change remains accepted when a summary refresh is delayed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i017_alt4",
+          "text": "The reward is one campaign ledger transition, not separate writes by each projection."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  },
+  {
+    "questionId": "ood-n06-b10-i018",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "mentalUnitId": "OOD-N06-B10",
+    "prompt": "In a cold-chain logistics console, a receiving carrier is reserved before temperature eligibility is confirmed. If the temperature test fails, the old carrier keeps the shipment and the new carrier reservation is released. After hand-off is accepted, tracking can retry from the shipment revision.",
+    "difficulty": "advanced_failure",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n06_b10_i018_workflow",
+          "text": "Reserve the receiving carrier, verify temperature eligibility, then record the hand-off; release the reservation and preserve the old carrier if the test fails."
+        },
+        {
+          "optionId": "n06_b10_i018_alt1",
+          "text": "Transfer ownership to the new carrier before checking temperature and repair the shipment record afterward."
+        },
+        {
+          "optionId": "n06_b10_i018_alt2",
+          "text": "Keep the new carrier reserved after a failed temperature check to simplify another attempt."
+        },
+        {
+          "optionId": "n06_b10_i018_alt3",
+          "text": "Let tracking accept the hand-off and decide whether the receiving carrier meets temperature limits."
+        },
+        {
+          "optionId": "n06_b10_i018_alt4",
+          "text": "Undo a valid accepted hand-off whenever a tracking projection is delayed."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n06_b10_i018_workflow"
+    },
+    "constraints": [
+      "Failed temperature eligibility keeps the shipment with its current carrier."
+    ],
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Temperature eligibility is a precondition to ownership transfer; a rejected test must release the temporary carrier reservation.",
+      "details": {
+        "mechanismOrProperty": "The coordinator holds the candidate resource, validates the shipment constraint, and commits one hand-off only on success. It compensates the hold on failure.",
+        "scenarioApplication": "The shipment remains with its old carrier after a failed check, while an accepted revision gives tracking a stable source for retry.",
+        "errorCorrection": "Changing ownership before temperature validation can place the shipment with an ineligible carrier.",
+        "boundaryOrTradeoff": "Compensate the temporary reservation, not the previous accepted carrier assignment; treat tracking as a retryable projection.",
+        "transfer": "For another carrier change, validate constraints before transfer and release candidate reservations when the check fails."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i018_alt1",
+          "text": "Ownership changes before eligibility is known, assigning the shipment to a carrier that may violate temperature limits."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i018_alt2",
+          "text": "A failed temperature test requires releasing the candidate hold, not keeping it indefinitely."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i018_alt3",
+          "text": "Tracking projects an accepted shipment revision; it cannot decide carrier eligibility."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06_b10_i018_alt4",
+          "text": "A delayed tracking view is retryable and does not undo the accepted carrier hand-off."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/saga"
+    ]
+  }
+]

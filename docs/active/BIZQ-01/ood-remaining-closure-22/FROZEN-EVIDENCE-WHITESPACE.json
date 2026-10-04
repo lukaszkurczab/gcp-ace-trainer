@@ -1,0 +1,23 @@
+{
+  "scope": "Only unchanged actual failed-test log and immutable historical semantic reports retain whitespace; code/lock/state diff checks pass. No frozen bytes changed.",
+  "warnings": [
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-CONSUMER-PRESYNC-RED.txt:18: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-CONSUMER-PRESYNC-RED.txt:21: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/SEMANTIC-N06-B03-v1.md:18: new blank line at EOF.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/SEMANTIC-N06-B07-v1.md:20: new blank line at EOF."
+  ],
+  "files": [
+    {
+      "path": "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-CONSUMER-PRESYNC-RED.txt",
+      "sha256": "16b7c8c214e7ac0c74df328f06136c1b2171db8121276eddc3d247f37805ce99"
+    },
+    {
+      "path": "docs/active/BIZQ-01/ood-remaining-closure-22/SEMANTIC-N06-B03-v1.md",
+      "sha256": "cd4406b670c0914de0f9f38c766e8d3b98bbab3738c3e259f81902baf3801f04"
+    },
+    {
+      "path": "docs/active/BIZQ-01/ood-remaining-closure-22/SEMANTIC-N06-B07-v1.md",
+      "sha256": "bc9718fd7713ebb87534f52b339f168c7557fd15dd8339d3b0803346d3e684e9"
+    }
+  ]
+}

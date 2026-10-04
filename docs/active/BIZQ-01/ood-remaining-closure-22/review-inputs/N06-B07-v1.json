@@ -1,0 +1,1406 @@
+[
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "conflicts are explicit and never silently overwrite accepted geometry",
+      "All route imports follow one sequence: load accepted base, detect overlaps, merge, record provenance. Only the conflict-summary format varies by map source; the shared workflow owns the no-silent-overwrite invariant."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The shared steps detect overlap before merging and record provenance afterward; varying only the summary format cannot bypass conflict detection.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only conflict-summary formatting is supplied by the variant.",
+        "scenarioApplication": "In a local-first map editor, the cartographer must merge an offline route edit. Conflicts are explicit and never silently overwrite accepted geometry. All route imports follow one sequence: load accepted base, detect overlaps, merge, record provenance. Only the conflict-summary format varies by map source; the shared workflow owns the no-silent-overwrite invariant. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared conflicts are explicit and never silently overwrite accepted geometry; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: conflicts are explicit and never silently overwrite accepted geometry. Caller-owned branching spreads the conflict-summary formatting across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant conflicts are explicit and never silently overwrite accepted geometry when one path changes.",
+        "boundaryOrTradeoff": "Use a fixed skeleton when map variants share overlap detection and provenance order. If one source needs a different merge lifecycle, it should use a separate workflow rather than override these steps.",
+        "transfer": "For another map source, retain the hook only when overlap detection and provenance steps remain common."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i001_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared conflicts are explicit and never silently overwrite accepted geometry; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i001_override",
+          "text": "Whole-method override can bypass the stated invariant: conflicts are explicit and never silently overwrite accepted geometry."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i001_caller",
+          "text": "Caller-owned branching spreads the conflict-summary formatting across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i001_copy",
+          "text": "Copied workflows can drift on the shared invariant conflicts are explicit and never silently overwrite accepted geometry when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the merge sequence fixed; vary only the conflict-summary hook after overlap detection."
+        },
+        {
+          "optionId": "n06b07_i001_strategy",
+          "text": "Select a complete merge the route edit strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i001_override",
+          "text": "Let each variant override the whole method for merge the route edit, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i001_caller",
+          "text": "Put the conflict-summary formatting branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i001_copy",
+          "text": "Copy the full merge the route edit sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a local-first map editor, the cartographer must merge an offline route edit. Conflicts are explicit and never silently overwrite accepted geometry.All route imports follow one sequence: load accepted base, detect overlaps, merge, record provenance. Only the conflict-summary format varies by map source; the shared workflow owns the no-silent-overwrite invariant. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i001",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "reward rules depend on the current legal campaign state",
+      "Every campaign follows: check current legal state, calculate reward, record it. Only the reward calculation varies by campaign; validation and recording order stay fixed."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Every reward still checks legal state before calculation and records the outcome afterward; a campaign changes only the bounded calculation.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only reward calculation is supplied by the variant.",
+        "scenarioApplication": "In a board-game campaign manager, the campaign host must apply a reward to a character. Reward rules depend on the current legal campaign state. Every campaign follows: check current legal state, calculate reward, record it. Only the reward calculation varies by campaign; validation and recording order stay fixed. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared reward rules depend on the current legal campaign state; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: reward rules depend on the current legal campaign state. Caller-owned branching spreads the reward calculation across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant reward rules depend on the current legal campaign state when one path changes.",
+        "boundaryOrTradeoff": "Keep the shared reward sequence only while legal-state validation and recording are common. A campaign with a different state transition needs its own explicit workflow.",
+        "transfer": "For a new campaign, change reward calculation without bypassing legal-state validation or ledger recording."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i002_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared reward rules depend on the current legal campaign state; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i002_override",
+          "text": "Whole-method override can bypass the stated invariant: reward rules depend on the current legal campaign state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i002_caller",
+          "text": "Caller-owned branching spreads the reward calculation across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i002_copy",
+          "text": "Copied workflows can drift on the shared invariant reward rules depend on the current legal campaign state when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i002_strategy",
+          "text": "Select a complete apply the reward strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i002_override",
+          "text": "Let each variant override the whole method for apply the reward, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i002_caller",
+          "text": "Put the reward calculation branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i002_copy",
+          "text": "Copy the full apply the reward sequence into each variant and edit its varying step locally."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep state validation and ledger recording in the shared workflow; vary only reward calculation."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a board-game campaign manager, the campaign host must apply a reward to a character. Reward rules depend on the current legal campaign state.Every campaign follows: check current legal state, calculate reward, record it. Only the reward calculation varies by campaign; validation and recording order stay fixed. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i002",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "temperature restrictions and hand-off ownership travel with the shipment",
+      "Every carrier reassignment follows: validate temperature limits, confirm receiver, transfer hand-off ownership. Carrier conversion varies; validation and transfer order stay fixed."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Temperature restrictions are validated before ownership changes; conversion differences cannot reorder that invariant.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only temperature conversion is supplied by the variant.",
+        "scenarioApplication": "In a cold-chain logistics console, the dispatch planner must reassign a shipment to a carrier. Temperature restrictions and hand-off ownership travel with the shipment. Every carrier reassignment follows: validate temperature limits, confirm receiver, transfer hand-off ownership. Carrier conversion varies; validation and transfer order stay fixed. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared temperature restrictions and hand-off ownership travel with the shipment; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: temperature restrictions and hand-off ownership travel with the shipment. Caller-owned branching spreads the temperature conversion across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant temperature restrictions and hand-off ownership travel with the shipment when one path changes.",
+        "boundaryOrTradeoff": "Use one skeleton while every reassignment obeys the same temperature-check and ownership-transfer order. A carrier requiring a different transfer invariant is not just a conversion variant.",
+        "transfer": "For another carrier, vary temperature conversion without moving hand-off ownership before validation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i003_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared temperature restrictions and hand-off ownership travel with the shipment; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i003_override",
+          "text": "Whole-method override can bypass the stated invariant: temperature restrictions and hand-off ownership travel with the shipment."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i003_caller",
+          "text": "Caller-owned branching spreads the temperature conversion across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i003_copy",
+          "text": "Copied workflows can drift on the shared invariant temperature restrictions and hand-off ownership travel with the shipment when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i003_strategy",
+          "text": "Select a complete reassign the shipment strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i003_override",
+          "text": "Let each variant override the whole method for reassign the shipment, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i003_caller",
+          "text": "Put the temperature conversion branch in every caller of the operation."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep temperature validation and hand-off transfer ordered; vary only carrier-specific conversion."
+        },
+        {
+          "optionId": "n06b07_i003_copy",
+          "text": "Copy the full reassign the shipment sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a cold-chain logistics console, the dispatch planner must reassign a shipment to a carrier. Temperature restrictions and hand-off ownership travel with the shipment.Every carrier reassignment follows: validate temperature limits, confirm receiver, transfer hand-off ownership. Carrier conversion varies; validation and transfer order stay fixed. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i003",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "a repayment cannot reduce the outstanding balance below zero",
+      "Every repayment follows: validate amount against balance, distribute it, record allocation. Loan products vary distribution; no variant may allow a negative balance."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Balance validation precedes distribution, so product-specific allocation cannot reduce the outstanding balance below zero.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only repayment distribution is supplied by the variant.",
+        "scenarioApplication": "In a cooperative lending ledger, the account steward must record a repayment allocation. A repayment cannot reduce the outstanding balance below zero. Every repayment follows: validate amount against balance, distribute it, record allocation. Loan products vary distribution; no variant may allow a negative balance. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared a repayment cannot reduce the outstanding balance below zero; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: a repayment cannot reduce the outstanding balance below zero. Caller-owned branching spreads the repayment distribution across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant a repayment cannot reduce the outstanding balance below zero when one path changes.",
+        "boundaryOrTradeoff": "Keep the balance guard common across products. If a loan product changes the meaning of outstanding balance, re-evaluate the invariant rather than overriding the method.",
+        "transfer": "For another repayment product, vary distribution without weakening the nonnegative balance rule."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i004_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared a repayment cannot reduce the outstanding balance below zero; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i004_override",
+          "text": "Whole-method override can bypass the stated invariant: a repayment cannot reduce the outstanding balance below zero."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i004_caller",
+          "text": "Caller-owned branching spreads the repayment distribution across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i004_copy",
+          "text": "Copied workflows can drift on the shared invariant a repayment cannot reduce the outstanding balance below zero when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i004_strategy",
+          "text": "Select a complete allocate the repayment strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i004_override",
+          "text": "Let each variant override the whole method for allocate the repayment, including the common checks and sequence."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep balance validation and allocation recording fixed; vary only the distribution formula."
+        },
+        {
+          "optionId": "n06b07_i004_caller",
+          "text": "Put the repayment distribution branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i004_copy",
+          "text": "Copy the full allocate the repayment sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a cooperative lending ledger, the account steward must record a repayment allocation. A repayment cannot reduce the outstanding balance below zero.Every repayment follows: validate amount against balance, distribute it, record allocation. Loan products vary distribution; no variant may allow a negative balance. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i004",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the bracket advances only from a legal match state",
+      "Every forfeit follows: confirm timeout eligibility, record the legal match transition, advance bracket. Competition formats vary timeout rules; transition and advancement order stay fixed."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Timeout variation is allowed only before the same legal state transition and bracket advancement.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only timeout eligibility is supplied by the variant.",
+        "scenarioApplication": "In a tournament bracket service, the match official must forfeit a match after a timeout. The bracket advances only from a legal match state. Every forfeit follows: confirm timeout eligibility, record the legal match transition, advance bracket. Competition formats vary timeout rules; transition and advancement order stay fixed. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared the bracket advances only from a legal match state; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: the bracket advances only from a legal match state. Caller-owned branching spreads the timeout eligibility across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant the bracket advances only from a legal match state when one path changes.",
+        "boundaryOrTradeoff": "The skeleton fits only while all formats share legal-transition and bracket order. A format with a different state model needs a separately specified transition.",
+        "transfer": "For another competition format, vary timeout eligibility while preserving legal transition before bracket advancement."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i005_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared the bracket advances only from a legal match state; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i005_override",
+          "text": "Whole-method override can bypass the stated invariant: the bracket advances only from a legal match state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i005_caller",
+          "text": "Caller-owned branching spreads the timeout eligibility across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i005_copy",
+          "text": "Copied workflows can drift on the shared invariant the bracket advances only from a legal match state when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i005_strategy",
+          "text": "Select a complete forfeit the match strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep legal-transition validation before bracket advancement; vary only timeout eligibility."
+        },
+        {
+          "optionId": "n06b07_i005_override",
+          "text": "Let each variant override the whole method for forfeit the match, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i005_caller",
+          "text": "Put the timeout eligibility branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i005_copy",
+          "text": "Copy the full forfeit the match sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a tournament bracket service, the match official must forfeit a match after a timeout. The bracket advances only from a legal match state.Every forfeit follows: confirm timeout eligibility, record the legal match transition, advance bracket. Competition formats vary timeout rules; transition and advancement order stay fixed. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i005",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "classification and refund eligibility are not the same responsibility",
+      "Every inspection follows: gather condition facts, classify, return classification. Item families vary classification criteria; refund eligibility remains a separate operation."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Classification remains the result of condition facts, while refund eligibility stays outside this workflow.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only classification criteria is supplied by the variant.",
+        "scenarioApplication": "In a returns inspection workflow, the warehouse inspector must classify a returned item. Classification and refund eligibility are not the same responsibility. Every inspection follows: gather condition facts, classify, return classification. Item families vary classification criteria; refund eligibility remains a separate operation. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared classification and refund eligibility are not the same responsibility; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: classification and refund eligibility are not the same responsibility. Caller-owned branching spreads the classification criteria across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant classification and refund eligibility are not the same responsibility when one path changes.",
+        "boundaryOrTradeoff": "Use this boundary while classification criteria vary but refund remains separate. If an inspection must decide refunds too, that is a different operation contract.",
+        "transfer": "For another returned-item family, vary classification criteria while keeping refund eligibility separate."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i006_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared classification and refund eligibility are not the same responsibility; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i006_override",
+          "text": "Whole-method override can bypass the stated invariant: classification and refund eligibility are not the same responsibility."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i006_caller",
+          "text": "Caller-owned branching spreads the classification criteria across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i006_copy",
+          "text": "Copied workflows can drift on the shared invariant classification and refund eligibility are not the same responsibility when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep condition gathering and classification order fixed; vary criteria without absorbing refund eligibility."
+        },
+        {
+          "optionId": "n06b07_i006_strategy",
+          "text": "Select a complete classify the return strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i006_override",
+          "text": "Let each variant override the whole method for classify the return, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i006_caller",
+          "text": "Put the classification criteria branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i006_copy",
+          "text": "Copy the full classify the return sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a returns inspection workflow, the warehouse inspector must classify a returned item. Classification and refund eligibility are not the same responsibility.Every inspection follows: gather condition facts, classify, return classification. Item families vary classification criteria; refund eligibility remains a separate operation. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i006",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "published outputs reference immutable inputs and code versions",
+      "Every publication follows: verify input and code-version identity, capture immutable result, publish its reference. Storage adapters vary capture; version checks precede publication."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Immutable input and code identity are verified before capture; a backend cannot publish an unverified snapshot.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only snapshot capture is supplied by the variant.",
+        "scenarioApplication": "In a research-notebook platform, the experiment owner must publish a result snapshot. Published outputs reference immutable inputs and code versions. Every publication follows: verify input and code-version identity, capture immutable result, publish its reference. Storage adapters vary capture; version checks precede publication. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared published outputs reference immutable inputs and code versions; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: published outputs reference immutable inputs and code versions. Caller-owned branching spreads the snapshot capture across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant published outputs reference immutable inputs and code versions when one path changes.",
+        "boundaryOrTradeoff": "Keep verification before capture and publish for every backend. A storage adapter with different identity semantics needs a separately reviewed publication contract.",
+        "transfer": "For another snapshot backend, vary capture only after verifying the immutable input and code version."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i007_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared published outputs reference immutable inputs and code versions; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i007_override",
+          "text": "Whole-method override can bypass the stated invariant: published outputs reference immutable inputs and code versions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i007_caller",
+          "text": "Caller-owned branching spreads the snapshot capture across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i007_copy",
+          "text": "Copied workflows can drift on the shared invariant published outputs reference immutable inputs and code versions when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i007_strategy",
+          "text": "Select a complete publish the snapshot strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i007_override",
+          "text": "Let each variant override the whole method for publish the snapshot, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i007_caller",
+          "text": "Put the snapshot capture branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i007_copy",
+          "text": "Copy the full publish the snapshot sequence into each variant and edit its varying step locally."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep input/version verification before capture and publication; vary only storage capture."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a research-notebook platform, the experiment owner must publish a result snapshot. Published outputs reference immutable inputs and code versions.Every publication follows: verify input and code-version identity, capture immutable result, publish its reference. Storage adapters vary capture; version checks precede publication. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i007",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "accepted comments must retain their author and document revision",
+      "Every acceptance follows: bind author and document revision, persist comment, notify assigned author. Channel varies; attribution and persistence order stay fixed."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Binding author and revision before persistence preserves attribution; notification variation occurs only after the comment is accepted.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only notification channel is supplied by the variant.",
+        "scenarioApplication": "In a collaborative annotation workspace, the review editor must accept a comment and notify the assigned author. Accepted comments must retain their author and document revision. Every acceptance follows: bind author and document revision, persist comment, notify assigned author. Channel varies; attribution and persistence order stay fixed. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared accepted comments must retain their author and document revision; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: accepted comments must retain their author and document revision. Caller-owned branching spreads the notification channel across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant accepted comments must retain their author and document revision when one path changes.",
+        "boundaryOrTradeoff": "Use the fixed order while all channels notify the same already-persisted comment. A channel that changes acceptance semantics needs a different operation.",
+        "transfer": "For another notification channel, preserve the author/revision-bound persisted comment as its input."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i008_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared accepted comments must retain their author and document revision; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i008_override",
+          "text": "Whole-method override can bypass the stated invariant: accepted comments must retain their author and document revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i008_caller",
+          "text": "Caller-owned branching spreads the notification channel across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i008_copy",
+          "text": "Copied workflows can drift on the shared invariant accepted comments must retain their author and document revision when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i008_strategy",
+          "text": "Select a complete accept the comment strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i008_override",
+          "text": "Let each variant override the whole method for accept the comment, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i008_caller",
+          "text": "Put the notification channel branch in every caller of the operation."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep author/revision binding and persistence before notification; vary only the channel step."
+        },
+        {
+          "optionId": "n06b07_i008_copy",
+          "text": "Copy the full accept the comment sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a collaborative annotation workspace, the review editor must accept a comment and notify the assigned author. Accepted comments must retain their author and document revision.Every acceptance follows: bind author and document revision, persist comment, notify assigned author. Channel varies; attribution and persistence order stay fixed. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i008",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "a submission is either complete or explicitly retryable",
+      "Every submission follows: validate completeness, save one complete inspection or mark retryable, acknowledge result. Offline storage adapters vary; partial submission is forbidden."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Validation governs whether one complete inspection is accepted; an adapter cannot acknowledge a partial record.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only offline persistence is supplied by the variant.",
+        "scenarioApplication": "In a mobile field-inspection app, the inspector must submit an offline inspection. A submission is either complete or explicitly retryable. Every submission follows: validate completeness, save one complete inspection or mark retryable, acknowledge result. Offline storage adapters vary; partial submission is forbidden. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared a submission is either complete or explicitly retryable; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: a submission is either complete or explicitly retryable. Caller-owned branching spreads the offline persistence across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant a submission is either complete or explicitly retryable when one path changes.",
+        "boundaryOrTradeoff": "Keep complete-or-retryable behavior common. A multipart inspection must define its own partial-progress and recovery contract.",
+        "transfer": "For another inspection store, preserve the complete-or-retryable result and never acknowledge partial persistence."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i009_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared a submission is either complete or explicitly retryable; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i009_override",
+          "text": "Whole-method override can bypass the stated invariant: a submission is either complete or explicitly retryable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i009_caller",
+          "text": "Caller-owned branching spreads the offline persistence across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i009_copy",
+          "text": "Copied workflows can drift on the shared invariant a submission is either complete or explicitly retryable when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i009_strategy",
+          "text": "Select a complete submit the inspection strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i009_override",
+          "text": "Let each variant override the whole method for submit the inspection, including the common checks and sequence."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep completeness validation and whole-record outcome fixed; vary only offline persistence."
+        },
+        {
+          "optionId": "n06b07_i009_caller",
+          "text": "Put the offline persistence branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i009_copy",
+          "text": "Copy the full submit the inspection sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a mobile field-inspection app, the inspector must submit an offline inspection. A submission is either complete or explicitly retryable.Every submission follows: validate completeness, save one complete inspection or mark retryable, acknowledge result. Offline storage adapters vary; partial submission is forbidden. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i009",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the new issue is traceable and does not double-charge the customer",
+      "Every reissue follows: confirm original rejection, create traceable replacement, record no-double-charge link. Invoice formats vary; rejection and accounting order stay fixed."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Rejection verification and charge linkage remain common, so a rendering variant cannot create an untraceable second charge.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only invoice rendering is supplied by the variant.",
+        "scenarioApplication": "In a digital invoice exchange, the billing operator must reissue a rejected invoice. The new issue is traceable and does not double-charge the customer. Every reissue follows: confirm original rejection, create traceable replacement, record no-double-charge link. Invoice formats vary; rejection and accounting order stay fixed. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared the new issue is traceable and does not double-charge the customer; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: the new issue is traceable and does not double-charge the customer. Caller-owned branching spreads the invoice rendering across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant the new issue is traceable and does not double-charge the customer when one path changes.",
+        "boundaryOrTradeoff": "Use the fixed accounting sequence while formats only render the replacement. A format requiring a different charge lifecycle needs a distinct workflow.",
+        "transfer": "For another invoice format, preserve the rejected source link and charge accounting before rendering-specific output."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i010_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared the new issue is traceable and does not double-charge the customer; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i010_override",
+          "text": "Whole-method override can bypass the stated invariant: the new issue is traceable and does not double-charge the customer."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i010_caller",
+          "text": "Caller-owned branching spreads the invoice rendering across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i010_copy",
+          "text": "Copied workflows can drift on the shared invariant the new issue is traceable and does not double-charge the customer when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i010_strategy",
+          "text": "Select a complete reissue the invoice strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep rejection verification and charge-link recording fixed; vary only replacement rendering."
+        },
+        {
+          "optionId": "n06b07_i010_override",
+          "text": "Let each variant override the whole method for reissue the invoice, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i010_caller",
+          "text": "Put the invoice rendering branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i010_copy",
+          "text": "Copy the full reissue the invoice sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a digital invoice exchange, the billing operator must reissue a rejected invoice. The new issue is traceable and does not double-charge the customer.Every reissue follows: confirm original rejection, create traceable replacement, record no-double-charge link. Invoice formats vary; rejection and accounting order stay fixed. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i010",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "revocation is visible to the door policy before access is granted",
+      "Every revocation follows: record it, expose it to the door policy, then acknowledge completion. Credential stores vary their write step; access must not be granted before policy visibility."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The door policy sees revocation before completion is acknowledged, independent of how a credential store writes it.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only credential-store write is supplied by the variant.",
+        "scenarioApplication": "In a smart-building access controller, the facilities administrator must revoke a badge. Revocation is visible to the door policy before access is granted. Every revocation follows: record it, expose it to the door policy, then acknowledge completion. Credential stores vary their write step; access must not be granted before policy visibility. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared revocation is visible to the door policy before access is granted; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: revocation is visible to the door policy before access is granted. Caller-owned branching spreads the credential-store write across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant revocation is visible to the door policy before access is granted when one path changes.",
+        "boundaryOrTradeoff": "Keep visibility-before-ack common across stores. A store that cannot provide the stated policy visibility must not override the sequence silently.",
+        "transfer": "For another credential store, make revocation visible to the door policy before reporting completion."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i011_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared revocation is visible to the door policy before access is granted; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i011_override",
+          "text": "Whole-method override can bypass the stated invariant: revocation is visible to the door policy before access is granted."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i011_caller",
+          "text": "Caller-owned branching spreads the credential-store write across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i011_copy",
+          "text": "Copied workflows can drift on the shared invariant revocation is visible to the door policy before access is granted when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep revocation visibility before acknowledgment; vary only credential-store recording."
+        },
+        {
+          "optionId": "n06b07_i011_strategy",
+          "text": "Select a complete revoke the badge strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i011_override",
+          "text": "Let each variant override the whole method for revoke the badge, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i011_caller",
+          "text": "Put the credential-store write branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i011_copy",
+          "text": "Copy the full revoke the badge sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a smart-building access controller, the facilities administrator must revoke a badge. Revocation is visible to the door policy before access is granted.Every revocation follows: record it, expose it to the door policy, then acknowledge completion. Credential stores vary their write step; access must not be granted before policy visibility. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i011",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the printed label represents the current approved shipment data",
+      "Every print follows: load approved shipment revision, format label, verify its revision, print. Carrier formatting varies; approved-data verification cannot be skipped."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The label is checked against approved shipment data before printing; formatting cannot choose a stale revision.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only carrier label formatting is supplied by the variant.",
+        "scenarioApplication": "In a package-label generation service, the shipping operator must print a label after address correction. The printed label represents the current approved shipment data. Every print follows: load approved shipment revision, format label, verify its revision, print. Carrier formatting varies; approved-data verification cannot be skipped. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared the printed label represents the current approved shipment data; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: the printed label represents the current approved shipment data. Caller-owned branching spreads the carrier label formatting across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant the printed label represents the current approved shipment data when one path changes.",
+        "boundaryOrTradeoff": "Use carrier hooks only for formatting after approved-data verification. A carrier that changes which shipment revision is authoritative needs a different contract.",
+        "transfer": "For another carrier, verify the approved shipment revision before applying its label format."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i012_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared the printed label represents the current approved shipment data; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i012_override",
+          "text": "Whole-method override can bypass the stated invariant: the printed label represents the current approved shipment data."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i012_caller",
+          "text": "Caller-owned branching spreads the carrier label formatting across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i012_copy",
+          "text": "Copied workflows can drift on the shared invariant the printed label represents the current approved shipment data when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i012_strategy",
+          "text": "Select a complete print the label strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i012_override",
+          "text": "Let each variant override the whole method for print the label, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i012_caller",
+          "text": "Put the carrier label formatting branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i012_copy",
+          "text": "Copy the full print the label sequence into each variant and edit its varying step locally."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep approved-revision verification before printing; vary only carrier formatting."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a package-label generation service, the shipping operator must print a label after address correction. The printed label represents the current approved shipment data.Every print follows: load approved shipment revision, format label, verify its revision, print. Carrier formatting varies; approved-data verification cannot be skipped. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i012",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the room capacity and cancellation policy must remain consistent",
+      "Every room move follows: check capacity, apply cancellation rule, reserve new room, release old booking. Room-specific capacity calculation varies; exposure waits for both checks."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Both destination constraints are checked before booking transfer, so a room-specific calculation does not change move order.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only room capacity calculation is supplied by the variant.",
+        "scenarioApplication": "In a multi-tenant rehearsal scheduler, the studio coordinator must move a booked rehearsal to a different room. The room capacity and cancellation policy must remain consistent. Every room move follows: check capacity, apply cancellation rule, reserve new room, release old booking. Room-specific capacity calculation varies; exposure waits for both checks. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared the room capacity and cancellation policy must remain consistent; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: the room capacity and cancellation policy must remain consistent. Caller-owned branching spreads the room capacity calculation across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant the room capacity and cancellation policy must remain consistent when one path changes.",
+        "boundaryOrTradeoff": "Keep reservation/release order while capacity calculation is the only room variation. If room changes need a different cancellation lifecycle, define a separate workflow.",
+        "transfer": "For another room, keep both eligibility checks before moving the booking."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i013_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared the room capacity and cancellation policy must remain consistent; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i013_override",
+          "text": "Whole-method override can bypass the stated invariant: the room capacity and cancellation policy must remain consistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i013_caller",
+          "text": "Caller-owned branching spreads the room capacity calculation across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i013_copy",
+          "text": "Copied workflows can drift on the shared invariant the room capacity and cancellation policy must remain consistent when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i013_strategy",
+          "text": "Select a complete move the booking strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i013_override",
+          "text": "Let each variant override the whole method for move the booking, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i013_caller",
+          "text": "Put the room capacity calculation branch in every caller of the operation."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep capacity and cancellation checks before reservation transfer; vary only room-specific capacity calculation."
+        },
+        {
+          "optionId": "n06b07_i013_copy",
+          "text": "Copy the full move the booking sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a multi-tenant rehearsal scheduler, the studio coordinator must move a booked rehearsal to a different room. The room capacity and cancellation policy must remain consistent.Every room move follows: check capacity, apply cancellation rule, reserve new room, release old booking. Room-specific capacity calculation varies; exposure waits for both checks. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i013",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "unsafe commands are rejected while maintenance is active",
+      "Every command follows: inspect maintenance state, reject unsafe command or execute safe command, audit outcome. Exhibit types vary the safety predicate; no variant bypasses the state check."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Maintenance state is checked before execution and outcome audit follows; device-specific safety logic cannot bypass the guard.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only safety predicate is supplied by the variant.",
+        "scenarioApplication": "In a museum exhibit controller, the exhibit operator must switch an exhibit into maintenance mode. Unsafe commands are rejected while maintenance is active. Every command follows: inspect maintenance state, reject unsafe command or execute safe command, audit outcome. Exhibit types vary the safety predicate; no variant bypasses the state check. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared unsafe commands are rejected while maintenance is active; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: unsafe commands are rejected while maintenance is active. Caller-owned branching spreads the safety predicate across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant unsafe commands are rejected while maintenance is active when one path changes.",
+        "boundaryOrTradeoff": "Use the common maintenance guard where all exhibit types share that state meaning. A device with different safe/unsafe semantics needs a separately reviewed algorithm.",
+        "transfer": "For another exhibit, vary the safety predicate but retain the maintenance-state check and audit steps."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i014_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared unsafe commands are rejected while maintenance is active; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i014_override",
+          "text": "Whole-method override can bypass the stated invariant: unsafe commands are rejected while maintenance is active."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i014_caller",
+          "text": "Caller-owned branching spreads the safety predicate across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i014_copy",
+          "text": "Copied workflows can drift on the shared invariant unsafe commands are rejected while maintenance is active when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i014_strategy",
+          "text": "Select a complete execute the command strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i014_override",
+          "text": "Let each variant override the whole method for execute the command, including the common checks and sequence."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep maintenance check and audit order fixed; vary only the exhibit-specific safety predicate."
+        },
+        {
+          "optionId": "n06b07_i014_caller",
+          "text": "Put the safety predicate branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i014_copy",
+          "text": "Copy the full execute the command sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a museum exhibit controller, the exhibit operator must switch an exhibit into maintenance mode. Unsafe commands are rejected while maintenance is active.Every command follows: inspect maintenance state, reject unsafe command or execute safe command, audit outcome. Exhibit types vary the safety predicate; no variant bypasses the state check. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i014",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "progress refers to a stable lesson identity",
+      "Every retirement follows: retain stable lesson identity, mark unavailable for new study, preserve linked progress. Storage formats vary progress-copy; identity continuity is invariant."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Progress remains linked to the same lesson identity while storage formats vary only the record-copy step.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only progress-record migration is supplied by the variant.",
+        "scenarioApplication": "In a video-learning library, the curriculum editor must retire a lesson while preserving learner progress. Progress refers to a stable lesson identity. Every retirement follows: retain stable lesson identity, mark unavailable for new study, preserve linked progress. Storage formats vary progress-copy; identity continuity is invariant. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared progress refers to a stable lesson identity; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: progress refers to a stable lesson identity. Caller-owned branching spreads the progress-record migration across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant progress refers to a stable lesson identity when one path changes.",
+        "boundaryOrTradeoff": "Keep lesson identity stable across progress formats. If retirement intentionally merges identities, that is a changed learner-history contract.",
+        "transfer": "For another progress representation, retain the same stable lesson identity through retirement."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i015_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared progress refers to a stable lesson identity; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i015_override",
+          "text": "Whole-method override can bypass the stated invariant: progress refers to a stable lesson identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i015_caller",
+          "text": "Caller-owned branching spreads the progress-record migration across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i015_copy",
+          "text": "Copied workflows can drift on the shared invariant progress refers to a stable lesson identity when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i015_strategy",
+          "text": "Select a complete retire the lesson strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep stable identity and retirement order fixed; vary only progress-record migration."
+        },
+        {
+          "optionId": "n06b07_i015_override",
+          "text": "Let each variant override the whole method for retire the lesson, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i015_caller",
+          "text": "Put the progress-record migration branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i015_copy",
+          "text": "Copy the full retire the lesson sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a video-learning library, the curriculum editor must retire a lesson while preserving learner progress. Progress refers to a stable lesson identity.Every retirement follows: retain stable lesson identity, mark unavailable for new study, preserve linked progress. Storage formats vary progress-copy; identity continuity is invariant. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i015",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "export observes a stable session state",
+      "Every close follows: capture stable session state, close board, export from that captured state. Export format varies; capture precedes close."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The export uses the captured session state because capture occurs before board close.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only history serialization is supplied by the variant.",
+        "scenarioApplication": "In a shared whiteboard application, the session host must close a board and export its history. Export observes a stable session state. Every close follows: capture stable session state, close board, export from that captured state. Export format varies; capture precedes close. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared export observes a stable session state; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: export observes a stable session state. Caller-owned branching spreads the history serialization across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant export observes a stable session state when one path changes.",
+        "boundaryOrTradeoff": "Use the captured-state boundary while formats vary only serialization. If an export must include changes during close, define a different snapshot contract.",
+        "transfer": "For another export format, serialize the captured session state rather than a later live board."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i016_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared export observes a stable session state; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i016_override",
+          "text": "Whole-method override can bypass the stated invariant: export observes a stable session state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i016_caller",
+          "text": "Caller-owned branching spreads the history serialization across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i016_copy",
+          "text": "Copied workflows can drift on the shared invariant export observes a stable session state when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep state capture before close and export; vary only history serialization."
+        },
+        {
+          "optionId": "n06b07_i016_strategy",
+          "text": "Select a complete close and export the board strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i016_override",
+          "text": "Let each variant override the whole method for close and export the board, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i016_caller",
+          "text": "Put the history serialization branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i016_copy",
+          "text": "Copy the full close and export the board sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a shared whiteboard application, the session host must close a board and export its history. Export observes a stable session state.Every close follows: capture stable session state, close board, export from that captured state. Export format varies; capture precedes close. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i016",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "the escalation keeps ownership and response deadlines",
+      "Every escalation follows: select eligible tier, transfer case ownership, notify participants with deadline. Support domains vary tier eligibility; transfer and notice order stay fixed."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The eligible tier is chosen before ownership moves and notification follows with its deadline.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only tier eligibility is supplied by the variant.",
+        "scenarioApplication": "In a customer-support escalation desk, the support lead must escalate a conversation. The escalation keeps ownership and response deadlines. Every escalation follows: select eligible tier, transfer case ownership, notify participants with deadline. Support domains vary tier eligibility; transfer and notice order stay fixed. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared the escalation keeps ownership and response deadlines; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: the escalation keeps ownership and response deadlines. Caller-owned branching spreads the tier eligibility across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant the escalation keeps ownership and response deadlines when one path changes.",
+        "boundaryOrTradeoff": "Keep ownership transfer and deadline notice order common. If a tier jointly owns a case rather than claiming it, the sequence must be redesigned.",
+        "transfer": "For another support domain, make tier eligibility the hook while preserving ownership/deadline order."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i017_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared the escalation keeps ownership and response deadlines; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i017_override",
+          "text": "Whole-method override can bypass the stated invariant: the escalation keeps ownership and response deadlines."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i017_caller",
+          "text": "Caller-owned branching spreads the tier eligibility across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i017_copy",
+          "text": "Copied workflows can drift on the shared invariant the escalation keeps ownership and response deadlines when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i017_strategy",
+          "text": "Select a complete escalate the conversation strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i017_override",
+          "text": "Let each variant override the whole method for escalate the conversation, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i017_caller",
+          "text": "Put the tier eligibility branch in every caller of the operation."
+        },
+        {
+          "optionId": "n06b07_i017_copy",
+          "text": "Copy the full escalate the conversation sequence into each variant and edit its varying step locally."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep tier selection before ownership transfer and notice; vary only tier eligibility."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a customer-support escalation desk, the support lead must escalate a conversation. The escalation keeps ownership and response deadlines.Every escalation follows: select eligible tier, transfer case ownership, notify participants with deadline. Support domains vary tier eligibility; transfer and notice order stay fixed. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i017",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "a listing cannot become visible before its price and stock rule are valid",
+      "Every publication follows: validate price and stock, create visible listing, record published revision. Product families vary one validation rule; visibility waits for both checks."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Price and stock must both be valid before visibility; only one product check varies inside the shared sequence.",
+      "details": {
+        "mechanismOrProperty": "The shared algorithm owns its preconditions, fixed step order, invariant checks, and result boundary; only product-specific validation is supplied by the variant.",
+        "scenarioApplication": "In a regional produce marketplace, the seller operations lead must publish a seasonal inventory change. A listing cannot become visible before its price and stock rule are valid. Every publication follows: validate price and stock, create visible listing, record published revision. Product families vary one validation rule; visibility waits for both checks. This keeps the case-specific invariant in the common sequence.",
+        "errorCorrection": "A complete strategy for this case could reorder or omit the shared a listing cannot become visible before its price and stock rule are valid; it duplicates steps that the scenario fixes. Whole-method override can bypass the stated invariant: a listing cannot become visible before its price and stock rule are valid. Caller-owned branching spreads the product-specific validation across entry points and can make the common order inconsistent. Copied workflows can drift on the shared invariant a listing cannot become visible before its price and stock rule are valid when one path changes.",
+        "boundaryOrTradeoff": "Use one skeleton while product families vary a bounded validation rule. If either check becomes advisory, its position and visibility rule must be reconsidered.",
+        "transfer": "For another product family, vary one validation rule without making a listing visible early."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i018_strategy",
+          "text": "A complete strategy for this case could reorder or omit the shared a listing cannot become visible before its price and stock rule are valid; it duplicates steps that the scenario fixes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i018_override",
+          "text": "Whole-method override can bypass the stated invariant: a listing cannot become visible before its price and stock rule are valid."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i018_caller",
+          "text": "Caller-owned branching spreads the product-specific validation across entry points and can make the common order inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n06b07_i018_copy",
+          "text": "Copied workflows can drift on the shared invariant a listing cannot become visible before its price and stock rule are valid when one path changes."
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n06b07_i018_strategy",
+          "text": "Select a complete publish the listing strategy for each variant, duplicating the shared validation and recording sequence."
+        },
+        {
+          "optionId": "n06b07_i018_override",
+          "text": "Let each variant override the whole method for publish the listing, including the common checks and sequence."
+        },
+        {
+          "optionId": "n06b07_i018_caller",
+          "text": "Put the product-specific validation branch in every caller of the operation."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep price/stock validation before visibility; vary only product-specific validation."
+        },
+        {
+          "optionId": "n06b07_i018_copy",
+          "text": "Copy the full publish the listing sequence into each variant and edit its varying step locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N06-B07",
+    "nodeId": "behavior_state_commands_events_and_workflows",
+    "prompt": "In a regional produce marketplace, the seller operations lead must publish a seasonal inventory change. A listing cannot become visible before its price and stock rule are valid.Every publication follows: validate price and stock, create visible listing, record published revision. Product families vary one validation rule; visibility waits for both checks. Which implementation preserves the invariant while supporting the stated variation?",
+    "questionId": "ood-n06-b07-i018",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/shows/visual-studio-toolbox/design-patterns-template-method"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

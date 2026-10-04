@@ -1,0 +1,289 @@
+{
+  "schemaVersion": "patternly-bizq01-independent-semantic-review-v1",
+  "reviewId": "N06-B06-v3",
+  "verdict": "PASS",
+  "frozenProposal": {
+    "path": "review-inputs/N06-B06-v3.json",
+    "sha256": "d9b5b93e41445b8faf6b1d5f554d0eac45ce455d6a0e8963d4d3b7b65778dedd"
+  },
+  "frozenAuthorNotes": {
+    "path": "review-inputs/AUTHOR-NOTES-N06-B06-v3.json",
+    "sha256": "f32596fcb191686a197320951f6076ac2d029ad247e51c342bddd38363dd3134"
+  },
+  "manifest": {
+    "path": "N06-MANIFEST.json",
+    "sha256": "be9cb40617caaaa8e18a41d06039c5bab3bc56eeb911b273bf21c7523569c5c3"
+  },
+  "contract": {
+    "path": "N06-CONTRACT.json",
+    "sha256": "c6b5612e21fb66a540eba31514510df49b302f8f1089cf474f2ac5880b4205fb"
+  },
+  "specification": {
+    "path": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sha256": "67aba008969eb570c86e1fbefc5b88a5e65f422d160fc7dcfd38084b59ff67d5"
+  },
+  "baseline": {
+    "gitCommit": "b7034f16bb77db4dde2ae27c13ef706b0301f6bb",
+    "sourcePath": "content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B06.json",
+    "sourceSha256": "c059c30bbd366cf6cb75eba815533de9706e62679c05f62608d4260647e0ed3f",
+    "fingerprintEncoding": "SHA-256 of compact insertion-order JSON (ensure_ascii=False; separators comma/colon)."
+  },
+  "v2Comparison": {
+    "path": "review-inputs/N06-B06-v2.json",
+    "sha256": "cd965a76a2c2a98d05def9e738a2ecc8470f8d1a0bdb28e72dd713fef827d2ae",
+    "changedFields": "Prompt and feedback Reason/Details changed across all 18; interaction/options and answer fields verified unchanged.",
+    "noteSha256": "991c9ed7d9e0483a1d43aeaa016eac731aa54e1eb1dcf86b990b2d8a694f650b"
+  },
+  "summary": {
+    "itemsReviewed": 18,
+    "pass": 18,
+    "revise": 0,
+    "identity": "All 18 question IDs and owner_preserves_contract option IDs preserve the same Chain-of-Responsibility decision; v3 supplies scenario-specific priority, fallback, eligibility, and terminal/remainder facts.",
+    "reusedOptionWarnings": {
+      "questionIds": [
+        "ood-n06-b06-i014",
+        "ood-n06-b06-i017"
+      ],
+      "basis": "B06 v2 to v3 interaction/options were unchanged; reused only matching option-shape flags, not semantic verdicts."
+    }
+  },
+  "items": [
+    {
+      "questionId": "ood-n06-b06-i001",
+      "currentQuestionId": "ood-n06-b06-i001",
+      "beforeFingerprint": "aad18d9cb7eb5c629338a3095ec197af6495b9074984cd842f0585116f4db04b",
+      "currentFingerprint": "7953b9fe971bbdda9620ef9817225a47abf24ec2445c2b2f44dbe16d5831b83f",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Run classification handlers in order; each returns a class or passes, while refund eligibility stays separate.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i002",
+      "currentQuestionId": "ood-n06-b06-i002",
+      "beforeFingerprint": "e9885245189399f202a25b0d8c8266535fa70651f565a13c172b2ad61a084169",
+      "currentFingerprint": "8c481a831d6d2046e6ca88c59b6db64b672778ed9f58b0ba1f74ed54dc0bf2ad",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Try snapshot backends in order; return a complete version-bound snapshot or pass without publishing.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i003",
+      "currentQuestionId": "ood-n06-b06-i003",
+      "beforeFingerprint": "c902e0477258685280f5d5d2a8494fab34886903a74f921e55ef32db08f3158d",
+      "currentFingerprint": "50e171eefebfe5a4c3ac32c0f1bbf7190d82bce256e6c76a7998acf11e168d7b",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Offer the accepted comment to ordered notification handlers; stop when one accepts the assigned-author notice.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i004",
+      "currentQuestionId": "ood-n06-b06-i004",
+      "beforeFingerprint": "0ff38c0549b8b58d006d865475ee73860d782bc35b2668f308c8fa2165c9a877",
+      "currentFingerprint": "4c40dba0a4c99ef18f300988f1e381b489dc5dea3b5925664b1b3edb35ab5528",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “a submission is either complete or explicitly retryable” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Try submission handlers in order; one accepts the whole inspection or passes it unchanged for retry.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i005",
+      "currentQuestionId": "ood-n06-b06-i005",
+      "beforeFingerprint": "391146c8cfb0ade754e7d2b16d1717c7514565641f466a648da55a53462e2673",
+      "currentFingerprint": "841e0996d27da10f4405a670d187c88e8797d82e1e27f761e743c698f1867a9e",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “the new issue is traceable and does not double-charge the customer” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Offer the rejected invoice to its ordered reissue handlers; the first eligible one issues its traceable replacement.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i006",
+      "currentQuestionId": "ood-n06-b06-i006",
+      "beforeFingerprint": "3bfce86133ef64f66e373e2e12a454440193f5c3934d0d2fe450c9acc77f741f",
+      "currentFingerprint": "770029de10ce60d99f700b09190d0d4b973e045458e08abedfa2cd6b201ddbd8",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “revocation is visible to the door policy before access is granted” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Evaluate the access rules in order; revocation is terminal, and an inapplicable rule passes.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i007",
+      "currentQuestionId": "ood-n06-b06-i007",
+      "beforeFingerprint": "fa06bbaa623e2f030c719e125fc054cb046431bdf0d3f60e7238accc107b2b64",
+      "currentFingerprint": "9bde8b3e2572c80d64ee1a0ee1d5ca1cd0c4d1e4ba3f292d7c108dbc294fbe7b",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “the printed label represents the current approved shipment data” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Try carrier/service label formatters in order; return the first label for approved shipment data.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i008",
+      "currentQuestionId": "ood-n06-b06-i008",
+      "beforeFingerprint": "216250b837e768c7c5727f5924004d719bfd2338d20e5f4c646bfe782f027449",
+      "currentFingerprint": "8b7d7ffc7748fb88a584001f7ab82a4f0fde21fc6b74ce88a0d80d6de4eaba76",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “the room capacity and cancellation policy must remain consistent” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Offer the room move to prioritized room handlers; the first that meets both conditions claims it.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i009",
+      "currentQuestionId": "ood-n06-b06-i009",
+      "beforeFingerprint": "b6af499eeb5f6140d6724f27ee43d3c09855842393ba042d233265375790b4ef",
+      "currentFingerprint": "c23377073fb5a1ad1612b4ef096f3e09f8f6885ab96e7c9ad5899d32921ea55e",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “unsafe commands are rejected while maintenance is active” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Pass the command through ordered safety handlers; the first applicable unsafe-command rule denies it.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i010",
+      "currentQuestionId": "ood-n06-b06-i010",
+      "beforeFingerprint": "967ba262de9447ad3d4b2e5d419979de4c292ba296c84677c0d6c112948f21a3",
+      "currentFingerprint": "4d122432a464e62f5f9cd06edb5fd9f6b762a3b47ef0006341a138eb8e309ec2",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “progress refers to a stable lesson identity” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Try progress handlers by supported record form; the first retires the lesson while preserving identity.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i011",
+      "currentQuestionId": "ood-n06-b06-i011",
+      "beforeFingerprint": "c2059886e5c57f255dd56d051c6eefe2976895fecaf8ce662fc24b03d237d6b8",
+      "currentFingerprint": "8d6886d305be8288c2d5c2e4cd0c555ea709e0e29592ad564959be54c44e613a",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “export observes a stable session state” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Try export handlers in order; return the first complete history for the stable session state.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i012",
+      "currentQuestionId": "ood-n06-b06-i012",
+      "beforeFingerprint": "01ba27493210001fe1ede91b60e56559fef80c3b868ea50d06f17ac4821b3c93",
+      "currentFingerprint": "b23a323411642d0e02eec1caf95f548fcf88f84c9450feaee046d7d35d47ee9e",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “the escalation keeps ownership and response deadlines” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Offer escalation to ordered tiers; the first that can meet the deadline owns the conversation.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i013",
+      "currentQuestionId": "ood-n06-b06-i013",
+      "beforeFingerprint": "b1ae8ecaaf131ad2654522460bf0639ebad8a8e89be9ea8aa3c1247bf42595c8",
+      "currentFingerprint": "d2f5837caa700836a9d0b446a0d93f7f4579b5a5051cc0548d42f5ca6c78c765",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “a listing cannot become visible before its price and stock rule are valid” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Pass the listing through ordered product rules; publish only after its matching rule validates price and stock.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i014",
+      "currentQuestionId": "ood-n06-b06-i014",
+      "beforeFingerprint": "c97e1db71ea6cf91fdcdcc5864ad608446b53a24e87eac0aff03ce132c8906b4",
+      "currentFingerprint": "cb7e0c28f1bb235a2ab17277842bf482953a999122af278ae6c6702f0e4c55cc",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “each split retains the original request identity and delivery promise” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Offer each vendor the remaining quantity; accept a split or pass the remainder while retaining request identity.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i015",
+      "currentQuestionId": "ood-n06-b06-i015",
+      "beforeFingerprint": "f0a0933211717a9f0e131961e02bace14b02b4077a2ffaf5e2d597ae4946572e",
+      "currentFingerprint": "da00249a60923e88431e8c41b241b6fbfb5c7b9425d188bbb4d2607227cfdc7c",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “transfer preserves the plot boundary and approval history” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Evaluate transfer authorities in order; the first applicable decision approves or denies without losing history.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i016",
+      "currentQuestionId": "ood-n06-b06-i016",
+      "beforeFingerprint": "8102af062bf9df209cd93ddc1b887f27dad1d6188d562824ae07897dbce5c451",
+      "currentFingerprint": "9f7054c55ab221807eea25052374b6815eec0c8d7e347857dc0c4d648975986d",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “the bundle pricing policy remains consistent with its components” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Try regional pricing handlers in order; the matching handler computes from the bundle’s component inputs.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i017",
+      "currentQuestionId": "ood-n06-b06-i017",
+      "beforeFingerprint": "8b6ac83668beb40801f44d96ddd14b04234b3fc648c18011053600f40ea48b6d",
+      "currentFingerprint": "508c9cfa0daca7b9fccfcb052669ce9b2b426f372e6a62e8b566f2adbff70338",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “charger capacity and reservation expiry are coordinated” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Offer the slot to station handlers in priority order; the first with capacity and a valid expiry claims it.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    },
+    {
+      "questionId": "ood-n06-b06-i018",
+      "currentQuestionId": "ood-n06-b06-i018",
+      "beforeFingerprint": "dbcfab9509bc946b4ca219e257afe5f994f7c4b4fa83c293992992db80c07e70",
+      "currentFingerprint": "22bae246e50c6b405462956b8bc6b145985aac609143481a0cfde1481870a02f",
+      "beforeAnswerOptionId": "owner_preserves_contract",
+      "beforeAcceptedMeaning": "Use ordered handlers when the request may be handled by one of several replaceable policies with a clear stop rule. In this case, that keeps the rule “asset identity remains stable while descriptive values are replaced” inside the owner that can observe and enforce it.",
+      "currentAnswerOptionId": "owner_preserves_contract",
+      "currentAcceptedMeaning": "Offer each conflict to its metadata handler; the first matching handler resolves it without changing asset identity.",
+      "identityRecommendation": "preserve_question_id_and_option_id",
+      "finding": "PASS",
+      "rationale": "The predecessor and current answer both teach ordered replaceable handlers with a clear applicability/stop outcome; the current text instantiates that same accepted decision for the case facts."
+    }
+  ],
+  "limits": [
+    "Proposal-level semantic review only; no source activation/migration, N06-wide cross-unit review, app admission, native execution, or full BIZQ-01."
+  ]
+}

@@ -1,0 +1,296 @@
+{
+  "scope": "Author hypotheses at stable B08v5; independent review required",
+  "sourceNotes": "AUTHOR-NOTES-B06-B10.json",
+  "sourceNotesSha256": "b09fbf57c5e4796c9f93e993d73389436e5c217f8395458272ac9d81d28c735e",
+  "unit": "OOD-N06-B08",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n06-b08-i001",
+      "questionId": "ood-n06-b08-i001",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose sequential traversal for a homogeneous ordered collection while keeping its operations and writes with their owners.",
+      "decisiveFact": "The records share one type and one traversal contract: the entries have one record type and settlement order must be shared by the payout run and reconciliation scan. The operation can be separate without exposing collection storage.",
+      "nearestAlternative": "Expose the mutable batch so Finance can sort and filter each scan itself. — Finance needs the stable batch order; writable storage lets either scan reorder membership.",
+      "changedCondition": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is release a seller payout.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i001_ordered_payout_entries"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i002",
+      "questionId": "ood-n06-b08-i002",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose sequential traversal for a homogeneous ordered collection while keeping its operations and writes with their owners.",
+      "decisiveFact": "The records share one type and one traversal contract: each feed entry has the same shape and every operation must observe effective-time order. The operation can be separate without exposing collection storage.",
+      "nearestAlternative": "Reimplement effective-time sorting in announcement, audit, and replay. — Independent sorting can diverge, so the same platform change may be announced and replayed in different orders.",
+      "changedCondition": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is announce platform changes.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i002_effective_time_feed"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i003",
+      "questionId": "ood-n06-b08-i003",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose external type-specific operations over stable heterogeneous nodes while the structure retains membership and order.",
+      "decisiveFact": "The stable schedule has several node types, and the node types are stable and each new operation needs different type-specific facts; add operations without moving structure ownership.",
+      "nearestAlternative": "Use one generic node iterator and put Reservation/CalendarGroup switches in both reports. — Each report would repeat type dispatch; the stable node set and changing operations suit visitors.",
+      "changedCondition": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is reserve a discharge window without committing a meter twice for an overlap.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i003_schedule_tree_operations"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i004",
+      "questionId": "ood-n06-b08-i004",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose sequential traversal for a homogeneous ordered collection while keeping its operations and writes with their owners.",
+      "decisiveFact": "The records share one type and one traversal contract: the output has one record type and stream order is authoritative for both scans. The operation can be separate without exposing collection storage.",
+      "nearestAlternative": "Let each CaptionSegment dispatch subtitle-export and timing-analysis visitors. — All entries share one record type; per-record visitors add dispatch without owning stream order.",
+      "changedCondition": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is switch the active language provider while preserving the stream timing and error contract.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i004_caption_segment_traversal"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i005",
+      "questionId": "ood-n06-b08-i005",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose external type-specific operations over stable heterogeneous nodes while the structure retains membership and order.",
+      "decisiveFact": "The stable roster has several node types, and stable heterogeneous nodes supply different facts to separately evolving operations; add operations without moving structure ownership.",
+      "nearestAlternative": "Give each report a generic traversal with its own Volunteer/Shift/Credential type switches. — Each report would repeat node-type branches; visitors isolate those changing operations.",
+      "changedCondition": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is swap assignments while preserving both volunteers’ skills and availability.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i005_roster_audit_operations"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i006",
+      "questionId": "ood-n06-b08-i006",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose external type-specific operations over stable heterogeneous nodes while the structure retains membership and order.",
+      "decisiveFact": "The stable route tree has several node types, and the node types and route tree are stable while operations can be added independently; add operations without moving structure ownership.",
+      "nearestAlternative": "Put a generic iterator in each report and branch on Route, Segment, or ConflictMarker. — Each operation would repeat route-node dispatch instead of extending behavior through visitors.",
+      "changedCondition": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is merge an offline route edit without silently overwriting accepted geometry.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i006_route_tree_operations"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i007",
+      "questionId": "ood-n06-b08-i007",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose external type-specific operations over stable heterogeneous nodes while the structure retains membership and order.",
+      "decisiveFact": "The stable campaign has several node types, and the heterogeneous structure is stable and the two read/calculation operations need different node facts; add operations without moving structure ownership.",
+      "nearestAlternative": "Use a generic walk and duplicate Character/Item/RuleReference switches in both operations. — Repeated type switches spread campaign-node knowledge across operations; visitors keep each operation together.",
+      "changedCondition": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is apply a reward using the current legal campaign state.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i007_campaign_node_analysis"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i008",
+      "questionId": "ood-n06-b08-i008",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose sequential traversal for a homogeneous ordered collection while keeping its operations and writes with their owners.",
+      "decisiveFact": "The records share one type and one traversal contract: package units share one record type and both scans must preserve shipment order. The operation can be separate without exposing collection storage.",
+      "nearestAlternative": "Expose the writable package list so planner scans can filter or reorder units. — The prompt requires read-only scans; writable shipment storage lets scans change hand-off inputs.",
+      "changedCondition": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is reassign a shipment while carrying its temperature restrictions and hand-off ownership.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i008_shipment_package_iteration"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i009",
+      "questionId": "ood-n06-b08-i009",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose sequential traversal for a homogeneous ordered collection while keeping its operations and writes with their owners.",
+      "decisiveFact": "The records share one type and one traversal contract: installments are homogeneous and both planning and aging need due-date order. The operation can be separate without exposing collection storage.",
+      "nearestAlternative": "Return the writable installment list so planning and aging can reorder it. — Reordering the list could change which installments the planner considers first.",
+      "changedCondition": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is record repayments without reducing the outstanding balance below zero.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i009_ordered_due_date_iteration"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i010",
+      "questionId": "ood-n06-b08-i010",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose external type-specific operations over stable heterogeneous nodes while the structure retains membership and order.",
+      "decisiveFact": "The stable bracket has several node types, and the structure is heterogeneous and stable while rendering and auditing need different per-node data; add operations without moving structure ownership.",
+      "nearestAlternative": "Give rendering and auditing generic walks with Match/Bye/Round switches in each operation. — The operations would duplicate type dispatch over a stable bracket node set.",
+      "changedCondition": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is forfeit a match only from a legal state.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i010_bracket_tree_operations"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i011",
+      "questionId": "ood-n06-b08-i011",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose sequential traversal for a homogeneous ordered collection while keeping its operations and writes with their owners.",
+      "decisiveFact": "The records share one type and one traversal contract: evidence is a homogeneous ordered list and classification/export are separate consumers. The operation can be separate without exposing collection storage.",
+      "nearestAlternative": "Expose a writable finding list so classification and export can reorder evidence. — Reordering findings can change the evidence sequence used by inspection and export.",
+      "changedCondition": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is classify an item from ordered ConditionFinding records.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i011_condition_finding_iteration"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i012",
+      "questionId": "ood-n06-b08-i012",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose external type-specific operations over stable heterogeneous nodes while the structure retains membership and order.",
+      "decisiveFact": "The stable snapshot has several node types, and artifact types stay stable while audit and retention operations vary independently; add operations without moving structure ownership.",
+      "nearestAlternative": "Use a generic tree walk and repeat Dataset/Configuration/CodeArtifact switches in both analyses. — Both analyses would repeat artifact-type dispatch instead of defining separate visitors.",
+      "changedCondition": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is remain bound to immutable inputs and a code version.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i012_artifact_node_audits"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i013",
+      "questionId": "ood-n06-b08-i013",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose external type-specific operations over stable heterogeneous nodes while the structure retains membership and order.",
+      "decisiveFact": "The stable revision has several node types, and stable heterogeneous revision nodes supply different facts to two independently added audits; add operations without moving structure ownership.",
+      "nearestAlternative": "Put a Paragraph/Figure/CommentAnchor switch in each audit loop. — The audits would duplicate node dispatch instead of adding independent operations through visitors.",
+      "changedCondition": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is preserve a comment’s author and document revision.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i013_revision_tree_audits"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i014",
+      "questionId": "ood-n06-b08-i014",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose sequential traversal for a homogeneous ordered collection while keeping its operations and writes with their owners.",
+      "decisiveFact": "The records share one type and one traversal contract: sections share one record type and validation/export both need the same order. The operation can be separate without exposing collection storage.",
+      "nearestAlternative": "Return the mutable result list so export can reorder or alter submission sections. — Export must not mutate results or affect whether a partial submission is accepted.",
+      "changedCondition": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is not mutate the list or mark a partial submission complete.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i014_ordered_section_results"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i015",
+      "questionId": "ood-n06-b08-i015",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose external type-specific operations over stable heterogeneous nodes while the structure retains membership and order.",
+      "decisiveFact": "The records share one type and one traversal contract: invoice lines have one type and reconciliation is a separate ordered read. The operation can be separate without exposing collection storage.",
+      "nearestAlternative": "Expose writable invoice lines so reconciliation can sort and filter its own pass. — Changing line order could affect traceability between the rejected and replacement invoice.",
+      "changedCondition": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is the stated operation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i015_invoice_line_iteration"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i016",
+      "questionId": "ood-n06-b08-i016",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose external type-specific operations over stable heterogeneous nodes while the structure retains membership and order.",
+      "decisiveFact": "The stable access graph has several node types, and heterogeneous node types remain stable while new inspections need different node-specific facts; add operations without moving structure ownership.",
+      "nearestAlternative": "Give each audit a generic graph walk with Credential/RoleGrant/ActiveSession switches. — The audits would duplicate stable-node dispatch instead of adding operations through visitors.",
+      "changedCondition": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is be visible before access is granted.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i016_session_graph_audits"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i017",
+      "questionId": "ood-n06-b08-i017",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose external type-specific operations over stable heterogeneous nodes while the structure retains membership and order.",
+      "decisiveFact": "The stable shipment tree has several node types, and the heterogeneous tree is stable and type-specific operations can be added separately; add operations without moving structure ownership.",
+      "nearestAlternative": "Put a Package/HazardFlag/ServiceLevel switch in both compliance and rendering loops. — Both operations would repeat stable-node dispatch rather than use separate visitors.",
+      "changedCondition": "Visitors fit while node types stay stable and new operations need different type-specific facts. If the structure becomes one homogeneous ordered collection with a shared scan, an iterator is simpler.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is reflect the current approved shipment data.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i017_shipment_node_audits"
+    },
+    {
+      "beforeQuestionId": "ood-n06-b08-i018",
+      "questionId": "ood-n06-b08-i018",
+      "mentalUnitId": "OOD-N06-B08",
+      "learningObjective": "Choose sequential traversal for a homogeneous ordered collection while keeping its operations and writes with their owners.",
+      "decisiveFact": "The records share one type and one traversal contract: bookings are homogeneous and both scans need the schedule’s order without mutable-list access. The operation can be separate without exposing collection storage.",
+      "nearestAlternative": "Return a mutable booking list so overlap and utilization scans can reorder entries. — Reordering bookings can change overlap comparisons and utilization results.",
+      "changedCondition": "An iterator fits while entries keep one record type and consumers need the same ordered traversal. If type-specific behavior must vary by node, an iterator alone would force each consumer to branch on node types.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The before and current answer both address when traversal should be separated from the operation while ownership stays clear. This case preserves that primary iterator/visitor and traversal-operation decision, with visible homogeneous-order or stable-heterogeneous-node facts. Its concrete operation is the stated operation.",
+      "sourceRefs": [
+        "https://www.informit.com/store/design-patterns-elements-of-reusable-object-oriented-9780321770462"
+      ],
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionId": "n06b08_i018_ordered_room_bookings"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+# BIZQ-01 — N06 source closure: Cel / Ustalenia / Podejście
+
+## Cel
+
+Doprowadzić całe N06 (180 pytań/10 mental units) do udokumentowanego odbioru jakości źródła, obowiązującego admission i synchronizacji konsumentów. Główny obszar pozostaje BIZQ-01 partial; N05/21 jest odebrane i pushed, exact CI37206914133 SUCCESS. Push nie przełącza obszaru. Ten briefing obejmuje zamknięte propozycje i ustalenie semantyki/identity; nie zatwierdza nieznanej jeszcze migracji.
+
+## Ustalenia
+
+[Wcześniejszy item-level preflight](../ood-remaining-closure-21/SOURCE-PREFLIGHT.json) obejmuje wszystkie180 pełnych obiektów N06:159 CONFIRMED i21 CONTRACT_GAP. Konkretne braki dotyczą triggera właściwego mechanizmu, najbliższych sensownych alternatyw oraz generic Reason/Details/diagnostics. CONTRACT_GAP oznacza, że fakty nie rozstrzygają mechanizmu wobec prostszego rozwiązania; nie dowodzi błędnej odpowiedzi. Przykłady: samo przełączenie dostawcy captions nie ustanawia niezależnej policy variation; consent lub payout invariant sam nie ustanawia state machine. [Current preflight](N06-PREFLIGHT.md) i [closed manifest](N06-MANIFEST.json) wiążą wszystkie10raw/180whole hashes z aktualnym v21/Qset6d19a75e8eae86869b3ce31b63ad57a6be13fc30532c22e993db6fbc3d0d4d12. Reuse ocen obowiązuje tylko dla exact unchanged objects. Weryfikacja tych bindings jest warunkiem rozpoczęcia authoring, nie dodatkowym kryterium produktu.
+
+Dziesięć istniejących objectives: strategy/policy; State/explicit machines; Command/undo/transactional intent; Observer/subscriptions; Mediator/collaboration; Chain/ordered handling; Template method; Iterator/Visitor/traversal-operation boundaries; domain events/aggregate collaboration; workflow sequencing/compensation/invariants. Naprawa obejmuje konkretną decyzję każdego istniejącego obiektu, bez zastąpienia node jednym template. Current OOD1413; poza zakresem1233, w tym765 odebranych N01–N05. Ordinary modes pozostają N01/136. N06 source acceptance nie ustanawia reachability/native/Premium acceptance.
+
+## Podejście
+
+[N06 canonical receipt](N06-CONTRACT.json) zapisuje append-only zakres w root docs07 przed authoring; prefix N05 i pozostałe reguły są byte-exact. Autorzy zapisują zwykłe arrays w `proposals/N06-Bxx.json`, nie aktywują source. Każdy item otrzymuje widoczne fakty rozstrzygające unit-specific decision, najbliższą plausibly correct alternative, przyczynowy Reason, wszystkie istniejące Details, konkretną granicę transferu i diagnostics po stable option ID. Fakty produktu/scenariusza są jawnie hipotetyczne; twierdzenia techniczne wymagają odpowiedniego primary source. Brak nowego globalnego option-ID gate, quota długości/prozy lub liczby replacements.
+
+Final whole-object semantic/identity review ustala każdy action przed aktywacją: zachować question ID, gdy primary decision i accepted meaning pozostają; odpowiedni unused i019–i036 tylko przy prawdziwej zmianie primary semantics/archetype. Option ID nie może oznaczać nowej decyzji pod starą tożsamością. Doprecyzowanie nie rozstrzyga automatycznie identity: reviewer porównuje before/current meaning. Przy CONTRACT_GAP zachować supported aspekt; retargeting nie udaje same-ID correction. Cross-unit review porównuje actual decisions we wszystkich180 i accepted765, nie same domeny/vignettes. Utrzymać node/unit/type/scoring/difficulty/source requirements/counts; nie dopisywać nowej polityki produktu.
+
+Własność propozycji: istniejący ood_cohort_author Luna High B01–B05; istniejący closure02 Luna High B06–B10 po zamknięciu current preflight. Autorzy są rozłączni i nie akceptują własnych pytań. Istniejący batch_design_review Luna High ma niezależny design/semantic/cross-unit/acceptance review. Root ma canonical contract/manifest orchestration/source activation/admission/locks/queue/state/push. Foreign AUD/ARCH/PERF/CH, appendix/footer i content audit/dist readonly; bez konkurencyjnych owners. Nie rozpoczynać authoring przed niezależnym design PASS i current bindings PASS.
+
+Po whole semantic acceptance root zamraża rzeczywisty identity map i przygotowuje dokładny producer brief: fixed22 proof wiążący10source bytes/old-current whole objects/versions/Qset oraz private byte-exact21 reconstruction→unchanged21→20→19a→19→17→16→13→12→11 chain. Independent migration review dotyczy wtedy konkretnego actualshape i history/admission ryzyka; obecny brief nie zatwierdza nieznanego rozwiązania. Preserve immutable proofs/descriptors/private guards, history594replacements+171same-ID+25Reason,1233otherOOD i eight other artifacts. Brak generic override/runtime archive/schema migration/alternate pipeline.
+
+Obowiązujący flow: source→validator/scorer→canonical build→candidate/readiness→app sync/locks→delegated runtime admission/releasegate→provenance-only dwa istniejące web demos. Rzeczywiste checks whole-object/answer/reversal/option diagnostics, source/preserved history/negative guards, affected consumers i wymagane gates; reuse matching wcześniejszych dowodów zamiast powtarzania przez sam HEAD. Package acceptance wymaga independent QA i root actual evidence; zwykły push dopiero po odbiorze. Implementation, fragment acceptance, whole BIZQ i release readiness pozostają rozłączne.
+
+## Pełny01 i ograniczenia
+
+Warunek pełnego01 w canonical row19a: naprawione i semantycznie odebrane confirmed critical A1/expanded findings, inventory/artifact/admission, brak disclosure/position scoring, rozstrzygnięte istotne warnings i wymagane Q01–Q14/actual runner/iOS. Po N06 pozostają N07–N09/468 oraz exact findings innych banków i native zakres. GCP ARCH03/F18, BESD ARCH02, PO Premiumprofile/valid-partial denominator pending pozostają; nie ponawiać pytań ani domniemywać zgody. Native15 ma wyłącznie guestcold/schedule/account-required evidence. N06 package nie claimuje native/fullbank/fullBIZQ acceptance.
+
+Zachować atomic goal+accepted plan, local reminders, real Premium i existing admission. Jeden runtime; mobile tylko istniejący iPhone17 7F315654-3175-4F3C-BB24-B0263F59360C, VO poza testami i accessibility semantics. Bez deploy/publikacji/produkcyjnych zakupów/service config/stash/reset/force/cudzych zmian.
+
+## Oceny materialnego podejścia
+
+Fit0.96:180 individual findings i istniejące10 objectives prowadzą do pełnego01. Simplicity0.86: connected node dzieli bezpiecznie preparation/migration/admission; nie10 osobnych cykli. Risk0.82: current binding, nieaktywne proposals, indywidualna identity i independent review ograniczają ambiguity/meaning/history risk. Maintainability0.83: closed scope i istniejący pipeline; immutable history bez general override. Minimum0.82≥0.8. Scores są oceną propozycji, nie dowodem current correctness lub runtime readiness.
