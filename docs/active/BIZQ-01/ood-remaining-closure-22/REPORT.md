@@ -1,6 +1,6 @@
 # BIZQ-01 — N06/22, 180 same-ID corrections
 
-Status: N06/22 package independently accepted (Luna High PASS) and root actual bindings/diff verified; ordinary push pending. Full BIZQ-01 remains `partial`. The only status queue is [PATTERNLY-WORKING-PLAN.md](../../../PATTERNLY-WORKING-PLAN.md), row19a.
+Status: N06/22 package independently accepted (Luna High PASS) and root actual bindings/diff verified; ordinary pushes verified; exact functional CI PASS. Full BIZQ-01 remains `partial`. The only status queue is [PATTERNLY-WORKING-PLAN.md](../../../PATTERNLY-WORKING-PLAN.md), row19a.
 
 ## Outcome and scope
 
@@ -40,6 +40,6 @@ All current checks use Node22.22.3. [Root final evidence](ROOT-FINAL-EVIDENCE.js
 
 ## Limits and next safe step
 
-[Independent final package QA](FINAL-QA.md) is PASS; [root actual final bindings](ROOT-PACKAGE-ACCEPTANCE.json) are PASS. Ordinary push and exact CI inspection remain pending. The reviewed web HEAD in QA is the pre-provenance-commit HEAD; actual delivered refs are recorded by the post-push receipt. No mobile, device, native, Premium, production purchase, deployment, publication or service configuration action occurred in this package. Static tests do not establish those runtime paths. Atomic goal+accepted plan, local reminders, one runtime and real Premium/content admission policies are retained.
+[Independent final package QA](FINAL-QA.md) is PASS; [root actual final bindings](ROOT-PACKAGE-ACCEPTANCE.json) are PASS. Ordinary pushes are verified by [POST-PUSH.json](POST-PUSH.json): app`a707ff9f`, content`5a8e895`, web`c50cd274`; all align with upstream and remote. Exact CI[37226328318](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37226328318) completed successfully in both required jobs; [exact evidence](POST-PUSH-CI.json). The reviewed web HEAD in QA is the pre-provenance-commit HEAD; actual delivered refs are recorded by the post-push receipt. No mobile, device, native, Premium, production purchase, deployment, publication or service configuration action occurred in this package. Static tests do not establish those runtime paths. Atomic goal+accepted plan, local reminders, one runtime and real Premium/content admission policies are retained.
 
-Accepted N01–N06 total945; remaining OOD closure scope is468 objects in N07–N09 (144/162/162), with the existing item-level preflight rather than blanket rewriting. BIZQ-01 still includes other bank findings, meaningful warnings, Q01–Q14, actual runner/iOS and existing PO/dependency decisions. Continue the same main area with the next coherent N07 package after normal push and required CI inspection. A push does not close BIZQ-01 or justify switching areas.
+Accepted N01–N06 total945; remaining OOD closure scope is468 objects in N07–N09 (144/162/162), with the existing item-level preflight rather than blanket rewriting. BIZQ-01 still includes other bank findings, meaningful warnings, Q01–Q14, actual runner/iOS and existing PO/dependency decisions. Continue the same main area with the next coherent N07 package after verified normal delivery and exact CI PASS. A push does not close BIZQ-01 or justify switching areas.

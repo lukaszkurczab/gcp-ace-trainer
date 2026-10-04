@@ -1,0 +1,57 @@
+{
+  "result": "PUSHED_VERIFIED",
+  "scope": "Accepted N06/22 ordinary delivery verified; exact functional CI PASS; full BIZQ01 partial",
+  "commits": {
+    "scope": "Locally committed independently accepted coherent N06/22 package; ordinary pushes pending",
+    "appFunctionalCommit": "a707ff9fba69917a03314cf6a4d55fc3eea09e5d",
+    "appConsumerCommit": "9dae1f713a39f9d8d0c71b113d7298a08e31adfe",
+    "contentCommit": "5a8e895379bb0abcbb5d7a1dc89fcf02167a823e",
+    "contentSourceCommit": "7648782e57ef6927b90c687f7ae67c62b8ae5ed2",
+    "webCommit": "c50cd2748b498924f53a53587d7122322b8f134a",
+    "finalQaSha256": "b535c0060b6b0a55547d66a2d0cd96f13d1d049ea6fce7a0664e2d22b331f103",
+    "rootEvidenceSha256": "99ad36f567f4f95b1989f57d5516d19d61357867af2246a82acbb91ea7161362",
+    "foreignFooterPreserved": true,
+    "foreignPlanAppendixExcluded": true
+  },
+  "refs": [
+    {
+      "repository": "app",
+      "head": "a707ff9fba69917a03314cf6a4d55fc3eea09e5d",
+      "upstream": "a707ff9fba69917a03314cf6a4d55fc3eea09e5d",
+      "remote": "a707ff9fba69917a03314cf6a4d55fc3eea09e5d",
+      "stashesPreserved": true
+    },
+    {
+      "repository": "content",
+      "head": "5a8e895379bb0abcbb5d7a1dc89fcf02167a823e",
+      "upstream": "5a8e895379bb0abcbb5d7a1dc89fcf02167a823e",
+      "remote": "5a8e895379bb0abcbb5d7a1dc89fcf02167a823e",
+      "stashesPreserved": true
+    },
+    {
+      "repository": "web",
+      "head": "c50cd2748b498924f53a53587d7122322b8f134a",
+      "upstream": "c50cd2748b498924f53a53587d7122322b8f134a",
+      "remote": "c50cd2748b498924f53a53587d7122322b8f134a",
+      "stashesPreserved": true
+    },
+    {
+      "repository": "backend",
+      "head": "039f7f000e701c4fbc69e18a1fb66528cbc5cdcb",
+      "upstream": "039f7f000e701c4fbc69e18a1fb66528cbc5cdcb",
+      "remote": "039f7f000e701c4fbc69e18a1fb66528cbc5cdcb",
+      "stashesPreserved": true
+    }
+  ],
+  "ci": {
+    "id": 37226328318,
+    "headSha": "a707ff9fba69917a03314cf6a4d55fc3eea09e5d",
+    "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37226328318",
+    "status": "completed",
+    "conclusion": "success",
+    "receiptPath": "POST-PUSH-CI.json"
+  },
+  "acceptedN01N06": 945,
+  "remainingOODN07N09": 468,
+  "noDeploymentOrExternalPublication": true
+}

@@ -1,0 +1,25 @@
+{
+  "result": "PASS",
+  "scope": "Exact pushed N06/22 functional app commit CI; not external release/native/full BIZQ01 acceptance",
+  "runId": 37226328318,
+  "headSha": "a707ff9fba69917a03314cf6a4d55fc3eea09e5d",
+  "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37226328318",
+  "jobs": [
+    {
+      "name": "Multi-track content release contract",
+      "conclusion": "success",
+      "status": "completed",
+      "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37226328318/job/111506619710"
+    },
+    {
+      "name": "Recovery QA gate",
+      "conclusion": "success",
+      "status": "completed",
+      "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37226328318/job/111506619850"
+    }
+  ],
+  "rawEvidenceSha256": "ace4c5eab8643e1deadb1dfc5f6d30c5ce5e4eef75fd6e65bf892cd3b793442e",
+  "currentContentCommit": "5a8e895379bb0abcbb5d7a1dc89fcf02167a823e",
+  "candidateSourceCommit": "7648782e57ef6927b90c687f7ae67c62b8ae5ed2",
+  "historicalContentCommit": "cc3efca88be7e01137f10ac69a0643f06b61a350"
+}

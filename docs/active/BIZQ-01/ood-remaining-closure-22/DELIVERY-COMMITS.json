@@ -1,0 +1,12 @@
+{
+  "scope": "Locally committed independently accepted coherent N06/22 package; ordinary pushes pending",
+  "appFunctionalCommit": "a707ff9fba69917a03314cf6a4d55fc3eea09e5d",
+  "appConsumerCommit": "9dae1f713a39f9d8d0c71b113d7298a08e31adfe",
+  "contentCommit": "5a8e895379bb0abcbb5d7a1dc89fcf02167a823e",
+  "contentSourceCommit": "7648782e57ef6927b90c687f7ae67c62b8ae5ed2",
+  "webCommit": "c50cd2748b498924f53a53587d7122322b8f134a",
+  "finalQaSha256": "b535c0060b6b0a55547d66a2d0cd96f13d1d049ea6fce7a0664e2d22b331f103",
+  "rootEvidenceSha256": "99ad36f567f4f95b1989f57d5516d19d61357867af2246a82acbb91ea7161362",
+  "foreignFooterPreserved": true,
+  "foreignPlanAppendixExcluded": true
+}

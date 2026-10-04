@@ -1,0 +1,20 @@
+[
+  {
+    "repository": "content",
+    "remoteBefore": "b7034f16bb77db4dde2ae27c13ef706b0301f6bb",
+    "localHead": "5a8e895379bb0abcbb5d7a1dc89fcf02167a823e",
+    "stashesPreserved": true
+  },
+  {
+    "repository": "web",
+    "remoteBefore": "0d83819473bdb48b3e36307055e7cf900b6ce856",
+    "localHead": "c50cd2748b498924f53a53587d7122322b8f134a",
+    "stashesPreserved": true
+  },
+  {
+    "repository": "app",
+    "remoteBefore": "7448b85e134fe0b18c51d40cb4d0e32d7eeb1afe",
+    "localHead": "a707ff9fba69917a03314cf6a4d55fc3eea09e5d",
+    "stashesPreserved": true
+  }
+]
