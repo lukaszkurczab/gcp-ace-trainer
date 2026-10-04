@@ -1,22 +1,15 @@
+import { getTrackIconName } from "../../components/trackIcon";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
-import { AppShellHeader, Button, Icon, Screen, type IconName } from "../../components";
+import { AppShellHeader, Button, Icon, Screen } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import {
-  AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID,
-  BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
-  CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID,
   CODING_INTERVIEW_TRACK_ID,
-  FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID,
-  GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   getTrackDisplays,
-  MICROSOFT_AZURE_ADMINISTRATOR_ASSOCIATE_AZ_104_TRACK_ID,
-  MICROSOFT_AZURE_AI_FUNDAMENTALS_AI_901_TRACK_ID,
-  OBJECT_ORIENTED_DESIGN_INTERVIEW_TRACK_ID,
   type TrackDisplay,
   type TrackId,
 } from "../../domain";
@@ -34,24 +27,6 @@ type SelectTrackScreenProps = {
   onboarding?: boolean;
   onTrackSelected?: (trackId: TrackId) => void;
 };
-
-const TRACK_ICONS: Readonly<Record<string, IconName>> = {
-  [AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID]: "cloud",
-  [BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID]: "database",
-  [CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID]: "sparkle",
-  [CODING_INTERVIEW_TRACK_ID]: "route",
-  [FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID]: "device-phone",
-  [GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID]: "server-stack",
-  [MICROSOFT_AZURE_ADMINISTRATOR_ASSOCIATE_AZ_104_TRACK_ID]: "settings",
-  [MICROSOFT_AZURE_AI_FUNDAMENTALS_AI_901_TRACK_ID]: "cpu",
-  [OBJECT_ORIENTED_DESIGN_INTERVIEW_TRACK_ID]: "grid",
-};
-
-function getTrackIconName(trackId: TrackId): IconName {
-  const iconName = TRACK_ICONS[trackId];
-  if (!iconName) throw new Error(`No canonical icon is registered for track ${trackId}.`);
-  return iconName;
-}
 
 /** Selection remains local until the single footer command commits one canonical track. */
 export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelected }: SelectTrackScreenProps) {

@@ -1,3 +1,4 @@
+import { getTrackIconName } from "../../components/trackIcon";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -18,7 +19,7 @@ import {
   useSkeletonGlassMotion,
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { getTrackDisplay } from "../../domain";
+import { FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID, getTrackDisplay } from "../../domain";
 import { goBackOrHome } from "../../navigation/goBackOrHome";
 import type { RootStackParamList } from "../../navigation/types";
 import { getAlgorithmsInterviewSimulationEntry } from "../../application/coding-interview";
@@ -348,7 +349,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             style={({ pressed }) => [styles.trackContext, pressed ? styles.pressed : null]}
           >
             <View style={styles.trackContextCopy}>
-              <IconTile name={isCodingInterviewTrack || isDesignInterviewTrack ? "code-brackets" : "cloud"} size={22} tone="primary" />
+              <IconTile name={activeTrack.id === FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID ? getTrackIconName(activeTrack.id) : isCodingInterviewTrack || isDesignInterviewTrack ? "code-brackets" : "cloud"} iconSize={22} size={32} tone="primary" />
               <Text maxFontSizeMultiplier={2} style={styles.trackContextTitle}>{t(activeTrack.shortTitle)}</Text>
             </View>
             <Text maxFontSizeMultiplier={2} style={styles.changeTrack}>{t("Change")}</Text>

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const source = readFileSync("src/features/home/SelectTrackScreen.tsx", "utf8");
+const iconSource = readFileSync("src/components/trackIcon.ts", "utf8");
 const bootstrap = readFileSync(".maestro/rc-algorithms-bootstrap.yaml", "utf8");
 
 test("track selection stacks dense rows and actions instead of clipping large text", () => {
@@ -21,16 +22,16 @@ test("Algorithms bootstrap accepts a reachable large-text control without requir
 });
 
 test("track cards use the canonical Figma icon mapping for every active track", () => {
-  assert.match(source, /\[CODING_INTERVIEW_TRACK_ID\]: "route"/);
-  assert.match(source, /\[GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID\]: "server-stack"/);
-  assert.match(source, /\[BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID\]: "database"/);
-  assert.match(source, /\[OBJECT_ORIENTED_DESIGN_INTERVIEW_TRACK_ID\]: "grid"/);
-  assert.match(source, /\[FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID\]: "device-phone"/);
-  assert.match(source, /\[AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID\]: "cloud"/);
-  assert.match(source, /\[MICROSOFT_AZURE_ADMINISTRATOR_ASSOCIATE_AZ_104_TRACK_ID\]: "settings"/);
-  assert.match(source, /\[MICROSOFT_AZURE_AI_FUNDAMENTALS_AI_901_TRACK_ID\]: "cpu"/);
-  assert.match(source, /\[CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID\]: "sparkle"/);
-  assert.match(source, /No canonical icon is registered for track/);
+  assert.match(iconSource, /\[CODING_INTERVIEW_TRACK_ID\]: "route"/);
+  assert.match(iconSource, /\[GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID\]: "server-stack"/);
+  assert.match(iconSource, /\[BACKEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID\]: "database"/);
+  assert.match(iconSource, /\[OBJECT_ORIENTED_DESIGN_INTERVIEW_TRACK_ID\]: "grid"/);
+  assert.match(iconSource, /\[FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID\]: "device-phone"/);
+  assert.match(iconSource, /\[AWS_CERTIFIED_SOLUTIONS_ARCHITECT_ASSOCIATE_TRACK_ID\]: "cloud"/);
+  assert.match(iconSource, /\[MICROSOFT_AZURE_ADMINISTRATOR_ASSOCIATE_AZ_104_TRACK_ID\]: "settings"/);
+  assert.match(iconSource, /\[MICROSOFT_AZURE_AI_FUNDAMENTALS_AI_901_TRACK_ID\]: "cpu"/);
+  assert.match(iconSource, /\[CLAUDE_CERTIFIED_ARCHITECT_PROFESSIONAL_CERTIFICATION_TRACK_ID\]: "sparkle"/);
+  assert.match(iconSource, /No canonical icon is registered for track/);
   assert.match(source, /color=\{palette\.primary\} name=\{icon\}/);
   assert.match(source, /trackIcon:\s*\{[\s\S]*?backgroundColor: palette\.surfaceInput[\s\S]*?borderColor: palette\.primary/);
 });

@@ -1,8 +1,10 @@
+import { getTrackIconName } from "../../../components/trackIcon";
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Fragment, useState } from "react";
 
 import { Button, Card, Icon, SkeletonShape, useSkeletonGlassMotion } from "../../../components";
+import { FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID } from "../../../domain";
 import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
 import type { CodingInterviewDashboard } from "../../../application/coding-interview";
 import type { GuidanceAction } from "../../../application/learningPlan";
@@ -199,13 +201,14 @@ export function HomeTab({
     ? "Resume session"
     : homePlanPresentation?.primaryLabel ?? (homePlanUnavailable ? tPlan("Try again") : recommendation?.primaryLabel ?? model.primaryLabel);
   const isCodingInterviewTrack = activeTrack.id === "coding-interview-dsa-problem-solving";
+  const isFrontendTrack = activeTrack.id === FRONTEND_SYSTEM_DESIGN_INTERVIEW_TRACK_ID;
   const decisionIcon = homePlanUnavailable
     ? "alert-triangle"
     : homePlanPresentation?.tone === "danger"
       ? "alert-triangle"
       : homePlanPresentation
         ? "route"
-        : recommendation?.icon ?? (isCodingInterviewTrack ? "route" : "cloud");
+        : recommendation?.icon ?? (isFrontendTrack ? getTrackIconName(activeTrack.id) : isCodingInterviewTrack ? "route" : "cloud");
   const decisionTone = homePlanUnavailable || recommendation?.enabled === false ? "muted" : "primary";
   const decisionEnabled = homePlanUnavailable || homePlanReady || recommendation?.enabled !== false;
   const recentAttempts = trainingAttempts
@@ -253,7 +256,7 @@ export function HomeTab({
         >
           <View style={styles.trackContextCopy}>
             <View style={styles.trackIconContainer}>
-              <Icon color={palette.primary} name={isCodingInterviewTrack ? "code-brackets" : "cloud"} size={22} />
+              <Icon color={palette.primary} name={isFrontendTrack ? getTrackIconName(activeTrack.id) : isCodingInterviewTrack ? "code-brackets" : "cloud"} size={22} />
             </View>
             <Text maxFontSizeMultiplier={2} style={styles.focusTitle} testID={runtimeSelectors.home.trackCard(activeTrack.id)}>
               {t(activeTrack.shortTitle)}
