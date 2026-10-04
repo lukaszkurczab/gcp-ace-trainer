@@ -1,0 +1,1172 @@
+[
+  {
+    "questionId": "ood-n03-b02-i019",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "A caption session uses one active language provider. Stream callbacks start from the session and call that provider, while the provider operations screen must list its active sessions by direct object traversal; no separate index is available. Reassignment updates the session and provider collections in one transaction. Which navigability should the two model clients have?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_019_model",
+          "text": "Make the Session–Provider association navigable in both directions so each stated client can traverse its required path."
+        },
+        {
+          "optionId": "n03b02_019_alt1",
+          "text": "Make it navigable only from Session to Provider; the provider screen can discover sessions by scanning all sessions."
+        },
+        {
+          "optionId": "n03b02_019_alt2",
+          "text": "Make it navigable only from Provider to Session; stream callbacks can search the provider’s session list."
+        },
+        {
+          "optionId": "n03b02_019_alt3",
+          "text": "Store two independent provider IDs on each session and keep no association between the model objects."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_019_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Make the Session–Provider association navigable in both directions so each stated client can traverse its required path.",
+      "details": {
+        "mechanismOrProperty": "Navigability is a traversal capability at an association end; both directions are justified only because both client paths are named.",
+        "scenarioApplication": "The stream follows Session→Provider, and the operations screen follows Provider→Sessions. The transaction supplies the consistency boundary for the reverse links.",
+        "errorCorrection": "A unidirectional reference would satisfy only one of the two explicitly required traversals; do not infer that an unmentioned query needs a back-reference.",
+        "boundaryOrTradeoff": "If the operations screen used a provider-keyed index, the model could keep only Session→Provider and avoid maintaining the inverse collection.",
+        "transfer": "Add reverse navigation when a required client actually needs it and the consistency cost has an explicit owner."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_019_alt1",
+          "text": "The prompt requires provider-to-sessions traversal and rules out a scan/index substitute."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_019_alt2",
+          "text": "Callbacks begin at a session, so the reverse-only direction cannot serve the stream path."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_019_alt3",
+          "text": "Duplicating an ID instead of modeling the association does not provide either required object traversal."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i020",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "A volunteer shift assignment stores a reference to its volunteer, and its detail screen opens that volunteer by following the stored reference. The manager views assignments for a shift through Shift→Assignments; the volunteer profile never lists assignments, and a separate assignment repository serves that profile. What direction should the Volunteer–Assignment association expose?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_020_model",
+          "text": "Expose Assignment→Volunteer; do not add Volunteer→Assignments solely for the shift screen."
+        },
+        {
+          "optionId": "n03b02_020_alt1",
+          "text": "Expose both directions and duplicate the shift assignment list on Volunteer."
+        },
+        {
+          "optionId": "n03b02_020_alt2",
+          "text": "Expose only Volunteer→Assignment and make every shift screen scan all volunteers."
+        },
+        {
+          "optionId": "n03b02_020_alt3",
+          "text": "Replace the association with the volunteer’s display name copied into each Assignment."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_020_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Expose Assignment→Volunteer; do not add Volunteer→Assignments solely for the shift screen.",
+      "details": {
+        "mechanismOrProperty": "A reference is useful in the direction a client traverses; an unused inverse collection adds update state without a stated query.",
+        "scenarioApplication": "Assignment→Volunteer supports assignment detail, while Shift→Assignments lists work. The Volunteer profile obtains its view from a repository.",
+        "errorCorrection": "Do not add a reverse field simply because the domain relationship can be drawn symmetrically; this case names no reverse traversal need.",
+        "boundaryOrTradeoff": "If the profile needed direct in-memory enumeration and had no repository, a maintained Volunteer→Assignments reference could be justified.",
+        "transfer": "Choose navigable ends from actual consumer paths rather than drawing arrows by domain intuition alone."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_020_alt1",
+          "text": "The shift screen already traverses Shift→Assignments, while no client needs Volunteer→Assignments and the repository serves the profile."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_020_alt2",
+          "text": "The prompt’s required shift path starts from Shift and does not require scanning volunteers; the assignment still needs its volunteer reference."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_020_alt3",
+          "text": "A copied display name is a value snapshot, not the required link to the assigned Volunteer object."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i021",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "An offline route edit stores the exact parent RouteRevision it was based on. Each Edit detail and evaluation follows its stored Edit→RouteRevision reference to inspect that revision’s geometry. A revision never needs to enumerate edits made from it; an edit service queries edits by parent ID. Which navigation direction is sufficient for the revision relationship?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_021_model",
+          "text": "Keep Edit→RouteRevision navigable and omit RouteRevision→Edits from the object association."
+        },
+        {
+          "optionId": "n03b02_021_alt1",
+          "text": "Make the association navigable only from RouteRevision to Edit; an edit can search for its parent revision."
+        },
+        {
+          "optionId": "n03b02_021_alt2",
+          "text": "Make both ends navigable and maintain an inverse edit collection on every revision."
+        },
+        {
+          "optionId": "n03b02_021_alt3",
+          "text": "Make neither end navigable and infer the parent from matching geometry values."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_021_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Keep Edit→RouteRevision navigable and omit RouteRevision→Edits from the object association.",
+      "details": {
+        "mechanismOrProperty": "The association should expose the path the edit evaluator actually follows; querying children by a key does not require a reverse object field.",
+        "scenarioApplication": "The editor and evaluator know the Edit and follow its reference to the exact RouteRevision; revision-to-edits is handled by the repository.",
+        "errorCorrection": "A query by parent ID is not evidence that the parent model needs a navigable inverse collection.",
+        "boundaryOrTradeoff": "If a revision detail screen had to traverse directly to every derived edit and no query service existed, the reverse end would become useful.",
+        "transfer": "Use stable identity for exact provenance and add reverse navigation only when direct traversal is part of the model contract."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_021_alt1",
+          "text": "An edit must follow its stored parent revision to compare its base, so the edit needs the outgoing reference."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_021_alt2",
+          "text": "The route revision does not enumerate edits in the object model; a query already handles lookup by ID."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_021_alt3",
+          "text": "Geometry equality cannot reliably identify the exact immutable parent revision."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i022",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "A campaign reward claim reads the character’s current CampaignRevision to evaluate eligibility. Campaign screens show rule versions, but they do not enumerate characters; a rules repository retrieves claims by campaign revision. Which direction should connect Character and CampaignRevision?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_022_model",
+          "text": "Make Character→CampaignRevision navigable; keep the claims lookup outside a reverse association field."
+        },
+        {
+          "optionId": "n03b02_022_alt1",
+          "text": "Make CampaignRevision→Character only, so a character can find its rules through the campaign’s character list."
+        },
+        {
+          "optionId": "n03b02_022_alt2",
+          "text": "Make both directions navigable and maintain every affected character list when a claim changes."
+        },
+        {
+          "optionId": "n03b02_022_alt3",
+          "text": "Use the current campaign name as the link instead of a revision identity."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_022_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Make Character→CampaignRevision navigable; keep the claims lookup outside a reverse association field.",
+      "details": {
+        "mechanismOrProperty": "Navigability follows the direction of the eligibility read, while a stable revision identity preserves the exact input.",
+        "scenarioApplication": "Character→CampaignRevision supports reward evaluation. The campaign’s rule-version screen and claim query use separate paths.",
+        "errorCorrection": "Do not infer reverse navigation from a many-to-one conceptual relationship when no client traverses it.",
+        "boundaryOrTradeoff": "If campaign administrators needed direct object traversal to all characters currently bound to a revision, a reverse end could be added.",
+        "transfer": "Draw the actual client path and identify the source object before choosing an association arrow."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_022_alt1",
+          "text": "The claim starts with a Character and needs its exact campaign revision; the reverse character list is not a required client path."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_022_alt2",
+          "text": "No campaign screen enumerates characters, so the inverse list adds consistency work without serving a stated traversal."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_022_alt3",
+          "text": "A mutable name cannot distinguish which campaign revision the claim used."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i023",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "A cold-chain shipment stores its current Carrier. Shipment detail follows Shipment→Carrier, and each carrier dispatch board must enumerate its active Shipments directly without scanning the fleet. A reassignment transaction updates both views together. Which association ends need to be navigable?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_023_model",
+          "text": "Make Shipment–Carrier navigable in both directions and update the inverse membership as part of the reassignment transaction."
+        },
+        {
+          "optionId": "n03b02_023_alt1",
+          "text": "Expose only Shipment→Carrier and have dispatch scan every shipment for a carrier match."
+        },
+        {
+          "optionId": "n03b02_023_alt2",
+          "text": "Expose only Carrier→Shipments and look up a shipment’s carrier from the carrier board."
+        },
+        {
+          "optionId": "n03b02_023_alt3",
+          "text": "Store two unrelated carrier names, one on Shipment and one on the dispatch board."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_023_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Make Shipment–Carrier navigable in both directions and update the inverse membership as part of the reassignment transaction.",
+      "details": {
+        "mechanismOrProperty": "Two-way navigation is justified by two required query directions; the transaction prevents the inverse collection from drifting.",
+        "scenarioApplication": "Shipment detail follows to its carrier, while dispatch starts from the carrier and lists shipments. Both ends serve named clients.",
+        "errorCorrection": "The correct design is not “always bidirectional”; it is bidirectional because this scenario requires both traversals and gives their update owner.",
+        "boundaryOrTradeoff": "If dispatch could use a carrier-keyed query index, the inverse object collection would no longer be necessary.",
+        "transfer": "Treat an inverse association as maintained state: require a real consumer and an explicit consistency mechanism."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_023_alt1",
+          "text": "The dispatch board explicitly requires direct carrier-to-shipments traversal and the prompt rules out scanning."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_023_alt2",
+          "text": "Shipment detail starts at a shipment and follows its carrier, which the reverse-only design cannot do."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_023_alt3",
+          "text": "Two copied names can disagree and do not represent one shared Carrier link."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i024",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "A repayment Allocation must follow its exact Account when posting. The account history page retrieves allocations from a durable account-keyed index; no business object needs to traverse from Account to Allocation. Should Account hold a navigable collection of Allocation objects?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_024_model",
+          "text": "Keep Allocation→Account navigable and use the existing account-keyed query for history; omit the inverse object reference."
+        },
+        {
+          "optionId": "n03b02_024_alt1",
+          "text": "Make the association bidirectional because every one-to-many domain relationship needs two object references."
+        },
+        {
+          "optionId": "n03b02_024_alt2",
+          "text": "Expose only Account→Allocation and make posting search all accounts for the allocation’s owner."
+        },
+        {
+          "optionId": "n03b02_024_alt3",
+          "text": "Use the allocation amount as the association key instead of an Account identity."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_024_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Keep Allocation→Account navigable and use the existing account-keyed query for history; omit the inverse object reference.",
+      "details": {
+        "mechanismOrProperty": "An indexed query can serve a reverse lookup without duplicating a navigable object collection.",
+        "scenarioApplication": "Posting follows Allocation→Account; the history page uses the account-keyed index. No direct Account→Allocation traversal is specified.",
+        "errorCorrection": "“One account has many allocations” describes multiplicity, not a requirement for two in-memory references.",
+        "boundaryOrTradeoff": "If callers had to enumerate account allocations directly through the object graph and the index disappeared, a navigable inverse could be added.",
+        "transfer": "Keep query infrastructure and object navigability distinct when deciding whether an inverse is needed."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_024_alt1",
+          "text": "The history query already provides the reverse lookup, while posting needs only Allocation→Account."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_024_alt2",
+          "text": "Posting starts with an allocation and requires its account; a reverse-only design misses that path."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_024_alt3",
+          "text": "Equal amounts can occur and are values, not stable account identities."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i025",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "A bracket match stores a direct reference to its Bracket so the forfeit handler can read the bracket revision. The bracket renderer obtains matches from a slot-indexed repository and never traverses a Match collection. Which association direction should the model expose?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_025_model",
+          "text": "Expose Match→Bracket for the forfeit handler and leave Bracket→Matches to the slot-indexed repository."
+        },
+        {
+          "optionId": "n03b02_025_alt1",
+          "text": "Expose both directions and keep a second mutable Match list on Bracket."
+        },
+        {
+          "optionId": "n03b02_025_alt2",
+          "text": "Expose only Bracket→Match so a match can discover its bracket by scanning slots."
+        },
+        {
+          "optionId": "n03b02_025_alt3",
+          "text": "Use the match’s visible bracket name as a substitute for a revision reference."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_025_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Expose Match→Bracket for the forfeit handler and leave Bracket→Matches to the slot-indexed repository.",
+      "details": {
+        "mechanismOrProperty": "A direct reference supports the traversal the behavior uses; a separate indexed query can locate the reverse set.",
+        "scenarioApplication": "Match→Bracket is the single object traversal in the forfeit flow; bracket rendering uses the slot index.",
+        "errorCorrection": "Do not add two copies of a relationship merely because both objects conceptually know about each other.",
+        "boundaryOrTradeoff": "If bracket behavior had to walk all matches in memory without a repository, a navigable Bracket→Matches end would be needed.",
+        "transfer": "Use explicit query paths to decide whether to store an inverse list or query children by key."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_025_alt1",
+          "text": "No client needs the in-object inverse list; the renderer has a dedicated query path."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_025_alt2",
+          "text": "The forfeit handler starts from the match and needs to reach its bracket revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_025_alt3",
+          "text": "A name is not the exact revision link required by the handler."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i026",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "A returns inspector opens one Item and must display its inspection reports by traversing the item’s stored report list. Each InspectionReport also needs to open its exact Item in the report detail view. The same service writes both links atomically. What navigation model supports both required screens?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_026_model",
+          "text": "Make Item–InspectionReport navigable in both directions and maintain the paired links in the write operation."
+        },
+        {
+          "optionId": "n03b02_026_alt1",
+          "text": "Make only InspectionReport→Item navigable and make the item screen query every report."
+        },
+        {
+          "optionId": "n03b02_026_alt2",
+          "text": "Make only Item→InspectionReport navigable and have a report reconstruct its item from text."
+        },
+        {
+          "optionId": "n03b02_026_alt3",
+          "text": "Use separate unrelated lists on Item and InspectionReport without a shared link."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_026_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Make Item–InspectionReport navigable in both directions and maintain the paired links in the write operation.",
+      "details": {
+        "mechanismOrProperty": "Both ends are navigable because each named client traverses from a different endpoint; paired updates keep the relation coherent.",
+        "scenarioApplication": "The item screen follows Item→Reports and the report screen follows Report→Item; one atomic writer owns both link updates.",
+        "errorCorrection": "One-way navigation would make one of the two stated detail paths unavailable in the model.",
+        "boundaryOrTradeoff": "If either screen were served by a stable indexed query, that screen would not require the corresponding inverse object field.",
+        "transfer": "Before adding inverse references, list the endpoints from which real client operations must traverse."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_026_alt1",
+          "text": "The item screen explicitly needs direct Item→Reports traversal, not a global report query."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_026_alt2",
+          "text": "The report detail needs its exact Item link, not a reconstructed text match."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_026_alt3",
+          "text": "Separate lists can diverge; the write path is required to maintain the relation atomically."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i027",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "A published Snapshot points to the exact Dataset and CodeVersion it used. The provenance viewer starts from Snapshot and follows both references; Dataset and CodeVersion screens never list the snapshots that reused them. Which way should the provenance associations navigate?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_027_model",
+          "text": "Expose Snapshot→Dataset and Snapshot→CodeVersion; do not add reverse snapshot collections to either shared artifact."
+        },
+        {
+          "optionId": "n03b02_027_alt1",
+          "text": "Expose only Dataset/CodeVersion→Snapshot and search from each snapshot for its inputs."
+        },
+        {
+          "optionId": "n03b02_027_alt2",
+          "text": "Make all associations bidirectional because provenance must always be navigable both ways."
+        },
+        {
+          "optionId": "n03b02_027_alt3",
+          "text": "Copy dataset and code-version names into Snapshot without references to their identities."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_027_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Expose Snapshot→Dataset and Snapshot→CodeVersion; do not add reverse snapshot collections to either shared artifact.",
+      "details": {
+        "mechanismOrProperty": "References should preserve the exact version identity and expose the direction the provenance client traverses.",
+        "scenarioApplication": "Snapshot follows to its inputs. The shared artifacts do not need to retain a list of every snapshot that references them.",
+        "errorCorrection": "Provenance completeness does not imply bidirectional object navigation; a reverse query would be a separate requirement.",
+        "boundaryOrTradeoff": "If an artifact usage screen later must traverse to every snapshot directly, add a reverse collection or a dedicated index for that client.",
+        "transfer": "Preserve exact identity on the required path; do not duplicate names or store unused inverse state."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_027_alt1",
+          "text": "The provenance viewer starts from Snapshot; reverse-only links cannot serve that traversal."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_027_alt2",
+          "text": "The artifact screens do not need reverse traversal, so the inverse collections have no stated client."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_027_alt3",
+          "text": "Names do not identify the exact immutable versions required by provenance."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i028",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "A document revision’s review panel lists its Annotations directly. Each annotation opens its exact DocumentRevision and Author. The author profile uses an existing indexed search and does not traverse annotations. Which association ends should be navigable?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_028_model",
+          "text": "Expose DocumentRevision→Annotations and Annotation→DocumentRevision/Author; omit Author→Annotations."
+        },
+        {
+          "optionId": "n03b02_028_alt1",
+          "text": "Make every end navigable, including Author→Annotations, and maintain all author collections."
+        },
+        {
+          "optionId": "n03b02_028_alt2",
+          "text": "Expose only Annotation→DocumentRevision and query all annotations for each revision."
+        },
+        {
+          "optionId": "n03b02_028_alt3",
+          "text": "Expose only Author→Annotations and infer a revision from the annotation text."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_028_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Expose DocumentRevision→Annotations and Annotation→DocumentRevision/Author; omit Author→Annotations.",
+      "details": {
+        "mechanismOrProperty": "Navigability is chosen per end, not globally for the relationship family; different endpoints have different client needs.",
+        "scenarioApplication": "The revision panel traverses to its annotations, and each annotation traverses back to its revision and author. The author-side list is queried separately.",
+        "errorCorrection": "A bidirectional annotation-to-author relation does not imply that the author must hold an inverse collection.",
+        "boundaryOrTradeoff": "If the author profile later required low-latency in-memory enumeration without an index, add Author→Annotations and define its update owner.",
+        "transfer": "Decide each navigable end independently from actual caller traversal and existing query support."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_028_alt1",
+          "text": "The author profile already uses an index; no client needs the reverse author collection."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_028_alt2",
+          "text": "The revision panel requires direct revision-to-annotations traversal."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_028_alt3",
+          "text": "Annotation text is not an identity link to its exact revision."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i029",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "An inspection submission references the RouteRevision against which it was performed. Inspectors open a submission and compare it with that revision. The route editor never lists submissions from a revision; compliance search is by submission ID. What is the minimal required navigation?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_029_model",
+          "text": "Expose InspectionSubmission→RouteRevision only."
+        },
+        {
+          "optionId": "n03b02_029_alt1",
+          "text": "Expose RouteRevision→InspectionSubmissions only so the submission can locate its baseline."
+        },
+        {
+          "optionId": "n03b02_029_alt2",
+          "text": "Expose both ends and keep a reverse collection on each revision without a route-side client."
+        },
+        {
+          "optionId": "n03b02_029_alt3",
+          "text": "Use matching route geometry as the link instead of a revision reference."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_029_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Expose InspectionSubmission→RouteRevision only.",
+      "details": {
+        "mechanismOrProperty": "A one-way reference can express the provenance path without storing an unused inverse collection.",
+        "scenarioApplication": "The compare operation begins at the submission and follows to its exact route revision; no other stated client needs the reverse path.",
+        "errorCorrection": "A source revision having many submissions is a multiplicity fact, not proof that it needs a navigable list property.",
+        "boundaryOrTradeoff": "A route editor that directly displayed all dependent submissions without a query service would change the navigability requirement.",
+        "transfer": "Use the source object in the operation as the starting point for selecting association direction."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_029_alt1",
+          "text": "The submission itself needs to reach its exact baseline; the reverse-only direction is wrong."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_029_alt2",
+          "text": "No route client traverses to submissions and compliance search is by submission ID."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_029_alt3",
+          "text": "Geometry can change between revisions and cannot identify the exact recorded baseline."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i030",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "An invoice issue points to its Order, and the order audit screen lists all issued versions by direct traversal. The billing correction screen begins with an Issue and follows back to its Order. A single writer updates both sides when a new issue is recorded. Which navigation should the Order–InvoiceIssue association support?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_030_model",
+          "text": "Support both Order→InvoiceIssues and InvoiceIssue→Order, with one writer maintaining the inverse collection."
+        },
+        {
+          "optionId": "n03b02_030_alt1",
+          "text": "Support only Issue→Order and scan all issues for the order audit screen."
+        },
+        {
+          "optionId": "n03b02_030_alt2",
+          "text": "Support only Order→Issues and resolve an issue’s order by searching the order list."
+        },
+        {
+          "optionId": "n03b02_030_alt3",
+          "text": "Store an order number on Issue and an unrelated list of issue numbers on Order."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_030_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Support both Order→InvoiceIssues and InvoiceIssue→Order, with one writer maintaining the inverse collection.",
+      "details": {
+        "mechanismOrProperty": "Both traversals are part of the stated model contract, so both association ends need navigation and a consistency owner.",
+        "scenarioApplication": "The order audit follows to its issues; an individual issue follows back to its order. The write path maintains both links.",
+        "errorCorrection": "The inverse collection is justified here by a real direct-traversal consumer, unlike cases where a repository already answers the reverse query.",
+        "boundaryOrTradeoff": "If audit enumeration moved to a durable indexed query, the object model could keep only Issue→Order.",
+        "transfer": "A reverse reference is justified by a consumer requirement plus an explicit update path, not by symmetry alone."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_030_alt1",
+          "text": "The audit screen requires direct enumeration and the scenario rules out scanning."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_030_alt2",
+          "text": "The correction screen starts with an issue and must reach its order directly."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_030_alt3",
+          "text": "Copied identifiers without a shared association create two representations of the same link."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i031",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "The door policy starts with a Door and retrieves the current badge assignments for that door. Each Badge detail view must also reach its assigned Door. The badge directory answers holder-to-badge lookups separately, and assignment changes are committed through one service. Which navigation ends should the Door–BadgeAssignment link expose?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_031_model",
+          "text": "Expose Door→BadgeAssignments and BadgeAssignment→Door; keep holder-to-badge lookup in the directory."
+        },
+        {
+          "optionId": "n03b02_031_alt1",
+          "text": "Expose all directions, including Holder→BadgeAssignments, and duplicate the directory’s holder index."
+        },
+        {
+          "optionId": "n03b02_031_alt2",
+          "text": "Expose only BadgeAssignment→Door so the door policy scans every assignment."
+        },
+        {
+          "optionId": "n03b02_031_alt3",
+          "text": "Expose only Door→BadgeAssignments and derive a badge’s door from its printed label."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_031_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Expose Door→BadgeAssignments and BadgeAssignment→Door; keep holder-to-badge lookup in the directory.",
+      "details": {
+        "mechanismOrProperty": "Navigability follows the required endpoints: both Door and Assignment are explicit starting objects, while Holder lookup has a separate index.",
+        "scenarioApplication": "The access check starts at Door; badge detail starts at its assignment and follows to Door. Holder queries remain directory-backed.",
+        "errorCorrection": "Do not add an inverse at every endpoint just because the relation involves a holder, badge, and door.",
+        "boundaryOrTradeoff": "If the holder screen had to traverse assignment objects directly without the directory, a holder-side reference would also be required.",
+        "transfer": "For associations with multiple classes, decide every end separately from the operations that start at that class."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_031_alt1",
+          "text": "The holder profile already has a directory index; an additional inverse collection is not a required object traversal."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_031_alt2",
+          "text": "Door policy needs the assignments for its door, and scanning is not the stated access path."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_031_alt3",
+          "text": "A printed label does not identify the current assignment after reassignment."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i032",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "Each Shipment points to one exact RouteRevision, and a revision may serve many shipments. Shipment detail displays its publisher by traversing Shipment→RouteRevision→Publisher. Publisher administration searches revisions by ID; no client lists shipments from a revision or revisions from a Publisher. Which association ends should be navigable?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_032_model_v3",
+          "text": "Expose Shipment→RouteRevision and RouteRevision→Publisher only; omit both inverse collections."
+        },
+        {
+          "optionId": "n03b02_032_alt1_v3",
+          "text": "Expose all four directions because each association should be navigable from either object."
+        },
+        {
+          "optionId": "n03b02_032_alt2_v3",
+          "text": "Add a direct Shipment→Publisher link and use it instead of the route revision path."
+        },
+        {
+          "optionId": "n03b02_032_alt3_v3",
+          "text": "Expose only Publisher→RouteRevision and RouteRevision→Shipment, reversing the named client path."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_032_model_v3"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The detail view requires two forward traversals; reverse searches already have indexed paths and no direct publisher shortcut is needed.",
+      "details": {
+        "mechanismOrProperty": "Navigability expresses a model path a client traverses. A chain can support a display without adding a redundant shortcut or inverse collection.",
+        "scenarioApplication": "Shipment detail follows its exact revision to the publisher. The admin searches by revision ID, and no described client traverses from Publisher or Revision to shipments.",
+        "errorCorrection": "Making every end bidirectional adds collections no client uses. A direct Shipment→Publisher edge duplicates a value reached through the pinned revision, and reversing the links breaks the required detail traversal.",
+        "boundaryOrTradeoff": "If publisher administration later needed to enumerate shipments by object traversal, add only that required inverse end and define how it stays consistent.",
+        "transfer": "For each association, list the actual client start and required path before deciding which ends need object navigation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_032_alt1_v3",
+          "text": "The prompt names only two forward traversals; an inverse is not required merely because the domain relation can be reversed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_032_alt2_v3",
+          "text": "Publisher comes from the exact pinned revision; a direct Shipment→Publisher link duplicates that path and can drift."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_032_alt3_v3",
+          "text": "Shipment detail begins with Shipment and follows Revision to Publisher, so the reversed paths do not satisfy it."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i033",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "A room calendar traverses Room→Bookings to show all reservations. Each Booking detail also follows Booking→Room. A move operation updates the room link in both places atomically; canceled bookings remain in their own history. How should this relationship be navigable?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_033_model",
+          "text": "Make Room–Booking navigable in both directions and update both links in the move operation."
+        },
+        {
+          "optionId": "n03b02_033_alt1",
+          "text": "Keep only Booking→Room and make the calendar search every booking."
+        },
+        {
+          "optionId": "n03b02_033_alt2",
+          "text": "Keep only Room→Booking and find the room for a booking by matching its displayed name."
+        },
+        {
+          "optionId": "n03b02_033_alt3",
+          "text": "Copy the booking into a new object on every move and leave the old room list unchanged."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_033_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Make Room–Booking navigable in both directions and update both links in the move operation.",
+      "details": {
+        "mechanismOrProperty": "The two clients require opposite traversals, while the atomic move operation owns inverse-link consistency.",
+        "scenarioApplication": "Room calendar and Booking detail start at different ends; the move service updates both sides as one operation.",
+        "errorCorrection": "Historical canceled booking records remain, but current room membership must still reflect the move rather than duplicate stale links.",
+        "boundaryOrTradeoff": "A room-keyed booking index could replace the inverse in-memory collection if the calendar no longer required direct traversal.",
+        "transfer": "When a relationship changes endpoints, identify who updates every required navigable view."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_033_alt1",
+          "text": "The calendar requires direct Room→Bookings traversal and no scan is offered."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_033_alt2",
+          "text": "Booking detail needs its exact current room link, not a display-name match."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_033_alt3",
+          "text": "A move changes the association; leaving the old link creates a stale room membership."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i034",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "An exhibit object references its MaintenancePolicy to reject unsafe commands. The same policy version is shared by many exhibits. Policy screens never list exhibits, and the command guard starts from an exhibit. Which direction should the Exhibit–MaintenancePolicy association expose?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_034_model",
+          "text": "Expose Exhibit→MaintenancePolicy only."
+        },
+        {
+          "optionId": "n03b02_034_alt1",
+          "text": "Expose MaintenancePolicy→Exhibits only, so an exhibit can find its policy through the shared policy list."
+        },
+        {
+          "optionId": "n03b02_034_alt2",
+          "text": "Make it bidirectional and maintain the same exhibit collection already available from the policy registry."
+        },
+        {
+          "optionId": "n03b02_034_alt3",
+          "text": "Copy the policy’s current command list into Exhibit and store no policy reference."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_034_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Expose Exhibit→MaintenancePolicy only.",
+      "details": {
+        "mechanismOrProperty": "A shared policy can be referenced by its consumers without carrying an inverse collection of every consumer.",
+        "scenarioApplication": "Exhibit→Policy supports command checks; the policy registry owns policy lookup and does not need a back-reference.",
+        "errorCorrection": "Sharing a policy does not make it necessary to store consumer objects on that policy.",
+        "boundaryOrTradeoff": "If a policy admin screen had to inspect all bound exhibits without the registry, reverse navigation could be added.",
+        "transfer": "For shared configuration, model the required consumer-to-version path and keep usage queries with their explicit index."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_034_alt1",
+          "text": "The guard starts from Exhibit, so it must navigate to the policy; a reverse-only link cannot serve it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_034_alt2",
+          "text": "Policy screens do not traverse to exhibits and the registry already answers that query."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_034_alt3",
+          "text": "A copied command list loses the identity of the policy version governing the exhibit."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i035",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "A Shipment has many immutable ScanEvents, and each event names one Hub. Its timeline shows every visited Hub by traversing Shipment→ScanEvents→Hub; there is no single Hub for the whole Shipment. Hub search uses an indexed ScanRepository and keeps no shipment collection. Which navigation should the object model expose?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_035_model_v3",
+          "text": "Expose Shipment→ScanEvents and ScanEvent→Hub; omit direct Shipment→Hub and Hub→Shipment links."
+        },
+        {
+          "optionId": "n03b02_035_alt1_v3",
+          "text": "Store one direct Shipment→Hub link as the destination for every scan in its timeline."
+        },
+        {
+          "optionId": "n03b02_035_alt2_v3",
+          "text": "Store a second Shipment→all-Hubs collection beside the ScanEvent links and update both on every scan."
+        },
+        {
+          "optionId": "n03b02_035_alt3_v3",
+          "text": "Add Hub→Shipments collections so Hub screens can list shipments without the existing repository."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_035_model_v3"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The timeline’s hub is event-specific; the existing event path preserves that distinction without a misleading shipment-level shortcut.",
+      "details": {
+        "mechanismOrProperty": "A navigable association should represent the path and granularity a client needs. A path through an event retains the event-specific relationship.",
+        "scenarioApplication": "Each ScanEvent has one Hub, while a Shipment has many events at different Hubs. The shipment-level direct link would imply one Hub or duplicate a list derivable through its events.",
+        "errorCorrection": "One direct Hub loses earlier stops. A second hub collection duplicates event data and needs synchronization; Hub-to-Shipments is not needed because the repository already answers that query.",
+        "boundaryOrTradeoff": "If the domain introduced one separately defined current-destination value, a Shipment→CurrentHub association could be added for that distinct fact.",
+        "transfer": "When a relationship belongs to each event in a sequence, expose that event-level path instead of flattening it onto the aggregate."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_035_alt1_v3",
+          "text": "A Shipment visits multiple Hubs through different events, so one shipment-level Hub cannot represent every timeline stop."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_035_alt2_v3",
+          "text": "The set of Hubs is already derived through the ScanEvents; storing it separately creates a second value to keep aligned."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_035_alt3_v3",
+          "text": "Hub queries already use the indexed repository, and no model client needs an inverse collection."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b02-i036",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B02",
+    "prompt": "A conversation timeline traverses Conversation→EscalationEvents. Each event detail also follows EscalationEvent→Conversation. A timeline writer adds both links in one transaction; the staff directory provides author searches separately. Which ends of Conversation–EscalationEvent should be navigable?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b02_036_model",
+          "text": "Expose Conversation→EscalationEvents and EscalationEvent→Conversation; keep author search directory-backed."
+        },
+        {
+          "optionId": "n03b02_036_alt1",
+          "text": "Expose every end, including StaffMember→EscalationEvents, and duplicate the directory index."
+        },
+        {
+          "optionId": "n03b02_036_alt2",
+          "text": "Expose only Event→Conversation and scan all events for a conversation timeline."
+        },
+        {
+          "optionId": "n03b02_036_alt3",
+          "text": "Expose only Conversation→Events and derive an event’s conversation from message text."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b02_036_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Expose Conversation→EscalationEvents and EscalationEvent→Conversation; keep author search directory-backed.",
+      "details": {
+        "mechanismOrProperty": "Both conversation-facing directions are required by named clients; other endpoints can remain query-backed.",
+        "scenarioApplication": "Timeline and event detail traverse in opposite directions. The transaction maintains their paired references.",
+        "errorCorrection": "Do not confuse staff lookup with the Conversation–Event association; the directory serves that separate access path.",
+        "boundaryOrTradeoff": "If the timeline used an event-store query instead of object traversal, the Conversation-side collection could be removed.",
+        "transfer": "Model the minimum navigable ends per client while keeping distinct lookup routes separate."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_036_alt1",
+          "text": "The staff directory already answers author queries; no author-side traversal is required."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_036_alt2",
+          "text": "The timeline requires direct Conversation→Events navigation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b02_036_alt3",
+          "text": "Message text is not a stable reference to the exact conversation."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  }
+]

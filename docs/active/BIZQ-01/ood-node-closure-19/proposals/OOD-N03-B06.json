@@ -1,0 +1,1208 @@
+[
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b06-i019",
+    "prompt": "Policy classes and export classes import each other; both teams change the classification for one export. What first separates that cyclic dependency?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_019_key",
+          "text": "Use a shared classification contract with one-way imports."
+        },
+        {
+          "optionId": "ood-n03-b06_019_w1",
+          "text": "Keep the cycle and add a runtime null check."
+        },
+        {
+          "optionId": "ood-n03-b06_019_w2",
+          "text": "Put both classes in a larger package so imports look local."
+        },
+        {
+          "optionId": "ood-n03-b06_019_w3",
+          "text": "Copy the classification rule into both classes."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_019_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The cycle comes from mutual compile-time knowledge of one decision.",
+      "details": {
+        "mechanismOrProperty": "A contract can break an import cycle while the runtime collaboration remains in both directions if needed.",
+        "scenarioApplication": "The two packages co-change the same export classification and currently import one another.",
+        "errorCorrection": "A null check addresses runtime values, not the source dependency cycle.",
+        "boundaryOrTradeoff": "A new contract helps only if it is independently owned and does not re-import either implementation.",
+        "transfer": "When two modules need each other’s types, isolate the shared contract at the stable decision boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_019_w1",
+          "text": "The null check cannot remove either import edge."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_019_w2",
+          "text": "Moving both classes together hides the cycle without changing the dependency graph."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_019_w3",
+          "text": "Duplicated rules can diverge after the next classification change."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b06-i020",
+    "prompt": "Order policy owns settlement decisions; Payment only reports status. The modules mutually import each other only to exchange that result. Which change breaks the cycle without moving the decision?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_020_key",
+          "text": "Keep the result with order policy; payment returns it."
+        },
+        {
+          "optionId": "ood-n03-b06_020_w1",
+          "text": "Move the whole payment workflow into order processing."
+        },
+        {
+          "optionId": "ood-n03-b06_020_w2",
+          "text": "Let both modules publish copies of the result structure."
+        },
+        {
+          "optionId": "ood-n03-b06_020_w3",
+          "text": "Have order processing import payment internals through a shared barrel."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_020_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Order policy owns settlement semantics, so the shared result contract belongs at that policy boundary.",
+      "details": {
+        "mechanismOrProperty": "A policy-owned result type can break the source cycle while payment still reports its provider status through the agreed boundary.",
+        "scenarioApplication": "Order policy decides settlement meaning; Payment reports status and returns the result in the Order-owned contract.",
+        "errorCorrection": "Moving the workflow transfers payment responsibility, not just the shared type.",
+        "boundaryOrTradeoff": "Keep the contract small and stable; do not create a general shared package for unrelated types.",
+        "transfer": "A result used by one policy should normally be shaped around that policy’s needs."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_020_w1",
+          "text": "Moving payment orchestration would change which module owns the workflow, not just the result contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_020_w2",
+          "text": "Two copied result definitions can drift and still do not establish one contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_020_w3",
+          "text": "A barrel re-export does not change which implementation the source depends on."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b06-i021",
+    "prompt": "A `Shared` package contains date formatting, invoice tax rules, and badge authorization. Only date formatting is used by all three consumers; policy changes force unrelated rebuilds. What boundary is justified?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_021_key",
+          "text": "Share formatting; keep tax and badge rules with their policies."
+        },
+        {
+          "optionId": "ood-n03-b06_021_w1",
+          "text": "Move all three into each consumer to eliminate every dependency."
+        },
+        {
+          "optionId": "ood-n03-b06_021_w2",
+          "text": "Keep one package because any reuse proves the concepts cohere."
+        },
+        {
+          "optionId": "ood-n03-b06_021_w3",
+          "text": "Create one service per function even though the rules change together with their policies."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_021_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Reuse alone does not make unrelated rules one cohesive module.",
+      "details": {
+        "mechanismOrProperty": "Cohesion follows a shared reason to change, while a narrow stable utility may still be shared.",
+        "scenarioApplication": "The facts distinguish one cross-cutting representation helper from two policy-specific rules.",
+        "errorCorrection": "Copying every utility creates needless duplication and still does not identify the policy boundaries.",
+        "boundaryOrTradeoff": "Avoid splitting a cohesive policy into one-function services without an independent change boundary.",
+        "transfer": "Group code by the decisions that change together, not by a general `shared` label."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_021_w1",
+          "text": "This copies the shared formatter along with policy logic without evidence that all three need separate copies."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_021_w2",
+          "text": "A single consumer of a reusable helper does not make unrelated tax and access policies cohesive."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_021_w3",
+          "text": "The scenario says each rule changes with its owning policy; one-function services add boundaries without evidence."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b06-i022",
+    "prompt": "Checkout imports Gateway; Gateway imports Checkout solely to use Checkout.Request during a callback. Which dependency refactor best preserves who starts the use case?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_022_key",
+          "text": "Give Gateway a Checkout-owned callback contract."
+        },
+        {
+          "optionId": "ood-n03-b06_022_w1",
+          "text": "Move the checkout use case into Gateway."
+        },
+        {
+          "optionId": "ood-n03-b06_022_w2",
+          "text": "Use a dynamic import from Gateway back to Checkout."
+        },
+        {
+          "optionId": "ood-n03-b06_022_w3",
+          "text": "Duplicate Checkout.Request in Gateway and cast between the two."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_022_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The back edge exists only because the provider names a caller-owned request type.",
+      "details": {
+        "mechanismOrProperty": "A boundary contract removes the compile-time back edge without reversing runtime control.",
+        "scenarioApplication": "Checkout still initiates payment; the gateway calls the supplied contract on completion.",
+        "errorCorrection": "Moving the use case changes who owns orchestration; dynamic loading only postpones the same dependency.",
+        "boundaryOrTradeoff": "Choose a minimal callback shape instead of exporting the whole checkout module.",
+        "transfer": "Runtime callbacks can point toward the caller even when compile-time dependencies point toward abstractions."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_022_w1",
+          "text": "Gateway owning checkout orchestration would change responsibility not required by the callback."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_022_w2",
+          "text": "Dynamic import delays loading but retains a dependency from Gateway to Checkout."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_022_w3",
+          "text": "A copied type has no shared type identity and needs a conversion boundary anyway."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b06-i023",
+    "prompt": "Invoice depends on Money, TaxPolicy, and CustomerStatus. The graph has no cycle, and all three change for different reasons. Which conclusion follows?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_023_key",
+          "text": "Keep the acyclic edges absent a concrete boundary problem."
+        },
+        {
+          "optionId": "ood-n03-b06_023_w1",
+          "text": "Split every imported type into its own package to reduce edge count."
+        },
+        {
+          "optionId": "ood-n03-b06_023_w2",
+          "text": "Merge all four modules because an acyclic graph means one cohesive module."
+        },
+        {
+          "optionId": "ood-n03-b06_023_w3",
+          "text": "Create a mediator solely to hide the three dependency edges."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_023_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Acyclicity and cohesion answer different questions.",
+      "details": {
+        "mechanismOrProperty": "Acyclic dependency structure can still contain several useful directed boundaries.",
+        "scenarioApplication": "The graph has no cycle and each dependency has an independently stated change reason.",
+        "errorCorrection": "Splitting every type would increase coordination without removing a demonstrated problem.",
+        "boundaryOrTradeoff": "Do not infer that a graph is wrong merely because a module has several dependencies.",
+        "transfer": "Use cycle evidence to break cycles and co-change/client evidence to reconsider cohesion."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_023_w1",
+          "text": "One package per type does not follow from the supplied evidence."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_023_w2",
+          "text": "No cycle does not prove the modules share one reason to change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_023_w3",
+          "text": "Hiding edges behind a mediator preserves the underlying policy dependencies."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b06-i024",
+    "prompt": "Scheduling rules change together, but the dashboard only reads their published schedule result. Where should the boundary sit?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_024_key",
+          "text": "Keep the co-changing rules together; expose their result."
+        },
+        {
+          "optionId": "ood-n03-b06_024_w1",
+          "text": "Split each rule because the dashboard reads a result."
+        },
+        {
+          "optionId": "ood-n03-b06_024_w2",
+          "text": "Make the dashboard import every rule implementation."
+        },
+        {
+          "optionId": "ood-n03-b06_024_w3",
+          "text": "Copy all scheduling rules into the dashboard."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_024_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A read-only client of a result does not need to participate in the policy module’s internal cohesion.",
+      "details": {
+        "mechanismOrProperty": "A module can keep co-changing rules together while presenting a separate outward contract.",
+        "scenarioApplication": "The rule set changes as one policy; the dashboard consumes only its result.",
+        "errorCorrection": "Splitting each rule would make their shared change coordinated across packages.",
+        "boundaryOrTradeoff": "The result contract should not expose rule internals unless a client requirement needs them.",
+        "transfer": "Separate internal cohesion from the shape of a module’s public output."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_024_w1",
+          "text": "The stated co-change is evidence to keep the rules together."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_024_w2",
+          "text": "The dashboard needs only the published result, not each implementation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_024_w3",
+          "text": "Copying the policy creates a second rule set that can drift."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b06-i025",
+    "prompt": "AccessPolicy and BadgeStore import each other: policy uses the store, while store imports AccessDecision to serialize it. What is the narrowest cycle-breaking move?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_025_key",
+          "text": "Map the decision to a store-owned persistence representation."
+        },
+        {
+          "optionId": "ood-n03-b06_025_w1",
+          "text": "Move authorization into BadgeStore."
+        },
+        {
+          "optionId": "ood-n03-b06_025_w2",
+          "text": "Make AccessPolicy import the store’s database entity."
+        },
+        {
+          "optionId": "ood-n03-b06_025_w3",
+          "text": "Add a third package that imports both concrete modules."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_025_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Persistence representation is creating the back edge from storage into policy.",
+      "details": {
+        "mechanismOrProperty": "Mapping at the persistence adapter keeps policy decisions independent of the stored schema.",
+        "scenarioApplication": "BadgeStore only needs a stable representation to persist the policy result.",
+        "errorCorrection": "Moving authorization changes its owner; importing the database entity reverses the dependency.",
+        "boundaryOrTradeoff": "The stored representation need not be the domain decision object.",
+        "transfer": "Keep policy and persistence models separate when their change reasons differ."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_025_w1",
+          "text": "BadgeStore would then own a decision that the scenario assigns to AccessPolicy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_025_w2",
+          "text": "Importing the database entity deepens the dependency on storage details."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_025_w3",
+          "text": "A third package importing both does not break the concrete imports between them."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b06-i026",
+    "prompt": "Search has two interchangeable engines. Both teams agree the request/result shape changes only when the search capability changes; ranking rules change independently. What should the contract contain?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_026_key",
+          "text": "Publish a stable search request and result contract."
+        },
+        {
+          "optionId": "ood-n03-b06_026_w1",
+          "text": "Every engine configuration and ranking field so callers can optimize each provider."
+        },
+        {
+          "optionId": "ood-n03-b06_026_w2",
+          "text": "Only a marker interface with no callable contract."
+        },
+        {
+          "optionId": "ood-n03-b06_026_w3",
+          "text": "A shared model containing all search and ranking types."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_026_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A useful boundary captures the stable capability, not all implementation knobs.",
+      "details": {
+        "mechanismOrProperty": "A narrow interface enables substitution while keeping unrelated policy changes local.",
+        "scenarioApplication": "Engine implementations vary, but callers need a stable query and result shape.",
+        "errorCorrection": "Provider configuration would couple callers to volatile implementation details.",
+        "boundaryOrTradeoff": "Do not erase behavior from the contract if callers need to express a query.",
+        "transfer": "Model the capability callers use and keep independently changing ranking policy separate."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_026_w1",
+          "text": "Provider-specific knobs make the shared interface vary with each engine."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_026_w2",
+          "text": "A marker gives no operation through which the caller can use the capability."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_026_w3",
+          "text": "The shared model would couple two independently changing concepts."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b06-i027",
+    "prompt": "Parser and Importer form a source cycle because each imports the other’s types, although Importer only needs a parsed-record result. What boundary fits?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_027_key",
+          "text": "Give Importer a stable parsed-record input contract."
+        },
+        {
+          "optionId": "ood-n03-b06_027_w1",
+          "text": "Make Parser own the entire import workflow."
+        },
+        {
+          "optionId": "ood-n03-b06_027_w2",
+          "text": "Let each side keep a private incompatible copy of the result."
+        },
+        {
+          "optionId": "ood-n03-b06_027_w3",
+          "text": "Combine Parser and Importer into one file while retaining their mutual abstractions."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_027_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The back edge comes from a result type crossing a boundary without clear ownership.",
+      "details": {
+        "mechanismOrProperty": "A caller-facing result contract can be shared without exposing parser internals.",
+        "scenarioApplication": "Importer consumes records; it does not need Parser’s implementation types.",
+        "errorCorrection": "Owning the workflow in Parser expands its responsibility beyond parsing.",
+        "boundaryOrTradeoff": "If they are actually one cohesive unit, merge the module; otherwise a filename change is not a contract fix.",
+        "transfer": "Break cycles at a stable exchanged concept, not by hiding imports."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_027_w1",
+          "text": "Parser owning the full workflow collapses two responsibilities without evidence."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_027_w2",
+          "text": "Private copies cannot guarantee the same shape at the boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_027_w3",
+          "text": "One file does not remove the two-way type dependency."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b06-i028",
+    "prompt": "Three unrelated packages import `Logging.Common`; only a small adapter actually calls the logger, while domain packages merely import its helpers. What is the safest first cohesion move?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_028_key",
+          "text": "Remove unused domain imports; keep logging at the adapter."
+        },
+        {
+          "optionId": "ood-n03-b06_028_w1",
+          "text": "Move domain rules into Logging.Common because it is already widely imported."
+        },
+        {
+          "optionId": "ood-n03-b06_028_w2",
+          "text": "Create one logging package per domain type."
+        },
+        {
+          "optionId": "ood-n03-b06_028_w3",
+          "text": "Replace every import with a global singleton."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_028_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Import popularity is not evidence that a package owns the importing policies.",
+      "details": {
+        "mechanismOrProperty": "Removing unused edges improves cohesion without introducing new ownership claims.",
+        "scenarioApplication": "The domain packages do not call logging; the adapter does.",
+        "errorCorrection": "Moving rules into Logging.Common follows dependency count rather than responsibility.",
+        "boundaryOrTradeoff": "If domain code needs a logging capability, define the smallest boundary required by that use.",
+        "transfer": "Inspect actual use and co-change before changing package ownership."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_028_w1",
+          "text": "A common dependency does not make logging the owner of domain decisions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_028_w2",
+          "text": "One package per type adds boundaries unsupported by the scenario."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_028_w3",
+          "text": "A global singleton hides the dependency instead of removing it."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b06-i029",
+    "prompt": "RefundUseCase and RefundPolicy import each other: the use case asks for eligibility; the policy imports the use case to construct its result. Which refactor maintains the policy boundary?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_029_key",
+          "text": "Let RefundPolicy return a policy-owned eligibility result; RefundUseCase interprets it."
+        },
+        {
+          "optionId": "ood-n03-b06_029_w1",
+          "text": "Move eligibility rules into RefundUseCase and delete the policy module."
+        },
+        {
+          "optionId": "ood-n03-b06_029_w2",
+          "text": "Let the policy return a use-case class instance."
+        },
+        {
+          "optionId": "ood-n03-b06_029_w3",
+          "text": "Create a shared package of all use-case and policy classes."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_029_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The result should express a policy decision without naming the orchestration class.",
+      "details": {
+        "mechanismOrProperty": "A policy-owned result permits the use case to depend on the policy contract in one direction.",
+        "scenarioApplication": "RefundPolicy determines eligibility; RefundUseCase coordinates the operation.",
+        "errorCorrection": "A use-case object in the policy result recreates the back dependency.",
+        "boundaryOrTradeoff": "Keep the result sufficient for orchestration but independent of UI and workflow details.",
+        "transfer": "Business policy should return its own decision vocabulary to the caller."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_029_w1",
+          "text": "Deleting the policy moves its explicitly separate eligibility responsibility."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_029_w2",
+          "text": "Returning a use-case instance retains the cycle through a different type."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_029_w3",
+          "text": "A shared package may centralize classes but does not define a one-way dependency."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b06-i030",
+    "prompt": "Library and Gym each change their access rules for separate regulators; a shared `AccessRules` package changes in every release for either client. What package boundary reduces unrelated coordination?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_030_key",
+          "text": "Keep each regulator’s rules local; share stable mechanics only."
+        },
+        {
+          "optionId": "ood-n03-b06_030_w1",
+          "text": "Keep both policies together because both use the word access."
+        },
+        {
+          "optionId": "ood-n03-b06_030_w2",
+          "text": "Copy the shared mechanics and all rule code into every caller."
+        },
+        {
+          "optionId": "ood-n03-b06_030_w3",
+          "text": "Make the regulator import both client modules."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_030_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Different change authorities are concrete evidence against one shared policy package.",
+      "details": {
+        "mechanismOrProperty": "Cohesion follows the responsibility and change reason; common mechanics can remain a separate stable dependency.",
+        "scenarioApplication": "The two rule sets respond to different regulator changes.",
+        "errorCorrection": "A name similarity does not make their policies one decision.",
+        "boundaryOrTradeoff": "Share only mechanics that do not vary with either regulator’s policy.",
+        "transfer": "When change reasons diverge, separate policy even if the domain vocabulary overlaps."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_030_w1",
+          "text": "A common noun alone does not show a single cohesion boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_030_w2",
+          "text": "Copying mechanics and policy creates synchronization work with no stated benefit."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_030_w3",
+          "text": "The regulator is not a module responsible for either client’s internal policy."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b06-i031",
+    "prompt": "Domain owns the stable policy operation; Infrastructure owns the vendor transaction and calls that operation. The database transaction type is imported into Domain only for that handling. Which boundary change fits these responsibilities?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_031_key",
+          "text": "Keep the vendor transaction in Infrastructure; call the Domain policy contract."
+        },
+        {
+          "optionId": "ood-n03-b06_031_w1",
+          "text": "Move the policy into Infrastructure so it can use the transaction type."
+        },
+        {
+          "optionId": "ood-n03-b06_031_w2",
+          "text": "Make Domain import the complete database client."
+        },
+        {
+          "optionId": "ood-n03-b06_031_w3",
+          "text": "Duplicate transaction interfaces in both modules."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_031_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Infrastructure owns the vendor transaction, while Domain owns the stable policy operation.",
+      "details": {
+        "mechanismOrProperty": "A one-way policy contract lets Infrastructure handle its transaction mechanism without importing that vendor type into Domain.",
+        "scenarioApplication": "Infrastructure calls the Domain operation and keeps its database transaction representation local.",
+        "errorCorrection": "Moving the policy or importing the full database client would reverse the stated ownership boundary.",
+        "boundaryOrTradeoff": "This selects a source boundary; transaction behavior remains the responsibility of the Infrastructure implementation described in the prompt.",
+        "transfer": "Keep an explicitly owned volatile mechanism at its owner while callers depend on the stable operation contract."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_031_w1",
+          "text": "Moving the policy follows the volatile mechanism instead of stable rules."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_031_w2",
+          "text": "Importing the client deepens the same dependency on infrastructure."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_031_w3",
+          "text": "Duplicated contracts can disagree and do not remove the direction problem."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b06-i032",
+    "prompt": "UsageAnalysis computes metrics, uploads files, emails owners, and renders a dashboard. These change for separate product reasons. What module split is justified?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_032_key",
+          "text": "Separate responsibilities with independent change triggers."
+        },
+        {
+          "optionId": "ood-n03-b06_032_w1",
+          "text": "Keep them together because every report uses all four actions."
+        },
+        {
+          "optionId": "ood-n03-b06_032_w2",
+          "text": "Split every method into a package even when two methods change together."
+        },
+        {
+          "optionId": "ood-n03-b06_032_w3",
+          "text": "Move metrics into the email client because it starts the workflow."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_032_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The stated change reasons are distinct and the methods cross several responsibilities.",
+      "details": {
+        "mechanismOrProperty": "Cohesion is improved by grouping operations that change for the same reason.",
+        "scenarioApplication": "Metrics, upload provider, email policy, and display requirements vary separately.",
+        "errorCorrection": "A workflow’s sequential use does not make its components one responsibility.",
+        "boundaryOrTradeoff": "Do not split further without evidence that another responsibility changes independently.",
+        "transfer": "Use actual reasons to change, not call sequence alone, to choose boundaries."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_032_w1",
+          "text": "Sequential use alone does not establish one reason to change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_032_w2",
+          "text": "One method per package adds boundaries beyond the independent reasons stated."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_032_w3",
+          "text": "Starting the workflow does not make the email provider owner of metrics."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b06-i033",
+    "prompt": "OrderPolicy and MessageBus cycle through an event type used to announce an accepted order. Which dependency direction keeps policy independent of transport?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_033_key",
+          "text": "Let policy define the event; let the adapter publish it."
+        },
+        {
+          "optionId": "ood-n03-b06_033_w1",
+          "text": "Make OrderPolicy import the bus SDK event class."
+        },
+        {
+          "optionId": "ood-n03-b06_033_w2",
+          "text": "Move acceptance rules into MessageBus."
+        },
+        {
+          "optionId": "ood-n03-b06_033_w3",
+          "text": "Copy the event type into both modules and translate implicitly."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_033_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The event’s business meaning is stable while the transport implementation varies.",
+      "details": {
+        "mechanismOrProperty": "A transport adapter can map a policy-level event into a bus-specific message.",
+        "scenarioApplication": "OrderPolicy decides acceptance; MessageBus transports the resulting event.",
+        "errorCorrection": "Using the SDK event class couples the policy to transport choices.",
+        "boundaryOrTradeoff": "Only publish data the receiving side needs; do not expose all policy internals.",
+        "transfer": "Let the stable decision own its event meaning and let adapters own wire formats."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_033_w1",
+          "text": "SDK classes make the policy depend on transport details."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_033_w2",
+          "text": "Moving acceptance to the bus reverses responsibility."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_033_w3",
+          "text": "Separate copies require a mapping and can drift."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b06-i034",
+    "prompt": "Several packages import `DateCommon` for formatting, billing cutoffs, and entitlement expiry. The last two use different time-zone and calendar rules. What should be separated?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_034_key",
+          "text": "Share formatting; separate cutoff and expiry policies."
+        },
+        {
+          "optionId": "ood-n03-b06_034_w1",
+          "text": "Keep every date decision in DateCommon because each uses a date."
+        },
+        {
+          "optionId": "ood-n03-b06_034_w2",
+          "text": "Duplicate the formatter separately inside every consumer."
+        },
+        {
+          "optionId": "ood-n03-b06_034_w3",
+          "text": "Merge Billing and Entitlement because both compare timestamps."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_034_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A common data type does not prove the decisions around it are cohesive.",
+      "details": {
+        "mechanismOrProperty": "A utility can share representation work while domain-specific policies remain independent.",
+        "scenarioApplication": "Formatting changes cross consumers; cutoff and expiry semantics have different owners.",
+        "errorCorrection": "Putting policy in DateCommon ties unrelated domains to a generic utility.",
+        "boundaryOrTradeoff": "Share a function only where behavior and change reason are actually shared.",
+        "transfer": "Separate shared syntax from rules that interpret it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_034_w1",
+          "text": "A shared primitive does not establish one calendar policy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_034_w2",
+          "text": "Duplicating the common formatter adds maintenance without solving the policy split."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_034_w3",
+          "text": "Both use timestamps, but their rules change for different product reasons."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b06-i035",
+    "prompt": "Report depends on ArchiveStore and LiveStore; both implement Report’s stable read contract. There is no reverse import. What should be done about the graph?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_035_key",
+          "text": "Keep the acyclic direction until a concrete problem appears."
+        },
+        {
+          "optionId": "ood-n03-b06_035_w1",
+          "text": "Introduce a mediator to make the graph appear symmetrical."
+        },
+        {
+          "optionId": "ood-n03-b06_035_w2",
+          "text": "Merge all three modules because both stores serve reports."
+        },
+        {
+          "optionId": "ood-n03-b06_035_w3",
+          "text": "Invert the report so each store imports its use case."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_035_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The graph already has the desired one-way dependency and no stated change pressure.",
+      "details": {
+        "mechanismOrProperty": "Directed dependencies need not be symmetric.",
+        "scenarioApplication": "Report consumes a read abstraction and the stores implement it.",
+        "errorCorrection": "A mediator would add another edge and concept without solving a cycle.",
+        "boundaryOrTradeoff": "Revisit only if report policy and storage representation begin changing together.",
+        "transfer": "Do not refactor a healthy acyclic graph solely for visual symmetry."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_035_w1",
+          "text": "Symmetry is not a dependency-quality requirement."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_035_w2",
+          "text": "Serving one consumer does not mean the stores and report have one change reason."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_035_w3",
+          "text": "Making the stores depend on report orchestration reverses a useful boundary."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B06",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b06-i036",
+    "prompt": "DocumentTools combines redaction policy and PDF rendering; redaction rules change with legal review while rendering changes with a vendor SDK. What boundary is warranted?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b06_036_key",
+          "text": "Separate redaction policy from the PDF rendering adapter."
+        },
+        {
+          "optionId": "ood-n03-b06_036_w1",
+          "text": "Move redaction into the PDF adapter because it handles the document bytes."
+        },
+        {
+          "optionId": "ood-n03-b06_036_w2",
+          "text": "Put the SDK and legal rules in one package to reduce imports."
+        },
+        {
+          "optionId": "ood-n03-b06_036_w3",
+          "text": "Copy redaction rules into each renderer."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b06_036_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The two responsibilities have different stated change authorities.",
+      "details": {
+        "mechanismOrProperty": "A policy can select what is redacted while an adapter handles the rendering mechanism.",
+        "scenarioApplication": "Legal review changes redaction; the vendor SDK changes rendering.",
+        "errorCorrection": "The renderer’s access to bytes does not make it the owner of legal policy.",
+        "boundaryOrTradeoff": "Keep the handoff explicit so policy remains testable without provider-specific types.",
+        "transfer": "Separate decisions that change for different reasons and connect them through a narrow capability."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_036_w1",
+          "text": "Byte access does not determine ownership of redaction rules."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_036_w2",
+          "text": "One package would couple legal policy to a volatile SDK."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b06_036_w3",
+          "text": "Duplicated policy can produce inconsistent redaction across renderers."
+        }
+      ]
+    }
+  }
+]

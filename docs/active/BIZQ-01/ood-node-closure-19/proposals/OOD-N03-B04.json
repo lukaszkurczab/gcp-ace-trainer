@@ -1,0 +1,1190 @@
+[
+  {
+    "questionId": "ood-n03-b04-i019",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A route planner accepts any Route implementation through one read-only contract: every route returns the same ordered stops and travel-time units, and no route adds required inputs. A regional route subtype changes how travel times are computed but preserves those results and invariants for every caller. How should the regional route type relate to Route?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_019_model",
+          "text": "RegionalRoute may implement Route."
+        },
+        {
+          "optionId": "n03b04_019_alt1",
+          "text": "Keep RegionalRoute as an unrelated collaborator that every caller must special-case."
+        },
+        {
+          "optionId": "n03b04_019_alt2",
+          "text": "Subclass Route but require regional callers to provide a new mandatory territory argument."
+        },
+        {
+          "optionId": "n03b04_019_alt3",
+          "text": "Copy Route’s stop list into a new type and let callers choose between two unrelated APIs."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_019_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Every route receives the same inputs and returns the same promised result shape.",
+      "details": {
+        "mechanismOrProperty": "A subtype must be usable wherever the base type is expected without changing the caller-visible behavior.",
+        "scenarioApplication": "RegionalRoute changes its calculation but still returns the same stop and time contract to every planner.",
+        "errorCorrection": "Implementation variation alone does not require a separate collaborator when the object remains a valid Route for all clients.",
+        "boundaryOrTradeoff": "If a regional route needed extra caller input or changed what a returned duration meant, keep that behavior behind a separate collaborator or API.",
+        "transfer": "Test substitutability at the public contract: required inputs, promised outputs, and preserved invariants."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_019_alt1",
+          "text": "The prompt states that callers consume the same Route contract and the regional type is behaviorally interchangeable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_019_alt2",
+          "text": "A new required argument is a stronger precondition and breaks callers that only know Route."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_019_alt3",
+          "text": "Duplicating the API discards the common substitutable contract the case already provides."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i020",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "An invoice service can calculate either a standard or negotiated tax amount. The invoice remains the same domain object, and an authorized account setting chooses the tax calculator for each calculation; callers still use the same invoice API. Where should the two calculation behaviors live?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_020_model",
+          "text": "Use an account-selected TaxCalculator collaborator."
+        },
+        {
+          "optionId": "n03b04_020_alt1",
+          "text": "Make NegotiatedInvoice a subtype and move the selected calculation rule into invoice identity."
+        },
+        {
+          "optionId": "n03b04_020_alt2",
+          "text": "Create one Invoice subtype per tax rule and require callers to select a concrete invoice class."
+        },
+        {
+          "optionId": "n03b04_020_alt3",
+          "text": "Let each Invoice caller calculate tax independently before calling the invoice."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_020_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Tax behavior changes per calculation while Invoice identity and caller contract remain fixed.",
+      "details": {
+        "mechanismOrProperty": "Composition keeps an independently selected behavior alongside a stable domain object.",
+        "scenarioApplication": "Invoice stays the same object while the account’s chosen TaxCalculator supplies one calculation.",
+        "errorCorrection": "Do not turn a policy choice into a subtype hierarchy when the same invoice can use the selected calculator without changing its identity or contract.",
+        "boundaryOrTradeoff": "If negotiated invoices were distinct domain types with different caller-visible guarantees, a subtype could be appropriate.",
+        "transfer": "Ask whether the variation changes the object’s substitutable kind or is a behavior the same object uses."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_020_alt1",
+          "text": "The tax behavior is selected independently per calculation and does not change what kind of invoice the object is."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_020_alt2",
+          "text": "Tax selection is a collaborator variation, not an invoice-kind distinction in the prompt."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_020_alt3",
+          "text": "Duplicating the invariant across callers makes the same invoice contract depend on caller implementation."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i021",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A public DocumentReader promises that callers can request text for any published document. A proposed EncryptedReader requires callers to supply a decryption key that ordinary DocumentReader callers do not have; without it, the reader cannot return the promised text. Can EncryptedReader safely be modeled as a DocumentReader subtype?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_021_model",
+          "text": "Keep key-dependent reading behind a separate reader API."
+        },
+        {
+          "optionId": "n03b04_021_alt1",
+          "text": "Yes; a subtype may require extra caller input whenever its implementation is more secure."
+        },
+        {
+          "optionId": "n03b04_021_alt2",
+          "text": "Yes; inherit DocumentReader and return an empty string when no key is supplied."
+        },
+        {
+          "optionId": "n03b04_021_alt3",
+          "text": "Make DocumentReader require a key for every document, including unencrypted ones."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_021_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Ordinary DocumentReader callers lack the new required key.",
+      "details": {
+        "mechanismOrProperty": "A subtype cannot strengthen the conditions a base-type caller must meet to get the base promise.",
+        "scenarioApplication": "EncryptedReader needs information its callers do not possess under the DocumentReader contract.",
+        "errorCorrection": "Security requirements may justify a distinct API or injected key provider, but do not make the subtype valid by changing the expected caller behavior.",
+        "boundaryOrTradeoff": "If the key were supplied through the same existing reader contract and every caller could still obtain the promised document text, the implementation could be substitutable.",
+        "transfer": "Compare the candidate’s required inputs with what a base-typed caller is allowed to provide."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_021_alt1",
+          "text": "A caller holding only a DocumentReader cannot satisfy the added key requirement, so the candidate is not substitutable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_021_alt2",
+          "text": "Returning empty text weakens the promised result for ordinary callers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_021_alt3",
+          "text": "Changing the base contract imposes a new requirement on every existing reader client."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i022",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A timetable API accepts any Schedule and promises that `eventsFor(day)` returns every event for that day, including canceled events marked with their status. A proposed ArchivedSchedule silently omits canceled events because it is optimized for public display. What is the sound model for the public-only view?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_022_model",
+          "text": "Use a public-only Schedule projection."
+        },
+        {
+          "optionId": "n03b04_022_alt1",
+          "text": "Subclass Schedule and hide canceled events from the inherited method."
+        },
+        {
+          "optionId": "n03b04_022_alt2",
+          "text": "Subclass Schedule and return an empty list for canceled days."
+        },
+        {
+          "optionId": "n03b04_022_alt3",
+          "text": "Change every Schedule caller to know whether it received the archived subtype."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_022_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The base schedule promises canceled events that this view omits.",
+      "details": {
+        "mechanismOrProperty": "A specialized view with a narrower result is not a behavioral subtype of the complete schedule contract.",
+        "scenarioApplication": "The public-only projection may be useful, but consumers that need all events must continue to receive Schedule behavior.",
+        "errorCorrection": "Do not treat a display filter as a subtype if it violates the base type’s completeness promise.",
+        "boundaryOrTradeoff": "If the base type promised only currently visible events, the archived view could satisfy that contract.",
+        "transfer": "A subtype must preserve the base type’s postconditions, not merely share its name or data structure."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_022_alt1",
+          "text": "Omitting canceled events weakens the base result guarantee."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_022_alt2",
+          "text": "An empty list falsely says no events exist when the base contract includes canceled ones."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_022_alt3",
+          "text": "Requiring subtype checks changes the behavior expected from a Schedule value."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i023",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A media pipeline accepts any Encoder through the same `encode(source, format)` contract. The new LosslessEncoder accepts the same inputs, returns a decodable file with the same format metadata, and never discards source samples; callers do not need to know which encoder instance they receive. Which relation best represents LosslessEncoder?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_023_model",
+          "text": "LosslessEncoder may implement Encoder."
+        },
+        {
+          "optionId": "n03b04_023_alt1",
+          "text": "Make LosslessEncoder an unrelated helper that every pipeline stage must detect by concrete type."
+        },
+        {
+          "optionId": "n03b04_023_alt2",
+          "text": "Subclass Encoder but make the caller provide a lossless-only quality flag."
+        },
+        {
+          "optionId": "n03b04_023_alt3",
+          "text": "Use LosslessEncoder as a wrapper that silently changes the requested output format."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_023_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The encoder strengthens an output guarantee without adding caller obligations.",
+      "details": {
+        "mechanismOrProperty": "Subtype variation is appropriate when an implementation changes internal behavior while preserving the public contract.",
+        "scenarioApplication": "LosslessEncoder receives the same arguments and returns the same promised kind of decodable output, with the additional no-sample-loss guarantee.",
+        "errorCorrection": "A stronger guarantee is compatible with substitutability; a stronger caller requirement or weaker result would not be.",
+        "boundaryOrTradeoff": "If a codec required extra source metadata absent from the base API, that codec should be a separate collaborator or adapter.",
+        "transfer": "Check both directions: extra guarantees may refine a subtype, but extra caller obligations usually break substitutability."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_023_alt1",
+          "text": "The same inputs, outputs, and invariants hold for every encoder implementation in this pipeline."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_023_alt2",
+          "text": "A lossless-only required flag strengthens the precondition and breaks existing Encoder callers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_023_alt3",
+          "text": "Changing the requested format violates the output contract rather than specializing behavior safely."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i024",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A delivery label can be rendered in either a thermal-printer layout or a PDF layout. The Shipment object stays the same, and the chosen renderer is selected per destination; both renderers consume a ShipmentSnapshot and produce an artifact through the same output contract. How should the two renderings be modeled?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_024_model",
+          "text": "Use a destination-selected LabelRenderer with Shipment."
+        },
+        {
+          "optionId": "n03b04_024_alt1",
+          "text": "Create ThermalShipment and PdfShipment subtypes even though layout is selected per destination."
+        },
+        {
+          "optionId": "n03b04_024_alt2",
+          "text": "Put printer-specific formatting branches in every caller that requests a label."
+        },
+        {
+          "optionId": "n03b04_024_alt3",
+          "text": "Make a PDF subtype of ThermalLabel because both represent printed labels."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_024_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Destination changes presentation, not the shipment’s domain type.",
+      "details": {
+        "mechanismOrProperty": "A collaborator represents a behavior selected alongside a stable domain object.",
+        "scenarioApplication": "Each destination chooses a renderer for the same shipment snapshot; Shipment identity and caller contract do not change.",
+        "errorCorrection": "Do not encode an output-format choice in the Shipment subtype when format varies per rendering request.",
+        "boundaryOrTradeoff": "If the domain distinguished shipments with different non-interchangeable fulfillment guarantees, subtype modeling might be warranted for that separate distinction.",
+        "transfer": "Place behavior that varies independently of an entity in a collaborator rather than multiplying entity subtypes."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_024_alt1",
+          "text": "The variation is an independently selected rendering behavior, not a different kind of Shipment."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_024_alt2",
+          "text": "Duplicating formatting policy across callers makes the same output contract caller-dependent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_024_alt3",
+          "text": "A PDF artifact is not a specialized thermal label and does not substitute for it."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i025",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "Every InspectionReport exposes a `condition()` operation that returns one of the allowed inspection categories. A proposed CertifiedReport adds a signature but keeps the same category set and operation behavior; any client that accepts InspectionReport can read it unchanged. How should CertifiedReport relate to InspectionReport?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_025_model",
+          "text": "CertifiedReport may extend InspectionReport."
+        },
+        {
+          "optionId": "n03b04_025_alt1",
+          "text": "Keep it as an unrelated collaborator because adding a signature always changes the report contract."
+        },
+        {
+          "optionId": "n03b04_025_alt2",
+          "text": "Subclass it but remove `condition()` because certified reports use the signature instead."
+        },
+        {
+          "optionId": "n03b04_025_alt3",
+          "text": "Make every report caller check for CertifiedReport before reading the category."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_025_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The signature is additive and leaves every report operation available.",
+      "details": {
+        "mechanismOrProperty": "A subtype may add behavior while preserving the base type’s observable guarantees.",
+        "scenarioApplication": "CertifiedReport still returns the same condition category; its signature is extra information rather than a replacement behavior.",
+        "errorCorrection": "Do not confuse an added capability with a changed contract; the key test is whether base clients still work.",
+        "boundaryOrTradeoff": "If certification changed category meaning or removed the operation for some reports, the type would need a distinct contract.",
+        "transfer": "Subtypes can refine guarantees, but they must retain every behavior their base clients rely on."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_025_alt1",
+          "text": "An additional guarantee does not prevent the certified report from honoring the existing base operation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_025_alt2",
+          "text": "Removing a promised operation violates the base contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_025_alt3",
+          "text": "No caller distinction is required when the subtype supports the same operation and result contract."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i026",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A reservation object remains the same domain record whether a user chooses standard or accessible room matching. The matcher is chosen per search request, and both matchers return candidate room IDs under the same result contract; neither matcher represents a reservation. Where should the matching variation live?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_026_model",
+          "text": "Select RoomMatcher per search, outside Reservation identity."
+        },
+        {
+          "optionId": "n03b04_026_alt1",
+          "text": "Create StandardReservation and AccessibleReservation even though one reservation can be searched under either matcher."
+        },
+        {
+          "optionId": "n03b04_026_alt2",
+          "text": "Make RoomMatcher a subtype of Reservation because it affects candidate rooms."
+        },
+        {
+          "optionId": "n03b04_026_alt3",
+          "text": "Copy the matching algorithm into each caller so each screen can choose its own rule."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_026_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Matcher choice varies by request, not by Reservation kind.",
+      "details": {
+        "mechanismOrProperty": "A collaborator can vary per operation while the domain object keeps one identity and stable contract.",
+        "scenarioApplication": "The request selects a matcher; the resulting candidate IDs follow the same contract without changing Reservation.",
+        "errorCorrection": "Do not turn the algorithm that processes a reservation into a subtype of the reservation itself.",
+        "boundaryOrTradeoff": "If reservations themselves represented distinct products with different lifecycle or caller-visible guarantees, a subtype could be considered separately.",
+        "transfer": "Ask whether the candidate is a kind of the entity or an independent behavior applied to it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_026_alt1",
+          "text": "A single reservation may be evaluated by different matchers, so the variation is not an entity kind."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_026_alt2",
+          "text": "A matcher is a behavior service, not a reservation with the reservation contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_026_alt3",
+          "text": "Duplicating the algorithm across screens risks inconsistent results and is not required by the scenario."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i027",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A `Route` base contract guarantees that every route accepts a pair of valid endpoints and returns a connected path or a documented no-path result. A proposed ScenicRoute additionally requires a minimum number of waypoints before it will search. Should ScenicRoute be a Route subtype?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_027_model",
+          "text": "Expose ScenicRoute through a separate policy or API."
+        },
+        {
+          "optionId": "n03b04_027_alt1",
+          "text": "Yes; subclasses may require more input as long as their names communicate the restriction."
+        },
+        {
+          "optionId": "n03b04_027_alt2",
+          "text": "Yes; return no-path whenever too few waypoints are supplied, even when a path exists."
+        },
+        {
+          "optionId": "n03b04_027_alt3",
+          "text": "Make Route require waypoints for every route, including routes with no scenic constraint."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_027_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The subtype rejects valid base inputs unless callers supply extra waypoints.",
+      "details": {
+        "mechanismOrProperty": "Behavioral substitutability requires the subtype to accept every input the base contract accepts.",
+        "scenarioApplication": "ScenicRoute needs an extra input that ordinary Route callers are not required to provide.",
+        "errorCorrection": "A descriptive subtype name does not repair a contract violation; callers typed as Route must not fail unexpectedly.",
+        "boundaryOrTradeoff": "If the waypoint rule were an optional parameter in the existing base API, ScenicRoute could preserve the contract while adding a mode.",
+        "transfer": "Compare accepted inputs before treating a specialized behavior as a subtype."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_027_alt1",
+          "text": "A base-typed caller can provide valid endpoints without waypoints, so the subtype strengthens a precondition."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_027_alt2",
+          "text": "Returning no-path when a valid path exists weakens the base result promise."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_027_alt3",
+          "text": "Changing the base type imposes a requirement absent from the current contract."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i028",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "An exhibit uses one maintenance policy chosen by the building operator. The exhibit remains the same object when policy changes, and the policy can be reused by many exhibits; policy selection does not change any Exhibit caller contract. How should the policy choice be represented?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_028_model",
+          "text": "Reference a replaceable MaintenancePolicy from Exhibit."
+        },
+        {
+          "optionId": "n03b04_028_alt1",
+          "text": "Create one Exhibit subtype for every maintenance policy and encode policy choice in its type."
+        },
+        {
+          "optionId": "n03b04_028_alt2",
+          "text": "Make MaintenancePolicy a subtype of Exhibit because it controls exhibit commands."
+        },
+        {
+          "optionId": "n03b04_028_alt3",
+          "text": "Copy the policy rules into each caller so the Exhibit has no policy association."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_028_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Policy selection changes without changing Exhibit identity or API.",
+      "details": {
+        "mechanismOrProperty": "Composition models a has-a behavior dependency while the owner object keeps its identity.",
+        "scenarioApplication": "Exhibit continues to be an Exhibit; the operator-selected policy changes which commands are allowed.",
+        "errorCorrection": "Do not create concrete entity subclasses for a setting that can vary independently and be shared.",
+        "boundaryOrTradeoff": "If policy variants defined enduring kinds of exhibits with distinct external guarantees, a subtype could represent that stable distinction.",
+        "transfer": "Keep independently configured behavior as a collaborator unless it changes the object’s substitutable kind."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_028_alt1",
+          "text": "A reusable, independently selected rule is not a distinct kind of Exhibit."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_028_alt2",
+          "text": "The policy supplies behavior but does not have the Exhibit’s identity or caller contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_028_alt3",
+          "text": "Copying rules into callers fragments the single policy that the scenario says is reused."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i029",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A payout processor accepts any Processor and promises that a settled payout is either recorded once or returns a retryable failure with the same payout key. A proposed RegionalProcessor follows the same input rules and result contract while adding regional routing internally. Can RegionalProcessor be treated as a Processor subtype?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_029_model",
+          "text": "RegionalProcessor may implement Processor."
+        },
+        {
+          "optionId": "n03b04_029_alt1",
+          "text": "No; regional routing must always be a collaborator even when callers use one unchanged processor contract."
+        },
+        {
+          "optionId": "n03b04_029_alt2",
+          "text": "Yes, but it may return success before recording the payout because regional routing is asynchronous."
+        },
+        {
+          "optionId": "n03b04_029_alt3",
+          "text": "Yes, but require a region code that existing Processor callers do not provide."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_029_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Regional routing preserves the processor’s idempotent result contract.",
+      "details": {
+        "mechanismOrProperty": "A subtype can replace the base implementation if the same caller-visible guarantees remain true.",
+        "scenarioApplication": "RegionalProcessor preserves the exactly-once record-or-retryable-failure contract while selecting a route internally.",
+        "errorCorrection": "Implementation structure does not decide substitutability; the accepted inputs and outcomes do.",
+        "boundaryOrTradeoff": "If regional routing exposed different failure or duplicate behavior, represent that variant behind a separate contract or collaborator.",
+        "transfer": "Compare the observable behavior from the base caller’s perspective before accepting an implementation as a subtype."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_029_alt1",
+          "text": "The routing variation is internal and does not change the public preconditions or outcome guarantee."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_029_alt2",
+          "text": "Success before the payout is recorded violates the stated Processor result contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_029_alt3",
+          "text": "The added region argument strengthens the caller precondition."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i030",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A document signer can use either an in-house signing service or an external provider. The signer object remains the same request, and the provider is selected for each delivery attempt; provider credentials and availability are managed separately. How should the provider variation relate to SignRequest?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_030_model",
+          "text": "Use a selected SigningProvider with SignRequest."
+        },
+        {
+          "optionId": "n03b04_030_alt1",
+          "text": "Create an ExternalSignRequest subtype whose identity changes whenever a provider is selected."
+        },
+        {
+          "optionId": "n03b04_030_alt2",
+          "text": "Make SigningProvider a subtype of SignRequest because both participate in signing."
+        },
+        {
+          "optionId": "n03b04_030_alt3",
+          "text": "Have each SignRequest caller own credentials and decide which provider protocol to call."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_030_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Provider choice changes independently for each delivery attempt.",
+      "details": {
+        "mechanismOrProperty": "A collaborator represents an independently selected participant with its own responsibility and lifecycle.",
+        "scenarioApplication": "The same SignRequest can be delivered through either provider, and the provider owns its credentials and availability behavior.",
+        "errorCorrection": "Do not confuse the object being acted on with the service that performs the action.",
+        "boundaryOrTradeoff": "If provider-specific requests had different domain guarantees and were never switched per request, a separate request subtype might be worth evaluating.",
+        "transfer": "Model distinct roles as collaborators when one object invokes another responsibility rather than becoming that responsibility."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_030_alt1",
+          "text": "Provider choice changes the delivery mechanism, not the request’s domain identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_030_alt2",
+          "text": "A provider does not expose the SignRequest object’s caller contract; it performs a distinct role."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_030_alt3",
+          "text": "Credentials and protocol handling are explicitly managed separately from callers."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i031",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A read-only view implements the same query-only `Profile` contract used by account screens: callers request display fields, no operation mutates a Profile, and the documented unavailable-field result is preserved. It adds a provenance badge but keeps every existing caller operation intact. Should ReadOnlyProfile be a subtype of Profile?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_031_model",
+          "text": "ReadOnlyProfile may implement Profile."
+        },
+        {
+          "optionId": "n03b04_031_alt1",
+          "text": "No; any added presentation field requires a separate unrelated type."
+        },
+        {
+          "optionId": "n03b04_031_alt2",
+          "text": "Yes, but remove the unavailable-field result because a read-only view has no missing data."
+        },
+        {
+          "optionId": "n03b04_031_alt3",
+          "text": "Make every account screen test for ReadOnlyProfile before calling Profile operations."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_031_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The read-only variant preserves the base fields and unavailable result.",
+      "details": {
+        "mechanismOrProperty": "A subtype may offer additional information while preserving the base set of observable operations.",
+        "scenarioApplication": "ReadOnlyProfile retains the same fields and unavailable behavior; its provenance badge is an additive capability.",
+        "errorCorrection": "Read-only is not automatically incompatible with Profile; the deciding issue is whether the base contract requires updates.",
+        "boundaryOrTradeoff": "If Profile’s contract included a required update operation, this read-only view could not substitute without a valid update behavior.",
+        "transfer": "Check the full base API, not just whether the subtype adds or omits a feature in its name."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_031_alt1",
+          "text": "The added field does not alter the base contract, so ordinary Profile clients can still use the view."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_031_alt2",
+          "text": "Removing a documented result changes behavior expected by existing callers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_031_alt3",
+          "text": "A type check is unnecessary when the subtype supports all base operations."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i032",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A campaign character has a permanent `claimReward` operation with a contract that rejects ineligible claims and never changes quest completion. A proposed AutoCompletingCharacter makes the call succeed by completing the quest first, a side effect the base contract forbids. Can AutoCompletingCharacter replace Character?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_032_model",
+          "text": "Keep quest completion outside Character’s reward operation."
+        },
+        {
+          "optionId": "n03b04_032_alt1",
+          "text": "Yes; completing the quest is a helpful specialization of reward claiming."
+        },
+        {
+          "optionId": "n03b04_032_alt2",
+          "text": "Yes; override the base operation and report success after the extra quest change."
+        },
+        {
+          "optionId": "n03b04_032_alt3",
+          "text": "Change Character’s contract so reward claiming always completes an eligible quest first."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_032_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The proposed subtype adds a state change forbidden by the base operation.",
+      "details": {
+        "mechanismOrProperty": "Substitutability covers side effects and invariants, not only return values.",
+        "scenarioApplication": "The subtype adds a quest mutation to a call that must remain read-only with respect to quest completion.",
+        "errorCorrection": "A convenient extra action is still a contract change when callers rely on the base operation not performing it.",
+        "boundaryOrTradeoff": "If the use case explicitly requested an atomic “complete quest and claim reward” operation, it should be a separate command with that contract.",
+        "transfer": "Compare state changes as well as method signatures when reviewing a subtype."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_032_alt1",
+          "text": "The base contract explicitly forbids changing quest completion during reward claim."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_032_alt2",
+          "text": "Reporting success after an unrequested state change violates the promised side-effect boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_032_alt3",
+          "text": "Changing the base contract would alter all existing Character callers."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i033",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A cold-chain shipment can be assigned to a Carrier only after the carrier acknowledges custody and meets the temperature band. Carrier selection changes per shipment, while Shipment keeps the same fields and lifecycle. Where should the carrier-specific assignment behavior live?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_033_model",
+          "text": "Select Carrier through Shipment assignment, not subtype identity."
+        },
+        {
+          "optionId": "n03b04_033_alt1",
+          "text": "Create one Shipment subtype for each carrier so its custody acknowledgement becomes part of shipment type."
+        },
+        {
+          "optionId": "n03b04_033_alt2",
+          "text": "Make Carrier a subtype of Shipment because both participate in delivery."
+        },
+        {
+          "optionId": "n03b04_033_alt3",
+          "text": "Let dispatch callers bypass the custody check whenever a carrier is familiar."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_033_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Carrier selection changes across shipments while Shipment remains the same kind.",
+      "details": {
+        "mechanismOrProperty": "An association or collaborator models the selected carrier while Shipment remains the stable domain record.",
+        "scenarioApplication": "The shipment refers to whichever carrier passes the same stated band and acknowledgement conditions.",
+        "errorCorrection": "Do not encode a changing assignment value as a permanent subtype of the assigned entity.",
+        "boundaryOrTradeoff": "If shipment categories had permanently different guarantees and different callers, subtype modeling could express that separate domain distinction.",
+        "transfer": "Assignments that change over an object’s lifetime usually belong in relationships or collaborators, not in the object’s class identity."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_033_alt1",
+          "text": "Carrier choice varies independently for the same shipment; it is not a distinct shipment kind."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_033_alt2",
+          "text": "A carrier has its own identity and does not satisfy the Shipment contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_033_alt3",
+          "text": "The stated assignment precondition applies regardless of caller familiarity."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i034",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A campaign reward evaluator is selected by the campaign’s ruleset. The Character remains the same object while the campaign revision changes; evaluator implementations receive the same read-only inputs and return the same eligibility result shape. How should reward evaluation vary across campaign revisions?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_034_model",
+          "text": "Select RewardEvaluator by campaign revision."
+        },
+        {
+          "optionId": "n03b04_034_alt1",
+          "text": "Create a Character subtype for every campaign revision even though the same character moves between revisions."
+        },
+        {
+          "optionId": "n03b04_034_alt2",
+          "text": "Make RewardEvaluator a subtype of Character because it reads character state."
+        },
+        {
+          "optionId": "n03b04_034_alt3",
+          "text": "Duplicate reward calculations in the UI and persistence callers."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_034_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Campaign revision selects the rule implementation; Character remains unchanged.",
+      "details": {
+        "mechanismOrProperty": "A decision strategy chosen by external context is a collaborator, while the subject of the decision retains its own lifecycle.",
+        "scenarioApplication": "The campaign selects the evaluator for its revision, and the same Character is evaluated under that rule.",
+        "errorCorrection": "Do not make the entity’s class represent every external rule context that can be applied to it.",
+        "boundaryOrTradeoff": "If campaign-specific characters had distinct enduring behavior contracts independent of evaluator choice, subtypes might be useful.",
+        "transfer": "Keep policy selection near the operation that chooses it, rather than multiplying entity subtypes for contextual rules."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_034_alt1",
+          "text": "Campaign revision changes do not change the character’s domain kind or identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_034_alt2",
+          "text": "An evaluator performs a decision service and does not satisfy Character’s entity contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_034_alt3",
+          "text": "Duplicating the same rule across callers can produce different eligibility results."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i035",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "Every Match implementation accepts the same two team IDs and returns one of the documented legal-state outcomes. A proposed ExhibitionMatch subtype additionally allows a completed match to be forfeited, an operation the base Match contract rejects. Can ExhibitionMatch safely substitute for Match?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_035_model",
+          "text": "Keep ExhibitionMatch outside Match’s rejecting contract."
+        },
+        {
+          "optionId": "n03b04_035_alt1",
+          "text": "Yes; accepting more operations is always safe even when it changes a documented rejection."
+        },
+        {
+          "optionId": "n03b04_035_alt2",
+          "text": "Yes; override the rejection only for callers that know the concrete subtype."
+        },
+        {
+          "optionId": "n03b04_035_alt3",
+          "text": "Make every Match caller detect ExhibitionMatch before submitting a forfeit."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_035_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Base callers rely on completed matches rejecting a forfeit.",
+      "details": {
+        "mechanismOrProperty": "A subtype must preserve the base type’s state-transition and rejection guarantees.",
+        "scenarioApplication": "ExhibitionMatch would permit a completed-match transition that every Match caller expects to be rejected.",
+        "errorCorrection": "“More permissive” behavior can still violate a contract when the base guarantees a specific rejection outcome.",
+        "boundaryOrTradeoff": "If the base contract allowed completed-match corrections under explicit authority, a specialized implementation could preserve that same authorization rule.",
+        "transfer": "Review both allowed transitions and required rejections when assessing substitutability."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_035_alt1",
+          "text": "Callers rely on completed matches rejecting a forfeit; changing that outcome violates the base contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_035_alt2",
+          "text": "The base-type guarantee cannot depend on which caller remembers a subtype check."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_035_alt3",
+          "text": "Subtype checks make behavior differ for a caller that only knows Match."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b04-i036",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B04",
+    "prompt": "A marketplace listing may render through a compact card or a full detail page. The same Listing object supplies the same underlying fields, and a view adapter chooses which presentation is produced for the current screen. How should the presentation variation be modeled?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b04_036_model",
+          "text": "Use a view adapter for Listing presentation."
+        },
+        {
+          "optionId": "n03b04_036_alt1",
+          "text": "Create CompactListing and FullListing subtypes and change the listing’s identity when the screen changes."
+        },
+        {
+          "optionId": "n03b04_036_alt2",
+          "text": "Make the view adapter a subtype of Listing because it reads listing data."
+        },
+        {
+          "optionId": "n03b04_036_alt3",
+          "text": "Put separate formatting and field-selection rules in every screen caller."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b04_036_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Screen choice selects a representation, not a new Listing kind.",
+      "details": {
+        "mechanismOrProperty": "A composition boundary separates domain identity from a behavior selected by a consumer.",
+        "scenarioApplication": "The adapter consumes the same Listing fields and renders one chosen view without changing the Listing object.",
+        "errorCorrection": "Do not model UI representation as domain inheritance when the domain object has not changed.",
+        "boundaryOrTradeoff": "If listing categories carried different permanent business guarantees, those categories could be modeled separately from view format.",
+        "transfer": "Keep representation choices outside entity identity when clients vary presentation independently."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_036_alt1",
+          "text": "Screen choice is a presentation variation and does not create a new kind of Listing."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_036_alt2",
+          "text": "An adapter produces a view; it does not satisfy the Listing entity contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b04_036_alt3",
+          "text": "Duplicating view logic across callers fragments a single presentation decision."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF",
+      "https://doi.org/10.1145/62138.62141"
+    ]
+  }
+]

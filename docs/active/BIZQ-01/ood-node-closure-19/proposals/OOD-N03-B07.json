@@ -1,0 +1,1208 @@
+[
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b07-i019",
+    "prompt": "The application has one startup composition root. A new invoice feature needs an `InvoiceStore` and `TaxPolicy`; where should the concrete implementations be selected?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_019_key",
+          "text": "Wire the chosen implementations at startup."
+        },
+        {
+          "optionId": "ood-n03-b07_019_w1",
+          "text": "Let InvoiceFeature instantiate vendor classes inside each operation."
+        },
+        {
+          "optionId": "ood-n03-b07_019_w2",
+          "text": "Resolve both dependencies by string name from a global service locator."
+        },
+        {
+          "optionId": "ood-n03-b07_019_w3",
+          "text": "Make the domain policy choose the database provider."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_019_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Composition belongs at the application boundary where the running graph is assembled.",
+      "details": {
+        "mechanismOrProperty": "Constructor injection exposes required collaborators; the root chooses concrete implementations.",
+        "scenarioApplication": "The feature needs two capabilities, while startup owns application wiring.",
+        "errorCorrection": "Constructing vendor classes inside the feature hides the graph and provider choice.",
+        "boundaryOrTradeoff": "A composition root should not absorb the tax decision itself.",
+        "transfer": "Centralize object graph assembly, not business policy."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_019_w1",
+          "text": "Feature code becomes coupled to constructors and vendor types."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_019_w2",
+          "text": "String lookup hides required collaborators and moves composition choices into feature runtime."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_019_w3",
+          "text": "Database selection is an infrastructure choice, not a tax rule."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b07-i020",
+    "prompt": "A web request handler and its request-local authorization context are registered with a scope per request. Which lifetime should the handler use?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_020_key",
+          "text": "A scoped handler that receives the scoped authorization context."
+        },
+        {
+          "optionId": "ood-n03-b07_020_w1",
+          "text": "A singleton handler that captures the request scope."
+        },
+        {
+          "optionId": "ood-n03-b07_020_w2",
+          "text": "A transient handler stored by the singleton application shell."
+        },
+        {
+          "optionId": "ood-n03-b07_020_w3",
+          "text": "A new global context shared across all requests."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_020_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Both values belong to the same request boundary.",
+      "details": {
+        "mechanismOrProperty": "A scoped consumer can safely receive the context from its request scope.",
+        "scenarioApplication": "The framework creates one scope for each request.",
+        "errorCorrection": "A singleton cannot retain request-specific state beyond that scope.",
+        "boundaryOrTradeoff": "A transient stored by a singleton becomes effectively long-lived through that reference.",
+        "transfer": "Match the consumer lifetime to the shortest-lived dependency it retains."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_020_w1",
+          "text": "Capturing a request scope in a singleton outlives the authorization context."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_020_w2",
+          "text": "The singleton shell would retain the transient handler and its request data."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_020_w3",
+          "text": "A global context leaks one request’s authorization into others."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b07-i021",
+    "prompt": "A singleton cache is constructed with a scoped tenant resolver and stores it for later calls. What is the concrete lifetime defect?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_021_key",
+          "text": "The singleton retains a resolver whose valid scope ends before the singleton."
+        },
+        {
+          "optionId": "ood-n03-b07_021_w1",
+          "text": "The resolver must be a transient because tenant IDs are strings."
+        },
+        {
+          "optionId": "ood-n03-b07_021_w2",
+          "text": "The cache should be scoped even though the application needs one global cache."
+        },
+        {
+          "optionId": "ood-n03-b07_021_w3",
+          "text": "The resolver must be a static field so it outlives the cache."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_021_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The retained reference crosses a shorter-lived scope boundary.",
+      "details": {
+        "mechanismOrProperty": "Captive dependencies occur when a longer-lived object captures a shorter-lived service.",
+        "scenarioApplication": "The cache is singleton and keeps the tenant resolver beyond a request.",
+        "errorCorrection": "Changing the identifier type does not change the lifetime relation.",
+        "boundaryOrTradeoff": "If tenant resolution is request-specific, resolve it inside a request operation or adjust the cache contract.",
+        "transfer": "Check actual retention, not merely registration labels, when comparing lifetimes."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_021_w1",
+          "text": "Transient still permits a captured instance to live as long as the singleton."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_021_w2",
+          "text": "Changing the cache to scoped abandons the stated global-cache requirement."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_021_w3",
+          "text": "Static storage extends the leak rather than respecting request scope."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b07-i022",
+    "prompt": "A singleton background scheduler needs a request-scoped database session only while processing each queued job. How should it obtain the session?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_022_key",
+          "text": "Create a job scope, then resolve its session."
+        },
+        {
+          "optionId": "ood-n03-b07_022_w1",
+          "text": "Inject one session into the singleton at startup."
+        },
+        {
+          "optionId": "ood-n03-b07_022_w2",
+          "text": "Make the session singleton to satisfy the scheduler."
+        },
+        {
+          "optionId": "ood-n03-b07_022_w3",
+          "text": "Resolve the request session from a global service locator without scope creation."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_022_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The job is the bounded unit of work that can own a scope.",
+      "details": {
+        "mechanismOrProperty": "A scope factory lets a long-lived worker create a shorter-lived dependency boundary.",
+        "scenarioApplication": "The worker persists, while each queued job needs its own database session.",
+        "errorCorrection": "An injected session would be retained across jobs and its intended scope.",
+        "boundaryOrTradeoff": "The job scope must be disposed after each job, including failure paths.",
+        "transfer": "Long-lived workers should create bounded scopes around independent work items."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_022_w1",
+          "text": "Startup injection retains one session for every job."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_022_w2",
+          "text": "A singleton session would share state and lifetime across independent jobs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_022_w3",
+          "text": "Without a scope, the resolver has no defined job boundary."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b07-i023",
+    "prompt": "A controller needs an injected PDF renderer for each request; the renderer is stateless and safe to share. Which registration is justified by these facts?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_023_key",
+          "text": "Use singleton while its retained graph is long-lived."
+        },
+        {
+          "optionId": "ood-n03-b07_023_w1",
+          "text": "A scoped renderer because every consumer is a controller."
+        },
+        {
+          "optionId": "ood-n03-b07_023_w2",
+          "text": "A transient renderer because all dependencies must be transient."
+        },
+        {
+          "optionId": "ood-n03-b07_023_w3",
+          "text": "A global mutable renderer set by the first controller."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_023_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The stated renderer is stateless and safe to share.",
+      "details": {
+        "mechanismOrProperty": "Lifetime should follow state, resource, and dependency constraints rather than consumer naming.",
+        "scenarioApplication": "The renderer has no per-request state and can be shared.",
+        "errorCorrection": "A scoped lifetime is valid but not required by the given facts.",
+        "boundaryOrTradeoff": "The singleton choice changes if it later captures request-scoped state.",
+        "transfer": "Choose the narrowest lifetime facts support; do not infer a rule from class names."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_023_w1",
+          "text": "Controllers being scoped does not force every dependency to share that lifetime."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_023_w2",
+          "text": "Transient creation is not required for stateless safe-to-share behavior."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_023_w3",
+          "text": "A mutable global introduces hidden configuration state absent from the contract."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b07-i024",
+    "prompt": "A payment method varies by merchant, and each request includes the merchant identifier. Where should that choice occur?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_024_key",
+          "text": "In a request-time factory that selects the implementation for that merchant."
+        },
+        {
+          "optionId": "ood-n03-b07_024_w1",
+          "text": "In the application startup root using one fixed implementation for all merchants."
+        },
+        {
+          "optionId": "ood-n03-b07_024_w2",
+          "text": "Inside the concrete processor by changing a global merchant variable."
+        },
+        {
+          "optionId": "ood-n03-b07_024_w3",
+          "text": "By registering every processor as singleton and choosing one at random."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_024_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The selection input is available per request rather than at startup.",
+      "details": {
+        "mechanismOrProperty": "The root wires available implementations; a narrow factory handles runtime selection from explicit input.",
+        "scenarioApplication": "Different merchants can use different processors during the same application run.",
+        "errorCorrection": "One fixed startup mapping cannot express the stated per-merchant choice.",
+        "boundaryOrTradeoff": "The factory should use explicit merchant data and avoid mutable ambient state.",
+        "transfer": "Separate static graph construction from legitimate runtime strategy selection."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_024_w1",
+          "text": "A single composition choice cannot vary by each request’s merchant."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_024_w2",
+          "text": "A global variable risks one request changing another request’s processor."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_024_w3",
+          "text": "Random selection ignores the supplied merchant identifier."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b07-i025",
+    "prompt": "A formatter currently has no dependencies and callers can construct it directly. Tests now need a deterministic clock supplied to formatting. What small change improves construction and testing?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_025_key",
+          "text": "Inject the clock; bind production time at the root."
+        },
+        {
+          "optionId": "ood-n03-b07_025_w1",
+          "text": "Read system time through a global singleton inside every method."
+        },
+        {
+          "optionId": "ood-n03-b07_025_w2",
+          "text": "Pass the container into the formatter and resolve the clock there."
+        },
+        {
+          "optionId": "ood-n03-b07_025_w3",
+          "text": "Make all formatter methods static and mutate a global test clock."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_025_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The new varying input should be explicit at the dependency boundary.",
+      "details": {
+        "mechanismOrProperty": "Constructor injection makes the clock requirement visible and replaceable in tests.",
+        "scenarioApplication": "Tests need deterministic time and production supplies the real clock.",
+        "errorCorrection": "Passing the container turns the formatter into a service locator client.",
+        "boundaryOrTradeoff": "Keep the clock abstraction narrow and avoid introducing injection for unrelated pure helpers.",
+        "transfer": "Make changing collaborators explicit where behavior depends on them."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_025_w1",
+          "text": "Ambient time remains nondeterministic unless the global is carefully mutated."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_025_w2",
+          "text": "Container access hides the formatter’s actual dependency."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_025_w3",
+          "text": "A mutable global clock can contaminate parallel tests and callers."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b07-i026",
+    "prompt": "A tenant-scoped service is registered inside a child scope but the child object is returned to a singleton cache after the scope ends. What should the design do?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_026_key",
+          "text": "Keep the object in scope or return detached data."
+        },
+        {
+          "optionId": "ood-n03-b07_026_w1",
+          "text": "Return the object and rely on the garbage collector to extend the scope."
+        },
+        {
+          "optionId": "ood-n03-b07_026_w2",
+          "text": "Promote every tenant service to singleton."
+        },
+        {
+          "optionId": "ood-n03-b07_026_w3",
+          "text": "Disable scope disposal so cached instances keep working."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_026_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Object reachability does not change the validity boundary of the scope.",
+      "details": {
+        "mechanismOrProperty": "The scope owns the scoped service lifecycle; cached values need a separate lifetime-safe representation.",
+        "scenarioApplication": "The cache outlives the child scope that resolved the object.",
+        "errorCorrection": "Garbage collection handles memory reclamation, not service-scope validity.",
+        "boundaryOrTradeoff": "Use a stable immutable snapshot only if the cache needs data rather than the live service.",
+        "transfer": "Do not let a reference escape farther than the contract that keeps it valid."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_026_w1",
+          "text": "Reachability does not extend scoped dependencies’ promised lifetime."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_026_w2",
+          "text": "Making all tenant services singleton can mix tenant/request state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_026_w3",
+          "text": "Skipping disposal leaks the scope instead of fixing ownership."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b07-i027",
+    "prompt": "An optional notification adapter is available only in deployments that enable email. The use case can complete without sending email. How should it be composed?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_027_key",
+          "text": "Make the optional capability’s absence explicit."
+        },
+        {
+          "optionId": "ood-n03-b07_027_w1",
+          "text": "Have the use case search globally for an adapter at runtime."
+        },
+        {
+          "optionId": "ood-n03-b07_027_w2",
+          "text": "Always register a fake adapter that reports successful delivery."
+        },
+        {
+          "optionId": "ood-n03-b07_027_w3",
+          "text": "Make the notification vendor mandatory in every deployment."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_027_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The capability is deployment-optional and the behavior without it is specified.",
+      "details": {
+        "mechanismOrProperty": "Explicit optional composition avoids hidden lookup and false success.",
+        "scenarioApplication": "Email can be disabled while the core operation still completes.",
+        "errorCorrection": "A fake success adapter misrepresents a delivery that did not occur.",
+        "boundaryOrTradeoff": "If the operation must guarantee notification, the contract must change to require it.",
+        "transfer": "Represent optional collaborators explicitly instead of fabricating a successful result."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_027_w1",
+          "text": "Global lookup conceals a deployment condition from construction."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_027_w2",
+          "text": "A success result would tell callers an email was sent when it was not."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_027_w3",
+          "text": "Making the vendor mandatory contradicts the stated deployment variants."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b07-i028",
+    "prompt": "A scoped database unit of work and a transient repository are both resolved in one request scope. Which fact determines whether that graph is safe?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_028_key",
+          "text": "Whether its scoped unit of work escapes the scope."
+        },
+        {
+          "optionId": "ood-n03-b07_028_w1",
+          "text": "Whether the repository has the word `Repository` in its class name."
+        },
+        {
+          "optionId": "ood-n03-b07_028_w2",
+          "text": "Whether every transient is registered before every scoped service."
+        },
+        {
+          "optionId": "ood-n03-b07_028_w3",
+          "text": "Whether the repository uses a static method."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_028_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Lifetime safety depends on actual reference retention, not only registration labels.",
+      "details": {
+        "mechanismOrProperty": "A transient can be used inside a scope if it does not escape that scope.",
+        "scenarioApplication": "The repository is transient while its collaborator is scoped.",
+        "errorCorrection": "Registration order does not extend a dependency’s validity.",
+        "boundaryOrTradeoff": "If a longer-lived owner retains the repository, inspect the entire retained graph.",
+        "transfer": "Trace the object graph and its lifetime boundaries rather than treating transient as always short-lived."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_028_w1",
+          "text": "A class name says nothing about the reference graph."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_028_w2",
+          "text": "Registration order does not repair a lifetime mismatch."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_028_w3",
+          "text": "Static methods can still access hidden state and do not answer the scope question."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b07-i029",
+    "prompt": "A test can construct `InvoiceService` with a fake store, but production currently duplicates manual wiring in two app entry points. What is the smallest composition improvement?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_029_key",
+          "text": "Share composition code; keep constructors explicit."
+        },
+        {
+          "optionId": "ood-n03-b07_029_w1",
+          "text": "Pass the container into InvoiceService and let it wire itself."
+        },
+        {
+          "optionId": "ood-n03-b07_029_w2",
+          "text": "Make the fake store the production default."
+        },
+        {
+          "optionId": "ood-n03-b07_029_w3",
+          "text": "Move every application decision into a static global initializer."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_029_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The duplicate is in application assembly, not in the service’s dependency contract.",
+      "details": {
+        "mechanismOrProperty": "A shared composition function centralizes wiring without hiding collaborators from the service.",
+        "scenarioApplication": "Both entry points need the same production graph and tests already supply a fake.",
+        "errorCorrection": "Container injection would make the service resolve dependencies implicitly.",
+        "boundaryOrTradeoff": "The composition function should accept only genuine deployment choices.",
+        "transfer": "Centralize repeated graph construction at the composition boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_029_w1",
+          "text": "Self-wiring moves composition into the feature and obscures its requirements."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_029_w2",
+          "text": "A test double is not a production implementation merely because it is convenient."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_029_w3",
+          "text": "A static initializer hides setup timing and configuration."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b07-i030",
+    "prompt": "Scoped InvoiceService receives a transient Validator and retains it only until the request scope ends. Validator captures no shorter-lived dependency. What follows?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_030_key",
+          "text": "Safe while both references stay within the request scope."
+        },
+        {
+          "optionId": "ood-n03-b07_030_w1",
+          "text": "Change Validator to singleton so every request can reuse one instance."
+        },
+        {
+          "optionId": "ood-n03-b07_030_w2",
+          "text": "Change InvoiceService to singleton because it retains a transient dependency."
+        },
+        {
+          "optionId": "ood-n03-b07_030_w3",
+          "text": "Create a new root service provider whenever validation is needed."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_030_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A transient can be retained safely when its actual owner does not outlive its dependencies.",
+      "details": {
+        "mechanismOrProperty": "A transient registration means a new instance is created when resolved; retention still follows the reference owner.",
+        "scenarioApplication": "InvoiceService and its Validator both remain within one request scope, and Validator has no shorter-lived collaborator.",
+        "errorCorrection": "The transient label alone does not create a captive dependency; extending either object past the request could change the result.",
+        "boundaryOrTradeoff": "The conclusion depends on the stated retention and dependency graph, not on the class name.",
+        "transfer": "Compare the longest actual reference lifetime with each dependency’s validity boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_030_w1",
+          "text": "Sharing a validator across requests is not required and could introduce shared state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_030_w2",
+          "text": "A scoped service may retain a transient within its own scope; singleton would outlive the request."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_030_w3",
+          "text": "Creating root providers per validation duplicates global services and does not establish a request scope."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b07-i031",
+    "prompt": "A singleton metrics collector needs a request-specific user ID for one record call, but must not retain it. Which API boundary fits?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_031_key",
+          "text": "Pass the user ID as a method argument to the singleton operation."
+        },
+        {
+          "optionId": "ood-n03-b07_031_w1",
+          "text": "Inject the scoped request context into the singleton constructor."
+        },
+        {
+          "optionId": "ood-n03-b07_031_w2",
+          "text": "Store the current user in a mutable singleton field."
+        },
+        {
+          "optionId": "ood-n03-b07_031_w3",
+          "text": "Create a new global collector for each user and never release it."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_031_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The value is operation-specific and need not be retained.",
+      "details": {
+        "mechanismOrProperty": "Method input avoids capturing request scope in a singleton.",
+        "scenarioApplication": "The collector is shared; the user ID is only needed for one call.",
+        "errorCorrection": "Constructor injection would retain a scoped context for the collector lifetime.",
+        "boundaryOrTradeoff": "Ensure the collector does not store the passed identifier beyond the call if the contract forbids retention.",
+        "transfer": "Pass short-lived data to the operation that consumes it instead of capturing its source."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_031_w1",
+          "text": "Capturing the request context would cross the scope boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_031_w2",
+          "text": "Mutable shared state can leak one user’s identifier into another call."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_031_w3",
+          "text": "An unbounded collector per user invents a lifecycle problem."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b07-i032",
+    "prompt": "EmailAddress is an immutable validated value with no collaborators or external lifecycle; UserService creates one from input. Should the container resolve EmailAddress?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_032_key",
+          "text": "No; use its validating constructor or factory at the input boundary."
+        },
+        {
+          "optionId": "ood-n03-b07_032_w1",
+          "text": "Register every value object so application code never calls constructors."
+        },
+        {
+          "optionId": "ood-n03-b07_032_w2",
+          "text": "Make EmailAddress a singleton to reuse validated values across requests."
+        },
+        {
+          "optionId": "ood-n03-b07_032_w3",
+          "text": "Pass the container into UserService so it can resolve value types."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_032_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "EmailAddress is a value created from each input, not a shared service collaborator.",
+      "details": {
+        "mechanismOrProperty": "Dependency injection composes collaborating services; it need not turn every value into a container-managed lifetime.",
+        "scenarioApplication": "The value is immutable, validated, and has no external resource or collaborator.",
+        "errorCorrection": "Resolving it as a singleton would reuse the wrong input; resolving every instance from the container adds indirection without lifecycle value.",
+        "boundaryOrTradeoff": "If construction later gains an external collaborator or costly managed resource, revisit the boundary.",
+        "transfer": "Create per-input values directly when their validated data—not a shared service dependency—defines them."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_032_w1",
+          "text": "The value varies with each input and has no dependency to compose."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_032_w2",
+          "text": "The value must be built from the current input, not reused as a service."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_032_w3",
+          "text": "A container lookup hides construction and gives no lifecycle benefit."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b07-i033",
+    "prompt": "Two feature modules need the same scoped authorization checker during one request. Which setup preserves request consistency?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_033_key",
+          "text": "Use one registration within the request scope."
+        },
+        {
+          "optionId": "ood-n03-b07_033_w1",
+          "text": "Register two unrelated scoped registrations with different factories and assume identity."
+        },
+        {
+          "optionId": "ood-n03-b07_033_w2",
+          "text": "Create a singleton checker that caches the current user."
+        },
+        {
+          "optionId": "ood-n03-b07_033_w3",
+          "text": "Construct separate checkers per method and let each read its own current-user global."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_033_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Both modules need the same request-local decision context.",
+      "details": {
+        "mechanismOrProperty": "A shared scoped registration provides one instance within the request scope.",
+        "scenarioApplication": "The two consumers run in the same request and require consistent authorization.",
+        "errorCorrection": "Separate factories may produce separate state even with a scoped label.",
+        "boundaryOrTradeoff": "The checker must not escape its request scope or cache user state globally.",
+        "transfer": "Share one scope-owned collaborator when same-scope identity is part of the behavior."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_033_w1",
+          "text": "Different registrations do not guarantee the same instance."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_033_w2",
+          "text": "A singleton cache can retain one request’s authorization state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_033_w3",
+          "text": "Ambient globals hide and can race the current user value."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b07-i034",
+    "prompt": "Startup configuration contains a database connection string and a tenant-specific secret arrives per request. What belongs in singleton configuration versus request composition?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_034_key",
+          "text": "Keep deployment settings in config; pass request secrets per operation."
+        },
+        {
+          "optionId": "ood-n03-b07_034_w1",
+          "text": "Store every tenant secret in a singleton options object."
+        },
+        {
+          "optionId": "ood-n03-b07_034_w2",
+          "text": "Rebuild all application services whenever a tenant request arrives."
+        },
+        {
+          "optionId": "ood-n03-b07_034_w3",
+          "text": "Put the connection string in a request-global mutable variable."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_034_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The two values have different lifetimes and sources.",
+      "details": {
+        "mechanismOrProperty": "Stable deployment settings can be long-lived; request secrets must remain request-bound.",
+        "scenarioApplication": "The connection string is deployment configuration; tenant secret is supplied per request.",
+        "errorCorrection": "A singleton options object would retain request-specific secret material.",
+        "boundaryOrTradeoff": "Handle secret protection and logging under the app’s existing security policy.",
+        "transfer": "Separate deployment configuration from per-operation data according to lifetime."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_034_w1",
+          "text": "A singleton would make one tenant’s value visible beyond its request."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_034_w2",
+          "text": "Rebuilding the entire graph per request is not required to pass one scoped input."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_034_w3",
+          "text": "A mutable global can race across concurrent requests."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b07-i035",
+    "prompt": "A report pipeline requires Redaction before Audit, then Export; each stage is an injected collaborator. Where should that order be assembled?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_035_key",
+          "text": "Compose the decorators in the application root in the required order."
+        },
+        {
+          "optionId": "ood-n03-b07_035_w1",
+          "text": "Let each decorator construct the next stage internally."
+        },
+        {
+          "optionId": "ood-n03-b07_035_w2",
+          "text": "Register an unordered collection and rely on whichever iteration order occurs."
+        },
+        {
+          "optionId": "ood-n03-b07_035_w3",
+          "text": "Repeat the ordering branches in every report caller."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_035_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The application has the ordering requirement and owns assembly of the collaborator graph.",
+      "details": {
+        "mechanismOrProperty": "Decorator composition wraps collaborators; the order changes behavior and should be explicit where the graph is built.",
+        "scenarioApplication": "The required sequence is Redaction, then Audit, then Export for the report pipeline.",
+        "errorCorrection": "Hidden construction, unspecified collection order, or caller copies can each produce a different stage sequence.",
+        "boundaryOrTradeoff": "The pipeline may expose one composed service to callers without publishing each stage.",
+        "transfer": "Place application-specific collaborator ordering in composition, where it can be reviewed as one graph."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_035_w1",
+          "text": "Internal construction hides the required order and makes stages harder to replace."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_035_w2",
+          "text": "The prompt requires an order; an unspecified iteration order cannot guarantee it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_035_w3",
+          "text": "Copying the sequence across callers can drift and bypass a stage."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B07",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b07-i036",
+    "prompt": "A request handler uses its CancellationToken during one child operation only. How should the token reach that child?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b07_036_key",
+          "text": "Pass the token without retaining it as a dependency."
+        },
+        {
+          "optionId": "ood-n03-b07_036_w1",
+          "text": "Register the request token as a singleton for all child operations."
+        },
+        {
+          "optionId": "ood-n03-b07_036_w2",
+          "text": "Inject the handler’s scoped request context into a singleton child service."
+        },
+        {
+          "optionId": "ood-n03-b07_036_w3",
+          "text": "Store the current token in a mutable static field."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b07_036_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The token is operation-specific input, not a long-lived collaborator.",
+      "details": {
+        "mechanismOrProperty": "Method arguments carry per-operation context without extending its lifetime through object retention.",
+        "scenarioApplication": "The child uses the token only while the handler’s operation is active.",
+        "errorCorrection": "A singleton or static field would let one request’s cancellation state affect later or concurrent work.",
+        "boundaryOrTradeoff": "A child service that itself owns a longer operation may need a different explicit lifetime contract.",
+        "transfer": "Pass short-lived operation context at the call boundary when it is not retained."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_036_w1",
+          "text": "A request token expires with its operation and must not govern unrelated calls."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_036_w2",
+          "text": "The singleton outlives the request-scoped context it would capture."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b07_036_w3",
+          "text": "Concurrent requests can overwrite or observe the same mutable token field."
+        }
+      ]
+    }
+  }
+]

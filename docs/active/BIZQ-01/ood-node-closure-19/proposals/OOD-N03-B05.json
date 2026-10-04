@@ -1,0 +1,1208 @@
+[
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b05-i019",
+    "prompt": "Two jurisdiction SDKs change request types independently, while one tax rule stays unchanged. Which dependency should the rule use?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_019_correct",
+          "text": "A policy-owned calculation contract implemented by each jurisdiction adapter."
+        },
+        {
+          "optionId": "b05_019_tax_rule_imports_sdk",
+          "text": "Import the first SDK and branch for the second."
+        },
+        {
+          "optionId": "b05_019_sdk_owns_rule",
+          "text": "Duplicate the calculation in both adapters."
+        },
+        {
+          "optionId": "b05_019_shared_vendor_models",
+          "text": "Put both SDK models in a shared package imported by policy."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_019_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The rule is stable while provider types vary; put the contract with the stable consumer.",
+      "details": {
+        "mechanismOrProperty": "Dependency inversion changes compile-time references, not runtime call flow; adapters still perform requested provider work.",
+        "scenarioApplication": "Both SDKs map into one policy-owned calculation meaning.",
+        "errorCorrection": "Importing SDK types or duplicating the rule makes provider releases drive or fork policy.",
+        "boundaryOrTradeoff": "This isolates provider representations; adapters do not choose the tax rule.",
+        "transfer": "When a mechanism varies but a decision stays fixed, let its owner define the needed capability."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_019_tax_rule_imports_sdk",
+          "text": "Every provider type change would force a policy source change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_019_sdk_owns_rule",
+          "text": "The same rule could drift as the providers change independently."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_019_shared_vendor_models",
+          "text": "The package still makes policy depend on volatile provider types."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b05-i020",
+    "prompt": "A fraud rule reads recent failed attempts. The database vendor is changing, but the threshold and decision stay fixed. Where should the narrow query contract live?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_020_correct",
+          "text": "Beside fraud policy, implemented by persistence adapters."
+        },
+        {
+          "optionId": "b05_020_db_owns_query",
+          "text": "Define the query type in the database package and import it in the rule."
+        },
+        {
+          "optionId": "b05_020_one_query_per_db",
+          "text": "Give each database a query interface and branch inside policy."
+        },
+        {
+          "optionId": "b05_020_universal_data_package",
+          "text": "Put all feature queries in a universal data-access package."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_020_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The fraud policy is the consumer and names exactly the evidence it needs.",
+      "details": {
+        "mechanismOrProperty": "Compile-time direction follows the module that declares a type; a consumer-side port removes vendor query dependencies.",
+        "scenarioApplication": "The rule asks for recent failed attempts, not SQL syntax or a database-specific model.",
+        "errorCorrection": "Database-owned interfaces point policy toward implementation; universal packages mix unrelated needs.",
+        "boundaryOrTradeoff": "Execution stays in persistence; the port states only the evidence contract.",
+        "transfer": "Place a boundary contract where its stable consumer defines the capability."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_020_db_owns_query",
+          "text": "Replacing storage would require a stable policy dependency change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_020_one_query_per_db",
+          "text": "Policy would own provider selection and vary with adapters."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_020_universal_data_package",
+          "text": "A package name does not make this evidence contract consumer-owned."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b05-i021",
+    "prompt": "Two parcel carriers use different codes for the same three events. Delivery policy accepts only LabelCreated, InTransit, or Delivered. Where should mapping happen?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_021_correct",
+          "text": "In each carrier adapter before the normalized event reaches delivery policy."
+        },
+        {
+          "optionId": "b05_021_policy_knows_codes",
+          "text": "Add both carriers’ codes to policy and branch there."
+        },
+        {
+          "optionId": "b05_021_raw_strings",
+          "text": "Pass raw strings to every caller for interpretation."
+        },
+        {
+          "optionId": "b05_021_sdk_union",
+          "text": "Make policy import a package containing both carrier SDK types."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_021_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Carrier vocabularies vary, while policy uses one stable event set.",
+      "details": {
+        "mechanismOrProperty": "An adapter maps external representation into an internal contract before business policy consumes it.",
+        "scenarioApplication": "Each provider code maps to a named event; policy then applies delivery rules.",
+        "errorCorrection": "Raw strings distribute interpretation; importing SDK types couples policy to release timing.",
+        "boundaryOrTradeoff": "Mapping translates status only; delivery eligibility remains policy’s decision.",
+        "transfer": "Normalize external encodings at their boundary when they represent the same internal fact."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_021_policy_knows_codes",
+          "text": "The stable rule would change when a carrier renames or adds a code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_021_raw_strings",
+          "text": "Callers could assign different meanings to the same provider value."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_021_sdk_union",
+          "text": "That retains compile-time coupling to changing providers."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b05-i022",
+    "prompt": "A receipt formatter uses one stable date-value API. There is no alternate library, test seam, or format variation in scope. Should a new date-provider interface be introduced?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_022_correct",
+          "text": "Keep the direct API until a real substitution need exists."
+        },
+        {
+          "optionId": "b05_022_interface_everywhere",
+          "text": "Wrap this stable date API now so a future provider can replace it."
+        },
+        {
+          "optionId": "b05_022_formatter_in_root",
+          "text": "Use a composition-root adapter although no date provider currently varies."
+        },
+        {
+          "optionId": "b05_022_plugin_registry",
+          "text": "Add plugin discovery before any alternate formatter is required."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_022_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "No meaningful mechanism variation is identified, so a port adds indirection without changing dependencies.",
+      "details": {
+        "mechanismOrProperty": "Dependency inversion addresses a real compile-time dependency on a changing detail; it is not interface-per-class policy.",
+        "scenarioApplication": "The formatter receives an internal date value and has one stable implementation.",
+        "errorCorrection": "A possible future provider is not evidence for a registry today.",
+        "boundaryOrTradeoff": "If a real alternative or test seam appears, reassess instead of predesigning an unspecified contract.",
+        "transfer": "Name the change boundary an abstraction protects; otherwise keep a direct stable dependency."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_022_interface_everywhere",
+          "text": "The case states no current substitution pressure, so this creates an unused seam."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_022_formatter_in_root",
+          "text": "Moving the formatter does not create a real client or variation boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_022_plugin_registry",
+          "text": "Dynamic discovery solves a provider-selection problem absent from this case."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b05-i023",
+    "prompt": "Catalog ranking needs one thumbnail-metadata query. Two image stores change independently. CommonInfra is proposed as the interface’s home. Where should it live?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_023_correct",
+          "text": "Define the query port with catalog policy; stores implement it."
+        },
+        {
+          "optionId": "b05_023_commoninfra_owns",
+          "text": "Define the metadata shape in CommonInfra so both stores implement it."
+        },
+        {
+          "optionId": "b05_023_catalog_instantiates",
+          "text": "Have catalog policy select and construct each store adapter."
+        },
+        {
+          "optionId": "b05_023_native_store_types",
+          "text": "Pass each store’s native response into ranking policy."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_023_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Catalog is the consumer and defines the stable query need.",
+      "details": {
+        "mechanismOrProperty": "Contract placement determines source dependency direction; “common” does not reverse it by name.",
+        "scenarioApplication": "Both adapters translate their result to the metadata concept catalog uses.",
+        "errorCorrection": "A shared package fits only if it owns a genuinely shared concept; no other consumer is stated.",
+        "boundaryOrTradeoff": "Only the query contract is shared; store code remains outside policy.",
+        "transfer": "Choose abstraction ownership from semantic responsibility and consumer need, not file convenience."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_023_commoninfra_owns",
+          "text": "Only catalog policy needs this query, so a generic home adds a dependency without another client."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_023_catalog_instantiates",
+          "text": "Provider selection couples the decision module to concrete implementations."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_023_native_store_types",
+          "text": "The rule would branch on provider shapes despite consuming one concept."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b05-i024",
+    "prompt": "A web form and partner API use different field names but express the same SeatRequest. They evolve independently; booking policy has no client-specific behavior. Who should understand wire schemas?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_024_correct",
+          "text": "Each client adapter; booking policy uses only SeatRequest."
+        },
+        {
+          "optionId": "b05_024_policy_imports_both",
+          "text": "Import both wire schemas and branch inside booking policy."
+        },
+        {
+          "optionId": "b05_024_web_schema_canonical",
+          "text": "Use the web form type as the canonical policy request."
+        },
+        {
+          "optionId": "b05_024_union_wire_input",
+          "text": "Accept a union of external request shapes in policy."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_024_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Client shapes vary but booking facts are shared.",
+      "details": {
+        "mechanismOrProperty": "Inbound adapters translate external types into a policy-owned request contract.",
+        "scenarioApplication": "Each maps its fields into SeatRequest; the same policy validates both.",
+        "errorCorrection": "Choosing one client as canonical hides rather than removes a volatile dependency.",
+        "boundaryOrTradeoff": "Adapters map shape; business validation remains with booking policy.",
+        "transfer": "Normalize independently changing caller representations before a stable rule."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_024_policy_imports_both",
+          "text": "The stable rule would track unrelated client releases."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_024_web_schema_canonical",
+          "text": "The rule stays coupled to one independently changing client."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_024_union_wire_input",
+          "text": "The rule still interprets transport fields rather than its own inputs."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b05-i025",
+    "prompt": "A notification rule retries only temporary failures and stops after three attempts. The sender SDK is replacing exception types and a second sender will be added. What should policy consume?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_025_correct",
+          "text": "A sender-result contract with temporary/permanent outcomes, mapped by each adapter."
+        },
+        {
+          "optionId": "b05_025_rule_catches_sdk",
+          "text": "Catch the current SDK exception in policy."
+        },
+        {
+          "optionId": "b05_025_adapter_owns_retry",
+          "text": "Let each sender set retry eligibility and count."
+        },
+        {
+          "optionId": "b05_025_retry_every_error",
+          "text": "Treat all failures as temporary and retry three times."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_025_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Retry threshold is policy; exception types are mechanism details.",
+      "details": {
+        "mechanismOrProperty": "Adapters translate provider failures to policy-relevant outcomes; policy controls the repeated decision.",
+        "scenarioApplication": "Both senders map exceptions, then the same three-attempt rule applies.",
+        "errorCorrection": "Moving policy into adapters risks provider-specific behavior; treating errors alike violates the case.",
+        "boundaryOrTradeoff": "Provider diagnostics can remain outside the result if retry selection does not need them.",
+        "transfer": "Keep stable retry conditions in policy and translate failure representations at the edge."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_025_rule_catches_sdk",
+          "text": "Provider exception changes would force policy branches."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_025_adapter_owns_retry",
+          "text": "The stable three-attempt policy could vary by provider."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_025_retry_every_error",
+          "text": "That ignores the stated permanent/temporary distinction."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b05-i026",
+    "prompt": "Scheduling policy imports CalendarCommon, whose helper imports one vendor SDK. A second provider is required while decisions stay unchanged. What should change?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_026_correct",
+          "text": "Move the availability port beside scheduling policy; keep vendor queries in adapters."
+        },
+        {
+          "optionId": "b05_026_name_hides_sdk",
+          "text": "Keep the import because policy names CalendarCommon, not the SDK."
+        },
+        {
+          "optionId": "b05_026_copy_helper",
+          "text": "Copy and edit the vendor helper inside policy."
+        },
+        {
+          "optionId": "b05_026_two_common_pkgs",
+          "text": "Add another package and select between providers in policy."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_026_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The source graph still reaches the vendor SDK through the helper.",
+      "details": {
+        "mechanismOrProperty": "Compile-time isolation includes transitive imports; a package label does not erase dependency edges.",
+        "scenarioApplication": "Scheduling needs availability and a normalized window, which a policy-side port can state.",
+        "errorCorrection": "Copying or multiplying helpers leaves implementation choice inside policy.",
+        "boundaryOrTradeoff": "Move only the narrow contract inward; vendor query mechanics remain at the edge.",
+        "transfer": "Inspect the full import path when stable policy depends on replaceable infrastructure."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_026_name_hides_sdk",
+          "text": "A transitive dependency still exposes policy to provider changes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_026_copy_helper",
+          "text": "That embeds provider query details in the stable rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_026_two_common_pkgs",
+          "text": "Provider choice stays coupled to the decision module."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b05-i027",
+    "prompt": "Permit evaluation needs only whether a parcel lies in an approved district. The GIS client also exposes tiles, routing, billing, and accounts. What should policy depend on?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_027_correct",
+          "text": "A permit-owned district-membership contract implemented by the GIS adapter."
+        },
+        {
+          "optionId": "b05_027_full_gis_client",
+          "text": "Inject the full GIS client because it includes containment."
+        },
+        {
+          "optionId": "b05_027_gis_owns_permit",
+          "text": "Move final permit approval into the GIS client."
+        },
+        {
+          "optionId": "b05_027_provider_selector",
+          "text": "Pass raw coordinates and provider name into policy."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_027_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The consumer needs one spatial fact, not the provider’s full surface.",
+      "details": {
+        "mechanismOrProperty": "An abstraction models the operation the consumer needs; adapters map it to provider APIs.",
+        "scenarioApplication": "The adapter answers membership; policy combines it with other permit conditions.",
+        "errorCorrection": "Moving approval conflates query and policy; raw provider names leak mechanism details.",
+        "boundaryOrTradeoff": "Keep the contract narrow because the other GIS features are out of scope.",
+        "transfer": "Define the stable capability a consumer needs from a broader service."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_027_full_gis_client",
+          "text": "Unrelated provider operations and API changes expand policy coupling."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_027_gis_owns_permit",
+          "text": "Spatial membership is one fact; permit policy owns the broader decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_027_provider_selector",
+          "text": "The rule would know provider selection and representation."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b05-i028",
+    "prompt": "A fee policy calls a carrier calculator at runtime. The policy owns the stable rate-input contract; the carrier is replaceable. Which source dependency is appropriate?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_028_correct",
+          "text": "Carrier implementation depends on the policy contract; policy calls the abstraction."
+        },
+        {
+          "optionId": "b05_028_policy_imports_carrier",
+          "text": "Make policy import and construct the carrier class."
+        },
+        {
+          "optionId": "b05_028_contract_in_carrier",
+          "text": "Move the interface into the carrier package because it implements it."
+        },
+        {
+          "optionId": "b05_028_duplicate_interfaces",
+          "text": "Keep interfaces in both modules and convert them inside policy."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_028_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The policy owns contract meaning even though execution reaches outward.",
+      "details": {
+        "mechanismOrProperty": "Dependency inversion distinguishes source references from runtime calls; implementation satisfies the inward-owned interface.",
+        "scenarioApplication": "Carrier supplies a result through the policy’s stable rate contract.",
+        "errorCorrection": "The implementer does not own the contract merely because it supplies behavior.",
+        "boundaryOrTradeoff": "This is about module references, not where application wiring selects an instance.",
+        "transfer": "Draw both graphs: runtime calls may point outward while imports point inward."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_028_policy_imports_carrier",
+          "text": "Runtime invocation does not require a source dependency on the replaceable class."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_028_contract_in_carrier",
+          "text": "Policy would import a contract owned by the mechanism it must replace."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_028_duplicate_interfaces",
+          "text": "This adds provider-specific conversion to a stable consumer."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b05-i029",
+    "prompt": "An access rule always denies expired badges. Audit export is enabled in only one deployment, and access decisions must match without it. Where should audit delivery sit?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_029_correct",
+          "text": "Keep expiry in policy; make audit delivery optional."
+        },
+        {
+          "optionId": "b05_029_policy_constructs_exporter",
+          "text": "Have policy construct the file exporter to guarantee delivery."
+        },
+        {
+          "optionId": "b05_029_exporter_owns_expiry",
+          "text": "Let the exporter decide expiry and fail closed when audit is disabled."
+        },
+        {
+          "optionId": "b05_029_two_deployment_rules",
+          "text": "Duplicate expiry policy so each deployment has a local path."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_029_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Expiry is invariant across deployments; only audit delivery varies.",
+      "details": {
+        "mechanismOrProperty": "Stable policy can express optional side effects through an outbound capability.",
+        "scenarioApplication": "Policy applies expiry and emits an audit fact when an adapter is configured.",
+        "errorCorrection": "The alternative confuses required decision logic with a conditional output.",
+        "boundaryOrTradeoff": "Optionality affects audit delivery, not badge validation.",
+        "transfer": "Keep required policy independent from integrations some deployments do not use."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_029_policy_constructs_exporter",
+          "text": "Direct construction couples the access decision to one optional delivery mechanism."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_029_exporter_owns_expiry",
+          "text": "Delivery availability must not change the stated access result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_029_two_deployment_rules",
+          "text": "Two copies can diverge although expiry policy is identical."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b05-i030",
+    "prompt": "An eligibility rule subclasses VendorHttpBase, which supplies an HTTP client and retries. That vendor is being removed; eligibility criteria remain. What is the smallest correction?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_030_correct",
+          "text": "Keep eligibility in policy; isolate HTTP and retries behind an adapter."
+        },
+        {
+          "optionId": "b05_030_new_vendor_base",
+          "text": "Replace the base with the new vendor’s HTTP base and preserve inheritance."
+        },
+        {
+          "optionId": "b05_030_decision_in_adapter",
+          "text": "Move eligibility into the adapter so rule and provider stay together."
+        },
+        {
+          "optionId": "b05_030_copy_http_logic",
+          "text": "Copy provider client and retry code into each policy release."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_030_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The rule has no HTTP responsibility, so its superclass adds an irrelevant dependency.",
+      "details": {
+        "mechanismOrProperty": "Inheritance creates a source dependency on base behavior; this policy needs only its inputs and criteria.",
+        "scenarioApplication": "Eligibility runs while an adapter separately performs outbound requests and retries.",
+        "errorCorrection": "Replacing or copying infrastructure behavior retains coupling in a different form.",
+        "boundaryOrTradeoff": "This is not a general ban on inheritance; the case says this type has no HTTP need.",
+        "transfer": "If a stable rule inherits implementation code, verify the decision actually needs that behavior."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_030_new_vendor_base",
+          "text": "A new provider base still makes stable eligibility inherit volatile HTTP behavior."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_030_decision_in_adapter",
+          "text": "The scenario says criteria stay stable; provider changes would then drive policy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_030_copy_http_logic",
+          "text": "Duplicating mechanism does not remove provider coupling and can fork policy."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b05-i031",
+    "prompt": "A screening SDK renames its reason enum each release. Compliance policy needs reviewed status and reason code. Which type should the stable rule consume?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_031_correct",
+          "text": "An application-owned ScreeningOutcome mapped by the SDK adapter."
+        },
+        {
+          "optionId": "b05_031_sdk_enum_in_policy",
+          "text": "Use the SDK enum directly in compliance rules."
+        },
+        {
+          "optionId": "b05_031_policy_is_plugin",
+          "text": "Make compliance implement the SDK extension interface."
+        },
+        {
+          "optionId": "b05_031_drop_reason",
+          "text": "Reduce the outcome to a boolean."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_031_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Compliance owns the input meaning; the SDK owns its current representation.",
+      "details": {
+        "mechanismOrProperty": "A boundary mapper preserves information while translating external types into a stable value.",
+        "scenarioApplication": "The adapter maps status and reason; policy stays independent of SDK names.",
+        "errorCorrection": "Importing the enum ties policy to provider releases; dropping it loses a stated input.",
+        "boundaryOrTradeoff": "The application value contains only the fields this decision requires.",
+        "transfer": "Map an independently changing type to the stable consumer’s meaning."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_031_sdk_enum_in_policy",
+          "text": "A provider enum rename becomes a policy source change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_031_policy_is_plugin",
+          "text": "The rule would depend on the replaceable plugin contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_031_drop_reason",
+          "text": "The prompt says the reason code is required decision information."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b05-i032",
+    "prompt": "A retention rule uses a compliance-approved duration. One deployment loads it from a file and another from remote settings. What should the rule receive?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_032_correct",
+          "text": "A validated duration supplied by configuration adapters."
+        },
+        {
+          "optionId": "b05_032_rule_reads_file",
+          "text": "Read the local file inside the retention rule."
+        },
+        {
+          "optionId": "b05_032_reader_owns_rule",
+          "text": "Put retention logic in each settings adapter."
+        },
+        {
+          "optionId": "b05_032_raw_string",
+          "text": "Pass text and let each caller parse it."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_032_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Deployments vary in source, not in the rule’s input meaning.",
+      "details": {
+        "mechanismOrProperty": "A validated value separates configuration retrieval from policy evaluation.",
+        "scenarioApplication": "Each adapter loads and validates the duration before the common rule applies it.",
+        "errorCorrection": "The rule need not gain file or remote-client dependencies to read its input.",
+        "boundaryOrTradeoff": "The prompt assumes a validated duration; missing/invalid config would need its own explicit contract.",
+        "transfer": "Keep deployment retrieval at the edge and pass the policy-owned value inward."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_032_rule_reads_file",
+          "text": "Policy would depend on one deployment mechanism."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_032_reader_owns_rule",
+          "text": "Policy meaning could differ by configuration source."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_032_raw_string",
+          "text": "Callers could interpret the same value differently."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b05-i033",
+    "prompt": "Publishing policy rejects documents missing required sections. One partner needs XML and another JSON; requirements are identical. Which module should depend on serializers?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_033_correct",
+          "text": "Partner serializers depend on a normalized document contract; policy imports neither."
+        },
+        {
+          "optionId": "b05_033_policy_serializes",
+          "text": "Add XML and JSON branches to publishing policy."
+        },
+        {
+          "optionId": "b05_033_serializer_validates",
+          "text": "Let each serializer decide whether sections are present."
+        },
+        {
+          "optionId": "b05_033_partner_schema_model",
+          "text": "Use the first partner’s XML schema as the policy type."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_033_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The rule applies before output formatting and does not vary by partner.",
+      "details": {
+        "mechanismOrProperty": "Policy evaluates a normalized model; adapters transform it for external consumers.",
+        "scenarioApplication": "The same section check runs before XML or JSON serialization.",
+        "errorCorrection": "Serializer checks duplicate policy; a partner schema imports a volatile output type.",
+        "boundaryOrTradeoff": "A partner may change encoding without changing the section requirement.",
+        "transfer": "Keep stable acceptance decisions upstream from replaceable output representations."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_033_policy_serializes",
+          "text": "Output format changes would force changes to the stable rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_033_serializer_validates",
+          "text": "The invariant could vary by partner or run only after formatting."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_033_partner_schema_model",
+          "text": "A transport representation would control the stable decision contract."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b05-i034",
+    "prompt": "Dispatch owns a retry limit of four. The database package stores it today but does not use it; dispatch policy reviews change it. Where should it live?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_034_correct",
+          "text": "With dispatch policy; persistence consumes decisions but does not own the limit."
+        },
+        {
+          "optionId": "b05_034_db_owns_constant",
+          "text": "Leave it in the database package because it is already there."
+        },
+        {
+          "optionId": "b05_034_duplicate_limit",
+          "text": "Copy four into both modules and update by convention."
+        },
+        {
+          "optionId": "b05_034_mutable_global",
+          "text": "Move it to a global mutable setting."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_034_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The value changes with dispatch policy, not with database implementation.",
+      "details": {
+        "mechanismOrProperty": "Dependencies should follow semantic ownership rather than historical file placement.",
+        "scenarioApplication": "Dispatch reviews and changes the limit; database only happens to store it now.",
+        "errorCorrection": "Copies or a global do not clarify who owns the policy value.",
+        "boundaryOrTradeoff": "If it were deployment-specific, ownership could differ; here it is policy-reviewed.",
+        "transfer": "Locate a decision value with the module whose contract governs its changes."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_034_db_owns_constant",
+          "text": "Policy imports a lower-level package for its own rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_034_duplicate_limit",
+          "text": "The copies can drift while representing one value."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_034_mutable_global",
+          "text": "That turns a reviewed policy value into runtime configuration without case support."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b05-i035",
+    "prompt": "An editorial rule accepts summaries only when they cite a source and stay below a stated length. Hosted and local models may generate them. Where should checks run?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_035_correct",
+          "text": "Validate normalized model output in editorial policy."
+        },
+        {
+          "optionId": "b05_035_hosted_enforces",
+          "text": "Ask each model provider to enforce citations and length before returning output."
+        },
+        {
+          "optionId": "b05_035_policy_imports_sdk",
+          "text": "Bind editorial checks to one hosted model’s SDK response type."
+        },
+        {
+          "optionId": "b05_035_duplicate_checks",
+          "text": "Run checks inside each model adapter before mapping results."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_035_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The generator varies while acceptance conditions stay fixed.",
+      "details": {
+        "mechanismOrProperty": "Adapters normalize mechanism responses; one policy evaluates the stable acceptance rule.",
+        "scenarioApplication": "Both models produce a summary that the same citation and length checks inspect.",
+        "errorCorrection": "Generation behavior is not a contract that guarantees acceptance criteria.",
+        "boundaryOrTradeoff": "Parsing stays at each edge; validation remains centralized.",
+        "transfer": "Normalize replaceable output before applying one stable policy."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_035_hosted_enforces",
+          "text": "Provider generation is not the application’s stated final acceptance check."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_035_policy_imports_sdk",
+          "text": "An SDK-specific response shape ties editorial rules to one provider."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_035_duplicate_checks",
+          "text": "Copies can diverge; normalize first, then apply one policy."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B05",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b05-i036",
+    "prompt": "Two independent workflows need the same signed-approval fact. Security defines what counts as valid approval; each workflow changes its steps. Where should the contract live?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "b05_036_correct",
+          "text": "In security; workflows depend on it without importing one another."
+        },
+        {
+          "optionId": "b05_036_first_workflow_owns",
+          "text": "Put the type in the first workflow and make the second import it."
+        },
+        {
+          "optionId": "b05_036_duplicate_verifiers",
+          "text": "Define separate approval types and verification in each workflow."
+        },
+        {
+          "optionId": "b05_036_global_service",
+          "text": "Expose approval through an undeclared global service."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "b05_036_correct"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Security owns approval meaning; each workflow owns its own sequence.",
+      "details": {
+        "mechanismOrProperty": "A shared abstraction belongs with the stable capability it describes, not the first consumer.",
+        "scenarioApplication": "Both workflows receive one verified representation while keeping orchestration independent.",
+        "errorCorrection": "Duplicate definitions risk drift; a global hides dependencies.",
+        "boundaryOrTradeoff": "The contract contains the approval fact, not workflow-specific actions.",
+        "transfer": "Place a shared capability contract with its semantic owner and decouple consumers."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_036_first_workflow_owns",
+          "text": "A peer workflow would own a security concept it does not define."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_036_duplicate_verifiers",
+          "text": "The same security fact could acquire divergent meanings."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "b05_036_global_service",
+          "text": "The collaborator is hidden rather than an explicit boundary."
+        }
+      ]
+    }
+  }
+]

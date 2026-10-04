@@ -1,0 +1,1208 @@
+[
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b08-i019",
+    "prompt": "A C# method opens a file stream, reads it, then can return early when the header is invalid. What cleanup structure covers both branches?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_019_key",
+          "text": "Use `using`/`await using` around the stream so disposal runs on return and exception."
+        },
+        {
+          "optionId": "ood-n03-b08_019_w1",
+          "text": "Call `Close` only after the valid-header branch."
+        },
+        {
+          "optionId": "ood-n03-b08_019_w2",
+          "text": "Keep the stream in a static field and close it at process exit."
+        },
+        {
+          "optionId": "ood-n03-b08_019_w3",
+          "text": "Rely on garbage collection to close the operating-system handle promptly."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_019_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The stream is acquired before a branch that can exit early.",
+      "details": {
+        "mechanismOrProperty": "Deterministic disposal ties release to lexical ownership and runs when leaving the scope.",
+        "scenarioApplication": "Both the invalid and valid paths leave the method after opening the stream.",
+        "errorCorrection": "A late close is skipped by the early return.",
+        "boundaryOrTradeoff": "The exact syntax depends on whether the resource implements synchronous or asynchronous disposal.",
+        "transfer": "Place cleanup in a construct that encloses every path after acquisition."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_019_w1",
+          "text": "The invalid-header return bypasses the later close."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_019_w2",
+          "text": "A static field extends ownership beyond the operation and complicates concurrent reads."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_019_w3",
+          "text": "Garbage collection timing does not provide prompt deterministic release."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b08-i020",
+    "prompt": "A C# operation owns an `IAsyncDisposable` response body and must finish flushing it before releasing it. Which cleanup form matches that contract?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_020_key",
+          "text": "Await asynchronous disposal before returning."
+        },
+        {
+          "optionId": "ood-n03-b08_020_w1",
+          "text": "Use `using` and fire-and-forget the asynchronous dispose call."
+        },
+        {
+          "optionId": "ood-n03-b08_020_w2",
+          "text": "Drop the reference after flushing and let finalization release it."
+        },
+        {
+          "optionId": "ood-n03-b08_020_w3",
+          "text": "Return it to a global cache for another request."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_020_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The resource’s release operation is asynchronous and completion matters before return.",
+      "details": {
+        "mechanismOrProperty": "Awaited async disposal preserves the required ordering.",
+        "scenarioApplication": "The contract says the flush and disposal must complete before leaving.",
+        "errorCorrection": "Fire-and-forget can let the operation return while cleanup is still running.",
+        "boundaryOrTradeoff": "Use this only for a resource that actually supports asynchronous disposal.",
+        "transfer": "Match cleanup form to the resource contract and await required release work."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_020_w1",
+          "text": "Synchronous scope exit cannot wait for an unawaited cleanup task."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_020_w2",
+          "text": "Finalization has no guarantee of the required timing."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_020_w3",
+          "text": "A response body is request-owned and cannot be reused globally."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b08-i021",
+    "prompt": "A library receives a caller-owned stream and reads from it, but its contract says the caller may continue reading afterward. Who disposes the stream?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_021_key",
+          "text": "The caller owns the stream; leave it open."
+        },
+        {
+          "optionId": "ood-n03-b08_021_w1",
+          "text": "The library disposes it immediately after reading."
+        },
+        {
+          "optionId": "ood-n03-b08_021_w2",
+          "text": "Both caller and library dispose it to be safe."
+        },
+        {
+          "optionId": "ood-n03-b08_021_w3",
+          "text": "The library transfers it to a global stream pool."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_021_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The prompt explicitly states that the caller retains the stream after this operation.",
+      "details": {
+        "mechanismOrProperty": "Borrowing a resource for use does not transfer ownership.",
+        "scenarioApplication": "The library reads but the caller continues using the stream.",
+        "errorCorrection": "Disposal by the library would invalidate the caller’s remaining use.",
+        "boundaryOrTradeoff": "An explicit ownership-transfer contract would produce a different answer.",
+        "transfer": "Distinguish a borrowed handle from a resource acquired or transferred by the component."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_021_w1",
+          "text": "Immediate disposal contradicts the caller’s stated continued use."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_021_w2",
+          "text": "Two owners make release timing and repeated disposal ambiguous."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_021_w3",
+          "text": "The stream was not offered for shared pooling or global reuse."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b08-i022",
+    "prompt": "A method creates a temporary file and returns a durable file identifier to a queued worker that reads it later. When should the file be removed?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_022_key",
+          "text": "Keep it through job completion, then clean it up."
+        },
+        {
+          "optionId": "ood-n03-b08_022_w1",
+          "text": "In the creating method’s `finally` before the worker starts."
+        },
+        {
+          "optionId": "ood-n03-b08_022_w2",
+          "text": "Never, because durable identifiers imply permanent files."
+        },
+        {
+          "optionId": "ood-n03-b08_022_w3",
+          "text": "At arbitrary process shutdown regardless of pending work."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_022_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The worker needs the file after the creating call returns.",
+      "details": {
+        "mechanismOrProperty": "The job lifecycle defines the resource’s useful lifetime and cleanup boundary.",
+        "scenarioApplication": "A queued worker consumes the created file later.",
+        "errorCorrection": "Deleting in the creator’s finally removes the worker’s input prematurely.",
+        "boundaryOrTradeoff": "The job system needs a defined abandon/expiry cleanup path as well as success cleanup.",
+        "transfer": "Keep a resource alive through its last authorized use and release it afterward."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_022_w1",
+          "text": "The worker cannot read a file removed before processing."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_022_w2",
+          "text": "Durability does not mean permanent retention."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_022_w3",
+          "text": "Shutdown timing does not account for job completion and restart behavior."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b08-i023",
+    "prompt": "A database transaction was opened and an update fails before commit. Which action protects the transaction boundary?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_023_key",
+          "text": "Roll back on failure, and always dispose the transaction."
+        },
+        {
+          "optionId": "ood-n03-b08_023_w1",
+          "text": "Commit in `finally` so every opened transaction closes cleanly."
+        },
+        {
+          "optionId": "ood-n03-b08_023_w2",
+          "text": "Leave the transaction open for the next request to decide."
+        },
+        {
+          "optionId": "ood-n03-b08_023_w3",
+          "text": "Catch the error and skip cleanup to preserve diagnostic context."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_023_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "An uncommitted failed update must not be committed as cleanup.",
+      "details": {
+        "mechanismOrProperty": "Rollback expresses failure semantics; disposal still releases the transaction resource.",
+        "scenarioApplication": "The update fails before commit.",
+        "errorCorrection": "Committing in finally would make a failed operation durable.",
+        "boundaryOrTradeoff": "If commit outcome is unknown, follow the transaction API’s explicit recovery contract.",
+        "transfer": "Cleanup releases resources, while commit or rollback expresses the business outcome."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_023_w1",
+          "text": "A failed update is not a successful transaction to commit."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_023_w2",
+          "text": "A later request must not inherit this operation’s transaction."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_023_w3",
+          "text": "Diagnostics can be recorded before cleanup; they do not justify leaking the transaction."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b08-i024",
+    "prompt": "A client owns a pool of reusable sockets and lends one socket to a request. What should the request release when finished?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_024_key",
+          "text": "Return the socket to its owning pool."
+        },
+        {
+          "optionId": "ood-n03-b08_024_w1",
+          "text": "Dispose the pool together with each borrowed socket."
+        },
+        {
+          "optionId": "ood-n03-b08_024_w2",
+          "text": "Keep the socket indefinitely because it belongs to a pool."
+        },
+        {
+          "optionId": "ood-n03-b08_024_w3",
+          "text": "Create a second pool during each request and dispose the original."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_024_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The pool, not the request, owns the socket lifecycle.",
+      "details": {
+        "mechanismOrProperty": "Borrow/release differs from acquire/own/dispose.",
+        "scenarioApplication": "A request temporarily uses one socket from a longer-lived pool.",
+        "errorCorrection": "Disposing the pool would invalidate other borrowers.",
+        "boundaryOrTradeoff": "The pool itself needs a shutdown cleanup boundary.",
+        "transfer": "Follow the explicit ownership contract for pooled resources."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_024_w1",
+          "text": "The request does not own the pool or its shared sockets."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_024_w2",
+          "text": "Returning to the pool is required to make the socket available again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_024_w3",
+          "text": "A per-request pool contradicts the shared pool described."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b08-i025",
+    "prompt": "A component subscribes to a long-lived event publisher with a callback that captures the component. What cleanup prevents the publisher retaining it after its work ends?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_025_key",
+          "text": "Unsubscribe the callback when the component’s subscription lifetime ends."
+        },
+        {
+          "optionId": "ood-n03-b08_025_w1",
+          "text": "Clear the publisher’s entire subscriber list after each callback."
+        },
+        {
+          "optionId": "ood-n03-b08_025_w2",
+          "text": "Rely on the component becoming unreachable even though the publisher references it."
+        },
+        {
+          "optionId": "ood-n03-b08_025_w3",
+          "text": "Create a second publisher so the original can retain the callback."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_025_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The publisher’s event reference keeps the capturing component reachable.",
+      "details": {
+        "mechanismOrProperty": "Subscription is a resource-like registration that needs a matching release.",
+        "scenarioApplication": "The publisher outlives the subscriber and retains its callback.",
+        "errorCorrection": "Clearing every subscriber would disrupt other consumers.",
+        "boundaryOrTradeoff": "If the publisher is scoped to the subscriber, their shared owner may instead end both together.",
+        "transfer": "Pair event registration with removal at the same ownership boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_025_w1",
+          "text": "Removing all handlers exceeds this component’s ownership."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_025_w2",
+          "text": "The publisher’s reference prevents the subscriber from becoming unreachable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_025_w3",
+          "text": "A second publisher does not release this subscription."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b08-i026",
+    "prompt": "A timer is started for one upload attempt; retries may replace it. Which cleanup belongs on success, retry, and cancellation?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_026_key",
+          "text": "Stop and dispose each timer when its attempt ends."
+        },
+        {
+          "optionId": "ood-n03-b08_026_w1",
+          "text": "Leave every prior timer running until application shutdown."
+        },
+        {
+          "optionId": "ood-n03-b08_026_w2",
+          "text": "Dispose the upload service after each callback, even if it is shared."
+        },
+        {
+          "optionId": "ood-n03-b08_026_w3",
+          "text": "Only stop the timer on success; failed attempts need their timeout."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_026_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The attempt owner creates the timer and must release each instance when its attempt ends.",
+      "details": {
+        "mechanismOrProperty": "Resource cleanup covers every terminal path, including replacing a resource.",
+        "scenarioApplication": "Retries and cancellation can end an attempt before success.",
+        "errorCorrection": "Keeping old timers running can trigger callbacks for obsolete attempts.",
+        "boundaryOrTradeoff": "If the timer is reused, its owner must still stop it when the owning operation ends.",
+        "transfer": "Audit every branch after acquisition, not only the success path."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_026_w1",
+          "text": "A stale timer continues operating after its attempt ended."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_026_w2",
+          "text": "Disposing a shared service can break other in-flight attempts."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_026_w3",
+          "text": "Failure also ends or replaces the old timer’s ownership interval."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b08-i027",
+    "prompt": "A temporary file is created, then parsing fails before a file handle is returned to the caller. What should the creator do?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_027_key",
+          "text": "Delete the partial file in the creator’s failure cleanup."
+        },
+        {
+          "optionId": "ood-n03-b08_027_w1",
+          "text": "Return the partial path as if parsing succeeded."
+        },
+        {
+          "optionId": "ood-n03-b08_027_w2",
+          "text": "Leave cleanup to the caller that never received the path."
+        },
+        {
+          "optionId": "ood-n03-b08_027_w3",
+          "text": "Move the partial file to a shared cache without recording ownership."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_027_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The creator still owns the partial file because transfer never occurred.",
+      "details": {
+        "mechanismOrProperty": "Ownership transfers only after the documented handoff succeeds.",
+        "scenarioApplication": "Parsing fails before the caller receives a handle.",
+        "errorCorrection": "The caller cannot clean up a resource it never learned about.",
+        "boundaryOrTradeoff": "Preserve the parse error while ensuring the partial artifact is removed.",
+        "transfer": "Treat failed acquisition/handoff as still owned by the creator."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_027_w1",
+          "text": "A partial artifact is not equivalent to a validated successful result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_027_w2",
+          "text": "No ownership handoff occurred."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_027_w3",
+          "text": "An untracked shared cache hides rather than resolves ownership."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b08-i028",
+    "prompt": "A critical section acquires a lock and then an assertion can throw. How should the lock be released?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_028_key",
+          "text": "Release the lock in `finally` or equivalent."
+        },
+        {
+          "optionId": "ood-n03-b08_028_w1",
+          "text": "Release it only after the assertion passes."
+        },
+        {
+          "optionId": "ood-n03-b08_028_w2",
+          "text": "Catch the assertion and keep the lock for diagnosis."
+        },
+        {
+          "optionId": "ood-n03-b08_028_w3",
+          "text": "Store the lock in a process-wide list for later release."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_028_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The exception can leave the critical section before a normal release statement.",
+      "details": {
+        "mechanismOrProperty": "Structured cleanup guarantees release on success and exceptional exit.",
+        "scenarioApplication": "The assertion is after lock acquisition and may throw.",
+        "errorCorrection": "A normal-path release is bypassed by the exception.",
+        "boundaryOrTradeoff": "The protected state still needs to remain consistent when reporting the assertion.",
+        "transfer": "Pair acquisition with guaranteed release around all code that can exit."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_028_w1",
+          "text": "The assertion failure still leaves the scope and needs release."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_028_w2",
+          "text": "Holding the lock can deadlock subsequent work."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_028_w3",
+          "text": "A global list does not release at the required boundary."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b08-i029",
+    "prompt": "A stream wrapper owns the stream it opens and is itself disposed by the caller. What should disposing the wrapper do?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_029_key",
+          "text": "Dispose the owned stream with its wrapper."
+        },
+        {
+          "optionId": "ood-n03-b08_029_w1",
+          "text": "Leave the inner stream open despite the explicit ownership contract."
+        },
+        {
+          "optionId": "ood-n03-b08_029_w2",
+          "text": "Dispose every stream in the process to prevent leaks."
+        },
+        {
+          "optionId": "ood-n03-b08_029_w3",
+          "text": "Dispose the inner stream on every read call."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_029_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The wrapper owns the inner stream by stated contract.",
+      "details": {
+        "mechanismOrProperty": "An owning wrapper should release resources it acquired or was assigned to own.",
+        "scenarioApplication": "The caller disposes the wrapper; the wrapper owns its stream.",
+        "errorCorrection": "Leaving the owned stream open leaks its handle.",
+        "boundaryOrTradeoff": "A wrapper around a borrowed stream would need a different explicit contract.",
+        "transfer": "Make ownership transfer visible and implement matching cleanup."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_029_w1",
+          "text": "The ownership fact rules out leaving its inner resource unreleased."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_029_w2",
+          "text": "The wrapper has no authority over unrelated process streams."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_029_w3",
+          "text": "The stream must remain usable across multiple reads until wrapper disposal."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b08-i030",
+    "prompt": "A producer is blocked while writing to a network response, and cancellation is requested. The producer owns the response stream. What must its cancellation path do?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_030_key",
+          "text": "The operation owner disposes the stream on cancellation."
+        },
+        {
+          "optionId": "ood-n03-b08_030_w1",
+          "text": "Ignore cancellation until the remote peer closes the stream."
+        },
+        {
+          "optionId": "ood-n03-b08_030_w2",
+          "text": "Store the cancellation token in a singleton and dispose all active streams."
+        },
+        {
+          "optionId": "ood-n03-b08_030_w3",
+          "text": "Return success while leaving the stream open."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_030_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Cancellation ends the producer’s operation but does not release the acquired stream automatically.",
+      "details": {
+        "mechanismOrProperty": "The resource owner performs cleanup while observing cancellation.",
+        "scenarioApplication": "The producer opened the stream and is blocked during a write.",
+        "errorCorrection": "Ignoring cancellation can hold the stream indefinitely.",
+        "boundaryOrTradeoff": "Report cancellation distinctly from successful completion after cleanup.",
+        "transfer": "Propagate cancellation to the operation and release resources in the owner’s finally path."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_030_w1",
+          "text": "Waiting for the peer ignores the caller’s cancellation request."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_030_w2",
+          "text": "A singleton sweeping streams crosses operation ownership boundaries."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_030_w3",
+          "text": "Leaving the stream open leaks the acquired resource."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b08-i031",
+    "prompt": "A C# HTTP response body is streamed to a file; the response owns the body stream and the copy may fail. What should the method’s scopes express?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_031_key",
+          "text": "Dispose both streams after copy, including failure."
+        },
+        {
+          "optionId": "ood-n03-b08_031_w1",
+          "text": "Dispose only the file stream and abandon the response body."
+        },
+        {
+          "optionId": "ood-n03-b08_031_w2",
+          "text": "Dispose the response before the copy begins."
+        },
+        {
+          "optionId": "ood-n03-b08_031_w3",
+          "text": "Keep both resources alive in static fields for retry."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_031_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Both resources are acquired for this copy operation and remain owned through the copy.",
+      "details": {
+        "mechanismOrProperty": "Nested using scopes release each resource on normal or exceptional exit.",
+        "scenarioApplication": "The copy can throw while both streams are open.",
+        "errorCorrection": "Abandoning the response body may retain a connection resource.",
+        "boundaryOrTradeoff": "A retry must open or reacquire resources according to the client contract.",
+        "transfer": "Scope each acquired resource around the complete operation that consumes it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_031_w1",
+          "text": "The response still owns a body that should be released after reading."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_031_w2",
+          "text": "Disposal before copy makes the source unavailable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_031_w3",
+          "text": "Static retention outlives the operation and creates concurrent state."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b08-i032",
+    "prompt": "A custom iterator yields rows from a database cursor. The consumer stops after the first row. Who closes the cursor?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_032_key",
+          "text": "Dispose the enumerator so early-stop closes the cursor."
+        },
+        {
+          "optionId": "ood-n03-b08_032_w1",
+          "text": "The consumer must exhaust every row before the cursor can close."
+        },
+        {
+          "optionId": "ood-n03-b08_032_w2",
+          "text": "The database closes it immediately after the first yield."
+        },
+        {
+          "optionId": "ood-n03-b08_032_w3",
+          "text": "The cursor should be cached globally for the next enumeration."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_032_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Enumeration may end before the iterator reaches its normal completion point.",
+      "details": {
+        "mechanismOrProperty": "Iterator cleanup must run when the consumer disposes or abandons enumeration according to the language contract.",
+        "scenarioApplication": "The consumer intentionally stops after one row.",
+        "errorCorrection": "Requiring full consumption changes caller behavior and can keep resources open.",
+        "boundaryOrTradeoff": "The API should document disposal expectations if callers control enumerator lifetime.",
+        "transfer": "Include early termination in resource-lifetime reasoning for lazy sequences."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_032_w1",
+          "text": "The consumer’s partial read is valid; exhaustion is not guaranteed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_032_w2",
+          "text": "Closing before yielding the first row would break the consumer."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_032_w3",
+          "text": "A cursor is tied to one query and cannot be globally shared."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b08-i033",
+    "prompt": "An operation acquires a lock successfully, then opening its file fails. Which resource must the failure cleanup release?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_033_key",
+          "text": "Release the already-acquired lock; no file handle was obtained."
+        },
+        {
+          "optionId": "ood-n03-b08_033_w1",
+          "text": "Retry opening indefinitely while holding the lock."
+        },
+        {
+          "optionId": "ood-n03-b08_033_w2",
+          "text": "Skip all cleanup because the file acquisition failed."
+        },
+        {
+          "optionId": "ood-n03-b08_033_w3",
+          "text": "Try to close a file handle even though opening failed."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_033_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The lock acquisition succeeded, but the later file acquisition did not.",
+      "details": {
+        "mechanismOrProperty": "Only a successful acquisition creates a resource this operation must release.",
+        "scenarioApplication": "The operation owns the lock; file open failed before a file handle was returned.",
+        "errorCorrection": "Release the lock during failure cleanup; do not treat the failed file open as a resource acquisition.",
+        "boundaryOrTradeoff": "If several resources were successfully acquired, release each according to its actual ownership contract; this case has only the lock.",
+        "transfer": "Track which acquisitions succeeded and clean up those resources on every exit path."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_033_w1",
+          "text": "An unbounded retry holds the lock and can block other operations."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_033_w2",
+          "text": "The failed file open does not undo the lock acquisition."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_033_w3",
+          "text": "No file handle exists to close; the acquired lock still needs release."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b08-i034",
+    "prompt": "A cleanup call itself can fail while a primary parse error is being reported. How should the code preserve useful failure information?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_034_key",
+          "text": "Preserve the primary error while surfacing cleanup failure."
+        },
+        {
+          "optionId": "ood-n03-b08_034_w1",
+          "text": "Discard the parse error and report only cleanup failure."
+        },
+        {
+          "optionId": "ood-n03-b08_034_w2",
+          "text": "Suppress both errors and return a successful empty result."
+        },
+        {
+          "optionId": "ood-n03-b08_034_w3",
+          "text": "Retry cleanup without limit until it succeeds."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_034_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "There are two distinct failures and the original parse failure remains relevant.",
+      "details": {
+        "mechanismOrProperty": "Error handling should preserve the primary failure while making cleanup failure observable.",
+        "scenarioApplication": "Parsing already failed before disposal also reports an error.",
+        "errorCorrection": "Replacing the original exception loses the cause of the failed operation.",
+        "boundaryOrTradeoff": "The exact aggregation or logging mechanism depends on the language/API contract.",
+        "transfer": "Keep cleanup reliable and retain enough context for both failures."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_034_w1",
+          "text": "Only showing cleanup failure obscures why the operation failed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_034_w2",
+          "text": "Returning success hides both failures."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_034_w3",
+          "text": "Unbounded retry can prevent the method from terminating."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b08-i035",
+    "prompt": "A C# service returns an immutable byte array that it allocated; it also owns a native handle used only to create those bytes. Which item requires deterministic cleanup?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_035_key",
+          "text": "The native handle; the returned managed byte array remains ordinary managed data."
+        },
+        {
+          "optionId": "ood-n03-b08_035_w1",
+          "text": "Both must be explicitly disposed because both were allocated."
+        },
+        {
+          "optionId": "ood-n03-b08_035_w2",
+          "text": "Neither needs cleanup because garbage collection covers both."
+        },
+        {
+          "optionId": "ood-n03-b08_035_w3",
+          "text": "The byte array must be disposed, but the native handle may be retained."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_035_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The native handle is an external resource; the managed byte array is not IDisposable merely because it was allocated.",
+      "details": {
+        "mechanismOrProperty": "Managed memory reclamation and external resource release are different mechanisms.",
+        "scenarioApplication": "The service owns a native handle during generation and returns bytes.",
+        "errorCorrection": "Treating all allocations alike risks leaking the external handle or inventing disposal on the array.",
+        "boundaryOrTradeoff": "If the byte array wraps external memory, its ownership contract would differ.",
+        "transfer": "Identify external resources separately from ordinary managed values."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_035_w1",
+          "text": "A managed array does not acquire an OS handle by allocation alone."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_035_w2",
+          "text": "Garbage collection does not deterministically release the native handle."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_035_w3",
+          "text": "This reverses the resource distinction in the scenario."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B08",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b08-i036",
+    "prompt": "A worker receives ownership of a stream explicitly and is responsible for closing it after processing. What should the producer do after successful handoff?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b08_036_key",
+          "text": "Stop using and disposing the stream; ownership has transferred to the worker."
+        },
+        {
+          "optionId": "ood-n03-b08_036_w1",
+          "text": "Dispose the stream immediately after enqueueing it."
+        },
+        {
+          "optionId": "ood-n03-b08_036_w2",
+          "text": "Keep a second owner reference and dispose it again at process shutdown."
+        },
+        {
+          "optionId": "ood-n03-b08_036_w3",
+          "text": "Never tell the worker it owns the stream."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b08_036_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The prompt states a successful ownership transfer.",
+      "details": {
+        "mechanismOrProperty": "A clear handoff assigns one lifecycle owner.",
+        "scenarioApplication": "The worker will process and close the stream.",
+        "errorCorrection": "Producer disposal would invalidate the worker’s work.",
+        "boundaryOrTradeoff": "If enqueueing fails before transfer, the producer must still clean up its stream.",
+        "transfer": "Make transfer success/failure the exact ownership boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_036_w1",
+          "text": "The worker cannot consume a stream already disposed by its producer."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_036_w2",
+          "text": "Two owners create ambiguous and potentially repeated cleanup."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b08_036_w3",
+          "text": "The worker needs the ownership fact to fulfill its responsibility."
+        }
+      ]
+    }
+  }
+]

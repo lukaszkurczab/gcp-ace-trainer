@@ -1,0 +1,1172 @@
+[
+  {
+    "questionId": "ood-n03-b03-i019",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A temporary access grant has a start and expiry instant. At expiry it stops authorizing access, but its grant ID, approver, and timestamps remain in the audit record. A role definition is shared by many grants. What lifecycle should the grant have when its expiry arrives?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_019_model",
+          "text": "Expire the Grant’s authority but retain its audit record."
+        },
+        {
+          "optionId": "n03b03_019_alt1",
+          "text": "Delete the grant record at expiry and reconstruct it later from the role definition."
+        },
+        {
+          "optionId": "n03b03_019_alt2",
+          "text": "Leave the grant active and rely on every door caller to compare the expiry timestamp correctly."
+        },
+        {
+          "optionId": "n03b03_019_alt3",
+          "text": "Delete the shared role definition when this grant expires."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_019_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Authorization ends at expiry, but the approval evidence remains auditable.",
+      "details": {
+        "mechanismOrProperty": "An object can leave its active state without ending its record lifetime; audit retention is explicit here.",
+        "scenarioApplication": "At the expiry instant, this Grant becomes expired and no longer authorizes access, while its ID and approval history remain stored.",
+        "errorCorrection": "Do not confuse “no longer active” with “delete the object.” The case requires a retained lifecycle record.",
+        "boundaryOrTradeoff": "If the grant were only a transient unsaved preview with no audit obligation, deleting it on expiry could be appropriate.",
+        "transfer": "When an object has both an active use period and a retention period, model those as separate lifecycle boundaries."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_019_alt1",
+          "text": "Expiry removes authorization, but the prompt explicitly requires the grant record to remain auditable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_019_alt2",
+          "text": "The scenario makes the grant’s expiry transition a domain responsibility, not a caller convention."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_019_alt3",
+          "text": "The role definition is shared and has a separate lifetime from any one grant."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i020",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A two-reviewer approval request stores each signed decision by reviewer and round. If the request is withdrawn, no new decision may be added, but earlier signed decisions must remain queryable for the compliance record. How should withdrawal affect the already recorded decisions?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_020_model",
+          "text": "Close the request to new decisions; retain signed decision records."
+        },
+        {
+          "optionId": "n03b03_020_alt1",
+          "text": "Delete all reviewer decisions when the request is withdrawn."
+        },
+        {
+          "optionId": "n03b03_020_alt2",
+          "text": "Keep the request open for new decisions but hide the earlier signed records."
+        },
+        {
+          "optionId": "n03b03_020_alt3",
+          "text": "Move every decision into the current reviewer profile and remove its request context."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_020_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Withdrawal ends the review opportunity, not the signed evidence already stored.",
+      "details": {
+        "mechanismOrProperty": "A parent workflow’s closed state can stop new child creation while preserving historical child records.",
+        "scenarioApplication": "Withdrawal ends the request’s active review phase, not the persisted signed-decision records.",
+        "errorCorrection": "Do not model withdrawal as a destructive cascade when the facts require historical retrieval.",
+        "boundaryOrTradeoff": "If the decisions were unsigned transient drafts, the system could discard them when the request is withdrawn.",
+        "transfer": "Separate the lifecycle of a workflow from the retention lifecycle of its already committed evidence."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_020_alt1",
+          "text": "Signed decisions are explicitly retained after withdrawal; deletion would erase the required compliance history."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_020_alt2",
+          "text": "Withdrawal closes the decision process, so accepting new decisions violates the stated lifecycle boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_020_alt3",
+          "text": "The request context is needed to identify which approval each decision belongs to."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i021",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "An inspection editor creates four local section drafts. Canceling the editor must remove those drafts. Submitting copies their values into a permanent Inspection record; later deleting the editor session must not affect the submitted record. Which object should control the local drafts’ lifetime?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_021_model",
+          "text": "The editor owns its drafts; submit creates a separate Inspection."
+        },
+        {
+          "optionId": "n03b03_021_alt1",
+          "text": "Let the permanent Inspection own the drafts before submission and delete it whenever the editor closes."
+        },
+        {
+          "optionId": "n03b03_021_alt2",
+          "text": "Retain every canceled draft indefinitely as if it were a submitted inspection."
+        },
+        {
+          "optionId": "n03b03_021_alt3",
+          "text": "Have each section decide independently whether the editor session has ended."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_021_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Cancellation applies only to unsent drafts; the submitted object is independent.",
+      "details": {
+        "mechanismOrProperty": "Creation boundary separates temporary working state from the durable submitted record.",
+        "scenarioApplication": "Cancel deletes the local drafts. Submit copies their values into a new Inspection that outlives the editor.",
+        "errorCorrection": "Do not attach the submitted record to the editor session merely because the editor created it.",
+        "boundaryOrTradeoff": "If submission transferred the same draft objects into the durable inspection, the session could no longer delete them after commit.",
+        "transfer": "Identify whether a workflow commits the same object or creates a durable successor before assigning cleanup ownership."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_021_alt1",
+          "text": "Before submission the drafts are session-local; after submission the durable Inspection is a separate object."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_021_alt2",
+          "text": "The prompt requires cancellation to remove local drafts, not retain them as permanent inspections."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_021_alt3",
+          "text": "One editor-session lifecycle owner can consistently remove its draft set."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i022",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A notebook run creates an immutable result snapshot only after all input references validate. A failed publication attempt may be retried after repairing a missing code reference; no partial snapshot is visible before validation succeeds. When should the snapshot object be created?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_022_model",
+          "text": "Create the immutable Snapshot only after validation succeeds."
+        },
+        {
+          "optionId": "n03b03_022_alt1",
+          "text": "Create a visible partial Snapshot first and let each caller remove it when validation fails."
+        },
+        {
+          "optionId": "n03b03_022_alt2",
+          "text": "Create the Snapshot before validating inputs and mutate its code reference after publication."
+        },
+        {
+          "optionId": "n03b03_022_alt3",
+          "text": "Have the code-version object create snapshots whenever any notebook references it."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_022_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Partial snapshots are prohibited, so validation is the creation boundary.",
+      "details": {
+        "mechanismOrProperty": "The object’s creation boundary should coincide with the point at which its invariant is complete and publication is allowed.",
+        "scenarioApplication": "Validation completes first; only successful publication creates the immutable Snapshot.",
+        "errorCorrection": "Do not publish a half-formed object and rely on each caller to clean up an invalid state.",
+        "boundaryOrTradeoff": "If drafts were intentionally visible during editing, they should be modeled as a separate draft object with its own lifecycle.",
+        "transfer": "Create durable domain records at their declared commit point, and use a separate temporary representation for incomplete work."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_022_alt1",
+          "text": "The case requires no partial snapshot to be visible on failed validation, so callers should not own compensating deletion."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_022_alt2",
+          "text": "The published snapshot’s input references are immutable, so mutation after publication violates the stated lifecycle."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_022_alt3",
+          "text": "Snapshot creation belongs to the publication event and depends on the validated full input set."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i023",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "An account recovery challenge contains a one-time secret and has a fixed expiry 24 hours after issue. Successful confirmation must make the secret unusable immediately. The system keeps a consumed challenge marker until that original expiry to reject replay, then may purge the marker; the account and recovery audit remain. What lifecycle should confirmation trigger?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_023_model_v2",
+          "text": "Consume the secret on success; retain its replay marker until expiry."
+        },
+        {
+          "optionId": "n03b03_023_alt1_v2",
+          "text": "Keep the challenge usable until its 24-hour expiry so a repeated confirmation can succeed again."
+        },
+        {
+          "optionId": "n03b03_023_alt2_v2",
+          "text": "Delete the account and its recovery audit when the challenge is consumed."
+        },
+        {
+          "optionId": "n03b03_023_alt3_v2",
+          "text": "Retain and accept the same secret after success, using the expiry as the only replay control."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_023_model_v2"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Success consumes this one-time secret before its time limit; replay evidence has a longer lifetime.",
+      "details": {
+        "mechanismOrProperty": "The challenge secret and its replay marker have separate lifecycle needs: the secret ends at successful use, while the consumed marker remains until the original expiry.",
+        "scenarioApplication": "A second use must be rejected during the remaining 24-hour window; after expiry the challenge record can be purged without affecting the account or audit.",
+        "errorCorrection": "Waiting for the deadline leaves a successfully used secret reusable. Deleting the account exceeds the challenge’s scope, and retaining an accepted secret defeats the one-time rule.",
+        "boundaryOrTradeoff": "If no replay detection were required after success, the whole challenge record could be removed immediately; this scenario explicitly requires the marker.",
+        "transfer": "Separate credential material, replay evidence, and the identity whose access the credential protects when deciding what expires or is deleted."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_023_alt1_v2",
+          "text": "Successful confirmation consumes the one-time secret; leaving it usable permits the replay the prompt forbids."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_023_alt2_v2",
+          "text": "The account and recovery audit are explicitly retained and are not owned by the temporary challenge."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_023_alt3_v2",
+          "text": "Expiry is the fallback lifetime limit, but successful use invalidates the secret earlier."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i024",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A canceled offline inspection draft is not retained. Once submitted, a separate server Inspection is durable even if the device later clears its local queue. The same section values are copied during submit rather than transferring the local draft objects. What should happen to local queue objects after a successful submit?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_024_model",
+          "text": "Delete local copies only after server acknowledgement."
+        },
+        {
+          "optionId": "n03b03_024_alt1",
+          "text": "Keep the local draft objects as the permanent server record and let queue cleanup delete them."
+        },
+        {
+          "optionId": "n03b03_024_alt2",
+          "text": "Delete the local draft before server acknowledgement so no duplicate copy exists."
+        },
+        {
+          "optionId": "n03b03_024_alt3",
+          "text": "Retain every local draft forever because submitted data must be auditable."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_024_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The acknowledgement is the commit boundary between temporary device copies and durable server data.",
+      "details": {
+        "mechanismOrProperty": "A copy-and-acknowledge boundary gives the temporary queue and committed server object separate lifetimes.",
+        "scenarioApplication": "The queue keeps the local draft until acknowledgement, then removes that local object; the server Inspection remains.",
+        "errorCorrection": "Avoid treating copied draft data as one object shared across device and server lifetimes.",
+        "boundaryOrTradeoff": "If the server stored the same remote object by reference rather than creating a separate durable record, the cleanup contract would have to change.",
+        "transfer": "Tie cleanup of temporary copies to the explicit commit/acknowledgement boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_024_alt1",
+          "text": "The server creates a separate durable record, so acknowledged local copies may be removed without deleting that record."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_024_alt2",
+          "text": "Deleting before acknowledgement can lose the only copy if submission fails."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_024_alt3",
+          "text": "The scenario distinguishes temporary device drafts from the durable server record; it does not require permanent local copies."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i025",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A rejected invoice issue is immutable and retained with its rejection reason. A corrected issue gets a new issue ID and links to the rejected one. Retrying delivery of the same issue does not create another issue record. How should retry and correction affect the invoice objects?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_025_model",
+          "text": "Retry the same issue ID; create a successor only for corrected content."
+        },
+        {
+          "optionId": "n03b03_025_alt1",
+          "text": "Overwrite the rejected issue in place with corrected fields and keep its old ID."
+        },
+        {
+          "optionId": "n03b03_025_alt2",
+          "text": "Create a new issue record for every delivery retry, even when its content is unchanged."
+        },
+        {
+          "optionId": "n03b03_025_alt3",
+          "text": "Delete the rejected issue after creating the corrected issue."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_025_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Retry repeats an immutable issue, while corrected content has a new identity.",
+      "details": {
+        "mechanismOrProperty": "Lifecycle transitions distinguish retrying an operation on the same record from creating a new versioned record.",
+        "scenarioApplication": "Retry keeps the existing identity; correction creates a linked new issue while preserving the rejected one.",
+        "errorCorrection": "Do not collapse correction and delivery retry: one changes content and creates a successor, the other repeats delivery of the same immutable object.",
+        "boundaryOrTradeoff": "If issue content were intentionally mutable and no rejection history were required, an in-place update could be possible.",
+        "transfer": "Use explicit identity and retention rules to decide whether an operation mutates, retries, or creates a successor."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_025_alt1",
+          "text": "The rejected record is immutable and retained; corrected content has a distinct issue identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_025_alt2",
+          "text": "Delivery retry is not a content correction and the prompt explicitly keeps the same issue ID."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_025_alt3",
+          "text": "The rejected issue remains part of the audit history after correction."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i026",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "Badge revocation immediately ends access, but the badge record and revocation event are retained. A replacement physical badge receives a new badge ID; the old record is never reactivated. What lifecycle transition represents revocation?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_026_model",
+          "text": "Revoke and retain the old Badge; give replacement hardware a new ID."
+        },
+        {
+          "optionId": "n03b03_026_alt1",
+          "text": "Delete the badge on revocation and reuse its ID for the replacement."
+        },
+        {
+          "optionId": "n03b03_026_alt2",
+          "text": "Keep the badge active but ask each door to remember the revocation event separately."
+        },
+        {
+          "optionId": "n03b03_026_alt3",
+          "text": "Change the holder’s account status and leave the badge lifecycle unchanged."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_026_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Revocation removes access without erasing the retained badge record.",
+      "details": {
+        "mechanismOrProperty": "Revocation is a terminal lifecycle state for this physical badge, distinct from deleting its record or disabling its holder.",
+        "scenarioApplication": "The badge stops authorizing access while the record and event remain; a new physical card is a new Badge object.",
+        "errorCorrection": "Do not reuse identity after revocation; the prompt requires the old badge to remain distinguishable.",
+        "boundaryOrTradeoff": "If the product treated badge records as transient and retained no history, deletion could be allowed, but replacement identity still must not falsely represent the old card.",
+        "transfer": "Model the lifecycle of the physical credential separately from the lifecycle of its person or account."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_026_alt1",
+          "text": "Revocation preserves the old record and replacement gets a new identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_026_alt2",
+          "text": "Every access decision must see the revoked status; caller-local memory does not satisfy that shared state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_026_alt3",
+          "text": "A holder account can remain active while one physical badge is revoked."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i027",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A label preview is temporary and may be discarded when address editing is canceled. A printed label is an immutable audit artifact retained after shipment cancellation. Printing creates a new artifact from the current approved shipment snapshot. Which lifecycle should apply to the preview and printed label?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_027_model",
+          "text": "Discard previews on cancel; create a retained Label only after printing."
+        },
+        {
+          "optionId": "n03b03_027_alt1",
+          "text": "Promote the preview object into the permanent label before the address is approved."
+        },
+        {
+          "optionId": "n03b03_027_alt2",
+          "text": "Delete the printed label when the shipment is canceled, just like the preview."
+        },
+        {
+          "optionId": "n03b03_027_alt3",
+          "text": "Keep every abandoned preview permanently as if it had been printed."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_027_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Preview and printed-label lifetimes begin and end at different workflow events.",
+      "details": {
+        "mechanismOrProperty": "Temporary editing state and committed output artifacts have different creation and retention boundaries.",
+        "scenarioApplication": "Cancel removes the preview; successful print creates a distinct durable Label tied to the approved snapshot.",
+        "errorCorrection": "Do not give the preview the printed artifact’s audit lifetime or delete the artifact with the shipment.",
+        "boundaryOrTradeoff": "If previews themselves were legally issued documents, they would need the retained artifact lifecycle too.",
+        "transfer": "Represent preview, approval, and issued artifact as separate lifecycle stages when their retention differs."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_027_alt1",
+          "text": "Approval and printing define the artifact creation boundary; the preview is not the retained printed record."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_027_alt2",
+          "text": "The printed label is explicitly retained after shipment cancellation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_027_alt3",
+          "text": "Canceled previews are temporary and the prompt does not require them as audit records."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i028",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A rehearsal hold blocks a room for ten minutes while the coordinator waits for confirmation. If confirmation arrives, the system creates a Booking that remains until canceled. If the hold expires, it is removed and no Booking exists. How should hold expiry affect the two objects?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_028_model",
+          "text": "Expire the Hold; create a Booking only after confirmation."
+        },
+        {
+          "optionId": "n03b03_028_alt1",
+          "text": "Keep an expired Hold as the permanent Booking even when no confirmation arrived."
+        },
+        {
+          "optionId": "n03b03_028_alt2",
+          "text": "Create a Booking at hold creation and delete it later if confirmation never arrives."
+        },
+        {
+          "optionId": "n03b03_028_alt3",
+          "text": "Let the room record own every Hold forever, including expired unconfirmed holds."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_028_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "An unconfirmed hold expires without ever becoming a booking.",
+      "details": {
+        "mechanismOrProperty": "A temporary reservation attempt and confirmed booking are separate objects with distinct commit points.",
+        "scenarioApplication": "The Hold exists while awaiting confirmation; expiration removes it, while confirmation creates a durable Booking.",
+        "errorCorrection": "Do not equate temporary capacity blocking with a confirmed booking.",
+        "boundaryOrTradeoff": "If the product retained expired holds for analytics, it could keep a separate HoldEvent record without turning it into a Booking.",
+        "transfer": "Use explicit confirmation and expiry events to define when a tentative object becomes a durable domain object."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_028_alt1",
+          "text": "An expired unconfirmed hold is not a booking under the stated lifecycle."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_028_alt2",
+          "text": "The prompt says the Booking exists only after confirmation; early creation exposes the wrong object state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_028_alt3",
+          "text": "Expired temporary holds are removed rather than kept as room-owned history."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i029",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "When a new catalog policy is published, the prior PolicyVersion stops being available for new listings. Existing listings contain complete copies of the policy values, not references to that PolicyVersion. The approved retention schedule keeps every superseded version for two years after replacement; a legal hold pauses purge. When may the old version be purged?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_029_model_v2",
+          "text": "Supersede at replacement; purge after two years unless a legal hold remains."
+        },
+        {
+          "optionId": "n03b03_029_alt1_v2",
+          "text": "Purge it as soon as the last listing stops using it, even if two years have not elapsed."
+        },
+        {
+          "optionId": "n03b03_029_alt2_v2",
+          "text": "Purge it immediately at replacement because listings have copied its values."
+        },
+        {
+          "optionId": "n03b03_029_alt3_v2",
+          "text": "Keep it forever because historical listings must continue to reference the old version."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_029_model_v2"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A fixed schedule, not remaining listing links, controls purge eligibility here.",
+      "details": {
+        "mechanismOrProperty": "Supersession ends availability for new work, while a separate retention clock and hold determine when the version record may be purged.",
+        "scenarioApplication": "The two-year period starts at replacement. Copied listing values do not pin the PolicyVersion, and an active legal hold prevents purge after the period.",
+        "errorCorrection": "Reference-count retirement is the wrong rule because listings contain copies. Immediate deletion violates retention; indefinite retention ignores the stated purge boundary.",
+        "boundaryOrTradeoff": "If listings held live PolicyVersion references instead of snapshots, the model would also need to preserve referential integrity for those consumers.",
+        "transfer": "Distinguish “not current,” “no longer referenced,” and “eligible for deletion”; a retention schedule can make these separate lifecycle states."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_029_alt1_v2",
+          "text": "The approved two-year retention period applies even though listings copy values and no longer reference the version."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_029_alt2_v2",
+          "text": "Supersession stops new use, but the required retention period has just begun."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_029_alt3_v2",
+          "text": "The prompt gives a finite retention period and says listings do not reference the old version."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i030",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A lesson revision can be retired from new enrollment while existing completions continue to reference it. A completion record stores the exact revision and remains available for the learner’s history. Retirement must not rewrite or remove completed records. What lifecycle change should retirement perform?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_030_model",
+          "text": "Retire the revision from enrollment; retain its linked completions."
+        },
+        {
+          "optionId": "n03b03_030_alt1",
+          "text": "Delete the revision and cascade-delete its completion records."
+        },
+        {
+          "optionId": "n03b03_030_alt2",
+          "text": "Rewrite every completion to point to the newest lesson revision."
+        },
+        {
+          "optionId": "n03b03_030_alt3",
+          "text": "Keep the retired revision available for new enrollment because existing completions reference it."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_030_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Retirement blocks new enrollment but does not sever historical completions.",
+      "details": {
+        "mechanismOrProperty": "Retirement changes availability, not historical identity or retention, when records must continue referencing the old version.",
+        "scenarioApplication": "The revision remains resolvable for completion history but is excluded from new enrollment.",
+        "errorCorrection": "Do not treat a newer revision as a replacement for the historical object recorded by a completion.",
+        "boundaryOrTradeoff": "If the product required hard deletion and no completion referred to the revision, reference cleanup could be part of retirement.",
+        "transfer": "Separate an object’s availability to new work from its retention for existing references."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_030_alt1",
+          "text": "The prompt explicitly preserves both revision identity and completion history."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_030_alt2",
+          "text": "A completion records the exact revision used; retargeting changes its historical meaning."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_030_alt3",
+          "text": "Retirement is specifically defined to stop new enrollment while preserving existing history."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i031",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A whiteboard session owns unsaved strokes until close. A successful export creates a separate immutable HistoryArchive that survives session deletion. If export fails, no archive is visible and the session keeps its strokes for retry. What should close and export do to these objects?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_031_model",
+          "text": "Keep strokes on export failure; create a separate Archive after success."
+        },
+        {
+          "optionId": "n03b03_031_alt1",
+          "text": "Delete the Session and its strokes before attempting export."
+        },
+        {
+          "optionId": "n03b03_031_alt2",
+          "text": "Treat the Archive as part of the Session so closing the Session deletes the successful export."
+        },
+        {
+          "optionId": "n03b03_031_alt3",
+          "text": "Create a partial Archive during export and ask the caller to remove it if export fails."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_031_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Failed export leaves the source session retryable; only success creates the archive.",
+      "details": {
+        "mechanismOrProperty": "A successful export commits a distinct retained artifact; the live session remains the owner of unsaved working state until that boundary.",
+        "scenarioApplication": "On failure, the session and strokes remain. On success, a separate archive is created and the session may later be deleted.",
+        "errorCorrection": "Do not tie the durable archive’s lifetime to the editor session that produced it.",
+        "boundaryOrTradeoff": "If export intentionally streamed a visible partial archive, the partial artifact would need its own resumable lifecycle contract.",
+        "transfer": "Preserve the authoritative working object until a durable successor is committed."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_031_alt1",
+          "text": "A failed export must leave the strokes available for retry, so deleting the session first loses required state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_031_alt2",
+          "text": "The archive explicitly survives session deletion and therefore has a separate lifetime."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_031_alt3",
+          "text": "The prompt says no archive is visible until export succeeds; callers should not clean up a partial public object."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i032",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A support conversation can change its assigned team several times. Each EscalationEvent records the team and deadline at that time and remains in the timeline. Reassignment updates the current conversation fields but does not mutate older events. How should reassignment affect the escalation history?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_032_model",
+          "text": "Change current assignment and append an immutable EscalationEvent."
+        },
+        {
+          "optionId": "n03b03_032_alt1",
+          "text": "Rewrite the latest event in place so it always matches the current team and deadline."
+        },
+        {
+          "optionId": "n03b03_032_alt2",
+          "text": "Delete old escalation events when ownership changes."
+        },
+        {
+          "optionId": "n03b03_032_alt3",
+          "text": "Copy the full history onto each newly assigned team and delete the conversation events."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_032_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Reassignment changes current fields and appends, rather than rewrites, history.",
+      "details": {
+        "mechanismOrProperty": "Current state and immutable lifecycle events serve different time horizons and should not be collapsed.",
+        "scenarioApplication": "The Conversation reflects the current owner; each reassignment appends a new event while older event values remain intact.",
+        "errorCorrection": "Do not use the latest event as mutable storage for current state when the prompt requires an immutable timeline.",
+        "boundaryOrTradeoff": "If the system stored only current assignment and no event history, updating a single current record could be sufficient.",
+        "transfer": "When past facts must remain inspectable, model each transition as a retained event rather than rewriting it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_032_alt1",
+          "text": "Earlier events must remain a record of their original team/deadline, not be overwritten by current state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_032_alt2",
+          "text": "The timeline is explicitly retained after reassignment."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_032_alt3",
+          "text": "The conversation timeline remains the authoritative event history; team copies are not the stated model."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i033",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A listing has an unpublished seasonal draft and a currently published revision. Canceling the draft must leave the published revision untouched. Publishing a validated draft creates a new immutable revision and marks the prior revision superseded; prior revisions remain available to orders that selected them. What lifecycle should draft cancellation and publication use?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_033_model",
+          "text": "Discard the draft on cancel; publish a retained successor revision."
+        },
+        {
+          "optionId": "n03b03_033_alt1",
+          "text": "Mutate the published revision in place whenever a draft is edited."
+        },
+        {
+          "optionId": "n03b03_033_alt2",
+          "text": "Delete the currently published revision when a draft is canceled."
+        },
+        {
+          "optionId": "n03b03_033_alt3",
+          "text": "Replace the prior revision object at publish and retarget every existing order."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_033_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Cancellation affects only unpublished work; publication creates another retained revision.",
+      "details": {
+        "mechanismOrProperty": "Draft and published objects have separate lifecycles, and publication creates an immutable successor rather than mutating the current record.",
+        "scenarioApplication": "Cancel removes the draft only. Publish creates a new revision and retains the old one as superseded.",
+        "errorCorrection": "A state label such as “current” does not imply the earlier published object can be deleted when references still use it.",
+        "boundaryOrTradeoff": "If revisions were not immutable and no order pinned them, in-place update could be a different valid model.",
+        "transfer": "Use separate working and published identities when consumers may depend on historical versions."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_033_alt1",
+          "text": "The published revision is immutable; draft editing cannot mutate it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_033_alt2",
+          "text": "Canceling a draft must not affect the currently published revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_033_alt3",
+          "text": "Prior revisions remain available to orders that selected them; retargeting loses that history."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i034",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A backorder split is tentative until a vendor acknowledges its portion. Before acknowledgement, canceling the request deletes that tentative split. After acknowledgement, the accepted vendor work order is retained even if the customer later cancels the overall request. What lifecycle boundary distinguishes the tentative split from accepted work?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_034_model",
+          "text": "Delete tentative splits; retain VendorWorkOrder after acknowledgement."
+        },
+        {
+          "optionId": "n03b03_034_alt1",
+          "text": "Create the retained work order before vendor acknowledgement and delete it on request cancellation."
+        },
+        {
+          "optionId": "n03b03_034_alt2",
+          "text": "Delete accepted vendor work orders whenever the customer cancels the request."
+        },
+        {
+          "optionId": "n03b03_034_alt3",
+          "text": "Treat tentative and accepted splits as one object whose lifetime always matches the request."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_034_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Acknowledgement separates disposable tentative work from retained vendor work.",
+      "details": {
+        "mechanismOrProperty": "A state transition may create a durable successor with a new lifecycle instead of extending the tentative object in place.",
+        "scenarioApplication": "Before acknowledgement, the tentative split is deleted with the request; after acknowledgement, the separate vendor work order is retained.",
+        "errorCorrection": "Do not let request cancellation erase a committed vendor obligation, and do not expose one before commitment.",
+        "boundaryOrTradeoff": "If vendors could retract acknowledged work and no record was retained, the accepted-stage retention requirement would differ.",
+        "transfer": "Identify the commit event that changes an object from provisional working state to a durable external record."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_034_alt1",
+          "text": "Acknowledgement is the explicit creation boundary for the retained work order."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_034_alt2",
+          "text": "Accepted vendor work survives later customer cancellation under the stated facts."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_034_alt3",
+          "text": "The prompt gives the tentative and accepted stages different lifetimes."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i035",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A route quote cache stores a derived result for one exact RouteRevision and RatingSnapshot. Each cache entry expires 10 minutes after creation; either source record remains available independently, and an expired quote can be recomputed. What should expiry remove?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_035_model_v2",
+          "text": "Expire only the cache entry; keep source records for recomputation."
+        },
+        {
+          "optionId": "n03b03_035_alt1_v2",
+          "text": "Delete the RouteRevision and RatingSnapshot together with the cache entry because they produced the quote."
+        },
+        {
+          "optionId": "n03b03_035_alt2_v2",
+          "text": "Keep the cache entry indefinitely because both source records remain available."
+        },
+        {
+          "optionId": "n03b03_035_alt3_v2",
+          "text": "Retire the route and rating source records at the cache entry’s 10-minute expiry."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_035_model_v2"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The cache has a ten-minute lifetime; its inputs do not.",
+      "details": {
+        "mechanismOrProperty": "A derived cache value may be discarded without owning the identity or lifetime of the inputs from which it was calculated.",
+        "scenarioApplication": "Expiry removes the one cached quote. The exact route revision and rating snapshot remain, allowing the next request to derive a fresh quote.",
+        "errorCorrection": "Deleting inputs mistakes a cached result for its source objects. Keeping an expired entry ignores the stated lifetime, while retiring sources changes business records unrelated to cache expiry.",
+        "boundaryOrTradeoff": "If the cache entry were the only retained copy of either source, deleting it would lose required data; the prompt states both sources remain independently available.",
+        "transfer": "For derived objects, identify whether expiry invalidates only the projection or also ends the source objects’ separate lifetimes."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_035_alt1_v2",
+          "text": "The prompt says each source remains independently available and can be used to recompute an expired quote."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_035_alt2_v2",
+          "text": "The cache entry has an explicit ten-minute expiry even while its inputs remain valid."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_035_alt3_v2",
+          "text": "Cache expiry applies to the derived entry, not the lifecycle of route or rating records."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b03-i036",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B03",
+    "prompt": "A bundle quote uses the current prices of shared catalog products. Publishing a new bundle revision pins the exact product-price versions it used. Retiring a product from new bundles does not remove those versions while existing bundle revisions still reference them. When may the old product-price version be retired?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b03_036_model",
+          "text": "Retire a price version only after its last live reference is released."
+        },
+        {
+          "optionId": "n03b03_036_alt1",
+          "text": "Delete the price version immediately when the product is retired from new bundles."
+        },
+        {
+          "optionId": "n03b03_036_alt2",
+          "text": "Let each bundle revision delete the shared price version as soon as that bundle is removed."
+        },
+        {
+          "optionId": "n03b03_036_alt3",
+          "text": "Keep the old version current for new bundles until every historical revision is deleted."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b03_036_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Live bundle references, rather than catalog-current status, determine retirement.",
+      "details": {
+        "mechanismOrProperty": "Shared immutable version retention ends when its last consumer releases it, not when it stops being current.",
+        "scenarioApplication": "New bundles switch to the new price version; old revisions continue to resolve their pinned version until references end.",
+        "errorCorrection": "“Retired from new use” is not equivalent to “safe to delete” while historical objects still depend on it.",
+        "boundaryOrTradeoff": "If no retained revision pinned the old price, it could be retired immediately after replacement.",
+        "transfer": "Distinguish version selection for future work from retention required by existing consumers."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_036_alt1",
+          "text": "Existing revisions still need the pinned price version even though new bundles no longer use it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_036_alt2",
+          "text": "Several revisions may share a version, so one consumer cannot unilaterally retire it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b03_036_alt3",
+          "text": "The prompt allows a new version for new bundles while old references remain."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  }
+]

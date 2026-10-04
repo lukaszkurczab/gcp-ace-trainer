@@ -1,0 +1,1172 @@
+[
+  {
+    "questionId": "ood-n03-b01-i019",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A lending ledger keeps each posted allocation as an audit record even after an account is closed. Every allocation points to exactly one account; an account may have zero or many allocations, and closing an account never deletes its posted allocations. Which relationship and multiplicities model these facts?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_019_model",
+          "text": "Plain association: Account 1—0..* Allocations; each allocation has one account."
+        },
+        {
+          "optionId": "n03b01_019_alt1",
+          "text": "Compose Account with its Allocations, one-to-many, so closing the Account deletes every allocation."
+        },
+        {
+          "optionId": "n03b01_019_alt2",
+          "text": "Use a many-to-many association because an allocation may be shared by several accounts."
+        },
+        {
+          "optionId": "n03b01_019_alt3",
+          "text": "Use one-to-one association because each account has one current balance."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_019_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Posted records outlive the account, so the link does not own their lifecycle.",
+      "details": {
+        "mechanismOrProperty": "An ordinary association records a link without asserting whole-part deletion. Multiplicity is read independently at both ends.",
+        "scenarioApplication": "Each allocation has one account, while an account can retain any number of allocations, including none. The audit-retention fact is decisive against composition.",
+        "errorCorrection": "Do not infer composition from the phrase “account allocation.” UML composition would normally delete object parts with their composite; that is expressly not this ledger’s rule.",
+        "boundaryOrTradeoff": "If the ledger instead guaranteed that allocations were disposable draft children deleted with a draft account, composition could fit that draft model. The posted records here outlive closure.",
+        "transfer": "For a relationship question, write each end’s count and lifecycle rule before choosing a whole-part marker."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_019_alt1",
+          "text": "The explicit retention rule rules out composition; closure must leave allocation records intact."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_019_alt2",
+          "text": "An allocation is assigned to exactly one account, so the many-to-many end contradicts the stated endpoint rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_019_alt3",
+          "text": "The scenario allows zero or many allocations per account; a balance is not an allocation count."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i020",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A bracket editor creates a draft match slot for a single tournament bracket. A slot cannot be reused by another bracket. Removing the draft bracket removes all of its unplayed slots; played matches are converted to separate archived result records. How should the draft bracket and its unplayed slots be related?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_020_model",
+          "text": "Composition: Bracket 1—0..* DraftSlots; each slot has one bracket."
+        },
+        {
+          "optionId": "n03b01_020_alt1",
+          "text": "Use a plain many-to-many association because slots may move between brackets after creation."
+        },
+        {
+          "optionId": "n03b01_020_alt2",
+          "text": "Use a plain one-to-many association so deleting a draft leaves orphan slots available for reuse."
+        },
+        {
+          "optionId": "n03b01_020_alt3",
+          "text": "Make DraftSlot a subtype of Bracket because both participate in tournament structure."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_020_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Unplayed slots disappear with the draft bracket, unlike archived results.",
+      "details": {
+        "mechanismOrProperty": "Composition models the exclusive whole-part lifetime stated for these draft objects; the archived result is intentionally outside that lifetime.",
+        "scenarioApplication": "A bracket may have no slots yet or many; each slot has one bracket. Deleting the draft bracket deletes its unplayed slots, which is the decisive composition fact.",
+        "errorCorrection": "Do not carry the archived-result behavior back to draft slots. The prompt separates the two records and only gives the draft slots the bracket’s lifetime.",
+        "boundaryOrTradeoff": "Once played, the separate result record survives bracket editing. If the question concerned that result record, its retention would call for a separate association.",
+        "transfer": "Model the lifecycle of the specific object kind in the question; similarly named historical records may have a different owner."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_020_alt1",
+          "text": "The prompt explicitly forbids slot reuse across brackets, and the draft bracket owns slot deletion."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_020_alt2",
+          "text": "The prompt says removing the bracket removes its unplayed slots; leaving them orphaned violates that lifecycle."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_020_alt3",
+          "text": "A slot is a part linked to a bracket, not a specialized kind of bracket."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i021",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A research report cites several laboratory protocols, and the same protocol may be cited by reports from many projects. A report-protocol link has no independent fields such as run date, selected version, or status. Deleting a report does not delete a protocol. Which relationship structure represents the links?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_021_model_v2",
+          "text": "Plain association: Reports and Protocols are many-to-many."
+        },
+        {
+          "optionId": "n03b01_021_alt1_v2",
+          "text": "Use a one-to-many association so a Protocol can belong to only one Report."
+        },
+        {
+          "optionId": "n03b01_021_alt2_v2",
+          "text": "Compose Protocols under Reports so deleting one report removes every cited protocol."
+        },
+        {
+          "optionId": "n03b01_021_alt3_v2",
+          "text": "Create a ProtocolUse association class even though the link has no per-citation data in this model."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_021_model_v2"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Both endpoint types recur, and the link has no citation-specific state.",
+      "details": {
+        "mechanismOrProperty": "A many-to-many association represents multiple links at each endpoint; a separate association class is useful when each link has its own attributes or behavior.",
+        "scenarioApplication": "Reports cite multiple protocols, protocols recur across reports, deletion does not cascade, and the prompt gives no citation-specific fields.",
+        "errorCorrection": "Limiting a protocol to one report contradicts reuse; composition contradicts independent protocol lifetime; an association class adds link state the model does not have.",
+        "boundaryOrTradeoff": "If each citation later stored a protocol version or approval status, the link would carry its own data and could be modeled as a ProtocolUse object.",
+        "transfer": "Read multiplicity at both ends, then ask whether the relationship itself has data before adding an association class."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_021_alt1_v2",
+          "text": "The same protocol is explicitly cited by reports from many projects, so its report-side multiplicity is many."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_021_alt2_v2",
+          "text": "Report deletion leaves protocols intact, so a report cannot own protocol lifetime."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_021_alt3_v2",
+          "text": "No citation-specific values exist in this case; a separate link object would add unsupported state."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i022",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A research snapshot records the exact input datasets and code versions used for a run. A dataset or code version may be reused by many snapshots, and deleting a snapshot never deletes either referenced artifact. Which relationship structure matches the snapshot and its inputs?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_022_model",
+          "text": "Associate each Snapshot with its shared Datasets and CodeVersions."
+        },
+        {
+          "optionId": "n03b01_022_alt1",
+          "text": "Compose each Snapshot with its datasets and code versions so deleting the snapshot deletes all inputs."
+        },
+        {
+          "optionId": "n03b01_022_alt2",
+          "text": "Use a one-to-one relationship because each snapshot is created by one run."
+        },
+        {
+          "optionId": "n03b01_022_alt3",
+          "text": "Use composition in both directions because immutable artifacts are owned by every snapshot that references them."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_022_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Snapshots share inputs that have independent lifetimes.",
+      "details": {
+        "mechanismOrProperty": "A reference to immutable data is still an association when the referenced object has an independent lifecycle and can be shared.",
+        "scenarioApplication": "The snapshot points to multiple provenance artifacts, while each artifact can be referenced by many snapshots. The no-delete and reuse facts exclude composition.",
+        "errorCorrection": "Immutability does not mean ownership. It describes whether values change, not which object controls the referenced object’s lifetime.",
+        "boundaryOrTradeoff": "If a snapshot contained a unique temporary copy that was deleted only with that snapshot, that copy could be modeled as a part instead of the shared source artifact.",
+        "transfer": "Separate source identity and retention from the record that points to it; provenance links rarely imply ownership by themselves."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_022_alt1",
+          "text": "Inputs are independently retained and reused; snapshot deletion cannot own their lifetime."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_022_alt2",
+          "text": "A snapshot can pin several datasets and versions, and an artifact can be reused by multiple snapshots."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_022_alt3",
+          "text": "An immutable shared artifact cannot be an exclusive part of every referencing snapshot at once."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i023",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "An annotation is attached to one exact document revision and has one author. A revision can have many annotations and an author can write annotations on many revisions. Superseding a revision does not erase its annotations. Which multiplicities and relationship kind fit the annotation records?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_023_model",
+          "text": "Two associations: each Annotation has one Revision and Author; either can recur."
+        },
+        {
+          "optionId": "n03b01_023_alt1",
+          "text": "Compose annotations under the current revision so superseding it erases them."
+        },
+        {
+          "optionId": "n03b01_023_alt2",
+          "text": "Use one-to-one links from revision and author because each annotation has only one of each."
+        },
+        {
+          "optionId": "n03b01_023_alt3",
+          "text": "Use a many-to-many annotation-to-revision link so one annotation can silently move between revisions."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_023_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Annotations are singularly attributed but both authors and revisions recur.",
+      "details": {
+        "mechanismOrProperty": "Two separate associations can connect a record to its author and revision, with distinct multiplicities at each end.",
+        "scenarioApplication": "Each annotation has exactly one author and one revision, but either can participate in many annotations. Supersession preserves the linked record.",
+        "errorCorrection": "The fact that an annotation is “attached” to a revision does not mean it is disposable when the revision is superseded.",
+        "boundaryOrTradeoff": "If annotations were scratch marks deleted whenever a draft revision was discarded, a composite draft model could be appropriate for those scratch objects.",
+        "transfer": "State whether records are snapshots/history or disposable children before treating containment as composition."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_023_alt1",
+          "text": "The annotation history remains after supersession, so the revision does not own its lifetime."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_023_alt2",
+          "text": "Many annotations per revision and author are explicit; one-to-one constrains both ends incorrectly."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_023_alt3",
+          "text": "Each annotation records one exact revision; moving it would violate the stated record identity."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i024",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A mobile inspection draft contains four independently editable sections. The draft cannot be saved without all four section objects. Discarding the draft deletes its unsent sections; once submitted, the server creates separate retained inspection records. Model the draft and its four local section objects.",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_024_model",
+          "text": "Compose each Draft with its four DraftSections."
+        },
+        {
+          "optionId": "n03b01_024_alt1",
+          "text": "Use a many-to-many association because inspectors may copy a section into another draft."
+        },
+        {
+          "optionId": "n03b01_024_alt2",
+          "text": "Use a plain one-to-many association so discarded draft sections remain as reusable records."
+        },
+        {
+          "optionId": "n03b01_024_alt3",
+          "text": "Compose the retained server Inspection with the local Draft so either deletion removes both."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_024_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The local sections end with the draft; submission creates different records.",
+      "details": {
+        "mechanismOrProperty": "Composition fits an exclusive part whose existence in this model is bounded by the draft. The exact count is four at the section end.",
+        "scenarioApplication": "Every draft has four local sections, and every section has one draft. Discarding the draft removes those children; submission creates different server objects.",
+        "errorCorrection": "Do not mistake submission for moving the same object into a server record. The prompt explicitly says the server creates separate retained records.",
+        "boundaryOrTradeoff": "If submitted sections were the same objects and survived deletion of the draft, a plain association or a transfer out of composition would be needed.",
+        "transfer": "When a workflow copies or transforms data across a boundary, model the lifetime of each record separately rather than assuming one object moves unchanged."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_024_alt1",
+          "text": "The prompt says the local sections are not reused; copying creates different objects rather than sharing these parts."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_024_alt2",
+          "text": "Discarding a draft explicitly deletes its unsent sections, so an independent section lifetime is wrong."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_024_alt3",
+          "text": "The submitted server record is separate and retained; it does not share the local draft’s lifetime."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i025",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A lab instrument has zero or one installed CalibrationModule at a time, and a module is installed in at most one instrument at a time. Modules return to an independent service pool after removal and can later be installed elsewhere; removing an instrument does not delete its module. Which relationship and multiplicities model installation?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_025_model_v3",
+          "text": "Plain association, 0..1 at both ends; module lifetime is independent."
+        },
+        {
+          "optionId": "n03b01_025_alt1_v3",
+          "text": "Compose each instrument with its optional module so instrument deletion also deletes the module."
+        },
+        {
+          "optionId": "n03b01_025_alt2_v3",
+          "text": "Use many-to-many because a module can be installed in different instruments over time."
+        },
+        {
+          "optionId": "n03b01_025_alt3_v3",
+          "text": "Use one-to-one with exactly one module per instrument and exactly one instrument per module."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_025_model_v3"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Installation is exclusive at a moment, but the module has an independent, reusable lifecycle.",
+      "details": {
+        "mechanismOrProperty": "Multiplicity describes how many links may exist at one time; composition separately claims a whole-part deletion relationship.",
+        "scenarioApplication": "Each instrument has at most one installed module, and each module has at most one instrument at once. Removal returns the module to service, so it can later link to another instrument.",
+        "errorCorrection": "Reuse over time does not mean simultaneous many-to-many membership. Deleting an instrument cannot delete the module, and some instruments may have no module.",
+        "boundaryOrTradeoff": "If instruments could carry several modules at once, raise the instrument-side multiplicity. If modules existed only as disposable instrument parts, composition could be considered.",
+        "transfer": "Separate current-link cardinality from reuse across time and from ownership of object lifetime."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_025_alt1_v3",
+          "text": "The module is returned to an independent pool and survives instrument deletion, so composition is false."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_025_alt2_v3",
+          "text": "The scenario forbids simultaneous assignment to multiple instruments; reuse happens after removal."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_025_alt3_v3",
+          "text": "An instrument may have no module, so the lower bound is zero, not one."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i026",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A campus access system stores physical badge records and their holder assignments. A holder may have several badges over time; a badge is assigned to at most one holder at a time. Revocation archives the badge record rather than deleting it. Choose the relationship and multiplicity for current holder assignment.",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_026_model",
+          "text": "Associate each Badge with at most one current Holder; a Holder may have many badges."
+        },
+        {
+          "optionId": "n03b01_026_alt1",
+          "text": "Compose badges under the holder so removing a holder deletes every badge record."
+        },
+        {
+          "optionId": "n03b01_026_alt2",
+          "text": "Use one-to-one because a badge can have only one current holder."
+        },
+        {
+          "optionId": "n03b01_026_alt3",
+          "text": "Use many-to-many because a single badge may be assigned to several holders simultaneously."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_026_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Badge identity survives revocation while the current holder link can change.",
+      "details": {
+        "mechanismOrProperty": "Temporal assignment cardinality can be represented as a current association even when historical assignment events are stored separately.",
+        "scenarioApplication": "A badge’s current link has an upper bound of one; a holder may accumulate many badge links. Revocation changes status and retains the badge.",
+        "errorCorrection": "Do not infer badge deletion from holder removal. The prompt separates the physical badge record from its current assignment.",
+        "boundaryOrTradeoff": "If a badge were a temporary token created and destroyed with a holder account, composition would be a different lifecycle model.",
+        "transfer": "For time-varying relationships, distinguish the current link’s multiplicity from retained assignment history."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_026_alt1",
+          "text": "Badge records remain archived after revocation and are not owned for deletion by the holder."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_026_alt2",
+          "text": "A holder can have multiple badges over time, so one-to-one is too restrictive."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_026_alt3",
+          "text": "At most one current holder per badge excludes simultaneous many-to-many assignment."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i027",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A shipment may receive a replacement label after an address correction. Each label records one shipment snapshot; a shipment can have several historical labels. Printed labels remain in the audit archive when a shipment is cancelled. Which relationship preserves both the label history and the stated cardinality?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_027_model",
+          "text": "Associate each Shipment with its historical Labels."
+        },
+        {
+          "optionId": "n03b01_027_alt1",
+          "text": "Compose Labels under Shipment so cancellation deletes all printed labels."
+        },
+        {
+          "optionId": "n03b01_027_alt2",
+          "text": "Use a one-to-one association because a shipment has one active label."
+        },
+        {
+          "optionId": "n03b01_027_alt3",
+          "text": "Use a many-to-many association because corrected labels can be reprinted."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_027_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Replacement creates another retained label rather than moving one shared label.",
+      "details": {
+        "mechanismOrProperty": "The association captures provenance, while status or supersession can identify which label is current.",
+        "scenarioApplication": "Each label points to one shipment; the shipment can point to many labels across corrections. Cancellation does not delete them.",
+        "errorCorrection": "An “active label” constraint is about current status, not a one-to-one limit on historical label objects.",
+        "boundaryOrTradeoff": "If the system generated only an unprinted temporary preview deleted with the shipment, that preview could have a composite lifecycle.",
+        "transfer": "Do not use current cardinality to erase historical objects when the scenario requires audit retention."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_027_alt1",
+          "text": "Cancellation must retain the printed evidence, so label lifetime is not controlled by shipment deletion."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_027_alt2",
+          "text": "Historical replacements make several labels per shipment possible even if one is active."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_027_alt3",
+          "text": "Reprinting makes a new label record, not a single label shared by multiple shipments."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i028",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A rehearsal booking points to one room while it is active. A room can host many bookings at different times. Moving a booking changes its room link, and cancelled booking records remain available for reporting. Model the booking-to-room relationship.",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_028_model",
+          "text": "Associate each Booking with one current Room; a Room may host many Bookings."
+        },
+        {
+          "optionId": "n03b01_028_alt1",
+          "text": "Compose bookings under a room so removing a room deletes its booking history."
+        },
+        {
+          "optionId": "n03b01_028_alt2",
+          "text": "Use many-to-many because a booking can move between rooms during its lifetime."
+        },
+        {
+          "optionId": "n03b01_028_alt3",
+          "text": "Use one-to-one because each room can host only one booking at a time."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_028_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A booking has one current room, while room history spans bookings.",
+      "details": {
+        "mechanismOrProperty": "The association models the current link; time and cancellation rules belong to the booking’s state and constraints.",
+        "scenarioApplication": "Each booking has one room at a time, while a room can link to many bookings over time. Historical bookings persist.",
+        "errorCorrection": "Do not translate “room is not double-booked at the same time” into one-to-one object cardinality; the prompt allows bookings at different times.",
+        "boundaryOrTradeoff": "A booking may temporarily have no room while cancelled or being moved if the domain permits that state; the given active state has one room.",
+        "transfer": "Separate temporal overlap constraints from the multiplicity of objects connected over their lifetimes."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_028_alt1",
+          "text": "Cancelled bookings remain for reporting, so room deletion cannot own their lifetime."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_028_alt2",
+          "text": "A booking has one current room link; moving it changes that link rather than making the same booking simultaneously belong to many rooms."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_028_alt3",
+          "text": "Different bookings can occur in the same room at different times; temporal capacity is not one-to-one object multiplicity."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i029",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "An exhibit’s maintenance history contains many maintenance records. Each record belongs to one exhibit. Replacing the physical exhibit does not erase the maintenance records, which remain attached to the retired exhibit record. Which relationship should represent the records?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_029_model",
+          "text": "Associate each Exhibit with its retained MaintenanceRecords."
+        },
+        {
+          "optionId": "n03b01_029_alt1",
+          "text": "Compose maintenance records so replacing the exhibit deletes its history."
+        },
+        {
+          "optionId": "n03b01_029_alt2",
+          "text": "Use one-to-one because an exhibit can only be in one maintenance state now."
+        },
+        {
+          "optionId": "n03b01_029_alt3",
+          "text": "Use many-to-many because a maintenance record can be shared across unrelated exhibits."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_029_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Replacing an exhibit does not remove its maintenance history.",
+      "details": {
+        "mechanismOrProperty": "A historical record may be associated with the object it describes without being a disposable component of that object.",
+        "scenarioApplication": "The exhibit has many maintenance records over time, and each record identifies one exhibit; replacement leaves the records intact.",
+        "errorCorrection": "A current maintenance flag and a maintenance history are different objects with different multiplicities.",
+        "boundaryOrTradeoff": "A temporary checklist for an unsaved maintenance session could be a part of that session and deleted with it.",
+        "transfer": "For audit records, model the subject link and retention policy separately from the subject’s current state."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_029_alt1",
+          "text": "The maintenance history survives replacement, so the exhibit does not control record deletion."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_029_alt2",
+          "text": "The question concerns historical records, not the exhibit’s single current state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_029_alt3",
+          "text": "Each record documents one exhibit’s maintenance; sharing would merge unrelated histories."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i030",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A learning platform stores a completion against the exact published lesson revision used by the learner. One revision can have many completions. Retiring that revision does not delete learner completions. Which relationship represents completion provenance?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_030_model",
+          "text": "Associate each Completion with the exact LessonRevision it used."
+        },
+        {
+          "optionId": "n03b01_030_alt1",
+          "text": "Compose completions inside the revision so retirement erases learner history."
+        },
+        {
+          "optionId": "n03b01_030_alt2",
+          "text": "Use a one-to-one association because a learner completes a revision once."
+        },
+        {
+          "optionId": "n03b01_030_alt3",
+          "text": "Use a many-to-many association because a completion may refer to several revisions."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_030_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A completion records the exact revision used, not the current lesson title.",
+      "details": {
+        "mechanismOrProperty": "A stable reference from an event to the exact version it observed preserves provenance without implying containment.",
+        "scenarioApplication": "Each completion refers to exactly one revision; many completions may refer to it. Retirement leaves the completion intact.",
+        "errorCorrection": "The learner may have other completions, but this particular completion records one exact revision and should not be spread across versions.",
+        "boundaryOrTradeoff": "An unfinished in-memory quiz response could be a temporary child of a session; the persisted completion is retained history.",
+        "transfer": "Versioned source objects often outlive the events that reference them; choose associations and counts accordingly."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_030_alt1",
+          "text": "Completions survive retirement, so the revision cannot own their lifetime."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_030_alt2",
+          "text": "Different learners can complete the same revision; one-to-one constrains the revision end incorrectly."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_030_alt3",
+          "text": "The prompt pins one exact revision per completion."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i031",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A venue contains many numbered Seats, and each Seat belongs to exactly one Venue. Seat labels are unique within a venue but repeat at other venues; a booking request supplies a Venue and local SeatLabel, which identifies at most one Seat. In a UML association, at which end should SeatLabel qualify the lookup?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_031_model_v4",
+          "text": "At the Seat end, so Venue plus SeatLabel selects at most one Seat."
+        },
+        {
+          "optionId": "n03b01_031_alt1_v4",
+          "text": "At the Venue end, so a Seat selects the Venue by its local label."
+        },
+        {
+          "optionId": "n03b01_031_alt2_v4",
+          "text": "Nowhere; make SeatLabel globally unique and omit the association qualifier."
+        },
+        {
+          "optionId": "n03b01_031_alt3_v4",
+          "text": "At the Booking-to-Venue end, so SeatLabel identifies a Venue for each booking."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_031_model_v4"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The lookup starts from a Venue and narrows the related Seat by a venue-local label.",
+      "details": {
+        "mechanismOrProperty": "A UML qualifier is an attribute attached to an association end; from an object at the opposite end, its value selects among the related objects.",
+        "scenarioApplication": "The start object is a Venue and the target objects are its Seats. SeatLabel is unique only within that Venue, so the qualifier belongs at the Seat end.",
+        "errorCorrection": "Putting the qualifier on Venue reverses the lookup. A global label contradicts repeated labels, and qualifying Booking→Venue models a different path.",
+        "boundaryOrTradeoff": "If labels became global identifiers, no venue-local qualifier would be needed. If the pair identified several seats, the qualified-end multiplicity would allow several.",
+        "transfer": "Place a qualifier on the end whose instances are selected by a key in the context of the opposite object."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_031_alt1_v4",
+          "text": "The request starts with Venue and uses it to select a Seat; the proposed direction selects the Venue from a Seat."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_031_alt2_v4",
+          "text": "The premise says labels repeat across venues, so a label alone is not globally unique."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_031_alt3_v4",
+          "text": "SeatLabel chooses a Seat within a Venue; it does not choose the Venue from a Booking."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i032",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "Each escalation event records one support conversation and the staff member who made it. A StaffMember may author escalation events for multiple conversations. A conversation may have many escalation events, and changing the assigned staff member does not rewrite earlier events. Choose the relationship cardinalities for the immutable escalation events.",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_032_model",
+          "text": "Link each EscalationEvent to one Conversation and StaffMember; both recur across events."
+        },
+        {
+          "optionId": "n03b01_032_alt1",
+          "text": "Compose events under the currently assigned staff member so reassignment erases earlier events."
+        },
+        {
+          "optionId": "n03b01_032_alt2",
+          "text": "Use one-to-one links because each event has one conversation and one staff member."
+        },
+        {
+          "optionId": "n03b01_032_alt3",
+          "text": "Link each event to every staff member ever assigned to the conversation."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_032_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Events accumulate separately for each conversation and author.",
+      "details": {
+        "mechanismOrProperty": "Event records have single subject/author references while those referenced people and conversations participate in many events.",
+        "scenarioApplication": "Each event has one conversation and one author, but both endpoints can appear in many events over time. Reassignment does not alter prior links.",
+        "errorCorrection": "Do not make event authorship follow the mutable current assignment; preserve the recorded author reference.",
+        "boundaryOrTradeoff": "A temporary unsubmitted escalation draft could be deleted with its authoring session, unlike a saved immutable event.",
+        "transfer": "For event/audit objects, model one recorded cause and actor per event while allowing many events per long-lived subject."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_032_alt1",
+          "text": "Events retain their original author across reassignment, so the current staff member does not own their lifetime."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_032_alt2",
+          "text": "Many events may share a conversation or staff member; one-to-one is too restrictive."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_032_alt3",
+          "text": "The prompt says each event records the staff member who made it, not everyone ever assigned."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i033",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A marketplace listing references one approved inventory policy version. A policy version can be used by many listings, and publishing a new policy does not mutate the version already pinned by a listing. Which relationship and multiplicities describe listings and policy versions?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_033_model",
+          "text": "Associate each Listing with its pinned PolicyVersion."
+        },
+        {
+          "optionId": "n03b01_033_alt1",
+          "text": "Compose policy versions inside listings so removing a listing deletes its shared policy."
+        },
+        {
+          "optionId": "n03b01_033_alt2",
+          "text": "Use one-to-one because every listing has its own pricing rule."
+        },
+        {
+          "optionId": "n03b01_033_alt3",
+          "text": "Use a many-to-many link so each listing can silently switch among versions without recording which one it used."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_033_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Listings pin versions while the catalog can publish replacements.",
+      "details": {
+        "mechanismOrProperty": "Versioned reusable policy objects have an independent lifecycle and are linked by references from the records that use them.",
+        "scenarioApplication": "A listing points to one version, and many listings may point to that same version. Publishing a newer version does not change existing links.",
+        "errorCorrection": "A policy can be updated by publishing a new version without turning every listing’s existing association into a multi-choice relation.",
+        "boundaryOrTradeoff": "A listing-specific private rule copied and deleted with the listing would be a different, owned object rather than the shared policy version.",
+        "transfer": "For reusable immutable configuration, model the exact selected version as a reference and state its multiplicity."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_033_alt1",
+          "text": "Policy versions are shared and retained independently, so no listing owns their deletion."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_033_alt2",
+          "text": "The scenario explicitly permits many listings to reuse a policy version."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_033_alt3",
+          "text": "Each listing pins one exact version; multiple alternatives would not identify the published policy."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i034",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A repair request can be split into several vendor work orders. Every split names exactly one original request and one vendor, and each work order has its own ID and allocated quantity. A vendor can receive many splits, and closing the request does not delete the vendor’s work-order history. What relationship model fits the split records?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_034_model",
+          "text": "Model Split as the Request–Vendor association class, with many Splits at each end."
+        },
+        {
+          "optionId": "n03b01_034_alt1",
+          "text": "Compose Splits under Request and Vendor so either parent deletion erases the work history."
+        },
+        {
+          "optionId": "n03b01_034_alt2",
+          "text": "Use one-to-one between Request and Split because the request identity stays the same."
+        },
+        {
+          "optionId": "n03b01_034_alt3",
+          "text": "Use a many-to-many Request-to-Vendor link without distinct Split objects."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_034_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Each split carries facts about its particular request-vendor pairing.",
+      "details": {
+        "mechanismOrProperty": "A join/event object is appropriate when the relationship itself has identity and carries its own history.",
+        "scenarioApplication": "Each Split has one Request and one Vendor, while each Request and Vendor can be connected to many Splits.",
+        "errorCorrection": "Retaining the original request ID does not make every split the same object; each work order is a distinct record.",
+        "boundaryOrTradeoff": "Temporary unsent split drafts deleted with a request could be composition parts, but sent vendor work orders are retained records.",
+        "transfer": "When a many-to-many relationship carries identity or history, model the association as its own linked object."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_034_alt1",
+          "text": "Work orders remain in vendor history; neither referenced party controls their deletion."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_034_alt2",
+          "text": "A split request explicitly creates several split records."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_034_alt3",
+          "text": "The case requires each split to retain its own link to one request and one vendor, not a collapsed link."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i035",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A garden reservation may have several approval records from different review rounds. Each approval record identifies exactly one reservation and reviewer. A Reviewer may approve multiple reservations across review rounds. Transferring the reservation does not erase the prior approvals. Select the relationship model for reservation approvals.",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_035_model",
+          "text": "Link each Approval to one Reservation and Reviewer; both may recur."
+        },
+        {
+          "optionId": "n03b01_035_alt1",
+          "text": "Compose approvals under the current reservation holder so a transfer deletes the review history."
+        },
+        {
+          "optionId": "n03b01_035_alt2",
+          "text": "Use one approval per reservation because only the latest decision matters."
+        },
+        {
+          "optionId": "n03b01_035_alt3",
+          "text": "Use many-to-many because one approval record can be reassigned to several reservations."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_035_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Reservations and reviewers both recur across approval records.",
+      "details": {
+        "mechanismOrProperty": "Approval events link to the subject and reviewer that participated; the current owner can change without rewriting past links.",
+        "scenarioApplication": "Each approval has one reservation and one reviewer; reservations and reviewers can participate in many approval records.",
+        "errorCorrection": "A current approval summary may show only the latest result, but that summary does not change the history multiplicity.",
+        "boundaryOrTradeoff": "A temporary unsaved approval form could be discarded with a reservation-edit session; persisted approvals are different records.",
+        "transfer": "Treat review decisions as retained events with precise subject and author links when transfers must preserve history."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_035_alt1",
+          "text": "Transfer preserves approval history, so current-holder ownership is not the record lifecycle."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_035_alt2",
+          "text": "The prompt explicitly stores several rounds and reviewers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_035_alt3",
+          "text": "Each approval documents one specific reservation review, not multiple reservations."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  },
+  {
+    "questionId": "ood-n03-b01-i036",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B01",
+    "prompt": "A subscription bundle contains two or more bundle-line objects. Each line belongs to one bundle and is deleted when that bundle is deleted. The products referenced by the lines are shared across bundles and remain in the catalog if a bundle is removed. Which relationships represent Bundle, BundleLine, and Product?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n03b01_036_model",
+          "text": "Compose Bundle–BundleLine; associate each line with its shared Product."
+        },
+        {
+          "optionId": "n03b01_036_alt1",
+          "text": "Compose Bundle with Product directly so deleting a bundle deletes shared catalog products."
+        },
+        {
+          "optionId": "n03b01_036_alt2",
+          "text": "Use plain associations for both Bundle–BundleLine and BundleLine–Product, leaving deleted bundle lines independently alive."
+        },
+        {
+          "optionId": "n03b01_036_alt3",
+          "text": "Compose Product under BundleLine because a line references a product."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n03b01_036_model"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Bundle lines end with their bundle; catalog products are shared.",
+      "details": {
+        "mechanismOrProperty": "One domain can contain a composition and a separate ordinary association; ownership must be decided for each endpoint pair.",
+        "scenarioApplication": "A Bundle owns its lines, but the lines merely reference reusable Products. The two relationships have different lifetimes.",
+        "errorCorrection": "Do not propagate the bundle’s lifetime through a reference to a shared catalog object.",
+        "boundaryOrTradeoff": "If a bundle held private copied product snapshots deleted with it, those snapshots—not the catalog products—could be composite parts.",
+        "transfer": "Analyze each link separately; a composite container may reference external reusable objects without owning them."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_036_alt1",
+          "text": "Products are shared catalog objects and survive bundle deletion, so they cannot be composite parts of a bundle."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_036_alt2",
+          "text": "Bundle lines have an explicitly bundle-bounded lifetime and should be removed with their bundle."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n03b01_036_alt3",
+          "text": "A line’s product is shared and independently retained; reference does not imply whole-part ownership."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ]
+  }
+]

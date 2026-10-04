@@ -1,0 +1,1208 @@
+[
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b09-i019",
+    "prompt": "A TypeScript package has three internal parsers, but consumers need only `parseInvoice(text)`. Which surface best preserves representation freedom?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_019_key",
+          "text": "Export `parseInvoice`; keep parser representation private."
+        },
+        {
+          "optionId": "ood-n03-b09_019_w1",
+          "text": "Export the parser barrel so clients can choose a stage when needed."
+        },
+        {
+          "optionId": "ood-n03-b09_019_w2",
+          "text": "Expose parser objects so clients can tune parse stages."
+        },
+        {
+          "optionId": "ood-n03-b09_019_w3",
+          "text": "Publish every intermediate type so consumers can reproduce parsing."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_019_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Consumers need one operation; the parser representation is internal.",
+      "details": {
+        "mechanismOrProperty": "A narrow module export surface limits compatibility commitments.",
+        "scenarioApplication": "Only `parseInvoice(text)` is named as a consumer requirement.",
+        "errorCorrection": "Wildcard exports publish internal names without a client need.",
+        "boundaryOrTradeoff": "Export additional types only when callers need to name them in the supported contract.",
+        "transfer": "Expose the operation callers require and keep implementation structure replaceable."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_019_w1",
+          "text": "Publishing internal stages commits the module to names consumers do not need."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_019_w2",
+          "text": "Mutable stage objects expose parser representation beyond the requested operation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_019_w3",
+          "text": "Reproducing the parser in clients defeats the package boundary."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b09-i020",
+    "prompt": "The pricing module stores amounts as integer cents today, but consumers only need to request a quote and display the returned amount. What should be public?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_020_key",
+          "text": "Export quote behavior and a semantic amount value."
+        },
+        {
+          "optionId": "ood-n03-b09_020_w1",
+          "text": "Expose cents and document the unit for consumers."
+        },
+        {
+          "optionId": "ood-n03-b09_020_w2",
+          "text": "Expose the pricing row so callers can update it directly."
+        },
+        {
+          "optionId": "ood-n03-b09_020_w3",
+          "text": "A mutable price singleton shared by every consumer."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_020_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Consumers need pricing behavior and a returned amount, not storage internals.",
+      "details": {
+        "mechanismOrProperty": "An abstraction can preserve a stable result while internal representation changes.",
+        "scenarioApplication": "The scenario states integer cents may change while caller needs stay fixed.",
+        "errorCorrection": "Exposing the field makes a storage change into a consumer migration.",
+        "boundaryOrTradeoff": "The amount contract must still define units/currency clearly.",
+        "transfer": "Keep storage representation behind a stable client-facing contract."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_020_w1",
+          "text": "The prompt says storage representation may change; documenting cents still publishes it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_020_w2",
+          "text": "A persistence row exposes storage and write authority beyond quote display."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_020_w3",
+          "text": "Shared mutable state makes updates and consumers’ observations ambiguous."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b09-i021",
+    "prompt": "A library’s public function returns `VendorTimeoutError`, but clients do not otherwise use the vendor SDK. What API boundary reduces vendor coupling?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_021_key",
+          "text": "Map the vendor failure to a library-owned timeout/result contract."
+        },
+        {
+          "optionId": "ood-n03-b09_021_w1",
+          "text": "Export the entire vendor error hierarchy."
+        },
+        {
+          "optionId": "ood-n03-b09_021_w2",
+          "text": "Catch every vendor error and report success with an empty value."
+        },
+        {
+          "optionId": "ood-n03-b09_021_w3",
+          "text": "Make clients import the vendor SDK to inspect private fields."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_021_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Clients need a meaningful failure outcome without vendor details.",
+      "details": {
+        "mechanismOrProperty": "A library-owned error contract separates client semantics from provider representation.",
+        "scenarioApplication": "The SDK is an internal mechanism and its error may change with upgrades.",
+        "errorCorrection": "Returning success hides a real failure and changes semantics.",
+        "boundaryOrTradeoff": "Preserve distinctions clients need; do not flatten meaningful outcomes.",
+        "transfer": "Translate provider errors at the module boundary into supported library outcomes."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_021_w1",
+          "text": "Publishing the hierarchy makes the SDK part of the public compatibility surface."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_021_w2",
+          "text": "An empty result falsely signals successful work."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_021_w3",
+          "text": "Private vendor fields are not a stable client contract."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b09-i022",
+    "prompt": "A module exports a `UserRecord` type that includes database table and cache-key fields. External callers need only a user ID and display name. What is the safer contract?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_022_key",
+          "text": "Export a client-facing user view with only the fields required by callers."
+        },
+        {
+          "optionId": "ood-n03-b09_022_w1",
+          "text": "Export the database record unchanged because it is already available."
+        },
+        {
+          "optionId": "ood-n03-b09_022_w2",
+          "text": "Let callers read cache keys and update the database directly."
+        },
+        {
+          "optionId": "ood-n03-b09_022_w3",
+          "text": "Hide the module entirely even though external callers need user data."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_022_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The persistence representation contains fields outside the stated client need.",
+      "details": {
+        "mechanismOrProperty": "A deliberate public view prevents internal storage details from becoming commitments.",
+        "scenarioApplication": "Callers need identity and display data, not table/cache implementation fields.",
+        "errorCorrection": "Exporting the record couples clients to storage evolution.",
+        "boundaryOrTradeoff": "Include fields only when their semantics are stable and supported.",
+        "transfer": "Separate the external contract from persistence models."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_022_w1",
+          "text": "Convenience of an existing type does not make its fields a supported API."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_022_w2",
+          "text": "The prompt grants no need for cache control or direct persistence writes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_022_w3",
+          "text": "The stated callers do need a supported way to read user data."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b09-i023",
+    "prompt": "An internal module has `normalizeForWire`, used only by one exported operation. Should consumers import it directly?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_023_key",
+          "text": "Keep it unexported and let the public operation use it internally."
+        },
+        {
+          "optionId": "ood-n03-b09_023_w1",
+          "text": "Export it because it appears in the source file."
+        },
+        {
+          "optionId": "ood-n03-b09_023_w2",
+          "text": "Re-export it through every package barrel."
+        },
+        {
+          "optionId": "ood-n03-b09_023_w3",
+          "text": "Require callers to duplicate its normalization algorithm."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_023_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The helper has no independent client requirement.",
+      "details": {
+        "mechanismOrProperty": "Non-exported module declarations are not visible outside the module in TypeScript.",
+        "scenarioApplication": "One public operation is the only named consumer.",
+        "errorCorrection": "Exporting the helper enlarges compatibility surface without benefit.",
+        "boundaryOrTradeoff": "If a second client needs the exact normalization contract, review whether it should be promoted.",
+        "transfer": "Promote an internal helper only when an actual supported client contract requires it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_023_w1",
+          "text": "Source visibility to the author does not imply package visibility."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_023_w2",
+          "text": "Barrel re-export still makes the helper part of the consumer surface."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_023_w3",
+          "text": "Duplicating normalization creates drift and is unnecessary."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b09-i024",
+    "prompt": "A package exports a default `Client` class with six methods, while most consumers need only a small read operation. Which API change is most targeted?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_024_key",
+          "text": "Expose a read capability; keep unrelated methods for their clients."
+        },
+        {
+          "optionId": "ood-n03-b09_024_w1",
+          "text": "Publish the full Client through a global singleton for convenient discovery."
+        },
+        {
+          "optionId": "ood-n03-b09_024_w2",
+          "text": "Remove all exports so no package client can use it."
+        },
+        {
+          "optionId": "ood-n03-b09_024_w3",
+          "text": "Expose the transport object to bypass the client class."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_024_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A client’s needed operation should shape its usable contract.",
+      "details": {
+        "mechanismOrProperty": "A focused capability reduces consumer dependence on unrelated methods.",
+        "scenarioApplication": "The scenario identifies a read-only consumer with no write need.",
+        "errorCorrection": "A singleton adds lifecycle and shared state not requested.",
+        "boundaryOrTradeoff": "Do not remove methods that existing supported consumers still use.",
+        "transfer": "Design API surfaces around real client operations and compatibility needs."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_024_w1",
+          "text": "A singleton exposes unrelated methods and adds shared lifecycle state to a read-only client."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_024_w2",
+          "text": "Other package clients still have supported operations; removing all exports exceeds this scope."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_024_w3",
+          "text": "Transport is implementation detail, not the requested read capability."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b09-i025",
+    "prompt": "A module has a stable exported `parse(text)` function and several internal parsing stages. A refactor changes those stages but not results. What compatibility promise is relevant?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_025_key",
+          "text": "Preserve the exported function’s documented behavior; internal stage names can change."
+        },
+        {
+          "optionId": "ood-n03-b09_025_w1",
+          "text": "Keep every internal helper name unchanged for package clients."
+        },
+        {
+          "optionId": "ood-n03-b09_025_w2",
+          "text": "Expose the stage graph so clients can coordinate with the refactor."
+        },
+        {
+          "optionId": "ood-n03-b09_025_w3",
+          "text": "Treat any source edit as a breaking API change."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_025_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Only the supported export is part of the client-facing contract.",
+      "details": {
+        "mechanismOrProperty": "Module encapsulation permits implementation refactoring behind unchanged behavior.",
+        "scenarioApplication": "The parse result and exported signature remain stable.",
+        "errorCorrection": "Requiring private helper stability blocks internal changes without a client contract.",
+        "boundaryOrTradeoff": "If documented behavior changes, assess that public contract separately from implementation names.",
+        "transfer": "Compatibility is defined by supported client-visible behavior and exports."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_025_w1",
+          "text": "Internal helper names are not public when they are not exported."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_025_w2",
+          "text": "The prompt gives no client need for the internal stage graph."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_025_w3",
+          "text": "A source change alone does not alter the public contract."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b09-i026",
+    "prompt": "A TypeScript declaration file exports `InternalRow`, but its package documentation says no consumer should depend on it. What should the module do to enforce its intended surface?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_026_key",
+          "text": "Remove the export and expose only the stable consumer type."
+        },
+        {
+          "optionId": "ood-n03-b09_026_w1",
+          "text": "Keep the export and rely on a warning in documentation."
+        },
+        {
+          "optionId": "ood-n03-b09_026_w2",
+          "text": "Rename it with an underscore while leaving it exported."
+        },
+        {
+          "optionId": "ood-n03-b09_026_w3",
+          "text": "Duplicate it under a second public name."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_026_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The declaration currently makes the type importable despite the intended boundary.",
+      "details": {
+        "mechanismOrProperty": "A real module export is the technical visibility boundary; naming conventions alone do not hide it.",
+        "scenarioApplication": "The type is explicitly intended to remain internal.",
+        "errorCorrection": "Documentation does not prevent a consumer from importing an exported name.",
+        "boundaryOrTradeoff": "A deprecation period may be needed if clients already depend on the exported type.",
+        "transfer": "Align actual exports with the supported compatibility contract."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_026_w1",
+          "text": "A warning cannot technically stop imports or establish an internal surface."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_026_w2",
+          "text": "An underscore does not remove the export."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_026_w3",
+          "text": "A second name increases rather than reduces public commitment."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b09-i027",
+    "prompt": "A module offers both `createReport(options)` and direct `Report` construction. Constructor callers can bypass required validation. Which surface protects the invariant?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_027_key",
+          "text": "Export the validated factory and keep direct construction internal."
+        },
+        {
+          "optionId": "ood-n03-b09_027_w1",
+          "text": "Export both paths and document that callers should choose the factory."
+        },
+        {
+          "optionId": "ood-n03-b09_027_w2",
+          "text": "Expose the constructor but make validation a private caller responsibility."
+        },
+        {
+          "optionId": "ood-n03-b09_027_w3",
+          "text": "Remove validation and let each caller normalize independently."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_027_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Direct construction bypasses the invariant that the module owns.",
+      "details": {
+        "mechanismOrProperty": "A factory can enforce required setup before returning a usable value.",
+        "scenarioApplication": "The prompt says constructor callers can skip validation.",
+        "errorCorrection": "Documentation alone leaves the bypass available.",
+        "boundaryOrTradeoff": "Expose direct construction only if the type can preserve its invariant for every supported creation path.",
+        "transfer": "Public creation paths should uphold the same validity contract."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_027_w1",
+          "text": "Two creation paths retain the known bypass."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_027_w2",
+          "text": "The invariant belongs to the module, not every caller."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_027_w3",
+          "text": "Caller duplication invites inconsistent validation."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b09-i028",
+    "prompt": "A package barrel currently exports every file with `export *`; a newly added experimental parser becomes public accidentally. What change controls the package surface?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_028_key",
+          "text": "Replace the wildcard with an explicit list of supported exports."
+        },
+        {
+          "optionId": "ood-n03-b09_028_w1",
+          "text": "Keep the wildcard and prefix experimental names with `internal`."
+        },
+        {
+          "optionId": "ood-n03-b09_028_w2",
+          "text": "Ask consumers not to import the new parser."
+        },
+        {
+          "optionId": "ood-n03-b09_028_w3",
+          "text": "Move experimental code into another folder but keep the wildcard."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_028_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The wildcard automatically includes a new exported declaration.",
+      "details": {
+        "mechanismOrProperty": "An explicit entrypoint makes additions an intentional compatibility decision.",
+        "scenarioApplication": "The experimental parser should not be a supported client API.",
+        "errorCorrection": "A name prefix does not prevent importing an exported symbol.",
+        "boundaryOrTradeoff": "A separate package is an option only if it has a real ownership or release boundary.",
+        "transfer": "Make public exposure deliberate at the package entrypoint."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_028_w1",
+          "text": "Consumers can still import the exported prefixed name."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_028_w2",
+          "text": "A request not to import it leaves the wildcard export unchanged, so it remains public."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_028_w3",
+          "text": "Moving the file does not remove it from the wildcard barrel, so it is still exported."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b09-i029",
+    "prompt": "A public `Result` union is used by clients to distinguish `notFound` from `forbidden`. An implementation adds a vendor response code to each variant. What should remain public?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_029_key",
+          "text": "Preserve both result variants; map vendor codes internally."
+        },
+        {
+          "optionId": "ood-n03-b09_029_w1",
+          "text": "Expose each provider code as a required field on both variants."
+        },
+        {
+          "optionId": "ood-n03-b09_029_w2",
+          "text": "Collapse both variants to `failed` because one provider status covers them."
+        },
+        {
+          "optionId": "ood-n03-b09_029_w3",
+          "text": "Return the raw HTTP response to all callers."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_029_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Clients rely on two meaningful library outcomes, not transport codes.",
+      "details": {
+        "mechanismOrProperty": "The public contract should preserve caller-relevant distinctions while hiding mechanism detail.",
+        "scenarioApplication": "`notFound` and `forbidden` are explicit supported outcomes.",
+        "errorCorrection": "Adding required provider codes couples clients to one implementation.",
+        "boundaryOrTradeoff": "If a provider code changes client action, add an intentional stable semantic field.",
+        "transfer": "Translate transport detail without erasing contract distinctions clients use."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_029_w1",
+          "text": "Required vendor codes couple clients to implementation-specific representations."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_029_w2",
+          "text": "The clients use `notFound` and `forbidden` as distinct outcomes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_029_w3",
+          "text": "Raw transport data exposes details beyond the supported result contract."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b09-i030",
+    "prompt": "A function accepts `{timeoutMs?: number}`. Omission means use the module default; explicit `0` means no waiting. Which public type contract preserves that distinction?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_030_key",
+          "text": "Keep `timeoutMs` optional and document distinct omitted versus zero behavior."
+        },
+        {
+          "optionId": "ood-n03-b09_030_w1",
+          "text": "Coerce omission and zero to the same default."
+        },
+        {
+          "optionId": "ood-n03-b09_030_w2",
+          "text": "Make it required and force callers to copy the default constant."
+        },
+        {
+          "optionId": "ood-n03-b09_030_w3",
+          "text": "Replace it with a boolean named `fast`."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_030_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The caller-visible distinction between absence and a supplied zero is meaningful.",
+      "details": {
+        "mechanismOrProperty": "Optionality can encode whether a caller supplied a value when semantics define it.",
+        "scenarioApplication": "Omission chooses the module default; zero has a separate behavior.",
+        "errorCorrection": "Coercing both values destroys the stated contract distinction.",
+        "boundaryOrTradeoff": "The implementation must preserve presence when interpreting the option.",
+        "transfer": "Model only distinctions that the scenario says callers can observe."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_030_w1",
+          "text": "The two inputs are explicitly defined to behave differently."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_030_w2",
+          "text": "Requiring all callers to know the default duplicates policy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_030_w3",
+          "text": "A boolean does not communicate the numeric timing contract."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "foundational",
+    "questionId": "ood-n03-b09-i031",
+    "prompt": "A function’s public options object exposes the SDK’s `RetryOptions` type, which changes on every vendor release. What boundary keeps clients insulated?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_031_key",
+          "text": "Own stable retry options and map them to the SDK."
+        },
+        {
+          "optionId": "ood-n03-b09_031_w1",
+          "text": "Re-export the SDK retry type from the package entrypoint."
+        },
+        {
+          "optionId": "ood-n03-b09_031_w2",
+          "text": "Have every caller construct the vendor-specific retry object."
+        },
+        {
+          "optionId": "ood-n03-b09_031_w3",
+          "text": "Remove retry configuration and silently use provider defaults."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_031_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The public operation has its own supported retry needs.",
+      "details": {
+        "mechanismOrProperty": "A module-owned options type prevents a vendor release from changing consumer source.",
+        "scenarioApplication": "The SDK type is volatile while the package owns the client contract.",
+        "errorCorrection": "Re-exporting makes the SDK shape a transitive public dependency.",
+        "boundaryOrTradeoff": "Retain a configuration field only if it has stable client semantics.",
+        "transfer": "Keep provider-specific configuration translation inside the adapter."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_031_w1",
+          "text": "Re-exporting passes each vendor shape change directly to clients."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_031_w2",
+          "text": "Each caller would need to track the SDK type and its releases."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_031_w3",
+          "text": "Silently removing caller control changes supported retry behavior."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "foundational_boundary",
+    "questionId": "ood-n03-b09-i032",
+    "prompt": "A module exports `setStatus(status: string)` even though only `pending`, `approved`, and `rejected` are legal. What public API expresses the supported inputs accurately?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_032_key",
+          "text": "A status type limited to the three supported values."
+        },
+        {
+          "optionId": "ood-n03-b09_032_w1",
+          "text": "Any string plus runtime logging for unknown values."
+        },
+        {
+          "optionId": "ood-n03-b09_032_w2",
+          "text": "A database row object so callers can assign arbitrary fields."
+        },
+        {
+          "optionId": "ood-n03-b09_032_w3",
+          "text": "A numeric status whose mapping is undocumented."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_032_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The supported input set is finite and explicit.",
+      "details": {
+        "mechanismOrProperty": "A narrow type communicates the accepted contract to callers and tools.",
+        "scenarioApplication": "Only three values are stated as legal.",
+        "errorCorrection": "Any string advertises unsupported inputs and defers preventable mistakes.",
+        "boundaryOrTradeoff": "Runtime validation may still be needed at untrusted boundaries.",
+        "transfer": "Keep type-level and runtime validation aligned at the API edge."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_032_w1",
+          "text": "Logging does not make unsupported values part of the contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_032_w2",
+          "text": "The row object exposes storage shape and broader mutation power."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_032_w3",
+          "text": "Undocumented numbers hide rather than express the meaning."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "intermediate",
+    "questionId": "ood-n03-b09-i033",
+    "prompt": "An exported class includes a `cacheKey` property used internally to optimize reads. No caller needs it. What is the better visibility choice?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_033_key",
+          "text": "Keep `cacheKey` private and expose only the stable behavior clients need."
+        },
+        {
+          "optionId": "ood-n03-b09_033_w1",
+          "text": "Make it public because it may help advanced clients later."
+        },
+        {
+          "optionId": "ood-n03-b09_033_w2",
+          "text": "Expose a setter so clients can tune the cache."
+        },
+        {
+          "optionId": "ood-n03-b09_033_w3",
+          "text": "Move it into a public base class for reuse."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_033_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The property is an implementation detail with no client requirement.",
+      "details": {
+        "mechanismOrProperty": "Private representation can change without forcing consumer compatibility.",
+        "scenarioApplication": "No caller needs the cache key.",
+        "errorCorrection": "Speculative future usefulness is not a present API contract.",
+        "boundaryOrTradeoff": "If a concrete client need appears, design a semantic capability rather than exposing an optimization key.",
+        "transfer": "Do not turn internal optimization state into public representation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_033_w1",
+          "text": "Public exposure creates compatibility cost without demonstrated value."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_033_w2",
+          "text": "The prompt gives no supported client tuning requirement."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_033_w3",
+          "text": "A public base class adds inheritance commitments for an internal field."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "intermediate_transfer",
+    "questionId": "ood-n03-b09-i034",
+    "prompt": "A consumer needs to report progress while a long import runs, but the importer currently exposes mutable internal phase objects. What contract is safer?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_034_key",
+          "text": "Expose a stable read-only progress contract."
+        },
+        {
+          "optionId": "ood-n03-b09_034_w1",
+          "text": "Expose mutable phase objects so callers can update import state."
+        },
+        {
+          "optionId": "ood-n03-b09_034_w2",
+          "text": "Ask callers to inspect private fields after each callback."
+        },
+        {
+          "optionId": "ood-n03-b09_034_w3",
+          "text": "Publish every importer class so callers can subclass the workflow."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_034_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The caller needs progress observation, not control of the import state machine.",
+      "details": {
+        "mechanismOrProperty": "A read-only API communicates observation without exposing mutable representation.",
+        "scenarioApplication": "The needed client capability is to report progress.",
+        "errorCorrection": "Mutation can let callers violate internal workflow invariants.",
+        "boundaryOrTradeoff": "Add only progress fields with stable meaning across implementations.",
+        "transfer": "Expose the smallest client capability and retain internal state-machine freedom."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_034_w1",
+          "text": "The client needs observation, not authority to mutate the importer state machine."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_034_w2",
+          "text": "Private field inspection is not a stable supported contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_034_w3",
+          "text": "Subclassing every importer class exposes far more than progress observation."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "advanced_tradeoff",
+    "questionId": "ood-n03-b09-i035",
+    "prompt": "A package already supports `load(id)` and a new implementation can use a cache internally. No caller needs cache controls. What should the API change be?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_035_key",
+          "text": "Keep the exported `load(id)` contract and implement caching behind it."
+        },
+        {
+          "optionId": "ood-n03-b09_035_w1",
+          "text": "Add cache policy, key, and eviction fields to every caller."
+        },
+        {
+          "optionId": "ood-n03-b09_035_w2",
+          "text": "Expose the cache instance so clients can clear it directly."
+        },
+        {
+          "optionId": "ood-n03-b09_035_w3",
+          "text": "Change the return type to the internal cache entry."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_035_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The internal implementation changes while the client operation remains stable.",
+      "details": {
+        "mechanismOrProperty": "A stable exported API permits internal optimization without caller coupling.",
+        "scenarioApplication": "Callers still ask to load by ID and need no cache behavior.",
+        "errorCorrection": "Caller-supplied cache controls expose an implementation concern without a requirement.",
+        "boundaryOrTradeoff": "If cache invalidation becomes a client guarantee, add a semantic operation then.",
+        "transfer": "Do not widen a stable API solely because its implementation acquired a new mechanism."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_035_w1",
+          "text": "Those fields commit every caller to a cache strategy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_035_w2",
+          "text": "The cache instance exposes internal mutable state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_035_w3",
+          "text": "An internal cache entry is not the client’s result contract."
+        }
+      ]
+    }
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+    "mentalUnitId": "OOD-N03-B09",
+    "difficulty": "advanced_failure",
+    "questionId": "ood-n03-b09-i036",
+    "prompt": "A module has one stable operation used by external callers and multiple internal implementations. Which export arrangement best supports changing the implementations?",
+    "constraints": [],
+    "sourceRefs": [
+      "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+      "https://www.omg.org/spec/UML/2.5.1/PDF"
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "ood-n03-b09_036_key",
+          "text": "Export the stable operation; keep implementations internal."
+        },
+        {
+          "optionId": "ood-n03-b09_036_w1",
+          "text": "Export every implementation and require callers to choose one."
+        },
+        {
+          "optionId": "ood-n03-b09_036_w2",
+          "text": "Let callers import whichever source file is newest."
+        },
+        {
+          "optionId": "ood-n03-b09_036_w3",
+          "text": "Expose implementation fields through a shared mutable singleton."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "ood-n03-b09_036_key"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Consumers depend on one behavior while the implementations can vary.",
+      "details": {
+        "mechanismOrProperty": "A stable API separates clients from the module’s replaceable internals.",
+        "scenarioApplication": "The scenario says external callers use one operation.",
+        "errorCorrection": "Publishing all implementations makes each one a compatibility commitment.",
+        "boundaryOrTradeoff": "Expose implementation selection only if callers have a stated supported choice.",
+        "transfer": "Keep replaceable implementation details behind the stable client boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_036_w1",
+          "text": "No client choice is stated; publishing each class expands the compatibility surface."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_036_w2",
+          "text": "Source paths change with refactors and are not a stable client contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "ood-n03-b09_036_w3",
+          "text": "Shared mutable internals can interfere across callers and expose representation."
+        }
+      ]
+    }
+  }
+]
