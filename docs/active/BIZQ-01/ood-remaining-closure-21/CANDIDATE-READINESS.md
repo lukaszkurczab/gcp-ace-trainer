@@ -40,8 +40,14 @@ The candidate/readiness commands updated these content-repository outputs:
 
 The packet helpers `assemble-candidate-decision.mjs` and `update-consumer-lock.mjs` bind the candidate to the frozen proof/source checkpoint, accepted semantic review, canonical receipt, prior artifact inventory, and exact previous app candidate. They do not grant admission.
 
-## Remaining step
+## Admission and demo provenance
 
-The existing admission command is `npm run candidate:admission-v3 -- BIZQ-01/ADMISSION`. Its implementation requires the exact app release/content locks and runtime pin to be in the application `HEAD`, with the relevant app paths clean; it then runs the existing runtime-admission test and writes runtime evidence plus the candidate admission receipt. Root is preparing the local app/content readiness checkpoints. I did not run admission against a dirty app tree or fabricate a frontend commit.
+After the content source checkpoint and app consumer checkpoint were recorded, `npm run candidate:admission-v3 -- BIZQ-01/ADMISSION` passed. It binds frontend commit `99f4f58ddc3b5a67d55440ef8c30926ce2b4096d`, the exact app locks and runtime test pin above, and the nine-track release. The admission receipt is `evidence/admissions/candidate-admission-v3.json`, SHA-256 `f9a3a353d58da6011903ed06dc1d3225c8b5cb91a269c1fc11432725c402ddbc`. Runtime evidence is `evidence/admissions/runtime/59d008662e6fab640d093c9ad29b30c566a6440d0fd549012078c80e8f26803d-99f4f58ddc3b5a67d55440ef8c30926ce2b4096d.json`, SHA-256 `ed8f8c32b09b50c9861e8df69dc31cbd2228766795b708859ea9171cd6bacbf7`. The existing `npm run candidate:release-gate-v2` then passed. Admission is for local verified artifacts only (`local_verified_artifacts_no_deployment`); no external publication or deployment occurred.
 
-The first root full-static attempt occurred before the content/app readiness checkpoints and without the cross-repository expected-SHA environment, and its log is retained. A clean, explicitly bound rerun remains pending after root’s checkpoint; no full-static PASS is claimed here. Demo provenance export also remains downstream of a matching admission receipt.
+`npm run export:demo` refreshed the existing web demo catalog, preserving exactly `alg-complexity-time-005` and `aws-saa-c03-architecture-001-odk096`. `node scripts/check-canonical-demo.mjs` passed. A comparison with the prior web commit confirms the question payloads and ordering are byte-equivalent as parsed JSON; only the two records’ provenance changed. The current `patternly-web/src/generated/demoQuestions.json` SHA-256 is `591b493cd5e3384ac98c1149fee41e606d9956185e6d65dc26f6b0e81084e025`; the previous file SHA-256 was `9d2d359bbb9e1e5a13d9b0eb40e5819c8672f58dfb5b7c94b7a757f683ba432c`.
+
+The production `npm run build` check could not proceed because `PATTERNLY_PUBLIC_LEGAL_ARTIFACT_PATH` is not configured in this environment; the error occurred before Vite build. No public legal artifact or build configuration was changed to bypass it.
+
+## Remaining verification
+
+The first root full-static attempt occurred before the local readiness checkpoints and without the required cross-repository expected-SHA environment. Its failure log is retained. Root is running the app static suite with the committed pins and explicit source/history inputs; no full-static PASS is claimed in this report until that run completes.

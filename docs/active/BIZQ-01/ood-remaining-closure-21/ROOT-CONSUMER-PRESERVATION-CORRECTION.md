@@ -1,0 +1,3 @@
+# Provenance diagnostic correction
+
+First final preservation probe passed exact payload and unchanged provenance-field deep comparisons, then failed its changed-field inventory: JavaScript reference inequality counted unchanged modeIds arrays as changed. Root changed only the inventory comparison to isDeepStrictEqual; allowed fields and all preservation assertions remain. This is a checker correction, not an exporter/content change. The initial failure was exposed in the tool output; a separate raw log was not captured. The corrected real probe is recorded in ROOT-CONSUMER-PRESERVATION-FINAL.json.

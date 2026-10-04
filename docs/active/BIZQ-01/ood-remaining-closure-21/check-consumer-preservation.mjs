@@ -7,6 +7,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
+import {isDeepStrictEqual} from 'node:util';
 const packet=fileURLToPath(new URL('./',import.meta.url));
 const app=path.resolve(packet,'../../../..');
 const web=path.resolve(app,'../patternly-web');
@@ -49,7 +50,7 @@ for(let i=0;i<2;i++){
  const old=oldDemo.demos[i]; const now=demo.demos[i];
  assert.deepEqual(omit(now,['provenance']),omit(old,['provenance']));
  assert.deepEqual(omit(now.provenance,allowed),omit(old.provenance,allowed));
- const changed=Object.keys(now.provenance).filter(k=>now.provenance[k]!==old.provenance[k]);
+ const changed=Object.keys(now.provenance).filter(k=>!isDeepStrictEqual(now.provenance[k],old.provenance[k]));
  assert.deepEqual([...changed].sort(),[...allowed].sort());
  changes.push({questionId:now.provenance.questionId,changedProvenanceFields:changed});
 }
