@@ -1,0 +1,26 @@
+{
+  "verdict": "PASS",
+  "scope": "Root actual provisional draft schema/all-option score/reversal/feedback-target coverage only. Drafts may change; no semantic, identity-meaning, source activation, admission or native acceptance.",
+  "questions": 54,
+  "scoringCases": 432,
+  "units": [
+    {
+      "unit": "OOD-N03-B01",
+      "sha256": "3d18d1ece928a37511802627c4c14aa3c3c1750bedde15e1fc808bd44c146cd2",
+      "count": 18,
+      "scoringCases": 144
+    },
+    {
+      "unit": "OOD-N03-B02",
+      "sha256": "763b119a8d549c06eb2fd9ce5b5a9381b648aa7e1fb8c04d566cc8df94f6eaef",
+      "count": 18,
+      "scoringCases": 144
+    },
+    {
+      "unit": "OOD-N03-B03",
+      "sha256": "fd74fe66b341ad91dd692204340af03d0a780664aded139c92616afc33ab4477",
+      "count": 18,
+      "scoringCases": 144
+    }
+  ]
+}

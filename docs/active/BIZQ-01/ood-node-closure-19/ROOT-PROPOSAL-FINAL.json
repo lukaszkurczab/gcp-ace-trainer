@@ -1,0 +1,123 @@
+{
+  "verdict": "PASS",
+  "scope": "Actual schema/all-option scoring/source/manifest checks plus independently accepted semantic/identity/cross reports for this fixed162 set. Source/admission/consumer/native/full-area remain pending.",
+  "manifestSha256": "c344367f12072c110761664825bd95c6f40334eea89296cb56e9787ab847fe73",
+  "questionCount": 162,
+  "optionCases": 1296,
+  "units": [
+    {
+      "unit": "OOD-N03-B01",
+      "proposalSha256": "c23224df332377b45f718bc10d903a7c9fe645954dd9778f30af503bbabef58b",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 1
+      }
+    },
+    {
+      "unit": "OOD-N03-B02",
+      "proposalSha256": "d70ee871a3ee7087c1b5d3d03f2feaedf041fd1d1cbb6267df2439a953abd237",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 4
+      }
+    },
+    {
+      "unit": "OOD-N03-B03",
+      "proposalSha256": "830a1fb12385d084279054f3d32db5261af24e7501700847b75e25f1c83ef0de",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 0
+      }
+    },
+    {
+      "unit": "OOD-N03-B04",
+      "proposalSha256": "25c09577a8ebcb0116dd1bf5ce2a763eaa011e8f58f42ebeb3e00f0591126360",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 0
+      }
+    },
+    {
+      "unit": "OOD-N03-B05",
+      "proposalSha256": "19912a8a5278b7fe5a88ac1864aca04327ff255ee46dd04b29c68ed0c21d7d32",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 5
+      }
+    },
+    {
+      "unit": "OOD-N03-B06",
+      "proposalSha256": "c7fc7970481fadc0795617e64af14e8cbcce8452d01bb3c45ca65fd6d75952ad",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 0
+      }
+    },
+    {
+      "unit": "OOD-N03-B07",
+      "proposalSha256": "846d741c52339153cf0ad2b72813ce2672908de733591aaf6afcd7dd42b00fc0",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 1
+      }
+    },
+    {
+      "unit": "OOD-N03-B08",
+      "proposalSha256": "68ca04a4849f4d1c7e20ff9592c4dbd2a028f7be86e51241015f91d3f7e56058",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 0
+      }
+    },
+    {
+      "unit": "OOD-N03-B09",
+      "proposalSha256": "d3327d2c3e1d42ca3079ac9a74dd05aba9e684bd2fee39115324b46cd84bbb19",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 4
+      }
+    }
+  ],
+  "semanticEvidence": [
+    {
+      "file": "SEMANTIC-REVIEW-B01-B04-v1.md",
+      "sha256": "396ac238572ba01ac0f62e00662382980ce0629c71260833c7fb2093d2c97d56"
+    },
+    {
+      "file": "SEMANTIC-REVIEW-B05-B09-v1.md",
+      "sha256": "449be3007ea9e571e68e5121c4d6bdacda7ec456b993b8c0561fd3b272b5ae2f"
+    },
+    {
+      "file": "SEMANTIC-CROSS-UNIT-v1.md",
+      "sha256": "96c0c9afc0ff8e54aae150d5a43dcbc907d29b7ba971efe8e12206e6ec6ccd99"
+    }
+  ],
+  "notes": [
+    {
+      "file": "AUTHOR-NOTES-B01-B04.json",
+      "sha256": "f66e00a55958eb51f535ef69edf2d938446493c8a7458101f187c2dc676cbc2e"
+    },
+    {
+      "file": "AUTHOR-NOTES-B05-B09.json",
+      "sha256": "1d5f8268f505a5decc7bfbdf5740a8896bb8415f31738ea77feec3d30a17f8e7"
+    }
+  ]
+}

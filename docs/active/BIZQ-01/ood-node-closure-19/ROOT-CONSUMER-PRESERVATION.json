@@ -1,0 +1,10 @@
+{
+  "result": "PASS",
+  "unchangedArtifacts": 8,
+  "unchangedOodObjects": 1251,
+  "reviewedNewObjects": 162,
+  "retiredIdsAbsent": 162,
+  "historicalLock": "byte-exact",
+  "artifactSha256": "9632bd529f51a9ad29e5dd54a7e22684c668db22d3f5a6c49764c405689a95fb",
+  "scope": "Actual current consumer artifact preservation; focused runtime scoring/pools and admission are separate gates."
+}

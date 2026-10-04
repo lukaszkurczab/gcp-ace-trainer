@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "contentCommit": "1d024bb62328bdb81490d713dc41a6f7d155e9b6",
+  "candidateId": "4ab655bd84a1e8f252d15b6ee217ab3451ced917cdc5ef2ea5c9f9bfa6e5c13a",
+  "appCommit": "189160574298575e87a59141f3ee1d26744df3bc",
+  "runtimeEvidence": {
+    "path": "evidence/admissions/runtime/4ab655bd84a1e8f252d15b6ee217ab3451ced917cdc5ef2ea5c9f9bfa6e5c13a-189160574298575e87a59141f3ee1d26744df3bc.json",
+    "sha256": "d55495d2fd19bc302483c132aa2144e640b7185f8f76445920586225372ce756"
+  },
+  "boundary": "local_verified_artifacts_no_deployment"
+}

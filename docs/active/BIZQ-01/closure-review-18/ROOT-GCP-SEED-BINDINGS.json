@@ -1,0 +1,14 @@
+{
+  "verdict": "PASS",
+  "sourceCommit": "90a1d83859c2be83c5266ffe981f487d3c29aeeb",
+  "sourceSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4",
+  "reportSha256": "3479371600d18a78028d3c6879435c60acad8898c27b08af139bd2556b90bc99",
+  "reviewed": 18,
+  "high": 2,
+  "moderate": 16,
+  "sampleOverlap": [
+    "gcp-ace-gcpace-n01-b02-001"
+  ],
+  "additionalDistinctObjects": 17,
+  "scope": "Full18-unit report bindings/current source/builder-derived bundle parity; not semantic/admission/native/wholebank acceptance"
+}

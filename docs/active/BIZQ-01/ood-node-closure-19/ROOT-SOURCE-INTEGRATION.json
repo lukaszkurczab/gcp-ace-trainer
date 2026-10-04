@@ -1,0 +1,75 @@
+{
+  "result": "INTEGRATED_PENDING_VERIFICATION",
+  "contentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-19",
+  "beforeProducerCommit": "90a1d83859c2be83c5266ffe981f487d3c29aeeb",
+  "questionSetSha256": "b3198cffb61cad65233b0dee7bf308830d53a6adbf0cd6ceac00ffff5fb665a5",
+  "proofSha256": "7161c91cc3ec8cf1cc22d99121928902b1e706986cd833f6663c0d4534715a4f",
+  "replacements": 162,
+  "retained": 0,
+  "sourceFiles": [
+    {
+      "sourceFile": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B01.json",
+      "beforeSourceSha256": "ba4f3e943faf3d5a93fb07e24f132309d4999b0f18560146482acb49a7394d36",
+      "sourceSha256": "77c68c1e8258deaca67490d1abb5f38d26674038e0f760e756b85166bf33671e",
+      "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+      "mentalUnitId": "OOD-N03-B01"
+    },
+    {
+      "sourceFile": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeSourceSha256": "d111ae5ce76f81062d69c5e1de7c7b7d720840ccfe30c6519fba78f66c388515",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+      "mentalUnitId": "OOD-N03-B02"
+    },
+    {
+      "sourceFile": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "beforeSourceSha256": "eece9e7eba921df5eb811f303782609189b27ef9a3355bacb67fd86ec0f53672",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+      "mentalUnitId": "OOD-N03-B03"
+    },
+    {
+      "sourceFile": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B04.json",
+      "beforeSourceSha256": "b410df959e838d7ff5e3c075a30b397af4b270fd6de6a2bb4a47e530e0e4658a",
+      "sourceSha256": "20a31ab14e6f7d01d132d064b14f347c30483931862409916b232e5df996ae03",
+      "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+      "mentalUnitId": "OOD-N03-B04"
+    },
+    {
+      "sourceFile": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B05.json",
+      "beforeSourceSha256": "759741cbf807116e885c8e3bf12ac4c1250c02ab1d965873a7c69ffed7af9a07",
+      "sourceSha256": "583aa495eae6e3ac5e47e4ec9b6ce87a0ac3c9cc826216723e0155547a2bbf05",
+      "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+      "mentalUnitId": "OOD-N03-B05"
+    },
+    {
+      "sourceFile": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B06.json",
+      "beforeSourceSha256": "18ded2381012a9d93224f4a3bc388ab5123ad516076e544cd7bb3d63f1a64e96",
+      "sourceSha256": "8b19701bf0b18d25b0984323a7c0d5601eb324d6fb4dbebb690b9956fbd7da09",
+      "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+      "mentalUnitId": "OOD-N03-B06"
+    },
+    {
+      "sourceFile": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B07.json",
+      "beforeSourceSha256": "ea473492d59a8c210a53db8a3ebd993568dde28ded9af0595acfbfde0a5fad93",
+      "sourceSha256": "1490651f9a176dc61dc92c56733aafefd2010c47340b899a1ccf218cd804e4bd",
+      "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+      "mentalUnitId": "OOD-N03-B07"
+    },
+    {
+      "sourceFile": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B08.json",
+      "beforeSourceSha256": "50490bc7ab0deb9b4d91580a8703612cc506e56dce6f06879aff2d4fbf75e667",
+      "sourceSha256": "fc5e6d5a64bc34054bedfd0a6d6ba9b6689a5d99f43d7b640bc14832970853e8",
+      "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+      "mentalUnitId": "OOD-N03-B08"
+    },
+    {
+      "sourceFile": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B09.json",
+      "beforeSourceSha256": "920e0b9b8fda16b007b72323594d431fe7b2ee09a5a01de0fc7a04b32172e8db",
+      "sourceSha256": "a03c8e4fb5404b2e8568946a53c28da215777142acb12d506c48275af3e6ea80",
+      "nodeId": "relationships_composition_ownership_lifecycle_and_dependencies",
+      "mentalUnitId": "OOD-N03-B09"
+    }
+  ],
+  "limits": "Reviewed fixed source installation only; proof/canonical/build/preservation/consumer/admission/independent final gates remain pending."
+}

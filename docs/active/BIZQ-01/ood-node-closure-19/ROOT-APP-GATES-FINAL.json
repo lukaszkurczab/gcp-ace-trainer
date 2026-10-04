@@ -1,0 +1,32 @@
+{
+  "result": "PASS across actual unchanged-code checks",
+  "tests": 1836,
+  "passedUniqueTests": 1832,
+  "existingSkippedTests": 4,
+  "failedUnresolvedTests": 0,
+  "method": "Full static script run passed recovery/typecheck and1831tests, failed only historical fixture ENOENT before later boundary commands. Reused those unchanged checks; reran all3cross tests on existing same-SHA historical checkout containing required artifact, then ran both downstream boundary validators separately. No claim that failed full script exited0.",
+  "currentContentCommit": "1d024bb62328bdb81490d713dc41a6f7d155e9b6",
+  "historicalContentCommit": "cc3efca88be7e01137f10ac69a0643f06b61a350",
+  "evidence": [
+    {
+      "path": "ROOT-APP-STATIC-MISSING-HISTORICAL-ARTIFACT.log",
+      "sha256": "0b1e581798333820186dadddc916eea5a5634b0f316ef35f26ca8cf112f9ff7c"
+    },
+    {
+      "path": "ROOT-CROSS-REPO.log",
+      "sha256": "9e32ed414d03e83994b5e8819e41dc91bfd946d1d7a5bb11e0912b74886b0d61"
+    },
+    {
+      "path": "ROOT-CONTENT-BOUNDARY.log",
+      "sha256": "b53b6b76837ae0f573e69c69856be2930ca32f2381e7602b1f603e30fa43f938"
+    },
+    {
+      "path": "ROOT-RUNTIME-PRIVACY-BOUNDARY.log",
+      "sha256": "bcb4b78593b6751177c7facf707db4f73a2da89f45bfd01153c277cea6945197"
+    },
+    {
+      "path": "ROOT-TYPECHECK.log",
+      "sha256": "35bcf25cc4f04a4a9d0dbce3a28e166befebdebb85bbf87095b907f5500349e3"
+    }
+  ]
+}

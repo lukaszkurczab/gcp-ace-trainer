@@ -1,0 +1,10 @@
+{
+  "canonicalPath": "/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/07-content-guidelines.md",
+  "sha256": "b451c500d5d67e0649f7df7decb1d1cd6e105381ca7204ab923f4fba3bd700f7",
+  "enteredBeforeAuthoring": true,
+  "scope": "fixed N03 repair162; reviewed conditional per-item identity; private closed17/19 validation body; existing authority/pipeline/ordinaryN01pools unchanged",
+  "sourceContractOutsideFourGitRepositories": true,
+  "acceptedProposal": "BRIEF-QA-AMENDMENT.md",
+  "actualManifestCheck": "ROOT-MANIFEST-CHECK.json",
+  "contentBaseline": "90a1d83859c2be83c5266ffe981f487d3c29aeeb"
+}

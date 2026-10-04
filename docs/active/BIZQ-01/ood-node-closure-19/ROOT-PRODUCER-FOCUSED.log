@@ -1,0 +1,136 @@
+TAP version 13
+# Subtest: accepts the fixed 119-item package and reconstructs the immutable v13→12→11 predecessor chain
+ok 1 - accepts the fixed 119-item package and reconstructs the immutable v13→12→11 predecessor chain
+  ---
+  duration_ms: 2574.726458
+  type: 'test'
+  ...
+# Subtest: validates, scores, and binds targeted feedback for every replacement option
+ok 2 - validates, scores, and binds targeted feedback for every replacement option
+  ---
+  duration_ms: 14.374583
+  type: 'test'
+  ...
+# Subtest: requires every fixed OOD generation proof in the v16 predecessor chain
+ok 3 - requires every fixed OOD generation proof in the v16 predecessor chain
+  ---
+  duration_ms: 3314.640875
+  type: 'test'
+  ...
+# Subtest: rejects changed identities, hashes, object bindings, membership, and unsupported fields
+ok 4 - rejects changed identities, hashes, object bindings, membership, and unsupported fields
+  ---
+  duration_ms: 7496.932333
+  type: 'test'
+  ...
+# Subtest: rejects changed canonical source membership and unsupported catalog versions
+ok 5 - rejects changed canonical source membership and unsupported catalog versions
+  ---
+  duration_ms: 2076.988583
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked fixed proof path
+ok 6 - rejects a symlinked fixed proof path
+  ---
+  duration_ms: 646.055958
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked current source path
+ok 7 - rejects a symlinked current source path
+  ---
+  duration_ms: 404.53125
+  type: 'test'
+  ...
+# Subtest: accepts the fixed 152-item package and reconstructs the immutable v16→13→12→11 predecessor chain
+ok 8 - accepts the fixed 152-item package and reconstructs the immutable v16→13→12→11 predecessor chain
+  ---
+  duration_ms: 2696.603291
+  type: 'test'
+  ...
+# Subtest: validates, scores, and binds targeted feedback for every replacement option
+ok 9 - validates, scores, and binds targeted feedback for every replacement option
+  ---
+  duration_ms: 18.148083
+  type: 'test'
+  ...
+# Subtest: requires every fixed OOD generation proof in the v17 predecessor chain
+ok 10 - requires every fixed OOD generation proof in the v17 predecessor chain
+  ---
+  duration_ms: 4413.477792
+  type: 'test'
+  ...
+# Subtest: rejects changed identities, hashes, object bindings, membership, and unsupported fields
+ok 11 - rejects changed identities, hashes, object bindings, membership, and unsupported fields
+  ---
+  duration_ms: 7528.561458
+  type: 'test'
+  ...
+# Subtest: rejects changed canonical source membership and unsupported catalog versions
+ok 12 - rejects changed canonical source membership and unsupported catalog versions
+  ---
+  duration_ms: 2116.305875
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked fixed proof path
+ok 13 - rejects a symlinked fixed proof path
+  ---
+  duration_ms: 579.005334
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked current source path
+ok 14 - rejects a symlinked current source path
+  ---
+  duration_ms: 347.541458
+  type: 'test'
+  ...
+# Subtest: accepts the fixed 162-item package and reconstructs the immutable v17→16→13→12→11 predecessor chain
+ok 15 - accepts the fixed 162-item package and reconstructs the immutable v17→16→13→12→11 predecessor chain
+  ---
+  duration_ms: 2808.399042
+  type: 'test'
+  ...
+# Subtest: validates, scores, and binds targeted feedback for every replacement option
+ok 16 - validates, scores, and binds targeted feedback for every replacement option
+  ---
+  duration_ms: 19.341
+  type: 'test'
+  ...
+# Subtest: requires every fixed OOD generation proof in the v19 predecessor chain
+ok 17 - requires every fixed OOD generation proof in the v19 predecessor chain
+  ---
+  duration_ms: 5651.551875
+  type: 'test'
+  ...
+# Subtest: rejects changed identities, hashes, object bindings, membership, and unsupported fields
+ok 18 - rejects changed identities, hashes, object bindings, membership, and unsupported fields
+  ---
+  duration_ms: 9607.614459
+  type: 'test'
+  ...
+# Subtest: rejects changed canonical source membership and unsupported catalog versions
+ok 19 - rejects changed canonical source membership and unsupported catalog versions
+  ---
+  duration_ms: 1636.09125
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked fixed proof path
+ok 20 - rejects a symlinked fixed proof path
+  ---
+  duration_ms: 518.579167
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked current source path
+ok 21 - rejects a symlinked current source path
+  ---
+  duration_ms: 318.22725
+  type: 'test'
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 21
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 20701.335625

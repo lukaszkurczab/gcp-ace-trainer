@@ -1,0 +1,1534 @@
+{
+  "items": [
+    {
+      "beforeQuestionId": "ood-n03-b01-i001",
+      "questionId": "ood-n03-b01-i019",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Choose association rather than composition when posted allocation records outlive the account.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “a repayment cannot reduce the outstanding balance below zero” to this distinct decision: Choose association rather than composition when posted allocation records outlive the account.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Composition is the nearest alternative because an allocation sounds account-owned; the explicit post-closure retention requirement excludes it.",
+      "decisionReversal": "If posted allocations were temporary draft children and account deletion removed them, the relationship could become composition; the one-account-per-allocation multiplicity would stay.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b01-i022",
+          "whyClosest": "Nearest current accepted comparison: An invoice line captures quantity and unit price at issue time. The catalog price may later change; old invoices must still show the issued amount. Choose how an issued line should calculate. This item instead decides choose association rather than composition when posted allocation records outlive the account."
+        }
+      ],
+      "visibleDecisiveFact": "A lending ledger keeps each posted allocation as an audit record even after an account is closed. Every allocation points to exactly one account; an account may have zero or many allocations, and closing an account never deletes its posted allocations. Which relationship and multiplicities model these facts",
+      "acceptedKeySummary": "Plain association: Account 1—0..* Allocations; each allocation has one account."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i002",
+      "questionId": "ood-n03-b01-i020",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Model exclusive draft-slot ownership with composition and separate the retained match result.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the bracket advances only from a legal match state” to this distinct decision: Model exclusive draft-slot ownership with composition and separate the retained match result.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "A plain one-to-many association preserves the correct counts but fails the stated deletion cascade for unplayed slots.",
+      "decisionReversal": "If removing a draft bracket left its slots available for independent reassignment, composition would be inappropriate even though the one-to-many counts stayed the same.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b04-i020",
+          "whyClosest": "Nearest current accepted comparison: A theater booking stores a confirmed seat reservation and the capacity hold that protects that seat. The booking rule requires both to change together: a confirmed reservation cannot exist w. This item instead decides model exclusive draft-slot ownership with composition and separate the retained match result."
+        }
+      ],
+      "visibleDecisiveFact": "A bracket editor creates a draft match slot for a single tournament bracket. A slot cannot be reused by another bracket. Removing the draft bracket removes all of its unplayed slots; played matches are converted to separate archived result records. How should the draft bracket and its unplayed slots be related",
+      "acceptedKeySummary": "Composition: Bracket 1—0..* DraftSlots; each slot has one bracket."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i003",
+      "questionId": "ood-n03-b01-i021",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Determine many-to-many protocol reuse without inventing per-link state or ownership.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “classification and refund eligibility are not the same responsibility” to this distinct decision: Determine many-to-many protocol reuse without inventing per-link state or ownership.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "One-to-many association: it gets one endpoint right but conflicts with protocol reuse across multiple reports.",
+      "decisionReversal": "If each protocol could belong to only one report, change that endpoint to one; if each citation acquired its own data, use a link object.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b05-i029",
+          "whyClosest": "Nearest current accepted comparison: In a collaborative annotation workspace, the review editor must accept a comment and notify the assigned author. Accepted comments must retain their author and document revision. Accepted co. This item instead decides determine many-to-many protocol reuse without inventing per-link state or ownership."
+        }
+      ],
+      "visibleDecisiveFact": "A research report cites several laboratory protocols, and the same protocol may be cited by reports from many projects. A report-protocol link has no independent fields such as run date, selected version, or status. Deleting a report does not delete a protocol. Which relationship structure represents the links",
+      "acceptedKeySummary": "Plain association: Reports and Protocols are many-to-many."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i004",
+      "questionId": "ood-n03-b01-i022",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Model shared immutable provenance inputs with associations, not snapshot-owned lifetimes.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “published outputs reference immutable inputs and code versions” to this distinct decision: Model shared immutable provenance inputs with associations, not snapshot-owned lifetimes.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Composition is the nearest whole-part alternative, but shared reuse and independent retention contradict exclusive part ownership.",
+      "decisionReversal": "If every snapshot got a unique private copy and deleting the snapshot deleted that copy, composition could fit the copied artifact.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b01-i025",
+          "whyClosest": "Nearest current accepted comparison: A sensor reading stores the raw measurement and the calibration revision used when it was taken. Later recalibration must not rewrite historical readings. Choose how a historical corrected v. This item instead decides model shared immutable provenance inputs with associations, not snapshot-owned lifetimes."
+        }
+      ],
+      "visibleDecisiveFact": "A research snapshot records the exact input datasets and code versions used for a run. A dataset or code version may be reused by many snapshots, and deleting a snapshot never deletes either referenced artifact. Which relationship structure matches the snapshot and its inputs",
+      "acceptedKeySummary": "Associate each Snapshot with its shared Datasets and CodeVersions."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i005",
+      "questionId": "ood-n03-b01-i023",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Read author and revision multiplicities independently for retained annotations.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “accepted comments must retain their author and document revision” to this distinct decision: Read author and revision multiplicities independently for retained annotations.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Composition follows naturally from “attached to,” but the retention rule makes the plain association the coherent model.",
+      "decisionReversal": "If a draft revision and its annotations were always created and deleted together, composition could model that draft-only lifecycle.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b05-i029",
+          "whyClosest": "Nearest current accepted comparison: In a collaborative annotation workspace, the review editor must accept a comment and notify the assigned author. Accepted comments must retain their author and document revision. Accepted co. This item instead decides read author and revision multiplicities independently for retained annotations."
+        }
+      ],
+      "visibleDecisiveFact": "An annotation is attached to one exact document revision and has one author. A revision can have many annotations and an author can write annotations on many revisions. Superseding a revision does not erase its annotations. Which multiplicities and relationship kind fit the annotation records",
+      "acceptedKeySummary": "Two associations: each Annotation has one Revision and Author; either can recur."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i006",
+      "questionId": "ood-n03-b01-i024",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Use composition for four session-local drafts that are deleted on cancel, while keeping the committed successor separate.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “a submission is either complete or explicitly retryable” to this distinct decision: Use composition for four session-local drafts that are deleted on cancel, while keeping the committed successor separate.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "A one-to-many association gets the count partly right but omits the draft-controlled deletion rule.",
+      "decisionReversal": "If section objects were retained and independently reused after the draft was discarded, choose association rather than composition.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b04-i020",
+          "whyClosest": "Nearest current accepted comparison: A theater booking stores a confirmed seat reservation and the capacity hold that protects that seat. The booking rule requires both to change together: a confirmed reservation cannot exist w. This item instead decides use composition for four session-local drafts that are deleted on cancel, while keeping the committed successor separate."
+        }
+      ],
+      "visibleDecisiveFact": "A mobile inspection draft contains four independently editable sections. The draft cannot be saved without all four section objects. Discarding the draft deletes its unsent sections; once submitted, the server creates separate retained inspection records. Model the draft and its four local section objects.",
+      "acceptedKeySummary": "Compose each Draft with its four DraftSections."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i007",
+      "questionId": "ood-n03-b01-i025",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Model optional, exclusive current installation with 0..1 multiplicity at both ends despite module reuse over time.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the new issue is traceable and does not double-charge the customer” to this distinct decision: Model optional, exclusive current installation with 0..1 multiplicity at both ends despite module reuse over time.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Composition is the nearest alternative, but module survival and return to the service pool contradict part ownership.",
+      "decisionReversal": "If each instrument required exactly one permanent module and module removal ended its lifecycle, the lower bounds and ownership conclusion would change.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n01-b05-i020",
+          "whyClosest": "Nearest current accepted comparison: A learning catalog can retire a lesson from new assignments while existing learner records still point to its stable lesson ID. Deletion removes the record and breaks those references. Which. This item instead decides keep corrected invoice issues as retained order history rather than parts deleted with an active order."
+        }
+      ],
+      "visibleDecisiveFact": "A lab instrument has zero or one installed CalibrationModule at a time, and a module is installed in at most one instrument at a time. Modules return to an independent service pool after removal and can later be installed elsewhere; removing an instrument does not delete its module. Which relationship and multiplicities model installation",
+      "acceptedKeySummary": "Plain association, 0..1 at both ends; module lifetime is independent."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i008",
+      "questionId": "ood-n03-b01-i026",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Model the current badge-holder link separately from badge record retention and historical assignment.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “revocation is visible to the door policy before access is granted” to this distinct decision: Model the current badge-holder link separately from badge record retention and historical assignment.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "One-to-one captures badge exclusivity but incorrectly limits a holder to one badge over time.",
+      "decisionReversal": "If the system allowed one badge to be active for multiple holders at the same time, the badge-to-holder upper multiplicity would change.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i031",
+          "whyClosest": "Nearest current accepted comparison: A drone maintenance job assigns a replacement battery to one aircraft. The old battery must be returned to Available only after the new battery passes the aircraft’s compatibility check. Cho. This item instead decides model the current badge-holder link separately from badge record retention and historical assignment."
+        }
+      ],
+      "visibleDecisiveFact": "A campus access system stores physical badge records and their holder assignments. A holder may have several badges over time; a badge is assigned to at most one holder at a time. Revocation archives the badge record rather than deleting it. Choose the relationship and multiplicity for current holder assignment.",
+      "acceptedKeySummary": "Associate each Badge with at most one current Holder; a Holder may have many badges."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i009",
+      "questionId": "ood-n03-b01-i027",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Represent replacement labels as one-to-many retained shipment history, not a single current label.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the printed label represents the current approved shipment data” to this distinct decision: Represent replacement labels as one-to-many retained shipment history, not a single current label.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "One-to-one is a close shortcut for the active label but contradicts the explicit replacement history.",
+      "decisionReversal": "If labels were never retained and each shipment had exactly one replace-in-place label, a one-to-one current-state model could fit.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b05-i031",
+          "whyClosest": "Nearest current accepted comparison: In a digital invoice exchange, the billing operator must reissue a rejected invoice. The new issue is traceable and does not double-charge the customer. Every issue records its timestamp and. This item instead decides represent replacement labels as one-to-many retained shipment history, not a single current label."
+        }
+      ],
+      "visibleDecisiveFact": "A shipment may receive a replacement label after an address correction. Each label records one shipment snapshot; a shipment can have several historical labels. Printed labels remain in the audit archive when a shipment is cancelled. Which relationship preserves both the label history and the stated cardinality",
+      "acceptedKeySummary": "Associate each Shipment with its historical Labels."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i010",
+      "questionId": "ood-n03-b01-i028",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Represent each booking’s current room link and repeated room use without claiming simultaneous multiple rooms.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the room capacity and cancellation policy must remain consistent” to this distinct decision: Represent each booking’s current room link and repeated room use without claiming simultaneous multiple rooms.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "One-to-one is tempting from room capacity, but the capacity rule applies to overlapping times rather than all bookings.",
+      "decisionReversal": "If each room record represented a single fixed session and could never host another booking, one-to-one might be valid.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i021",
+          "whyClosest": "Nearest current accepted comparison: A studio booking may move from Requested to Confirmed only after the room and time are both accepted. A rejected move must leave the previous confirmed slot intact. Choose how a room move sh. This item instead decides represent each booking’s current room link and repeated room use without claiming simultaneous multiple rooms."
+        }
+      ],
+      "visibleDecisiveFact": "A rehearsal booking points to one room while it is active. A room can host many bookings at different times. Moving a booking changes its room link, and cancelled booking records remain available for reporting. Model the booking-to-room relationship.",
+      "acceptedKeySummary": "Associate each Booking with one current Room; a Room may host many Bookings."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i011",
+      "questionId": "ood-n03-b01-i029",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Keep exhibit maintenance records associated after the exhibit is retired or replaced.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “unsafe commands are rejected while maintenance is active” to this distinct decision: Keep exhibit maintenance records associated after the exhibit is retired or replaced.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Composition is plausible for a checklist used during one service session, but the archival lifetime of these records excludes it.",
+      "decisionReversal": "If records were session-local checklists discarded with the exhibit/service session, a composite model could fit.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n01-b05-i022",
+          "whyClosest": "Nearest current accepted comparison: A whiteboard host ends an active collaboration session, but the session transcript remains searchable under the same session ID. A separate retention action permanently removes old transcrip. This item instead decides keep exhibit maintenance records associated after the exhibit is retired or replaced."
+        }
+      ],
+      "visibleDecisiveFact": "An exhibit’s maintenance history contains many maintenance records. Each record belongs to one exhibit. Replacing the physical exhibit does not erase the maintenance records, which remain attached to the retired exhibit record. Which relationship should represent the records",
+      "acceptedKeySummary": "Associate each Exhibit with its retained MaintenanceRecords."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i012",
+      "questionId": "ood-n03-b01-i030",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Link completions to the exact retained lesson revision they used.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “progress refers to a stable lesson identity” to this distinct decision: Link completions to the exact retained lesson revision they used.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Composition is tempting because the completion was produced by a lesson, but the explicit retention rule contradicts deletion with the revision.",
+      "decisionReversal": "If an unsubmitted temporary response were deleted with the active revision/session, composition could apply to that temporary object.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b01-i022",
+          "whyClosest": "Nearest current accepted comparison: An invoice line captures quantity and unit price at issue time. The catalog price may later change; old invoices must still show the issued amount. Choose how an issued line should calculate. This item instead decides link completions to the exact retained lesson revision they used."
+        }
+      ],
+      "visibleDecisiveFact": "A learning platform stores a completion against the exact published lesson revision used by the learner. One revision can have many completions. Retiring that revision does not delete learner completions. Which relationship represents completion provenance",
+      "acceptedKeySummary": "Associate each Completion with the exact LessonRevision it used."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i013",
+      "questionId": "ood-n03-b01-i031",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Place a UML qualifier at the association end whose instances are selected by a key scoped to the opposite object.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “export observes a stable session state” to this distinct decision: Place a UML qualifier at the association end whose instances are selected by a key scoped to the opposite object.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Putting the qualifier at the Venue end reverses the path from the starting Venue to its selected Seat.",
+      "decisionReversal": "If the request began with Seat and needed to select its Venue by a local key, the qualifier would belong at the Venue end; a global label would remove this contextual need.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i022",
+          "whyClosest": "Nearest current accepted comparison: A whiteboard session can be Open, Closing, or Closed. Export is available only after all accepted strokes are included; a failed export keeps the session Closing and retryable. Choose the tr. This item instead decides associate immutable exports with one source revision without making them children of the live board."
+        }
+      ],
+      "visibleDecisiveFact": "A venue contains many numbered Seats, and each Seat belongs to exactly one Venue. Seat labels are unique within a venue but repeat at other venues; a booking request supplies a Venue and local SeatLabel, which identifies at most one Seat. In a UML association, at which end should SeatLabel qualify the lookup",
+      "acceptedKeySummary": "At the Seat end, so Venue plus SeatLabel selects at most one Seat."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i014",
+      "questionId": "ood-n03-b01-i032",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Use separate one-to-many links from escalation events to conversation and author, with reuse at both endpoints.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the escalation keeps ownership and response deadlines” to this distinct decision: Use separate one-to-many links from escalation events to conversation and author, with reuse at both endpoints.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "A staff-owned composition is plausible for a personal draft, but immutable attribution across reassignment contradicts it.",
+      "decisionReversal": "If escalation drafts existed only inside an unsaved staff session and were deleted on exit, a session composition could fit those drafts.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n01-b05-i019",
+          "whyClosest": "Nearest current accepted comparison: In the support desk, an escalation moves a conversation to a specialist queue and keeps its current owner and response deadline; it does not change priority. A plain reassignment changes the. This item instead decides use separate one-to-many links from escalation events to conversation and author, with reuse at both endpoints."
+        }
+      ],
+      "visibleDecisiveFact": "Each escalation event records one support conversation and the staff member who made it. A StaffMember may author escalation events for multiple conversations. A conversation may have many escalation events, and changing the assigned staff member does not rewrite earlier events. Choose the relationship cardinalities for the immutable escalation events.",
+      "acceptedKeySummary": "Link each EscalationEvent to one Conversation and StaffMember; both recur across events."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i015",
+      "questionId": "ood-n03-b01-i033",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Link listings to the exact policy version they pin while allowing version reuse.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “a listing cannot become visible before its price and stock rule are valid” to this distinct decision: Link listings to the exact policy version they pin while allowing version reuse.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Composition is tempting because a listing uses a policy, but shared reuse and independent version history contradict it.",
+      "decisionReversal": "If each listing created a private policy object that no other listing could use and deleted it on removal, composition could fit.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b01-i036",
+          "whyClosest": "Nearest current accepted comparison: A support case stores its opened instant and response window. The due instant is fixed when the case is created; later policy edits affect new cases only. Choose how an existing case should . This item instead decides link listings to the exact policy version they pin while allowing version reuse."
+        }
+      ],
+      "visibleDecisiveFact": "A marketplace listing references one approved inventory policy version. A policy version can be used by many listings, and publishing a new policy does not mutate the version already pinned by a listing. Which relationship and multiplicities describe listings and policy versions",
+      "acceptedKeySummary": "Associate each Listing with its pinned PolicyVersion."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i016",
+      "questionId": "ood-n03-b01-i034",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Model each request/vendor split as a record connecting exactly one request and vendor.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “each split retains the original request identity and delivery promise” to this distinct decision: Model each request/vendor split as a record connecting exactly one request and vendor.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "A direct many-to-many link is the nearest compact alternative, but it loses the independently retained split/work-order records.",
+      "decisionReversal": "If no split carried its own ID or history and only a live request-to-vendor link mattered, a direct association could be enough.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b06-i028",
+          "whyClosest": "Nearest current accepted comparison: In a board-game campaign manager, the campaign host must apply a reward to a character. Reward rules depend on the current legal campaign state. A character ID remains stable while quest pro. This item instead decides model each request/vendor split as a record connecting exactly one request and vendor."
+        }
+      ],
+      "visibleDecisiveFact": "A repair request can be split into several vendor work orders. Every split names exactly one original request and one vendor, and each work order has its own ID and allocated quantity. A vendor can receive many splits, and closing the request does not delete the vendor’s work-order history. What relationship model fits the split records",
+      "acceptedKeySummary": "Model Split as the Request–Vendor association class, with many Splits at each end."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i017",
+      "questionId": "ood-n03-b01-i035",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Choose both reservation-approval multiplicities from stated repeated review and reviewer reuse.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “transfer preserves the plot boundary and approval history” to this distinct decision: Choose both reservation-approval multiplicities from stated repeated review and reviewer reuse.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Composition under the present holder confuses mutable assignment with the persistent approval record’s identity.",
+      "decisionReversal": "If review drafts were discarded on transfer and had no retained decision identity, a temporary composite form could be suitable.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n01-b04-i019",
+          "whyClosest": "Nearest current accepted comparison: A garden plot is reserved by Ada. A transfer to Bo must preserve the plot boundary and approval history, and Bo must accept before Ada’s reservation ends. What is the legal transition?. This item instead decides choose both reservation-approval multiplicities from stated repeated review and reviewer reuse."
+        }
+      ],
+      "visibleDecisiveFact": "A garden reservation may have several approval records from different review rounds. Each approval record identifies exactly one reservation and reviewer. A Reviewer may approve multiple reservations across review rounds. Transferring the reservation does not erase the prior approvals. Select the relationship model for reservation approvals.",
+      "acceptedKeySummary": "Link each Approval to one Reservation and Reviewer; both may recur."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b01-i018",
+      "questionId": "ood-n03-b01-i036",
+      "mentalUnitId": "OOD-N03-B01",
+      "learningObjective": "Compose bundle-owned lines but associate each line to a shared product.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the bundle pricing policy remains consistent with its components” to this distinct decision: Compose bundle-owned lines but associate each line to a shared product.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Composing Product under BundleLine is plausible from the “bundle contains products” phrase, but shared catalog reuse and survival rule it out.",
+      "decisionReversal": "If each bundle line owned a private product snapshot that no other bundle used and removed with the bundle, composition could describe the snapshot.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b04-i026",
+          "whyClosest": "Nearest current accepted comparison: An invoice exchange owns invoice lines and tax totals. Tax rules change when jurisdiction policy changes; document layout changes when a trading partner revises its required file format. Cho. This item instead decides compose bundle-owned lines but associate each line to a shared product."
+        }
+      ],
+      "visibleDecisiveFact": "A subscription bundle contains two or more bundle-line objects. Each line belongs to one bundle and is deleted when that bundle is deleted. The products referenced by the lines are shared across bundles and remain in the catalog if a bundle is removed. Which relationships represent Bundle, BundleLine, and Product",
+      "acceptedKeySummary": "Compose Bundle–BundleLine; associate each line with its shared Product."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i001",
+      "questionId": "ood-n03-b02-i019",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose both traversals only where the session and provider operations each require a direct object path.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the current stream keeps its timing and error contract” to this distinct decision: Expose both traversals only where the session and provider operations each require a direct object path.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Session→Provider alone is the closest alternative, but it cannot answer the provider’s required direct session listing.",
+      "decisionReversal": "Introducing an authoritative provider-to-session index would remove the need for a navigable inverse association.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b04-i024",
+          "whyClosest": "Nearest current accepted comparison: A review workspace accepts a comment into an article thread and notifies the assigned author. Acceptance rules change with editorial policy; notification-provider APIs change when the mail v. This item instead decides expose both traversals only where the session and provider operations each require a direct object path."
+        }
+      ],
+      "visibleDecisiveFact": "A caption session uses one active language provider. Stream callbacks start from the session and call that provider, while the provider operations screen must list its active sessions by direct object traversal; no separate index is available. Reassignment updates the session and provider collections in one transaction. Which navigability should the two model clients have",
+      "acceptedKeySummary": "Make the Session–Provider association navigable in both directions so each stated client can traverse its required path."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i002",
+      "questionId": "ood-n03-b02-i020",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose the stored volunteer reference because assignment detail follows it, while keeping profile listing repository-backed.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “skills and availability constraints hold for both assignments” to this distinct decision: Expose the stored volunteer reference because assignment detail follows it, while keeping profile listing repository-backed.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Bidirectional navigation is plausible for a many-to-one assignment, but it duplicates a list no model client needs.",
+      "decisionReversal": "Removing the profile repository and requiring direct volunteer-to-assignment traversal would justify adding the inverse end.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b05-i021",
+          "whyClosest": "Nearest current accepted comparison: In a volunteer coordination hub, the shift manager must swap two volunteer assignments. Skills and availability constraints hold for both assignments. The assignment list and each nested ava. This item instead decides expose the stored volunteer reference because assignment detail follows it, while keeping profile listing repository-backed."
+        }
+      ],
+      "visibleDecisiveFact": "A volunteer shift assignment stores a reference to its volunteer, and its detail screen opens that volunteer by following the stored reference. The manager views assignments for a shift through Shift→Assignments; the volunteer profile never lists assignments, and a separate assignment repository serves that profile. What direction should the Volunteer–Assignment association expose",
+      "acceptedKeySummary": "Expose Assignment→Volunteer; do not add Volunteer→Assignments solely for the shift screen."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i003",
+      "questionId": "ood-n03-b02-i021",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Keep edit-to-parent traversal and use the existing query for reverse edit lookup.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The source item assessed the source’s general rule against unnecessary bidirectional references; this replacement decides whether the actual Edit detail/evaluator path needs the parent reference while the repository serves reverse lookup.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Bidirectional navigation is a reasonable convenience, but it creates an inverse collection without a stated consumer.",
+      "decisionReversal": "A new in-memory revision screen that enumerates child edits directly would change the required traversal and justify the reverse end.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b01-i025",
+          "whyClosest": "Nearest current accepted comparison: A sensor reading stores the raw measurement and the calibration revision used when it was taken. Later recalibration must not rewrite historical readings. Choose how a historical corrected v. This item instead decides keep edit-to-parent traversal and use the existing query for reverse edit lookup."
+        }
+      ],
+      "visibleDecisiveFact": "An offline route edit stores the exact parent RouteRevision it was based on. Each Edit detail and evaluation follows its stored Edit→RouteRevision reference to inspect that revision’s geometry. A revision never needs to enumerate edits made from it; an edit service queries edits by parent ID. Which navigation direction is sufficient for the revision relationship",
+      "acceptedKeySummary": "Keep Edit→RouteRevision navigable and omit RouteRevision→Edits from the object association."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i004",
+      "questionId": "ood-n03-b02-i022",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Let a character read its pinned campaign revision without storing a claims collection on the revision.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “reward rules depend on the current legal campaign state” to this distinct decision: Let a character read its pinned campaign revision without storing a claims collection on the revision.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Bidirectional links are the closest convenience option, but the stated campaign clients never traverse to characters.",
+      "decisionReversal": "A required campaign-revision-to-characters object traversal with no repository alternative would justify an inverse collection.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i023",
+          "whyClosest": "Nearest current accepted comparison: In a curriculum publishing desk, proposal P1 is pending while the current package remains active. An editor replaces P1 with P2 before P1’s delayed acceptance arrives. A response must affect. This item instead decides let a character read its pinned campaign revision without storing a claims collection on the revision."
+        }
+      ],
+      "visibleDecisiveFact": "A campaign reward claim reads the character’s current CampaignRevision to evaluate eligibility. Campaign screens show rule versions, but they do not enumerate characters; a rules repository retrieves claims by campaign revision. Which direction should connect Character and CampaignRevision",
+      "acceptedKeySummary": "Make Character→CampaignRevision navigable; keep the claims lookup outside a reverse association field."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i005",
+      "questionId": "ood-n03-b02-i023",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Support both shipment-to-carrier and carrier-to-shipment clients with one coordinated membership update.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “temperature restrictions and hand-off ownership travel with the shipment” to this distinct decision: Support both shipment-to-carrier and carrier-to-shipment clients with one coordinated membership update.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "One-way Shipment→Carrier is close, but it cannot meet the dispatch board’s no-scan direct-traversal requirement.",
+      "decisionReversal": "Allowing the board to use a carrier-keyed index would remove the need for navigable Carrier→Shipments.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b04-i024",
+          "whyClosest": "Nearest current accepted comparison: A review workspace accepts a comment into an article thread and notifies the assigned author. Acceptance rules change with editorial policy; notification-provider APIs change when the mail v. This item instead decides support both shipment-to-carrier and carrier-to-shipment clients with one coordinated membership update."
+        }
+      ],
+      "visibleDecisiveFact": "A cold-chain shipment stores its current Carrier. Shipment detail follows Shipment→Carrier, and each carrier dispatch board must enumerate its active Shipments directly without scanning the fleet. A reassignment transaction updates both views together. Which association ends need to be navigable",
+      "acceptedKeySummary": "Make Shipment–Carrier navigable in both directions and update the inverse membership as part of the reassignment transaction."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i006",
+      "questionId": "ood-n03-b02-i024",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Use a durable account-keyed query for history instead of storing a redundant inverse object collection.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “a repayment cannot reduce the outstanding balance below zero” to this distinct decision: Use a durable account-keyed query for history instead of storing a redundant inverse object collection.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Bidirectional navigation is plausible from the one-to-many cardinality, but the indexed history path makes the reverse field unnecessary.",
+      "decisionReversal": "Removing the account-keyed index while keeping the history traversal requirement would justify an inverse association.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b01-i026",
+          "whyClosest": "Nearest current accepted comparison: A monthly allowance stores a period limit and accepted charges for that period. Draft charges do not reduce available balance. Choose how the allowance should expose its remaining accepted b. This item instead decides use a durable account-keyed query for history instead of storing a redundant inverse object collection."
+        }
+      ],
+      "visibleDecisiveFact": "A repayment Allocation must follow its exact Account when posting. The account history page retrieves allocations from a durable account-keyed index; no business object needs to traverse from Account to Allocation. Should Account hold a navigable collection of Allocation objects",
+      "acceptedKeySummary": "Keep Allocation→Account navigable and use the existing account-keyed query for history; omit the inverse object reference."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i007",
+      "questionId": "ood-n03-b02-i025",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose match-to-bracket for the forfeit handler and leave match listing to its indexed repository.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the bracket advances only from a legal match state” to this distinct decision: Expose match-to-bracket for the forfeit handler and leave match listing to its indexed repository.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Bidirectional navigation may look convenient, but it would create a second mutable list with no stated consumer.",
+      "decisionReversal": "Making match enumeration a direct in-memory bracket operation would justify adding the inverse end.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b03-i028",
+          "whyClosest": "Nearest current accepted comparison: A shipment has packed parcels and an order quantity. The shipping caller reads parcel totals, checks the remaining quantity, and then marks the shipment ready. A shipment can be ready only w. This item instead decides expose match-to-bracket for the forfeit handler and leave match listing to its indexed repository."
+        }
+      ],
+      "visibleDecisiveFact": "A bracket match stores a direct reference to its Bracket so the forfeit handler can read the bracket revision. The bracket renderer obtains matches from a slot-indexed repository and never traverses a Match collection. Which association direction should the model expose",
+      "acceptedKeySummary": "Expose Match→Bracket for the forfeit handler and leave Bracket→Matches to the slot-indexed repository."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i008",
+      "questionId": "ood-n03-b02-i026",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Provide both required report/item paths and update them atomically because both screens traverse the link.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “classification and refund eligibility are not the same responsibility” to this distinct decision: Provide both required report/item paths and update them atomically because both screens traverse the link.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "A single direction is a plausible simplification, but each direction is independently required by a different screen.",
+      "decisionReversal": "Replacing one direct-traversal screen with an indexed query would allow the corresponding association end to be non-navigable.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b05-i029",
+          "whyClosest": "Nearest current accepted comparison: In a collaborative annotation workspace, the review editor must accept a comment and notify the assigned author. Accepted comments must retain their author and document revision. Accepted co. This item instead decides provide both required report/item paths and update them atomically because both screens traverse the link."
+        }
+      ],
+      "visibleDecisiveFact": "A returns inspector opens one Item and must display its inspection reports by traversing the item’s stored report list. Each InspectionReport also needs to open its exact Item in the report detail view. The same service writes both links atomically. What navigation model supports both required screens",
+      "acceptedKeySummary": "Make Item–InspectionReport navigable in both directions and maintain the paired links in the write operation."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i009",
+      "questionId": "ood-n03-b02-i027",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose snapshot-to-input provenance while leaving shared-artifact reverse search to its indexed query.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “published outputs reference immutable inputs and code versions” to this distinct decision: Expose snapshot-to-input provenance while leaving shared-artifact reverse search to its indexed query.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Bidirectional links seem symmetrical, but only Snapshot-origin traversal is required by these clients.",
+      "decisionReversal": "A direct artifact-to-snapshots usage screen with no query alternative would create a need for reverse navigation.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b07-i031",
+          "whyClosest": "Nearest current accepted comparison: In a volunteer coordination hub, the shift manager must swap two volunteer assignments. Skills and availability constraints hold for both assignments. A swap request contains two distinct as. This item instead decides expose snapshot-to-input provenance while leaving shared-artifact reverse search to its indexed query."
+        }
+      ],
+      "visibleDecisiveFact": "A published Snapshot points to the exact Dataset and CodeVersion it used. The provenance viewer starts from Snapshot and follows both references; Dataset and CodeVersion screens never list the snapshots that reused them. Which way should the provenance associations navigate",
+      "acceptedKeySummary": "Expose Snapshot→Dataset and Snapshot→CodeVersion; do not add reverse snapshot collections to either shared artifact."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i010",
+      "questionId": "ood-n03-b02-i028",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Support revision-to-annotations and annotation-to-revision/author while avoiding an unneeded author collection.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “accepted comments must retain their author and document revision” to this distinct decision: Support revision-to-annotations and annotation-to-revision/author while avoiding an unneeded author collection.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Making every end navigable is plausible for convenience, but it adds an unused author list that another index already serves.",
+      "decisionReversal": "If the author index were removed and the profile had to traverse annotations directly, add the author-side end.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b07-i020",
+          "whyClosest": "Nearest current accepted comparison: In a drone maintenance planner, the fleet coordinator must schedule a battery replacement. A battery cannot be assigned to two aircraft at once. Battery serial and aircraft ID are required t. This item instead decides support revision-to-annotations and annotation-to-revision/author while avoiding an unneeded author collection."
+        }
+      ],
+      "visibleDecisiveFact": "A document revision’s review panel lists its Annotations directly. Each annotation opens its exact DocumentRevision and Author. The author profile uses an existing indexed search and does not traverse annotations. Which association ends should be navigable",
+      "acceptedKeySummary": "Expose DocumentRevision→Annotations and Annotation→DocumentRevision/Author; omit Author→Annotations."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i011",
+      "questionId": "ood-n03-b02-i029",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose only submission-to-route-revision because revision clients do not enumerate submissions.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “a submission is either complete or explicitly retryable” to this distinct decision: Expose only submission-to-route-revision because revision clients do not enumerate submissions.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Bidirectional navigation is close because multiple submissions may share one revision, but the reverse traversal has no client.",
+      "decisionReversal": "A direct revision-to-submissions screen with no indexed query would justify a navigable inverse.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b05-i031",
+          "whyClosest": "Nearest current accepted comparison: In a digital invoice exchange, the billing operator must reissue a rejected invoice. The new issue is traceable and does not double-charge the customer. Every issue records its timestamp and. This item instead decides expose only submission-to-route-revision because revision clients do not enumerate submissions."
+        }
+      ],
+      "visibleDecisiveFact": "An inspection submission references the RouteRevision against which it was performed. Inspectors open a submission and compare it with that revision. The route editor never lists submissions from a revision; compliance search is by submission ID. What is the minimal required navigation",
+      "acceptedKeySummary": "Expose InspectionSubmission→RouteRevision only."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i012",
+      "questionId": "ood-n03-b02-i030",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Keep order and issue traversals because each named client starts at the opposite endpoint.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the new issue is traceable and does not double-charge the customer” to this distinct decision: Keep order and issue traversals because each named client starts at the opposite endpoint.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "One-way Issue→Order is closest, but it cannot satisfy the required direct order-history traversal.",
+      "decisionReversal": "Replacing the order audit’s direct traversal with an indexed query would remove the need for Order→Issues.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b07-i032",
+          "whyClosest": "Nearest current accepted comparison: In a local-first map editor, the cartographer must merge an offline route edit. Conflicts are explicit and never silently overwrite accepted geometry. An edit must identify its parent route . This item instead decides keep order and issue traversals because each named client starts at the opposite endpoint."
+        }
+      ],
+      "visibleDecisiveFact": "An invoice issue points to its Order, and the order audit screen lists all issued versions by direct traversal. The billing correction screen begins with an Issue and follows back to its Order. A single writer updates both sides when a new issue is recorded. Which navigation should the Order–InvoiceIssue association support",
+      "acceptedKeySummary": "Support both Order→InvoiceIssues and InvoiceIssue→Order, with one writer maintaining the inverse collection."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i013",
+      "questionId": "ood-n03-b02-i031",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose door assignment collection and assignment-to-door while keeping holder lookup directory-backed.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “revocation is visible to the door policy before access is granted” to this distinct decision: Expose door assignment collection and assignment-to-door while keeping holder lookup directory-backed.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Making all ends navigable looks uniform, but duplicates a holder index that already owns that query.",
+      "decisionReversal": "Removing the holder directory and requiring direct holder-to-assignment traversal would justify a new navigable end.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b05-i031",
+          "whyClosest": "Nearest current accepted comparison: In a digital invoice exchange, the billing operator must reissue a rejected invoice. The new issue is traceable and does not double-charge the customer. Every issue records its timestamp and. This item instead decides expose door assignment collection and assignment-to-door while keeping holder lookup directory-backed."
+        }
+      ],
+      "visibleDecisiveFact": "The door policy starts with a Door and retrieves the current badge assignments for that door. Each Badge detail view must also reach its assigned Door. The badge directory answers holder-to-badge lookups separately, and assignment changes are committed through one service. Which navigation ends should the Door–BadgeAssignment link expose",
+      "acceptedKeySummary": "Expose Door→BadgeAssignments and BadgeAssignment→Door; keep holder-to-badge lookup in the directory."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i014",
+      "questionId": "ood-n03-b02-i032",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose only the forward ends required for a two-association Shipment→Revision→Publisher detail path.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the printed label represents the current approved shipment data” to this distinct decision: Expose only the forward ends required for a two-association Shipment→Revision→Publisher detail path.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Making both associations navigable in both directions is plausible, but none of the named clients needs the inverse traversals.",
+      "decisionReversal": "If a publisher screen later needed to enumerate shipments directly, add that specific inverse end and define its update path.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b05-i021",
+          "whyClosest": "Nearest current accepted comparison: In a volunteer coordination hub, the shift manager must swap two volunteer assignments. Skills and availability constraints hold for both assignments. The assignment list and each nested ava. This item instead decides expose label-to-source-snapshot only; audit search starts by label id."
+        }
+      ],
+      "visibleDecisiveFact": "Each Shipment points to one exact RouteRevision, and a revision may serve many shipments. Shipment detail displays its publisher by traversing Shipment→RouteRevision→Publisher. Publisher administration searches revisions by ID; no client lists shipments from a revision or revisions from a Publisher. Which association ends should be navigable",
+      "acceptedKeySummary": "Expose Shipment→RouteRevision and RouteRevision→Publisher only; omit both inverse collections."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i015",
+      "questionId": "ood-n03-b02-i033",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Support room calendar and booking detail traversals with one coordinated move operation.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the room capacity and cancellation policy must remain consistent” to this distinct decision: Support room calendar and booking detail traversals with one coordinated move operation.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Booking→Room alone is a reasonable default, but it fails the calendar’s direct enumeration contract.",
+      "decisionReversal": "Switching the calendar to an indexed query would allow the model to omit Room→Bookings.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i033",
+          "whyClosest": "Nearest current accepted comparison: A timed exercise attempt changes from InProgress to Submitted. The submitted attempt pins its exercise revision and scoring policy; late submission is allowed but marked late. Choose how a l. This item instead decides support room calendar and booking detail traversals with one coordinated move operation."
+        }
+      ],
+      "visibleDecisiveFact": "A room calendar traverses Room→Bookings to show all reservations. Each Booking detail also follows Booking→Room. A move operation updates the room link in both places atomically; canceled bookings remain in their own history. How should this relationship be navigable",
+      "acceptedKeySummary": "Make Room–Booking navigable in both directions and update both links in the move operation."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i016",
+      "questionId": "ood-n03-b02-i034",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose exhibit-to-policy only because policy consumers do not traverse back to exhibits.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “unsafe commands are rejected while maintenance is active” to this distinct decision: Expose exhibit-to-policy only because policy consumers do not traverse back to exhibits.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Bidirectional navigation is plausible for a shared policy but redundant because the registry already supplies the usage query.",
+      "decisionReversal": "A registry-free policy screen that traverses directly to consuming exhibits would justify an inverse end.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i033",
+          "whyClosest": "Nearest current accepted comparison: A timed exercise attempt changes from InProgress to Submitted. The submitted attempt pins its exercise revision and scoring policy; late submission is allowed but marked late. Choose how a l. This item instead decides expose exhibit-to-policy only because policy consumers do not traverse back to exhibits."
+        }
+      ],
+      "visibleDecisiveFact": "An exhibit object references its MaintenancePolicy to reject unsafe commands. The same policy version is shared by many exhibits. Policy screens never list exhibits, and the command guard starts from an exhibit. Which direction should the Exhibit–MaintenancePolicy association expose",
+      "acceptedKeySummary": "Expose Exhibit→MaintenancePolicy only."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i017",
+      "questionId": "ood-n03-b02-i035",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Keep event-specific Hub traversal on ScanEvent and omit a misleading shipment-level shortcut or unused inverse.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “progress refers to a stable lesson identity” to this distinct decision: Keep event-specific Hub traversal on ScanEvent and omit a misleading shipment-level shortcut or unused inverse.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Adding a direct Shipment→Hub value is plausible for a summary, but it cannot represent every stop in a multi-event timeline.",
+      "decisionReversal": "If the domain defined a separate current-destination field, a direct Shipment→CurrentHub relation could represent that distinct fact.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b01-i022",
+          "whyClosest": "Nearest current accepted comparison: An invoice line captures quantity and unit price at issue time. The catalog price may later change; old invoices must still show the issued amount. Choose how an issued line should calculate. This item instead decides expose completion-to-exact-lesson-revision while learner reports remain query-backed."
+        }
+      ],
+      "visibleDecisiveFact": "A Shipment has many immutable ScanEvents, and each event names one Hub. Its timeline shows every visited Hub by traversing Shipment→ScanEvents→Hub; there is no single Hub for the whole Shipment. Hub search uses an indexed ScanRepository and keeps no shipment collection. Which navigation should the object model expose",
+      "acceptedKeySummary": "Expose Shipment→ScanEvents and ScanEvent→Hub; omit direct Shipment→Hub and Hub→Shipment links."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b02-i018",
+      "questionId": "ood-n03-b02-i036",
+      "mentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Support timeline and event detail paths while keeping author search in the staff directory.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “export observes a stable session state” to this distinct decision: Support timeline and event detail paths while keeping author search in the staff directory.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Event→Conversation alone is close, but it cannot provide the direct timeline traversal.",
+      "decisionReversal": "Replacing the timeline’s object traversal with an indexed event query would remove the inverse collection requirement.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n01-b05-i019",
+          "whyClosest": "Nearest current accepted comparison: In the support desk, an escalation moves a conversation to a specialist queue and keeps its current owner and response deadline; it does not change priority. A plain reassignment changes the. This item instead decides support timeline and event detail paths while keeping author search in the staff directory."
+        }
+      ],
+      "visibleDecisiveFact": "A conversation timeline traverses Conversation→EscalationEvents. Each event detail also follows EscalationEvent→Conversation. A timeline writer adds both links in one transaction; the staff directory provides author searches separately. Which ends of Conversation–EscalationEvent should be navigable",
+      "acceptedKeySummary": "Expose Conversation→EscalationEvents and EscalationEvent→Conversation; keep author search directory-backed."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i001",
+      "questionId": "ood-n03-b03-i019",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Separate a grant’s authorization expiry from retention of its approval evidence.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the role expires and is attributable to a specific approval” to this distinct decision: Separate a grant’s authorization expiry from retention of its approval evidence.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Deleting the grant is the closest alternative because its permission ends, but the audit facts require the historical record to survive.",
+      "decisionReversal": "If no audit or later reference existed and the grant were a temporary preview, deletion at expiry could satisfy the case.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i036",
+          "whyClosest": "Nearest current accepted comparison: A temporary role grant moves from Pending to Active only after the reviewer approves it. Its expiry remains scheduled from the approved start time; denial leaves an audit record. Choose how . This item instead decides separate a grant’s authorization expiry from retention of its approval evidence."
+        }
+      ],
+      "visibleDecisiveFact": "A temporary access grant has a start and expiry instant. At expiry it stops authorizing access, but its grant ID, approver, and timestamps remain in the audit record. A role definition is shared by many grants. What lifecycle should the grant have when its expiry arrives",
+      "acceptedKeySummary": "Expire the Grant’s authority but retain its audit record."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i002",
+      "questionId": "ood-n03-b03-i020",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Close a withdrawn request to new decisions while retaining already signed decision records.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the seal covers the exact immutable revision” to this distinct decision: Close a withdrawn request to new decisions while retaining already signed decision records.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Deleting the children is close to a “close everything” interpretation, but it contradicts the explicit audit requirement.",
+      "decisionReversal": "If no decision had been signed or retained, withdrawal could remove the transient review drafts.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i034",
+          "whyClosest": "Nearest current accepted comparison: A procurement exception moves to Approved only after the named manager signs it. A delegate may prepare the request but cannot approve it. Choose what a delegate’s approval action should do.. This item instead decides close a withdrawn request to new decisions while retaining already signed decision records."
+        }
+      ],
+      "visibleDecisiveFact": "A two-reviewer approval request stores each signed decision by reviewer and round. If the request is withdrawn, no new decision may be added, but earlier signed decisions must remain queryable for the compliance record. How should withdrawal affect the already recorded decisions",
+      "acceptedKeySummary": "Close the request to new decisions; retain signed decision records."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i003",
+      "questionId": "ood-n03-b03-i021",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Keep cancellable editor drafts session-owned and create the durable inspection as a distinct committed object.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “release is idempotent and tied to a settled order” to this distinct decision: Keep cancellable editor drafts session-owned and create the durable inspection as a distinct committed object.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Keeping canceled drafts as history is plausible for some systems, but this scenario explicitly says cancel removes them.",
+      "decisionReversal": "If the audit policy required canceled sections to remain queryable, the session would need to close them as retained records instead of deleting them.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i022",
+          "whyClosest": "Nearest current accepted comparison: A whiteboard session can be Open, Closing, or Closed. Export is available only after all accepted strokes are included; a failed export keeps the session Closing and retryable. Choose the tr. This item instead decides keep cancellable editor drafts session-owned and create the durable inspection as a distinct committed object."
+        }
+      ],
+      "visibleDecisiveFact": "An inspection editor creates four local section drafts. Canceling the editor must remove those drafts. Submitting copies their values into a permanent Inspection record; later deleting the editor session must not affect the submitted record. Which object should control the local drafts’ lifetime",
+      "acceptedKeySummary": "The editor owns its drafts; submit creates a separate Inspection."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i004",
+      "questionId": "ood-n03-b03-i022",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Create an immutable snapshot only after complete input validation succeeds.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “passengers receive the change in the order in which it becomes effective” to this distinct decision: Create an immutable snapshot only after complete input validation succeeds.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "A mutable early snapshot is tempting for incremental construction, but the prompt prohibits partial visibility and post-publication mutation.",
+      "decisionReversal": "If the product allowed visible draft snapshots with mutable references before publishing, a separate DraftSnapshot lifecycle could be valid.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i027",
+          "whyClosest": "Nearest current accepted comparison: A regional bundle is Draft until all three component offers are active for the chosen region. Component availability can change while the draft is being reviewed. Choose what activation shou. This item instead decides create an immutable snapshot only after complete input validation succeeds."
+        }
+      ],
+      "visibleDecisiveFact": "A notebook run creates an immutable result snapshot only after all input references validate. A failed publication attempt may be retried after repairing a missing code reference; no partial snapshot is visible before validation succeeds. When should the snapshot object be created",
+      "acceptedKeySummary": "Create the immutable Snapshot only after validation succeeds."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i005",
+      "questionId": "ood-n03-b03-i023",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Consume a one-time recovery secret on success while retaining only a replay marker through the fixed expiry.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “a meter cannot be committed twice for an overlapping window” to this distinct decision: Consume a one-time recovery secret on success while retaining only a replay marker through the fixed expiry.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Keep the secret usable through its whole 24-hour window; this conflicts with the explicit one-time-success rule.",
+      "decisionReversal": "If successful confirmation did not consume the secret, it could remain valid until expiry; if replay markers were not required, the whole challenge could be purged immediately.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n01-b02-i033",
+          "whyClosest": "Nearest current accepted comparison: A comment is accepted with its author and document revision stored. Notifying the assigned author then fails, but notification can be retried by a separate worker. The comment must not be lo. This item instead decides consume a one-time recovery secret on success while retaining only a replay marker through the fixed expiry."
+        }
+      ],
+      "visibleDecisiveFact": "An account recovery challenge contains a one-time secret and has a fixed expiry 24 hours after issue. Successful confirmation must make the secret unusable immediately. The system keeps a consumed challenge marker until that original expiry to reject replay, then may purge the marker; the account and recovery audit remain. What lifecycle should confirmation trigger",
+      "acceptedKeySummary": "Consume the secret on success; retain its replay marker until expiry."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i006",
+      "questionId": "ood-n03-b03-i024",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Delete local copied drafts only after durable server acknowledgement; keep server records independent.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the current stream keeps its timing and error contract” to this distinct decision: Delete local copied drafts only after durable server acknowledgement; keep server records independent.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Deleting before acknowledgement avoids a duplicate, but it can destroy the only recoverable draft on a failed submit.",
+      "decisionReversal": "If no durable server copy were created, the local draft would need to remain the authoritative record after submission.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i038",
+          "whyClosest": "Nearest current accepted comparison: A seller payout moves from Ready to Released after settlement. A release request may be retried after a timeout; the payment provider returns the same transfer reference for a repeated reque. This item instead decides delete local copied drafts only after durable server acknowledgement; keep server records independent."
+        }
+      ],
+      "visibleDecisiveFact": "A canceled offline inspection draft is not retained. Once submitted, a separate server Inspection is durable even if the device later clears its local queue. The same section values are copied during submit rather than transferring the local draft objects. What should happen to local queue objects after a successful submit",
+      "acceptedKeySummary": "Delete local copies only after server acknowledgement."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i007",
+      "questionId": "ood-n03-b03-i025",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Distinguish retry of the same immutable issue from a corrected successor issue.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “skills and availability constraints hold for both assignments” to this distinct decision: Distinguish retry of the same immutable issue from a corrected successor issue.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Creating a new issue on each retry is plausible when retries are logged, but this case says retry must not create another issue object.",
+      "decisionReversal": "If the system required every send attempt to be its own event record, create a separate DeliveryAttempt rather than cloning the Issue.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b05-i031",
+          "whyClosest": "Nearest current accepted comparison: In a digital invoice exchange, the billing operator must reissue a rejected invoice. The new issue is traceable and does not double-charge the customer. Every issue records its timestamp and. This item instead decides distinguish retry of the same immutable issue from a corrected successor issue."
+        }
+      ],
+      "visibleDecisiveFact": "A rejected invoice issue is immutable and retained with its rejection reason. A corrected issue gets a new issue ID and links to the rejected one. Retrying delivery of the same issue does not create another issue record. How should retry and correction affect the invoice objects",
+      "acceptedKeySummary": "Retry the same issue ID; create a successor only for corrected content."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i008",
+      "questionId": "ood-n03-b03-i026",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Revoke access without deleting the retained badge record; create a new identity for replacement hardware.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “conflicts are explicit and never silently overwrite accepted geometry” to this distinct decision: Revoke access without deleting the retained badge record; create a new identity for replacement hardware.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Deleting and reusing the ID is tempting for a clean current roster, but it erases the retained revocation history.",
+      "decisionReversal": "If the old badge record had no retention requirement and was never externally referenced, deletion could replace the retained terminal state.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i031",
+          "whyClosest": "Nearest current accepted comparison: A drone maintenance job assigns a replacement battery to one aircraft. The old battery must be returned to Available only after the new battery passes the aircraft’s compatibility check. Cho. This item instead decides revoke access without deleting the retained badge record; create a new identity for replacement hardware."
+        }
+      ],
+      "visibleDecisiveFact": "Badge revocation immediately ends access, but the badge record and revocation event are retained. A replacement physical badge receives a new badge ID; the old record is never reactivated. What lifecycle transition represents revocation",
+      "acceptedKeySummary": "Revoke and retain the old Badge; give replacement hardware a new ID."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i009",
+      "questionId": "ood-n03-b03-i027",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Discard an unprinted preview on cancel and create the retained artifact only at successful print.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “reward rules depend on the current legal campaign state” to this distinct decision: Discard an unprinted preview on cancel and create the retained artifact only at successful print.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Treating the preview as the same permanent label is close because it contains the current layout, but it exists before the required approval/print event.",
+      "decisionReversal": "If the system retained every preview as an issued artifact, preview creation—not printing—would become the persistence boundary.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i022",
+          "whyClosest": "Nearest current accepted comparison: A whiteboard session can be Open, Closing, or Closed. Export is available only after all accepted strokes are included; a failed export keeps the session Closing and retryable. Choose the tr. This item instead decides discard an unprinted preview on cancel and create the retained artifact only at successful print."
+        }
+      ],
+      "visibleDecisiveFact": "A label preview is temporary and may be discarded when address editing is canceled. A printed label is an immutable audit artifact retained after shipment cancellation. Printing creates a new artifact from the current approved shipment snapshot. Which lifecycle should apply to the preview and printed label",
+      "acceptedKeySummary": "Discard previews on cancel; create a retained Label only after printing."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i010",
+      "questionId": "ood-n03-b03-i028",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Expire an unconfirmed temporary hold without creating a booking; confirmation creates the durable booking.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “temperature restrictions and hand-off ownership travel with the shipment” to this distinct decision: Expire an unconfirmed temporary hold without creating a booking; confirmation creates the durable booking.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Creating a Booking early is plausible to reserve the room, but the case makes confirmation a prerequisite to Booking creation.",
+      "decisionReversal": "If the domain defined a confirmed booking at hold creation with later compensation on timeout, early Booking creation could fit that different contract.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i028",
+          "whyClosest": "Nearest current accepted comparison: A charging controller records a connector as Available, Reserved, or Charging. A reservation expires at its stated instant unless a vehicle has connected. Choose the state when the expiry in. This item instead decides expire an unconfirmed temporary hold without creating a booking; confirmation creates the durable booking."
+        }
+      ],
+      "visibleDecisiveFact": "A rehearsal hold blocks a room for ten minutes while the coordinator waits for confirmation. If confirmation arrives, the system creates a Booking that remains until canceled. If the hold expires, it is removed and no Booking exists. How should hold expiry affect the two objects",
+      "acceptedKeySummary": "Expire the Hold; create a Booking only after confirmation."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i011",
+      "questionId": "ood-n03-b03-i029",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Apply a fixed retention clock and legal hold to a superseded copied-value policy version.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “a repayment cannot reduce the outstanding balance below zero” to this distinct decision: Apply a fixed retention clock and legal hold to a superseded copied-value policy version.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Purge when the last listing stops using the version; this ignores the separately stated fixed retention clock.",
+      "decisionReversal": "If listings held live version references or the retention schedule were removed, retirement could instead depend on active references or a different explicit policy.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n01-b04-i033",
+          "whyClosest": "Nearest current accepted comparison: A support archive holds an incident record whose retention period ended yesterday. A court preservation hold remains active until a release notice arrives. This workflow permits purge only a. This item instead decides apply a fixed retention clock and legal hold to a superseded copied-value policy version."
+        }
+      ],
+      "visibleDecisiveFact": "When a new catalog policy is published, the prior PolicyVersion stops being available for new listings. Existing listings contain complete copies of the policy values, not references to that PolicyVersion. The approved retention schedule keeps every superseded version for two years after replacement; a legal hold pauses purge. When may the old version be purged",
+      "acceptedKeySummary": "Supersede at replacement; purge after two years unless a legal hold remains."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i012",
+      "questionId": "ood-n03-b03-i030",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Retire a lesson revision from new enrollment without severing existing completion history.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the bracket advances only from a legal match state” to this distinct decision: Retire a lesson revision from new enrollment without severing existing completion history.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Cascading deletion is tempting from “retire,” but it destroys the preserved completion history.",
+      "decisionReversal": "If no active or historical record referenced the revision and policy required erasure, deletion could be appropriate.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n01-b05-i020",
+          "whyClosest": "Nearest current accepted comparison: A learning catalog can retire a lesson from new assignments while existing learner records still point to its stable lesson ID. Deletion removes the record and breaks those references. Which. This item instead decides retire a lesson revision from new enrollment without severing existing completion history."
+        }
+      ],
+      "visibleDecisiveFact": "A lesson revision can be retired from new enrollment while existing completions continue to reference it. A completion record stores the exact revision and remains available for the learner’s history. Retirement must not rewrite or remove completed records. What lifecycle change should retirement perform",
+      "acceptedKeySummary": "Retire the revision from enrollment; retain its linked completions."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i013",
+      "questionId": "ood-n03-b03-i031",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Keep live-session strokes through export failure and create an independent archive only after successful export.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “classification and refund eligibility are not the same responsibility” to this distinct decision: Keep live-session strokes through export failure and create an independent archive only after successful export.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Making Archive a session part is plausible from its origin, but it contradicts the requirement that the export survive session deletion.",
+      "decisionReversal": "If an export were only a temporary view destroyed with the session, it could share the session lifetime.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i022",
+          "whyClosest": "Nearest current accepted comparison: A whiteboard session can be Open, Closing, or Closed. Export is available only after all accepted strokes are included; a failed export keeps the session Closing and retryable. Choose the tr. This item instead decides keep live-session strokes through export failure and create an independent archive only after successful export."
+        }
+      ],
+      "visibleDecisiveFact": "A whiteboard session owns unsaved strokes until close. A successful export creates a separate immutable HistoryArchive that survives session deletion. If export fails, no archive is visible and the session keeps its strokes for retry. What should close and export do to these objects",
+      "acceptedKeySummary": "Keep strokes on export failure; create a separate Archive after success."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i014",
+      "questionId": "ood-n03-b03-i032",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Update current assignment and append an immutable event without rewriting prior escalation history.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “published outputs reference immutable inputs and code versions” to this distinct decision: Update current assignment and append an immutable event without rewriting prior escalation history.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Updating the latest event seems economical, but it falsifies the historical value after reassignment.",
+      "decisionReversal": "If policy explicitly discarded old assignment history, the conversation could store only its current fields and replace them.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n01-b05-i019",
+          "whyClosest": "Nearest current accepted comparison: In the support desk, an escalation moves a conversation to a specialist queue and keeps its current owner and response deadline; it does not change priority. A plain reassignment changes the. This item instead decides update current assignment and append an immutable event without rewriting prior escalation history."
+        }
+      ],
+      "visibleDecisiveFact": "A support conversation can change its assigned team several times. Each EscalationEvent records the team and deadline at that time and remains in the timeline. Reassignment updates the current conversation fields but does not mutate older events. How should reassignment affect the escalation history",
+      "acceptedKeySummary": "Change current assignment and append an immutable EscalationEvent."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i015",
+      "questionId": "ood-n03-b03-i033",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Discard only an unpublished draft; publish a new retained revision and preserve prior revisions for orders.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “accepted comments must retain their author and document revision” to this distinct decision: Discard only an unpublished draft; publish a new retained revision and preserve prior revisions for orders.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Mutating the published revision is close because the user is editing the same listing, but the immutable revision promise rules it out.",
+      "decisionReversal": "If no order or audit record referenced old revisions and the contract allowed mutation, a single mutable listing record could suffice.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i023",
+          "whyClosest": "Nearest current accepted comparison: In a curriculum publishing desk, proposal P1 is pending while the current package remains active. An editor replaces P1 with P2 before P1’s delayed acceptance arrives. A response must affect. This item instead decides discard only an unpublished draft; publish a new retained revision and preserve prior revisions for orders."
+        }
+      ],
+      "visibleDecisiveFact": "A listing has an unpublished seasonal draft and a currently published revision. Canceling the draft must leave the published revision untouched. Publishing a validated draft creates a new immutable revision and marks the prior revision superseded; prior revisions remain available to orders that selected them. What lifecycle should draft cancellation and publication use",
+      "acceptedKeySummary": "Discard the draft on cancel; publish a retained successor revision."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i016",
+      "questionId": "ood-n03-b03-i034",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Delete a tentative split before acknowledgement but retain accepted vendor work as its own object.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “a submission is either complete or explicitly retryable” to this distinct decision: Delete a tentative split before acknowledgement but retain accepted vendor work as its own object.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Using one object for both stages is simpler, but cannot satisfy both the pre-ack deletion and post-ack retention rules.",
+      "decisionReversal": "If the accepted split remained fully cancellable and unrecorded, both stages could share a request-bounded lifecycle.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i026",
+          "whyClosest": "Nearest current accepted comparison: A garden plot reservation moves from Plot A to Plot B. Plot B must be vacant at commit time; a denied transfer must preserve Plot A and its approval history. Choose how to respond when Plot . This item instead decides delete a tentative split before acknowledgement but retain accepted vendor work as its own object."
+        }
+      ],
+      "visibleDecisiveFact": "A backorder split is tentative until a vendor acknowledges its portion. Before acknowledgement, canceling the request deletes that tentative split. After acknowledgement, the accepted vendor work order is retained even if the customer later cancels the overall request. What lifecycle boundary distinguishes the tentative split from accepted work",
+      "acceptedKeySummary": "Delete tentative splits; retain VendorWorkOrder after acknowledgement."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i017",
+      "questionId": "ood-n03-b03-i035",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Expire only a derived quote-cache entry while preserving independent source records for recomputation.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the new issue is traceable and does not double-charge the customer” to this distinct decision: Expire only a derived quote-cache entry while preserving independent source records for recomputation.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Delete the route revision and rating snapshot with the cache; this wrongly gives the derived object ownership of its inputs.",
+      "decisionReversal": "If those source records existed only as part of the cache entry, cache deletion would also end their lifecycle; the prompt says they remain independently available.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b01-i025",
+          "whyClosest": "Nearest current accepted comparison: A sensor reading stores the raw measurement and the calibration revision used when it was taken. Later recalibration must not rewrite historical readings. Choose how a historical corrected v. This item instead decides expire only a derived quote-cache entry while preserving independent source records for recomputation."
+        }
+      ],
+      "visibleDecisiveFact": "A route quote cache stores a derived result for one exact RouteRevision and RatingSnapshot. Each cache entry expires 10 minutes after creation; either source record remains available independently, and an expired quote can be recomputed. What should expiry remove",
+      "acceptedKeySummary": "Expire only the cache entry; keep source records for recomputation."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b03-i018",
+      "questionId": "ood-n03-b03-i036",
+      "mentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Retire a shared price version only after retained bundle revisions release their live references.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “revocation is visible to the door policy before access is granted” to this distinct decision: Retire a shared price version only after retained bundle revisions release their live references.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ],
+      "nearestAlternative": "Immediate deletion is the closest lifecycle shortcut, but it breaks the exact-price history of existing bundle revisions.",
+      "decisionReversal": "If bundle revisions copied prices by value and held no version reference, the catalog could retire the old version sooner.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b01-i036",
+          "whyClosest": "Nearest current accepted comparison: A support case stores its opened instant and response window. The due instant is fixed when the case is created; later policy edits affect new cases only. Choose how an existing case should . This item instead decides retire a shared price version only after retained bundle revisions release their live references."
+        }
+      ],
+      "visibleDecisiveFact": "A bundle quote uses the current prices of shared catalog products. Publishing a new bundle revision pins the exact product-price versions it used. Retiring a product from new bundles does not remove those versions while existing bundle revisions still reference them. When may the old product-price version be retired",
+      "acceptedKeySummary": "Retire a price version only after its last live reference is released."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i001",
+      "questionId": "ood-n03-b04-i019",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Use a subtype when changed implementation preserves the full base inputs, outputs, and invariants.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “a battery cannot be assigned to two aircraft at once” to this distinct decision: Use a subtype when changed implementation preserves the full base inputs, outputs, and invariants.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "A collaborator is plausible because calculation varies, but the stated contract makes each route an interchangeable Route value.",
+      "decisionReversal": "If the regional implementation required an extra field or returned different time semantics, it would no longer be a drop-in Route subtype.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b04-i020",
+          "whyClosest": "Nearest current accepted comparison: A theater booking stores a confirmed seat reservation and the capacity hold that protects that seat. The booking rule requires both to change together: a confirmed reservation cannot exist w. This item instead decides use a subtype when changed implementation preserves the full base inputs, outputs, and invariants."
+        }
+      ],
+      "visibleDecisiveFact": "A route planner accepts any Route implementation through one read-only contract: every route returns the same ordered stops and travel-time units, and no route adds required inputs. A regional route subtype changes how travel times are computed but preserves those results and invariants for every caller. How should the regional route type relate to Route",
+      "acceptedKeySummary": "RegionalRoute may implement Route."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i002",
+      "questionId": "ood-n03-b04-i020",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Compose an independently selected tax calculator around the stable invoice object.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “privacy and consent rules apply before external disclosure” to this distinct decision: Compose an independently selected tax calculator around the stable invoice object.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "A NegotiatedInvoice subtype is close because the price outcome differs, but the prompt makes the rule independently selectable per calculation.",
+      "decisionReversal": "If negotiated invoices had a distinct stable contract and every caller could use them through Invoice without extra conditions, a subtype could fit.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b04-i026",
+          "whyClosest": "Nearest current accepted comparison: An invoice exchange owns invoice lines and tax totals. Tax rules change when jurisdiction policy changes; document layout changes when a trading partner revises its required file format. Cho. This item instead decides compose an independently selected tax calculator around the stable invoice object."
+        }
+      ],
+      "visibleDecisiveFact": "An invoice service can calculate either a standard or negotiated tax amount. The invoice remains the same domain object, and an authorized account setting chooses the tax calculator for each calculation; callers still use the same invoice API. Where should the two calculation behaviors live",
+      "acceptedKeySummary": "Use an account-selected TaxCalculator collaborator."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i003",
+      "questionId": "ood-n03-b04-i021",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Reject a subtype that requires a key unavailable to callers of the base reader contract.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “completion records the exercise version and score policy” to this distinct decision: Reject a subtype that requires a key unavailable to callers of the base reader contract.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "The subtype option is tempting because both types read documents, but the new mandatory key makes a base caller insufficient.",
+      "decisionReversal": "If the base contract already included a key source available to every caller, the stronger-precondition objection would disappear.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b07-i020",
+          "whyClosest": "Nearest current accepted comparison: In a drone maintenance planner, the fleet coordinator must schedule a battery replacement. A battery cannot be assigned to two aircraft at once. Battery serial and aircraft ID are required t. This item instead decides reject a subtype that requires a key unavailable to callers of the base reader contract."
+        }
+      ],
+      "visibleDecisiveFact": "A public DocumentReader promises that callers can request text for any published document. A proposed EncryptedReader requires callers to supply a decryption key that ordinary DocumentReader callers do not have; without it, the reader cannot return the promised text. Can EncryptedReader safely be modeled as a DocumentReader subtype",
+      "acceptedKeySummary": "Keep key-dependent reading behind a separate reader API."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i004",
+      "questionId": "ood-n03-b04-i022",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Keep a filtered public schedule as a projection because it omits results promised by Schedule.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “approval is attributable, bounded, and cannot bypass required controls” to this distinct decision: Keep a filtered public schedule as a projection because it omits results promised by Schedule.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "Subclassing is plausible because the archived data is still a schedule, but the omitted canceled events violate the stated result contract.",
+      "decisionReversal": "If the base contract excluded canceled events, returning only public events would no longer weaken the guarantee.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i020",
+          "whyClosest": "Nearest current accepted comparison: A course lesson has states Draft, Published, and Retired. Retirement prevents new enrollment, while existing learners keep their progress record linked to the lesson ID. Choose the retiremen. This item instead decides keep a filtered public schedule as a projection because it omits results promised by schedule."
+        }
+      ],
+      "visibleDecisiveFact": "A timetable API accepts any Schedule and promises that `eventsFor(day)` returns every event for that day, including canceled events marked with their status. A proposed ArchivedSchedule silently omits canceled events because it is optimized for public display. What is the sound model for the public-only view",
+      "acceptedKeySummary": "Use a public-only Schedule projection."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i005",
+      "questionId": "ood-n03-b04-i023",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Accept a lossless encoder subtype that strengthens output guarantees without adding required inputs.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “annotations follow stable segments rather than file offsets” to this distinct decision: Accept a lossless encoder subtype that strengthens output guarantees without adding required inputs.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "A type-detecting helper is plausible for specialized encoding, but no caller distinction is needed under the stated contract.",
+      "decisionReversal": "If the lossless codec required a new mandatory parameter, the current base-typed pipeline could not substitute it directly.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b04-i026",
+          "whyClosest": "Nearest current accepted comparison: An invoice exchange owns invoice lines and tax totals. Tax rules change when jurisdiction policy changes; document layout changes when a trading partner revises its required file format. Cho. This item instead decides accept a lossless encoder subtype that strengthens output guarantees without adding required inputs."
+        }
+      ],
+      "visibleDecisiveFact": "A media pipeline accepts any Encoder through the same `encode(source, format)` contract. The new LosslessEncoder accepts the same inputs, returns a decodable file with the same format metadata, and never discards source samples; callers do not need to know which encoder instance they receive. Which relation best represents LosslessEncoder",
+      "acceptedKeySummary": "LosslessEncoder may implement Encoder."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i006",
+      "questionId": "ood-n03-b04-i024",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Compose destination-selected label rendering instead of changing Shipment identity per format.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the role expires and is attributable to a specific approval” to this distinct decision: Compose destination-selected label rendering instead of changing Shipment identity per format.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "Destination-specific Shipment subtypes are close because a destination affects output, but the shipment itself remains the same object.",
+      "decisionReversal": "If the shipment types had distinct stable caller-visible behavior unrelated to rendering choice, generalization could be appropriate.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b04-i024",
+          "whyClosest": "Nearest current accepted comparison: A review workspace accepts a comment into an article thread and notifies the assigned author. Acceptance rules change with editorial policy; notification-provider APIs change when the mail v. This item instead decides compose destination-selected label rendering instead of changing shipment identity per format."
+        }
+      ],
+      "visibleDecisiveFact": "A delivery label can be rendered in either a thermal-printer layout or a PDF layout. The Shipment object stays the same, and the chosen renderer is selected per destination; both renderers consume a ShipmentSnapshot and produce an artifact through the same output contract. How should the two renderings be modeled",
+      "acceptedKeySummary": "Use a destination-selected LabelRenderer with Shipment."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i007",
+      "questionId": "ood-n03-b04-i025",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Allow additive signature metadata when CertifiedReport retains the entire inspection-report contract.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the seal covers the exact immutable revision” to this distinct decision: Allow additive signature metadata when CertifiedReport retains the entire inspection-report contract.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "An unrelated collaborator is plausible because the signature is separate, but it needlessly splits an otherwise substitutable report.",
+      "decisionReversal": "If CertifiedReport could not provide the same `condition()` behavior, it would no longer qualify as a subtype.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b05-i027",
+          "whyClosest": "Nearest current accepted comparison: In a returns inspection workflow, the warehouse inspector must classify a returned item. Classification and refund eligibility are not the same responsibility. The submitted condition catego. This item instead decides allow additive signature metadata when certifiedreport retains the entire inspection-report contract."
+        }
+      ],
+      "visibleDecisiveFact": "Every InspectionReport exposes a `condition()` operation that returns one of the allowed inspection categories. A proposed CertifiedReport adds a signature but keeps the same category set and operation behavior; any client that accepts InspectionReport can read it unchanged. How should CertifiedReport relate to InspectionReport",
+      "acceptedKeySummary": "CertifiedReport may extend InspectionReport."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i008",
+      "questionId": "ood-n03-b04-i026",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Compose a matcher chosen per search request rather than encoding request policy in Reservation subtype.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “release is idempotent and tied to a settled order” to this distinct decision: Compose a matcher chosen per search request rather than encoding request policy in Reservation subtype.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "Reservation subtypes appear plausible from the two matching modes, but the same reservation can use either mode.",
+      "decisionReversal": "If the reservation’s kind permanently determined one distinct contract and it could never be evaluated by the other matcher, subtype modeling could fit.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b06-i030",
+          "whyClosest": "Nearest current accepted comparison: In a cooperative lending ledger, the account steward must record a repayment allocation. A repayment cannot reduce the outstanding balance below zero. Each repayment allocation has an alloca. This item instead decides compose a matcher chosen per search request rather than encoding request policy in reservation subtype."
+        }
+      ],
+      "visibleDecisiveFact": "A reservation object remains the same domain record whether a user chooses standard or accessible room matching. The matcher is chosen per search request, and both matchers return candidate room IDs under the same result contract; neither matcher represents a reservation. Where should the matching variation live",
+      "acceptedKeySummary": "Select RoomMatcher per search, outside Reservation identity."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i009",
+      "questionId": "ood-n03-b04-i027",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Reject ScenicRoute as a subtype when it adds a mandatory waypoint precondition.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “passengers receive the change in the order in which it becomes effective” to this distinct decision: Reject ScenicRoute as a subtype when it adds a mandatory waypoint precondition.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "Subclassing is tempting because scenic routes are still routes, but the extra required waypoints violate the base input contract.",
+      "decisionReversal": "If the base contract also required those waypoints for every route, the stronger-precondition objection would disappear.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b07-i020",
+          "whyClosest": "Nearest current accepted comparison: In a drone maintenance planner, the fleet coordinator must schedule a battery replacement. A battery cannot be assigned to two aircraft at once. Battery serial and aircraft ID are required t. This item instead decides reject scenicroute as a subtype when it adds a mandatory waypoint precondition."
+        }
+      ],
+      "visibleDecisiveFact": "A `Route` base contract guarantees that every route accepts a pair of valid endpoints and returns a connected path or a documented no-path result. A proposed ScenicRoute additionally requires a minimum number of waypoints before it will search. Should ScenicRoute be a Route subtype",
+      "acceptedKeySummary": "Expose ScenicRoute through a separate policy or API."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i010",
+      "questionId": "ood-n03-b04-i028",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Keep a replaceable maintenance policy as a collaborator while Exhibit identity remains stable.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “a meter cannot be committed twice for an overlapping window” to this distinct decision: Keep a replaceable maintenance policy as a collaborator while Exhibit identity remains stable.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "Policy-specific Exhibit subtypes are close because policy changes behavior, but the same exhibit can change policy without changing identity.",
+      "decisionReversal": "If an exhibit’s policy were fixed for its entire lifetime and defined a distinct caller contract, a subtype might be justified.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b03-i024",
+          "whyClosest": "Nearest current accepted comparison: An exhibit command handler reads the controller’s maintenance flag and command type, then blocks unsafe commands. The rule is part of the exhibit’s accepted operating behavior and is used by. This item instead decides keep a replaceable maintenance policy as a collaborator while exhibit identity remains stable."
+        }
+      ],
+      "visibleDecisiveFact": "An exhibit uses one maintenance policy chosen by the building operator. The exhibit remains the same object when policy changes, and the policy can be reused by many exhibits; policy selection does not change any Exhibit caller contract. How should the policy choice be represented",
+      "acceptedKeySummary": "Reference a replaceable MaintenancePolicy from Exhibit."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i011",
+      "questionId": "ood-n03-b04-i029",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Use a regional processor subtype when it preserves the base idempotency and retry outcome contract.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the current stream keeps its timing and error contract” to this distinct decision: Use a regional processor subtype when it preserves the base idempotency and retry outcome contract.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "A separate collaborator is reasonable, but the case does not require callers to handle a different contract.",
+      "decisionReversal": "If the regional implementation could report success before durable recording, it would no longer satisfy the Processor contract.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i038",
+          "whyClosest": "Nearest current accepted comparison: A seller payout moves from Ready to Released after settlement. A release request may be retried after a timeout; the payment provider returns the same transfer reference for a repeated reque. This item instead decides use a regional processor subtype when it preserves the base idempotency and retry outcome contract."
+        }
+      ],
+      "visibleDecisiveFact": "A payout processor accepts any Processor and promises that a settled payout is either recorded once or returns a retryable failure with the same payout key. A proposed RegionalProcessor follows the same input rules and result contract while adding regional routing internally. Can RegionalProcessor be treated as a Processor subtype",
+      "acceptedKeySummary": "RegionalProcessor may implement Processor."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i012",
+      "questionId": "ood-n03-b04-i030",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Compose an independently selected SigningProvider around the same sign request.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “skills and availability constraints hold for both assignments” to this distinct decision: Compose an independently selected SigningProvider around the same sign request.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "A provider-specific request subtype is tempting because signing differs by provider, but provider selection does not change the request itself.",
+      "decisionReversal": "If the request type permanently encoded a different caller contract for each provider and was not switchable, a subtype could be considered.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b04-i038",
+          "whyClosest": "Nearest current accepted comparison: A charging reservation stores connector, window, and reservation status. Reservation policy changes with utility programs; billing-provider APIs change when payment vendors add fields. Choos. This item instead decides compose an independently selected signingprovider around the same sign request."
+        }
+      ],
+      "visibleDecisiveFact": "A document signer can use either an in-house signing service or an external provider. The signer object remains the same request, and the provider is selected for each delivery attempt; provider credentials and availability are managed separately. How should the provider variation relate to SignRequest",
+      "acceptedKeySummary": "Use a selected SigningProvider with SignRequest."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i013",
+      "questionId": "ood-n03-b04-i031",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Accept a read-only subtype when the base Profile contract is explicitly query-only and every result is preserved.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “conflicts are explicit and never silently overwrite accepted geometry” to this distinct decision: Accept a read-only subtype when the base Profile contract is explicitly query-only and every result is preserved.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "A separate unrelated view type is plausible, but it adds branching when no base operation is missing or mutated.",
+      "decisionReversal": "If Profile later promises a mutation the view cannot honor, the read-only view must use a separate interface or state-aware contract.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b05-i027",
+          "whyClosest": "Nearest current accepted comparison: In a returns inspection workflow, the warehouse inspector must classify a returned item. Classification and refund eligibility are not the same responsibility. The submitted condition catego. This item instead decides accept a read-only profile subtype that preserves the base fields and unavailable-field result."
+        }
+      ],
+      "visibleDecisiveFact": "A read-only view implements the same query-only `Profile` contract used by account screens: callers request display fields, no operation mutates a Profile, and the documented unavailable-field result is preserved. It adds a provenance badge but keeps every existing caller operation intact. Should ReadOnlyProfile be a subtype of Profile",
+      "acceptedKeySummary": "ReadOnlyProfile may implement Profile."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i014",
+      "questionId": "ood-n03-b04-i032",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Reject a character subtype whose reward call performs a state change the base contract forbids.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “reward rules depend on the current legal campaign state” to this distinct decision: Reject a character subtype whose reward call performs a state change the base contract forbids.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "A subtype sounds reasonable because it still claims rewards, but the added mutation violates the base behavior.",
+      "decisionReversal": "If the base operation explicitly included quest completion as a permitted side effect, the objection would disappear.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b03-i025",
+          "whyClosest": "Nearest current accepted comparison: A course administrator retires a lesson. The caller currently reads learner-progress links and manually marks each one preserved before changing the lesson’s status. Lesson identity and reti. This item instead decides reject a character subtype whose reward call performs a state change the base contract forbids."
+        }
+      ],
+      "visibleDecisiveFact": "A campaign character has a permanent `claimReward` operation with a contract that rejects ineligible claims and never changes quest completion. A proposed AutoCompletingCharacter makes the call succeed by completing the quest first, a side effect the base contract forbids. Can AutoCompletingCharacter replace Character",
+      "acceptedKeySummary": "Keep quest completion outside Character’s reward operation."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i015",
+      "questionId": "ood-n03-b04-i033",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Keep independently selected carrier assignment behavior outside Shipment subtype identity.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “temperature restrictions and hand-off ownership travel with the shipment” to this distinct decision: Keep independently selected carrier assignment behavior outside Shipment subtype identity.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "Carrier-specific Shipment subtypes are tempting because the carrier affects delivery, but the same Shipment may be reassigned.",
+      "decisionReversal": "If carrier type were fixed at shipment creation and defined a different stable caller contract, a subtype might be warranted.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b04-i024",
+          "whyClosest": "Nearest current accepted comparison: A review workspace accepts a comment into an article thread and notifies the assigned author. Acceptance rules change with editorial policy; notification-provider APIs change when the mail v. This item instead decides keep independently selected carrier assignment behavior outside shipment subtype identity."
+        }
+      ],
+      "visibleDecisiveFact": "A cold-chain shipment can be assigned to a Carrier only after the carrier acknowledges custody and meets the temperature band. Carrier selection changes per shipment, while Shipment keeps the same fields and lifecycle. Where should the carrier-specific assignment behavior live",
+      "acceptedKeySummary": "Select Carrier through Shipment assignment, not subtype identity."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i016",
+      "questionId": "ood-n03-b04-i034",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Compose a campaign-selected evaluator around the same Character input and result contract.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “a repayment cannot reduce the outstanding balance below zero” to this distinct decision: Compose a campaign-selected evaluator around the same Character input and result contract.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "Revision-specific Character subclasses are plausible because outcomes vary, but the prompt says characters move across revisions.",
+      "decisionReversal": "If each character belonged permanently to one revision and the subtype carried a distinct stable contract, the hierarchy could be reconsidered.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b04-i033",
+          "whyClosest": "Nearest current accepted comparison: A support case owns assignee and response deadline. Escalation priority changes with support policy; the notification system changes when the messaging vendor changes. Choose how to isolate . This item instead decides compose a campaign-selected evaluator around the same character input and result contract."
+        }
+      ],
+      "visibleDecisiveFact": "A campaign reward evaluator is selected by the campaign’s ruleset. The Character remains the same object while the campaign revision changes; evaluator implementations receive the same read-only inputs and return the same eligibility result shape. How should reward evaluation vary across campaign revisions",
+      "acceptedKeySummary": "Select RewardEvaluator by campaign revision."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i017",
+      "questionId": "ood-n03-b04-i035",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Reject a match subtype that allows a state transition the base contract promises to reject.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “the bracket advances only from a legal match state” to this distinct decision: Reject a match subtype that allows a state transition the base contract promises to reject.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "Allowing the transition seems like a harmless extension, but callers rely on the documented rejection as an invariant.",
+      "decisionReversal": "Adding an authorized correction path to the base contract would make a subtype-specific correction compatible.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b02-i026",
+          "whyClosest": "Nearest current accepted comparison: A garden plot reservation moves from Plot A to Plot B. Plot B must be vacant at commit time; a denied transfer must preserve Plot A and its approval history. Choose how to respond when Plot . This item instead decides reject a match subtype that allows a state transition the base contract promises to reject."
+        }
+      ],
+      "visibleDecisiveFact": "Every Match implementation accepts the same two team IDs and returns one of the documented legal-state outcomes. A proposed ExhibitionMatch subtype additionally allows a completed match to be forfeited, an operation the base Match contract rejects. Can ExhibitionMatch safely substitute for Match",
+      "acceptedKeySummary": "Keep ExhibitionMatch outside Match’s rejecting contract."
+    },
+    {
+      "beforeQuestionId": "ood-n03-b04-i018",
+      "questionId": "ood-n03-b04-i036",
+      "mentalUnitId": "OOD-N03-B04",
+      "learningObjective": "Keep view-format variation in an adapter because the same Listing supplies both presentations.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "Changes from the source invariant “classification and refund eligibility are not the same responsibility” to this distinct decision: Keep view-format variation in an adapter because the same Listing supplies both presentations.",
+      "sourceRefs": [
+        "https://www.omg.org/spec/UML/2.5.1/PDF",
+        "https://doi.org/10.1145/62138.62141"
+      ],
+      "nearestAlternative": "Listing subtypes are close because screens show different fields, but the same listing appears in both views.",
+      "decisionReversal": "If a distinct listing category had a stable business contract that changed the available operations, subtype modeling might be appropriate.",
+      "closestAcceptedPeers": [
+        {
+          "questionId": "ood-n02-b08-i025",
+          "whyClosest": "Nearest current accepted comparison: In a drone maintenance planner, the fleet coordinator must schedule a battery replacement. A battery cannot be assigned to two aircraft at once. Battery search uses a serial number. An unkno. This item instead decides keep view-format variation in an adapter because the same listing supplies both presentations."
+        }
+      ],
+      "visibleDecisiveFact": "A marketplace listing may render through a compact card or a full detail page. The same Listing object supplies the same underlying fields, and a view adapter chooses which presentation is produced for the current screen. How should the presentation variation be modeled",
+      "acceptedKeySummary": "Use a view adapter for Listing presentation."
+    }
+  ]
+}

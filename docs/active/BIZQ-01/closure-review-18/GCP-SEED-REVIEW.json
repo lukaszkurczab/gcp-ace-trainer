@@ -1,0 +1,285 @@
+{
+  "reportId": "BIZQ-01-GCPACE-N01-B02-full-unit-review-v1",
+  "scope": "Independent source-only semantic review of every current question object in GCPACE-N01-B02. This is not a whole-track judgment, authoring approval, source change, build/admission result, or runtime/native acceptance.",
+  "reviewerEffort": "Luna High",
+  "source": {
+    "repository": "patternly-content",
+    "commit": "90a1d83859c2be83c5266ffe981f487d3c29aeeb",
+    "path": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+    "sha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4",
+    "questionCount": 18,
+    "unitId": "GCPACE-N01-B02"
+  },
+  "fingerprintMethod": "Canonical itemFingerprint from the existing patternly-content/scripts/review/content-review-console.mjs listItems() API, computed over each exact current source object.",
+  "criteria": {
+    "BIZQ-01 §4.1": "One decision, explicit decisive condition, nearest alternative, transfer boundary; a single-choice answer must satisfy the complete stated contract.",
+    "BIZQ-01 §4.2": "Do not expose authoring instructions or the answer in learner-visible constraints.",
+    "BIZQ-01 §4.3": "Alternatives represent plausible local misconceptions and have comparable concreteness; avoid category filler.",
+    "BIZQ-01 §4.4": "Reason and Details explain the mechanism and scenario, correct the nearest error, and bound transfer."
+  },
+  "commonFinding": "All 18 objects share a learner-visible third constraint that says not to substitute adjacent product/billing/identity/location boundaries. It is authoring guidance rather than a scenario fact, excludes whole distractor categories, and contradicts keys whose decisions depend on managed identity/domain context (notably 001, 002, 007, 015, 016). All objects reuse near-identical mechanism/transfer/error-correction prose; distractor messages paraphrase an option and repeat a generic “decisive requirement” label rather than diagnosing the local misconception. This applies existing §4.2–§4.4, not a new criterion.",
+  "primaryReferences": [
+    {
+      "id": "resource-hierarchy",
+      "url": "https://docs.cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy",
+      "supports": "Organization→optional folders→projects→service resources; projects belong to organization rather than creator; managed-user project-creation default and policy inheritance."
+    },
+    {
+      "id": "organization-setup",
+      "url": "https://docs.cloud.google.com/resource-manager/docs/creating-managing-organization",
+      "supports": "Domain-associated organization provisioning and existing-customer project/billing-account provisioning trigger; one organization per Workspace/Cloud Identity account."
+    },
+    {
+      "id": "create-folders",
+      "url": "https://docs.cloud.google.com/resource-manager/docs/creating-managing-folders",
+      "supports": "Folders require an organization and may contain projects or nested folders; hierarchy grouping/delegation."
+    },
+    {
+      "id": "project-migration",
+      "url": "https://docs.cloud.google.com/resource-manager/docs/project-migration",
+      "supports": "Standalone-project migration is supported and changes hierarchy placement."
+    },
+    {
+      "id": "manage-projects-within-folder",
+      "url": "https://docs.cloud.google.com/resource-manager/docs/manage-projects-within-folder",
+      "supports": "Moving projects changes inherited IAM/organization-policy context."
+    },
+    {
+      "id": "prior-bounded-review",
+      "path": "patternly/docs/active/BIZQ-01/gcp-distractors-slice-07/SEMANTIC-QA.md",
+      "supports": "Prior GCP07 review is scoped to question 001/proposal; it is not review of questions 002–018."
+    },
+    {
+      "id": "learner-visible-constraints",
+      "path": "patternly/src/features/practice/PracticeQuestionCard.tsx:19-26",
+      "supports": "Current presentation renders each constraint beneath the prompt."
+    }
+  ],
+  "summary": {
+    "reviewed": 18,
+    "pass": 0,
+    "defect": 18,
+    "unresolved": 0,
+    "high": 2,
+    "moderate": 16,
+    "unitOnly": true
+  },
+  "items": [
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-001",
+      "itemFingerprint": "714a9846773fb72013fa33aabb8d0f7d7f4386e939fde56093075ee51a0b251b",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "The keyed action can be read as provisioning the missing Resource Manager organization through the existing Cloud Identity or Google Workspace domain, so it does not itself assert creation of a new identity account and is consistent with the accepted GCP07 answer meaning. The shared constraint “Do not substitute an adjacent product, billing, identity, or location boundary” still conflicts with the domain/identity basis for the answer, while the options are unrelated category fillers and the feedback does not distinguish organization-resource provisioning from the adjacent concepts.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-002",
+      "itemFingerprint": "2b47a0cf82ed032f9534a5e4d4ac7bf06a251eba97666a11db37d986267b8a11",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "The home organization is the documented default for managed-user project creation, so the key is supported as an expectation. But the shared constraint expressly says not to substitute an identity boundary while the correct parent is determined by the user’s managed-domain organization. The options are not comparable; “a random folder selected by the browser” is especially implausible. Feedback restates the default and gives no nearest-misconception correction.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-003",
+      "itemFingerprint": "0c4de858970bcb01e1517e302450429a149b1227cc8b90427a340e59d8738f30",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "The organization parent is correct: folders require an organization hierarchy. The same learner-visible constraint names billing, identity, and location boundaries, eliminating three answer categories before reasoning; the subnet and VM-image distractors are unrelated resource types. Details only repeat that folders descend from organizations.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-004",
+      "itemFingerprint": "85c720c274476e7d8e25a90e91bca791aaf311f80e4f0d140716ce4fbcfc9c5d",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "A standalone project can exist at the top level without an organization, so D is supported. The constraint explicitly excludes identity/billing/location alternatives; the project-under-billing-account distractor is also an invalid hierarchy claim, while the remaining options are categorical. Feedback does not explain the difference between standalone and managed-domain project state.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-005",
+      "itemFingerprint": "396e33b35d27b1febde9d4e00f46486c543a444fcaf3b473a5a281562cbb94a9",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "The organization is a valid immediate parent for a folder. The constraint tells the learner to reject billing and location categories; the remaining project-as-folder-parent option is a basic hierarchy inversion. Feedback says only that organizations sit above folders, without addressing why an organization rather than a nested folder is the immediate parent in this scenario.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-006",
+      "itemFingerprint": "cc91c8d62cba8df7154be24e6a7c0cb2fcdec1a5ad034eb7a9cd0fb62c683fc8",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "Organization → parent folder → department folder is valid because folders can nest below organizations or other folders. The constraint discloses billing/location exclusions; project-as-folder-parent is the only hierarchy misconception and is surrounded by unrelated choices. Feedback states the correct structure but does not diagnose that misconception.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-007",
+      "itemFingerprint": "e912d037572e16ba122415fb2887c67cb9366e42d9408b5e4c15a9046ac4357a",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "One Workspace domain is associated with one organization resource, supporting C. The shared constraint says not to use an identity boundary although the keyed relationship is defined by the managed domain. A and B are malformed “one organization per resource” alternatives, D contradicts the stated Workspace context, and feedback repeats the premise.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-008",
+      "itemFingerprint": "af561b20b8e46983a411fc958a3590664853e1448282d70419a557c90c78743c",
+      "verdict": "DEFECT",
+      "severity": "high",
+      "finding": "The parent remaining the organization after the employee leaves is supported, but the keyed option also asserts “The creator principal changes.” Leaving employment does not, by itself, change which principal created the project; the cited hierarchy contract only establishes project parentage/continuity. Because the answer is single-choice and combines both claims, this false extra claim makes the keyed answer inaccurate. The distractors are categorical impossibilities.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-009",
+      "itemFingerprint": "7e539087edc1aa23bbbcbde38695633eb5eba742d5fcaa0fb7fe37307021ca9b",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "The organization is the common ancestor for company-wide governance. The constraint already rules out billing/location substitutes; the single-department project is the only somewhat related alternative. Feedback repeats the common-ancestor conclusion and does not explain the scope difference between organization-wide and department/project scope.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-010",
+      "itemFingerprint": "4e0685bd0812164b5a1f710db1b843afc07e3733be99c875b0d1285f97420b8b",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "A valid standalone project may remain top-level until associated with an organization, supporting B. The constraint provides category exclusions; billing-account ownership and inability to contain resources are unsupported distractors. Feedback repeats standalone-versus-managed state but does not explain what changes when an organization resource is later established.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-011",
+      "itemFingerprint": "cee5f91c4aebf9337797cfddacfd16d25828064dca1afe39e9cdf9cc6331e26b",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "Migrating a standalone project into an organization is the correct operation; Google documents project migration as a metadata move of hierarchy location, without recreating the project. Options A/B/D are not close alternatives, and the common constraint makes billing and identity categories salient. Details omit the meaningful boundary that migration has permissions and policy implications.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-012",
+      "itemFingerprint": "d61c75881eb132e17a8c7932b1f1ee00ad4cdca2990185821205ff84934180a4",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "The department folder is a valid parent for the new project. Billing account, zone, and sibling project are invalid parent types, and the constraint calls out billing/location exclusions before the choice. Feedback states the folder boundary but does not explain the parent-type distinction.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-013",
+      "itemFingerprint": "576513dd3d4611c2c1f70a3747cb1564daf11a9ff037b3d9dbe5fe2752857dd5",
+      "verdict": "DEFECT",
+      "severity": "high",
+      "finding": "The prompt and keyed correction are under-specified. Billing is not a Resource Manager hierarchy parent, but Google’s organization-setup documentation says an organization resource can be provisioned when an existing customer creates a new project or billing account. Thus “billing setup will create the organization” could describe a provisioning trigger, while the answer says billing and organization setup are separate concerns. The item needs to distinguish billing-account parentage from a billing-account creation event that triggers organization provisioning; as written, A is not uniquely justified.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-014",
+      "itemFingerprint": "e7bcfbdd331d2bd02a85fe83056d1d144e78c9375a1a4f3355ab0db396adc496",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "A managed organization with folders is a valid boundary for centralized administration across departments. The constraint eliminates billing/location options; “one project with all workloads” is a coarse alternative but the others are unrelated. Feedback repeats the desired common ancestor without contrasting organization-wide policy inheritance against project-level administration.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-015",
+      "itemFingerprint": "15e1ffbd7b45b0e70ceaef7df401ae7eb97f570575d417b981fd723f2428ac52",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "The managed-domain organization is the home context described, so C is supported. The shared constraint says not to substitute an identity boundary even though the key tests that domain-to-organization relationship. Billing, compute zone, and viewed VPC are remote distractors; feedback simply restates the premise.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-016",
+      "itemFingerprint": "3ad71bddb404a65f6c75b6c433ec16d027af3c46edd1f01e5263a18734959457",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "The creator is a principal while the organization is the project’s hierarchy ancestor, supporting D. The shared constraint instructs learners not to use an identity boundary even though the key’s distinction is principal versus parent. The other statements are implausible absolutes; feedback repeats the distinction rather than diagnosing the ownership/ancestry confusion.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-017",
+      "itemFingerprint": "9f9b0e0eb88f298a7dfd6868a0f128e0d88a82adc8f1c16dd3476088098d86a0",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "A department folder under the organization is valid for delegated project administration. The constraint directly excludes billing and location categories; the other alternatives are invalid hierarchy forms, leaving the key by category elimination. Feedback repeats folder grouping/delegation without contrasting a billing relationship with resource ancestry.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "unitId": "GCPACE-N01-B02",
+      "nodeId": "organization_projects_policies_services_quotas_and_assets",
+      "questionId": "gcp-ace-gcpace-n01-b02-018",
+      "itemFingerprint": "edaa8935a988411ac4124f94c4d3e17f223d9910ae79676809da4faa3581cd51",
+      "verdict": "DEFECT",
+      "severity": "moderate",
+      "finding": "Reassessing inherited organization/folder governance after moving a project under an organization is supported by hierarchy-based IAM and organization-policy inheritance. The constraint rules out billing/location alternatives before answering, and display name/VM type/currency are not comparable governance alternatives. Details do not name the policy-inheritance mechanism or distinguish direct project policy from inherited policy.",
+      "sourceFile": "content/google-cloud-associate-cloud-engineer/organization_projects_policies_services_quotas_and_assets/GCPACE-N01-B02.json",
+      "sourceFileSha256": "25e13430f685b05846f7e83fc30f98ef3eca5102b5b5732c286596be0d1e2ad4"
+    }
+  ]
+}

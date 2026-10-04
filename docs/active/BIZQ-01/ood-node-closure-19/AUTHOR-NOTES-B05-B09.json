@@ -1,0 +1,1084 @@
+{
+  "items": [
+    {
+      "beforeQuestionId": "ood-n03-b05-i001",
+      "questionId": "ood-n03-b05-i019",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Place a stable tax policy contract with the policy owner while providers vary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for place a stable tax policy contract with the policy owner while providers vary. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i002",
+      "questionId": "ood-n03-b05-i020",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Keep persistence behind a read capability consumed by stable policy.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for keep persistence behind a read capability consumed by stable policy. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i003",
+      "questionId": "ood-n03-b05-i021",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Translate provider status into a policy-owned outcome.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for translate provider status into a policy-owned outcome. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i004",
+      "questionId": "ood-n03-b05-i022",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Introduce an abstraction only where a real variation or client boundary supports it.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for introduce an abstraction only where a real variation or client boundary supports it. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i005",
+      "questionId": "ood-n03-b05-i023",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Place a consumer-specific contract with the decision owner instead of a generic shared package.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for place a consumer-specific contract with the decision owner instead of a generic shared package. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i006",
+      "questionId": "ood-n03-b05-i024",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Normalize inbound vendor representations at the adapter boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for normalize inbound vendor representations at the adapter boundary. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i007",
+      "questionId": "ood-n03-b05-i025",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Express retry outcomes in a stable application contract.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for express retry outcomes in a stable application contract. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i008",
+      "questionId": "ood-n03-b05-i026",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Trace transitive imports to identify the actual compile-time dependency.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for trace transitive imports to identify the actual compile-time dependency. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i009",
+      "questionId": "ood-n03-b05-i027",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Expose only the capability the GIS policy needs from replaceable providers.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for expose only the capability the gis policy needs from replaceable providers. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i010",
+      "questionId": "ood-n03-b05-i028",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Distinguish compile-time dependency direction from runtime call direction.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for distinguish compile-time dependency direction from runtime call direction. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i011",
+      "questionId": "ood-n03-b05-i029",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Keep optional audit delivery outside the stable policy decision.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for keep optional audit delivery outside the stable policy decision. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i012",
+      "questionId": "ood-n03-b05-i030",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Avoid inheriting from a volatile infrastructure base class to reuse policy.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for avoid inheriting from a volatile infrastructure base class to reuse policy. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i013",
+      "questionId": "ood-n03-b05-i031",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Map SDK results into application-owned types.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for map sdk results into application-owned types. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i014",
+      "questionId": "ood-n03-b05-i032",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Validate deployment configuration before exposing it as a domain value.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for validate deployment configuration before exposing it as a domain value. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i015",
+      "questionId": "ood-n03-b05-i033",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Keep serialization after policy validation at the transport boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for keep serialization after policy validation at the transport boundary. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i016",
+      "questionId": "ood-n03-b05-i034",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Place stable policy constants with the policy that owns their meaning.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for place stable policy constants with the policy that owns their meaning. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i017",
+      "questionId": "ood-n03-b05-i035",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Normalize and validate model output before policy consumes it.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for normalize and validate model output before policy consumes it. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b05-i018",
+      "questionId": "ood-n03-b05-i036",
+      "mentalUnitId": "OOD-N03-B05",
+      "learningObjective": "Let the client contract owner define the capability shared by adapters.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for let the client contract owner define the capability shared by adapters. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i001",
+      "questionId": "ood-n03-b06-i019",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Break mutual imports by extracting the shared decision contract.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for break mutual imports by extracting the shared decision contract. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i002",
+      "questionId": "ood-n03-b06-i020",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Give a cross-module result contract a justified owner.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline generic owner_preserves_contract answer did not identify a cycle-breaking result boundary. This replacement states that Order policy owns settlement semantics and asks for its result contract, changing the accepted decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i003",
+      "questionId": "ood-n03-b06-i021",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Separate unrelated rules from a genuinely shared utility.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for separate unrelated rules from a genuinely shared utility. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i004",
+      "questionId": "ood-n03-b06-i022",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Break callback type cycles without changing runtime orchestration.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for break callback type cycles without changing runtime orchestration. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i005",
+      "questionId": "ood-n03-b06-i023",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Retain useful acyclic dependencies when no change pressure supports a split.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for retain useful acyclic dependencies when no change pressure supports a split. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i006",
+      "questionId": "ood-n03-b06-i024",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Keep co-changing scheduling policy cohesive behind a result boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for keep co-changing scheduling policy cohesive behind a result boundary. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i007",
+      "questionId": "ood-n03-b06-i025",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Keep persistence representation from creating a policy back edge.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for keep persistence representation from creating a policy back edge. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i008",
+      "questionId": "ood-n03-b06-i026",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Shape an abstraction around a stable capability rather than provider knobs.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for shape an abstraction around a stable capability rather than provider knobs. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i009",
+      "questionId": "ood-n03-b06-i027",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Break parser/workflow cycles at their exchanged result contract.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for break parser/workflow cycles at their exchanged result contract. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i010",
+      "questionId": "ood-n03-b06-i028",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Remove unused common imports instead of relocating unrelated policy.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for remove unused common imports instead of relocating unrelated policy. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i011",
+      "questionId": "ood-n03-b06-i029",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Keep policy results independent from use-case orchestration classes.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for keep policy results independent from use-case orchestration classes. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i012",
+      "questionId": "ood-n03-b06-i030",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Separate policies controlled by distinct change authorities.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for separate policies controlled by distinct change authorities. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i013",
+      "questionId": "ood-n03-b06-i031",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Keep database transaction mechanisms behind a domain contract.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline generic owner_preserves_contract answer did not state ownership of the database transaction or the policy operation. This replacement makes Infrastructure the transaction owner and Domain the policy owner, changing the accepted boundary decision.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i014",
+      "questionId": "ood-n03-b06-i032",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Split responsibilities with independently stated change reasons.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for split responsibilities with independently stated change reasons. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i015",
+      "questionId": "ood-n03-b06-i033",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Keep business event meaning independent from message transport.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for keep business event meaning independent from message transport. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i016",
+      "questionId": "ood-n03-b06-i034",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Separate shared date representation from domain-specific date rules.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for separate shared date representation from domain-specific date rules. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i017",
+      "questionId": "ood-n03-b06-i035",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Preserve a healthy directed graph in the absence of a demonstrated defect.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for preserve a healthy directed graph in the absence of a demonstrated defect. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b06-i018",
+      "questionId": "ood-n03-b06-i036",
+      "mentalUnitId": "OOD-N03-B06",
+      "learningObjective": "Separate legal redaction policy from a changing PDF rendering mechanism.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for separate legal redaction policy from a changing pdf rendering mechanism. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i001",
+      "questionId": "ood-n03-b07-i019",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Assemble concrete collaborators at the application composition root.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for assemble concrete collaborators at the application composition root. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i002",
+      "questionId": "ood-n03-b07-i020",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Match a request handler lifetime to its request-scoped dependency.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for match a request handler lifetime to its request-scoped dependency. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i003",
+      "questionId": "ood-n03-b07-i021",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Identify captive dependencies through retained references.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for identify captive dependencies through retained references. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i004",
+      "questionId": "ood-n03-b07-i022",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Create a bounded scope for each long-lived worker job.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for create a bounded scope for each long-lived worker job. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i005",
+      "questionId": "ood-n03-b07-i023",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Choose a service lifetime from state and dependency facts, not class names.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for choose a service lifetime from state and dependency facts, not class names. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i006",
+      "questionId": "ood-n03-b07-i024",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Select runtime-varying implementations from explicit request data.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for select runtime-varying implementations from explicit request data. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i007",
+      "questionId": "ood-n03-b07-i025",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Inject a changing clock dependency explicitly for deterministic behavior.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for inject a changing clock dependency explicitly for deterministic behavior. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i008",
+      "questionId": "ood-n03-b07-i026",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Prevent scoped service instances escaping into longer-lived caches.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for prevent scoped service instances escaping into longer-lived caches. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i009",
+      "questionId": "ood-n03-b07-i027",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Represent deployment-optional capabilities without fake success.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for represent deployment-optional capabilities without fake success. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i010",
+      "questionId": "ood-n03-b07-i028",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Assess lifetime from the full retained object graph.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for assess lifetime from the full retained object graph. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i011",
+      "questionId": "ood-n03-b07-i029",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Centralize duplicate application wiring while keeping constructors explicit.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for centralize duplicate application wiring while keeping constructors explicit. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i012",
+      "questionId": "ood-n03-b07-i030",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Assess whether a transient retained by one scoped consumer crosses a lifetime boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for assess whether a transient retained by one scoped consumer crosses a lifetime boundary. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i013",
+      "questionId": "ood-n03-b07-i031",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Pass operation-specific data without capturing request scope.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for pass operation-specific data without capturing request scope. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i014",
+      "questionId": "ood-n03-b07-i032",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Use the container for collaborating services, not dependency-free per-input values.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The original item selected a generic ownership response. This replacement tests whether dependency-free, immutable per-input values need container-managed construction; the answer and required reasoning have changed.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i015",
+      "questionId": "ood-n03-b07-i033",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Share a same-scope collaborator where instance identity matters.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for share a same-scope collaborator where instance identity matters. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i016",
+      "questionId": "ood-n03-b07-i034",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Separate stable deployment configuration from request-specific values.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for separate stable deployment configuration from request-specific values. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i017",
+      "questionId": "ood-n03-b07-i035",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Assemble ordered decorators at the application composition root.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The original item selected a generic ownership response. This replacement tests where a required decorator order is composed; the answer and required reasoning have changed.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b07-i018",
+      "questionId": "ood-n03-b07-i036",
+      "mentalUnitId": "OOD-N03-B07",
+      "learningObjective": "Pass operation-scoped cancellation data without retaining it in a long-lived service.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for pass operation-scoped cancellation data without retaining it in a long-lived service. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i001",
+      "questionId": "ood-n03-b08-i019",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Guarantee stream disposal across early return and exception paths.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for guarantee stream disposal across early return and exception paths. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i002",
+      "questionId": "ood-n03-b08-i020",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Await asynchronous cleanup when resource release completion is required.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for await asynchronous cleanup when resource release completion is required. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i003",
+      "questionId": "ood-n03-b08-i021",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Distinguish borrowed resources from resources the component owns.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for distinguish borrowed resources from resources the component owns. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i004",
+      "questionId": "ood-n03-b08-i022",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Keep temporary files through queued work and clean them at job end.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for keep temporary files through queued work and clean them at job end. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i005",
+      "questionId": "ood-n03-b08-i023",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Use rollback for a failed transaction and dispose its handle.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for use rollback for a failed transaction and dispose its handle. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i006",
+      "questionId": "ood-n03-b08-i024",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Return borrowed sockets to their owning pool rather than disposing the pool.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for return borrowed sockets to their owning pool rather than disposing the pool. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i007",
+      "questionId": "ood-n03-b08-i025",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Unsubscribe callbacks that retain a shorter-lived component.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for unsubscribe callbacks that retain a shorter-lived component. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i008",
+      "questionId": "ood-n03-b08-i026",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Release attempt timers when success, failure, retry, or cancellation ends the attempt.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for release attempt timers when success, failure, retry, or cancellation ends the attempt. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i009",
+      "questionId": "ood-n03-b08-i027",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Delete partial artifacts when handoff to a caller never succeeds.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for delete partial artifacts when handoff to a caller never succeeds. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i010",
+      "questionId": "ood-n03-b08-i028",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Guarantee lock release on exceptional exits.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for guarantee lock release on exceptional exits. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i011",
+      "questionId": "ood-n03-b08-i029",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Have an owning wrapper dispose the inner resource it owns.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for have an owning wrapper dispose the inner resource it owns. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i012",
+      "questionId": "ood-n03-b08-i030",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Clean up an acquired stream when the owning write operation is cancelled.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for clean up an acquired stream when the owning write operation is cancelled. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i013",
+      "questionId": "ood-n03-b08-i031",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Enclose source and destination streams for the full copy operation.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The original item selected a generic ownership response. This replacement tests cleanup of both streams across a failed copy; the answer and required reasoning have changed.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i014",
+      "questionId": "ood-n03-b08-i032",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Close lazy enumerator resources when a consumer stops early.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The original item selected a generic ownership response. This replacement tests closing a cursor when enumeration ends early; the answer and required reasoning have changed.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i015",
+      "questionId": "ood-n03-b08-i033",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Release earlier acquisitions when a later acquisition fails.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The original item selected a generic ownership response. This replacement tests which successful acquisition must be released after a later open fails; the answer and required reasoning have changed.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i016",
+      "questionId": "ood-n03-b08-i034",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Preserve the primary operation failure while reporting cleanup failure.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The original item selected a generic ownership response. This replacement tests preserving a primary operation error when cleanup also fails; the answer and required reasoning have changed.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i017",
+      "questionId": "ood-n03-b08-i035",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Distinguish external handles requiring cleanup from ordinary managed data.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The original item selected a generic ownership response. This replacement distinguishes deterministic release of a native handle from ordinary managed data; the answer and required reasoning have changed.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b08-i018",
+      "questionId": "ood-n03-b08-i036",
+      "mentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Transfer resource ownership only after the handoff succeeds.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The original item selected a generic ownership response. This replacement tests the precise ownership transfer after a successful stream handoff; the answer and required reasoning have changed.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i001",
+      "questionId": "ood-n03-b09-i019",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Expose a required parsing operation while keeping parser representation private.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for expose a required parsing operation while keeping parser representation private. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i002",
+      "questionId": "ood-n03-b09-i020",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Keep storage representation behind a client-facing amount contract.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for keep storage representation behind a client-facing amount contract. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i003",
+      "questionId": "ood-n03-b09-i021",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Translate provider failures to stable library-owned outcomes.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for translate provider failures to stable library-owned outcomes. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i004",
+      "questionId": "ood-n03-b09-i022",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Publish a view type that contains only supported client data.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for publish a view type that contains only supported client data. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i005",
+      "questionId": "ood-n03-b09-i023",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Keep a module helper private when no client contract requires it.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for keep a module helper private when no client contract requires it. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i006",
+      "questionId": "ood-n03-b09-i024",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Shape client access around the requested narrow capability.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for shape client access around the requested narrow capability. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i007",
+      "questionId": "ood-n03-b09-i025",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Preserve public behavior while refactoring internal stages.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for preserve public behavior while refactoring internal stages. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i008",
+      "questionId": "ood-n03-b09-i026",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Align actual TypeScript exports with the declared supported surface.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for align actual typescript exports with the declared supported surface. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i009",
+      "questionId": "ood-n03-b09-i027",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Enforce required validation through the public construction path.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for enforce required validation through the public construction path. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i010",
+      "questionId": "ood-n03-b09-i028",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Use explicit package exports to prevent accidental API exposure.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for use explicit package exports to prevent accidental api exposure. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i011",
+      "questionId": "ood-n03-b09-i029",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Preserve caller-relevant result distinctions while hiding transport codes.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for preserve caller-relevant result distinctions while hiding transport codes. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i012",
+      "questionId": "ood-n03-b09-i030",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Model meaningful omitted-versus-supplied option behavior explicitly.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for model meaningful omitted-versus-supplied option behavior explicitly. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i013",
+      "questionId": "ood-n03-b09-i031",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Translate vendor retry settings inside the adapter boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for translate vendor retry settings inside the adapter boundary. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i014",
+      "questionId": "ood-n03-b09-i032",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Express the legal input set in the public API contract.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for express the legal input set in the public api contract. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i015",
+      "questionId": "ood-n03-b09-i033",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Keep internal optimization state out of the public representation.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for keep internal optimization state out of the public representation. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i016",
+      "questionId": "ood-n03-b09-i034",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Expose read-only progress without exposing a mutable internal state machine.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for expose read-only progress without exposing a mutable internal state machine. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i017",
+      "questionId": "ood-n03-b09-i035",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Keep caching behind a stable exported load operation.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for keep caching behind a stable exported load operation. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n03-b09-i018",
+      "questionId": "ood-n03-b09-i036",
+      "mentalUnitId": "OOD-N03-B09",
+      "learningObjective": "Expose the stable operation while retaining replaceable implementations internally.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The baseline keyed only generic owner_preserves_contract and lacked facts for expose the stable operation while retaining replaceable implementations internally. This revision makes that case-specific decision the accepted answer, so it uses the manifest candidate ID.",
+      "sourceRefs": [
+        "https://www.typescriptlang.org/docs/handbook/2/modules.html",
+        "https://www.omg.org/spec/UML/2.5.1/PDF"
+      ]
+    }
+  ]
+}
