@@ -1,6 +1,6 @@
 # BIZQ-01 — OOD N04, pakiet 20
 
-**Pakiet N04/20 odebrany lokalnie: root rzeczywiste sprawdzenia i niezależny final QA PASS. Zwykły push oraz CI receipt są następnym krokiem. Pełny BIZQ-01: partial.** Pakiet zastępuje ogólny szablon odpowiedzi pytaniami o rzeczywiste kontrakty interfejsów, dispatch, podstawialność, role, dependency inversion, rozszerzanie, generics, capabilities i wspólną implementację. Nie rozszerza dostępnych pul N01.
+**Pakiet N04/20 odebrany lokalnie: root rzeczywiste sprawdzenia i niezależny final QA PASS. Zwykłe pushe zakończone: app54a1f5ac/contentb1d7cc4/web4195947. [Exact CI37192176251](POST-PUSH-CI.json) oba zadania SUCCESS; [remote/stashes/foreign preservation](POST-PUSH-REPOS.json) PASS. Pełny BIZQ-01: partial.** Pakiet zastępuje ogólny szablon odpowiedzi pytaniami o rzeczywiste kontrakty interfejsów, dispatch, podstawialność, role, dependency inversion, rozszerzanie, generics, capabilities i wspólną implementację. Nie rozszerza dostępnych pul N01.
 
 ## Zakres i przyczyna
 

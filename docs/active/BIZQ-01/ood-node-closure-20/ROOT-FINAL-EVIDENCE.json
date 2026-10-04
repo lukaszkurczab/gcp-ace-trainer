@@ -1,5 +1,5 @@
 {
-  "scope": "Root actual executed evidence and independently accepted bounded package20; ordinary push/CI next, full BIZQ01/native not accepted",
+  "scope": "Root actual checks and independent final QA PASS; ordinary pushes and exact behavioral app54a1f5ac CI both jobs SUCCESS. Later documentation receipt commits reuse matching behavioral evidence; full BIZQ01/native not accepted",
   "files": {
     "sourceQuestionSet": {
       "path": "ROOT-FINAL-BINDINGS-v2.json",
@@ -84,6 +84,14 @@
     "rootPathProbes": {
       "path": "ROOT-PATH-PROBES.json",
       "sha256": "d7becbd04059d95267e90f88ce8d801f16000131e78debcad373a87f85470f78"
+    },
+    "postPushRepos": {
+      "path": "POST-PUSH-REPOS.json",
+      "sha256": "8351c0a0f3803324903d0f87b0a45df3c1b5059e9dd10c988b169623fac34e7e"
+    },
+    "postPushCI": {
+      "path": "POST-PUSH-CI.json",
+      "sha256": "5f548aa8c3192cb190aa98bfdaada6d22e0e29e61bbe1feeaf309712143b6659"
     }
   },
   "sourceCommit": "1912fa7fa741bf642bdb71917b42a7638090cdc5",

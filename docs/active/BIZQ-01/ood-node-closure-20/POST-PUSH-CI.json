@@ -1,0 +1,18 @@
+{
+  "status": "completed",
+  "conclusion": "success",
+  "headSha": "54a1f5ac8a3ccdae6ace760e064d2ef7468c6a8c",
+  "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37192176251",
+  "jobs": [
+    {
+      "name": "Recovery QA gate",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Multi-track content release contract",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ]
+}
