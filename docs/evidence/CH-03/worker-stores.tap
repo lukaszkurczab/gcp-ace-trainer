@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: CH-03 legal stores accept every canonical kind and status tuple
+ok 1 - CH-03 legal stores accept every canonical kind and status tuple
+  ---
+  duration_ms: 369.134583
+  type: 'test'
+  ...
+# Subtest: CH-03 legal malformed enums fail detail, transition, and mixed queue before audit or SMTP
+ok 2 - CH-03 legal malformed enums fail detail, transition, and mixed queue before audit or SMTP
+  ---
+  duration_ms: 213.01375
+  type: 'test'
+  ...
+# Subtest: CH-03 incident stores accept all five canonical parent enum sets
+ok 3 - CH-03 incident stores accept all five canonical parent enum sets
+  ---
+  duration_ms: 224.255292
+  type: 'test'
+  ...
+# Subtest: CH-03 incident malformed parent enums reject list and mixed queue without reminders or audits
+ok 4 - CH-03 incident malformed parent enums reject list and mixed queue without reminders or audits
+  ---
+  duration_ms: 405.953833
+  type: 'test'
+  ...
+# Subtest: CH-03 incident detail/export and delivery paths reject corrupt enums before reminders, audit, SMTP, or delivery finalization
+ok 5 - CH-03 incident detail/export and delivery paths reject corrupt enums before reminders, audit, SMTP, or delivery finalization
+  ---
+  duration_ms: 573.655208
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2399.463917

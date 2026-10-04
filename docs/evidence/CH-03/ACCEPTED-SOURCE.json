@@ -1,0 +1,8 @@
+{
+  "src/modules/legal-requests/contracts.ts": "5233cd579757f4e9ff5021febc946e0cf8f85db888d107039fac2e881e132fc8",
+  "src/modules/legal-requests/store.ts": "61bdefc26ca758bfded418ee305609d1cb65ab2ccbd9aea53ecefef7c9e06109",
+  "src/modules/security-incidents/contracts.ts": "7ff3f599b5312e2e95b7c4c1b9b4ede6434250a4cb60443c421d6417d5cfeafb",
+  "src/modules/security-incidents/store.ts": "52a5227f5703317c49414075bb1a45dd026ba37a55681624b84f92e130970db7",
+  "tests/ch03StoredEnums.emulator.test.ts": "f23b35a31ba9784e86cb3dc069df4b67934f5d1152c01b7beff684c7f938e763",
+  "tests/ch03Acceptance.emulator.test.mjs": "d5e62531aaa64a6e2e874467599560e75dee0b27d09ca4b67388f94d56bfd5f5"
+}

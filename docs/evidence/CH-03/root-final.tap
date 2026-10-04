@@ -1,0 +1,272 @@
+TAP version 13
+# Subtest: CH-03 production operator routes reject corrupt records without effects
+ok 1 - CH-03 production operator routes reject corrupt records without effects
+  ---
+  duration_ms: 492.692667
+  type: 'test'
+  ...
+# Subtest: CH-03 missing/null/unknown child status and corrupted sender failure preserve state
+ok 2 - CH-03 missing/null/unknown child status and corrupted sender failure preserve state
+  ---
+  duration_ms: 281.0385
+  type: 'test'
+  ...
+# Subtest: CH-03 malformed child status blocks ordinary action and SMTP preflight
+ok 3 - CH-03 malformed child status blocks ordinary action and SMTP preflight
+  ---
+  duration_ms: 269.725667
+  type: 'test'
+  ...
+# Subtest: CH-03 legal stores accept every canonical kind and status tuple
+ok 4 - CH-03 legal stores accept every canonical kind and status tuple
+  ---
+  duration_ms: 305.842083
+  type: 'test'
+  ...
+# Subtest: CH-03 legal malformed enums fail detail, transition, and mixed queue before audit or SMTP
+ok 5 - CH-03 legal malformed enums fail detail, transition, and mixed queue before audit or SMTP
+  ---
+  duration_ms: 257.676791
+  type: 'test'
+  ...
+# Subtest: CH-03 incident stores accept all five canonical parent enum sets
+ok 6 - CH-03 incident stores accept all five canonical parent enum sets
+  ---
+  duration_ms: 247.906167
+  type: 'test'
+  ...
+# Subtest: CH-03 incident malformed parent enums reject list and mixed queue without reminders or audits
+ok 7 - CH-03 incident malformed parent enums reject list and mixed queue without reminders or audits
+  ---
+  duration_ms: 443.457708
+  type: 'test'
+  ...
+# Subtest: CH-03 incident detail/export and delivery paths reject corrupt enums before reminders, audit, SMTP, or delivery finalization
+ok 8 - CH-03 incident detail/export and delivery paths reject corrupt enums before reminders, audit, SMTP, or delivery finalization
+  ---
+  duration_ms: 593.097584
+  type: 'test'
+  ...
+# Subtest: consumer request intake is bounded and distinguishes every approved route
+ok 9 - consumer request intake is bounded and distinguishes every approved route
+  ---
+  duration_ms: 3.180542
+  type: 'test'
+  ...
+# Subtest: only a complaint receives the statutory fourteen-day response deadline
+ok 10 - only a complaint receives the statutory fourteen-day response deadline
+  ---
+  duration_ms: 1.039417
+  type: 'test'
+  ...
+# Subtest: closed consumer cases retain evidence for six calendar years
+ok 11 - closed consumer cases retain evidence for six calendar years
+  ---
+  duration_ms: 0.136708
+  type: 'test'
+  ...
+# Subtest: operator transitions require an expected revision and bounded response or hold reason
+ok 12 - operator transitions require an expected revision and bounded response or hold reason
+  ---
+  duration_ms: 0.498875
+  type: 'test'
+  ...
+# Subtest: GATE-02 source OpenAPI document is complete
+ok 13 - GATE-02 source OpenAPI document is complete
+  ---
+  duration_ms: 4.252
+  type: 'test'
+  ...
+# Subtest: unready runtime response matches the documented 503 schema
+ok 14 - unready runtime response matches the documented 503 schema
+  ---
+  duration_ms: 107.083167
+  type: 'test'
+  ...
+# Subtest: runtime parity uses the real app, normalizes parameters, and ignores automatic HEAD
+ok 15 - runtime parity uses the real app, normalizes parameters, and ignores automatic HEAD
+  ---
+  duration_ms: 12.08125
+  type: 'test'
+  ...
+# Subtest: runtime parity rejects a missing operation
+ok 16 - runtime parity rejects a missing operation
+  ---
+  duration_ms: 10.607542
+  type: 'test'
+  ...
+# Subtest: runtime parity rejects an extra operation
+ok 17 - runtime parity rejects an extra operation
+  ---
+  duration_ms: 13.222042
+  type: 'test'
+  ...
+# Subtest: runtime parity rejects a wrong method
+ok 18 - runtime parity rejects a wrong method
+  ---
+  duration_ms: 9.394583
+  type: 'test'
+  ...
+# unknown format "uuid" ignored in schema at path "\#/properties/operationId"
+# unknown format "uuid" ignored in schema at path "\#/properties/operationId"
+# unknown format "uuid" ignored in schema at path "\#/properties/operationId"
+# unknown format "uuid" ignored in schema at path "\#/properties/operationId"
+# Subtest: behavioral security probes exercise every protected profile
+ok 19 - behavioral security probes exercise every protected profile
+  ---
+  duration_ms: 52.611125
+  type: 'test'
+  ...
+# Subtest: every account-resolving operation documents account_not_found
+ok 20 - every account-resolving operation documents account_not_found
+  ---
+  duration_ms: 2.679167
+  type: 'test'
+  ...
+# Subtest: recovery operation routes document strict operation-bound payloads, guards, and no-store responses
+ok 21 - recovery operation routes document strict operation-bound payloads, guards, and no-store responses
+  ---
+  duration_ms: 17.951208
+  type: 'test'
+  ...
+# Subtest: behavioral security probes reject a no-op guard fixture
+ok 22 - behavioral security probes reject a no-op guard fixture
+  ---
+  duration_ms: 5.468625
+  type: 'test'
+  ...
+# Subtest: an unregistered no-op pre-handler is unknown and cannot impersonate a public route
+ok 23 - an unregistered no-op pre-handler is unknown and cannot impersonate a public route
+  ---
+  duration_ms: 12.565042
+  type: 'test'
+  ...
+# Subtest: completeness rejects a missing request schema
+ok 24 - completeness rejects a missing request schema
+  ---
+  duration_ms: 3.388584
+  type: 'test'
+  ...
+# Subtest: completeness rejects an empty request schema
+ok 25 - completeness rejects an empty request schema
+  ---
+  duration_ms: 3.081083
+  type: 'test'
+  ...
+# Subtest: completeness rejects a missing success response schema
+ok 26 - completeness rejects a missing success response schema
+  ---
+  duration_ms: 3.04175
+  type: 'test'
+  ...
+# Subtest: completeness rejects an empty success response schema
+ok 27 - completeness rejects an empty success response schema
+  ---
+  duration_ms: 3.210958
+  type: 'test'
+  ...
+# Subtest: completeness rejects duplicate operation identities
+ok 28 - completeness rejects duplicate operation identities
+  ---
+  duration_ms: 2.953416
+  type: 'test'
+  ...
+# Subtest: completeness rejects an incorrect protection profile
+ok 29 - completeness rejects an incorrect protection profile
+  ---
+  duration_ms: 3.033334
+  type: 'test'
+  ...
+# Subtest: completeness rejects an unclassified consumer operation
+ok 30 - completeness rejects an unclassified consumer operation
+  ---
+  duration_ms: 3.159209
+  type: 'test'
+  ...
+# Subtest: ordinary error responses use the closed common envelope
+ok 31 - ordinary error responses use the closed common envelope
+  ---
+  duration_ms: 4.5955
+  type: 'test'
+  ...
+# Subtest: frontend checker rejects an unknown consumer operation
+ok 32 - frontend checker rejects an unknown consumer operation
+  ---
+  duration_ms: 110.316834
+  type: 'test'
+  ...
+# Subtest: frontend checker does not let a methodless static path satisfy a consumer operation
+ok 33 - frontend checker does not let a methodless static path satisfy a consumer operation
+  ---
+  duration_ms: 105.418084
+  type: 'test'
+  ...
+# Subtest: frontend checker binds useAdminRead callsites to the wrapper method
+ok 34 - frontend checker binds useAdminRead callsites to the wrapper method
+  ---
+  duration_ms: 103.827333
+  type: 'test'
+  ...
+# Subtest: frontend checker rejects a useAdminRead callsite with no expected operation
+ok 35 - frontend checker rejects a useAdminRead callsite with no expected operation
+  ---
+  duration_ms: 102.996333
+  type: 'test'
+  ...
+# Subtest: operator routes use the production verifier for exact-scope authorization before stores
+ok 36 - operator routes use the production verifier for exact-scope authorization before stores
+  ---
+  duration_ms: 124.139334
+  type: 'test'
+  ...
+# Subtest: unconfigured operator access is explicit and no-store
+ok 37 - unconfigured operator access is explicit and no-store
+  ---
+  duration_ms: 14.276416
+  type: 'test'
+  ...
+# Subtest: operator queue and mutation projections stay minimal while audited details expose only allowlisted context
+ok 38 - operator queue and mutation projections stay minimal while audited details expose only allowlisted context
+  ---
+  duration_ms: 17.024458
+  type: 'test'
+  ...
+# Subtest: operator transitions reject extra fields and disabled delivery actions before store writes
+ok 39 - operator transitions reject extra fields and disabled delivery actions before store writes
+  ---
+  duration_ms: 18.515583
+  type: 'test'
+  ...
+# Subtest: security incident contract requires an explicit revision for every mutation
+ok 40 - security incident contract requires an explicit revision for every mutation
+  ---
+  duration_ms: 2.243625
+  type: 'test'
+  ...
+# Subtest: security incident calendar retention preserves leap-year legal dates
+ok 41 - security incident calendar retention preserves leap-year legal dates
+  ---
+  duration_ms: 1.092958
+  type: 'test'
+  ...
+# Subtest: security incident awareness deadline is immutable UTC +72 hours
+ok 42 - security incident awareness deadline is immutable UTC +72 hours
+  ---
+  duration_ms: 0.108875
+  type: 'test'
+  ...
+# Subtest: OpenAPI exposes every runtime security-incident action and exact export route
+ok 43 - OpenAPI exposes every runtime security-incident action and exact export route
+  ---
+  duration_ms: 2.623875
+  type: 'test'
+  ...
+1..43
+# tests 43
+# suites 0
+# pass 43
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6512.996667

@@ -1,0 +1,30 @@
+{
+  "patternly": {
+    "head": "99f4f58ddc3b5a67d55440ef8c30926ce2b4096d",
+    "upstream": "f52e94d413a70eeb879115293f171ff19aca6340",
+    "stashes": "stash@{0}: On main: UI-26-02B awaiting provider runtime matrix 2026-09-27\nstash@{1}: On main: UI-26-11 awaiting runtime matrix and physical VoiceOver 2026-09-27\nstash@{2}: On main: UI-26-09 awaiting runtime and physical VoiceOver 2026-09-27\nstash@{3}: On main: UI-26-08 awaiting physical VoiceOver 2026-09-27\nstash@{4}: On main: UI-26-07 awaiting physical VoiceOver 2026-09-27\nstash@{5}: On main: I18N-01 partial seven-locale runtime 2026-09-26",
+    "status": "M .agent/WORKING_STATE.md\n M docs/PATTERNLY-WORKING-PLAN.md\n M docs/active/BIZQ-01/ood-remaining-closure-21/CANDIDATE-READINESS.md\n M docs/active/BIZQ-01/ood-remaining-closure-21/CONSUMER-QA.json\n M docs/active/BIZQ-01/ood-remaining-closure-21/CONSUMER-QA.md\n M docs/active/BIZQ-01/ood-remaining-closure-21/ROOT-STATIC-PREFLIGHT-CORRECTION.md\n M docs/active/BIZQ-01/ood-remaining-closure-21/check-consumer-preservation.mjs\n?? docs/active/BIZQ-01/ood-remaining-closure-21/ADMISSION-CHECKPOINT.json\n?? docs/active/BIZQ-01/ood-remaining-closure-21/CONSUMER-CHECKPOINT.json\n?? docs/active/BIZQ-01/ood-remaining-closure-21/FINAL-QA.json\n?? docs/active/BIZQ-01/ood-remaining-closure-21/FINAL-QA.md\n?? docs/active/BIZQ-01/ood-remaining-closure-21/REPORT.md\n?? docs/active/BIZQ-01/ood-remaining-closure-21/ROOT-APP-STATIC-CHECKPOINT-REVISE.log\n?? docs/active/BIZQ-01/ood-remaining-closure-21/ROOT-APP-STATIC.log\n?? docs/active/BIZQ-01/ood-remaining-closure-21/ROOT-CONSUMER-PRESERVATION-CORRECTION.md\n?? docs/active/BIZQ-01/ood-remaining-closure-21/ROOT-CONSUMER-PRESERVATION-FINAL.json\n?? docs/active/BIZQ-01/ood-remaining-closure-21/ROOT-EXPORT-CHECK.log\n?? docs/active/BIZQ-01/ood-remaining-closure-21/ROOT-FINAL-EVIDENCE.json\n?? docs/active/BIZQ-01/ood-remaining-closure-21/ROOT-FIXTURE-BUFFER-PREFLIGHT.json\n?? docs/active/BIZQ-01/ood-remaining-closure-21/ROOT-FIXTURE-CONDITION-CORRECTION.json\n?? docs/active/BIZQ-01/ood-remaining-closure-21/ROOT-POST-ADMISSION-TESTS.log\n?? docs/active/BIZQ-01/ood-remaining-closure-21/ROOT-RELEASE-GATE.log\n?? docs/active/BIZQ-01/ood-remaining-closure-21/ROOT-WEB-VERIFY.log\n?? docs/active/BIZQ-01/ood-remaining-closure-21/capture-final-evidence.mjs\n?? docs/active/SECURITY-PRIVACY-AUDIT/\n?? docs/evidence/CH-03/",
+    "index": ""
+  },
+  "patternly-backend": {
+    "head": "039f7f000e701c4fbc69e18a1fb66528cbc5cdcb",
+    "upstream": "039f7f000e701c4fbc69e18a1fb66528cbc5cdcb",
+    "stashes": "stash@{0}: On main: AUD-08-B2 pending producer before accepted OPS-B4 integration\nstash@{1}: On main: AUD-08-B2 pending producer before accepted OPS-B3 integration\nstash@{2}: On main: AUD-08-B2 pending producer before accepted OPS-B2 integration\nstash@{3}: On main: UI-26-02B exchange evidence awaiting provider runtime matrix 2026-09-27",
+    "status": "",
+    "index": ""
+  },
+  "patternly-content": {
+    "head": "b7034f16bb77db4dde2ae27c13ef706b0301f6bb",
+    "upstream": "95b7e07f33d7808b9c879db37f11e63e25abcb01",
+    "stashes": "stash@{0}: On agent/ai901-question-bank: preserve unrelated work before frontend master push\nstash@{1}: On agent/ai901-question-bank: codex-preserve-local-work-before-master-switch",
+    "status": "?? dist/\n?? evidence/business-quality/full-content-audit-2026-10-02/",
+    "index": ""
+  },
+  "patternly-web": {
+    "head": "0d83819473bdb48b3e36307055e7cf900b6ce856",
+    "upstream": "4195947244604d687fd84cefe3f67a7e2d5b2abc",
+    "stashes": "",
+    "status": "",
+    "index": ""
+  }
+}
