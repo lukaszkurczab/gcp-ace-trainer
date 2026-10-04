@@ -1,0 +1,19 @@
+✔ BIZQ-01 cohort14 preserves source01 as the exact accepted predecessor (10.717166ms)
+✔ BIZQ-01 preserves both accepted source01 objects and their scored, built, and projected behavior (807.083375ms)
+✔ BIZQ-01 changed items keep concrete learner constraints and one scoreable authored answer (1.175709ms)
+✔ BIZQ-01 canonical builder carries the exact cohort and new content identity (185.780791ms)
+✔ BIZQ-01 advisory console distinguishes corrected cohort from remaining warnings (601.767ms)
+✔ review console surfaces a remaining BESD constraint disclosure without recording an outcome (714.428166ms)
+✔ constraint warning is advisory across interactions and does not flag ordinary worked examples or feedback (634.0925ms)
+✔ Q14 flags a valid sole-longest correct choice for human review without changing scoring (603.182875ms)
+✔ review console exposes exactly nine launch tracks, navigable coverage, and advisory signals (606.624042ms)
+✔ review console records one current explicit outcome and invalidates it when source identity changes (596.143792ms)
+✔ review console serves a local UI and bounded JSON API without fabricating approval (672.692667ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3899.822209

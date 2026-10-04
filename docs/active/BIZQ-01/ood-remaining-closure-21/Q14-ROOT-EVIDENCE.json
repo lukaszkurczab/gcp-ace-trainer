@@ -1,0 +1,47 @@
+{
+  "scope": "Actual Q14 tooling acceptance only; BIZQ-01 partial and N05 proposals inactive",
+  "contentCommit": "4ab3301dd422ba432705f38d7a1c4bdf5062751f",
+  "contentUpstream": "4ab3301dd422ba432705f38d7a1c4bdf5062751f",
+  "lastContentSourceCommit": "1912fa7fa741bf642bdb71917b42a7638090cdc5",
+  "files": {
+    "scripts/review/content-review-console.mjs": "98d5f3048a5de916f892d0461e83736c9fd356ccb0a4f901c6dc1557bbed24c2",
+    "tests/contentReviewConsole.test.mjs": "3139944064ed95ad490cc4332d7908db3777a6a747ae36b42dc0a110d2f3e43f"
+  },
+  "evidence": {
+    "Q14-BRIEFING.md": "ed5d285e0bcf8f3037817741fadb25f2ba1d7438ceedc88b1882bc822e901407",
+    "Q14-BRIEF-QA.md": "3fbf29c3c20478fd9ed1f4a964056d0880e059821ef8c18bd70fb885586a17aa",
+    "Q14-FINAL-QA.md": "34a19c6ae06b57b570d1057c3410a7ab4b82d4d3decba94602492dff925aff01",
+    "Q14-WORKER-RED.log": "acbe4da3ed9cb5901227e0b9ade99c617e24287414d22f9bc0d94fa73e585e45",
+    "Q14-ROOT-FOCUSED-CORRECTION.log": "1cc4b2de8fb788316b27f73f9c7482598f0512124ae1749abbd13dc3ecacc422",
+    "Q14-ROOT-CANONICAL-CORRECTION.log": "c22546d10f3c49e9cfffc7f070b19d8b89fcbf2df34b2d2bf2cf90e666737902"
+  },
+  "actualChecks": {
+    "rootFocusedFinal": {
+      "pass": 11,
+      "fail": 0
+    },
+    "rootCanonicalFinal": {
+      "pass": 159,
+      "fail": 0,
+      "skip": 0
+    },
+    "independentFocused": {
+      "pass": 11,
+      "fail": 0
+    },
+    "independentInvalidEmptyIdProbe": "reproduced before correction; schema invalid and no Q14 flag after correction",
+    "diffCheck": "PASS"
+  },
+  "unchanged": "Tracked canonical sources/catalog/proofs/schema/scorer/artifacts/admission; no app runtime or web change",
+  "stashCounts": {
+    "app": 6,
+    "content": 2,
+    "web": 0,
+    "backend": 4
+  },
+  "limitations": [
+    "Broad comparative heuristic is advisory, not semantic verdict",
+    "No native/browser/Premium/full01 acceptance",
+    "Other \u00a75B warning mechanisms and source/native requirements retain existing evidence or gaps"
+  ]
+}
