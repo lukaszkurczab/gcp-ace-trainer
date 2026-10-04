@@ -1,0 +1,46 @@
+{
+  "verdict": "REVISE",
+  "scope": "Independent semantic review of six corrected N04 whole objects only; 156 unchanged objects reuse applicable prior reviews. No source, producer, consumer, admission, native, or full-bank acceptance.",
+  "criteria": [
+    "docs/07-content-guidelines.md: fixed OOD-N04 cohort clause, distinct unit-specific decisions and rejection of recycled cross-unit decisions",
+    "docs/07-content-guidelines.md: authored Reason/Details and stable-ID diagnostics accurately explain the decision and targeted alternative"
+  ],
+  "inputs": [
+    {
+      "unit": "OOD-N04-B01",
+      "path": "review-inputs/v5/OOD-N04-B01.json",
+      "proposalSha256": "19576ef2ead08fdf21c789dd7a0ab5b691174b103fa88ae2d8b0e8d90c12dc80",
+      "notesSha256": "0b79bee022231bcb1144327e07785c956160656b00b91c2f465b93ee12256f32",
+      "items": [
+        {"questionId":"ood-n04-b01-i028","result":"REVISE","finding":"Same opt-in capability-interface decision and decisive premises as accepted ood-n04-b09-i029; domain noun changes do not make a distinct decision."},
+        {"questionId":"ood-n04-b01-i035","result":"PASS","finding":"Polymorphic per-element draw while preserving the supplied order; alternatives and feedback align."},
+        {"questionId":"ood-n04-b01-i036","result":"PASS","finding":"Opaque continuation value hides storage pagination details; alternatives and feedback align."}
+      ]
+    },
+    {
+      "unit": "OOD-N04-B03",
+      "path": "review-inputs/v4/OOD-N04-B03.json",
+      "proposalSha256": "76011c4b1ba9440b126af651a84aae1925c06d4f9955784ebf6f2067562b1e28",
+      "notesSha256": "4a319a0879894e071262c3e4baf2a66b917b6f193d685795c8297b94004d204d",
+      "items": [
+        {"questionId":"ood-n04-b03-i035","result":"PASS","finding":"Preserves the explicit per-input cardinality, order, and candidate identity postcondition; distinct from retry idempotency."}
+      ]
+    },
+    {
+      "unit": "OOD-N04-B08",
+      "path": "review-inputs/v3/OOD-N04-B08.json",
+      "proposalSha256": "9f7dbef69dc01c92ec8f9d664f4aad08f717ab9cd4b0c9601282012da0752b5d",
+      "notesSha256": "f15a70816e740adb5aeb0477bc2ea733ca077131f3b1c463c013bfc4d752c3a5",
+      "items": [
+        {"questionId":"ood-n04-b08-i035","result":"PASS","finding":"A pair-specific optional copy attempt reports Copied/Unsupported for the existing fallback; distinct from provider-level signing capability."},
+        {"questionId":"ood-n04-b08-i036","result":"REVISE","finding":"Wrong-option feedback incorrectly generalizes that Boolean values cannot distinguish two outcomes; correct the diagnostic or make the alternative a realistic acceptance acknowledgment."}
+      ]
+    }
+  ],
+  "totals": {"correctedItemsReviewed":6,"pass":4,"revise":2,"unchangedPriorReviewReuse":156},
+  "limitations": [
+    "No review of source activation or migration implementation.",
+    "No producer, consumer, admission, native, Premium, or full BIZQ-01 acceptance claim.",
+    "This bounded result does not supersede earlier reports outside the six corrected objects."
+  ]
+}

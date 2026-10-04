@@ -1,0 +1,34 @@
+{
+  "scope": "Frozen proposal review input; B01v1 reusable unchanged; no activation or acceptance",
+  "manifestSha256": "74f929fef0122d1d75412e07d6b86ab2b634056dd0ed0a98a7051baca7e0eec0",
+  "units": [
+    {
+      "unit": "OOD-N04-B02",
+      "proposal": "review-inputs/v2/OOD-N04-B02.json",
+      "proposalSha256": "ee5b26078ae2af3f1221ca2370425d89882fcbac8f598d22ba5dc82e5bb9fa9d",
+      "notes": "review-inputs/v2/OOD-N04-B02-notes.json",
+      "notesSha256": "85968c164b22a206228b93ba04568b3f4cf114ca85ed91fb013c90b815911dc3"
+    },
+    {
+      "unit": "OOD-N04-B03",
+      "proposal": "review-inputs/v2/OOD-N04-B03.json",
+      "proposalSha256": "e479bf07d852d08ddc53efa6d7f95a94d46b9c14cc234117b1ab458b6bf7a323",
+      "notes": "review-inputs/v2/OOD-N04-B03-notes.json",
+      "notesSha256": "3369a96a44abee1fa269e67d53f874b74a83e68caedc3f4a7fd322efcbeb3436"
+    },
+    {
+      "unit": "OOD-N04-B04",
+      "proposal": "review-inputs/v2/OOD-N04-B04.json",
+      "proposalSha256": "072730a2c70fa61ee32408743d6b0437c5f991101a8ba0b7f4907880664df41e",
+      "notes": "review-inputs/v2/OOD-N04-B04-notes.json",
+      "notesSha256": "e52866f935756882e0eeb94494fc27e33a56d1793a3be1f01b83d7c695f5c05e"
+    },
+    {
+      "unit": "OOD-N04-B07",
+      "proposal": "review-inputs/v2/OOD-N04-B07.json",
+      "proposalSha256": "70468bd7dca1db48e98742f19a927dab26d0abba3cfcea2eedc6426c88a3d973",
+      "notes": "review-inputs/v2/OOD-N04-B07-notes.json",
+      "notesSha256": "4d5f17d21ca6eef2764db4c02b3c9458043d6214923cd00f30f7bbd6c9c47fc6"
+    }
+  ]
+}

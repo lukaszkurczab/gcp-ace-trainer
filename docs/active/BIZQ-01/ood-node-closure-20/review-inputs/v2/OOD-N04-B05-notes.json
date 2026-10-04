@@ -1,0 +1,256 @@
+{
+  "items": [
+    {
+      "beforeQuestionId": "ood-n04-b05-i001",
+      "questionId": "ood-n04-b05-i001",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "Two payment gateways return different response classes and error enums; either gateway can be selected by deployment, while the renewal rule changes only with subscription policy.",
+      "nearestAlternative": "The nearest alternative is a shared response model because both adapters can compile against it; it fails because the stable rule, not the provider pair, owns the accepted renewal meaning.",
+      "changedCondition": "A gateway-specific settlement rule would change the policy input and justify an explicit provider distinction rather than silently importing its SDK type.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (Two payment gateways return different response classes and error enums; either gateway can be selected by deployment, while the renewal rule changes only with subscription policy.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i002",
+      "questionId": "ood-n04-b05-i002",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "A bureau SDK is being replaced and each bureau names income verification differently; the threshold and denial meaning remain fixed across both providers.",
+      "nearestAlternative": "The nearest alternative wraps only the network call but leaves the policy typed to the bureau model, so a provider release still changes the stable decision module.",
+      "changedCondition": "An explicitly incomparable provider result would require a distinct rejection/unknown input case, not another SDK type leaking into the rule.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (A bureau SDK is being replaced and each bureau names income verification differently; the threshold and denial meaning remain fixed across both providers.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i003",
+      "questionId": "ood-n04-b05-i003",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "Two carrier APIs encode arrival states and timestamps differently; the delivery rule uses the same comparison for both carriers and may not inspect raw payloads.",
+      "nearestAlternative": "The shared carrier-event type seems reusable, but it carries provider structure into the consumer and leaves translation responsibility ambiguous.",
+      "changedCondition": "If one carrier reports estimated rather than final arrival, the input must expose that distinction before the policy treats it as delivered.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (Two carrier APIs encode arrival states and timestamps differently; the delivery rule uses the same comparison for both carriers and may not inspect raw payloads.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i004",
+      "questionId": "ood-n04-b05-i004",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "The clinic directory can be local or hosted, and both return a provider-specific specialty code; the rule’s two checks are unchanged.",
+      "nearestAlternative": "A provider-specific subtype appears to reuse the hosted model, but it makes a deployment implementation dictate the policy’s type hierarchy.",
+      "changedCondition": "An unavailable capability lookup would alter the decision outcome and should be represented distinctly from a positive match.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (The clinic directory can be local or hosted, and both return a provider-specific specialty code; the rule’s two checks are unchanged.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i005",
+      "questionId": "ood-n04-b05-i005",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "A new ledger vendor changes its decimal and line-item classes; the approval invariant and rounding policy stay owned by the billing team.",
+      "nearestAlternative": "A repository-side check is attractive because line items are read there, but it transfers the approval invariant to the persistence mechanism.",
+      "changedCondition": "Different currencies or scale rules would require a currency-aware policy input and comparison, rather than a vendor-specific class import.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (A new ledger vendor changes its decimal and line-item classes; the approval invariant and rounding policy stay owned by the billing team.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i006",
+      "questionId": "ood-n04-b05-i006",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "Notice records arrive from two content platforms with different field names; the required-notice list is release policy and remains identical.",
+      "nearestAlternative": "Adapter-side validation reduces work in the rule, but it relocates a stable legal requirement to two changing integrations.",
+      "changedCondition": "An unavailable notices response would require an explicit unknown/failure state instead of being normalized as no missing notices.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (Notice records arrive from two content platforms with different field names; the required-notice list is release policy and remains identical.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i007",
+      "questionId": "ood-n04-b05-i007",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "The policy limit is reviewed with insurance terms; the carrier’s package and currency types are replaced next quarter, while carrier adapters already normalize currency.",
+      "nearestAlternative": "Carrier-local coverage checks appear close to the parcel data but make identical insurance terms behave differently by carrier.",
+      "changedCondition": "If plans use different currencies or limits, the plan identifier and currency become explicit policy inputs.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (The policy limit is reviewed with insurance terms; the carrier’s package and currency types are replaced next quarter, while carrier adapters already normalize currency.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i008",
+      "questionId": "ood-n04-b05-i008",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "Two scoring vendors use unrelated response classes and band labels; both adapters can map their documented bands to the same policy vocabulary.",
+      "nearestAlternative": "Returning a vendor-computed boolean looks simpler but turns a stable policy into two independent, potentially inconsistent vendor rules.",
+      "changedCondition": "A vendor-only band with no agreed policy meaning requires an explicit unknown or manual-review outcome.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (Two scoring vendors use unrelated response classes and band labels; both adapters can map their documented bands to the same policy vocabulary.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i009",
+      "questionId": "ood-n04-b05-i009",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "One deployment reads retention dates from a local file and another from a settings service; the policy calendar and deletion rule do not vary by deployment.",
+      "nearestAlternative": "Letting the settings service decide is close to where the value lives, but it makes a deployment mechanism the authority for retention semantics.",
+      "changedCondition": "A deployment-specific retention policy would require an explicit policy selection, not an accidental difference in settings adapters.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (One deployment reads retention dates from a local file and another from a settings service; the policy calendar and deletion rule do not vary by deployment.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i010",
+      "questionId": "ood-n04-b05-i010",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "Availability comes from either a venue database or a partner inventory API; both can return occupied intervals, while booking owns overlap semantics.",
+      "nearestAlternative": "Trusting a provider’s boolean avoids moving data, but it transfers a stable overlap decision into integrations that change independently.",
+      "changedCondition": "If the venue permits adjacent intervals under a provider-specific rule, that rule must become an explicit input rather than an undocumented adapter choice.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (Availability comes from either a venue database or a partner inventory API; both can return occupied intervals, while booking owns overlap semantics.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i011",
+      "questionId": "ood-n04-b05-i011",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "The moderation SDK is being replaced; SDK labels differ, but the editorial team owns the prohibited labels and both adapters can map reviewed outcomes.",
+      "nearestAlternative": "A provider-local boolean blocks direct SDK coupling but hides the label needed to explain and consistently revise the editorial rule.",
+      "changedCondition": "If the editorial team changes the prohibited set, policy changes; if the SDK renames a label, only its adapter mapping changes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (The moderation SDK is being replaced; SDK labels differ, but the editorial team owns the prohibited labels and both adapters can map reviewed outcomes.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i012",
+      "questionId": "ood-n04-b05-i012",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "Verification comes from an internal reviewer tool or an external document service; each reports document kinds differently, while grant requirements are fixed by the program.",
+      "nearestAlternative": "Using a provider’s complete flag is convenient, but the stated program requirement is more specific than the provider’s status.",
+      "changedCondition": "If a program amendment changes the required set or cutoff, that is a policy change even when no document provider changes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (Verification comes from an internal reviewer tool or an external document service; each reports document kinds differently, while grant requirements are fixed by the program.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i013",
+      "questionId": "ood-n04-b05-i013",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "Two policy-administration systems use different date and status enums; the coverage interval semantics are set by the insurer and remain the same.",
+      "nearestAlternative": "Provider-side decision methods avoid mapping, but they hide the exact insurer rule and couple that rule to vendor APIs.",
+      "changedCondition": "If the insurer changes the coverage endpoint rule, CoverageDecision changes; a vendor schema change remains an adapter correction.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (Two policy-administration systems use different date and status enums; the coverage interval semantics are set by the insurer and remain the same.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i014",
+      "questionId": "ood-n04-b05-i014",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "Retail systems use different product-category codes; warranty terms are fixed by the manufacturer, and each retailer can map its codes to the manufacturer’s family list.",
+      "nearestAlternative": "A shared catalog package seems to centralize mappings, but it would make a retail integration package own manufacturer warranty meaning.",
+      "changedCondition": "A new manufacturer family changes policy data; a retailer code rename changes only its adapter mapping.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (Retail systems use different product-category codes; warranty terms are fixed by the manufacturer, and each retailer can map its codes to the manufacturer’s family list.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i015",
+      "questionId": "ood-n04-b05-i015",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "Income and debt values come from two finance connectors with distinct DTOs; the loan product defines the ratio and both connectors expose the same dated amounts after conversion.",
+      "nearestAlternative": "Sharing DTOs reduces mapping code but leaves the stable product rule dependent on a changing financial provider schema.",
+      "changedCondition": "If connector evidence uses a different period, the adapter must preserve that fact or the policy must reject incomparable evidence.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (Income and debt values come from two finance connectors with distinct DTOs; the loan product defines the ratio and both connectors expose the same dated amounts after conversion.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i016",
+      "questionId": "ood-n04-b05-i016",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "Credential timestamps arrive from two badge vendors; the security policy defines expiry as a timestamp comparison and vendor adapters can normalize timestamps to UTC.",
+      "nearestAlternative": "The SDK boolean is easy to consume, but it hides the expiry evidence and transfers policy authority to vendor code.",
+      "changedCondition": "If the security team defines a grace interval, the policy comparison changes; a timestamp encoding change stays in an adapter.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (Credential timestamps arrive from two badge vendors; the security policy defines expiry as a timestamp comparison and vendor adapters can normalize timestamps to UTC.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i017",
+      "questionId": "ood-n04-b05-i017",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "One settlement service reports a status enum and another reports event records; both adapters can produce the two facts, and payout policy owns the release rule.",
+      "nearestAlternative": "A settlement-issued command simplifies callers but moves a two-condition payout rule into a component that supplies only one condition.",
+      "changedCondition": "An unknown settlement state changes the policy outcome to a defined pending/review case; it must not be coerced to false or true.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (One settlement service reports a status enum and another reports event records; both adapters can produce the two facts, and payout policy owns the release rule.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b05-i018",
+      "questionId": "ood-n04-b05-i018",
+      "mentalUnitId": "OOD-N04-B05",
+      "learningObjective": "Choose dependency direction and contract ownership so stable policy depends on policy-meaningful inputs while volatile mechanisms translate their own representations.",
+      "decisiveFact": "Consent records are stored in either a regional database or a hosted consent service; both are translated to the same purpose and decision time, while the privacy rule owns purpose matching.",
+      "nearestAlternative": "Provider-side `isAllowed` queries avoid passing records but duplicate privacy semantics across storage implementations.",
+      "changedCondition": "If a lookup fails, the input must express failure/unknown so the policy cannot treat it as a negative consent record accidentally.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The frozen lens still asks for the dependency boundary; these facts now make the same policy-versus-mechanism decision concrete (Consent records are stored in either a regional database or a hosted consent service; both are translated to the same purpose and decision time, while the privacy rule owns purpose matching.). New option identities bind this item-specific wording.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+      ]
+    }
+  ]
+}

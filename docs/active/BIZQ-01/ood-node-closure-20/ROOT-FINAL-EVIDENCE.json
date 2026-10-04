@@ -1,0 +1,95 @@
+{
+  "scope": "Root actual executed evidence and independently accepted bounded package20; ordinary push/CI next, full BIZQ01/native not accepted",
+  "files": {
+    "sourceQuestionSet": {
+      "path": "ROOT-FINAL-BINDINGS-v2.json",
+      "sha256": "0572a16b6baef2256f417e5c7c6df0b501b0bc7dbe350dc18dcd23a879c3c6f3"
+    },
+    "semanticQA": {
+      "path": "SEMANTIC-FINAL-QA.md",
+      "sha256": "5612cb2ac7329eca264fc3f14a0a48b49fae42467dd6403d949a02dd22ab5209"
+    },
+    "producerQA": {
+      "path": "PRODUCER-QA.md",
+      "sha256": "f783e8838d8e056703e83d237b26463ae74a01fab7be38a5be107369cd372ff2"
+    },
+    "sourcePreservation": {
+      "path": "ROOT-SOURCE-PRESERVATION.json",
+      "sha256": "cbc2ed09e03c381b328822759d34927363147c31dc19167957bb3c961d8b4334"
+    },
+    "previousGuards": {
+      "path": "ROOT-PREVIOUS-GUARDS.json",
+      "sha256": "14b3ac4c199128ae2fed5cfca5520790f77dfa298c550bb506aa75a423a4fb55"
+    },
+    "migration": {
+      "path": "ROOT-MIGRATION.log",
+      "sha256": "3887d7b673e36b704cc618f7f8264bd597617473d5918281d6a36972675db311"
+    },
+    "migrationPreservation": {
+      "path": "ROOT-MIGRATION-PRESERVATION.json",
+      "sha256": "997c079fcb4a901888c9b03f834aa51822473cca566a5e7784532c11d8250498"
+    },
+    "canonical": {
+      "path": "ROOT-PRODUCER-CANONICAL.log",
+      "sha256": "d4a7a3fcfe493e0d3ccdfbdb83bc957b46031c0fbcb8c12d741cb9c56d43add4"
+    },
+    "buildPreservation": {
+      "path": "ROOT-BUILD-PRESERVATION.json",
+      "sha256": "570bc1a7d245545a6718b75ba42eb71774c08f6d8449f054c59ea919d3d0c350"
+    },
+    "consumerGreen": {
+      "path": "ROOT-CONSUMER-GREEN.log",
+      "sha256": "831e59d8bdcdf403250507574879768a5d178155a0437d5efd22308d48efe7f2"
+    },
+    "consumerPreservation": {
+      "path": "ROOT-CONSUMER-PRESERVATION.json",
+      "sha256": "b29f52b450c9a829d355ddb5b375c88aca2b4ede52eba3f90c5e1fd309a22fcc"
+    },
+    "static": {
+      "path": "ROOT-APP-STATIC.log",
+      "sha256": "5bd5761b80f58ec6c29e1c86c6debe98d23cdace9eaa1039f156df9a606837f2"
+    },
+    "admission": {
+      "path": "ROOT-ADMISSION.log",
+      "sha256": "b733767cc3a62e8f8a56f3df17762f46d05d30804feec56444ced41015b68513"
+    },
+    "releaseGate": {
+      "path": "ROOT-RELEASE-GATE.log",
+      "sha256": "929a962a96cde157b4330740b1efea3f8b5beb4d4b502fa7f09bdd7c43680151"
+    },
+    "web": {
+      "path": "ROOT-WEB.log",
+      "sha256": "2b4da132e1981626d503643a6113386735d70f5d4d4f3e9f9a3fb2ad98f8ca8d"
+    },
+    "demoPreservation": {
+      "path": "ROOT-WEB-PRESERVATION.json",
+      "sha256": "e9de7c9ea2ecf9784cf5b702cca214b1bc38f5f27eb4ce9648933e9ddeef65f1"
+    },
+    "producerCorrectionQA": {
+      "path": "PRODUCER-CORRECTION-QA.md",
+      "sha256": "778384cecae3b6fd528bf69c1b6f0d38a270e25fe056107ecb8de98f2167f3cc"
+    },
+    "consumerQA": {
+      "path": "CONSUMER-QA.md",
+      "sha256": "6eada02017775f1e23138b38e8aed60c9dd8e5c6a16251cd365a1ccf80925698"
+    },
+    "finalQA": {
+      "path": "FINAL-QA.md",
+      "sha256": "6be71f4b54b5381b3c6954f192d73f77cf0a5021f6f74eda9e5eca9e104a1fac"
+    },
+    "pathTool": {
+      "path": "check-path-probes.mjs",
+      "sha256": "5682029c71228a5f1a0226d40a4f050997b8b31afb872ce5ff6e34870273581a"
+    },
+    "rootPathProbes": {
+      "path": "ROOT-PATH-PROBES.json",
+      "sha256": "d7becbd04059d95267e90f88ce8d801f16000131e78debcad373a87f85470f78"
+    }
+  },
+  "sourceCommit": "1912fa7fa741bf642bdb71917b42a7638090cdc5",
+  "verificationCheckpoint": "4721c395a6a55a02496b8971b7d47cae93a3d1a5",
+  "readinessCheckpoint": "141efee6dee5e59b5e746fe410a15334693db0f5",
+  "contentAdmissionCommit": "b1d7cc419b475dccd37fba82c948bcd760ab577f",
+  "applicationConsumerCommit": "7705e4583af9af646b671edaac08da282a05e595",
+  "candidateId": "3001b254f9a1c4f9d15a01577f5457b8cb4ad79723f9958ecbdb7c8c5658417b"
+}

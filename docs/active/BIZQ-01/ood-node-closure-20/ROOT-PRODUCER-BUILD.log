@@ -1,0 +1,5 @@
+
+> patternly-content@1.0.0 content:build-all
+> node scripts/build.mjs build-all
+
+lock.tracks[8].contentVersion does not match catalog

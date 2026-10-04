@@ -1,0 +1,61 @@
+{
+  "verdict": "PASS",
+  "scope": "Actual source bytes/whole objects, preservation inventory, sole catalog-version change and exact whole OOD predecessor; not migration/producer/consumer/admission/native acceptance",
+  "baselineCommit": "98a7d0519005290cd2c0380d04b08a7b1bdebcde",
+  "changedSourceFiles": [
+    {
+      "path": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B01.json",
+      "sourceSha256": "14689bf58bc6b5fc92e19b58f3ea6c030d0d876b9d7f7d0226639f1078b1a3ab",
+      "questionCount": 18
+    },
+    {
+      "path": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B02.json",
+      "sourceSha256": "07dc546ab1fe0b27faf59b90415dce6d19c5f84fb3d9e0b5d9b9367089540027",
+      "questionCount": 18
+    },
+    {
+      "path": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B03.json",
+      "sourceSha256": "df3d74abef8658fe3a038af2975644dea70240e549da3c84d0b6358dc27cd770",
+      "questionCount": 18
+    },
+    {
+      "path": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B04.json",
+      "sourceSha256": "111104dbb3d8b2c1d09c49d824a23719808a194bd4d53842cc573724df003f55",
+      "questionCount": 18
+    },
+    {
+      "path": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B05.json",
+      "sourceSha256": "87d3159243ad32fcf4739799478a69b2f8d9eb22994a9a2b701ecaa2752e5950",
+      "questionCount": 18
+    },
+    {
+      "path": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B06.json",
+      "sourceSha256": "ae0a8306d017225a899a8aa7b4038eca836550c51c702a9c9e3c49fd1c30eef0",
+      "questionCount": 18
+    },
+    {
+      "path": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B07.json",
+      "sourceSha256": "17e336e71bc3690f9c2bf6d0783099261662fb5551f8e2d942df22948bee217f",
+      "questionCount": 18
+    },
+    {
+      "path": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B08.json",
+      "sourceSha256": "431555e485c0362703faa4bcd660ad8627774bd6d02619d12520d35d53caf183",
+      "questionCount": 18
+    },
+    {
+      "path": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B09.json",
+      "sourceSha256": "f51418182cf1beee23a947de3f67771bddfd023a5e6599350c6be63e9b15a87c",
+      "questionCount": 18
+    }
+  ],
+  "changedN04Objects": 162,
+  "semanticReplacements": 144,
+  "sameIdCorrections": 18,
+  "untouchedContentFiles": 944,
+  "immutableProofAndEvidenceFiles": 11,
+  "unchangedNonN04OodObjects": 1251,
+  "oodQuestionCount": 1413,
+  "beforeQuestionSetSha256": "6f493ddd0ebfbbd5fa7acf98e17de69420360925f498791a683aca5f1d7f1f53",
+  "currentQuestionSetSha256": "5b552f935cc3fa8bb142ccd38dc747a19a57823a8c7c8fd243fc786d43f0fe72"
+}

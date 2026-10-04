@@ -1,0 +1,925 @@
+{
+  "scope": "Read-only exact frozen proposals/notes, actual compact source encoding and real producer question-set hash; not semantic approval, activation, admission or native acceptance",
+  "inputBindings": "ROOT-FINAL-REVIEW-INPUTS-v2.json",
+  "inputSha256": "8e2a027713624dfb029863657fcf552d3801cb97adcea0757d2835be761af05f",
+  "manifestSha256": "74f929fef0122d1d75412e07d6b86ab2b634056dd0ed0a98a7051baca7e0eec0",
+  "questionCount": 1413,
+  "proposalQuestionCount": 162,
+  "reusedMatchingScoringCases": 1476,
+  "unchangedNonN04Objects": 1251,
+  "beforeQuestionSetSha256": "6f493ddd0ebfbbd5fa7acf98e17de69420360925f498791a683aca5f1d7f1f53",
+  "proposedQuestionSetSha256": "5b552f935cc3fa8bb142ccd38dc747a19a57823a8c7c8fd243fc786d43f0fe72",
+  "declaredReplacementCount": 144,
+  "declaredRetainedCount": 18,
+  "units": [
+    {
+      "unit": "OOD-N04-B01",
+      "sourcePath": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B01.json",
+      "beforeSourceSha256": "3f7bfd0223ac5f8b67d343b8ec379240607e97cabd6f01afb6215aad9678fad6",
+      "proposalSha256": "ad156610a40fedb29d0bb14022703b15e19806ac3aaa7d26dfd4258e68c160c5",
+      "notesSha256": "87b2eb869d68133659fc3d32b2e6de56bfe444370fac00c10a6374c2ec26c854",
+      "proposedSourceSha256": "14689bf58bc6b5fc92e19b58f3ea6c030d0d876b9d7f7d0226639f1078b1a3ab",
+      "sourceEncoding": "JSON.stringify(questionArray), compact UTF-8, no final newline",
+      "identityActions": [
+        {
+          "beforeQuestionId": "ood-n04-b01-i001",
+          "questionId": "ood-n04-b01-i019",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i002",
+          "questionId": "ood-n04-b01-i020",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i003",
+          "questionId": "ood-n04-b01-i021",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i004",
+          "questionId": "ood-n04-b01-i022",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i005",
+          "questionId": "ood-n04-b01-i023",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i006",
+          "questionId": "ood-n04-b01-i024",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i007",
+          "questionId": "ood-n04-b01-i025",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i008",
+          "questionId": "ood-n04-b01-i026",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i009",
+          "questionId": "ood-n04-b01-i027",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i010",
+          "questionId": "ood-n04-b01-i028",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i011",
+          "questionId": "ood-n04-b01-i029",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i012",
+          "questionId": "ood-n04-b01-i030",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i013",
+          "questionId": "ood-n04-b01-i031",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i014",
+          "questionId": "ood-n04-b01-i032",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i015",
+          "questionId": "ood-n04-b01-i033",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i016",
+          "questionId": "ood-n04-b01-i034",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i017",
+          "questionId": "ood-n04-b01-i035",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b01-i018",
+          "questionId": "ood-n04-b01-i036",
+          "identityAction": "replace_question_with_new_id"
+        }
+      ]
+    },
+    {
+      "unit": "OOD-N04-B02",
+      "sourcePath": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B02.json",
+      "beforeSourceSha256": "39dc806cd5ad144ae86cd60b9c312d211fe9edb34dc93385a8e2d1ec0c8499b6",
+      "proposalSha256": "ee5b26078ae2af3f1221ca2370425d89882fcbac8f598d22ba5dc82e5bb9fa9d",
+      "notesSha256": "85968c164b22a206228b93ba04568b3f4cf114ca85ed91fb013c90b815911dc3",
+      "proposedSourceSha256": "07dc546ab1fe0b27faf59b90415dce6d19c5f84fb3d9e0b5d9b9367089540027",
+      "sourceEncoding": "JSON.stringify(questionArray), compact UTF-8, no final newline",
+      "identityActions": [
+        {
+          "beforeQuestionId": "ood-n04-b02-i001",
+          "questionId": "ood-n04-b02-i019",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i002",
+          "questionId": "ood-n04-b02-i020",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i003",
+          "questionId": "ood-n04-b02-i021",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i004",
+          "questionId": "ood-n04-b02-i022",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i005",
+          "questionId": "ood-n04-b02-i023",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i006",
+          "questionId": "ood-n04-b02-i024",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i007",
+          "questionId": "ood-n04-b02-i025",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i008",
+          "questionId": "ood-n04-b02-i026",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i009",
+          "questionId": "ood-n04-b02-i027",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i010",
+          "questionId": "ood-n04-b02-i028",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i011",
+          "questionId": "ood-n04-b02-i029",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i012",
+          "questionId": "ood-n04-b02-i030",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i013",
+          "questionId": "ood-n04-b02-i031",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i014",
+          "questionId": "ood-n04-b02-i032",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i015",
+          "questionId": "ood-n04-b02-i033",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i016",
+          "questionId": "ood-n04-b02-i034",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i017",
+          "questionId": "ood-n04-b02-i035",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b02-i018",
+          "questionId": "ood-n04-b02-i036",
+          "identityAction": "replace_question_with_new_id"
+        }
+      ]
+    },
+    {
+      "unit": "OOD-N04-B03",
+      "sourcePath": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B03.json",
+      "beforeSourceSha256": "0db38c86bde7d00ee5d8740deb9f81b5a269ed17848dd050a953cce88ea3d2e9",
+      "proposalSha256": "76011c4b1ba9440b126af651a84aae1925c06d4f9955784ebf6f2067562b1e28",
+      "notesSha256": "4a319a0879894e071262c3e4baf2a66b917b6f193d685795c8297b94004d204d",
+      "proposedSourceSha256": "df3d74abef8658fe3a038af2975644dea70240e549da3c84d0b6358dc27cd770",
+      "sourceEncoding": "JSON.stringify(questionArray), compact UTF-8, no final newline",
+      "identityActions": [
+        {
+          "beforeQuestionId": "ood-n04-b03-i001",
+          "questionId": "ood-n04-b03-i019",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i002",
+          "questionId": "ood-n04-b03-i020",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i003",
+          "questionId": "ood-n04-b03-i021",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i004",
+          "questionId": "ood-n04-b03-i022",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i005",
+          "questionId": "ood-n04-b03-i023",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i006",
+          "questionId": "ood-n04-b03-i024",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i007",
+          "questionId": "ood-n04-b03-i025",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i008",
+          "questionId": "ood-n04-b03-i026",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i009",
+          "questionId": "ood-n04-b03-i027",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i010",
+          "questionId": "ood-n04-b03-i028",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i011",
+          "questionId": "ood-n04-b03-i029",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i012",
+          "questionId": "ood-n04-b03-i030",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i013",
+          "questionId": "ood-n04-b03-i031",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i014",
+          "questionId": "ood-n04-b03-i032",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i015",
+          "questionId": "ood-n04-b03-i033",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i016",
+          "questionId": "ood-n04-b03-i034",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i017",
+          "questionId": "ood-n04-b03-i035",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b03-i018",
+          "questionId": "ood-n04-b03-i036",
+          "identityAction": "replace_question_with_new_id"
+        }
+      ]
+    },
+    {
+      "unit": "OOD-N04-B04",
+      "sourcePath": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B04.json",
+      "beforeSourceSha256": "7bb3641b4c6f351012823e1e46dc41150a53741849b962263a1e377376f7c9fb",
+      "proposalSha256": "f5a3005b9acaccf1c15f4bd6aef56af2a13ebfcfd3d65c5c85f58ef94f8e435e",
+      "notesSha256": "d4adc2a937603053b4d25883c8690c9f7251439860587fbc2e5de50247622b84",
+      "proposedSourceSha256": "111104dbb3d8b2c1d09c49d824a23719808a194bd4d53842cc573724df003f55",
+      "sourceEncoding": "JSON.stringify(questionArray), compact UTF-8, no final newline",
+      "identityActions": [
+        {
+          "beforeQuestionId": "ood-n04-b04-i001",
+          "questionId": "ood-n04-b04-i019",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i002",
+          "questionId": "ood-n04-b04-i020",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i003",
+          "questionId": "ood-n04-b04-i021",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i004",
+          "questionId": "ood-n04-b04-i022",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i005",
+          "questionId": "ood-n04-b04-i023",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i006",
+          "questionId": "ood-n04-b04-i024",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i007",
+          "questionId": "ood-n04-b04-i025",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i008",
+          "questionId": "ood-n04-b04-i026",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i009",
+          "questionId": "ood-n04-b04-i027",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i010",
+          "questionId": "ood-n04-b04-i028",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i011",
+          "questionId": "ood-n04-b04-i029",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i012",
+          "questionId": "ood-n04-b04-i030",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i013",
+          "questionId": "ood-n04-b04-i031",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i014",
+          "questionId": "ood-n04-b04-i032",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i015",
+          "questionId": "ood-n04-b04-i033",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i016",
+          "questionId": "ood-n04-b04-i034",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i017",
+          "questionId": "ood-n04-b04-i035",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b04-i018",
+          "questionId": "ood-n04-b04-i036",
+          "identityAction": "replace_question_with_new_id"
+        }
+      ]
+    },
+    {
+      "unit": "OOD-N04-B05",
+      "sourcePath": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B05.json",
+      "beforeSourceSha256": "1f617f0282d8284dfcef1569f7504efb200ce040722c36c7f64425d063294a75",
+      "proposalSha256": "4e3082cf3cfbe54d3249182d8716c2617957345612a7244841087b83e7b32be7",
+      "notesSha256": "3a57039619015e83dc390ead00ab8bfb7368a029632d15f9653f669288834f7d",
+      "proposedSourceSha256": "87d3159243ad32fcf4739799478a69b2f8d9eb22994a9a2b701ecaa2752e5950",
+      "sourceEncoding": "JSON.stringify(questionArray), compact UTF-8, no final newline",
+      "identityActions": [
+        {
+          "beforeQuestionId": "ood-n04-b05-i001",
+          "questionId": "ood-n04-b05-i001",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i002",
+          "questionId": "ood-n04-b05-i002",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i003",
+          "questionId": "ood-n04-b05-i003",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i004",
+          "questionId": "ood-n04-b05-i004",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i005",
+          "questionId": "ood-n04-b05-i005",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i006",
+          "questionId": "ood-n04-b05-i006",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i007",
+          "questionId": "ood-n04-b05-i007",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i008",
+          "questionId": "ood-n04-b05-i008",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i009",
+          "questionId": "ood-n04-b05-i009",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i010",
+          "questionId": "ood-n04-b05-i010",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i011",
+          "questionId": "ood-n04-b05-i011",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i012",
+          "questionId": "ood-n04-b05-i012",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i013",
+          "questionId": "ood-n04-b05-i013",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i014",
+          "questionId": "ood-n04-b05-i014",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i015",
+          "questionId": "ood-n04-b05-i015",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i016",
+          "questionId": "ood-n04-b05-i016",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i017",
+          "questionId": "ood-n04-b05-i017",
+          "identityAction": "preserve_question_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b05-i018",
+          "questionId": "ood-n04-b05-i018",
+          "identityAction": "preserve_question_id"
+        }
+      ]
+    },
+    {
+      "unit": "OOD-N04-B06",
+      "sourcePath": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B06.json",
+      "beforeSourceSha256": "2477b13c36100959c64b312ffe2c29ffe45c75f4d18a5abd5a404a59b7c15108",
+      "proposalSha256": "5337a01630671e66befadf3fdb51256ede430769b2ea2c4cac12f7288a79ee47",
+      "notesSha256": "cfcafdd2f38ad7deab89760d23d3f3a4c760dd5c4ed531f2abfedbf523aed8b1",
+      "proposedSourceSha256": "ae0a8306d017225a899a8aa7b4038eca836550c51c702a9c9e3c49fd1c30eef0",
+      "sourceEncoding": "JSON.stringify(questionArray), compact UTF-8, no final newline",
+      "identityActions": [
+        {
+          "beforeQuestionId": "ood-n04-b06-i001",
+          "questionId": "ood-n04-b06-i019",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i002",
+          "questionId": "ood-n04-b06-i020",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i003",
+          "questionId": "ood-n04-b06-i021",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i004",
+          "questionId": "ood-n04-b06-i022",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i005",
+          "questionId": "ood-n04-b06-i023",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i006",
+          "questionId": "ood-n04-b06-i024",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i007",
+          "questionId": "ood-n04-b06-i025",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i008",
+          "questionId": "ood-n04-b06-i026",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i009",
+          "questionId": "ood-n04-b06-i027",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i010",
+          "questionId": "ood-n04-b06-i028",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i011",
+          "questionId": "ood-n04-b06-i029",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i012",
+          "questionId": "ood-n04-b06-i030",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i013",
+          "questionId": "ood-n04-b06-i031",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i014",
+          "questionId": "ood-n04-b06-i032",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i015",
+          "questionId": "ood-n04-b06-i033",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i016",
+          "questionId": "ood-n04-b06-i034",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i017",
+          "questionId": "ood-n04-b06-i035",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b06-i018",
+          "questionId": "ood-n04-b06-i036",
+          "identityAction": "replace_question_with_new_id"
+        }
+      ]
+    },
+    {
+      "unit": "OOD-N04-B07",
+      "sourcePath": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B07.json",
+      "beforeSourceSha256": "0f617c1b70947c885f267fc6c6d8e72514f5f56e6deb3b27fff099252745593c",
+      "proposalSha256": "dcb09dd65116aede41d068a293ffa25408547df9dd39bb2721112efea61e20df",
+      "notesSha256": "1af93b1fd561cef24c98f89741aad9592f709af955280d533e8e23f45f40ac7f",
+      "proposedSourceSha256": "17e336e71bc3690f9c2bf6d0783099261662fb5551f8e2d942df22948bee217f",
+      "sourceEncoding": "JSON.stringify(questionArray), compact UTF-8, no final newline",
+      "identityActions": [
+        {
+          "beforeQuestionId": "ood-n04-b07-i001",
+          "questionId": "ood-n04-b07-i019",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i002",
+          "questionId": "ood-n04-b07-i020",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i003",
+          "questionId": "ood-n04-b07-i021",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i004",
+          "questionId": "ood-n04-b07-i022",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i005",
+          "questionId": "ood-n04-b07-i023",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i006",
+          "questionId": "ood-n04-b07-i024",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i007",
+          "questionId": "ood-n04-b07-i025",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i008",
+          "questionId": "ood-n04-b07-i026",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i009",
+          "questionId": "ood-n04-b07-i027",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i010",
+          "questionId": "ood-n04-b07-i028",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i011",
+          "questionId": "ood-n04-b07-i029",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i012",
+          "questionId": "ood-n04-b07-i030",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i013",
+          "questionId": "ood-n04-b07-i031",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i014",
+          "questionId": "ood-n04-b07-i032",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i015",
+          "questionId": "ood-n04-b07-i033",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i016",
+          "questionId": "ood-n04-b07-i034",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i017",
+          "questionId": "ood-n04-b07-i035",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b07-i018",
+          "questionId": "ood-n04-b07-i036",
+          "identityAction": "replace_question_with_new_id"
+        }
+      ]
+    },
+    {
+      "unit": "OOD-N04-B08",
+      "sourcePath": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B08.json",
+      "beforeSourceSha256": "65c6a41268a5811228653ce540d77069b9a5247ca98742f6fa55a07e6ea0977a",
+      "proposalSha256": "568fc311163050145b8b7fa16e5956160c83852da5c7228070f7ce1d711b5c33",
+      "notesSha256": "a3ecd69fdfd8547bd106ca3a5f7c15ad88218cbcbd4c6242ee841dfa69f4722c",
+      "proposedSourceSha256": "431555e485c0362703faa4bcd660ad8627774bd6d02619d12520d35d53caf183",
+      "sourceEncoding": "JSON.stringify(questionArray), compact UTF-8, no final newline",
+      "identityActions": [
+        {
+          "beforeQuestionId": "ood-n04-b08-i001",
+          "questionId": "ood-n04-b08-i019",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i002",
+          "questionId": "ood-n04-b08-i020",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i003",
+          "questionId": "ood-n04-b08-i021",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i004",
+          "questionId": "ood-n04-b08-i022",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i005",
+          "questionId": "ood-n04-b08-i023",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i006",
+          "questionId": "ood-n04-b08-i024",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i007",
+          "questionId": "ood-n04-b08-i025",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i008",
+          "questionId": "ood-n04-b08-i026",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i009",
+          "questionId": "ood-n04-b08-i027",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i010",
+          "questionId": "ood-n04-b08-i028",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i011",
+          "questionId": "ood-n04-b08-i029",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i012",
+          "questionId": "ood-n04-b08-i030",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i013",
+          "questionId": "ood-n04-b08-i031",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i014",
+          "questionId": "ood-n04-b08-i032",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i015",
+          "questionId": "ood-n04-b08-i033",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i016",
+          "questionId": "ood-n04-b08-i034",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i017",
+          "questionId": "ood-n04-b08-i035",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b08-i018",
+          "questionId": "ood-n04-b08-i036",
+          "identityAction": "replace_question_with_new_id"
+        }
+      ]
+    },
+    {
+      "unit": "OOD-N04-B09",
+      "sourcePath": "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B09.json",
+      "beforeSourceSha256": "0bd009721c5ee62baeac7655e204fbcf852c3222c956feb8b286dc9594b63461",
+      "proposalSha256": "a99275dda3ff1492654aa7777ee3ea56a227926b3730536f5ac6aaea95fa4506",
+      "notesSha256": "4512046afc6050c88a8e448c587641afdafa285c2f39165b167c4f73c9d08243",
+      "proposedSourceSha256": "f51418182cf1beee23a947de3f67771bddfd023a5e6599350c6be63e9b15a87c",
+      "sourceEncoding": "JSON.stringify(questionArray), compact UTF-8, no final newline",
+      "identityActions": [
+        {
+          "beforeQuestionId": "ood-n04-b09-i001",
+          "questionId": "ood-n04-b09-i019",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i002",
+          "questionId": "ood-n04-b09-i020",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i003",
+          "questionId": "ood-n04-b09-i021",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i004",
+          "questionId": "ood-n04-b09-i022",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i005",
+          "questionId": "ood-n04-b09-i023",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i006",
+          "questionId": "ood-n04-b09-i024",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i007",
+          "questionId": "ood-n04-b09-i025",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i008",
+          "questionId": "ood-n04-b09-i026",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i009",
+          "questionId": "ood-n04-b09-i027",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i010",
+          "questionId": "ood-n04-b09-i028",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i011",
+          "questionId": "ood-n04-b09-i029",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i012",
+          "questionId": "ood-n04-b09-i030",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i013",
+          "questionId": "ood-n04-b09-i031",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i014",
+          "questionId": "ood-n04-b09-i032",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i015",
+          "questionId": "ood-n04-b09-i033",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i016",
+          "questionId": "ood-n04-b09-i034",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i017",
+          "questionId": "ood-n04-b09-i035",
+          "identityAction": "replace_question_with_new_id"
+        },
+        {
+          "beforeQuestionId": "ood-n04-b09-i018",
+          "questionId": "ood-n04-b09-i036",
+          "identityAction": "replace_question_with_new_id"
+        }
+      ]
+    }
+  ]
+}

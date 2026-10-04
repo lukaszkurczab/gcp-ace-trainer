@@ -1,0 +1,85 @@
+{
+  "verdict": "PASS",
+  "scope": "exact manifest/source binding, schema and declared identity-action structure, all-option score/reversal; not semantic/identity-meaning/admission/native acceptance. Style counts are warnings without rejection threshold.",
+  "manifestSha256": "74f929fef0122d1d75412e07d6b86ab2b634056dd0ed0a98a7051baca7e0eec0",
+  "questionCount": 72,
+  "optionCases": 576,
+  "units": [
+    {
+      "unit": "OOD-N04-B01",
+      "proposalSha256": "8dfe28c4f7b7ea7a2791c5b74efb80e5545fff865b5f51673e7a1b0a339b3ed1",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 7,
+        "exactReasonMatchesKey": [],
+        "duplicateReasons": [],
+        "duplicateDetailsByField": {
+          "mechanismOrProperty": [],
+          "scenarioApplication": [],
+          "errorCorrection": [],
+          "boundaryOrTradeoff": [],
+          "transfer": []
+        }
+      }
+    },
+    {
+      "unit": "OOD-N04-B02",
+      "proposalSha256": "e71855a104e267296fcae3d9054097511d7cce923993bd250d14afbc085492d2",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 3,
+        "exactReasonMatchesKey": [],
+        "duplicateReasons": [],
+        "duplicateDetailsByField": {
+          "mechanismOrProperty": [],
+          "scenarioApplication": [],
+          "errorCorrection": [],
+          "boundaryOrTradeoff": [],
+          "transfer": []
+        }
+      }
+    },
+    {
+      "unit": "OOD-N04-B03",
+      "proposalSha256": "ca980508c5ae3e54f259921bca7fb0f4b8b28c7a99c5399590a6188aee7beb08",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 2,
+        "exactReasonMatchesKey": [],
+        "duplicateReasons": [],
+        "duplicateDetailsByField": {
+          "mechanismOrProperty": [],
+          "scenarioApplication": [],
+          "errorCorrection": [],
+          "boundaryOrTradeoff": [],
+          "transfer": []
+        }
+      }
+    },
+    {
+      "unit": "OOD-N04-B04",
+      "proposalSha256": "ab64f36e91210bde28313b202a34ac8cde28dc5e6bf2cb7bc589d79e80d1fc34",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 5,
+        "exactReasonMatchesKey": [],
+        "duplicateReasons": [],
+        "duplicateDetailsByField": {
+          "mechanismOrProperty": [],
+          "scenarioApplication": [],
+          "errorCorrection": [],
+          "boundaryOrTradeoff": [],
+          "transfer": []
+        }
+      }
+    }
+  ]
+}

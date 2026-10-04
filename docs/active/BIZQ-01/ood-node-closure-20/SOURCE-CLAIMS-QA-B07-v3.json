@@ -1,0 +1,61 @@
+{
+  "scope": "Independent technical-source re-review of frozen B07v3. Reuses the technical findings for unchanged objects from v2 and rechecks the three changed objects. This is not whole-object semantic acceptance, cross-unit review, producer validation, or runtime acceptance.",
+  "candidatePath": "review-inputs/v3/OOD-N04-B07.json",
+  "candidateSha256": "dcb09dd65116aede41d068a293ffa25408547df9dd39bb2721112efea61e20df",
+  "notesSha256": "1af93b1fd561cef24c98f89741aad9592f709af955280d533e8e23f45f40ac7f",
+  "changedItemsEvidence": "ROOT-B07-V3-PRESERVATION.json binds the exact candidate and records only i022, i026, and i029 changed; its other 15 whole objects are unchanged from the v2 technical review input.",
+  "reviewerModel": "gpt-6-luna",
+  "reasoningEffort": "high",
+  "summary": {
+    "pass": 18,
+    "revise": 0,
+    "unresolved": 0,
+    "verdict": "PASS_SOURCE_CLAIMS"
+  },
+  "references": [
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces",
+      "supports": "Built-in variance for IEnumerable<T>, IReadOnlyList<T>, IComparer<T>, IComparable<T>; reference-type-only variance conversions; classes such as List<T> remain invariant."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces",
+      "supports": "The in/out declaration rules and variance-safe input/output positions for custom generic interfaces."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-delegates",
+      "supports": "Delegate variance, including contravariant callback inputs."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters",
+      "supports": "Interface, struct, notnull, and public-parameterless-constructor generic constraints; notnull diagnostics are nullable-analysis warnings, not runtime validation."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "supports": "Variance safety and restriction of variant type parameters to interfaces and delegates."
+    }
+  ],
+  "items": [
+    {"questionId":"ood-n04-b07-i019","verdict":"PASS","finding":"Unchanged from v2. The getter-only interface uses TRevision only as output; reference-type widening to the base revision interface is supported. The class-variance and cast distractors are accurately rejected.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces","https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i020","verdict":"PASS","finding":"Unchanged from v2. Read and Replace use T in output and input positions, respectively, so neither variance direction is safe for this single mutable interface.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i021","verdict":"PASS","finding":"Unchanged from v2. IComparer<T> is contravariant; an IComparer<TransitEvent> can safely consume PlatformChange values. The diagnostics distinguish the int result from T input positions.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i022","verdict":"PASS","finding":"The signature now consistently returns TOutput from a TInput argument. Input contravariance accepts a broader MeterReading converter for RawMeterReading, and output covariance exposes DailyEnergyReport as EnergyReport. The option explanations match those positions.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i023","verdict":"PASS","finding":"Unchanged from v2. The covariant conversion is through IEnumerable<T>; List<T> itself remains invariant, and the read-only call-site premise supports the view.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i024","verdict":"PASS","finding":"Unchanged from v2. The interface constraint makes StartTime available to the generic body, while the prompt permits multiple implementations.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"]},
+    {"questionId":"ood-n04-b07-i025","verdict":"PASS","finding":"Unchanged from v2. The struct constraint makes T a non-nullable value type and supports nullable T as an optional value.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"]},
+    {"questionId":"ood-n04-b07-i026","verdict":"PASS","finding":"The stem now precisely asks for nullable-analysis diagnostics and enables nullable analysis; it separates those diagnostics from a runtime boundary that rejects null values. The notnull constraint covers non-nullable reference and value type arguments, and violations produce warnings rather than runtime enforcement or an unconditional compile error. The key, Reason, Details, and wrong-option messages maintain this distinction.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"]},
+    {"questionId":"ood-n04-b07-i027","verdict":"PASS","finding":"Unchanged from v2. The public parameterless constructor constraint is the language contract required by new T(); class and notnull constraints do not imply that constructor.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"]},
+    {"questionId":"ood-n04-b07-i028","verdict":"PASS","finding":"Unchanged from v2. The interface bound justifies the stated generic member accesses and is accurately distinguished from constructor, enum, and runtime-cast approaches.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"]},
+    {"questionId":"ood-n04-b07-i029","verdict":"PASS","finding":"The stem supplies the missing distinguishing fact: the supported AwardScore struct implements IComparable<AwardScore> but not non-generic IComparable, and compile-time support is required. The generic interface constraint admits that struct; the non-generic constraint excludes it, while dynamic does not provide the required compile-time capability check. The non-empty premise also makes a constructor bound unnecessary.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters","https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i030","verdict":"PASS","finding":"Unchanged from v2. An output-only interface may declare covariance without a class constraint; conversions between constructed variant interfaces are available for reference-type arguments, not value-type arguments.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i031","verdict":"PASS","finding":"Unchanged from v2. IReadOnlyList<T> is covariant and List<T> invariant. The live-view and no-snapshot premises support the keyed interface view.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i032","verdict":"PASS","finding":"Unchanged from v2. Action<T> consumes its argument contravariantly, so a handler for the base event can handle the derived event.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-delegates"]},
+    {"questionId":"ood-n04-b07-i033","verdict":"PASS","finding":"Unchanged from v2. The property exposes T in both output and input positions; a mutable generic class cannot declare variance.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces","https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i034","verdict":"PASS","finding":"Unchanged from v2. An interface constraint permits the generic body to call Format across unrelated implementing classes; a concrete Invoice bound excludes the stated CreditNote caller.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"]},
+    {"questionId":"ood-n04-b07-i035","verdict":"PASS","finding":"Unchanged from v2. Both type parameters are output-only, and the prompt states reference-type hierarchies, so both may be covariant.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces","https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i036","verdict":"PASS","finding":"Unchanged from v2. TBase and TSpecific appear in input and output positions independently, supporting in and out with the stated subtype relationship.","evidence":"Reused exact v2 technical finding; object is unchanged per the bound preservation manifest.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces"]}
+  ],
+  "limitations": [
+    "No C# compiler was available in the workspace (`dotnet`, `csc`, and `mcs` were absent), so no compiler probe was run. This review used official Microsoft documentation and inspected source objects.",
+    "This review establishes source-backed technical claims only. It does not establish whole-package semantic acceptance or runtime behavior."
+  ]
+}

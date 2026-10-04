@@ -1,0 +1,7 @@
+# Independent B08-i036 correction review
+
+**Verdict: PASS for the bounded correction.** Frozen input: `review-inputs/v4/OOD-N04-B08.json`, SHA-256 `568fc311163050145b8b7fa16e5956160c83852da5c7228070f7ce1d711b5c33`; notes wrapper SHA-256 `a3ecd69fdfd8547bd106ca3a5f7c15ad88218cbcbd4c6242ee841dfa69f4722c`.
+
+The prompt now explicitly requires the cancellation response itself to include the final receipt if publication won. The revised Boolean alternative can report a terminal state, but sends the caller to a separate receipt lookup, so it fails that visible response contract. The revised wrong-option message and `errorCorrection` correctly distinguish those points; they no longer claim Boolean values are inherently unable to encode two states. The accepted option still reports either confirmed cleanup or publication with the receipt, and the remaining alternatives retain their distinct errors: acknowledging a request before its outcome, deleting a committed archive, and giving storage cleanup to the caller.
+
+This changes the decision-relevant prompt fact and the distractor meaning while preserving the unit objective and accepted answer. The changed distractor has a fresh option ID. The outcome and all diagnostics are aligned. This review accepts only `ood-n04-b08-i036`; the other 17 exact matching v3 objects reuse their applicable prior review. It does not resolve the separate N04-B01-i028 cross-unit finding or accept the full N04 cohort, source migration, runtime admission, native/Premium access, or full BIZQ-01.

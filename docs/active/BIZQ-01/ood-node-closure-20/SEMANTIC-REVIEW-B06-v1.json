@@ -1,0 +1,35 @@
+{
+  "reviewer": "gpt-6-luna-high",
+  "reviewType": "independent whole-object semantic review",
+  "unit": "OOD-N04-B06",
+  "verdict": "REVISE",
+  "proposal": "review-inputs/v1/OOD-N04-B06.json",
+  "proposalSha256": "05cbc330e667a73e263962ca95122746b77f464b0fbbc3fd12a36768763c6c2c",
+  "notes": "review-inputs/v1/OOD-N04-B06-notes.json",
+  "notesSha256": "33cf9c69a9ca472ae4c7f4e22d8f09eb3d29e7225237adb77f747ceadc14e3d0",
+  "items": [
+    {"questionId":"ood-n04-b06-i019","verdict":"REVISE","reason":"A singleton can dispatch by tenant and selected policy version under the visible prompt; alt3 is not uniquely wrong."},
+    {"questionId":"ood-n04-b06-i020","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i021","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i022","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i023","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i024","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i025","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i026","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i027","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i028","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i029","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i030","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i031","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i032","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i033","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i034","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i035","verdict":"PASS"},
+    {"questionId":"ood-n04-b06-i036","verdict":"PASS"}
+  ],
+  "minimalCorrection": "Make alt3 specifically a single unversioned policy without tenant/version dispatch, or add a visible scenario limitation that excludes tenant-aware singleton dispatch.",
+  "limitations": [
+    "No general singleton prohibition is required.",
+    "No producer, consumer, native, or full BIZQ-01 acceptance is implied."
+  ]
+}

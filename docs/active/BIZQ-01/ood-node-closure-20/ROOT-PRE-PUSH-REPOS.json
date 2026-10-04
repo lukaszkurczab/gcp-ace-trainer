@@ -1,0 +1,41 @@
+{
+  "patternly": {
+    "head": "7705e4583af9af646b671edaac08da282a05e595",
+    "upstream": "5150ad606b1523918a30b4958e1d5bbb9622811c",
+    "trackedChanges": [
+      ".agent/WORKING_STATE.md",
+      "docs/PATTERNLY-WORKING-PLAN.md"
+    ],
+    "stashCount": 6,
+    "stashListSha256": "e0a2283eeef486693d86cdf69dc119c8d5a1622df66e8eef0826fb7d447549fb"
+  },
+  "patternly-content": {
+    "head": "b1d7cc419b475dccd37fba82c948bcd760ab577f",
+    "upstream": "98a7d0519005290cd2c0380d04b08a7b1bdebcde",
+    "trackedChanges": [],
+    "stashCount": 2,
+    "stashListSha256": "d278bb1ab1d66494ec7e574bc1bad3470bae930b023d55844e9e3df9a1722f0c"
+  },
+  "patternly-web": {
+    "head": "3a2614fa1b3ada0ecb9d23a342b81fc90cc4836b",
+    "upstream": "3a2614fa1b3ada0ecb9d23a342b81fc90cc4836b",
+    "trackedChanges": [
+      "src/generated/demoQuestions.json"
+    ],
+    "stashCount": 0,
+    "stashListSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "patternly-backend": {
+    "head": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+    "upstream": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+    "trackedChanges": [],
+    "stashCount": 4,
+    "stashListSha256": "3fc1cfb799ddc5fb92604cecfa2e7f66759bd17ab74f66198bec0459f807f3fb"
+  },
+  "foreignPlanOutside19a": {
+    "workingSha256": "e10a1239ffc0fc310ba70c3fba3b1bd2e26017450ef7d34b3dbfa49828c4bf76",
+    "headSha256": "5b17eb1aaa2e2696f6b13b901aaeb8edd4ca9cefae7213cc2c26c9d2b2c9848e",
+    "note": "Foreign uncommitted appendix is preserved; stage only own19a row"
+  },
+  "foreignStateFooterSha256": "611166e7185874f280b075c5207876d6184160a8d5d60cfb574267a5036e0fa5"
+}

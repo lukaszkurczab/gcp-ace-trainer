@@ -1,0 +1,116 @@
+{
+  "scope": "Frozen final review inputs and aggregate matching root structure/scoring evidence; not semantic approval or migration identity freeze",
+  "manifestSha256": "74f929fef0122d1d75412e07d6b86ab2b634056dd0ed0a98a7051baca7e0eec0",
+  "questionCount": 162,
+  "optionCases": 1476,
+  "units": [
+    {
+      "unit": "OOD-N04-B01",
+      "version": 4,
+      "proposalPath": "review-inputs/v4/OOD-N04-B01.json",
+      "proposalSha256": "670ce78a087186d771a49916eba32a8b6756fbe91dbc58efb3de5fefd8b19b2d",
+      "notesPath": "review-inputs/v4/OOD-N04-B01-notes.json",
+      "notesSha256": "d81eaf3a68cd14b6f5d220ecc80160c547166b64f3a986a7766e3ef47190083e",
+      "declaredReplacementCount": 18,
+      "declaredRetainedCount": 0,
+      "structuralEvidence": "ROOT-STRUCTURE-B01-v4.json",
+      "optionCases": 144
+    },
+    {
+      "unit": "OOD-N04-B02",
+      "version": 2,
+      "proposalPath": "review-inputs/v2/OOD-N04-B02.json",
+      "proposalSha256": "ee5b26078ae2af3f1221ca2370425d89882fcbac8f598d22ba5dc82e5bb9fa9d",
+      "notesPath": "review-inputs/v2/OOD-N04-B02-notes.json",
+      "notesSha256": "85968c164b22a206228b93ba04568b3f4cf114ca85ed91fb013c90b815911dc3",
+      "declaredReplacementCount": 18,
+      "declaredRetainedCount": 0,
+      "structuralEvidence": "ROOT-STRUCTURE-B02-B04-v2.json",
+      "optionCases": 144
+    },
+    {
+      "unit": "OOD-N04-B03",
+      "version": 3,
+      "proposalPath": "review-inputs/v3/OOD-N04-B03.json",
+      "proposalSha256": "a53da3f534c3003556b23347b4b6b4bafc22b1cb2587160d8a211faab0ca08e7",
+      "notesPath": "review-inputs/v3/OOD-N04-B03-notes.json",
+      "notesSha256": "96a9e29b10404a971b2f659883d6965a854d4be46577d56032f9f50ffa73d3b9",
+      "declaredReplacementCount": 18,
+      "declaredRetainedCount": 0,
+      "structuralEvidence": "ROOT-STRUCTURE-B03-v3.json",
+      "optionCases": 144
+    },
+    {
+      "unit": "OOD-N04-B04",
+      "version": 3,
+      "proposalPath": "review-inputs/v3/OOD-N04-B04.json",
+      "proposalSha256": "f5a3005b9acaccf1c15f4bd6aef56af2a13ebfcfd3d65c5c85f58ef94f8e435e",
+      "notesPath": "review-inputs/v3/OOD-N04-B04-notes.json",
+      "notesSha256": "d4adc2a937603053b4d25883c8690c9f7251439860587fbc2e5de50247622b84",
+      "declaredReplacementCount": 18,
+      "declaredRetainedCount": 0,
+      "structuralEvidence": "ROOT-STRUCTURE-B04-v3.json",
+      "optionCases": 144
+    },
+    {
+      "unit": "OOD-N04-B05",
+      "version": 2,
+      "proposalPath": "review-inputs/v2/OOD-N04-B05.json",
+      "proposalSha256": "4e3082cf3cfbe54d3249182d8716c2617957345612a7244841087b83e7b32be7",
+      "notesPath": "review-inputs/v2/OOD-N04-B05-notes.json",
+      "notesSha256": "3a57039619015e83dc390ead00ab8bfb7368a029632d15f9653f669288834f7d",
+      "declaredReplacementCount": 0,
+      "declaredRetainedCount": 18,
+      "structuralEvidence": "ROOT-STRUCTURE-B05-v2.json",
+      "optionCases": 180
+    },
+    {
+      "unit": "OOD-N04-B06",
+      "version": 2,
+      "proposalPath": "review-inputs/v2/OOD-N04-B06.json",
+      "proposalSha256": "5337a01630671e66befadf3fdb51256ede430769b2ea2c4cac12f7288a79ee47",
+      "notesPath": "review-inputs/v2/OOD-N04-B06-notes.json",
+      "notesSha256": "cfcafdd2f38ad7deab89760d23d3f3a4c760dd5c4ed531f2abfedbf523aed8b1",
+      "declaredReplacementCount": 18,
+      "declaredRetainedCount": 0,
+      "structuralEvidence": "ROOT-STRUCTURE-B06-v2.json",
+      "optionCases": 180
+    },
+    {
+      "unit": "OOD-N04-B07",
+      "version": 3,
+      "proposalPath": "review-inputs/v3/OOD-N04-B07.json",
+      "proposalSha256": "dcb09dd65116aede41d068a293ffa25408547df9dd39bb2721112efea61e20df",
+      "notesPath": "review-inputs/v3/OOD-N04-B07-notes.json",
+      "notesSha256": "1af93b1fd561cef24c98f89741aad9592f709af955280d533e8e23f45f40ac7f",
+      "declaredReplacementCount": 18,
+      "declaredRetainedCount": 0,
+      "structuralEvidence": "ROOT-STRUCTURE-B07-v3.json",
+      "optionCases": 180
+    },
+    {
+      "unit": "OOD-N04-B08",
+      "version": 2,
+      "proposalPath": "review-inputs/v2/OOD-N04-B08.json",
+      "proposalSha256": "b61af1745e160b0470874a1b5e928f0e521e78b16c6ca01fc842e9bcad956a13",
+      "notesPath": "review-inputs/v2/OOD-N04-B08-notes.json",
+      "notesSha256": "1bc990fafde2de51d6ec1b44cc9b19a13ff5699bb32108291dbaf26eb914f204",
+      "declaredReplacementCount": 18,
+      "declaredRetainedCount": 0,
+      "structuralEvidence": "ROOT-STRUCTURE-B08-v2.json",
+      "optionCases": 180
+    },
+    {
+      "unit": "OOD-N04-B09",
+      "version": 2,
+      "proposalPath": "review-inputs/v2/OOD-N04-B09.json",
+      "proposalSha256": "a99275dda3ff1492654aa7777ee3ea56a227926b3730536f5ac6aaea95fa4506",
+      "notesPath": "review-inputs/v2/OOD-N04-B09-notes.json",
+      "notesSha256": "4512046afc6050c88a8e448c587641afdafa285c2f39165b167c4f73c9d08243",
+      "declaredReplacementCount": 18,
+      "declaredRetainedCount": 0,
+      "structuralEvidence": "ROOT-STRUCTURE-B09-v2.json",
+      "optionCases": 180
+    }
+  ]
+}

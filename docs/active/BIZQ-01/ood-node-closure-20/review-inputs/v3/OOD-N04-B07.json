@@ -1,0 +1,1415 @@
+[
+  {
+    "questionId": "ood-n04-b07-i019",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The notary publishes sealed document revisions. In this C# API, `IRevisionSeal<TRevision>` exposes only `TRevision CurrentRevision { get; }`; every revision type is a reference type, and callers need to read a seal for `SignedRevision` wherever `IRevision` is expected. Which declaration and assignment preserve that producer-only contract?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i001_typed_contract",
+          "text": "Declare `out TRevision`; the getter-only seal supports this reference-type widening."
+        },
+        {
+          "optionId": "n04b07_i001_alt1",
+          "text": "Make `TRevision` invariant because every generic interface must preserve the exact constructed type."
+        },
+        {
+          "optionId": "n04b07_i001_alt2",
+          "text": "Add `in TRevision` so the caller can pass any revision subtype into the seal."
+        },
+        {
+          "optionId": "n04b07_i001_alt3",
+          "text": "Make `RevisionSeal<T>` covariant as a class and expose its mutable revision field."
+        },
+        {
+          "optionId": "n04b07_i001_alt4",
+          "text": "Cast each seal to `IRevisionSeal<IRevision>` at call sites."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i001_typed_contract"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A type used only in output position can vary toward its base type, so the shared reader contract accepts the specialized seal without allowing callers to replace its revision.",
+      "details": {
+        "mechanismOrProperty": "`out` marks the type parameter as covariant, and the getter is an output use.",
+        "scenarioApplication": "The notary returns a signed subtype through a contract consumers read as `IRevision`.",
+        "errorCorrection": "The interface declaration supplies the conversion; call-site casts do not repair invariance. Adding an input or mutable setter would invalidate this variance direction.",
+        "boundaryOrTradeoff": "Apply covariance only to a producer contract whose type parameter is returned, not consumed.",
+        "transfer": "For another revision reader, check that the type parameter is returned only and that the requested widening is between reference types."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i001_alt1",
+          "text": "It rejects the stated producer substitution even though this interface only returns the revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i001_alt2",
+          "text": "Contravariance applies to consumed values; this API has no revision input."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i001_alt3",
+          "text": "C# variance annotations apply to interface and delegate type parameters, and mutable fields would permit unsafe writes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i001_alt4",
+          "text": "A cast cannot make an invariant constructed type variant; encode the safe read-only relationship in the interface."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i020",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The payout service stores settled-order receipts. `IReceiptShelf<T>` exposes both `T Read(string id)` and `void Replace(string id, T receipt)`. A seller shelf may contain only `SellerReceipt`, while a method through `IReceiptShelf<Receipt>` could replace with any Receipt. Which relationship prevents that unsafe substitution?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i002_typed_contract",
+          "text": "Keep T invariant: `Read` produces it and `Replace` consumes it."
+        },
+        {
+          "optionId": "n04b07_i002_alt1",
+          "text": "Declare `out T` because reading a receipt is the common operation."
+        },
+        {
+          "optionId": "n04b07_i002_alt2",
+          "text": "Declare `in T` because replacement is the operation that changes state."
+        },
+        {
+          "optionId": "n04b07_i002_alt3",
+          "text": "Use `IEnumerable<T>` for the shelf and cast when replacing."
+        },
+        {
+          "optionId": "n04b07_i002_alt4",
+          "text": "Accept `IReceiptShelf<object>` and downcast at every write."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i002_typed_contract"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The shelf is a read/write contract: its element type must remain exact so a base-typed caller cannot insert a receipt the seller shelf cannot represent.",
+      "details": {
+        "mechanismOrProperty": "`Read` produces T, while `Replace` consumes T.",
+        "scenarioApplication": "The same parameter in both directions rules out `out` and `in`.",
+        "errorCorrection": "The seller shelf may accept only `SellerReceipt`; a base-typed caller cannot safely write any `Receipt`. A cast moves the mismatch to runtime and does not make the constructed generic types assignable.",
+        "boundaryOrTradeoff": "Use an invariant mutable abstraction when callers both retrieve and replace its element type.",
+        "transfer": "For another mutable shelf, inspect every getter and setter before considering variance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i002_alt1",
+          "text": "The same type parameter also appears in `Replace` input, which covariance forbids."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i002_alt2",
+          "text": "The `Read` return is an output use, so the parameter is not input-only."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i002_alt3",
+          "text": "An enumerable describes iteration, not the required keyed replacement operation or safe write relationship."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i002_alt4",
+          "text": "That broadens the accepted value type and defers a type mismatch to runtime."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i021",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "Transit controllers sort platform-change events. The API receives `IComparer<T>` and compares two values of T; `PlatformChange` derives from `TransitEvent`. An existing `IComparer<TransitEvent>` can compare every `PlatformChange`, and the sort must accept it. Which variance declaration permits that safe reuse?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i003_typed_contract",
+          "text": "Use `IComparer<in T>`; this comparer consumes the values it compares."
+        },
+        {
+          "optionId": "n04b07_i003_alt1",
+          "text": "Declare `out T` because Compare returns an integer."
+        },
+        {
+          "optionId": "n04b07_i003_alt2",
+          "text": "Leave it invariant and wrap the event comparer in a second adapter."
+        },
+        {
+          "optionId": "n04b07_i003_alt3",
+          "text": "Use `IEnumerable<T>` as the comparer contract."
+        },
+        {
+          "optionId": "n04b07_i003_alt4",
+          "text": "Require `where T : PlatformChange` on the comparer."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i003_typed_contract"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The comparer accepts T values and produces only an ordering result; contravariance lets a consumer of the broader event type consume the narrower values.",
+      "details": {
+        "mechanismOrProperty": "Both Compare parameters are inputs of type T.",
+        "scenarioApplication": "An `IComparer<TransitEvent>` can compare `PlatformChange` instances because each is a transit event.",
+        "errorCorrection": "The `int` result does not make T an output position. An adapter or narrower constraint would discard a safe existing relationship.",
+        "boundaryOrTradeoff": "Use contravariance when a consumer can handle the base type of the values supplied.",
+        "transfer": "For another sorter callback, classify the compared values as inputs rather than treating the comparison result as T."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i003_alt1",
+          "text": "The returned integer is not T; T is supplied as both Compare arguments."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i003_alt2",
+          "text": "The stated comparer can already consume each platform change; an adapter adds work without changing the type contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i003_alt3",
+          "text": "Enumeration does not define the two-value comparison operation needed by the sort."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i003_alt4",
+          "text": "That constrains implementations to the narrow subtype and prevents the broader event comparer from being reused."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/standard/generics/covariance-and-contravariance"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i022",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The energy service converts incoming meter readings to a normalized report. Its C# interface has `TOutput Convert(TInput value)` and uses `TOutput` only as the return type. A `RawMeterReading` is a `MeterReading`; `DailyEnergyReport` derives from `EnergyReport`. Which assignment is supported by these two positions?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i004_typed_contract",
+          "text": "Mark input `in`, output `out`; use `IConverter<MeterReading, DailyEnergyReport>`."
+        },
+        {
+          "optionId": "n04b07_i004_alt1",
+          "text": "Reverse both variance marks: `out TInput, in TOutput`."
+        },
+        {
+          "optionId": "n04b07_i004_alt2",
+          "text": "Make both parameters invariant because a converter transforms between two types."
+        },
+        {
+          "optionId": "n04b07_i004_alt3",
+          "text": "Keep only output covariance and require the exact input type."
+        },
+        {
+          "optionId": "n04b07_i004_alt4",
+          "text": "Use `object` for both types and cast inside Convert."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i004_typed_contract"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The interface keeps its two positions separate: it can accept a broader input and return a narrower output through the corresponding variance directions.",
+      "details": {
+        "mechanismOrProperty": "The method consumes `TInput`, so the broader `MeterReading` converter accepts a raw subtype.",
+        "scenarioApplication": "The method produces `TOutput`, so a daily subtype report can be read as an energy report.",
+        "errorCorrection": "The two type parameters have independent variance positions. Reversing either mark contradicts the parameter/return position and can be rejected by the compiler.",
+        "boundaryOrTradeoff": "For a typed transformation, model input and output separately when both safe directions are needed.",
+        "transfer": "For another converter, analyze each input and output parameter independently."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i004_alt1",
+          "text": "That would put the safe directions opposite the actual method positions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i004_alt2",
+          "text": "The stated API uses the input only as an argument and output only as a return, so each position can safely vary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i004_alt3",
+          "text": "That throws away the safe ability of a converter accepting the broader MeterReading type to process RawMeterReading."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i004_alt4",
+          "text": "This removes compile-time relationship checking and adds runtime casts without helping the stated conversion."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i023",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The captioning studio has `IEnumerable<CaptionSegment>` and `List<CaptionSegment>`. The consumer expects `IEnumerable<CaptionRecord>`, and `CaptionSegment` derives from `CaptionRecord`. The stream is read-only at this call site. Which expression uses the supported C# relationship without claiming list covariance?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i005_typed_contract",
+          "text": "Use the covariant `IEnumerable<CaptionSegment>` view as `IEnumerable<CaptionRecord>`."
+        },
+        {
+          "optionId": "n04b07_i005_alt1",
+          "text": "Assign the list directly to `List<CaptionRecord>`."
+        },
+        {
+          "optionId": "n04b07_i005_alt2",
+          "text": "Declare `List<out CaptionSegment>`."
+        },
+        {
+          "optionId": "n04b07_i005_alt3",
+          "text": "Copy every segment into a new `List<CaptionRecord>` solely for type conversion."
+        },
+        {
+          "optionId": "n04b07_i005_alt4",
+          "text": "Cast the original list to `List<CaptionRecord>`."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i005_typed_contract"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The conversion is through the covariant `IEnumerable<T>` view, not through the invariant mutable `List<T>` construction.",
+      "details": {
+        "mechanismOrProperty": "The scenario needs enumeration only, which the source list implements.",
+        "scenarioApplication": "`IEnumerable<out T>` allows the derived element sequence to be read as a base sequence.",
+        "errorCorrection": "`List<T>` remains invariant because it also accepts writes. Copying or casting to a base-element list would obscure or violate the actual type contract.",
+        "boundaryOrTradeoff": "Distinguish the variance of an implemented interface from the variance of its concrete class.",
+        "transfer": "For another collection consumer, distinguish the concrete mutable type from the read-only interface it exposes."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i005_alt1",
+          "text": "`List<T>` is a class with an invariant T parameter; covariance of an interface it implements does not make the class variant."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i005_alt2",
+          "text": "C# does not permit variance annotations on classes such as List<T>."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i005_alt3",
+          "text": "A read-only consumer can use the covariant enumerable view; copying is not required by this type relationship."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i005_alt4",
+          "text": "A cast cannot safely make a mutable subtype list writable as its base element type."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/standard/generics/covariance-and-contravariance"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i024",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The volunteer scheduler compares candidate assignments by start time. Its generic helper must call `candidate.StartTime`; every accepted candidate implements `IHasStartTime`, and the helper does not inspect any other member. Which type constraint expresses the operation the helper actually needs?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i006_typed_contract",
+          "text": "Use `where T : IHasStartTime`; the helper reads that capability."
+        },
+        {
+          "optionId": "n04b07_i006_alt1",
+          "text": "Constrain T to `VolunteerAssignment` even though other accepted candidates implement the same interface."
+        },
+        {
+          "optionId": "n04b07_i006_alt2",
+          "text": "Leave T unconstrained and cast to `IHasStartTime` inside the helper."
+        },
+        {
+          "optionId": "n04b07_i006_alt3",
+          "text": "Constrain T to `new()` because the helper compares candidates."
+        },
+        {
+          "optionId": "n04b07_i006_alt4",
+          "text": "Accept `object` and use reflection to find a StartTime property."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i006_typed_contract"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A generic constraint names the smallest shared capability required by the algorithm, preserving multiple candidate types while making the member statically available.",
+      "details": {
+        "mechanismOrProperty": "The helper accesses only `StartTime`.",
+        "scenarioApplication": "The prompt guarantees every valid candidate implements `IHasStartTime`.",
+        "errorCorrection": "An interface bound supplies that member to the compiler. A concrete-class bound, reflection, or runtime cast either narrows valid inputs or weakens checking.",
+        "boundaryOrTradeoff": "Choose the least restrictive bound that proves each operation used in the generic body.",
+        "transfer": "For another generic helper, list the exact members it calls and constrain only the shared capability that provides them."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i006_alt1",
+          "text": "That excludes valid implementations without adding a member the algorithm needs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i006_alt2",
+          "text": "The cast postpones a stated compile-time requirement to runtime."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i006_alt3",
+          "text": "Construction capability is unrelated to reading StartTime."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i006_alt4",
+          "text": "Reflection loses static checking and can fail on a type the prompt says already satisfies the interface."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i025",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "Offline route edits are persisted as an optional value type `RouteVersion`. The merge helper must distinguish a missing version from a present version and access members of the struct; nullable reference annotations are enabled. Which constraint makes `T?` mean an optional value type for this helper?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i007_typed_contract",
+          "text": "Use `where T : struct`; nullable T represents an optional value."
+        },
+        {
+          "optionId": "n04b07_i007_alt1",
+          "text": "Use `where T : class` so null marks a missing version."
+        },
+        {
+          "optionId": "n04b07_i007_alt2",
+          "text": "Use `where T : notnull` because every route version is present."
+        },
+        {
+          "optionId": "n04b07_i007_alt3",
+          "text": "Use no constraint and assume `T?` always means Nullable<T>."
+        },
+        {
+          "optionId": "n04b07_i007_alt4",
+          "text": "Use `where T : new()` so a default version can represent absence."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i007_typed_contract"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The `struct` constraint establishes the value-type case, where nullable T is the optional value wrapper needed to preserve the missing-versus-present distinction.",
+      "details": {
+        "mechanismOrProperty": "The scenario explicitly says RouteVersion is a value type.",
+        "scenarioApplication": "`where T : struct` is the constraint that restricts T to non-nullable value types.",
+        "errorCorrection": "The helper can then use nullable T for absence without inventing a sentinel RouteVersion. `class`, `notnull`, and `new()` do not establish this value-type contract.",
+        "boundaryOrTradeoff": "Select nullability constraints from the required type category and API semantics.",
+        "transfer": "For another optional struct, verify that T is value-type constrained before using nullable T as absence."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i007_alt1",
+          "text": "That accepts references rather than the stipulated value type and gives a different nullability contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i007_alt2",
+          "text": "`notnull` does not specifically require a value type or provide the intended nullable value wrapper."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i007_alt3",
+          "text": "For an unconstrained type parameter, nullable annotation behavior is not equivalent to a value-type-only bound."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i007_alt4",
+          "text": "A constructor bound neither identifies absence nor requires T to be a value type."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i026",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "A campaign reward method formats display labels by calling `ToString()` on T. Nullable analysis is enabled; callers may use either non-nullable reference types or value types, and the API must warn on nullable type arguments. A separate runtime boundary already rejects null values. Which generic constraint states the compile-time type-argument requirement?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i008_typed_contract",
+          "text": "Use `where T : notnull` to request nullable-analysis diagnostics for nullable type arguments."
+        },
+        {
+          "optionId": "n04b07_i008_alt1",
+          "text": "Use `where T : Character`, excluding other valid reference and value types."
+        },
+        {
+          "optionId": "n04b07_i008_alt2",
+          "text": "Use `where T : struct`, excluding the supported non-nullable reference types."
+        },
+        {
+          "optionId": "n04b07_i008_alt3",
+          "text": "Use `where T : new()`; constructor availability does not express nullability."
+        },
+        {
+          "optionId": "n04b07_i008_alt4",
+          "text": "Leave T unconstrained; the runtime guard alone produces nullable type-argument diagnostics."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i008_typed_contract"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The `notnull` constraint expresses the nullable-analysis requirement for both non-nullable reference and value type arguments; runtime rejection remains a separate boundary.",
+      "details": {
+        "mechanismOrProperty": "In nullable-aware C#, `where T : notnull` limits type arguments to non-nullable types and can produce a warning when that contract is violated.",
+        "scenarioApplication": "The method accepts reference and value types; the separate runtime boundary handles actual null values.",
+        "errorCorrection": "`class` or Character constraints exclude supported type categories; a runtime check does not state the generic type-argument annotation.",
+        "boundaryOrTradeoff": "The constraint is compile-time nullable-analysis guidance, not a runtime null check or unconditional compiler error.",
+        "transfer": "When reviewing a generic nullability contract, distinguish type-argument diagnostics from validation of runtime values."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i008_alt1",
+          "text": "That excludes valid non-nullable types and narrows the API to one class hierarchy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i008_alt2",
+          "text": "The constraint excludes non-nullable reference types that the API explicitly supports."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i008_alt3",
+          "text": "A constructor requirement does not express whether T is nullable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i008_alt4",
+          "text": "Runtime rejection handles values, but does not provide nullable-analysis diagnostics for generic type arguments."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i027",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The cold-chain adapter must create an empty `TemperatureBatch<T>` when a provider returns no readings. `T` is a report DTO; the batch constructor calls `new T()`, and the API contract requires a public parameterless constructor for every accepted T. Which generic constraint directly satisfies that construction requirement?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i009_typed_contract",
+          "text": "Add `where T : new()` for public parameterless construction."
+        },
+        {
+          "optionId": "n04b07_i009_alt1",
+          "text": "Add `where T : class`; every report DTO is a class."
+        },
+        {
+          "optionId": "n04b07_i009_alt2",
+          "text": "Add `where T : notnull`; the new value cannot be null."
+        },
+        {
+          "optionId": "n04b07_i009_alt3",
+          "text": "Use `Activator.CreateInstance<T>()` without a constraint."
+        },
+        {
+          "optionId": "n04b07_i009_alt4",
+          "text": "Make TemperatureBatch non-generic and store `object`."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i009_typed_contract"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The generic implementation constructs an instance, so it needs the constructor capability at compile time; the `new()` constraint states exactly that requirement.",
+      "details": {
+        "mechanismOrProperty": "The generic body performs `new T()`.",
+        "scenarioApplication": "The scenario requires a public parameterless constructor for every allowed T.",
+        "errorCorrection": "`new()` supplies that construction guarantee to the compiler. Class and non-null constraints do not imply a constructor.",
+        "boundaryOrTradeoff": "Use a construction bound only where the generic implementation actually constructs T.",
+        "transfer": "For another generic constructor, use a constructor bound only when the method itself creates T."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i009_alt1",
+          "text": "A class constraint does not guarantee any constructor, including a public parameterless one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i009_alt2",
+          "text": "Non-nullability does not make construction available to the generic method."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i009_alt3",
+          "text": "Reflection does not express the compile-time constructor contract the API explicitly requires."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i009_alt4",
+          "text": "That loses the typed batch contract and does not satisfy the stipulated construction step safely."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i028",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The repayment API accepts a currency-specific amount. `Amount<TCurrency>` must permit reading `CurrencyCode` and `MinorUnitScale` from TCurrency; every supported currency descriptor implements `ICurrencyDescriptor`. Which constraint justifies those member accesses while keeping the amount generic?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i010_typed_contract",
+          "text": "Constrain `TCurrency : ICurrencyDescriptor` to expose both required members."
+        },
+        {
+          "optionId": "n04b07_i010_alt1",
+          "text": "Use `where TCurrency : Enum` because currency codes are finite."
+        },
+        {
+          "optionId": "n04b07_i010_alt2",
+          "text": "Leave TCurrency unconstrained and cast each descriptor to the interface."
+        },
+        {
+          "optionId": "n04b07_i010_alt3",
+          "text": "Use `where TCurrency : new()` so a descriptor can be created."
+        },
+        {
+          "optionId": "n04b07_i010_alt4",
+          "text": "Hard-code a switch for every currency type in Amount<TCurrency>."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i010_typed_contract"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The generic operation depends on a named descriptor capability, so the interface bound makes those member accesses statically valid for each supported currency type.",
+      "details": {
+        "mechanismOrProperty": "The method reads CurrencyCode and MinorUnitScale.",
+        "scenarioApplication": "The scenario guarantees those members through `ICurrencyDescriptor`.",
+        "errorCorrection": "A constraint exposes interface members in the generic body. Enum, cast, and constructor approaches do not prove the stated contract.",
+        "boundaryOrTradeoff": "Bind a type parameter to the contract that supplies the operations actually used.",
+        "transfer": "For another typed amount, bind the parameter to the interface that supplies each member the implementation reads."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i010_alt1",
+          "text": "The prompt’s descriptor data is supplied by an interface, and enums do not provide those members."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i010_alt2",
+          "text": "That defers a guaranteed member requirement to runtime and does not give the generic body a checked contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i010_alt3",
+          "text": "The method reads an existing descriptor and needs no construction capability."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i010_alt4",
+          "text": "That duplicates type-specific knowledge instead of relying on the shared descriptor contract stated for all supported currencies."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i029",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The tournament ranking API selects from a non-empty set. Its generic method calls `CompareTo`; one supported `AwardScore` struct implements `IComparable<AwardScore>` but not non-generic `IComparable`. The API must require comparison support at compile time, not through dynamic binding. Which constraint fits?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i011_typed_contract",
+          "text": "Use `where T : IComparable<T>` for the typed comparison contract."
+        },
+        {
+          "optionId": "n04b07_i011_alt1",
+          "text": "Use non-generic `IComparable`; AwardScore does not implement that interface."
+        },
+        {
+          "optionId": "n04b07_i011_alt2",
+          "text": "Add `where T : new()`; construction does not provide comparison."
+        },
+        {
+          "optionId": "n04b07_i011_alt3",
+          "text": "Require `T : class, IComparable<T>`; this excludes the supported struct."
+        },
+        {
+          "optionId": "n04b07_i011_alt4",
+          "text": "Use `dynamic`; that defers the stated compile-time capability check."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i011_typed_contract"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The supported struct exposes only the self-typed comparison interface, and the API requires the compiler to enforce that capability.",
+      "details": {
+        "mechanismOrProperty": "`IComparable<T>` supplies the typed `CompareTo(T)` member through a generic constraint.",
+        "scenarioApplication": "AwardScore implements that interface but not non-generic IComparable, and it is an admitted struct.",
+        "errorCorrection": "The non-generic interface and a class-only bound exclude AwardScore; dynamic binding moves validation to runtime.",
+        "boundaryOrTradeoff": "The caller already supplies a non-empty sequence, so the helper needs no construction bound.",
+        "transfer": "For another generic algorithm, state the supported type’s implemented contract and where the operation must be checked."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i011_alt1",
+          "text": "The stipulated AwardScore struct does not implement non-generic IComparable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i011_alt2",
+          "text": "A constructor bound permits creation but does not provide typed comparison."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i011_alt3",
+          "text": "A class constraint rejects the supported AwardScore value type."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i011_alt4",
+          "text": "Dynamic binding does not make comparison support a compile-time requirement."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i030",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "A research notebook exposes `IResultArchive<T>` with `T Load(ResultId id)` and never accepts T. Both class and struct result types are supported. Which statement accurately describes declaring this interface covariant?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i012_typed_contract",
+          "text": "`out T` is legal, but C# variance conversions apply only when the type argument is a reference type."
+        },
+        {
+          "optionId": "n04b07_i012_alt1",
+          "text": "`out T` is illegal unless T has a `class` constraint."
+        },
+        {
+          "optionId": "n04b07_i012_alt2",
+          "text": "`out T` makes `IResultArchive<int>` convertible to `IResultArchive<object>`."
+        },
+        {
+          "optionId": "n04b07_i012_alt3",
+          "text": "A value-type argument is covariant whenever the interface returns it and never accepts it."
+        },
+        {
+          "optionId": "n04b07_i012_alt4",
+          "text": "The interface must be invariant because C# forbids variant declarations on interfaces."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i012_typed_contract"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "C# permits the output-only interface declaration, but a variance conversion is unavailable for value-type arguments.",
+      "details": {
+        "mechanismOrProperty": "An output-only interface parameter can be declared covariant, while the language limits variance conversions to reference-type arguments.",
+        "scenarioApplication": "The archive can still be instantiated with a struct result; that instance simply does not gain a variance conversion.",
+        "errorCorrection": "Do not confuse a legal variant declaration with a conversion that applies to every possible type argument.",
+        "boundaryOrTradeoff": "Reference-type callers may use the conversion; value-type support remains valid without it.",
+        "transfer": "For another variant interface, separate whether the declaration is legal from whether a particular constructed type receives a variance conversion."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i012_alt1",
+          "text": "A class constraint is not required to declare a covariant interface; it limits which type arguments may be used."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i012_alt2",
+          "text": "Value types do not receive variance conversions to object through a variant generic interface."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i012_alt3",
+          "text": "Output position is necessary for covariance, but a value-type argument still receives no variance conversion."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i012_alt4",
+          "text": "C# permits variance modifiers on generic interfaces; the limitation here concerns conversion for value-type arguments."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/standard/generics/covariance-and-contravariance"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i031",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The annotation workspace stores a mutable `List<Comment>`. One caller needs a live, read-only `IReadOnlyList<Annotation>` view that reflects later list changes; Comment derives from Annotation. A snapshot copy is not acceptable for this caller. Which type contract supports that view?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i013_typed_contract",
+          "text": "Use `IReadOnlyList<Comment>` as `IReadOnlyList<Annotation>` through covariance."
+        },
+        {
+          "optionId": "n04b07_i013_alt1",
+          "text": "Expose it as `List<Annotation>` because the read-only view guarantees no writes."
+        },
+        {
+          "optionId": "n04b07_i013_alt2",
+          "text": "Use `ICollection<Annotation>` because every collection interface is covariant."
+        },
+        {
+          "optionId": "n04b07_i013_alt3",
+          "text": "Cast to `IReadOnlyList<Annotation>` regardless of the type argument."
+        },
+        {
+          "optionId": "n04b07_i013_alt4",
+          "text": "Copy to a list of Annotation for every reader."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i013_typed_contract"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The live reader can use the covariant read-only interface view; the mutable List<T> itself stays invariant.",
+      "details": {
+        "mechanismOrProperty": "Comment and Annotation are reference types, and Comment derives from Annotation.",
+        "scenarioApplication": "The caller needs the live list through `IReadOnlyList<out T>`, so later source-list changes remain visible without exposing a write method.",
+        "errorCorrection": "A `List<Annotation>` cast is unsafe because it could accept non-Comment values. Copying into a new list would provide a snapshot rather than the required live view.",
+        "boundaryOrTradeoff": "A copy is valid for snapshot isolation, but the prompt explicitly needs a live view.",
+        "transfer": "When choosing a collection interface, compare whether the caller needs a live view, a snapshot, or mutation, then select the corresponding type contract."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i013_alt1",
+          "text": "A base-typed mutable list could receive a non-Comment value, violating the original List<Comment> element type."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i013_alt2",
+          "text": "A mutable ICollection<T> consumes T and does not provide the stated safe covariant read view."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i013_alt3",
+          "text": "A cast does not establish the required variance conversion; use the declared interface relationship."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i013_alt4",
+          "text": "Copying creates a snapshot and stops reflecting later changes to the original list."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/standard/generics/covariance-and-contravariance"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i032",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The badge policy accepts a handler for any `AccessEvent`. The door reader needs a handler for `BadgeRevokedEvent`, which derives from AccessEvent; the handler consumes one event and returns no event. Which delegate type relation allows the broad handler to serve this door reader?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i014_typed_contract",
+          "text": "Use `Action<AccessEvent>` for the badge-event handler input."
+        },
+        {
+          "optionId": "n04b07_i014_alt1",
+          "text": "Use `Func<BadgeRevokedEvent, AccessEvent>` because a delegate returns a value."
+        },
+        {
+          "optionId": "n04b07_i014_alt2",
+          "text": "Require `Action<BadgeRevokedEvent>` exactly because the event is more specific."
+        },
+        {
+          "optionId": "n04b07_i014_alt3",
+          "text": "Use `Action<out AccessEvent>`."
+        },
+        {
+          "optionId": "n04b07_i014_alt4",
+          "text": "Cast the broad handler to a badge-specific handler after subscription."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i014_typed_contract"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A callback consumes the event, so a handler able to process the broader base event is safe for the narrower badge event.",
+      "details": {
+        "mechanismOrProperty": "BadgeRevokedEvent is stated to derive from AccessEvent.",
+        "scenarioApplication": "The callback input is consumed, not returned.",
+        "errorCorrection": "`Action<T>` is contravariant in its input type. The broader handler accepts the specific badge event without extra adaptation.",
+        "boundaryOrTradeoff": "Use contravariance for callback inputs when a consumer can handle the supplied subtype.",
+        "transfer": "For another event handler, follow the delegate input position to determine whether a broader consumer can accept the event."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i014_alt1",
+          "text": "The handler contract returns no event, and Func adds an output that the scenario does not require."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i014_alt2",
+          "text": "That rejects a handler that can already consume every BadgeRevokedEvent as an AccessEvent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i014_alt3",
+          "text": "Action’s input parameter is contravariant; an output annotation would reverse the safe direction."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i014_alt4",
+          "text": "A cast obscures the safe delegate variance relationship and can fail at runtime."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i033",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The field-inspection parser receives either `InspectionEnvelope<PhotoRecord>` or `InspectionEnvelope<TextRecord>`. The generic class contains a mutable `Payload` property, and a consumer expects one `InspectionEnvelope<InspectionRecord>` that it may also write. What relationship should the class expose?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i015_typed_contract",
+          "text": "Keep `InspectionEnvelope<T>` invariant: its mutable property reads and writes T."
+        },
+        {
+          "optionId": "n04b07_i015_alt1",
+          "text": "Declare the class covariant because Payload is usually read."
+        },
+        {
+          "optionId": "n04b07_i015_alt2",
+          "text": "Declare the class contravariant because callers replace Payload."
+        },
+        {
+          "optionId": "n04b07_i015_alt3",
+          "text": "Mark the class parameter `out T` and hide the setter from current callers."
+        },
+        {
+          "optionId": "n04b07_i015_alt4",
+          "text": "Cast the photo envelope to the base envelope and prevent writes by convention."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i015_typed_contract"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The class’s public property makes T available in both directions, so its constructed type must remain exact for safe writes.",
+      "details": {
+        "mechanismOrProperty": "The property getter outputs T.",
+        "scenarioApplication": "The property setter consumes T.",
+        "errorCorrection": "Both use positions exist in the class contract. C# variance modifiers are available for interfaces and delegates, not classes.",
+        "boundaryOrTradeoff": "Split read and write views only if that is an actual API requirement; do not pretend the mutable envelope is covariant.",
+        "transfer": "For another mutable wrapper, check whether a property both returns and accepts the type parameter."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i015_alt1",
+          "text": "The setter consumes T, so the class cannot be covariant."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i015_alt2",
+          "text": "The getter returns T, so the class cannot be contravariant either."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i015_alt3",
+          "text": "C# classes cannot declare variance, and the public setter remains part of the contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i015_alt4",
+          "text": "A convention does not remove the declared write capability; a later base-record write could violate the original envelope’s payload type."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i034",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The digital invoice exporter is generic over a document type. Its implementation calls `Format()`; the accepted document types all implement `IInvoiceDocument`, and one caller also passes a `CreditNote` type that is not an Invoice subclass but implements that interface. Which bound supports the shared operation without excluding the caller?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i016_typed_contract",
+          "text": "Use `where TDocument : IInvoiceDocument` for the shared Format capability."
+        },
+        {
+          "optionId": "n04b07_i016_alt1",
+          "text": "Constrain TDocument to `Invoice` and add a special case for CreditNote."
+        },
+        {
+          "optionId": "n04b07_i016_alt2",
+          "text": "Leave it unbounded and call `dynamic Format()`."
+        },
+        {
+          "optionId": "n04b07_i016_alt3",
+          "text": "Constrain to `new()` so the exporter can make a temporary document."
+        },
+        {
+          "optionId": "n04b07_i016_alt4",
+          "text": "Use `object` and inspect each runtime type for a Format method."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i016_typed_contract"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The algorithm depends on formatting, and the stated interface is the common capability implemented by both otherwise unrelated document types.",
+      "details": {
+        "mechanismOrProperty": "Both accepted types implement IInvoiceDocument.",
+        "scenarioApplication": "The helper invokes Format and no Invoice-specific member.",
+        "errorCorrection": "An interface constraint supports the call while allowing unrelated implementing classes. A base-class constraint would reject CreditNote.",
+        "boundaryOrTradeoff": "Use interface bounds for capabilities shared across separate class hierarchies.",
+        "transfer": "For another generic formatter, constrain the parameter to the shared interface rather than one current implementation class."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i016_alt1",
+          "text": "The prompt expressly says CreditNote is not an Invoice subclass, and both types already share the needed interface."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i016_alt2",
+          "text": "That moves a compile-time operation requirement to runtime despite a shared interface contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i016_alt3",
+          "text": "The exporter formats a supplied document and has no stated construction need."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i016_alt4",
+          "text": "Runtime inspection duplicates the interface capability and can miss a valid implementation."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i035",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The returns workflow exposes a generic `IOutcome<TValue, TError>` interface whose public methods return either TValue or TError, while the workflow itself never accepts either type. Callers need to substitute a more specific result value and a more specific error through the corresponding base contracts; all four types are classes. Which variance shape matches both outputs?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i017_typed_contract",
+          "text": "Mark both parameters `out`; both are returned and neither is consumed."
+        },
+        {
+          "optionId": "n04b07_i017_alt1",
+          "text": "Make TValue covariant and TError contravariant because errors are handled."
+        },
+        {
+          "optionId": "n04b07_i017_alt2",
+          "text": "Make both parameters invariant because they represent a pair."
+        },
+        {
+          "optionId": "n04b07_i017_alt3",
+          "text": "Make both contravariant because callers supply values to workflow branches."
+        },
+        {
+          "optionId": "n04b07_i017_alt4",
+          "text": "Use one shared `object` type parameter for value and error."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i017_typed_contract"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Variance is determined by how each parameter is used in this type: both are returned and neither is consumed, so each can vary toward its base class.",
+      "details": {
+        "mechanismOrProperty": "The class-like Outcome contract has separate TValue and TError positions.",
+        "scenarioApplication": "Both are only returned by public methods.",
+        "errorCorrection": "Both are reference types as stated, satisfying C# variance conversion’s type-category condition. The semantic label “error” does not make TError an input.",
+        "boundaryOrTradeoff": "Evaluate each generic parameter’s actual positions independently.",
+        "transfer": "For another result pair, determine input/output position separately for each type parameter."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i017_alt1",
+          "text": "The prompt says the Outcome returns TError and does not consume it; the position, not the noun “error,” determines variance."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i017_alt2",
+          "text": "The pair shape does not prevent independent covariance when both parameters are output-only."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i017_alt3",
+          "text": "The Outcome API itself accepts neither type; external workflow inputs do not change its member positions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i017_alt4",
+          "text": "That erases the separate result and failure contracts and forces caller casts."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b07-i036",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B07",
+    "prompt": "The revision archive merges a base `IRevision` with a `SignedRevision` subtype. `IRevisionMerge<TBase, TSpecific>` consumes TBase as its only input and returns TSpecific as its only output; every SignedRevision is an IRevision. Which variance annotations fit this contract?",
+    "constraints": [
+      "Assume the C# generic contracts and subtype relationships stated in this scenario; do not infer additional members or runtime policies.",
+      "Choose the type relationship justified by the declared input/output positions and caller requirement."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b07_i018_typed_contract",
+          "text": "Mark TBase `in` and TSpecific `out` to match their positions."
+        },
+        {
+          "optionId": "n04b07_i018_alt1",
+          "text": "Mark TBase `out` and TSpecific `in`; merge flows from general to specific."
+        },
+        {
+          "optionId": "n04b07_i018_alt2",
+          "text": "Make both invariant because the two type arguments are related by inheritance."
+        },
+        {
+          "optionId": "n04b07_i018_alt3",
+          "text": "Mark both `in`; the caller initiates the merge operation."
+        },
+        {
+          "optionId": "n04b07_i018_alt4",
+          "text": "Mark both `out`; the archive returns a revision result."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b07_i018_typed_contract"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Each parameter follows its own method position: the merge consumes TBase and produces TSpecific.",
+      "details": {
+        "mechanismOrProperty": "A variant interface can use contravariance for an input parameter and covariance for a return type.",
+        "scenarioApplication": "TBase appears only as the merge input; TSpecific appears only as its output, and the case states the subtype relationship.",
+        "errorCorrection": "Reversing either mark contradicts its position. Using one mark for both parameters ignores their separate input/output roles.",
+        "boundaryOrTradeoff": "The declared positions are the full contract here; adding another input or output use could constrain a variance annotation.",
+        "transfer": "For each generic parameter separately, list the interface member positions and verify the relevant reference-type conversion before adding variance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i018_alt1",
+          "text": "Those marks are reversed: TBase is consumed, while TSpecific is returned."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i018_alt2",
+          "text": "Inheritance between the arguments does not require invariance when the interface positions support safe variance."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i018_alt3",
+          "text": "TSpecific is returned, so it cannot be declared input-only."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b07_i018_alt4",
+          "text": "TBase is supplied to the method, so it is not output-only."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"
+    ]
+  }
+]

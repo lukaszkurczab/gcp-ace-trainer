@@ -1,0 +1,66 @@
+{
+  "verdict": "PASS",
+  "scope": "exact manifest/source binding, schema and declared identity-action structure, all-option score/reversal; not semantic/identity-meaning/admission/native acceptance. Style counts are warnings without rejection threshold.",
+  "manifestSha256": "74f929fef0122d1d75412e07d6b86ab2b634056dd0ed0a98a7051baca7e0eec0",
+  "questionCount": 54,
+  "optionCases": 540,
+  "units": [
+    {
+      "unit": "OOD-N04-B06",
+      "proposalSha256": "05cbc330e667a73e263962ca95122746b77f464b0fbbc3fd12a36768763c6c2c",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 0,
+        "exactReasonMatchesKey": [],
+        "duplicateReasons": [],
+        "duplicateDetailsByField": {
+          "mechanismOrProperty": [],
+          "scenarioApplication": [],
+          "errorCorrection": [],
+          "boundaryOrTradeoff": [],
+          "transfer": []
+        }
+      }
+    },
+    {
+      "unit": "OOD-N04-B08",
+      "proposalSha256": "417977d3d5fde110c954443d9deea7c21baae99468b692ea8b52dc06eacc7906",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 1,
+        "exactReasonMatchesKey": [],
+        "duplicateReasons": [],
+        "duplicateDetailsByField": {
+          "mechanismOrProperty": [],
+          "scenarioApplication": [],
+          "errorCorrection": [],
+          "boundaryOrTradeoff": [],
+          "transfer": []
+        }
+      }
+    },
+    {
+      "unit": "OOD-N04-B09",
+      "proposalSha256": "eddd15b5c311393be3bf785b9862cc66f4f8f96f3ed20dd1f92de98520de0ace",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 4,
+        "exactReasonMatchesKey": [],
+        "duplicateReasons": [],
+        "duplicateDetailsByField": {
+          "mechanismOrProperty": [],
+          "scenarioApplication": [],
+          "errorCorrection": [],
+          "boundaryOrTradeoff": [],
+          "transfer": []
+        }
+      }
+    }
+  ]
+}

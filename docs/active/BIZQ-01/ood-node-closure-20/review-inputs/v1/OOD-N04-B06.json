@@ -1,0 +1,1424 @@
+[
+  {
+    "questionId": "ood-n04-b06-i019",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "The volunteer hub receives swap requests from two tenants whose skill rules change independently. Each tenant selects a published rule version; the assignment owner still performs the swap and checks availability. Where should the variation live?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i001_extension_contract",
+          "text": "Register tenant-versioned eligibility proposals; the assignment owner applies the checked swap."
+        },
+        {
+          "optionId": "n04b06_i001_alt1",
+          "text": "Add tenant-specific `if` branches to every caller that submits a swap."
+        },
+        {
+          "optionId": "n04b06_i001_alt2",
+          "text": "Let each policy plug-in mutate both volunteer assignments directly."
+        },
+        {
+          "optionId": "n04b06_i001_alt3",
+          "text": "Create one process-wide policy singleton shared across both tenants."
+        },
+        {
+          "optionId": "n04b06_i001_alt4",
+          "text": "Replace the assignment owner with a plug-in registry that coordinates all volunteer state."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i001_extension_contract"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Versioned policy is the changing decision; the assignment owner remains authoritative for the swap and availability check.",
+      "details": {
+        "mechanismOrProperty": "Tenant policy versions change independently.",
+        "scenarioApplication": "The extension proposes eligibility for the request.",
+        "errorCorrection": "The assignment owner applies the state change and validates availability. Caller branches duplicate rules, while direct plug-in mutation bypasses the stated owner.",
+        "boundaryOrTradeoff": "Place a plug-in at the variation seam without transferring authority over protected state.",
+        "transfer": "For another assignment extension, separate the policy’s proposal from the assignment owner’s state change."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i001_alt1",
+          "text": "Callers would duplicate changing policy rules and could bypass the assignment owner’s final checks."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i001_alt2",
+          "text": "That gives the extension authority over the state transition that the prompt assigns to the assignment owner."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i001_alt3",
+          "text": "A global policy cannot represent the independently selected tenant versions safely."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i001_alt4",
+          "text": "The registry is for selecting policy variation, not taking over assignment ownership."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i020",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "The map merge engine supports two algorithms selected by the user. Each algorithm must return proposed geometry and every conflict; only the route aggregate may accept geometry, and unresolved conflicts require user choice. What is the safe plug-in contract?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i002_extension_contract",
+          "text": "Return a merge proposal with conflicts; let the aggregate accept."
+        },
+        {
+          "optionId": "n04b06_i002_alt1",
+          "text": "Allow the plug-in to overwrite accepted geometry as soon as its algorithm finishes."
+        },
+        {
+          "optionId": "n04b06_i002_alt2",
+          "text": "Use a callback returning only `bool merged` and discard the conflicting segments."
+        },
+        {
+          "optionId": "n04b06_i002_alt3",
+          "text": "Let the route aggregate discover algorithms by reading every plug-in’s private fields."
+        },
+        {
+          "optionId": "n04b06_i002_alt4",
+          "text": "Create a global editor plug-in that owns rendering, storage, merge, sync, and conflict resolution."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i002_extension_contract"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The extension supplies a candidate result; the route owner retains the acceptance decision and unresolved conflict handling.",
+      "details": {
+        "mechanismOrProperty": "The user chooses between merge algorithms.",
+        "scenarioApplication": "Each algorithm returns both geometry and conflicts.",
+        "errorCorrection": "The route aggregate alone accepts geometry. Direct overwrite bypasses that acceptance boundary; a Boolean erases conflicts.",
+        "boundaryOrTradeoff": "Keep extension results advisory when another owner holds the state transition.",
+        "transfer": "For another merge plug-in, retain unresolved cases in the result and let the state owner decide acceptance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i002_alt1",
+          "text": "That bypasses the aggregate boundary and can silently accept a result with unresolved conflicts."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i002_alt2",
+          "text": "A Boolean cannot preserve the conflict information the editor must present to the user."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i002_alt3",
+          "text": "Private representation coupling makes the extension contract unstable and unnecessary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i002_alt4",
+          "text": "The requested extension varies only the merge algorithm; the broader editor responsibilities remain elsewhere."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i021",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Campaign reward formulas can be added independently by game modules. A formula receives a legal campaign-state snapshot and returns a reward proposal; the campaign command checks the current state again before applying it. Which boundary should the formula extension use?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i003_extension_contract",
+          "text": "Register reward calculators; the command rechecks state and applies."
+        },
+        {
+          "optionId": "n04b06_i003_alt1",
+          "text": "Let each formula plug-in grant points directly to the character."
+        },
+        {
+          "optionId": "n04b06_i003_alt2",
+          "text": "Use one switch over all reward types inside the campaign command and edit it for every game module."
+        },
+        {
+          "optionId": "n04b06_i003_alt3",
+          "text": "Treat formula registration as proof that every returned reward is legal."
+        },
+        {
+          "optionId": "n04b06_i003_alt4",
+          "text": "Let a plug-in receive the mutable campaign aggregate and decide every legal transition."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i003_extension_contract"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Formula variation can be registered independently, while the campaign command remains the authority that rechecks and applies the reward.",
+      "details": {
+        "mechanismOrProperty": "Game modules add formulas independently.",
+        "scenarioApplication": "The formula receives a snapshot and returns a proposal.",
+        "errorCorrection": "The command rechecks current legal state before applying. Registration is not authorization, and direct writes bypass the recheck.",
+        "boundaryOrTradeoff": "Separate a pluggable calculation from the state transition that consumes its result.",
+        "transfer": "For another campaign rule, keep extensible calculation separate from validation against current state."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i003_alt1",
+          "text": "A formula should not bypass the current-state check that the campaign command owns."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i003_alt2",
+          "text": "This forces independent formula additions to modify the command’s stable transition logic."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i003_alt3",
+          "text": "Registration identifies an implementation; it does not make a state-dependent proposal valid."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i003_alt4",
+          "text": "That expands formula authority beyond calculating a proposal and removes the command’s stated validation boundary."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i022",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Carrier integrations are configured per tenant. Two tenants may use different adapters for the same carrier name, and a dispatcher must resolve the adapter using the shipment’s tenant plus configured carrier ID. How should adapter registration be keyed and used?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i004_extension_contract",
+          "text": "Resolve through a registry keyed by tenant and carrier ID."
+        },
+        {
+          "optionId": "n04b06_i004_alt1",
+          "text": "Keep one static adapter per carrier name for the whole process."
+        },
+        {
+          "optionId": "n04b06_i004_alt2",
+          "text": "Ask every carrier adapter to inspect all tenant databases and choose itself."
+        },
+        {
+          "optionId": "n04b06_i004_alt3",
+          "text": "Instantiate an adapter by naming convention from the carrier string."
+        },
+        {
+          "optionId": "n04b06_i004_alt4",
+          "text": "Register one catchall logistics plug-in and let it handle all tenants and carrier operations."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i004_extension_contract"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The configured lookup key has two parts, so registration must preserve tenant scope rather than treating carrier name as globally unique.",
+      "details": {
+        "mechanismOrProperty": "The same carrier label can select different adapters for different tenants.",
+        "scenarioApplication": "The dispatcher has both tenant and configured carrier ID.",
+        "errorCorrection": "A tenant-scoped registry resolves the correct implementation. A global name map or naming convention drops part of the identity.",
+        "boundaryOrTradeoff": "Use all dimensions of the configuration identity in plug-in lookup.",
+        "transfer": "For another provider registry, include each configuration dimension that distinguishes implementations."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i004_alt1",
+          "text": "The same carrier name can map to different adapters by tenant in the stated configuration."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i004_alt2",
+          "text": "That spreads tenant selection and data access across plug-ins instead of using the dispatcher’s known key."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i004_alt3",
+          "text": "A name alone cannot express the configured tenant-specific mapping."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i004_alt4",
+          "text": "The catchall hides the explicit tenant-and-carrier lookup and combines unrelated provider behavior."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i023",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Repayment allocation rules can be extended for new loan products. A calculator receives the requested amount and installment schedule and returns an allocation plan; the ledger alone atomically checks the balance and applies the plan. What should the extension return?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i005_extension_contract",
+          "text": "Return an allocation plan; the ledger validates and commits it."
+        },
+        {
+          "optionId": "n04b06_i005_alt1",
+          "text": "Let each calculator subtract directly from installment balances."
+        },
+        {
+          "optionId": "n04b06_i005_alt2",
+          "text": "Have the calculator return only a Boolean indicating whether repayment is allowed."
+        },
+        {
+          "optionId": "n04b06_i005_alt3",
+          "text": "Add every loan product’s allocation rule to one ledger switch."
+        },
+        {
+          "optionId": "n04b06_i005_alt4",
+          "text": "Give the calculator a mutable ledger handle and let it decide how much to write."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i005_extension_contract"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Product-specific logic proposes the allocation; the ledger checks its invariant and commits the plan.",
+      "details": {
+        "mechanismOrProperty": "New products vary allocation calculation.",
+        "scenarioApplication": "The extension returns an installment-level plan.",
+        "errorCorrection": "The ledger owns the atomic balance check and write. A Boolean loses the plan; direct writes transfer ledger authority.",
+        "boundaryOrTradeoff": "Keep calculation extensions separate from the state-owning commit.",
+        "transfer": "For another product-specific plan, let the shared ledger enforce its invariant at commit."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i005_alt1",
+          "text": "That bypasses the ledger’s exclusive balance check and atomic application."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i005_alt2",
+          "text": "The ledger needs the actual allocation plan, not only a yes/no result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i005_alt3",
+          "text": "This makes independent product rules require changes to the stable ledger implementation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i005_alt4",
+          "text": "That gives plug-ins access to state the scenario reserves to the ledger."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i024",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Bracket timeouts are processed by one active handler per tournament. Configuration reload may replace the handler while an event is being delivered; an in-flight call must finish using the handler it started with, while new calls use the replacement. How should replacement be published?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i006_extension_contract",
+          "text": "Build, then atomically swap the handler; in-flight calls keep their captured handler."
+        },
+        {
+          "optionId": "n04b06_i006_alt1",
+          "text": "Mutate the active handler object field-by-field while callbacks are running."
+        },
+        {
+          "optionId": "n04b06_i006_alt2",
+          "text": "Remove the old handler before constructing the replacement."
+        },
+        {
+          "optionId": "n04b06_i006_alt3",
+          "text": "Invoke both old and new handlers during every reload window."
+        },
+        {
+          "optionId": "n04b06_i006_alt4",
+          "text": "Store the active handler in a global static shared by all tournaments."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i006_extension_contract"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Prepare and swap a complete tournament-scoped registration; captured in-flight calls continue coherently without double dispatch.",
+      "details": {
+        "mechanismOrProperty": "There is one active handler per tournament.",
+        "scenarioApplication": "Replacement can fail during construction.",
+        "errorCorrection": "In-flight events must retain their original handler reference. Mutating the handler live risks partial observations; dispatching both can duplicate effects.",
+        "boundaryOrTradeoff": "Replace a configured extension atomically at the scope where it is registered.",
+        "transfer": "For another live registration replacement, prepare the new instance before changing the active mapping."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i006_alt1",
+          "text": "An in-flight callback could observe a partially updated handler configuration."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i006_alt2",
+          "text": "A failed replacement would leave new timeout events without the required handler."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i006_alt3",
+          "text": "The prompt allows one active handler and does not permit duplicate timeout processing."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i006_alt4",
+          "text": "The registration is per tournament, so one static value conflates independent instances."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i025",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Return condition classification is stable, but refund policy versions change with purchase channel and receipt date. Inspection completes before refund review; each stage must preserve its own outcome and use the matching registered policy version. How should the policy extension be selected?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i007_extension_contract",
+          "text": "Select refund policy by version and context; keep condition separate."
+        },
+        {
+          "optionId": "n04b06_i007_alt1",
+          "text": "Let the inspection classifier set refund eligibility based only on condition."
+        },
+        {
+          "optionId": "n04b06_i007_alt2",
+          "text": "Use one current global refund policy for all historical returns."
+        },
+        {
+          "optionId": "n04b06_i007_alt3",
+          "text": "Register one `IReturnWorkflow` that classifies, decides, issues payment, and closes the case."
+        },
+        {
+          "optionId": "n04b06_i007_alt4",
+          "text": "Treat policy plug-in registration as final approval to refund."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i007_extension_contract"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Refund policies are versioned and context-dependent; classification remains a separate recorded stage.",
+      "details": {
+        "mechanismOrProperty": "Inspection records condition before refund review.",
+        "scenarioApplication": "Refund policy selection uses channel and receipt date.",
+        "errorCorrection": "The matching policy version must be preserved. A global-current policy can rewrite historical decisions; a catchall collapses stages.",
+        "boundaryOrTradeoff": "Select policy implementations from the decision’s actual context and keep outputs separate.",
+        "transfer": "For another historical policy, resolve the implementation from the facts that select its version."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i007_alt1",
+          "text": "The refund decision also depends on channel, date, and policy version."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i007_alt2",
+          "text": "That can apply a policy version that does not match the receipt context."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i007_alt3",
+          "text": "This merges two explicitly separated stages and their different evidence."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i007_alt4",
+          "text": "Selecting a policy does not supply the receipt facts or execute its decision."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i026",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Notebook exports support JSON and CSV. Each exporter receives an immutable published snapshot containing dataset and code revision IDs; an export request must use the requested format and never reread the mutable workspace. What should the exporter extension accept?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i008_extension_contract",
+          "text": "Give format exporters the immutable snapshot, not the live workspace."
+        },
+        {
+          "optionId": "n04b06_i008_alt1",
+          "text": "Pass each exporter the mutable workspace and let it look up the latest revisions."
+        },
+        {
+          "optionId": "n04b06_i008_alt2",
+          "text": "Make one `INotebookPlugin` both edit data and publish every output format."
+        },
+        {
+          "optionId": "n04b06_i008_alt3",
+          "text": "Use an exporter marker and let the caller serialize object fields itself."
+        },
+        {
+          "optionId": "n04b06_i008_alt4",
+          "text": "Resolve a global default exporter and ignore the format requested by the caller."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i008_extension_contract"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The plug-in varies output format, but every implementation receives the same immutable, revision-bound input.",
+      "details": {
+        "mechanismOrProperty": "The caller selects JSON or CSV.",
+        "scenarioApplication": "Each exporter receives a fixed snapshot with both revision identifiers.",
+        "errorCorrection": "The export path must not reread mutable workspace state. A marker or global default does not perform requested serialization.",
+        "boundaryOrTradeoff": "Pass stable input to output-specific extensions when provenance must stay fixed.",
+        "transfer": "For another export format, pass the immutable source record that the output is meant to represent."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i008_alt1",
+          "text": "The workspace can change after publication and break the snapshot’s revision binding."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i008_alt2",
+          "text": "Editing capability is unrelated to serializing the requested immutable snapshot."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i008_alt3",
+          "text": "The marker does not implement either format or guarantee the snapshot input is used."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i008_alt4",
+          "text": "That contradicts the request’s explicit format selection."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i027",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Accepted annotation comments are persisted before the assigned author is notified. Notification providers can be replaced; a provider failure must not make the already accepted comment appear rejected or cause the editor to resubmit it. Where should the notification callback run and what should it report?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i009_extension_contract",
+          "text": "Notify after acceptance; report delivery separately from persistence."
+        },
+        {
+          "optionId": "n04b06_i009_alt1",
+          "text": "Call the notification provider before persistence and cancel the comment if delivery fails."
+        },
+        {
+          "optionId": "n04b06_i009_alt2",
+          "text": "Let the callback mutate the comment’s author and document revision before notification."
+        },
+        {
+          "optionId": "n04b06_i009_alt3",
+          "text": "Use one synchronous callback that both persists the comment and notifies the author."
+        },
+        {
+          "optionId": "n04b06_i009_alt4",
+          "text": "Hide the provider behind a marker and let every editor send its own notification."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i009_extension_contract"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Persistence determines acceptance; a replaceable notification callback runs afterward and has a separately observable delivery result.",
+      "details": {
+        "mechanismOrProperty": "The comment is accepted and persisted before notification.",
+        "scenarioApplication": "Provider failure cannot undo acceptance or prompt a duplicate submission.",
+        "errorCorrection": "Notification delivery needs its own outcome. A combined callback obscures whether durable state changed.",
+        "boundaryOrTradeoff": "Keep an extension side effect after the authoritative operation when its failure must not reverse that result.",
+        "transfer": "For another external callback, define whether its failure can alter the already-persisted result."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i009_alt1",
+          "text": "That can reject a comment that was already valid, tying durable acceptance to an external provider outage."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i009_alt2",
+          "text": "The callback should not rewrite the accepted identity fields the comment must retain."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i009_alt3",
+          "text": "Combining operations makes a notification failure ambiguous about whether the comment was accepted."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i009_alt4",
+          "text": "That duplicates provider logic and makes replacement behavior inconsistent across callers."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i028",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Offline inspection sync supports several transport adapters. The server must return `Complete` or `Retryable` for the same inspection ID; a retry reuses that ID, and adapter registration can be refreshed without changing the result contract. What is the extension seam?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i010_extension_contract",
+          "text": "Register adapters under one contract for same-ID Complete/Retryable results."
+        },
+        {
+          "optionId": "n04b06_i010_alt1",
+          "text": "Let each adapter return its SDK response and have callers infer whether sync completed."
+        },
+        {
+          "optionId": "n04b06_i010_alt2",
+          "text": "Generate a new inspection ID whenever an adapter retries."
+        },
+        {
+          "optionId": "n04b06_i010_alt3",
+          "text": "Give every adapter authority to mark an inspection complete directly in local storage."
+        },
+        {
+          "optionId": "n04b06_i010_alt4",
+          "text": "Replace the sync API with a generic `IInspectionWorkflow` for capture, storage, sync, and review."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i010_extension_contract"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The adapter may change, but it must preserve the sync API’s identity and completion/retry outcomes.",
+      "details": {
+        "mechanismOrProperty": "The same inspection ID survives retry.",
+        "scenarioApplication": "The server result has two explicit states.",
+        "errorCorrection": "Transport adapters normalize those outcomes behind one contract. Raw SDK responses and new retry IDs break caller-visible semantics.",
+        "boundaryOrTradeoff": "Keep extension implementations replaceable while holding their externally visible contract stable.",
+        "transfer": "For another transport retry, preserve the operation identity and normalize outcomes for callers."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i010_alt1",
+          "text": "Callers would implement different interpretations of completion and retryability."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i010_alt2",
+          "text": "That changes operation identity across retries despite the explicit same-ID contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i010_alt3",
+          "text": "This bypasses the server result contract and makes completion depend on adapter-specific writes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i010_alt4",
+          "text": "The changing integration point is transport; unrelated inspection workflow functions do not belong in the seam."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i029",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Invoice providers support reissue with different APIs. The exchange selects a provider from account configuration; every reissue carries the same rejected-invoice identity and must return a receipt before the ledger marks it issued. How should provider extensions participate?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i011_extension_contract",
+          "text": "Resolve the configured provider; reissue the same identity and return its receipt."
+        },
+        {
+          "optionId": "n04b06_i011_alt1",
+          "text": "Let the provider assign a new invoice identity on every retry."
+        },
+        {
+          "optionId": "n04b06_i011_alt2",
+          "text": "Use a static default provider regardless of account configuration."
+        },
+        {
+          "optionId": "n04b06_i011_alt3",
+          "text": "Have each provider update the ledger directly before returning."
+        },
+        {
+          "optionId": "n04b06_i011_alt4",
+          "text": "Expose all provider-specific fields to the billing operator and let the caller build requests."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i011_extension_contract"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Provider variation is resolved from configuration, while a common reissue call preserves identity and returns the receipt needed for ledger transition.",
+      "details": {
+        "mechanismOrProperty": "Account configuration selects the implementation.",
+        "scenarioApplication": "Every attempt carries the same rejected-invoice identity.",
+        "errorCorrection": "The provider receipt precedes ledger marking. A static default ignores selection; direct mutation reverses the required order.",
+        "boundaryOrTradeoff": "Keep provider-specific request adaptation behind the selected implementation.",
+        "transfer": "For another provider reissue, keep account selection, invoice identity, and receipt ordering explicit."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i011_alt1",
+          "text": "That can break traceability and duplicate the charge the prompt forbids."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i011_alt2",
+          "text": "That ignores the stated per-account provider selection."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i011_alt3",
+          "text": "The prompt requires a provider receipt before the ledger marks the invoice issued."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i011_alt4",
+          "text": "That spreads adapter translation across callers and risks losing the common invoice identity."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i030",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Badge revocation must be visible before the door grants the next access request. Multiple policy listeners are registered; a listener failure must stop the grant, and listener order is configured explicitly. How should revocation callbacks be invoked?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i012_extension_contract",
+          "text": "Run listeners in configured order; any required failure blocks access."
+        },
+        {
+          "optionId": "n04b06_i012_alt1",
+          "text": "Publish revocation asynchronously and grant access while listeners catch up."
+        },
+        {
+          "optionId": "n04b06_i012_alt2",
+          "text": "Run listeners in parallel and ignore failed results."
+        },
+        {
+          "optionId": "n04b06_i012_alt3",
+          "text": "Let each door caller choose which listeners to invoke."
+        },
+        {
+          "optionId": "n04b06_i012_alt4",
+          "text": "Use a single marker on the badge as proof every listener has processed revocation."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i012_extension_contract"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The access grant depends on ordered listener completion; asynchronous or partial callback execution breaks the stated precondition.",
+      "details": {
+        "mechanismOrProperty": "Revocation must be visible before the next grant.",
+        "scenarioApplication": "The configured listener order is part of the contract.",
+        "errorCorrection": "Any required listener failure blocks access. Fire-and-forget or ignored failures cannot prove the pre-grant condition.",
+        "boundaryOrTradeoff": "Define callback ordering and failure semantics when later actions depend on completion.",
+        "transfer": "For another precondition listener, specify invocation order and which failures block the protected action."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i012_alt1",
+          "text": "That creates a window where a revoked badge could still be granted access."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i012_alt2",
+          "text": "The scenario requires configured ordering and treats any required listener failure as blocking."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i012_alt3",
+          "text": "Caller-selected subsets can omit a registered policy that must run before grant."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i012_alt4",
+          "text": "Type membership does not establish that runtime listeners completed this revocation."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i031",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Label formats vary by carrier. Each print job captures the approved shipment revision and selected label-scheme version at creation; later registration changes must affect new jobs only. How should the label generator be selected?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i013_extension_contract",
+          "text": "Pin the versioned generator when creating each job."
+        },
+        {
+          "optionId": "n04b06_i013_alt1",
+          "text": "Look up the latest generator each time a job is retried."
+        },
+        {
+          "optionId": "n04b06_i013_alt2",
+          "text": "Store only a carrier marker and let each printer infer a format."
+        },
+        {
+          "optionId": "n04b06_i013_alt3",
+          "text": "Mutate the registered generator in place when a new carrier format arrives."
+        },
+        {
+          "optionId": "n04b06_i013_alt4",
+          "text": "Use a global label generator for every carrier."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i013_extension_contract"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The job captures both approved input revision and scheme version, so later registration changes apply only to newly created jobs.",
+      "details": {
+        "mechanismOrProperty": "Carrier determines available format.",
+        "scenarioApplication": "The job captures selected scheme version at creation.",
+        "errorCorrection": "Retries reuse that job’s generator selection. A live latest lookup or mutation changes existing-job behavior.",
+        "boundaryOrTradeoff": "Bind extension versions at the lifecycle point where the contract requires reproducibility.",
+        "transfer": "For another reproducible job, capture the selected extension version with its input at job creation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i013_alt1",
+          "text": "A retry could produce a different label for the same captured job."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i013_alt2",
+          "text": "The marker cannot preserve the selected scheme version for an existing job."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i013_alt3",
+          "text": "Existing jobs could observe a new implementation despite their captured version."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i013_alt4",
+          "text": "That cannot represent the stated carrier-specific formats."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i032",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Rehearsal capacity and cancellation rules differ by tenant. A move request uses the tenant’s configured policy; the scheduler alone commits the room change, and a failed policy lookup must leave the booking unchanged. What should happen at the tenant policy seam?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i014_extension_contract",
+          "text": "Resolve tenant policy before commit; leave state unchanged on failure."
+        },
+        {
+          "optionId": "n04b06_i014_alt1",
+          "text": "Fall back to a global policy when the tenant registration is missing."
+        },
+        {
+          "optionId": "n04b06_i014_alt2",
+          "text": "Let the policy plug-in write the room assignment directly."
+        },
+        {
+          "optionId": "n04b06_i014_alt3",
+          "text": "Cache one policy instance globally under the room ID."
+        },
+        {
+          "optionId": "n04b06_i014_alt4",
+          "text": "Move the booking first and ask the policy to approve afterward."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i014_extension_contract"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Tenant policy must be resolved before the scheduler commits, with no hidden global fallback when its configuration is absent.",
+      "details": {
+        "mechanismOrProperty": "Rules differ by tenant.",
+        "scenarioApplication": "The scheduler commits the room change only after policy approval.",
+        "errorCorrection": "A lookup failure leaves the booking unchanged. A global fallback or room-only cache loses tenant scope.",
+        "boundaryOrTradeoff": "Make extension resolution failure explicit before state mutation.",
+        "transfer": "For another tenant policy, resolve the tenant-scoped rule before changing booking state."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i014_alt1",
+          "text": "The fallback can silently apply rules that the tenant did not configure."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i014_alt2",
+          "text": "The scheduler is the stated owner of the booking transition."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i014_alt3",
+          "text": "The policy key is tenant-scoped, and a room ID alone can collide across tenants."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i014_alt4",
+          "text": "A failed policy lookup would leave a change that the prompt requires not to commit."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i033",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "While an exhibit is in maintenance mode, unsafe commands are rejected. New command handlers can be registered by module; the controller must enforce maintenance mode for every handler, including newly registered ones. Where should the maintenance check live?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i015_extension_contract",
+          "text": "Keep the maintenance guard in the controller around all registered handlers."
+        },
+        {
+          "optionId": "n04b06_i015_alt1",
+          "text": "Require every plug-in author to remember to reject unsafe commands."
+        },
+        {
+          "optionId": "n04b06_i015_alt2",
+          "text": "Register handlers only after maintenance mode ends."
+        },
+        {
+          "optionId": "n04b06_i015_alt3",
+          "text": "Let each handler decide whether the exhibit is in maintenance mode from its private state."
+        },
+        {
+          "optionId": "n04b06_i015_alt4",
+          "text": "Replace command handlers with one large switch that must be edited for each new command."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i015_extension_contract"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The stable controller owns a cross-cutting precondition; it must apply that guard uniformly to registered handlers.",
+      "details": {
+        "mechanismOrProperty": "Handlers vary by module.",
+        "scenarioApplication": "Maintenance mode constrains every unsafe command.",
+        "errorCorrection": "The controller sees mode and invokes each handler. Duplicated per-plugin guards can be omitted; separate private state can go stale.",
+        "boundaryOrTradeoff": "Wrap extension execution with invariants common to every implementation.",
+        "transfer": "For another registered command, enforce shared guards at the stable invocation boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i015_alt1",
+          "text": "A future handler could omit the duplicated guard and admit a forbidden command."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i015_alt2",
+          "text": "Registration timing does not protect an already registered handler from later maintenance mode."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i015_alt3",
+          "text": "Separate state copies can disagree with the controller’s active mode."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i015_alt4",
+          "text": "That removes the explicit registration seam even though the shared guard can wrap extensions."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i034",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Retired lessons may be converted by source-version-specific migration modules. Learner progress uses stable lesson IDs; each converter receives old progress and returns mapped or explicitly unmapped records, while the library decides whether to commit. What is the migration plug-in contract?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i016_extension_contract",
+          "text": "Select converters by source version; return mapped and unmapped records."
+        },
+        {
+          "optionId": "n04b06_i016_alt1",
+          "text": "Let each converter delete old progress it cannot map."
+        },
+        {
+          "optionId": "n04b06_i016_alt2",
+          "text": "Run the newest converter against every historical progress record."
+        },
+        {
+          "optionId": "n04b06_i016_alt3",
+          "text": "Use a marker to claim the converter supports every retired lesson version."
+        },
+        {
+          "optionId": "n04b06_i016_alt4",
+          "text": "Have every library caller write its own version-specific migration switch."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i016_extension_contract"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Converters are selected by original version and return explicit partial results; the library retains commit authority.",
+      "details": {
+        "mechanismOrProperty": "Progress identity remains the stable lesson ID.",
+        "scenarioApplication": "Different old versions have different converters.",
+        "errorCorrection": "Unmapped records are returned rather than deleted. The converter proposes a mapping; the library decides commit.",
+        "boundaryOrTradeoff": "Version extension contracts should preserve both provenance and partial outcomes.",
+        "transfer": "For another old-record conversion, select by source format and preserve records the converter cannot map."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i016_alt1",
+          "text": "The library must decide whether to commit, and unmapped progress must remain visible."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i016_alt2",
+          "text": "A converter for another source version may not understand the record’s original shape."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i016_alt3",
+          "text": "The marker does not identify which source version the converter handles or map individual progress."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i016_alt4",
+          "text": "Callers would duplicate source-version selection and risk inconsistent progress handling."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i035",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Whiteboard exports use registered renderers. When an export starts, it captures the current renderer registration and a stable session snapshot; removing a renderer must not change an export already in progress. What lifecycle should an export invocation use?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i017_extension_contract",
+          "text": "Capture renderer and snapshot per export invocation."
+        },
+        {
+          "optionId": "n04b06_i017_alt1",
+          "text": "Read the registry before rendering every page."
+        },
+        {
+          "optionId": "n04b06_i017_alt2",
+          "text": "Keep removed renderers globally active forever to protect every export."
+        },
+        {
+          "optionId": "n04b06_i017_alt3",
+          "text": "Pass the mutable whiteboard session to the renderer and let it read latest state."
+        },
+        {
+          "optionId": "n04b06_i017_alt4",
+          "text": "Run the current and replacement renderers together during removal."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i017_extension_contract"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "An export invocation should hold the registration and input snapshot it captured; registry replacement governs only later calls.",
+      "details": {
+        "mechanismOrProperty": "The export begins with a current renderer and stable session snapshot.",
+        "scenarioApplication": "Removal applies to future lookup.",
+        "errorCorrection": "An in-flight invocation must not switch renderer or input midway. Repeated lookup and double dispatch violate that invocation boundary.",
+        "boundaryOrTradeoff": "Define extension lifetime relative to each operation that captures it.",
+        "transfer": "For another long-running export, capture the extension and input once per invocation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i017_alt1",
+          "text": "A removal midway could switch implementation during one export."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i017_alt2",
+          "text": "That prevents lifecycle cleanup even after all captured exports finish."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i017_alt3",
+          "text": "The output would no longer use the stable session snapshot captured for the export."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i017_alt4",
+          "text": "Two outputs can duplicate side effects and do not preserve the single captured renderer contract."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  },
+  {
+    "questionId": "ood-n04-b06-i036",
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B06",
+    "prompt": "Escalation targets are registered by support region. A target may accept the case or return retryable-unavailable; until accepted, the current owner and response deadline remain unchanged. What should the escalation callback return and when should ownership change?",
+    "constraints": [
+      "Treat the variation, registration scope, callback outcomes, and state authority stated in this case as the complete contract.",
+      "Do not assume a plug-in has authority or fallback behavior beyond the stated registration and result."
+    ],
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b06_i018_extension_contract",
+          "text": "Transfer only after acceptance; retryable-unavailable keeps current ownership."
+        },
+        {
+          "optionId": "n04b06_i018_alt1",
+          "text": "Treat registration as acceptance and transfer ownership before calling the target."
+        },
+        {
+          "optionId": "n04b06_i018_alt2",
+          "text": "Fire an asynchronous notification and transfer immediately."
+        },
+        {
+          "optionId": "n04b06_i018_alt3",
+          "text": "Let each target update the support case’s ownership fields directly."
+        },
+        {
+          "optionId": "n04b06_i018_alt4",
+          "text": "Use a Boolean `CanEscalate` query and transfer after it returns true."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b06_i018_extension_contract"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The callback’s actual acceptance result gates transfer; mere registration or availability does not transfer case responsibility.",
+      "details": {
+        "mechanismOrProperty": "Targets vary by support region.",
+        "scenarioApplication": "A target can accept or be temporarily unavailable.",
+        "errorCorrection": "Owner and deadline remain unchanged until acceptance. A query, notification, or registration cannot stand in for accepted handoff.",
+        "boundaryOrTradeoff": "Tie lifecycle transfer to the result that confirms the next owner took responsibility.",
+        "transfer": "For another ownership transfer, wait for acceptance of the actual case rather than a prior capability query."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i018_alt1",
+          "text": "A target may be unavailable, leaving the case without the prior owner or an accepted successor."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i018_alt2",
+          "text": "The target has not accepted, so the current owner and deadline cannot safely change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i018_alt3",
+          "text": "That bypasses the desk’s stated ownership transition and makes a failed response ambiguous."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b06_i018_alt4",
+          "text": "A prior availability check does not mean the target accepted this case."
+        }
+      ]
+    },
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+    ]
+  }
+]

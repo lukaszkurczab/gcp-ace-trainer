@@ -1,0 +1,31 @@
+{
+  "commit": "1912fa7fa741bf642bdb71917b42a7638090cdc5",
+  "files": {
+    "content/catalog.json": "238292c52943ac37faeb80515b0f8cdd28cdc2fef2f52fc9ef8abb5b3e7a3623",
+    "package.json": "02b876f9f5e6c1a08eec4eb8fc2915f6d8ec831661ace9a63a65d8cba51ece4e",
+    "scripts/content/verify-migration.mjs": "43d7e66f2ed19fe254fc4484226bd48f514c4405d206ccc24b2cd8e25de509c2",
+    "tests/bizq01-ood-node-closure-16.test.mjs": "1ca5267c9a455837f8d3422611f0c43c8ee91de3c1c99e2c2fd6c8d7f9f05fef",
+    "tests/bizq01-ood-node-closure-17.test.mjs": "8765683a501be286693262a130388be0d5d0646048fa89acb3f056feee8bb395",
+    "tests/bizq01-ood-node-closure-19.test.mjs": "81e40bea9ef8f3a41e29fd988ab9d17b2eae3ac39619dddfacf09b2e797beef1",
+    "tests/bizq01-ood-source-11.test.mjs": "8f6bbb79d41fea230ac1de57f2752164b46899979f0ac7a5d0a1f3aa76b7ffa7",
+    "tests/bizq01-ood-source-12.test.mjs": "1a0b0e80a6ab67f5207acd737cd62818cbdd43d0bafc3e579aa6914d82d1c04e",
+    "tests/ood-cohort16-historical-fixture.mjs": "bcdea4bc32e35040ca72eb5a512553ad8eaa6025a5e84196bcd2b2fa840c6d4e",
+    "tests/bizq01-ood-node-closure-20.test.mjs": "b89efc69b42fb652b26f04b17795d52347bbbcbfcd412582cfc5971dd5e484fe",
+    "evidence/business-quality/bizq-01-ood-node-closure-20.json": "cb087c42a24d7a7f6ddbd922b05f379efab8f68e991587b30ee8bf51f0e1298d",
+    "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B01.json": "14689bf58bc6b5fc92e19b58f3ea6c030d0d876b9d7f7d0226639f1078b1a3ab",
+    "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B02.json": "07dc546ab1fe0b27faf59b90415dce6d19c5f84fb3d9e0b5d9b9367089540027",
+    "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B03.json": "df3d74abef8658fe3a038af2975644dea70240e549da3c84d0b6358dc27cd770",
+    "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B04.json": "111104dbb3d8b2c1d09c49d824a23719808a194bd4d53842cc573724df003f55",
+    "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B05.json": "87d3159243ad32fcf4739799478a69b2f8d9eb22994a9a2b701ecaa2752e5950",
+    "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B06.json": "ae0a8306d017225a899a8aa7b4038eca836550c51c702a9c9e3c49fd1c30eef0",
+    "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B07.json": "17e336e71bc3690f9c2bf6d0783099261662fb5551f8e2d942df22948bee217f",
+    "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B08.json": "431555e485c0362703faa4bcd660ad8627774bd6d02619d12520d35d53caf183",
+    "content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B09.json": "f51418182cf1beee23a947de3f67771bddfd023a5e6599350c6be63e9b15a87c",
+    "tests/bizq01-migration-proof.test.mjs": "6fc3df257f319d6f3da13f9e355882a1d3c3f5fa6ab907cf1043213c74a54910",
+    "tests/content-builder.test.mjs": "72eff14575bb6635e923caf331bca2909d9bb770ae45854cd840255c9a517f19",
+    "tests/odk097-design-session-matrix.test.mjs": "350dc3231367de656fedb835b83e788601c30501c5040570f7bac5e576ed4bc1"
+  },
+  "scope": "Actual canonical content commit1912fa7, verification-only checkpoint4721c39; candidate sourceRepositoryCommit follows existing content-path history contract; full consumer/admission acceptance and push remain separate",
+  "sourceImplementationCommit": "1912fa7fa741bf642bdb71917b42a7638090cdc5",
+  "verificationCheckpointCommit": "4721c395a6a55a02496b8971b7d47cae93a3d1a5"
+}

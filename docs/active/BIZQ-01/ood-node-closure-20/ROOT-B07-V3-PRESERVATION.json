@@ -1,0 +1,13 @@
+{
+  "scope": "FrozenB07v3 changed3; previous15technicalclaims reusable, notsemantic/nativeacceptance",
+  "proposal": "review-inputs/v3/OOD-N04-B07.json",
+  "proposalSha256": "dcb09dd65116aede41d068a293ffa25408547df9dd39bb2721112efea61e20df",
+  "notes": "review-inputs/v3/OOD-N04-B07-notes.json",
+  "notesSha256": "1af93b1fd561cef24c98f89741aad9592f709af955280d533e8e23f45f40ac7f",
+  "changedQuestionIds": [
+    "ood-n04-b07-i022",
+    "ood-n04-b07-i026",
+    "ood-n04-b07-i029"
+  ],
+  "unchangedWholeObjects": 15
+}

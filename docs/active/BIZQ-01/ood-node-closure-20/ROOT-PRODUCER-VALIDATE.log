@@ -1,0 +1,5 @@
+
+> patternly-content@1.0.0 content:validate
+> node scripts/build.mjs validate --track object-oriented-design-interview
+
+Validated 1413 question(s) for object-oriented-design-interview

@@ -1,0 +1,11 @@
+{
+  "scope": "One bounded Boolean/receipt diagnostic correction; no semantic approval/source activation",
+  "proposalSha256": "568fc311163050145b8b7fa16e5956160c83852da5c7228070f7ce1d711b5c33",
+  "notesSha256": "a3ecd69fdfd8547bd106ca3a5f7c15ad88218cbcbd4c6242ee841dfa69f4722c",
+  "changedQuestionIds": [
+    "ood-n04-b08-i036"
+  ],
+  "unchangedWholeObjects": 17,
+  "unchangedNotes": 17,
+  "freshChangedOptionId": "n04b08_i036_alt3_terminal_boolean_lookup"
+}

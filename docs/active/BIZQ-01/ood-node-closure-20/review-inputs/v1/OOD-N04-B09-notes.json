@@ -1,0 +1,267 @@
+{
+  "items": [
+    {
+      "beforeQuestionId": "ood-n04-b09-i001",
+      "questionId": "ood-n04-b09-i019",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "The subscription catalog contains `RegionalBundle` and `TrialBundle`, which do not share a base class. Both expose the same pricing query; pricing rules are supplied per bundle and no shared mutable state or implementation exists. Which contract should the catalog consume?",
+      "nearestAlternative": "An abstract base can share a method implementation, but none is common in the stated case.",
+      "changedCondition": "If the bundles later share pricing state and a stable calculation workflow, a base class could earn its cost.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i002",
+      "questionId": "ood-n04-b09-i020",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Fleet charger models inherit from one `ChargerUnit` base that owns the reservation record and expiry. All models must use the same capacity check and release sequence; only the hardware response varies at one protected step. How should the family share the reservation workflow?",
+      "nearestAlternative": "A capability interface could describe reservation, but it would not centralize the shared state and sequence already owned by the family.",
+      "changedCondition": "If charger models were unrelated or used different reservation state, the base would no longer fit.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/inheritance",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i003",
+      "questionId": "ood-n04-b09-i021",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Photo and video archive assets inherit from different storage SDK base classes. Both need to expose a stable asset ID and merge descriptive metadata; the curation tool must accept either without changing their existing bases. Which extension preserves both hierarchies?",
+      "nearestAlternative": "A shared abstract base might centralize merge code, but it conflicts with the existing base-class constraint.",
+      "changedCondition": "If both assets later moved under one controlled hierarchy with shared state, a base class could be reconsidered.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/inheritance"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i004",
+      "questionId": "ood-n04-b09-i022",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "The rights system already has two approval classes that share immutable territory, expiry, and audit-reference fields plus the same validation sequence. Each subclass supplies only its license-specific restriction; unrelated services consume them through `IUsageApproval`. Where should the shared data and algorithm live?",
+      "nearestAlternative": "One generic concrete approval could reduce classes, but would not express the two license-specific restriction behaviors in the stated model.",
+      "changedCondition": "If the shared fields were not actually common or the types could not share a base, composition could hold the reusable policy.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/inheritance",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i005",
+      "questionId": "ood-n04-b09-i023",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Drone batteries inherit from different vendor SDK types. A planner must test the same `CanAssign(aircraft, window)` capability for both; the result depends on the battery’s vendor data and requested aircraft, not shared mutable state. What should the planner depend on?",
+      "nearestAlternative": "A shared base may appear simpler, but it would require changing vendor hierarchies the prompt says differ.",
+      "changedCondition": "If all batteries shared a controlled base with common state, the capability could be implemented there.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i006",
+      "questionId": "ood-n04-b09-i024",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Referral plug-ins target both older and current clients. The new library must add a `ValidateConsent` call, but older client runtimes do not support default interface implementations; existing plug-ins must continue loading unchanged, and no safe fallback can authorize disclosure. How should the new capability be introduced?",
+      "nearestAlternative": "A default member could ease interface evolution on supporting runtimes, but this scenario excludes those runtimes and has no safe default.",
+      "changedCondition": "If every target runtime supported a safe deny-by-default implementation, an interface default could be evaluated.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/interface-implementation/default-interface-methods-versions",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i007",
+      "questionId": "ood-n04-b09-i025",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Exercise implementations are unrelated classes, but every completion must record the exercise revision and scoring-policy ID used. The completion service needs this data from each implementation; it does not need common playback state. What should the API expose?",
+      "nearestAlternative": "A base type could centralize playback state, but the service does not need that state and the implementations are unrelated.",
+      "changedCondition": "If the exercise family shared a controlled playback lifecycle and state, a base could be justified for that separate behavior.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i008",
+      "questionId": "ood-n04-b09-i026",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Exception approvers share a policy-version field and a common sequence: check actor scope, evaluate controls, then produce an attributed result. Specialized approvers supply only one control predicate; no other class hierarchy is required. Which implementation structure best fits this family?",
+      "nearestAlternative": "A default interface body can supply shared behavior, but here the base also owns shared state and the family is controlled.",
+      "changedCondition": "If approvers had unrelated hierarchies and no shared state, a composed policy interface would fit better.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/inheritance",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i009",
+      "questionId": "ood-n04-b09-i027",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Podcast audio and video sources inherit different SDK types. The timeline editor only needs `GetStableSegmentIds()` for annotation remapping; it must not know provider metadata or the source’s storage format. Which type should the editor consume?",
+      "nearestAlternative": "Separate editor branches can work, but they couple the timeline to every source type and duplicate its one needed query.",
+      "changedCondition": "If the editor needed shared mutable media state, an adapter object could hold that state separately.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i010",
+      "questionId": "ood-n04-b09-i028",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Temporary-role records share expiry, approval reference, and a revoke transition. The role family is controlled by one library; callers also need to use each role through `ITemporaryRole` for lookup. How should the family separate implementation reuse from consumption?",
+      "nearestAlternative": "A default interface member can add behavior, but it cannot provide the shared instance fields this lifecycle uses.",
+      "changedCondition": "If the role types came from unrelated external hierarchies, composed lifecycle state could replace the common base.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/inheritance",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i011",
+      "questionId": "ood-n04-b09-i029",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Notarization providers already implement released `IRevisionSeal`. Adding a new abstract member would break those implementations; a default seal method cannot safely choose canonical bytes, and only some providers support the new hardware-backed signature. How should the library expose hardware-backed sealing?",
+      "nearestAlternative": "A default method is useful when one fallback is correct for all implementers, which this scenario explicitly rules out.",
+      "changedCondition": "If every existing provider had a correct, deterministic implementation from current members, a default could be considered.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/interface-implementation/default-interface-methods-versions"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i012",
+      "questionId": "ood-n04-b09-i030",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Marketplace payout providers share no class base; each provider SDK has its own request type. The billing layer needs one `ReleasePayout(orderId, idempotencyKey)` operation and a common receipt; no shared mutable fields are needed. Which abstraction should the billing layer depend on?",
+      "nearestAlternative": "A single concrete provider would be simplest for one integration, but does not accommodate the multiple provider adapters in the prompt.",
+      "changedCondition": "If providers shared a controlled implementation and state, a base could centralize those mechanics.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i013",
+      "questionId": "ood-n04-b09-i031",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Transit notice types already share an abstract `TransitEvent` base with immutable `EffectiveAt` and common event identity. Both platform and route changes use the same ordering behavior; the publisher needs no additional capability across unrelated types. Where should the ordering implementation live?",
+      "nearestAlternative": "An interface remains useful for unrelated event types, but no unrelated type is included in the stated publisher contract.",
+      "changedCondition": "If another event type outside this base later needs the capability, a shared interface could expose the ordering contract.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/inheritance",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i014",
+      "questionId": "ood-n04-b09-i032",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Meter models derive from a controlled `GridMeter` base that owns committed discharge windows. Capacity validation, overlap checks, and commit order are identical; only the reading source differs by model. How should this family vary its implementation?",
+      "nearestAlternative": "A callback for the reading source could also isolate that variation, but the controlled hierarchy already offers one narrow override point.",
+      "changedCondition": "If meter models did not share a base or the commit steps varied, composition or an interface would fit better.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/inheritance",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i015",
+      "questionId": "ood-n04-b09-i033",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "The existing ReadCaption member safely derives timed results, all clients support default interface implementations at compile/runtime, and providers may override with richer timing.",
+      "nearestAlternative": "A separate capability interface works when support is optional or has no safe fallback, but every provider here has the needed source member.",
+      "changedCondition": "If any supported runtime lacked default-interface support or ReadCaption could not derive a correct timing result, this default would not satisfy compatibility.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/interface-implementation/default-interface-methods-versions",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i016",
+      "questionId": "ood-n04-b09-i034",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Volunteer types come from separate HR systems but all can expose a stable volunteer ID and answer whether they meet a requested skill set. The assignment service must accept them without owning their stored records. What should the service consume?",
+      "nearestAlternative": "A common base could make sense if one system owned both records, but that is not the case described.",
+      "changedCondition": "If the eligibility decision depended on external profile data, an adapter could implement the same interface using that source.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i017",
+      "questionId": "ood-n04-b09-i035",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "Map geometries derive from one controlled `RouteGeometry` base that owns accepted coordinates and conflict records. The stable merge sequence preserves accepted points, invokes one algorithm-specific comparison hook, then returns unresolved conflicts; subclasses must not replace the guard sequence. Which design keeps the invariant while allowing merge variants?",
+      "nearestAlternative": "An injected strategy could represent comparison, but the prompt already places that variation as one protected family hook.",
+      "changedCondition": "If merge algorithms needed to replace the whole sequence, the base template would be too restrictive.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/inheritance",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b09-i018",
+      "questionId": "ood-n04-b09-i036",
+      "mentalUnitId": "OOD-N04-B09",
+      "learningObjective": "Choose an abstract base, interface capability, or default member from the actual shared state/behavior, hierarchy constraints, and safe fallback available to current clients.",
+      "decisiveFact": "RegionalBundle and TrialBundle share private base-owned price state and a common totaling sequence; the released IBundlePrice exposes only GetPrice, while only regional adjustment varies.",
+      "nearestAlternative": "An interface is right for the related but unrelated product types in i019, but it cannot provide this family’s shared state and algorithm.",
+      "changedCondition": "If the bundles did not share a controlled hierarchy or common calculation state, composition or a caller-facing interface would fit better.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The frozen item asks for an ordinary domain invariant to be assigned to an owner. This candidate changes the primary decision to choosing a type-contract implementation/evolution mechanism from explicit class hierarchy, shared state, compatibility, and default-behavior facts.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/inheritance",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces"
+      ]
+    }
+  ]
+}

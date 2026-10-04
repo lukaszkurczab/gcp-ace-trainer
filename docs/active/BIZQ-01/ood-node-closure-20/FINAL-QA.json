@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "review": "independent-final-qa",
+  "verdict": "PASS",
+  "scope": "Bounded OOD N04 source, app consumer, local verified-artifact admission, and provenance package20. Not full BIZQ-01, native, or external release acceptance.",
+  "identity": {
+    "sourceCommit": "1912fa7fa741bf642bdb71917b42a7638090cdc5",
+    "verificationCheckpoint": "4721c395a6a55a02496b8971b7d47cae93a3d1a5",
+    "readinessCheckpoint": "141efee6dee5e59b5e746fe410a15334693db0f5",
+    "appConsumerCommit": "7705e4583af9af646b671edaac08da282a05e595",
+    "contentAdmissionCommit": "b1d7cc419b475dccd37fba82c948bcd760ab577f",
+    "candidateId": "3001b254f9a1c4f9d15a01577f5457b8cb4ad79723f9958ecbdb7c8c5658417b",
+    "artifact": {
+      "sha256": "fa015cbcdb5b4a0865c39ce7958a4832a08e8b10811dd7f396dc12cc79c6de82",
+      "contentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "questionCount": 1413,
+      "questionSetSha256": "5b552f935cc3fa8bb142ccd38dc747a19a57823a8c7c8fd243fc786d43f0fe72"
+    },
+    "bundledContentLockSha256": "81696237c0f1f87d17bd7d0f56b24a8b70cf89670d306831f55fa0666f74efd4",
+    "applicationReleaseLockSha256": "28046b47ae03d6f089ac95b2c5a8feb96ffbbc040a4dcc663fc1e460e336e2c0",
+    "admission": {
+      "runtime": "granted",
+      "publishing": "granted",
+      "boundary": "local_verified_artifacts_no_deployment",
+      "externalPublicationOrDeployment": false
+    }
+  },
+  "checks": [
+    {
+      "name": "Independent producer correction tests",
+      "result": "PASS",
+      "testsPassed": 44,
+      "testsFailed": 0
+    },
+    {
+      "name": "Producer source canonical suite",
+      "result": "PASS",
+      "testsPassed": 158,
+      "testsFailed": 0,
+      "evidence": "ROOT-PRODUCER-CANONICAL.log"
+    },
+    {
+      "name": "Isolated proof/source path checks",
+      "result": "PASS",
+      "tool": "check-path-probes.mjs",
+      "toolSha256": "5682029c71228a5f1a0226d40a4f050997b8b31afb872ce5ff6e34870273581a",
+      "receipt": "PRODUCER-CORRECTION-QA.json"
+    },
+    {
+      "name": "Independent app package20 plus historical consumer tests",
+      "result": "PASS",
+      "testsPassed": 24,
+      "testsFailed": 0
+    },
+    {
+      "name": "Root consumer/preservation tests",
+      "result": "PASS",
+      "testsPassed": 65,
+      "testsFailed": 0,
+      "evidence": "ROOT-CONSUMER-GREEN.log"
+    },
+    {
+      "name": "App check:content-release",
+      "result": "PASS",
+      "sourceHead": "141efee6dee5e59b5e746fe410a15334693db0f5",
+      "inventory": "9/117/943/16077"
+    },
+    {
+      "name": "Full app static gate",
+      "result": "PASS",
+      "testsTotal": 1857,
+      "testsPassed": 1853,
+      "testsFailed": 0,
+      "existingDedicatedSkips": 4,
+      "additionalGates": ["recovery", "typecheck", "content-boundary", "runtime-privacy-boundary"],
+      "evidence": "ROOT-APP-STATIC.log"
+    },
+    {
+      "name": "Nine-artifact producer build and preservation",
+      "result": "PASS",
+      "unrelatedArtifactsByteExact": 8,
+      "evidence": "ROOT-BUILD-PRESERVATION.json"
+    },
+    {
+      "name": "Candidate, readiness, admission and release gate",
+      "result": "PASS",
+      "evidence": ["ROOT-CANDIDATE-DECISION.log", "ROOT-CANDIDATE-READINESS.log", "ROOT-ADMISSION.log", "ROOT-RELEASE-GATE.log"]
+    },
+    {
+      "name": "Post-admission tests",
+      "result": "PASS",
+      "testsPassed": 7,
+      "testsFailed": 0,
+      "evidence": "ROOT-POST-ADMISSION-TESTS.log"
+    },
+    {
+      "name": "Web provenance exporter and preservation",
+      "result": "PASS",
+      "testsPassed": 3,
+      "testsFailed": 0,
+      "demoExamplesPreserved": 2,
+      "evidence": ["ROOT-EXPORTER-TESTS.log", "ROOT-EXPORTER-CHECK.log", "ROOT-WEB-PRESERVATION.json"]
+    }
+  ],
+  "limitations": [
+    "No device/VoiceOver verification is claimed.",
+    "No Premium UI/entitlement acceptance or N04 pool eligibility is claimed.",
+    "Full BIZQ-01 remains partial/open.",
+    "Local admission does not constitute external publication or deployment."
+  ]
+}

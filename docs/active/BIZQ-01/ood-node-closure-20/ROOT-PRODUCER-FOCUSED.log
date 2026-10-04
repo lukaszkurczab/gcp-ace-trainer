@@ -1,0 +1,20 @@
+✔ accepts the fixed 162-item package and reconstructs the immutable v17→16→13→12→11 predecessor chain (2228.289541ms)
+✔ validates, scores, and binds targeted feedback for every replacement option (16.050667ms)
+✔ requires every fixed OOD generation proof in the v19 predecessor chain (5033.534667ms)
+✔ rejects changed identities, hashes, object bindings, membership, and unsupported fields (8976.901083ms)
+✔ rejects changed canonical source membership and unsupported catalog versions (1560.736333ms)
+✔ rejects a symlinked fixed proof path (541.285458ms)
+✔ rejects a symlinked current source path (277.101208ms)
+✔ accepts the fixed N04 package and reconstructs 19a→19→17→16→13→12→11 (2335.395583ms)
+✔ requires every fixed proof in the source20 predecessor chain (6884.907708ms)
+✔ rejects tampered fixed proof objects, membership, identity and source hashes (3712.786833ms)
+✔ rejects missing or extra source membership and source-content changes (2096.295667ms)
+✔ rejects symlinked fixed proof and source paths (812.9145ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18743.273083

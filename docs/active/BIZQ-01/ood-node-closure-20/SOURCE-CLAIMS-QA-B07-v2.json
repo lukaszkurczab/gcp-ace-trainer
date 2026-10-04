@@ -1,0 +1,68 @@
+{
+  "scope": "Independent technical-source audit of the C# claims in frozen B07v2. This is not whole-object semantic acceptance, cross-unit review, producer validation, or runtime acceptance.",
+  "candidatePath": "review-inputs/v2/OOD-N04-B07.json",
+  "candidateSha256": "70468bd7dca1db48e98742f19a927dab26d0abba3cfcea2eedc6426c88a3d973",
+  "notesSha256": "4d5f17d21ca6eef2764db4c02b3c9458043d6214923cd00f30f7bbd6c9c47fc6",
+  "reviewerModel": "gpt-6-luna",
+  "reasoningEffort": "high",
+  "summary": {
+    "pass": 16,
+    "revise": 2,
+    "unresolved": 0,
+    "verdict": "REVISE"
+  },
+  "references": [
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces",
+      "supports": "Built-in variance for IEnumerable<T>, IReadOnlyList<T>, IComparer<T>, IComparable<T>; reference-type-only variance conversions; classes such as List<T> remain invariant."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces",
+      "supports": "The in/out declaration rules and variance-safe input/output positions for custom generic interfaces."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-delegates",
+      "supports": "Delegate variance, including contravariant callback inputs."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters",
+      "supports": "Interface, struct, notnull, and public-parameterless-constructor generic constraints and the operations they permit."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "supports": "Language-specification variance safety and the restriction of variant type parameters to interfaces and delegates."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/out-generic-modifier",
+      "supports": "Covariant generic type parameter semantics."
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/in-generic-modifier",
+      "supports": "Contravariant generic type parameter semantics."
+    }
+  ],
+  "items": [
+    {"questionId":"ood-n04-b07-i019","verdict":"PASS","finding":"The getter-only interface uses TRevision only as output; reference-type widening to the base revision interface is supported. The class-variance and cast distractors are accurately rejected.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces","https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i020","verdict":"PASS","finding":"Read and Replace use T in output and input positions, respectively, so neither variance direction is safe for this single mutable interface. The feedback matches the actual option meanings.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i021","verdict":"PASS","finding":"IComparer<T> is contravariant; a comparer that accepts TransitEvent can safely consume PlatformChange values. The diagnostics correctly distinguish the int result from T's input positions.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i022","verdict":"REVISE","finding":"The displayed signature says `TInput Convert(TInput value)`, but the stem then says TOutput is the return type and the keyed in/out answer and Details rely on that. As written, TOutput has no position in the shown method and the return is TInput, so the stem contradicts its own signature.","smallestCorrection":"Change the displayed signature to `TOutput Convert(TInput value)` and retain the described inheritance relations; then independently verify the option text still expresses input contravariance and output covariance.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i023","verdict":"PASS","finding":"The covariant conversion is through IEnumerable<T>; List<T> itself remains invariant, and the read-only call-site premise supports the view. Copying is technically possible but is not the variance relationship asked for.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i024","verdict":"PASS","finding":"An interface constraint makes StartTime available to the generic body, while the prompt explicitly permits multiple implementations. The feedback accurately rejects runtime casting/reflection as weaker than the stated checked contract.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"]},
+    {"questionId":"ood-n04-b07-i025","verdict":"PASS","finding":"The struct constraint makes T a non-nullable value type and supports nullable T as an optional value. The distractors do not state equivalent constraints.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"]},
+    {"questionId":"ood-n04-b07-i026","verdict":"PASS","finding":"The notnull constraint expresses the stated generic type-argument nullability contract without narrowing callers to Character or requiring construction. It is a compile-time nullable-analysis constraint: violations produce warnings rather than runtime enforcement. The candidate does not claim runtime enforcement.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"]},
+    {"questionId":"ood-n04-b07-i027","verdict":"PASS","finding":"The public parameterless constructor constraint is the language contract required by new T(); the alternative class and notnull constraints do not imply that constructor.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"]},
+    {"questionId":"ood-n04-b07-i028","verdict":"PASS","finding":"The interface bound justifies the stated generic member accesses and is accurately distinguished from constructor, enum, and runtime-cast approaches.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"]},
+    {"questionId":"ood-n04-b07-i029","verdict":"REVISE","finding":"The prompt guarantees IComparable<T>, but does not require compile-time-only comparison or state that accepted types may lack non-generic IComparable. The keyed bound is the minimal typed contract, but `dynamic` can also invoke CompareTo at runtime, and the non-generic bound can work for types implementing both; the stem does not establish those alternatives as invalid for the stated accepted set.","smallestCorrection":"State that the generic ranking API must call CompareTo through a compile-time checked contract and that supported entries are not required to implement non-generic IComparable (or replace the alternatives with ones that contradict an explicit premise). Keep the prevalidated non-empty premise.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters","https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i030","verdict":"PASS","finding":"An output-only interface may declare covariance without a class constraint; conversions between constructed variant interfaces are available for reference-type arguments, not value-type arguments.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i031","verdict":"PASS","finding":"IReadOnlyList<T> is covariant and List<T> is invariant. The live-view and no-snapshot premises make the keyed interface view distinguishable from the copy alternative.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i032","verdict":"PASS","finding":"Action<T> consumes its argument contravariantly, so a handler for the base event can handle the derived event. The option and feedback accurately identify input direction.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-delegates"]},
+    {"questionId":"ood-n04-b07-i033","verdict":"PASS","finding":"The property exposes T in both output and input positions; a mutable generic class cannot declare variance. The option diagnoses align with the actual positions.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces","https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i034","verdict":"PASS","finding":"An interface constraint permits the generic body to call Format across unrelated implementing classes; the concrete Invoice bound would exclude the stated CreditNote caller.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters"]},
+    {"questionId":"ood-n04-b07-i035","verdict":"PASS","finding":"Each type parameter is output-only and the prompt states reference-type hierarchies, so both may be covariant. The diagnostic correctly avoids inferring direction from the word error.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces","https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/variance-in-generic-interfaces"]},
+    {"questionId":"ood-n04-b07-i036","verdict":"PASS","finding":"The input TBase and output TSpecific positions support `in` and `out` independently, with the stated subtype relationship. The reversed and uniform-direction alternatives contradict those positions.","references":["https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces"]}
+  ],
+  "limitations": [
+    "No C# compiler was available in the workspace (`dotnet`, `csc`, and `mcs` were absent), so no compiler probe was run. The findings are based on official Microsoft language and programming-guide references and source inspection.",
+    "This review addresses C# language/API claims and local single-answer technical ambiguities only. It does not establish whole-package semantic acceptance or runtime behavior."
+  ]
+}

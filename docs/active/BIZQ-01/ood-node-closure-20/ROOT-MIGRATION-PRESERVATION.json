@@ -1,0 +1,20 @@
+{
+  "verdict": "PASS",
+  "scope": "Actual executed migration output and current code/proof binding against accepted19a output; not focused-negative/producer/admission/native acceptance",
+  "priorLogSha256": "dafb57d58df6633289ca1893549edaeffed0482f9d218d856e15faba87eafcf6",
+  "currentLogSha256": "3887d7b673e36b704cc618f7f8264bd597617473d5918281d6a36972675db311",
+  "preservedPriorSemanticMappings": 450,
+  "unchangedFields": [
+    "counts",
+    "interactions",
+    "historicalCounts",
+    "tracks",
+    "approvedAdditionCount",
+    "reasonAmendmentProof",
+    "wordingCorrectionProof",
+    "replacementProof"
+  ],
+  "newSemanticMappings": 144,
+  "separateSameIdCorrections": 18,
+  "preservedReasonCorrections": 25
+}

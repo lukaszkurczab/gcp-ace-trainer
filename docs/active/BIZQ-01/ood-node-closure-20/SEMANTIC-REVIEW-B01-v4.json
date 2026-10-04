@@ -1,0 +1,17 @@
+{
+  "reviewer": "gpt-6-luna-high",
+  "reviewType": "bounded changed-leaf semantic re-review",
+  "unit": "OOD-N04-B01",
+  "verdict": "PASS",
+  "proposal": "review-inputs/v4/OOD-N04-B01.json",
+  "proposalSha256": "670ce78a087186d771a49916eba32a8b6756fbe91dbc58efb3de5fefd8b19b2d",
+  "notesSha256": "d81eaf3a68cd14b6f5d220ecc80160c547166b64f3a986a7766e3ef47190083e",
+  "changedLeaf": "ood-n04-b01-i024.feedback.details.boundaryOrTradeoff",
+  "verdictForChangedLeaf": "PASS",
+  "basis": "The revised text is grounded in the screen's read-only role and fixed expiry; it no longer asserts an unstated complete effectiveness rule or adds policy.",
+  "reusedEvidence": [
+    "SEMANTIC-REVIEW-B01-v3.md/json for i020 and i033 (both PASS).",
+    "SEMANTIC-REVIEW-B01-v2.md/json for the 15 unchanged whole questions and unchanged i024 fields."
+  ],
+  "limitations": ["No fresh whole-unit, cross-unit, producer, runtime/native or full BIZQ-01 acceptance claim."]
+}

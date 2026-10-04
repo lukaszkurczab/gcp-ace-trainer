@@ -1,0 +1,412 @@
+
+> patternly-content@1.0.0 test:canonical
+> node --test tests/content-builder.test.mjs tests/packageCompletionTransport.test.mjs tests/contentReviewConsole.test.mjs tests/bizq01-source-slice.test.mjs tests/bizq01-source-copy.test.mjs tests/bizq01-migration-proof.test.mjs tests/bizq01-besd-seed-cohort-14.test.mjs tests/bizq01-ood-source-11.test.mjs tests/bizq01-ood-source-12.test.mjs tests/bizq01-ood-unit-cohort-13.test.mjs tests/bizq01-ood-node-closure-16.test.mjs tests/bizq01-ood-node-closure-17.test.mjs tests/bizq01-ood-node-closure-19.test.mjs tests/bizq01-ood-node-closure-20.test.mjs tests/shared-contract.test.mjs tests/simp03-phase-a.test.mjs tests/simp03-verifier.test.mjs tests/content-boundary.test.mjs tests/odk123-claude-focus-feedback.test.mjs tests/odk096-canonical-approval.test.mjs tests/odk097-design-session-matrix.test.mjs tests/model-evaluation-inventory.test.mjs tests/candidate-draft-v2.test.mjs tests/candidate-readiness-v2.test.mjs tests/candidate-admission-v3.test.mjs tests/candidate-release-gate-v2.test.mjs
+
+✔ accepts the fixed two-unit cohort and source01 predecessor chain (4670.086708ms)
+✔ requires both the new fixed proof and unchanged source01 proof (2094.400958ms)
+✔ rejects changed current source items, old/current proof objects, source bytes, and versions (7895.491167ms)
+✔ rejects missing, duplicate, extra and unrelated replacement/source membership (4591.4785ms)
+✔ rejects canonical source moved behind a symlink (116.189334ms)
+✔ accepts the real BIZQ-01 replacement proof while preserving current and historical counts (7049.4045ms)
+✔ keeps the original migration verifier behavior when no BIZQ proof is present (1051.4025ms)
+✔ rejects changes to a current replacement and its frozen old object (2335.152291ms)
+✖ requires and binds the fixed 19a reason-only amendment proof (2449.273041ms)
+✖ binds 19a to exact IDs, before/current Reasons, hashes, and closed membership (1033.914875ms)
+✖ rejects every non-Reason edit in an amended source object (897.74975ms)
+✖ binds the catalog version and rejects symlink substitution for the 19a proof and source (2017.70175ms)
+✔ rejects stale batch identity, duplicate mappings, and a missing replacement (4022.497208ms)
+✔ rejects changes to an unrelated item in the proven current track (957.802375ms)
+✔ accepts only the real same-ID Coding wording correction alongside the unchanged BESD proof (2961.529625ms)
+✖ rejects the same-ID correction without its proof and rejects tampered frozen old objects (957.4305ms)
+✖ rejects unapproved wording, answer, options, feedback and taxonomy changes in the corrected source (983.947542ms)
+✖ rejects stale Coding version, proof identity/hashes/source location and unexpected proof fields (1187.280334ms)
+✔ rejects a corrected source moved away from its canonical mental-unit filename (252.014916ms)
+✖ rejects unreviewed primary-source pages even under the same publisher domain (980.331583ms)
+✔ accepts the fixed 119-item package and reconstructs the immutable v13→12→11 predecessor chain (4271.863125ms)
+✔ validates, scores, and binds targeted feedback for every replacement option (18.205417ms)
+✔ requires every fixed OOD generation proof in the v16 predecessor chain (4837.768917ms)
+✔ rejects changed identities, hashes, object bindings, membership, and unsupported fields (12510.187ms)
+✔ rejects changed canonical source membership and unsupported catalog versions (3447.113791ms)
+✔ rejects a symlinked fixed proof path (983.103166ms)
+✔ rejects a symlinked current source path (711.739583ms)
+✔ accepts the fixed 152-item package and reconstructs the immutable v16→13→12→11 predecessor chain (4169.977708ms)
+✔ validates, scores, and binds targeted feedback for every replacement option (51.398042ms)
+✔ requires every fixed OOD generation proof in the v17 predecessor chain (6545.289417ms)
+✔ rejects changed identities, hashes, object bindings, membership, and unsupported fields (12566.153917ms)
+✔ rejects changed canonical source membership and unsupported catalog versions (3120.032291ms)
+✔ rejects a symlinked fixed proof path (991.544ms)
+✔ rejects a symlinked current source path (716.084625ms)
+✔ accepts the fixed 162-item package and reconstructs the immutable v17→16→13→12→11 predecessor chain (4375.266125ms)
+✔ validates, scores, and binds targeted feedback for every replacement option (24.050833ms)
+✔ requires every fixed OOD generation proof in the v19 predecessor chain (9456.343625ms)
+✔ rejects changed identities, hashes, object bindings, membership, and unsupported fields (16999.0315ms)
+✔ rejects changed canonical source membership and unsupported catalog versions (3961.326958ms)
+✔ rejects a symlinked fixed proof path (1212.729917ms)
+✔ rejects a symlinked current source path (824.518584ms)
+✔ accepts the fixed N04 package and reconstructs 19a→19→17→16→13→12→11 (4747.697584ms)
+✔ requires every fixed proof in the source20 predecessor chain (12401.363125ms)
+✔ rejects tampered fixed proof objects, membership, identity and source hashes (7574.922292ms)
+✔ rejects missing or extra source membership and source-content changes (4258.228ms)
+✔ rejects symlinked fixed proof and source paths (2000.059958ms)
+✔ accepts the exact OOD source11 replacement and retains historical inventory (4009.656292ms)
+✔ replacement uses the authored single-choice scoring and feedback contract (44.78275ms)
+✔ rejects the replacement when its fixed proof is absent (2164.6865ms)
+✔ rejects a tampered frozen question and a changed current replacement (2471.55875ms)
+✔ rejects stale catalog or track hashes, duplicate mappings, and an absent new item (5643.254209ms)
+✔ rejects changes to an unaffected OOD item and unapproved proof fields (3178.722792ms)
+✔ rejects an unapproved proof source path and a physically relocated source file (1790.80875ms)
+✔ validates the exact source12 fixture and preserves its source11 predecessor (3506.1475ms)
+✔ source12 question validates, scores all options, and supplies authored wrong-option feedback (5.164458ms)
+✔ source12 cannot fall back when either fixed generation proof is absent (2147.280791ms)
+✔ rejects tampered current content, predecessor proof, and source identity (3203.565583ms)
+✔ rejects unreviewed successor proof identity, hashes, paths, and fields (6136.11325ms)
+✔ rejects a changed unrelated OOD source item instead of reconstructing around it (1176.559875ms)
+✔ rejects a symlinked current source before following it (848.385417ms)
+✔ validates the fixed source13 cohort and reconstructs immutable source12 and source11 predecessors (3532.331459ms)
+✔ all fifteen new questions validate, score each option, and bind authored feedback to every distractor (2.499208ms)
+✔ requires the source13 proof and rejects modified cohort bindings and historical predecessor evidence (4525.311792ms)
+✔ source13 directly requires both historical proofs and rejects changed, missing, or duplicate cohort membership (9330.066667ms)
+✔ rejects unreviewed cohort fields, unrelated source changes, and symlinked source paths (2261.303125ms)
+✔ same-ID source correction changes only the three reviewed texts and preserves all other mental-unit items (30.222834ms)
+✔ canonical single-track builder carries the exact corrected object and new immutable content identity (474.527667ms)
+✔ BIZQ-01 cohort14 preserves source01 as the exact accepted predecessor (13.494916ms)
+✔ BIZQ-01 preserves both accepted source01 objects and their scored, built, and projected behavior (1325.247667ms)
+✔ BIZQ-01 changed items keep concrete learner constraints and one scoreable authored answer (3.247625ms)
+✔ BIZQ-01 canonical builder carries the exact cohort and new content identity (281.571667ms)
+✔ BIZQ-01 advisory console distinguishes corrected cohort from remaining warnings (1021.199292ms)
+✔ admission binds verified local publishing bytes, app lock, and runtime test (152.818041ms)
+✔ committed admission and runtime evidence remain hash-bound (3.42025ms)
+✔ candidate draft v2 binds all nine canonical artifacts and exact ODK-096 AWS identity deterministically (6894.489917ms)
+✔ canonical source snapshot rejects a valid untracked mental-unit JSON in an isolated Git fixture (167.686875ms)
+✔ Codex candidate decision v2 binds exact candidate, source snapshot, release and nine artifact hashes (3912.796916ms)
+✔ release gate verifies exact decision-bound evidence and requires separate admission (599.682083ms)
+✔ release gate accepts the exact v3 admission without mutating readiness v2 (415.17875ms)
+✔ bundled Free-node control validates pinned source items and bounds decompression (3517.834375ms)
+✔ Free-node acceptance evidence rejects authority changes and unsupported fields (20.785667ms)
+✔ workflow contract rebuilds v2 evidence and release gate without legacy publisher or deployment commands (3.94975ms)
+✔ active canonical ingress has no legacy publisher and historical references are verifier-only (16.230125ms)
+✔ each catalogued track validates, tests and builds independently (128.005334ms)
+✔ build-all emits exactly nine deterministic artifacts and lock entries (103.583541ms)
+✔ GCP simulation profile binds a complete unambiguous node map to the same-version published artifact (783.168333ms)
+✔ Coding Interview simulation profile emits the blueprint and exact checksum-verified pool identities (1145.904ms)
+✔ malformed Coding Interview simulation blueprint fails closed (282.026209ms)
+✔ Coding Interview simulation selection policies reject stale pools and invalid identities (1109.117375ms)
+✔ Design Interview simulation profiles emit one strict text-response case per track (1377.472125ms)
+✔ Design simulation availability requires the canonical text profile and does not imply question-bank capacity (14.817ms)
+✔ malformed Design Interview simulation sources fail closed (35.594542ms)
+✔ malformed present GCP simulation profile fails closed on incomplete node coverage (218.186458ms)
+✔ existing GCP artifact rejects malformed profile even when its lock SHA is recomputed (1380.284291ms)
+✔ existing GCP artifact rejects a legal but source-inconsistent node domain when its lock SHA is recomputed (667.9305ms)
+✖ ACC-02 Candidate Manifest retains its exact nine-track identity against frozen baseline and migration manifest (1.719167ms)
+✔ canonical JSON sorts recursive object keys without reordering arrays (0.149708ms)
+✔ mutating one track does not rewrite another artifact or lock entry (66.340209ms)
+✔ builder rejects missing, empty, unknown and malformed inputs (11.361ms)
+✔ builder requires each mental-unit source file to be a non-empty question array (9.843042ms)
+✔ builder rejects path identity, foreign track, duplicate and invalid questions (21.841583ms)
+✔ existing malformed lock is rejected before a single-track build (9.276625ms)
+✔ source discovery rejects a symlinked track, node directory, or question file (18.450208ms)
+✔ a tampered existing artifact blocks another track before any write (42.734084ms)
+✔ single-track build rejects orphan artifacts and temporary outputs before writing any target (20.198042ms)
+✔ single-track build rejects a symlinked output root without external writes (7.8385ms)
+✔ single-track output commit rolls back both files on an injected second rename failure (27.345ms)
+✔ build-all stages and rolls back the complete new output set on rename failure (72.58ms)
+✔ CLI parser requires track for single-track commands and rejects it for build-all (0.434541ms)
+✔ CLI executes a hermetic single-track validate/test/build (139.89325ms)
+✔ review console surfaces a remaining BESD constraint disclosure without recording an outcome (1250.941333ms)
+✔ constraint warning is advisory across interactions and does not flag ordinary worked examples or feedback (1168.296125ms)
+✔ review console exposes exactly nine launch tracks, navigable coverage, and advisory signals (1246.784084ms)
+✔ review console records one current explicit outcome and invalidates it when source identity changes (904.439834ms)
+✔ review console serves a local UI and bounded JSON API without fabricating approval (972.007875ms)
+✔ nine canonical banks produce a repeatable inventory with an explicit AWS baseline mismatch (4231.758708ms)
+✔ ODK-096 approval binds one AWS Free node to exact canonical hashes and IDs (253.933792ms)
+✔ ODK-097 producer profiles expose the approved Design session matrix (15.857625ms)
+✖ ODK-097 producer changes preserve canonical Design question counts and hashes (323.314958ms)
+✔ Claude Focus Practice v2 is the only selectable-feedback mode in its immutable Free-node profile (0.864166ms)
+✔ catalog accepts a valid optional package completion rule and rejects malformed or null rules (1.004875ms)
+✔ builder transports the exact source rule, hashes it, and omits it when absent (28.488167ms)
+✔ existing artifact rule must agree with catalog even after checksum is recomputed (21.782042ms)
+✔ catalog is the exact nine-track SIMP-01 catalog (1.264ms)
+✔ fixture validates as one family-neutral contract (1.00875ms)
+✔ schema documents five disjoint interaction branches (0.6435ms)
+✔ Draft 2020-12 schema rejects feedback type mismatches in every variant (245.545333ms)
+✔ Draft 2020-12 schema agrees with runtime on padded and whitespace-only learner text (174.718542ms)
+✔ Draft 2020-12 schema and runtime agree on explicit learner whitespace code points (183.699292ms)
+✔ Draft 2020-12 schema and runtime keep identity metadata trim-clean for explicit whitespace (424.194542ms)
+✔ all five correct answers are scoreable (0.716875ms)
+✔ choice_single scores correct, wrong and empty responses (0.170208ms)
+✔ choice_multiple preserves valid partial points and gives zero for any wrong selection (0.714458ms)
+✔ multiple-choice wrong selections and empty response earn zero independently of app parity (0.407917ms)
+✔ ordering scores exact adjacent relations and incomplete answers (0.230417ms)
+✔ complexity scores every dimension and distinguishes missing values (0.333042ms)
+✔ decision_matrix scores every dimension independently (0.172958ms)
+✔ validator rejects missing identity and all family aliases (0.306208ms)
+✔ learner text preserves surrounding whitespace while identity stays trim-clean (0.201416ms)
+✔ learner text rejects whitespace-only values in every canonical learner surface (0.450042ms)
+✔ validator permits internal newlines that the schema pattern explicitly permits (0.066917ms)
+✔ scoring rejects additional response keys and mismatched response types for every variant (0.495709ms)
+✔ validator rejects extra fields and duplicate option/element/dimension IDs (0.194792ms)
+✔ validator rejects mismatched variants and foreign references (0.39975ms)
+✔ feedback messages are optional when no source map exists (0.08875ms)
+✔ fixture validator rejects a track outside the exact catalog (0.330958ms)
+✔ oracle covers every single-choice option (1.404167ms)
+✔ oracle covers every multiple-choice subset, including empty and all-selected (1.370708ms)
+✔ oracle freezes adjacent-relation ordering semantics (0.886792ms)
+✔ oracle covers accepted, wrong, alias and missing dimension values (0.760334ms)
+✔ canonical answers retain the complete accepted set for multi-accepted complexity (0.893125ms)
+✔ details remain arbitrary exact JSON, difficulty may be null, and aliases stay complexity-only (0.279916ms)
+✔ verifies the complete canonical tree and durable evidence without external inputs (2156.020208ms)
+✔ rejects canonical question tampering without changing evidence (714.688291ms)
+✔ rejects evidence hash tampering and missing membership (898.929334ms)
+✔ rejects symlinked canonical paths before following them (268.737833ms)
+✔ rejects a content root reached through a symlinked ancestor (280.426667ms)
+✔ has no dependency on ephemeral output or the migration writer (1.061666ms)
+ℹ tests 158
+ℹ suites 0
+ℹ pass 148
+ℹ fail 10
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 41274.493875
+
+✖ failing tests:
+
+test at tests/bizq01-migration-proof.test.mjs:107:1
+✖ requires and binds the fixed 19a reason-only amendment proof (2449.273041ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'EVIDENCE_MEMBERSHIP'
+  - 'HASH_MISMATCH'
+  
+      at Object.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:43:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async assertRejected (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:41:3)
+      at async withJsonMutation (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:34:5)
+      at async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:116:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'EVIDENCE_MEMBERSHIP',
+    expected: 'HASH_MISMATCH',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/bizq01-migration-proof.test.mjs:122:1
+✖ binds 19a to exact IDs, before/current Reasons, hashes, and closed membership (1033.914875ms)
+  AssertionError [ERR_ASSERTION]: before Reason
+  + actual - expected
+  
+  + 'EVIDENCE_MEMBERSHIP'
+  - 'HASH_MISMATCH'
+  
+      at Object.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:139:16)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async withJsonMutation (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:34:5)
+      at async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:136:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'EVIDENCE_MEMBERSHIP',
+    expected: 'HASH_MISMATCH',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/bizq01-migration-proof.test.mjs:146:1
+✖ rejects every non-Reason edit in an amended source object (897.74975ms)
+  AssertionError [ERR_ASSERTION]: prompt
+  + actual - expected
+  
+  + 'EVIDENCE_MEMBERSHIP'
+  - 'HASH_MISMATCH'
+  
+      at Object.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:166:14)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async withJsonMutation (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:34:5)
+      at async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:161:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'EVIDENCE_MEMBERSHIP',
+    expected: 'HASH_MISMATCH',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/bizq01-migration-proof.test.mjs:172:1
+✖ binds the catalog version and rejects symlink substitution for the 19a proof and source (2017.70175ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'EVIDENCE_MEMBERSHIP'
+  - 'SYMLINK_PATH'
+  
+      at Object.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:43:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async assertRejected (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:41:3)
+      at async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:184:7)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'EVIDENCE_MEMBERSHIP',
+    expected: 'SYMLINK_PATH',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/bizq01-migration-proof.test.mjs:232:1
+✖ rejects the same-ID correction without its proof and rejects tampered frozen old objects (957.4305ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'EVIDENCE_MEMBERSHIP'
+  - 'HASH_MISMATCH'
+  
+      at Object.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:43:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async assertRejected (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:41:3)
+      at async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:236:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'EVIDENCE_MEMBERSHIP',
+    expected: 'HASH_MISMATCH',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/bizq01-migration-proof.test.mjs:244:1
+✖ rejects unapproved wording, answer, options, feedback and taxonomy changes in the corrected source (983.947542ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'EVIDENCE_MEMBERSHIP'
+  - 'HASH_MISMATCH'
+  
+      at Object.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:43:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async assertRejected (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:41:3)
+      at async withJsonMutation (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:34:5)
+      at async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:252:6)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'EVIDENCE_MEMBERSHIP',
+    expected: 'HASH_MISMATCH',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/bizq01-migration-proof.test.mjs:261:1
+✖ rejects stale Coding version, proof identity/hashes/source location and unexpected proof fields (1187.280334ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'EVIDENCE_MEMBERSHIP'
+  - 'EVIDENCE_VALUE'
+              ^
+  
+      at Object.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:43:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async assertRejected (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:41:3)
+      at async withJsonMutation (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:34:5)
+      at async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:262:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'EVIDENCE_MEMBERSHIP',
+    expected: 'EVIDENCE_VALUE',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/bizq01-migration-proof.test.mjs:285:1
+✖ rejects unreviewed primary-source pages even under the same publisher domain (980.331583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'EVIDENCE_MEMBERSHIP'
+  - 'EVIDENCE_VALUE'
+              ^
+  
+      at Object.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:43:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async assertRejected (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:41:3)
+      at async withJsonMutation (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:34:5)
+      at async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:286:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'EVIDENCE_MEMBERSHIP',
+    expected: 'EVIDENCE_VALUE',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/content-builder.test.mjs:438:1
+✖ ACC-02 Candidate Manifest retains its exact nine-track identity against frozen baseline and migration manifest (1.719167ms)
+  AssertionError [ERR_ASSERTION]: object-oriented-design-interview
+  + actual - expected
+  
+  + 'object-oriented-design-interview-authoring-v2026.10.04-bizq01-20'
+  - 'object-oriented-design-interview-authoring-v2026.10.04-bizq01-19a'
+  
+      at TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/content-builder.test.mjs:472:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'object-oriented-design-interview-authoring-v2026.10.04-bizq01-20',
+    expected: 'object-oriented-design-interview-authoring-v2026.10.04-bizq01-19a',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/odk097-design-session-matrix.test.mjs:133:1
+✖ ODK-097 producer changes preserve canonical Design question counts and hashes (323.314958ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'object-oriented-design-interview-authoring-v2026.10.04-bizq01-20'
+  - 'object-oriented-design-interview-authoring-v2026.10.04-bizq01-19a'
+  
+      at TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/odk097-design-session-matrix.test.mjs:139:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'object-oriented-design-interview-authoring-v2026.10.04-bizq01-20',
+    expected: 'object-oriented-design-interview-authoring-v2026.10.04-bizq01-19a',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

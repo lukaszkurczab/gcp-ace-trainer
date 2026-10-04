@@ -1,0 +1,20 @@
+{
+  "scope": "frozen proposal inputs only; no semantic acceptance",
+  "units": [
+    {
+      "unit": "OOD-N04-B06",
+      "proposalSha256": "05cbc330e667a73e263962ca95122746b77f464b0fbbc3fd12a36768763c6c2c",
+      "notesSha256": "33cf9c69a9ca472ae4c7f4e22d8f09eb3d29e7225237adb77f747ceadc14e3d0"
+    },
+    {
+      "unit": "OOD-N04-B08",
+      "proposalSha256": "417977d3d5fde110c954443d9deea7c21baae99468b692ea8b52dc06eacc7906",
+      "notesSha256": "a35bb4cac289d5b1aed5614ae00ad273abbb7ad44187ecf956b7f37214841cd2"
+    },
+    {
+      "unit": "OOD-N04-B09",
+      "proposalSha256": "eddd15b5c311393be3bf785b9862cc66f4f8f96f3ed20dd1f92de98520de0ace",
+      "notesSha256": "d4f637dc6b1ca475b3c2a635f556beee0e317daae74054d6e837d4df6759ec88"
+    }
+  ]
+}

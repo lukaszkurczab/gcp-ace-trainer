@@ -1,0 +1,10 @@
+{
+  "scope": "One bounded cross-bank duplicate correction; not semantic acceptance/source activation",
+  "proposalSha256": "ad156610a40fedb29d0bb14022703b15e19806ac3aaa7d26dfd4258e68c160c5",
+  "notesSha256": "87b2eb869d68133659fc3d32b2e6de56bfe444370fac00c10a6374c2ec26c854",
+  "changedQuestionIds": [
+    "ood-n04-b01-i028"
+  ],
+  "unchangedWholeObjects": 17,
+  "unchangedNotes": 17
+}

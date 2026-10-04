@@ -1,0 +1,28 @@
+{
+  "verdict": "PASS",
+  "scope": "exact manifest/source binding, schema and declared identity-action structure, all-option score/reversal; not semantic/identity-meaning/admission/native acceptance. Style counts are warnings without rejection threshold.",
+  "manifestSha256": "74f929fef0122d1d75412e07d6b86ab2b634056dd0ed0a98a7051baca7e0eec0",
+  "questionCount": 18,
+  "optionCases": 180,
+  "units": [
+    {
+      "unit": "OOD-N04-B08",
+      "proposalSha256": "b61af1745e160b0470874a1b5e928f0e521e78b16c6ca01fc842e9bcad956a13",
+      "count": 18,
+      "replaced": 18,
+      "retained": 0,
+      "advisory": {
+        "soleLongestCorrect": 1,
+        "exactReasonMatchesKey": [],
+        "duplicateReasons": [],
+        "duplicateDetailsByField": {
+          "mechanismOrProperty": [],
+          "scenarioApplication": [],
+          "errorCorrection": [],
+          "boundaryOrTradeoff": [],
+          "transfer": []
+        }
+      }
+    }
+  ]
+}

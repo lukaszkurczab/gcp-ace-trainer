@@ -1,0 +1,274 @@
+{
+  "items": [
+    {
+      "beforeQuestionId": "ood-n04-b03-i001",
+      "questionId": "ood-n04-b03-i019",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "A caller that obeys ReportSource’s valid-interval contract must not need a subtype-specific range check. The archive subtype should accept that same input range and preserve the promised outcome.",
+      "decisiveFact": "The ReportSource contract accepts any valid date interval and promises either a complete report or a documented unavailable result. A proposed ArchiveReportSource rejects intervals longer than 30 days even though the archive can produce them. Which implementation preserves substitutability?",
+      "nearestAlternative": "Reject intervals longer than 30 days as invalid input.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i002",
+      "questionId": "ood-n04-b03-i020",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "Queue callers rely on FIFO removal and the defined Empty result. A priority-based behavior changes the core postcondition and should use a distinct contract.",
+      "decisiveFact": "The Queue contract says dequeue() returns the oldest pending job, or Empty when none remain. A proposed PriorityQueueSource may reorder jobs by urgency before returning one. Which behavior remains compatible?",
+      "nearestAlternative": "Return the highest-urgency job even when it arrived later.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i003",
+      "questionId": "ood-n04-b03-i021",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "Saved is a caller-visible guarantee of durability at return time. A subtype must not weaken that guarantee by acknowledging before it holds.",
+      "decisiveFact": "DocumentStore.save() promises that when it returns Saved(version), that version is durably readable. A FastDocumentStore candidate returns Saved immediately and flushes the bytes later. What should the candidate do to remain substitutable?",
+      "nearestAlternative": "Keep the immediate response and rely on a background flush eventually completing.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i004",
+      "questionId": "ood-n04-b03-i022",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "The base contract scopes removal to one stable ID and reports completion. A remote implementation must preserve that scope despite its provider’s broader operation.",
+      "decisiveFact": "The Catalog contract remove(id) removes exactly the identified listing and returns Removed(id). A proposed RemoteCatalog uses a provider API that deletes every listing sharing the same display name. Which behavior is compatible?",
+      "nearestAlternative": "Delete all rows with the same display name and return Removed(id).",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i005",
+      "questionId": "ood-n04-b03-i023",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "The base defines a stable repeat-call outcome and no state change. The legacy implementation must report that same ordinary result instead of throwing.",
+      "decisiveFact": "Reservation.cancel(id) is specified as idempotent: cancelling an already-cancelled reservation returns AlreadyCancelled and leaves the record unchanged. A LegacyReservation candidate throws on the second call. What preserves the contract?",
+      "nearestAlternative": "Keep throwing AlreadyCancelledException when cancellation is repeated.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i006",
+      "questionId": "ood-n04-b03-i024",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "The caller is entitled to request a quote without changing account or order state. A premium implementation must preserve that no-side-effect guarantee.",
+      "decisiveFact": "QuoteCalculator.quote(items) guarantees a price result without changing account balance or order state. A proposed PremiumQuote implementation deducts a deposit while calculating the quote. Which version honors the contract?",
+      "nearestAlternative": "Keep the deposit deduction inside quote() and return the remaining price.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i007",
+      "questionId": "ood-n04-b03-i025",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "The contract ties RetryableFailure to a retained message and a retry path. Swallowing failure as Delivered misreports the externally observable outcome.",
+      "decisiveFact": "Notifier.send(message) returns Delivered or RetryableFailure and does not discard a failed message. A proposed EmailNotifier catches transport errors and returns Delivered so that callers can continue. Which behavior is compatible?",
+      "nearestAlternative": "Continue returning Delivered after catching the transport error.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i008",
+      "questionId": "ood-n04-b03-i026",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "Each open has a per-reader initial-position and independence guarantee. A shared mutable cursor allows later opens to change an existing reader’s observable state.",
+      "decisiveFact": "ArchiveReader.open(snapshotId) returns a cursor positioned at the first record and guarantees that opening another reader does not alter an existing reader. A proposed ReusingArchiveReader resets one shared cursor on every open. Which design is compatible?",
+      "nearestAlternative": "Keep the shared cursor and reset it whenever any caller opens a reader.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i009",
+      "questionId": "ood-n04-b03-i027",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "ClockSource promises a monotone sequence to its callers, not a raw wall reading. The replacement must preserve that guarantee even when the underlying source moves backward.",
+      "decisiveFact": "ClockSource.now() promises nondecreasing instants for calls made by one process, even if the wall clock is corrected backward. A proposed WallClockSource returns the operating-system wall clock directly. Which implementation preserves the base contract?",
+      "nearestAlternative": "Return the current wall-clock reading for every call.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i010",
+      "questionId": "ood-n04-b03-i028",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "The base accepts all positive quantities, so a subtype cannot impose a minimum threshold. It must preserve the accepted input domain and defined stock result.",
+      "decisiveFact": "Inventory.reserve(item, quantity) accepts every positive quantity and either reserves it or returns InsufficientStock. A proposed BulkInventory rejects quantities below 10 as “not bulk.” Which implementation can satisfy the same Inventory contract?",
+      "nearestAlternative": "Keep the minimum of ten as an input validation rule.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i011",
+      "questionId": "ood-n04-b03-i029",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "Callers rely on both the total and its reconcilable jurisdiction lines. The flat-rate implementation must preserve that result structure and equality invariant.",
+      "decisiveFact": "TaxCalculator.calculate(invoice) returns a tax breakdown whose total equals the sum of its jurisdiction lines. A proposed FlatRateCalculator returns a single rounded total but drops the jurisdiction lines. Which result preserves the contract?",
+      "nearestAlternative": "Return only the rounded total and omit the line breakdown.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i012",
+      "questionId": "ood-n04-b03-i030",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "The contract covers supported text-only documents and requires rendered output. The compact renderer cannot turn absence of images into an unsupported or empty result.",
+      "decisiveFact": "Renderer.render(document) returns nonempty output for every nonempty supported document or returns UnsupportedFormat. The base explicitly supports text-only documents. A proposed CompactRenderer returns an empty string for such a document. Which behavior is substitutable?",
+      "nearestAlternative": "Keep returning an empty string when a supported document has no images.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i013",
+      "questionId": "ood-n04-b03-i031",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "Closed means the session will not accept later edits, and pending work must be accounted for. The autosaving subtype cannot make the terminal state provisional.",
+      "decisiveFact": "Session.close() guarantees that after Closed is returned, no further edits are accepted. The close result must identify any queued edit not applied. A proposed AutoSavingSession returns Closed while allowing queued edits to apply on reconnect. Which behavior honors the contract?",
+      "nearestAlternative": "Return Closed and apply edits queued earlier when the session reconnects.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i014",
+      "questionId": "ood-n04-b03-i032",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "Weight can affect whether a carrier is available, but it does not make a base-valid shipment invalid. The subtype should return the defined unavailable outcome rather than reject the call.",
+      "decisiveFact": "Carrier.quote(shipment) accepts any shipment that satisfies the base temperature band and returns a price or Unavailable. A proposed RegionalCarrier refuses all shipments above 20 kg, although the base contract allows them. What preserves substitutability?",
+      "nearestAlternative": "Reject every shipment above 20 kg as invalid input.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i015",
+      "questionId": "ood-n04-b03-i033",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "Accepted denotes complete chunk persistence at the supplied offset. The low-memory implementation must preserve that success meaning or report the defined failure.",
+      "decisiveFact": "ChunkedUpload.append(chunk) guarantees that an Accepted result means the entire chunk is stored at the reported offset. A proposed LowMemoryUpload stores only the first half but still returns Accepted(offset). Which behavior is compatible?",
+      "nearestAlternative": "Keep storing the first half and return Accepted at the starting offset.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i016",
+      "questionId": "ood-n04-b03-i034",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "Stored guarantees that the newly supplied value is what a subsequent read returns. A write-once variant cannot report that outcome when it silently keeps an earlier value.",
+      "decisiveFact": "CacheStore.put(key, value) guarantees that after Stored is returned, a read by that key returns the supplied value. A proposed WriteOnceCache ignores later puts for an existing key but still returns Stored. Which behavior preserves the contract?",
+      "nearestAlternative": "Keep ignoring later writes and return Stored.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i017",
+      "questionId": "ood-n04-b03-i035",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "The retry represents the same requested refund, not a second refund. Returning its existing outcome preserves the one-entry postcondition and balance bound.",
+      "decisiveFact": "RefundProcessor.refund(payment, amount) accepts an amount no greater than the unrefunded settled balance and returns Refunded(amount) after one ledger entry. Each refund request has a stable request ID; retries after timeout reuse that ID. A proposed RetryFriendlyProcessor posts the same refund again for a repeated request ID. Which behavior is compatible?",
+      "nearestAlternative": "Post a second ledger entry on every repeat and return Refunded(amount).",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b03-i018",
+      "questionId": "ood-n04-b03-i036",
+      "mentalUnitId": "OOD-N04-B03",
+      "learningObjective": "Predict is specified as a read-like operation over fixed model state. Online learning is a distinct behavior and should not be added invisibly to a subtype implementation.",
+      "decisiveFact": "Model.predict(features) promises a prediction and does not change trained model parameters or training data. A proposed AdaptiveModel updates its weights after every prediction. Which design remains compatible?",
+      "nearestAlternative": "Retain weight updates inside predict so later predictions improve.",
+      "changedCondition": "The prompt states both the base caller guarantee and the proposed implementation behavior, so compatibility can be judged against a visible precondition, postcondition, invariant, or side-effect boundary.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old generic owner response is replaced by a concrete contract comparison; its accepted decision and option meanings change.",
+      "sourceRefs": [
+        "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+      ]
+    }
+  ]
+}

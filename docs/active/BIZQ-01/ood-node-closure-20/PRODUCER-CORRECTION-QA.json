@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "review": "independent-producer-correction-qa",
+  "verdict": "PASS",
+  "scope": "The three test-only follow-up changes for source20 fixture registration and current OOD version/question-set pins.",
+  "contentRepositoryHead": "b1d7cc419b475dccd37fba82c948bcd760ab577f",
+  "correctionCommit": "4721c39",
+  "checks": [
+    {
+      "name": "migration proof fixture, content builder version assertion, ODK-097 version/hash pins",
+      "result": "PASS",
+      "command": "node --test tests/bizq01-migration-proof.test.mjs tests/content-builder.test.mjs tests/odk097-design-session-matrix.test.mjs",
+      "testsPassed": 44,
+      "testsFailed": 0
+    },
+    {
+      "name": "full canonical suite after correction",
+      "result": "PASS",
+      "evidence": "ROOT-PRODUCER-CANONICAL.log",
+      "testsPassed": 158,
+      "testsFailed": 0,
+      "note": "Earlier stale-fixture/pin failure receipt remains preserved in ROOT-PRODUCER-CANONICAL-REVISE.log."
+    },
+    {
+      "name": "isolated path/nonregular probes",
+      "result": "PASS",
+      "tool": {
+        "path": "check-path-probes.mjs",
+        "sha256": "5682029c71228a5f1a0226d40a4f050997b8b31afb872ce5ff6e34870273581a",
+        "syntaxCheck": "PASS",
+        "actualExecution": "PASS"
+      },
+      "cases": [
+        { "case": "fixed v20 proof is a directory", "expected": "UNSAFE_PATH", "observed": "UNSAFE_PATH" },
+        { "case": "N04 source file is a directory", "expected": "UNSAFE_PATH", "observed": "UNSAFE_PATH" },
+        { "case": "N04 source directory ancestor is a symlink", "expected": "SYMLINK_PATH", "observed": "SYMLINK_PATH" },
+        { "case": "evidence/business-quality ancestor is a symlink", "expected": "SYMLINK_PATH", "observed": "SYMLINK_PATH", "stage": "Caught by an earlier shared BESD proof guard before v20 dispatch." }
+      ],
+      "mutationScope": "/private/tmp temporary copies; held originals placed outside fixture content and removed after the probe",
+      "methodNote": "The script was rerun after moving held originals outside the copied content tree to ensure they could not trigger an unrelated inventory failure."
+    }
+  ],
+  "limitations": [
+    "The evidence/business-quality ancestor case proves safe rejection by the verifier, but does not reach the v20 branch first.",
+    "This is bounded producer-correction QA, not app/native or full BIZQ-01 acceptance."
+  ]
+}

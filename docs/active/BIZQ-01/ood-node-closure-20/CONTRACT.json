@@ -1,0 +1,8 @@
+{
+  "canonicalPath": "/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/07-content-guidelines.md",
+  "priorPrefixSha256": "a84ef6bdeb3d8a35bfe38650ad750f0455e00898140c63e36a1647610dcdf8b9",
+  "currentSha256": "6ebab9fcb685c7b805436f2dc4aeafb21101887fec58ce6a0a3d1403f82762fb",
+  "appendOnlyClause": "fixed OOD-N04 source-quality cohort20",
+  "scope": "authoring and reviewed identity preparation; exact producer architecture review remains required before implementation",
+  "authority": "existing user PO delegation; no manual gate reinstatement"
+}

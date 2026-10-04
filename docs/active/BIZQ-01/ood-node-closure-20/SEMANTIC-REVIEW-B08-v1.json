@@ -1,0 +1,33 @@
+{
+  "reviewer": "gpt-6-luna-high",
+  "reviewType": "independent whole-object semantic review",
+  "unit": "OOD-N04-B08",
+  "verdict": "REVISE",
+  "proposal": "review-inputs/v1/OOD-N04-B08.json",
+  "proposalSha256": "417977d3d5fde110c954443d9deea7c21baae99468b692ea8b52dc06eacc7906",
+  "notes": "review-inputs/v1/OOD-N04-B08-notes.json",
+  "notesSha256": "a35bb4cac289d5b1aed5614ae00ad273abbb7ad44187ecf956b7f37214841cd2",
+  "items": [
+    {"questionId":"ood-n04-b08-i019","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i020","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i021","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i022","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i023","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i024","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i025","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i026","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i027","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i028","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i029","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i030","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i031","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i032","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i033","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i034","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i035","verdict":"PASS"},
+    {"questionId":"ood-n04-b08-i036","verdict":"REVISE","reason":"The prompt prescribes the whole input/output contract and the key echoes it, disclosing the decision instead of leaving meaningful contract design."}
+  ],
+  "minimalCorrection": "Reframe i036 around provenance drift between the selected dataset/code revisions and the published snapshot, without stating the exact method inputs and output in the stem.",
+  "criteria": ["BIZQ §4.1", "BIZQ §4.2"],
+  "limitations": ["This is not producer/source-admission, consumer, native, whole-bank or full BIZQ-01 acceptance."]
+}

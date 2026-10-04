@@ -1,0 +1,27 @@
+{
+  "scope": "Four exact proposal corrections only; no semantic acceptance or source activation",
+  "units": [
+    {
+      "unit": "OOD-N04-B01",
+      "version": 5,
+      "proposalSha256": "19576ef2ead08fdf21c789dd7a0ab5b691174b103fa88ae2d8b0e8d90c12dc80",
+      "notesSha256": "0b79bee022231bcb1144327e07785c956160656b00b91c2f465b93ee12256f32",
+      "changedQuestionIds": [
+        "ood-n04-b01-i028",
+        "ood-n04-b01-i035",
+        "ood-n04-b01-i036"
+      ],
+      "unchangedWholeObjects": 15
+    },
+    {
+      "unit": "OOD-N04-B03",
+      "version": 4,
+      "proposalSha256": "76011c4b1ba9440b126af651a84aae1925c06d4f9955784ebf6f2067562b1e28",
+      "notesSha256": "4a319a0879894e071262c3e4baf2a66b917b6f193d685795c8297b94004d204d",
+      "changedQuestionIds": [
+        "ood-n04-b03-i035"
+      ],
+      "unchangedWholeObjects": 17
+    }
+  ]
+}

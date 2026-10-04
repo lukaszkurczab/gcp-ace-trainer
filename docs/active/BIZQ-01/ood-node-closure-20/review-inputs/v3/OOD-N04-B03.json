@@ -1,0 +1,1190 @@
+[
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i019",
+    "prompt": "The ReportSource contract accepts any valid date interval and promises either a complete report or a documented unavailable result. A proposed ArchiveReportSource rejects intervals longer than 30 days even though the archive can produce them. Which implementation preserves substitutability?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_01_contract",
+          "text": "Preserve the full valid input range and ReportSource’s result outcomes."
+        },
+        {
+          "optionId": "n04b03_01_input",
+          "text": "Reject intervals longer than 30 days as invalid input."
+        },
+        {
+          "optionId": "n04b03_01_outcome",
+          "text": "Return the first 30 days and label it complete."
+        },
+        {
+          "optionId": "n04b03_01_effect",
+          "text": "Throw RangeUnsupported for a valid interval."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_01_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A caller that obeys ReportSource’s valid-interval contract must not need a subtype-specific range check. The archive subtype should accept that same input range and preserve the promised outcome.",
+      "details": {
+        "mechanismOrProperty": "Substitutability requires honoring the base input domain and observable result guarantee.",
+        "scenarioApplication": "A valid 45-day request remains valid for both sources; the archive returns its report or the documented unavailable outcome.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: The subtype strengthens the accepted-input condition; callers that satisfy the base contract can now fail. The caller receives a result weaker than the complete-report guarantee, with truncation hidden. The base contract promised a report or documented unavailable outcome, not a new exception for valid input.",
+        "boundaryOrTradeoff": "A separately declared restricted source contract could narrow supported ranges, but it cannot silently implement this broader contract.",
+        "transfer": "Compare accepted inputs and returned outcomes at the call boundary, not only the subtype’s internal capability."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_01_input",
+          "text": "The subtype strengthens the accepted-input condition; callers that satisfy the base contract can now fail."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_01_outcome",
+          "text": "The caller receives a result weaker than the complete-report guarantee, with truncation hidden."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_01_effect",
+          "text": "The base contract promised a report or documented unavailable outcome, not a new exception for valid input."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i020",
+    "prompt": "The Queue contract says dequeue() returns the oldest pending job, or Empty when none remain. A proposed PriorityQueueSource may reorder jobs by urgency before returning one. Which behavior remains compatible?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_02_contract",
+          "text": "Keep FIFO dequeue semantics; offer urgency ordering under a separate contract."
+        },
+        {
+          "optionId": "n04b03_02_input",
+          "text": "Return the highest-urgency job even when it arrived later."
+        },
+        {
+          "optionId": "n04b03_02_outcome",
+          "text": "Return null when no jobs remain."
+        },
+        {
+          "optionId": "n04b03_02_effect",
+          "text": "Return the oldest job without removing it."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_02_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Queue callers rely on FIFO removal and the defined Empty result. A priority-based behavior changes the core postcondition and should use a distinct contract.",
+      "details": {
+        "mechanismOrProperty": "Behavioral compatibility includes the effect and ordering of an operation, not just its return type.",
+        "scenarioApplication": "The caller observes the oldest job removed from the queue; urgency is not allowed to change that result.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: A caller relying on FIFO order receives a different item than the base contract promises. The implementation changes the specified Empty outcome to an untyped null result. The method’s dequeue postcondition is not met because the same job remains pending.",
+        "boundaryOrTradeoff": "A priority queue is valid where urgency order is the intended contract, not as a drop-in implementation of FIFO Queue.",
+        "transfer": "When ordering is observable to callers, treat it as part of the contract."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_02_input",
+          "text": "A caller relying on FIFO order receives a different item than the base contract promises."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_02_outcome",
+          "text": "The implementation changes the specified Empty outcome to an untyped null result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_02_effect",
+          "text": "The method’s dequeue postcondition is not met because the same job remains pending."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i021",
+    "prompt": "DocumentStore.save() promises that when it returns Saved(version), that version is durably readable. A FastDocumentStore candidate returns Saved immediately and flushes the bytes later. What should the candidate do to remain substitutable?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_03_contract",
+          "text": "Acknowledge Saved only once the version is durably readable."
+        },
+        {
+          "optionId": "n04b03_03_input",
+          "text": "Keep the immediate response and rely on a background flush eventually completing."
+        },
+        {
+          "optionId": "n04b03_03_outcome",
+          "text": "Return Saved with a provisional version and document the delay elsewhere."
+        },
+        {
+          "optionId": "n04b03_03_effect",
+          "text": "Acknowledge Saved, then retry storage indefinitely if the flush fails."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_03_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Saved is a caller-visible guarantee of durability at return time. A subtype must not weaken that guarantee by acknowledging before it holds.",
+      "details": {
+        "mechanismOrProperty": "Postconditions constrain the point at which an operation reports success.",
+        "scenarioApplication": "The caller may safely read the returned version after Saved; delayed persistence would violate that expectation.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: A caller reading the returned version immediately can observe data that the base contract says is already durable. The returned status still claims the base postcondition even though durability is not established. An eventual retry cannot make the earlier Saved response truthful when storage may fail permanently.",
+        "boundaryOrTradeoff": "An asynchronous API can be designed, but it needs a different outcome such as Pending and cannot masquerade as Saved.",
+        "transfer": "Make success labels match the guarantee callers can rely on immediately."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_03_input",
+          "text": "A caller reading the returned version immediately can observe data that the base contract says is already durable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_03_outcome",
+          "text": "The returned status still claims the base postcondition even though durability is not established."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_03_effect",
+          "text": "An eventual retry cannot make the earlier Saved response truthful when storage may fail permanently."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i022",
+    "prompt": "The Catalog contract remove(id) removes exactly the identified listing and returns Removed(id). A proposed RemoteCatalog uses a provider API that deletes every listing sharing the same display name. Which behavior is compatible?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_04_contract",
+          "text": "Remove only the requested ID and return its removal outcome."
+        },
+        {
+          "optionId": "n04b03_04_input",
+          "text": "Delete all rows with the same display name and return Removed(id)."
+        },
+        {
+          "optionId": "n04b03_04_outcome",
+          "text": "Return Removed(id) after removing only the local cache entry."
+        },
+        {
+          "optionId": "n04b03_04_effect",
+          "text": "Mark the listing hidden but keep it in ordinary searches, then return Removed(id)."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_04_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The base contract scopes removal to one stable ID and reports completion. A remote implementation must preserve that scope despite its provider’s broader operation.",
+      "details": {
+        "mechanismOrProperty": "Substitutability includes constraints on side effects and post-state, not only method signatures.",
+        "scenarioApplication": "Only the selected listing is removed and the outcome identifies the same ID.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: The subtype has a broader side effect than the contract’s exact-ID removal, damaging unrelated listings. The catalog’s promised removal is not completed in the underlying catalog; the same listing may still be returned. The observable removal postcondition is not satisfied for the contract’s normal catalog lookup.",
+        "boundaryOrTradeoff": "A bulk-delete API can be exposed separately when callers intentionally request deletion by name.",
+        "transfer": "Check that a replacement implementation neither omits nor broadens the base operation’s effects."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_04_input",
+          "text": "The subtype has a broader side effect than the contract’s exact-ID removal, damaging unrelated listings."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_04_outcome",
+          "text": "The catalog’s promised removal is not completed in the underlying catalog; the same listing may still be returned."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_04_effect",
+          "text": "The observable removal postcondition is not satisfied for the contract’s normal catalog lookup."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i023",
+    "prompt": "Reservation.cancel(id) is specified as idempotent: cancelling an already-cancelled reservation returns AlreadyCancelled and leaves the record unchanged. A LegacyReservation candidate throws on the second call. What preserves the contract?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_05_contract",
+          "text": "Return AlreadyCancelled without changing state."
+        },
+        {
+          "optionId": "n04b03_05_input",
+          "text": "Keep throwing AlreadyCancelledException when cancellation is repeated."
+        },
+        {
+          "optionId": "n04b03_05_outcome",
+          "text": "Delete the record again and return Cancelled."
+        },
+        {
+          "optionId": "n04b03_05_effect",
+          "text": "Return Cancelled for every call, including repeats."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_05_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The base defines a stable repeat-call outcome and no state change. The legacy implementation must report that same ordinary result instead of throwing.",
+      "details": {
+        "mechanismOrProperty": "A subtype must preserve both the idempotent effect and the specified result for repeated calls.",
+        "scenarioApplication": "First cancellation changes the state; subsequent calls return AlreadyCancelled and leave it unchanged.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: The base specifies a normal outcome for the repeated call, so the subtype introduces a failure callers do not handle. The repeat call no longer preserves the existing record/state distinction promised by AlreadyCancelled. The caller cannot distinguish a newly applied cancellation from the already-cancelled state as the contract requires.",
+        "boundaryOrTradeoff": "An exception is reasonable only if the base contract classifies repeated cancellation as exceptional, which it does not.",
+        "transfer": "Test subtype behavior for repeated and boundary calls as well as the first successful call."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_05_input",
+          "text": "The base specifies a normal outcome for the repeated call, so the subtype introduces a failure callers do not handle."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_05_outcome",
+          "text": "The repeat call no longer preserves the existing record/state distinction promised by AlreadyCancelled."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_05_effect",
+          "text": "The caller cannot distinguish a newly applied cancellation from the already-cancelled state as the contract requires."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i024",
+    "prompt": "QuoteCalculator.quote(items) guarantees a price result without changing account balance or order state. A proposed PremiumQuote implementation deducts a deposit while calculating the quote. Which version honors the contract?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_06_contract",
+          "text": "Return a quote without changing account or order state."
+        },
+        {
+          "optionId": "n04b03_06_input",
+          "text": "Keep the deposit deduction inside quote() and return the remaining price."
+        },
+        {
+          "optionId": "n04b03_06_outcome",
+          "text": "Create a pending order during quote() so the price cannot change."
+        },
+        {
+          "optionId": "n04b03_06_effect",
+          "text": "Return a quote only when the caller first marks the account as charged."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_06_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The caller is entitled to request a quote without changing account or order state. A premium implementation must preserve that no-side-effect guarantee.",
+      "details": {
+        "mechanismOrProperty": "Substitutability covers effects and preconditions, not only the value returned.",
+        "scenarioApplication": "Both standard and premium sources calculate a price; charging belongs to a separately requested payment action.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: The subtype adds a state-changing side effect to an operation callers rely on as non-mutating. This also mutates order state, which the base contract explicitly excludes from quoting. That strengthens the precondition and makes a valid base call fail for the subtype.",
+        "boundaryOrTradeoff": "A quote-with-deposit workflow can exist as a different operation, but must not be hidden inside quote().",
+        "transfer": "Keep query-like operations within their stated side-effect boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_06_input",
+          "text": "The subtype adds a state-changing side effect to an operation callers rely on as non-mutating."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_06_outcome",
+          "text": "This also mutates order state, which the base contract explicitly excludes from quoting."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_06_effect",
+          "text": "That strengthens the precondition and makes a valid base call fail for the subtype."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i025",
+    "prompt": "Notifier.send(message) returns Delivered or RetryableFailure and does not discard a failed message. A proposed EmailNotifier catches transport errors and returns Delivered so that callers can continue. Which behavior is compatible?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_07_contract",
+          "text": "Retain the failed message and return RetryableFailure."
+        },
+        {
+          "optionId": "n04b03_07_input",
+          "text": "Continue returning Delivered after catching the transport error."
+        },
+        {
+          "optionId": "n04b03_07_outcome",
+          "text": "Return RetryableFailure but discard the failed message."
+        },
+        {
+          "optionId": "n04b03_07_effect",
+          "text": "Let the transport exception escape for all failures."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_07_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The contract ties RetryableFailure to a retained message and a retry path. Swallowing failure as Delivered misreports the externally observable outcome.",
+      "details": {
+        "mechanismOrProperty": "Subtypes preserve result semantics and failure recovery conditions.",
+        "scenarioApplication": "Successful sends return Delivered; failed sends remain available and return RetryableFailure.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: The caller receives success when delivery did not happen, contradicting the contract’s result meaning. The result signals retryability while the message needed for retry is no longer retained. The implementation replaces the specified RetryableFailure result with an undeclared exceptional path.",
+        "boundaryOrTradeoff": "A provider-specific exception can be logged internally, but callers should see the shared outcome promised by Notifier.",
+        "transfer": "Map low-level failures to the contract’s defined outcome without losing required recovery state."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_07_input",
+          "text": "The caller receives success when delivery did not happen, contradicting the contract’s result meaning."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_07_outcome",
+          "text": "The result signals retryability while the message needed for retry is no longer retained."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_07_effect",
+          "text": "The implementation replaces the specified RetryableFailure result with an undeclared exceptional path."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i026",
+    "prompt": "ArchiveReader.open(snapshotId) returns a cursor positioned at the first record and guarantees that opening another reader does not alter an existing reader. A proposed ReusingArchiveReader resets one shared cursor on every open. Which design is compatible?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_08_contract",
+          "text": "Give every opened reader its own cursor."
+        },
+        {
+          "optionId": "n04b03_08_input",
+          "text": "Keep the shared cursor and reset it whenever any caller opens a reader."
+        },
+        {
+          "optionId": "n04b03_08_outcome",
+          "text": "Return a reader positioned at the end and require callers to rewind before reading."
+        },
+        {
+          "optionId": "n04b03_08_effect",
+          "text": "Serialize all reads through one global cursor and report the shared current position."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_08_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Each open has a per-reader initial-position and independence guarantee. A shared mutable cursor allows later opens to change an existing reader’s observable state.",
+      "details": {
+        "mechanismOrProperty": "State isolation is part of the caller-visible contract when multiple readers coexist.",
+        "scenarioApplication": "The first reader remains at its own position even after another reader opens the same or a different snapshot.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: Opening a second reader changes the first reader’s position, violating the independence guarantee. The caller no longer receives the first-record initial position promised by open(). Serialization does not preserve the contract that an existing reader’s position remains independent.",
+        "boundaryOrTradeoff": "A single-consumer reader contract could share a cursor, but this base explicitly permits independent readers.",
+        "transfer": "Verify that shared implementation state does not violate per-instance behavior promised to callers."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_08_input",
+          "text": "Opening a second reader changes the first reader’s position, violating the independence guarantee."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_08_outcome",
+          "text": "The caller no longer receives the first-record initial position promised by open()."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_08_effect",
+          "text": "Serialization does not preserve the contract that an existing reader’s position remains independent."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i027",
+    "prompt": "ClockSource.now() promises nondecreasing instants for calls made by one process, even if the wall clock is corrected backward. A proposed WallClockSource returns the operating-system wall clock directly. Which implementation preserves the base contract?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_09_contract",
+          "text": "Keep returned instants nondecreasing despite wall-clock corrections."
+        },
+        {
+          "optionId": "n04b03_09_input",
+          "text": "Return the current wall-clock reading for every call."
+        },
+        {
+          "optionId": "n04b03_09_outcome",
+          "text": "Throw when a wall-clock correction moves backward."
+        },
+        {
+          "optionId": "n04b03_09_effect",
+          "text": "Return raw wall time and require each caller to clamp values itself."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_09_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "ClockSource promises a monotone sequence to its callers, not a raw wall reading. The replacement must preserve that guarantee even when the underlying source moves backward.",
+      "details": {
+        "mechanismOrProperty": "The subtype’s implementation detail cannot weaken a temporal postcondition that callers rely on.",
+        "scenarioApplication": "A correction may make the returned instant stay level temporarily, but it must not make it decrease.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: A backward wall-clock correction can produce a result earlier than one already returned. The contract promises a time result and does not define that correction as an exceptional outcome. That shifts a source guarantee into every caller and leaves the subtype’s own contract weaker.",
+        "boundaryOrTradeoff": "A wall clock that can move backward can be exposed by a different raw-clock contract.",
+        "transfer": "Preserve observable sequence properties at the abstraction boundary when callers depend on them."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_09_input",
+          "text": "A backward wall-clock correction can produce a result earlier than one already returned."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_09_outcome",
+          "text": "The contract promises a time result and does not define that correction as an exceptional outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_09_effect",
+          "text": "That shifts a source guarantee into every caller and leaves the subtype’s own contract weaker."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i028",
+    "prompt": "Inventory.reserve(item, quantity) accepts every positive quantity and either reserves it or returns InsufficientStock. A proposed BulkInventory rejects quantities below 10 as “not bulk.” Which implementation can satisfy the same Inventory contract?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_10_contract",
+          "text": "Accept all positive quantities and report Reserved or InsufficientStock."
+        },
+        {
+          "optionId": "n04b03_10_input",
+          "text": "Keep the minimum of ten as an input validation rule."
+        },
+        {
+          "optionId": "n04b03_10_outcome",
+          "text": "Return null for requests below ten."
+        },
+        {
+          "optionId": "n04b03_10_effect",
+          "text": "Round quantities below ten up to ten and reserve the larger amount."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_10_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The base accepts all positive quantities, so a subtype cannot impose a minimum threshold. It must preserve the accepted input domain and defined stock result.",
+      "details": {
+        "mechanismOrProperty": "A subtype may accept more inputs than its base, but not fewer when callers rely on the base domain.",
+        "scenarioApplication": "Requests for one through nine units remain valid and receive Reserved or InsufficientStock according to available stock.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: That strengthens the precondition and rejects valid calls allowed by Inventory. The subtype creates an unspecified result for inputs the base contract accepts. The implementation changes the requested quantity rather than honoring the caller’s valid input.",
+        "boundaryOrTradeoff": "A distinct bulk-order type may impose a minimum when callers intentionally select that narrower contract.",
+        "transfer": "Compare the base and subtype preconditions for every input a valid caller may supply."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_10_input",
+          "text": "That strengthens the precondition and rejects valid calls allowed by Inventory."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_10_outcome",
+          "text": "The subtype creates an unspecified result for inputs the base contract accepts."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_10_effect",
+          "text": "The implementation changes the requested quantity rather than honoring the caller’s valid input."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i029",
+    "prompt": "TaxCalculator.calculate(invoice) returns a tax breakdown whose total equals the sum of its jurisdiction lines. A proposed FlatRateCalculator returns a single rounded total but drops the jurisdiction lines. Which result preserves the contract?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_11_contract",
+          "text": "Return a total equal to the sum of jurisdiction lines."
+        },
+        {
+          "optionId": "n04b03_11_input",
+          "text": "Return only the rounded total and omit the line breakdown."
+        },
+        {
+          "optionId": "n04b03_11_outcome",
+          "text": "Return the correct lines but a total computed from unrounded intermediate values that differs from their sum."
+        },
+        {
+          "optionId": "n04b03_11_effect",
+          "text": "Return a matching breakdown but add an unlisted adjustment line to reconcile the total."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_11_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Callers rely on both the total and its reconcilable jurisdiction lines. The flat-rate implementation must preserve that result structure and equality invariant.",
+      "details": {
+        "mechanismOrProperty": "Postconditions can relate multiple output fields; matching only one field does not satisfy the contract.",
+        "scenarioApplication": "The total is computed from the returned line amounts after the same rounding policy.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: The numeric total alone weakens the promised result structure callers use for audit. The response violates the contract’s internal consistency invariant. The extra undisclosed adjustment makes the returned total no longer equal the sum of the stated jurisdiction lines.",
+        "boundaryOrTradeoff": "A total-only operation can be offered separately, but it cannot replace this breakdown contract.",
+        "transfer": "Check the full returned value and its invariants, not just the most visible scalar."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_11_input",
+          "text": "The numeric total alone weakens the promised result structure callers use for audit."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_11_outcome",
+          "text": "The response violates the contract’s internal consistency invariant."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_11_effect",
+          "text": "The extra undisclosed adjustment makes the returned total no longer equal the sum of the stated jurisdiction lines."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i030",
+    "prompt": "Renderer.render(document) returns nonempty output for every nonempty supported document or returns UnsupportedFormat. The base explicitly supports text-only documents. A proposed CompactRenderer returns an empty string for such a document. Which behavior is substitutable?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_12_contract",
+          "text": "Render supported nonempty text; reserve UnsupportedFormat for unsupported types."
+        },
+        {
+          "optionId": "n04b03_12_input",
+          "text": "Keep returning an empty string when a supported document has no images."
+        },
+        {
+          "optionId": "n04b03_12_outcome",
+          "text": "Reject text-only documents as UnsupportedFormat."
+        },
+        {
+          "optionId": "n04b03_12_effect",
+          "text": "Return a fixed “no image” placeholder instead of rendering document text."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_12_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The contract covers supported text-only documents and requires rendered output. The compact renderer cannot turn absence of images into an unsupported or empty result.",
+      "details": {
+        "mechanismOrProperty": "Substitution requires preserving both the accepted content domain and the meaning of a successful result.",
+        "scenarioApplication": "Text remains part of the renderable document, so the renderer includes it even when no image is present.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: The input is supported and nonempty, so the result violates the nonempty-output postcondition. The subtype narrows the supported input set despite the base contract including those documents. The caller receives nonempty bytes, but not a rendering of the supported document content promised by the method.",
+        "boundaryOrTradeoff": "A renderer for image-only documents needs a separate narrower contract rather than silently changing this one.",
+        "transfer": "Read success postconditions together with the base type’s supported input domain."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_12_input",
+          "text": "The input is supported and nonempty, so the result violates the nonempty-output postcondition."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_12_outcome",
+          "text": "The subtype narrows the supported input set despite the base contract including those documents."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_12_effect",
+          "text": "The caller receives nonempty bytes, but not a rendering of the supported document content promised by the method."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i031",
+    "prompt": "Session.close() guarantees that after Closed is returned, no further edits are accepted. The close result must identify any queued edit not applied. A proposed AutoSavingSession returns Closed while allowing queued edits to apply on reconnect. Which behavior honors the contract?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_13_contract",
+          "text": "Close only after edits stop; report queued work in the close result."
+        },
+        {
+          "optionId": "n04b03_13_input",
+          "text": "Return Closed and apply edits queued earlier when the session reconnects."
+        },
+        {
+          "optionId": "n04b03_13_outcome",
+          "text": "Allow edits while closed but omit them from the visible session status."
+        },
+        {
+          "optionId": "n04b03_13_effect",
+          "text": "Discard queued edits and return Closed without reporting them."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_13_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Closed means the session will not accept later edits, and pending work must be accounted for. The autosaving subtype cannot make the terminal state provisional.",
+      "details": {
+        "mechanismOrProperty": "A subtype preserves the base state-transition postcondition and any stated reporting of pending work.",
+        "scenarioApplication": "After Closed, reconnect cannot apply a newly accepted edit; the caller receives any specified pending-work outcome during close.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: The session changes after Closed, so the terminal-state guarantee is false. The operation still accepts edits after the point the base contract says none may be accepted. The session is closed, but the caller loses queued work without the close outcome reporting it.",
+        "boundaryOrTradeoff": "A resumable session may have a different lifecycle contract, but it cannot claim the same terminal Closed state.",
+        "transfer": "Ensure lifecycle labels mean the same thing to every implementation of a shared type."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_13_input",
+          "text": "The session changes after Closed, so the terminal-state guarantee is false."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_13_outcome",
+          "text": "The operation still accepts edits after the point the base contract says none may be accepted."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_13_effect",
+          "text": "The session is closed, but the caller loses queued work without the close outcome reporting it."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i032",
+    "prompt": "Carrier.quote(shipment) accepts any shipment that satisfies the base temperature band and returns a price or Unavailable. A proposed RegionalCarrier refuses all shipments above 20 kg, although the base contract allows them. What preserves substitutability?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_14_contract",
+          "text": "Accept base-valid shipments and return Price or Unavailable."
+        },
+        {
+          "optionId": "n04b03_14_input",
+          "text": "Reject every shipment above 20 kg as invalid input."
+        },
+        {
+          "optionId": "n04b03_14_outcome",
+          "text": "Return a zero price for a supported shipment the carrier cannot carry."
+        },
+        {
+          "optionId": "n04b03_14_effect",
+          "text": "Require callers to invoke quoteRegional(shipment) after checking weight."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_14_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Weight can affect whether a carrier is available, but it does not make a base-valid shipment invalid. The subtype should return the defined unavailable outcome rather than reject the call.",
+      "details": {
+        "mechanismOrProperty": "A narrower implementation capability belongs in a permitted result, not an undocumented stronger precondition.",
+        "scenarioApplication": "The caller can use the same quote operation for any base-valid shipment and handle Price or Unavailable.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: The regional subtype narrows the base input domain rather than reporting its actual availability outcome. Zero is a successful price, not the contract’s Unavailable outcome, and misleads callers. The subtype forces a narrower specialized call where callers expect the shared Carrier contract.",
+        "boundaryOrTradeoff": "A separate HeavyShipment contract is possible when callers knowingly request that narrower capability.",
+        "transfer": "Represent capacity differences as outcomes when the base method already admits the input."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_14_input",
+          "text": "The regional subtype narrows the base input domain rather than reporting its actual availability outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_14_outcome",
+          "text": "Zero is a successful price, not the contract’s Unavailable outcome, and misleads callers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_14_effect",
+          "text": "The subtype forces a narrower specialized call where callers expect the shared Carrier contract."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i033",
+  "prompt": "ChunkedUpload.append(chunk) returns either Accepted(offset) or RetryableFailure. Accepted means the entire chunk is stored at the reported offset; RetryableFailure commits no bytes so the caller can retry, and append does not throw. A proposed LowMemoryUpload stores only the first half before it detects insufficient capacity. Which behavior is compatible?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_15_contract",
+        "text": "Return Accepted only after the full chunk is stored; otherwise commit none and return RetryableFailure."
+        },
+        {
+          "optionId": "n04b03_15_input",
+          "text": "Keep storing the first half and return Accepted at the starting offset."
+        },
+        {
+          "optionId": "n04b03_15_outcome",
+          "text": "Return Accepted with the offset after the stored half."
+        },
+        {
+          "optionId": "n04b03_15_effect",
+        "text": "Throw an unchecked memory exception for large chunks instead of returning RetryableFailure."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_15_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The contract defines complete-or-none behavior: Accepted confirms the whole chunk, while RetryableFailure leaves it uncommitted for retry.",
+      "details": {
+        "mechanismOrProperty": "The result postconditions cover both paths: complete persistence for Accepted and no committed bytes for RetryableFailure.",
+        "scenarioApplication": "Because the low-memory implementation has already written only half, it must undo or stage that work before reporting RetryableFailure; it cannot report Accepted for the partial chunk.",
+        "errorCorrection": "Each alternative violates an explicit outcome: both Accepted options claim success with bytes missing, and throwing bypasses the required RetryableFailure result.",
+        "boundaryOrTradeoff": "This API chooses all-or-none append semantics; partial progress would require a separately specified result and recovery contract.",
+        "transfer": "For another chunked operation, check both success and failure postconditions before deciding whether a retry is safe."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_15_input",
+        "text": "Accepted promises the complete chunk, but the implementation has stored only half."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_15_outcome",
+        "text": "Moving the reported offset does not change that the chunk is incomplete while the result says Accepted."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_15_effect",
+        "text": "The stated contract requires RetryableFailure and says append does not throw."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i034",
+    "prompt": "CacheStore.put(key, value) guarantees that after Stored is returned, a read by that key returns the supplied value. A proposed WriteOnceCache ignores later puts for an existing key but still returns Stored. Which behavior preserves the contract?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_16_contract",
+          "text": "Store the supplied value before returning Stored."
+        },
+        {
+          "optionId": "n04b03_16_input",
+          "text": "Keep ignoring later writes and return Stored."
+        },
+        {
+          "optionId": "n04b03_16_outcome",
+          "text": "Append another value and let reads return whichever entry is first."
+        },
+        {
+          "optionId": "n04b03_16_effect",
+          "text": "Throw for an existing key although the base contract allows put for any key."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_16_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Stored guarantees that the newly supplied value is what a subsequent read returns. A write-once variant cannot report that outcome when it silently keeps an earlier value.",
+      "details": {
+        "mechanismOrProperty": "Postcondition fidelity includes the relation between the input value and later observable state.",
+        "scenarioApplication": "The operation either stores the supplied value and reports Stored or uses a separately defined outcome for preserving the prior value.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: A caller receives Stored even though the requested value is not the value a subsequent read returns. The returned state is ambiguous and does not guarantee that the supplied value is readable. The subtype strengthens the precondition by rejecting a base-valid operation.",
+        "boundaryOrTradeoff": "A write-once cache can expose an insertIfAbsent contract, but it should not silently substitute for put.",
+        "transfer": "Align operation names and result variants with the state change callers can verify."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_16_input",
+          "text": "A caller receives Stored even though the requested value is not the value a subsequent read returns."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_16_outcome",
+          "text": "The returned state is ambiguous and does not guarantee that the supplied value is readable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_16_effect",
+          "text": "The subtype strengthens the precondition by rejecting a base-valid operation."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i035",
+    "prompt": "RefundProcessor.refund(payment, amount) accepts an amount no greater than the unrefunded settled balance and returns Refunded(amount) after one ledger entry. Each refund request has a stable request ID; retries after timeout reuse that ID. A proposed RetryFriendlyProcessor posts the same refund again for a repeated request ID. Which behavior is compatible?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_17_contract",
+          "text": "Return the existing refund result for a repeated request ID."
+        },
+        {
+          "optionId": "n04b03_17_input",
+          "text": "Post a second ledger entry on every repeat and return Refunded(amount)."
+        },
+        {
+          "optionId": "n04b03_17_outcome",
+          "text": "Throw DuplicateRequest even when the same refund was already posted."
+        },
+        {
+          "optionId": "n04b03_17_effect",
+          "text": "Allow an amount above the unrefunded balance when the caller marks it as retry."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_17_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The retry represents the same requested refund, not a second refund. Returning its existing outcome preserves the one-entry postcondition and balance bound.",
+      "details": {
+        "mechanismOrProperty": "Substitutable implementations preserve both side-effect multiplicity and the input invariant across retries.",
+        "scenarioApplication": "The first request posts once; a repeated request identity returns the existing result without changing the ledger again.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: The base outcome promises one ledger entry, so a retry creates a duplicate side effect. The caller cannot reconcile a repeat through the specified result contract and receives a new exceptional outcome. A retry flag does not change the base amount bound and can violate the payment invariant.",
+        "boundaryOrTradeoff": "A genuinely new refund can use a new request identity and must still satisfy the unrefunded-balance bound.",
+        "transfer": "Treat retry behavior as part of the contract whenever repeated calls may occur."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_17_input",
+          "text": "The base outcome promises one ledger entry, so a retry creates a duplicate side effect."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_17_outcome",
+          "text": "The caller cannot reconcile a repeat through the specified result contract and receives a new exceptional outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_17_effect",
+          "text": "A retry flag does not change the base amount bound and can violate the payment invariant."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B03",
+    "questionId": "ood-n04-b03-i036",
+    "prompt": "Model.predict(features) promises a prediction and does not change trained model parameters or training data. A proposed AdaptiveModel updates its weights after every prediction. Which design remains compatible?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b03_18_contract",
+          "text": "Keep predict read-only; expose learning through a separate operation."
+        },
+        {
+          "optionId": "n04b03_18_input",
+          "text": "Retain weight updates inside predict so later predictions improve."
+        },
+        {
+          "optionId": "n04b03_18_outcome",
+          "text": "Update the weights but keep them private from callers."
+        },
+        {
+          "optionId": "n04b03_18_effect",
+          "text": "Require callers to pass learn=true or false to the shared predict method."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b03_18_contract"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Predict is specified as a read-like operation over fixed model state. Online learning is a distinct behavior and should not be added invisibly to a subtype implementation.",
+      "details": {
+        "mechanismOrProperty": "Preserving a no-mutation postcondition keeps repeated calls meaningful to every Model caller.",
+        "scenarioApplication": "The caller gets a prediction without changing parameters; a separately requested learning operation can update state under a separate contract.",
+        "errorCorrection": "Each distractor breaks a different part of this case’s contract: Callers rely on predict not mutating model parameters; the subtype changes behavior across repeated reads. Hiding the mutation does not preserve the no-change guarantee; the prediction operation still alters model state. The method now has an added mode and mutation authority absent from the base contract; ordinary callers can trigger learning accidentally.",
+        "boundaryOrTradeoff": "An adaptive model can be substitutable under a contract that permits learning-on-predict, but this base contract forbids it.",
+        "transfer": "Do not let a subtype add hidden side effects to a shared operation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_18_input",
+          "text": "Callers rely on predict not mutating model parameters; the subtype changes behavior across repeated reads."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_18_outcome",
+          "text": "Hiding the mutation does not preserve the no-change guarantee; the prediction operation still alters model state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b03_18_effect",
+          "text": "The method now has an added mode and mutation authority absent from the base contract; ordinary callers can trigger learning accidentally."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://www.cs.cmu.edu/~wing/publications/LiskovWing94.pdf",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.5"
+    ]
+  }
+]

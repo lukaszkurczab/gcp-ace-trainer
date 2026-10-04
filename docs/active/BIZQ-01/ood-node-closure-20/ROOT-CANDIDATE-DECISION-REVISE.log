@@ -1,0 +1,20 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ '1912fa7fa741bf642bdb71917b42a7638090cdc5'
+- '4721c395a6a55a02496b8971b7d47cae93a3d1a5'
+
+    at file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/active/BIZQ-01/ood-node-closure-20/assemble-candidate-decision.mjs:15:8 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: '1912fa7fa741bf642bdb71917b42a7638090cdc5',
+  expected: '4721c395a6a55a02496b8971b7d47cae93a3d1a5',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.21.0

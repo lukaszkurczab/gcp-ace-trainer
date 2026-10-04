@@ -1,0 +1,7 @@
+{
+  "scope": "Actual before/current reviewed N04 option ID sets, including18same-ID questions; no semanticapproval or runtimehistoricalmigration",
+  "questionCount": 162,
+  "reusedRetiredCohortOptionIds": [],
+  "retainedQuestionCount": 18,
+  "source": "MANIFEST.json + current9proposals bound ROOT-FINAL-REVIEW-INPUTS-v2.json"
+}

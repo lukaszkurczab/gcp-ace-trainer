@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "review": "independent-producer-acceptance",
+  "verdict": "PASS",
+  "scope": "BIZQ-01 package 20 producer only: nine OOD-N04 files, 144 semantic replacements, 18 same-ID corrections, preservation of the existing 25 Reason corrections, and exact reconstruction through the fixed historical chain.",
+  "snapshot": {
+    "verifier": {
+      "path": "patternly-content/scripts/content/verify-migration.mjs",
+      "sha256": "43d7e66f2ed19fe254fc4484226bd48f514c4405d206ccc24b2cd8e25de509c2"
+    },
+    "proof": {
+      "path": "patternly-content/evidence/business-quality/bizq-01-ood-node-closure-20.json",
+      "sha256": "cb087c42a24d7a7f6ddbd922b05f379efab8f68e991587b30ee8bf51f0e1298d"
+    },
+    "focusedTest": {
+      "path": "patternly-content/tests/bizq01-ood-node-closure-20.test.mjs",
+      "sha256": "b89efc69b42fb652b26f04b17795d52347bbbcbfcd412582cfc5971dd5e484fe"
+    }
+  },
+  "criteria": [
+    {
+      "criterion": "Fixed source and whole-object bindings for all nine N04 files",
+      "result": "PASS",
+      "evidence": "Independent raw-byte checks matched all nine current source hashes and all 162 proof currentQuestion objects; v20 focused tests cover tampered proof/source/object and missing/extra membership rejection."
+    },
+    {
+      "criterion": "Exact private v19a source and full OOD predecessor reconstruction",
+      "result": "PASS",
+      "evidence": "All nine predecessor arrays serialized as compact JSON matched beforeSourceSha256; the full 1,413-object current and predecessor OOD sets matched the fixed questionSetSha256 values. The focused v20 test also traversed 19a→19→17→16→13→12→11."
+    },
+    {
+      "criterion": "Separate 144 semantic replacements from 18 same-ID corrections in historical comparison",
+      "result": "PASS",
+      "evidence": "The final verifier uses semantic replacements for current membership and restores same-ID old objects only in historical reconstruction; migration output reports 594 semantic mappings and 18 separate corrections."
+    },
+    {
+      "criterion": "Preserve previous fixed descriptors and immutable evidence",
+      "result": "PASS",
+      "evidence": "After correcting the initial N03-B01 v19 descriptor edit, the final verifier diff is additive for v20 and the old proof files are unchanged. ROOT-SOURCE-PRESERVATION.json reports 11 immutable proof/evidence files and 944 untouched content files."
+    },
+    {
+      "criterion": "Focused positive, historical and negative coverage",
+      "result": "PASS",
+      "evidence": "Final snapshot command ran 26/26 tests across v20/v19/v17/v16; npm run verify:migration passed; git diff --check passed."
+    }
+  ],
+  "preservationReceipt": {
+    "path": "docs/active/BIZQ-01/ood-node-closure-20/ROOT-SOURCE-PRESERVATION.json",
+    "sha256": "cbc2ed09e03c381b328822759d34927363147c31dc19167957bb3c961d8b4334",
+    "reportedCounts": {
+      "changedN04Objects": 162,
+      "semanticReplacements": 144,
+      "sameIdCorrections": 18,
+      "untouchedContentFiles": 944,
+      "immutableProofAndEvidenceFiles": 11,
+      "unchangedNonN04OodObjects": 1251
+    }
+  },
+  "limitations": [
+    "Full canonical suite and build are pending the root-owned post-checkpoint gates.",
+    "Candidate/readiness, app consumer, admission, native behavior, release readiness and full BIZQ-01 completion are outside this producer acceptance."
+  ]
+}

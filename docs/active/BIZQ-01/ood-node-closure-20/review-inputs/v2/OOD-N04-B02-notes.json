@@ -1,0 +1,274 @@
+{
+  "items": [
+    {
+      "beforeQuestionId": "ood-n04-b02-i001",
+      "questionId": "ood-n04-b02-i019",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "The policy varies per reservation while the caller’s operation stays constant. Delegating through the selected policy lets the corresponding implementation determine the transfer behavior.",
+      "decisiveFact": "Garden transfers now follow two policies: an ordinary move keeps the original approval record, while a conservation plot also requires a soil review. The caller receives a Reservation and invokes transfer; new policies must be addable without editing the caller or Reservation’s source code. Which dispatch design meets that contract?",
+      "nearestAlternative": "Put an if/else on plot category in the caller and add a branch for each new transfer policy.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i002",
+      "questionId": "ood-n04-b02-i020",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "The catalog has already selected a pricing policy, and both policies share the same input and output contract. Dispatching that operation on the selected policy keeps callers uniform.",
+      "decisiveFact": "A regional bundle can use either the standard discount rule or a member-only rule. Both receive the same component prices; the catalog manager selects the rule when preparing the bundle, and the publishing screen calls one price operation. How should price calculation vary?",
+      "nearestAlternative": "Branch in the publishing screen on region and membership, then calculate the discount there.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i003",
+      "questionId": "ood-n04-b02-i021",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "Both connector kinds answer the same question but use different rules. A polymorphic query lets the actual connector supply the validity behavior.",
+      "decisiveFact": "A charging station has connector objects with different reservation rules: one connector expires an unconfirmed hold after five minutes; another holds it until an explicit cancellation. The caller receives a Connector and asks whether a hold is still valid. Which design avoids leaking connector kind into the caller?",
+      "nearestAlternative": "Let the caller inspect connector type and apply either the five-minute or cancellation rule.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i004",
+      "questionId": "ood-n04-b02-i022",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "The sources have a common import operation but different source representations. Letting each implementation normalize its own fields keeps the pipeline stable and the archive record uniform.",
+      "decisiveFact": "An archive imports metadata from either a camera file or a scanned catalog card. Both sources provide a title, but camera files include capture time and catalog cards include a shelf mark. The archive’s import pipeline calls normalize() on a SourceRecord. How should the pipeline handle the distinct source fields?",
+      "nearestAlternative": "Have the import pipeline branch on camera versus catalog-card classes and map each field itself.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i005",
+      "questionId": "ood-n04-b02-i023",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "The same usage facts are evaluated under a selected rule set, and the result has a shared shape. Dispatching evaluate on ClearancePolicy represents exactly that variation.",
+      "decisiveFact": "A rights-clearance request can be evaluated under one of several territory policies selected for that request. Every policy accepts the same usage facts and returns Approved or a list of unmet conditions; none may alter the request. Where should the variation live?",
+      "nearestAlternative": "Let the licensing analyst’s screen contain a territory switch and calculate the result.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i006",
+      "questionId": "ood-n04-b02-i024",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "The job already calls one compatibility operation and the battery implementations differ only in the accepted mounts. Overriding that operation supplies behavior without a model branch.",
+      "decisiveFact": "Battery candidates implement a common InstallationCheck contract. A standard battery supports one mount; a dual-mount battery supports either of two mounts. The maintenance job calls supports(mount) before assignment, and must not branch on battery model. Which implementation is appropriate?",
+      "nearestAlternative": "Add a model-name switch in MaintenanceJob to list compatible mounts.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i007",
+      "questionId": "ood-n04-b02-i025",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "Both destinations accept the same summary and share an outcome contract. The destination object can handle its own transport while keeping the navigator’s call stable.",
+      "decisiveFact": "Referral destinations can be an in-house clinic or a partner clinic. Both accept a ReferralSummary and return an acknowledgement or a retryable unavailable result; partner destinations additionally include a correlation token. The care navigator submits through a Destination reference. Which design is best?",
+      "nearestAlternative": "Branch in the navigator to call the in-house client or partner client and parse each response.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i008",
+      "questionId": "ood-n04-b02-i026",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "The attempt provides the same captured inputs while the selected policy changes only the scoring behavior. A common score operation on the policy keeps the result screen uniform.",
+      "decisiveFact": "An exercise attempt stores the exact exercise revision selected at start. It can be scored by either the practice policy or a certification policy; both accept the captured answers and revision but apply different score rules. The result screen calls score(attempt). How should scoring vary?",
+      "nearestAlternative": "Have the result screen branch on policy name and compute points itself.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i009",
+      "questionId": "ood-n04-b02-i027",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "Both rules share the same input and output but evaluate it differently. Dispatch on a selected ApprovalRule keeps the queue from implementing policy branches.",
+      "decisiveFact": "Procurement approvals use different control rules for routine and regulated purchases. Both rules receive the same exception facts and an approver identity; both return allowed or a missing-control list. The queue invokes canApprove(exception, actor). Which design fits?",
+      "nearestAlternative": "Put routine and regulated threshold branches into the approval queue.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i010",
+      "questionId": "ood-n04-b02-i028",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "The source format is the only varying behavior and the mapper already depends on a common decoded result. A selected decoder isolates format handling before the shared workflow.",
+      "decisiveFact": "A podcast editor can import a WAV recording or an MP3 recording. Both yield audio samples and a duration, but their decoders differ. The annotation mapper consumes the same DecodedRecording shape after import. Where should format-specific decoding occur?",
+      "nearestAlternative": "Make the annotation mapper branch on WAV/MP3 and decode there.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i011",
+      "questionId": "ood-n04-b02-i029",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "The grants share a query but define effectiveness differently. Implementing that query per grant keeps the access checker independent of grant kind and representation.",
+      "decisiveFact": "Grant policy is selected from a grant’s approval record. Both temporary and standing grants answer isEffective(at); a temporary grant also becomes ineffective at its expiry, while a standing grant has no expiry. The access checker calls that method through Grant. Which model avoids duplicated policy checks?",
+      "nearestAlternative": "Have the access checker inspect grant kind and expiry before deciding.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i012",
+      "questionId": "ood-n04-b02-i030",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "The signing request and reconciliation outcomes have a common contract even though transports differ. A Signer operation lets the workflow reconcile Unknown without parsing provider internals.",
+      "decisiveFact": "A signing request may use either the in-house signer or a partner signer. Each accepts an immutable revision digest and returns Sealed, Rejected, or Unknown under the same request ID. The notary workflow must reconcile Unknown without knowing transport details. What should it invoke?",
+      "nearestAlternative": "Let the notary workflow call each provider SDK and map its response itself.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i013",
+      "questionId": "ood-n04-b02-i031",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "Both processors accept the same stable payout identity and produce a common outcome. A selected processor can encapsulate the provider-specific request details.",
+      "decisiveFact": "Seller payouts can go through either a bank processor or a wallet processor. Both accept one settled payout ID and return a transfer reference or a retryable failure; each exposes different provider fields. The finance workflow calls release(id). How should it remain independent of provider kind?",
+      "nearestAlternative": "Put a bank-versus-wallet switch in the finance workflow and build the provider request there.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i014",
+      "questionId": "ood-n04-b02-i032",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "The notice variants share an application operation but have different effects on the board. Dispatching that operation by notice subtype keeps passenger callers uniform.",
+      "decisiveFact": "Transit notices share an effective-time ordering contract. A routine platform change updates one stop; an emergency notice blocks boarding at several stops until a replacement notice is issued. Passenger clients call applyTo(board) on a Notice. Which design is appropriate?",
+      "nearestAlternative": "Have each passenger client inspect notice kind and decide which stops to update.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i015",
+      "questionId": "ood-n04-b02-i033",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "Both meters answer the same capability question but support different interval forms. A common query can return the required available/unsupported outcome through runtime dispatch.",
+      "decisiveFact": "Two meter implementations report discharge availability: a smart meter can reserve by instant interval, while a legacy meter accepts only fixed half-hour slots. The service caller requests an interval and must receive Available or UnsupportedSlot before creating a commitment. Which contract should it call?",
+      "nearestAlternative": "Cast to SmartMeter for interval requests and special-case the legacy meter.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i016",
+      "questionId": "ood-n04-b02-i034",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "The provider’s request format varies, while the stream caller’s chunk/result expectation stays fixed. Translation belongs inside the selected provider implementation.",
+      "decisiveFact": "A caption provider may return a complete timestamped chunk or an unavailable result. The studio must keep the stream’s timing contract, and two provider implementations have different request formats. Which object should translate those formats?",
+      "nearestAlternative": "Put both request formats in the studio and branch before every transcription call.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i017",
+      "questionId": "ood-n04-b02-i035",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "The swap operation is common but eligibility has one subtype-specific condition. Dispatching the check on the assignment preserves the manager’s single call and the specialized rule.",
+      "decisiveFact": "A roster has multiple volunteer categories. All assignments use the same swap command; a specialist assignment additionally requires a certification match. The manager should not branch on category; it asks both assignments whether the pair is eligible, and rejected swaps return the blocking assignment. How should the eligibility check vary?",
+      "nearestAlternative": "Have the manager inspect assignment categories and apply the extra certification rule.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n04-b02-i018",
+      "questionId": "ood-n04-b02-i036",
+      "mentalUnitId": "OOD-N04-B02",
+      "learningObjective": "Both routes share the same edit/result contract; the constrained subtype adds a specific acceptance condition. Implementing that condition in apply keeps the map client uniform.",
+      "decisiveFact": "A route edit may target either a simple path or a constrained route with protected segments. Both accept a proposed geometry and return Accepted or a conflict set; protected routes reject any proposal that changes a protected segment. The map client invokes apply(edit). Which design preserves one caller contract?",
+      "nearestAlternative": "Make the map client compare route kinds and protected segments before calling a generic writer.",
+      "changedCondition": "The case states a real behavior variation behind one stable operation, so runtime dispatch is now supported by the visible caller and subtype facts.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The former generic ownership maxim is replaced by a specific shared operation and implementation-variation decision; the primary meaning and all option meanings change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+        "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+      ]
+    }
+  ]
+}

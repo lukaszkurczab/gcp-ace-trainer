@@ -1,0 +1,15 @@
+✔ admission binds verified local publishing bytes, app lock, and runtime test (106.082417ms)
+✔ committed admission and runtime evidence remain hash-bound (2.682458ms)
+✔ release gate verifies exact decision-bound evidence and requires separate admission (446.349083ms)
+✔ release gate accepts the exact v3 admission without mutating readiness v2 (330.745417ms)
+✔ bundled Free-node control validates pinned source items and bounds decompression (2034.5575ms)
+✔ Free-node acceptance evidence rejects authority changes and unsupported fields (5.039875ms)
+✔ workflow contract rebuilds v2 evidence and release gate without legacy publisher or deployment commands (1.318958ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2899.120459
