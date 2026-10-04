@@ -1,0 +1,1513 @@
+[
+  {
+    "beforeQuestionId": "ood-n02-b08-i001",
+    "questionId": "ood-n02-b08-i020",
+    "learningObjective": "Represent a confirmed missing reservation separately from a failed lookup.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b08-i020",
+      "prompt": "In a community garden allocation tool, the plot steward must transfer a plot reservation. Transfer preserves the plot boundary and approval history. A plot reservation lookup is a read: many plots have no current reservation, and that is normal. A database outage must still be reported separately. What should the lookup contract express?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i020_contract",
+            "text": "Return absent reservation as a normal optional result; return lookup failure separately."
+          },
+          {
+            "optionId": "b08_i020_local1",
+            "text": "Return null for both no reservation and database failure."
+          },
+          {
+            "optionId": "b08_i020_local2",
+            "text": "Return an empty reservation object when none exists."
+          },
+          {
+            "optionId": "b08_i020_local3",
+            "text": "Throw the same “not found” error for no reservation and storage outage."
+          },
+          {
+            "optionId": "b08_i020_local4",
+            "text": "Make callers query a plot field to infer whether a reservation was returned."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i020_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "No current reservation is an expected empty result, while a database outage is a failed lookup; the contract must not collapse those cases.",
+        "details": {
+          "mechanismOrProperty": "Returning no reservation is a successful lookup result. A database outage means the lookup did not establish whether one exists, so its failure must remain observable.",
+          "scenarioApplication": "The plot steward needs three distinguishable observations here: a reservation, a confirmed absence, or an unsuccessful read.",
+          "errorCorrection": "No reservation is expected for many plots; outage is not another spelling of absence.",
+          "boundaryOrTradeoff": "If this operation required a reservation to transfer, confirmed absence could be a command-level not-found outcome. This operation is the preceding read.",
+          "transfer": "For reads with expected missing records, preserve absence as data and preserve inability to read as failure."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i020_local1",
+            "text": "The empty option is a normal value; an outage is an operation failure."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i020_local2",
+            "text": "An empty reservation object would claim that a reservation exists after the lookup confirmed none."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i020_local3",
+            "text": "Not found and failed lookup call for different caller behavior."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i020_local4",
+            "text": "The plot itself does not encode whether the lookup succeeded."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i002",
+    "questionId": "ood-n02-b08-i021",
+    "learningObjective": "Keep a valid zero quote distinct from missing required component pricing.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "foundational_boundary",
+      "questionId": "ood-n02-b08-i021",
+      "prompt": "In a subscription packaging service, the catalog manager must add a regional bundle. The bundle pricing policy remains consistent with its components. A regional bundle quote may have a valid total of zero. If any required component price is missing, the quote cannot be calculated and the missing component must be named. What should the quote operation return?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i021_local2",
+            "text": "Return no quote for both a valid zero total and a missing component price."
+          },
+          {
+            "optionId": "b08_i021_local3",
+            "text": "Fill missing component prices from the previous regional quote."
+          },
+          {
+            "optionId": "b08_i021_local4",
+            "text": "Throw an untyped error that does not identify the missing component."
+          },
+          {
+            "optionId": "b08_i021_contract",
+            "text": "Return a valid quote, including zero, or a missing-component-price error."
+          },
+          {
+            "optionId": "b08_i021_local1",
+            "text": "Use zero to mean a component price was not found."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i021_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Zero is a valid quote total under the prompt; missing required input is an error with actionable component context.",
+        "details": {
+          "mechanismOrProperty": "Zero belongs to the quote domain. A missing component price prevents calculation and must identify which required input is unavailable.",
+          "scenarioApplication": "The bundle may total zero even though every component price is present; a missing component price is a different condition and blocks a quote.",
+          "errorCorrection": "Use the missing component identity to distinguish incomplete pricing input from a valid numeric total.",
+          "boundaryOrTradeoff": "If a component were optional, the prompt would need to say how omission affects the quote. Here every required component price is needed.",
+          "transfer": "Never reserve an otherwise valid numeric value as a marker for missing input when the prompt allows that value."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i021_local1",
+            "text": "The prompt separates a valid numeric value from unavailable pricing input."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i021_local2",
+            "text": "An optional quote alone cannot explain which required price is missing."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i021_local3",
+            "text": "Previous regional prices are not an authorized substitute."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i021_local4",
+            "text": "The caller needs the missing component to repair the quote request."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i003",
+    "questionId": "ood-n02-b08-i022",
+    "learningObjective": "Distinguish no available charger from inability to read the schedule.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "intermediate",
+      "questionId": "ood-n02-b08-i022",
+      "prompt": "In a fleet charging coordinator, the station operator must reserve a charger. Charger capacity and reservation expiry are coordinated. A charger search can find no free charger, and callers should show “none available.” If the schedule store cannot be read, callers should offer retry. How should search outcomes be represented?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i022_local4",
+            "text": "Return “no charger” for both an empty schedule and a failed schedule read."
+          },
+          {
+            "optionId": "b08_i022_contract",
+            "text": "Use separate outcomes for available, no match, and schedule-read failure."
+          },
+          {
+            "optionId": "b08_i022_local1",
+            "text": "Return an empty charger object for both no match and store failure."
+          },
+          {
+            "optionId": "b08_i022_local2",
+            "text": "Return no match when the schedule read fails, so the caller reports “none available.”"
+          },
+          {
+            "optionId": "b08_i022_local3",
+            "text": "Return the first charger even when it is occupied."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i022_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "The caller takes different actions for normal unavailability and failed schedule access, so both need distinct outcome cases.",
+        "details": {
+          "mechanismOrProperty": "No matching charger is a completed search result; a failed schedule read leaves availability unknown. The caller needs “none available” only after the schedule was read.",
+          "scenarioApplication": "The result must preserve whether a charger was found, the search completed with no match, or the store could not answer.",
+          "errorCorrection": "An empty search and an unreadable search are different results: only the first justifies showing “none available.”",
+          "boundaryOrTradeoff": "An optional charger plus a distinct read error could encode the same meanings. The important contract is that the two outcomes remain distinguishable.",
+          "transfer": "Only report a negative search result when the source needed to establish it was read successfully."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i022_local1",
+            "text": "The fact that no charger is available is not itself a storage error."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i022_local2",
+            "text": "A schedule timeout did not confirm an empty search, so this would falsely tell the operator that no charger is available."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i022_local3",
+            "text": "A charger that is already occupied does not satisfy the search for a free charger."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i022_local4",
+            "text": "A failed read cannot establish that no charger matches."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i004",
+    "questionId": "ood-n02-b08-i023",
+    "learningObjective": "Preserve the difference between absent caption metadata and intentionally blank text.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "intermediate_transfer",
+      "questionId": "ood-n02-b08-i023",
+      "prompt": "In a photo-archive curation tool, the archivist must merge duplicate metadata. Asset identity remains stable while descriptive values are replaced. An archived photo may have no caption metadata, while an explicitly stored empty caption means the curator intentionally chose blank text. How should the metadata field be modeled?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i023_local1",
+            "text": "Normalize absent metadata to an empty string."
+          },
+          {
+            "optionId": "b08_i023_local2",
+            "text": "Use null for both missing metadata and intentionally blank caption."
+          },
+          {
+            "optionId": "b08_i023_local3",
+            "text": "Make caption required and invent placeholder text when it is absent."
+          },
+          {
+            "optionId": "b08_i023_local4",
+            "text": "Drop empty captions during serialization because they display no characters."
+          },
+          {
+            "optionId": "b08_i023_contract",
+            "text": "Represent caption as optional text so absent differs from stored empty."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i023_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "The two states carry different curator intent; collapsing absence into empty text loses that distinction.",
+        "details": {
+          "mechanismOrProperty": "Caption presence carries curator intent independently from the string contents: absent metadata differs from a stored empty string.",
+          "scenarioApplication": "The field must carry both whether caption metadata was supplied and, when present, its text.",
+          "errorCorrection": "Normalizing absence to empty loses whether the curator intentionally chose blank text.",
+          "boundaryOrTradeoff": "If the archive later defines absent and blank captions as equivalent, normalization could be valid; the current contract expressly keeps them distinct.",
+          "transfer": "When an empty value is meaningful, model presence separately from the contained value."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i023_local1",
+            "text": "The presence bit matters independently of the caption’s string contents."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i023_local2",
+            "text": "One null value cannot distinguish the two meanings the prompt defines."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i023_local3",
+            "text": "A placeholder creates content the curator never supplied."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i023_local4",
+            "text": "An explicitly stored empty value must remain present under this contract."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i005",
+    "questionId": "ood-n02-b08-i024",
+    "learningObjective": "Return actionable validation errors for missing required licensing inputs.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "advanced_tradeoff",
+      "questionId": "ood-n02-b08-i024",
+      "prompt": "In a digital rights clearance tool, the licensing analyst must approve a territory-specific usage. Approval requires an explicit territory and expiration. Territory and expiry are mandatory for clearance. The request can be syntactically parsed while either field is missing; the analyst must receive field-specific repair guidance. What should request validation return?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i024_local3",
+            "text": "Use one generic false result that does not identify which field is missing."
+          },
+          {
+            "optionId": "b08_i024_local4",
+            "text": "Represent either missing field as “no matching clearance.”"
+          },
+          {
+            "optionId": "b08_i024_contract",
+            "text": "Return field-specific validation errors for missing territory or expiry."
+          },
+          {
+            "optionId": "b08_i024_local1",
+            "text": "Treat missing territory as worldwide and missing expiry as permanent."
+          },
+          {
+            "optionId": "b08_i024_local2",
+            "text": "Return an empty clearance as though a request was accepted."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i024_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Missing required input is a malformed request, not a valid global/permanent clearance or a search miss.",
+        "details": {
+          "mechanismOrProperty": "The request can parse while required territory or expiry is absent. Validation should report the specific missing field before any clearance lookup or approval.",
+          "scenarioApplication": "The analyst must know which of the two mandatory inputs to repair; neither a broad false value nor a search result supplies that guidance.",
+          "errorCorrection": "Field-specific validation identifies the missing territory or expiry without inventing a default license scope.",
+          "boundaryOrTradeoff": "If policy introduced a default, it would have to be stated as a rule. The prompt instead makes both fields mandatory.",
+          "transfer": "Keep malformed request input distinct from a valid request that returns no matching record."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i024_local1",
+            "text": "The prompt supplies no worldwide scope or permanent duration, so these defaults would authorize more than the request states."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i024_local2",
+            "text": "An empty accepted clearance would report success despite a missing mandatory field."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i024_local3",
+            "text": "A boolean cannot provide the repair details the prompt requires."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i024_local4",
+            "text": "No matching clearance is a result after valid input is searched, not a substitute for missing input."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i006",
+    "questionId": "ood-n02-b08-i025",
+    "learningObjective": "Distinguish an unknown battery from a known battery that is already assigned.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "advanced_failure",
+      "questionId": "ood-n02-b08-i025",
+      "prompt": "In a drone maintenance planner, the fleet coordinator must schedule a battery replacement. A battery cannot be assigned to two aircraft at once. Battery search uses a serial number. An unknown serial means no battery record; a known battery already assigned to an aircraft is a different condition. What should the lookup report?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i025_contract",
+            "text": "Report unknown serial separately from a found-but-assigned battery."
+          },
+          {
+            "optionId": "b08_i025_local1",
+            "text": "Return “not found” for both conditions."
+          },
+          {
+            "optionId": "b08_i025_local2",
+            "text": "Return an unassigned battery even when the serial is unknown."
+          },
+          {
+            "optionId": "b08_i025_local3",
+            "text": "Use null for an unknown serial and omit assignment status for found batteries."
+          },
+          {
+            "optionId": "b08_i025_local4",
+            "text": "Return a generic error whenever a battery is assigned."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i025_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "The record exists in the assigned case, so it must not be reported as absent; callers also need to know whether the requested serial exists.",
+        "details": {
+          "mechanismOrProperty": "The serial lookup has an existence question and, for a found battery, an assignment-state question. A known assigned battery is not a missing record.",
+          "scenarioApplication": "The coordinator needs to tell the operator whether the serial identifies a battery and whether that battery is currently assignable.",
+          "errorCorrection": "Reporting “not found” for an assigned battery erases a fact the caller needs; returning an unassigned battery fabricates state.",
+          "boundaryOrTradeoff": "An availability-only search could filter assigned batteries if that behavior were explicitly requested. This lookup is required to distinguish the two cases.",
+          "transfer": "Do not collapse a present record that fails a requested condition into record absence."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i025_local1",
+            "text": "The query has an absence state and a found state with a separate assignment condition."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i025_local2",
+            "text": "The prompt explicitly distinguishes no record from a record that cannot be scheduled."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i025_local3",
+            "text": "Null can represent an unknown serial, but omitting assignment status hides whether a found battery is already assigned."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i025_local4",
+            "text": "Assigned is an expected domain condition, not necessarily a system failure."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i007",
+    "questionId": "ood-n02-b08-i026",
+    "learningObjective": "Keep not-recorded, denied, and granted consent distinguishable; only granted permits sending.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b08-i026",
+      "prompt": "In a clinic referral coordinator, the care navigator must route a referral to a specialist. Privacy and consent rules apply before external disclosure. Consent lookup has three possible outcomes: not recorded, explicitly denied, and granted. The referral caller must distinguish not-recorded from denied for its follow-up action. A referral may be sent only for granted consent. What result contract preserves these requirements?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i026_local2",
+            "text": "Return granted as true and collapse denied and not recorded into one null result."
+          },
+          {
+            "optionId": "b08_i026_local3",
+            "text": "Treat the absence of a consent record as permission unless a denial is stored."
+          },
+          {
+            "optionId": "b08_i026_contract",
+            "text": "Preserve not-recorded, denied, and granted as distinct outcomes; allow sending only for granted."
+          },
+          {
+            "optionId": "b08_i026_local1",
+            "text": "Treat any existing consent record, including an explicit denial, as permission to send."
+          },
+          {
+            "optionId": "b08_i026_local4",
+            "text": "Report not-recorded as a transport failure even when the lookup completed successfully."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i026_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "The contract must preserve the three states stated in the prompt and permit external sending only for granted consent; no particular programming-language representation is required.",
+        "details": {
+          "mechanismOrProperty": "The scenario defines three completed lookup values plus an independent possibility that a lookup operation cannot complete. The contract must distinguish the three values without prescribing enum, tagged-union, or nullable encoding.",
+          "scenarioApplication": "Not recorded, denied, and granted remain separately observable; the send path permits disclosure only from the granted outcome.",
+          "errorCorrection": "Mapping denied and not-recorded to one null outcome loses a distinction the prompt explicitly requires; treating every existing record as permission would authorize a denied referral.",
+          "boundaryOrTradeoff": "A UI may render both non-granted states similarly, but any representation is acceptable if it preserves their distinction and keeps both from authorizing send.",
+          "transfer": "Specify the observable states and allowed action first; choose any encoding that preserves them without changing policy."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i026_local1",
+            "text": "An existing record may be explicitly denied; record presence alone does not authorize disclosure."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i026_local2",
+            "text": "This maps denied and not-recorded to the same result, although the prompt requires both states to remain distinguishable."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i026_local3",
+            "text": "The stated rule permits sending only for granted consent; missing evidence is not a grant."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i026_local4",
+            "text": "The lookup succeeded and returned a valid not-recorded state, so this is not an operational failure."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i008",
+    "questionId": "ood-n02-b08-i027",
+    "learningObjective": "Keep a valid zero score distinct from no score and its timeout status.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "foundational_boundary",
+      "questionId": "ood-n02-b08-i027",
+      "prompt": "In a music practice tracker, the learner must complete a timed exercise. Completion records the exercise version and score policy. A completed timed attempt can score zero. A timeout before any answer produces no score and a separate timeout status. How should the score field be represented?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i027_local4",
+            "text": "Drop timeout status and infer it from the absent score."
+          },
+          {
+            "optionId": "b08_i027_contract",
+            "text": "Keep score optional; zero is a score, while timeout status explains absence."
+          },
+          {
+            "optionId": "b08_i027_local1",
+            "text": "Use zero for both a zero-point result and no score."
+          },
+          {
+            "optionId": "b08_i027_local2",
+            "text": "Use null for zero and a numeric score for unanswered attempts."
+          },
+          {
+            "optionId": "b08_i027_local3",
+            "text": "Store a score only after replacing zero with a minimum positive value."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i027_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Zero is a valid score; absent score alone does not explain why no score exists, so timeout status remains separate.",
+        "details": {
+          "mechanismOrProperty": "Score presence and attempt status answer different questions. Zero is a completed score; timeout before any answer has no score and is labeled by status.",
+          "scenarioApplication": "The exercise history must record both the numeric result when awarded and the separate reason an attempt has no score.",
+          "errorCorrection": "Substituting zero for absence confuses an awarded zero with an unanswered timeout.",
+          "boundaryOrTradeoff": "If timeout attempts could earn partial credit, the policy would need to define that combination; this prompt says no answer means no score.",
+          "transfer": "Keep an optional measurement separate from lifecycle state that explains why the measurement is absent."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i027_local1",
+            "text": "Optionality expresses whether a score exists; it does not redefine numeric zero."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i027_local2",
+            "text": "The proposed encoding reverses the valid and absent cases."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i027_local3",
+            "text": "Changing zero invents a score the policy did not award."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i027_local4",
+            "text": "The status field already records why scoring did not occur."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i009",
+    "questionId": "ood-n02-b08-i028",
+    "learningObjective": "Represent approval lifecycle states, missing requests, and query failure distinctly.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "intermediate",
+      "questionId": "ood-n02-b08-i028",
+      "prompt": "In a procurement approval queue, the purchasing manager must approve an exception. Approval is attributable, bounded, and cannot bypass required controls. An exception request can be awaiting review, rejected, or approved. A missing request ID means no request exists; service failure means the state could not be read. How should a status query represent the results?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i028_local1",
+            "text": "Return false for pending and rejected, and true for approved."
+          },
+          {
+            "optionId": "b08_i028_local2",
+            "text": "Return null for every state except approved."
+          },
+          {
+            "optionId": "b08_i028_local3",
+            "text": "Return “rejected” when no request ID is found."
+          },
+          {
+            "optionId": "b08_i028_local4",
+            "text": "Return “pending” when the approval service is unavailable."
+          },
+          {
+            "optionId": "b08_i028_contract",
+            "text": "Return request states, not-found, and query failure as distinct outcomes."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i028_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Pending, rejected, approved, absent, and unreadable are different facts and may trigger different caller actions.",
+        "details": {
+          "mechanismOrProperty": "Pending, rejected, and approved are states of an existing request. Not-found means no request exists, while query failure means its state was not established.",
+          "scenarioApplication": "A boolean can project whether approval is sufficient, but the authoritative query must preserve lifecycle state, request existence, and ability to read it.",
+          "errorCorrection": "Null or false cannot distinguish an awaiting review from a final rejection, and a service outage cannot establish pending.",
+          "boundaryOrTradeoff": "A consumer that needs only “may proceed” can derive that projection after receiving the richer result; it should not erase status at the query boundary.",
+          "transfer": "Preserve the source status before deriving a simpler caller-facing decision."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i028_local1",
+            "text": "A boolean loses the distinction between awaiting review and a final rejection."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i028_local2",
+            "text": "Null cannot represent all named states and still explain absence."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i028_local3",
+            "text": "No request is not a rejection of an existing request."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i028_local4",
+            "text": "An unavailable service does not prove the request is pending."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i010",
+    "questionId": "ood-n02-b08-i029",
+    "learningObjective": "Preserve omitted, explicit-null, and supplied-value intents in a partial update.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "intermediate_transfer",
+      "questionId": "ood-n02-b08-i029",
+      "prompt": "In an account settings service, the owner may update a profile note. For this operation, an omitted note field means leave the current note unchanged, explicit null means clear it, and a supplied string means replace it. The request parser must preserve all three intents until the update is applied. What should the update contract distinguish?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i029_local3",
+            "text": "Treat omitted and explicit null as the same instruction to clear the current note."
+          },
+          {
+            "optionId": "b08_i029_local4",
+            "text": "Treat omitted and explicit null as the same instruction to keep the current note."
+          },
+          {
+            "optionId": "b08_i029_contract",
+            "text": "Preserve omitted, explicit null, and supplied string as keep, clear, and replace."
+          },
+          {
+            "optionId": "b08_i029_local1",
+            "text": "Convert both omitted and null to an empty string before applying the update."
+          },
+          {
+            "optionId": "b08_i029_local2",
+            "text": "Treat every omitted note field as a request to replace the current note with a default."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i029_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "The operation assigns three different meanings to omitted, null, and string input; collapsing them would either clear, retain, or invent a value contrary to the request.",
+        "details": {
+          "mechanismOrProperty": "A partial update needs to preserve field presence separately from its nullable content: omission, explicit null, and a supplied string are three different command intents in this prompt.",
+          "scenarioApplication": "The handler leaves the existing note untouched for omission, clears it for null, and replaces it for a string; the parser must not erase which case arrived.",
+          "errorCorrection": "Using only a nullable string loses the difference between omitted and explicit null unless presence is preserved separately; treating either as an empty string also invents a supplied value.",
+          "boundaryOrTradeoff": "This is the authored profile-update contract. It does not claim all APIs assign these meanings to omitted or null fields.",
+          "transfer": "For partial updates, preserve the caller’s stated intent for each field instead of treating absence, clearing, and replacement as one nullable value."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i029_local1",
+            "text": "An empty string is a supplied value, not the stated meaning of omission or explicit null."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i029_local2",
+            "text": "Omission means keep the current note under this contract, not replace it with a default."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i029_local3",
+            "text": "This clears the note on omission even though omission means leave the current value unchanged."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i029_local4",
+            "text": "This keeps the note on explicit null even though null means clear it."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i011",
+    "questionId": "ood-n02-b08-i030",
+    "learningObjective": "Distinguish no grant record from an existing expired grant.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "advanced_tradeoff",
+      "questionId": "ood-n02-b08-i030",
+      "prompt": "In a permissions review service, the security reviewer must grant a temporary role. The role expires and is attributable to a specific approval. A grant lookup can find no grant, an active grant, or an expired grant. An expired grant record remains visible for audit. What should the lookup return?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i030_contract",
+            "text": "Return absent only for no record; include expired status for an existing grant."
+          },
+          {
+            "optionId": "b08_i030_local1",
+            "text": "Treat expired as absent and hide the audit record."
+          },
+          {
+            "optionId": "b08_i030_local2",
+            "text": "Return the grant as active whenever its ID exists."
+          },
+          {
+            "optionId": "b08_i030_local3",
+            "text": "Use null for expired but a record for active."
+          },
+          {
+            "optionId": "b08_i030_local4",
+            "text": "Return an exception for every expired grant."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i030_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Expired grants still exist in the audit record; treating expiry as absence erases that distinction.",
+        "details": {
+          "mechanismOrProperty": "Record existence and present usability are separate: an expired grant still exists for audit even though it is no longer active.",
+          "scenarioApplication": "The security reviewer needs a found grant with its expiry state, an active grant, or confirmed absence.",
+          "errorCorrection": "Filtering expired records into absence would hide an audit record; treating every present ID as active would misstate authorization.",
+          "boundaryOrTradeoff": "A separate active-only query may filter expired records, but the full lookup described here must preserve their existence and status.",
+          "transfer": "Keep lifecycle validity distinct from whether the referenced record exists."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i030_local1",
+            "text": "The lookup answers record existence while status answers whether it is currently usable."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i030_local2",
+            "text": "ID presence alone does not mean the grant is active."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i030_local3",
+            "text": "Null would collapse an existing expired record into true absence."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i030_local4",
+            "text": "Expiry is a domain state here, not a failure of the lookup operation."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i012",
+    "questionId": "ood-n02-b08-i031",
+    "learningObjective": "Separate named verification outcomes from verifier unavailability.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "advanced_failure",
+      "questionId": "ood-n02-b08-i031",
+      "prompt": "In a document notarization service, the notary must seal a document revision. The seal covers the exact immutable revision. Seal verification has three domain outcomes: valid, signed revision differs from the requested revision, and signer key is revoked. A verifier outage is operational failure. How should the verification API respond?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i031_local2",
+            "text": "Return invalid for verifier outage even though no verification occurred."
+          },
+          {
+            "optionId": "b08_i031_local3",
+            "text": "Return valid when the signature bytes are well formed, ignoring revision and key status."
+          },
+          {
+            "optionId": "b08_i031_local4",
+            "text": "Throw one generic error for both domain rejection and service outage."
+          },
+          {
+            "optionId": "b08_i031_contract",
+            "text": "Return each verification outcome plus a separate verifier-unavailable error."
+          },
+          {
+            "optionId": "b08_i031_local1",
+            "text": "Return a boolean false for both revision mismatch and revoked key."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i031_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "The caller needs distinct remediation for revision mismatch and revoked key; an outage cannot be treated as a completed verification.",
+        "details": {
+          "mechanismOrProperty": "Verification can complete with valid, revision-mismatch, or revoked-key outcomes. An outage means no verification conclusion was reached.",
+          "scenarioApplication": "The caller must distinguish a completed negative verdict that has a specific remedy from an inability to obtain any verdict.",
+          "errorCorrection": "False merges two different completed findings; an outage cannot be reported as a finding about the seal.",
+          "boundaryOrTradeoff": "The programming-language representation may vary, but the visible contract must retain all three completed outcomes and the unavailable case.",
+          "transfer": "Report a domain verdict only after the operation has actually evaluated the domain facts."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i031_local1",
+            "text": "The scenario names three completed verification results and one inability-to-verify condition."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i031_local2",
+            "text": "No verification ran during the outage, so it establishes neither invalidity nor any other verdict about the seal."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i031_local3",
+            "text": "Well-formed bytes alone do not satisfy the stated verification checks."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i031_local4",
+            "text": "Operational failure is not a domain conclusion about the seal."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i013",
+    "questionId": "ood-n02-b08-i032",
+    "learningObjective": "Distinguish confirmed absence of a payout from unknown status during ledger failure.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b08-i032",
+      "prompt": "In a marketplace payout service, the finance operator must release a seller payout. Release is idempotent and tied to a settled order. A payout status query by key may find no payout yet, a pending payout, or a settled payout. A ledger outage means status is unknown, not “none.” What should the query contract distinguish?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i032_local4",
+            "text": "Treat pending as settled because both have a payout record."
+          },
+          {
+            "optionId": "b08_i032_contract",
+            "text": "Use optional status for confirmed absence and a distinct ledger failure."
+          },
+          {
+            "optionId": "b08_i032_local1",
+            "text": "Return “no payout” whenever the ledger cannot be reached."
+          },
+          {
+            "optionId": "b08_i032_local2",
+            "text": "Return a default pending payout when the key is absent."
+          },
+          {
+            "optionId": "b08_i032_local3",
+            "text": "Return null for both no payout and a ledger outage."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i032_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "An outage cannot establish absence; pending and settled are states of a found record, while no record is a normal empty result.",
+        "details": {
+          "mechanismOrProperty": "The payout key identifies the idempotent release whose status is being queried. No record, pending, and settled are confirmed states; a ledger outage leaves that status unknown.",
+          "scenarioApplication": "The finance operator needs to know whether the keyed release is absent, pending, or settled, while an outage must not be converted into “no payout.”",
+          "errorCorrection": "An unavailable ledger cannot establish absence; a synthetic pending record would invent state for the key.",
+          "boundaryOrTradeoff": "If an authoritative cached status were allowed during outages, the prompt would need to establish its freshness and authority. No such source is specified.",
+          "transfer": "For idempotent work, query and report the state of the same key; do not turn uncertainty into confirmed absence."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i032_local1",
+            "text": "The status query has separate record-existence, lifecycle-state, and operation-success dimensions."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i032_local2",
+            "text": "A synthetic pending record would invent state absent from the ledger."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i032_local3",
+            "text": "Null would erase whether absence was confirmed or unknown."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i032_local4",
+            "text": "A pending payout has not reached the settled state specified by the prompt."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i014",
+    "questionId": "ood-n02-b08-i033",
+    "learningObjective": "Keep empty notice history separate from an unknown route and read failure.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "foundational_boundary",
+      "questionId": "ood-n02-b08-i033",
+      "prompt": "In a public-transit disruption board, the service controller must announce a platform change. Passengers receive the change in the order in which it becomes effective. A route notice list may be empty because no platform change has been published for that route. An unknown route ID and a failed board read must be reported separately. What should list retrieval return?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i033_local1",
+            "text": "Return null for an empty list and for an unknown route."
+          },
+          {
+            "optionId": "b08_i033_local2",
+            "text": "Return an empty list whenever the board read fails."
+          },
+          {
+            "optionId": "b08_i033_local3",
+            "text": "Invent a default platform notice when the list is empty."
+          },
+          {
+            "optionId": "b08_i033_local4",
+            "text": "Report unknown route as a storage failure."
+          },
+          {
+            "optionId": "b08_i033_contract",
+            "text": "Return an empty list for known routes; distinguish unknown route and read failure."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i033_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "An empty collection is a valid result for a known route; the other two conditions mean the query did not return that valid empty state.",
+        "details": {
+          "mechanismOrProperty": "An empty list is a successful result for a known route with no notices. Unknown route and failed retrieval do not establish that empty collection.",
+          "scenarioApplication": "The controller needs to tell a valid empty history from an invalid route reference and from a board that could not be read.",
+          "errorCorrection": "Empty is a collection result, not a marker for unknown identity or failed storage access.",
+          "boundaryOrTradeoff": "If an endpoint is defined to return empty for unknown routes, that would be a different contract; this prompt requires unknown IDs to be reported separately.",
+          "transfer": "Keep collection cardinality, referenced-entity existence, and retrieval success distinct when callers act differently on them."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i033_local1",
+            "text": "No published notices does not make the route unknown."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i033_local2",
+            "text": "Failure cannot be interpreted as a confirmed empty result."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i033_local3",
+            "text": "The prompt does not authorize synthetic notices."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i033_local4",
+            "text": "A missing domain route and an unavailable read are separate outcomes."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i015",
+    "questionId": "ood-n02-b08-i034",
+    "learningObjective": "Use the continuation marker, not the current page length, to determine whether a filtered search is complete.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "intermediate",
+      "questionId": "ood-n02-b08-i034",
+      "prompt": "In an archive caption search, the caller requests pages from a filtered result. For this API, each page returns an items array and may return an opaque nextCursor. A page can have no visible items when its underlying rows are all excluded by the filter, while still returning nextCursor for another page. When no nextCursor is returned, the result set is exhausted. To continue, pass the returned cursor with the same search. How should the caller decide whether the search is complete?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i034_local1",
+            "text": "Treat any empty items array as the end of the search."
+          },
+          {
+            "optionId": "b08_i034_contract",
+            "text": "Continue with the returned nextCursor when it is present, even for an empty page; finish only when it is absent."
+          },
+          {
+            "optionId": "b08_i034_local3",
+            "text": "Build the next cursor from the last visible item, and finish if the page is empty."
+          },
+          {
+            "optionId": "b08_i034_local4",
+            "text": "Restart the same search from its first page whenever a page has no visible items."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i034_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "This API defines continuation by nextCursor. Filtering can leave a page empty without exhausting the underlying result, so page length alone cannot signal completion.",
+        "details": {
+          "mechanismOrProperty": "The local API contract separates page contents from search progress: items describes visible matches on this page, while nextCursor signals whether another page remains.",
+          "scenarioApplication": "Even when filtering removes every row from the current page, a returned nextCursor must be passed with the same search. Only the absence of nextCursor marks completion.",
+          "errorCorrection": "Stopping on an empty page can omit later matches; constructing a cursor from the last item fails precisely when no item is visible; restarting can repeat earlier pages.",
+          "boundaryOrTradeoff": "This decision follows the API facts stated in the prompt. It does not claim that other pagination APIs use the same cursor contract.",
+          "transfer": "When a paged API exposes a progress marker, use that marker to detect completion if page filtering can make the current result empty."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i034_local1",
+            "text": "The prompt allows a filtered page to be empty while nextCursor still points to another page."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i034_local3",
+            "text": "An empty page has no last visible item to use, but its returned nextCursor still provides the continuation value."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i034_local4",
+            "text": "Restarting from the first page does not advance the same search and can repeat pages already examined."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i016",
+    "questionId": "ood-n02-b08-i035",
+    "learningObjective": "Preserve the working provider on inconclusive discovery; report confirmed incompatibility separately from a registry timeout.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "intermediate_transfer",
+      "questionId": "ood-n02-b08-i035",
+      "prompt": "In a live captioning studio, the caption supervisor must switch the active language provider. The current stream remains on its working provider until a replacement is confirmed. Provider discovery can find no provider supporting the stream’s language, which requires operator configuration. A timeout contacting the provider registry requires retry and does not authorize removing the active provider. What should discovery report?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i035_contract",
+            "text": "Distinguish confirmed no match from registry unavailability; keep the current provider until a replacement is confirmed."
+          },
+          {
+            "optionId": "b08_i035_local1",
+            "text": "Return “no compatible provider” for both a successful empty registry result and a timeout."
+          },
+          {
+            "optionId": "b08_i035_local2",
+            "text": "Choose any provider and fail later during caption delivery."
+          },
+          {
+            "optionId": "b08_i035_local3",
+            "text": "Return a null provider for both no match and registry failure."
+          },
+          {
+            "optionId": "b08_i035_local4",
+            "text": "Treat registry timeout as a permanent configuration error."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i035_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "A successful empty search supports operator configuration; a timeout supports retry and leaves the working provider in place.",
+        "details": {
+          "mechanismOrProperty": "No compatible provider is a completed discovery result that needs operator configuration; registry timeout is inconclusive and calls for retry.",
+          "scenarioApplication": "The current stream has a working provider. A failed discovery must not be converted into a claim that no replacement exists or trigger removal of the current provider.",
+          "errorCorrection": "The registry did not answer during timeout, so the operator cannot conclude that the configured provider set lacks a compatible one.",
+          "boundaryOrTradeoff": "If discovery had an authoritative local registry snapshot, the prompt would need to define its freshness. Here it specifies retry after registry timeout.",
+          "transfer": "Separate a confirmed negative configuration result from a failed dependency check, preserving the active configuration while the check is inconclusive."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i035_local1",
+            "text": "A timeout gives no evidence that the registry contains no compatible provider; keep the current provider and retry."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i035_local2",
+            "text": "An incompatible provider cannot satisfy the language requirement."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i035_local3",
+            "text": "Null hides whether discovery succeeded and found none."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i035_local4",
+            "text": "A retryable timeout is not the permanent configuration condition described."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i017",
+    "questionId": "ood-n02-b08-i036",
+    "learningObjective": "Return specific missing-reference and availability-conflict errors for a swap.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "advanced_tradeoff",
+      "questionId": "ood-n02-b08-i036",
+      "prompt": "In a volunteer coordination hub, the shift manager must swap two volunteer assignments. A valid swap requires both assignment IDs to exist and both volunteers to satisfy the skill and availability constraints. Validation may discover an unknown assignment ID or a known volunteer who is unavailable. On either validation failure, both assignments remain unchanged. What should the response distinguish?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i036_local2",
+            "text": "Treat an unknown assignment as unavailable without saying it was missing."
+          },
+          {
+            "optionId": "b08_i036_local3",
+            "text": "Return success with whichever half of the swap was available."
+          },
+          {
+            "optionId": "b08_i036_local4",
+            "text": "Throw a storage exception when the volunteer is known but unavailable."
+          },
+          {
+            "optionId": "b08_i036_contract",
+            "text": "Return missing-ID and availability-conflict errors with affected IDs."
+          },
+          {
+            "optionId": "b08_i036_local1",
+            "text": "Return one generic false value for both conditions."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i036_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "A valid swap requires both existing assignments and current eligibility; the caller needs to distinguish a missing reference from a present volunteer who fails availability.",
+        "details": {
+          "mechanismOrProperty": "The swap has two reference checks and two current eligibility checks. Validation reports which requirement failed before the all-or-nothing swap changes either assignment.",
+          "scenarioApplication": "An unknown assignment ID needs reference repair; a known but unavailable volunteer needs an eligibility resolution. Both outcomes leave the original pair unchanged.",
+          "errorCorrection": "Returning one generic false hides which repair is needed; treating unavailable as missing erases a found assignment and its current status.",
+          "boundaryOrTradeoff": "The prompt permits these two validation failures and promises no partial swap. It does not say every skill or availability change is a storage error.",
+          "transfer": "For a multi-input command, keep missing references distinct from present records that fail a current condition, and report the actionable blocker."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i036_local1",
+            "text": "One generic false does not identify whether the manager must correct a missing ID or resolve an availability conflict."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i036_local2",
+            "text": "Unknown identity and present-but-unavailable are not the same state."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i036_local3",
+            "text": "The prompt forbids a partial swap."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i036_local4",
+            "text": "Availability conflict is a domain outcome, not automatically a storage failure."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i018",
+    "questionId": "ood-n02-b08-i037",
+    "learningObjective": "Separate malformed geometry from a valid stale branch that must be retained.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "advanced_failure",
+      "questionId": "ood-n02-b08-i037",
+      "prompt": "In a local-first map editor, the cartographer must merge an offline route edit. Conflicts are explicit and never silently overwrite accepted geometry. A route edit can be syntactically invalid geometry or a valid branch based on an older revision. Invalid geometry must be repaired; a stale branch must be kept for conflict review. What should merge preparation return?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i037_local4",
+            "text": "Return success for both and let the renderer infer validity."
+          },
+          {
+            "optionId": "b08_i037_contract",
+            "text": "Report geometry errors separately from a retained stale-parent conflict."
+          },
+          {
+            "optionId": "b08_i037_local1",
+            "text": "Return one “route invalid” error for both cases and discard the edit."
+          },
+          {
+            "optionId": "b08_i037_local2",
+            "text": "Treat stale parent as invalid geometry."
+          },
+          {
+            "optionId": "b08_i037_local3",
+            "text": "Accept malformed geometry because it has a valid parent ID."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i037_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "The caller’s remedies differ: fix geometry or review the retained branch; a single generic invalid result loses the branch.",
+        "details": {
+          "mechanismOrProperty": "Invalid geometry is an input-validation failure. A valid edit based on an old revision is a concurrency conflict whose branch must be retained for review.",
+          "scenarioApplication": "The cartographer needs two different next steps: repair malformed coordinates or review the preserved stale branch.",
+          "errorCorrection": "Labeling staleness as malformed geometry hides a valid edit; accepting malformed geometry because its parent exists skips input validation.",
+          "boundaryOrTradeoff": "Retaining the branch does not mean it is automatically mergeable; the prompt promises preservation for conflict review only.",
+          "transfer": "Distinguish invalid input from a valid operation that conflicts with newer state."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i037_local1",
+            "text": "Syntax/shape validation and revision conflict are separate dimensions of the request."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i037_local2",
+            "text": "Staleness does not make the geometry malformed."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i037_local3",
+            "text": "A valid parent does not make malformed geometry valid."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i037_local4",
+            "text": "The renderer is not the authority to infer merge validity."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b08-i019",
+    "questionId": "ood-n02-b08-i038",
+    "learningObjective": "Distinguish confirmed ineligibility from a missing character and failed evaluation.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B08",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b08-i038",
+      "prompt": "In a board-game campaign manager, the campaign host must apply a reward to a character. Reward rules depend on the current legal campaign state. A reward evaluation can be not eligible because the quest is incomplete, missing because the character ID is unknown, or unavailable because the rules service failed. What should the caller receive?",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b08_i038_local1",
+            "text": "Return “no reward” for both an incomplete quest and a rules-service outage."
+          },
+          {
+            "optionId": "b08_i038_local2",
+            "text": "Return zero reward for every unknown character."
+          },
+          {
+            "optionId": "b08_i038_local3",
+            "text": "Treat an incomplete quest as an invalid request and throw."
+          },
+          {
+            "optionId": "b08_i038_local4",
+            "text": "Return eligible if the rules service does not respond."
+          },
+          {
+            "optionId": "b08_i038_contract",
+            "text": "Return not-eligible, unknown-character, and rules-service-failure outcomes separately."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b08_i038_contract"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "A valid negative decision, missing subject, and inability to evaluate require different next steps.",
+        "details": {
+          "mechanismOrProperty": "Eligibility can be evaluated to a valid negative result, but an unknown character is a missing subject and a rules-service failure leaves the decision unknown.",
+          "scenarioApplication": "The caller’s next action differs: the learner may meet the quest condition, the character ID may need correction, or the rules service may need retry.",
+          "errorCorrection": "An incomplete quest is a known domain answer, not malformed input; a service failure cannot establish eligibility or ineligibility.",
+          "boundaryOrTradeoff": "If a missing character were treated as not eligible, the prompt would need that mapping rule. It instead requires the missing character to be identified separately.",
+          "transfer": "Keep a valid negative decision distinct from missing evaluation input and inability to evaluate."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i038_local1",
+            "text": "An incomplete quest is a confirmed domain outcome; service failure leaves eligibility unknown."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i038_local2",
+            "text": "A zero reward would invent a character result for a missing identity."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i038_local3",
+            "text": "The prompt treats incomplete quest as a valid evaluation state."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b08_i038_local4",
+            "text": "No response cannot establish positive eligibility."
+          }
+        ]
+      }
+    }
+  }
+]
