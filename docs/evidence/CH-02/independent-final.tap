@@ -1,0 +1,776 @@
+TAP version 13
+# Subtest: malformed /me through the production exchange/profile chain cannot select or activate an account
+ok 1 - malformed /me through the production exchange/profile chain cannot select or activate an account
+  ---
+  duration_ms: 29.005792
+  type: 'test'
+  ...
+# Subtest: malformed public deletion proof retains the verified remoteDeleted stage and never starts local cleanup
+ok 2 - malformed public deletion proof retains the verified remoteDeleted stage and never starts local cleanup
+  ---
+  duration_ms: 31.693833
+  type: 'test'
+  ...
+# Subtest: malformed deletion status retains remotePending and cannot authorize proof or local cleanup
+ok 3 - malformed deletion status retains remotePending and cannot authorize proof or local cleanup
+  ---
+  duration_ms: 45.408416
+  type: 'test'
+  ...
+# Subtest: account sync preserves known validation failures without persisting arbitrary error messages
+ok 4 - account sync preserves known validation failures without persisting arbitrary error messages
+  ---
+  duration_ms: 106.092209
+  type: 'test'
+  ...
+# Subtest: deletion retries after a revoked or stale session and leaves a verified local tombstone
+ok 5 - deletion retries after a revoked or stale session and leaves a verified local tombstone
+  ---
+  duration_ms: 16.557792
+  type: 'test'
+  ...
+# Subtest: deletion cleanup removes the complete canonical learning namespace while preserving device records and recovery markers
+ok 6 - deletion cleanup removes the complete canonical learning namespace while preserving device records and recovery markers
+  ---
+  duration_ms: 1.152292
+  type: 'test'
+  ...
+# Subtest: a completed marker from an earlier account does not block a later bound account
+ok 7 - a completed marker from an earlier account does not block a later bound account
+  ---
+  duration_ms: 2.574083
+  type: 'test'
+  ...
+# Subtest: a preflight journal failure does not create a deletion operation and pending retry cannot start one
+ok 8 - a preflight journal failure does not create a deletion operation and pending retry cannot start one
+  ---
+  duration_ms: 37.280417
+  type: 'test'
+  ...
+# Subtest: response loss resolves a matching remote operation and rejects mismatched status without local cleanup
+ok 9 - response loss resolves a matching remote operation and rejects mismatched status without local cleanup
+  ---
+  duration_ms: 8.213083
+  type: 'test'
+  ...
+# Subtest: local deletion cleanup resumes after a failed key removal without issuing another remote delete
+ok 10 - local deletion cleanup resumes after a failed key removal without issuing another remote delete
+  ---
+  duration_ms: 3.671542
+  type: 'test'
+  ...
+# Subtest: account deletion remains pending until reminders are disabled and retry does not repeat remote deletion
+ok 11 - account deletion remains pending until reminders are disabled and retry does not repeat remote deletion
+  ---
+  duration_ms: 3.510083
+  type: 'test'
+  ...
+# Subtest: server reauthentication failures remain reauthentication failures with the pending marker intact
+ok 12 - server reauthentication failures remain reauthentication failures with the pending marker intact
+  ---
+  duration_ms: 4.675041
+  type: 'test'
+  ...
+# Subtest: an invalid deletion acknowledgement keeps the same operation pending until an explicit retry verifies proof
+ok 13 - an invalid deletion acknowledgement keeps the same operation pending until an explicit retry verifies proof
+  ---
+  duration_ms: 184.011042
+  type: 'test'
+  ...
+# Subtest: an uncertain server deletion failure resolves through the bound operation status
+ok 14 - an uncertain server deletion failure resolves through the bound operation status
+  ---
+  duration_ms: 7.914167
+  type: 'test'
+  ...
+# Subtest: a durable terminal learning commit uploads once when Home retries pending data
+ok 15 - a durable terminal learning commit uploads once when Home retries pending data
+  ---
+  duration_ms: 348.876875
+  type: 'test'
+  ...
+# Subtest: concurrent Home retries share one offline attempt and preserve durable pending state
+ok 16 - concurrent Home retries share one offline attempt and preserve durable pending state
+  ---
+  duration_ms: 142.404417
+  type: 'test'
+  ...
+# Subtest: a concurrent local session start during upload keeps the interrupted Home sync retryable
+ok 17 - a concurrent local session start during upload keeps the interrupted Home sync retryable
+  ---
+  duration_ms: 552.608834
+  type: 'test'
+  ...
+# Subtest: a concurrent local session start during download keeps the interrupted Home sync retryable
+ok 18 - a concurrent local session start during download keeps the interrupted Home sync retryable
+  ---
+  duration_ms: 305.508125
+  type: 'test'
+  ...
+# Subtest: Home pending retry honors binding, state, and durable recovery guards without remote calls
+ok 19 - Home pending retry honors binding, state, and durable recovery guards without remote calls
+  ---
+  duration_ms: 5.63375
+  type: 'test'
+  ...
+# Subtest: bound restart exposes a projection for a locally saved session without remote reads or writes
+ok 20 - bound restart exposes a projection for a locally saved session without remote reads or writes
+  ---
+  duration_ms: 4.4085
+  type: 'test'
+  ...
+# Subtest: resume requires matching installation and account-state bindings
+ok 21 - resume requires matching installation and account-state bindings
+  ---
+  duration_ms: 1.417541
+  type: 'test'
+  ...
+# Subtest: a pending learning journal blocks bound account sync without clearing the journal
+ok 22 - a pending learning journal blocks bound account sync without clearing the journal
+  ---
+  duration_ms: 3.5715
+  type: 'test'
+  ...
+# Subtest: a deferred upload state resumes locally and syncs idempotently after finalization
+ok 23 - a deferred upload state resumes locally and syncs idempotently after finalization
+  ---
+  duration_ms: 68.721166
+  type: 'test'
+  ...
+# Subtest: discard deletes guest records and goals but preserves device preferences and performs no remote writes
+ok 24 - discard deletes guest records and goals but preserves device preferences and performs no remote writes
+  ---
+  duration_ms: 5.423833
+  type: 'test'
+  ...
+# Subtest: discard restores existing account records unchanged without uploading guest data
+ok 25 - discard restores existing account records unchanged without uploading guest data
+  ---
+  duration_ms: 3.297792
+  type: 'test'
+  ...
+# Subtest: failed account fetch keeps guest data and the approved discard plan for retry
+ok 26 - failed account fetch keeps guest data and the approved discard plan for retry
+  ---
+  duration_ms: 2.75575
+  type: 'test'
+  ...
+# Subtest: existing-account login restores remote data without offering or uploading guest adoption
+ok 27 - existing-account login restores remote data without offering or uploading guest adoption
+  ---
+  duration_ms: 2.03675
+  type: 'test'
+  ...
+# Subtest: one separable invalid remote plan restores Home data, quarantines its version, and resolves after replacement sync
+ok 28 - one separable invalid remote plan restores Home data, quarantines its version, and resolves after replacement sync
+  ---
+  duration_ms: 287.264042
+  type: 'test'
+  ...
+# Subtest: normal no-plan remote state creates no recovery incident
+ok 29 - normal no-plan remote state creates no recovery incident
+  ---
+  duration_ms: 22.309292
+  type: 'test'
+  ...
+# Subtest: learning plan recovery reserves before a read and commits the replacement with its ACK
+ok 30 - learning plan recovery reserves before a read and commits the replacement with its ACK
+  ---
+  duration_ms: 38.5025
+  type: 'test'
+  ...
+# Subtest: learning plan recovery persists failed attempts and respects the durable due time
+ok 31 - learning plan recovery persists failed attempts and respects the durable due time
+  ---
+  duration_ms: 31.847584
+  type: 'test'
+  ...
+# Subtest: learning plan recovery drops stale responses after a generation, incident, or account ownership change
+ok 32 - learning plan recovery drops stale responses after a generation, incident, or account ownership change
+  ---
+  duration_ms: 123.124542
+  type: 'test'
+  ...
+# Subtest: invalid plan recovery fails closed on bad envelope, duplicate identity, uncertain goal, or ownership
+ok 33 - invalid plan recovery fails closed on bad envelope, duplicate identity, uncertain goal, or ownership
+  ---
+  duration_ms: 179.711
+  type: 'test'
+  ...
+# Subtest: transfer applies an explicit guest conflict resolution once and completes durably
+ok 34 - transfer applies an explicit guest conflict resolution once and completes durably
+  ---
+  duration_ms: 15.202291
+  type: 'test'
+  ...
+# Subtest: guest adoption quarantines one invalid plan while materializing its goal and unambiguous active track
+ok 35 - guest adoption quarantines one invalid plan while materializing its goal and unambiguous active track
+  ---
+  duration_ms: 19.622625
+  type: 'test'
+  ...
+# Subtest: offline transfer retry reuses the durable confirmation and never uploads a duplicate guest snapshot
+ok 36 - offline transfer retry reuses the durable confirmation and never uploads a duplicate guest snapshot
+  ---
+  duration_ms: 9.726625
+  type: 'test'
+  ...
+# Subtest: discard resumes after partial-index failure without reconstructing a guest upload
+ok 37 - discard resumes after partial-index failure without reconstructing a guest upload
+  ---
+  duration_ms: 10.038125
+  type: 'test'
+  ...
+# Subtest: discard resumes after binding failure without reconstructing a guest upload
+ok 38 - discard resumes after binding failure without reconstructing a guest upload
+  ---
+  duration_ms: 7.435708
+  type: 'test'
+  ...
+# Subtest: discard resumes after finish failure without reconstructing a guest upload
+ok 39 - discard resumes after finish failure without reconstructing a guest upload
+  ---
+  duration_ms: 34.461416
+  type: 'test'
+  ...
+# Subtest: discard rejects another account and pending adoption without changing guest data
+ok 40 - discard rejects another account and pending adoption without changing guest data
+  ---
+  duration_ms: 4.8465
+  type: 'test'
+  ...
+# Subtest: a stale adoption confirmation is cleared so retry can request a fresh preview
+ok 41 - a stale adoption confirmation is cleared so retry can request a fresh preview
+  ---
+  duration_ms: 1.788167
+  type: 'test'
+  ...
+# Subtest: discard blocks an active guest session before fetching or deleting data
+ok 42 - discard blocks an active guest session before fetching or deleting data
+  ---
+  duration_ms: 1.403834
+  type: 'test'
+  ...
+# Subtest: concurrent discard calls make one transition and keep the guest outbox empty before fetching
+ok 43 - concurrent discard calls make one transition and keep the guest outbox empty before fetching
+  ---
+  duration_ms: 1.757583
+  type: 'test'
+  ...
+# Subtest: a session start requested while discard fetches waits and is preserved after materialization
+ok 44 - a session start requested while discard fetches waits and is preserved after materialization
+  ---
+  duration_ms: 4.961875
+  type: 'test'
+  ...
+# Subtest: malformed remote records keep the guest dataset and durable approved discard plan
+ok 45 - malformed remote records keep the guest dataset and durable approved discard plan
+  ---
+  duration_ms: 3.005291
+  type: 'test'
+  ...
+# Subtest: pending materialization blocks lifecycle account deletion without losing the marker
+ok 46 - pending materialization blocks lifecycle account deletion without losing the marker
+  ---
+  duration_ms: 0.733042
+  type: 'test'
+  ...
+# Subtest: a durable adoption confirmation blocks a new learning commit
+ok 47 - a durable adoption confirmation blocks a new learning commit
+  ---
+  duration_ms: 1.861792
+  type: 'test'
+  ...
+# Subtest: unreadable mutation journal blocks discard before deleting guest data
+ok 48 - unreadable mutation journal blocks discard before deleting guest data
+  ---
+  duration_ms: 0.671875
+  type: 'test'
+  ...
+# Subtest: ordinary Firebase identity exchanges before /me and blocks its custom-token observer event
+ok 49 - ordinary Firebase identity exchanges before /me and blocks its custom-token observer event
+  ---
+  duration_ms: 3.931916
+  type: 'test'
+  ...
+# Subtest: a custom-token recovery session with an authorization generation bypasses exchange
+ok 50 - a custom-token recovery session with an authorization generation bypasses exchange
+  ---
+  duration_ms: 0.402083
+  type: 'test'
+  ...
+# Subtest: recovery requires its exact generation and never exchanges a missing or mismatched claim
+    # Subtest: rejects generation null
+    ok 1 - rejects generation null
+      ---
+      duration_ms: 0.77375
+      type: 'test'
+      ...
+    # Subtest: rejects generation 1
+    ok 2 - rejects generation 1
+      ---
+      duration_ms: 0.196125
+      type: 'test'
+      ...
+    # Subtest: rejects generation 3
+    ok 3 - rejects generation 3
+      ---
+      duration_ms: 0.17425
+      type: 'test'
+      ...
+    1..3
+ok 51 - recovery requires its exact generation and never exchanges a missing or mismatched claim
+  ---
+  duration_ms: 1.89325
+  type: 'test'
+  ...
+# Subtest: a generation change after exchange prevents token sign-in and /me
+ok 52 - a generation change after exchange prevents token sign-in and /me
+  ---
+  duration_ms: 24.582666
+  type: 'test'
+  ...
+# Subtest: custom-token exchange requires a valid authorization generation before /me
+    # Subtest: rejects claim undefined
+    ok 1 - rejects claim undefined
+      ---
+      duration_ms: 1.07875
+      type: 'test'
+      ...
+    # Subtest: rejects claim 0
+    ok 2 - rejects claim 0
+      ---
+      duration_ms: 1.73925
+      type: 'test'
+      ...
+    # Subtest: rejects claim 1
+    ok 3 - rejects claim 1
+      ---
+      duration_ms: 0.742417
+      type: 'test'
+      ...
+    1..3
+ok 53 - custom-token exchange requires a valid authorization generation before /me
+  ---
+  duration_ms: 19.584459
+  type: 'test'
+  ...
+# Subtest: recovery issue session restore requires a current explicit sign-in intent and matching UID
+    # Subtest: before the user chooses sign-in
+    ok 1 - before the user chooses sign-in
+      ---
+      duration_ms: 21.928209
+      type: 'test'
+      ...
+    # Subtest: after the pending intent expires
+    ok 2 - after the pending intent expires
+      ---
+      duration_ms: 0.572
+      type: 'test'
+      ...
+    # Subtest: after restart has lost the pending intent
+    ok 3 - after restart has lost the pending intent
+      ---
+      duration_ms: 0.463625
+      type: 'test'
+      ...
+    # Subtest: when Firebase is bound to another UID
+    ok 4 - when Firebase is bound to another UID
+      ---
+      duration_ms: 0.222958
+      type: 'test'
+      ...
+    1..4
+ok 54 - recovery issue session restore requires a current explicit sign-in intent and matching UID
+  ---
+  duration_ms: 23.977375
+  type: 'test'
+  ...
+# Subtest: recovery issue session restore rejects a present mismatched or malformed generation before exchange
+    # Subtest: present wrong generation
+    ok 1 - present wrong generation
+      ---
+      duration_ms: 0.404417
+      type: 'test'
+      ...
+    # Subtest: malformed Firebase claim
+    ok 2 - malformed Firebase claim
+      ---
+      duration_ms: 0.341042
+      type: 'test'
+      ...
+    1..2
+ok 55 - recovery issue session restore rejects a present mismatched or malformed generation before exchange
+  ---
+  duration_ms: 1.086625
+  type: 'test'
+  ...
+# Subtest: a missing recovery generation restores only for current explicit intent, then checks the exact generation
+ok 56 - a missing recovery generation restores only for current explicit intent, then checks the exact generation
+  ---
+  duration_ms: 0.738125
+  type: 'test'
+  ...
+# Subtest: recovery intent expiring during exchange prevents observer release and Firebase sign-in
+ok 57 - recovery intent expiring during exchange prevents observer release and Firebase sign-in
+  ---
+  duration_ms: 11.565333
+  type: 'test'
+  ...
+# Subtest: a recovery sign-in returning another generation fails before ACK or /me
+ok 58 - a recovery sign-in returning another generation fails before ACK or /me
+  ---
+  duration_ms: 1.353208
+  type: 'test'
+  ...
+# Subtest: restored Auth resolves /me before selecting and activating its exact account scope
+ok 59 - restored Auth resolves /me before selecting and activating its exact account scope
+  ---
+  duration_ms: 6.053083
+  type: 'test'
+  ...
+# Subtest: UID change while /me is pending prevents account selection and activation
+ok 60 - UID change while /me is pending prevents account selection and activation
+  ---
+  duration_ms: 1.131875
+  type: 'test'
+  ...
+# Subtest: /me failure leaves prepared storage closed without selecting a profile
+ok 61 - /me failure leaves prepared storage closed without selecting a profile
+  ---
+  duration_ms: 0.642625
+  type: 'test'
+  ...
+# Subtest: a malformed successful /me response cannot select or activate an account profile
+ok 62 - a malformed successful /me response cannot select or activate an account profile
+  ---
+  duration_ms: 250.306417
+  type: 'test'
+  ...
+# Subtest: only a current restored account_not_found signs out persisted Auth
+ok 63 - only a current restored account_not_found signs out persisted Auth
+  ---
+  duration_ms: 0.311292
+  type: 'test'
+  ...
+# Subtest: provisional provider cancellation returns to sign-in only when its blocked UID owns the null Auth event
+ok 64 - provisional provider cancellation returns to sign-in only when its blocked UID owns the null Auth event
+  ---
+  duration_ms: 0.5575
+  type: 'test'
+  ...
+# Subtest: delayed null after sign-out promise resolution consumes the still-owned provider cancellation
+ok 65 - delayed null after sign-out promise resolution consumes the still-owned provider cancellation
+  ---
+  duration_ms: 0.55125
+  type: 'test'
+  ...
+# Subtest: replacement sign-in invalidates cancellation intent before a delayed stale null callback
+ok 66 - replacement sign-in invalidates cancellation intent before a delayed stale null callback
+  ---
+  duration_ms: 0.186875
+  type: 'test'
+  ...
+# Subtest: Auth loss locks the rendered account state before closing its profile scope
+ok 67 - Auth loss locks the rendered account state before closing its profile scope
+  ---
+  duration_ms: 0.803167
+  type: 'test'
+  ...
+# Subtest: local account sign-out verifies the durable block before locking, closing, and calling Firebase
+ok 68 - local account sign-out verifies the durable block before locking, closing, and calling Firebase
+  ---
+  duration_ms: 1.490791
+  type: 'test'
+  ...
+# Subtest: logout receipt validation requires the exact pending pair or completed receipt
+ok 69 - logout receipt validation requires the exact pending pair or completed receipt
+  ---
+  duration_ms: 0.279625
+  type: 'test'
+  ...
+# Subtest: owned-cache cleanup failure is explicit after Firebase sign-out and never reports success
+ok 70 - owned-cache cleanup failure is explicit after Firebase sign-out and never reports success
+  ---
+  duration_ms: 0.343792
+  type: 'test'
+  ...
+# Subtest: Firebase failure remains signOutPending even when owned-cache cleanup fails
+ok 71 - Firebase failure remains signOutPending even when owned-cache cleanup fails
+  ---
+  duration_ms: 0.3395
+  type: 'test'
+  ...
+# Subtest: failed local control write closes access and attempts Firebase sign-out but stays a failure
+ok 72 - failed local control write closes access and attempts Firebase sign-out but stays a failure
+  ---
+  duration_ms: 0.323584
+  type: 'test'
+  ...
+# Subtest: SDK failure after an unverified control write remains signOutPending without cache cleanup
+ok 73 - SDK failure after an unverified control write remains signOutPending without cache cleanup
+  ---
+  duration_ms: 0.312958
+  type: 'test'
+  ...
+# Subtest: retrying sign-out for the exact completed UID-operation receipt still clears local Auth
+ok 74 - retrying sign-out for the exact completed UID-operation receipt still clears local Auth
+  ---
+  duration_ms: 0.299875
+  type: 'test'
+  ...
+# Subtest: a retained Auth retry rejects blocked receipts for a different UID or operation
+ok 75 - a retained Auth retry rejects blocked receipts for a different UID or operation
+  ---
+  duration_ms: 0.499791
+  type: 'test'
+  ...
+# Subtest: unverified local control read-back attempts Firebase sign-out only when no scoped marker is recoverable
+ok 76 - unverified local control read-back attempts Firebase sign-out only when no scoped marker is recoverable
+  ---
+  duration_ms: 0.4385
+  type: 'test'
+  ...
+# Subtest: when a scoped operation is durable, control-write failure retains Auth for a recoverable retry
+ok 77 - when a scoped operation is durable, control-write failure retains Auth for a recoverable retry
+  ---
+  duration_ms: 0.270625
+  type: 'test'
+  ...
+# Subtest: restore locks only for a matching scoped logout marker missing from the control journal
+ok 78 - restore locks only for a matching scoped logout marker missing from the control journal
+  ---
+  duration_ms: 0.290875
+  type: 'test'
+  ...
+# Subtest: pending remote revoke blocks profile preparation only for its matching Auth UID
+ok 79 - pending remote revoke blocks profile preparation only for its matching Auth UID
+  ---
+  duration_ms: 0.188375
+  type: 'test'
+  ...
+# Subtest: authenticated scope checks and repairs incomplete logout before publishing profile preparation
+ok 80 - authenticated scope checks and repairs incomplete logout before publishing profile preparation
+  ---
+  duration_ms: 0.508625
+  type: 'test'
+  ...
+# Subtest: scope guard rechecks Auth generation after reading an absent marker
+ok 81 - scope guard rechecks Auth generation after reading an absent marker
+  ---
+  duration_ms: 0.208583
+  type: 'test'
+  ...
+# Subtest: a completed revoke receipt clears the scoped marker before profile startup continues
+ok 82 - a completed revoke receipt clears the scoped marker before profile startup continues
+  ---
+  duration_ms: 0.2405
+  type: 'test'
+  ...
+# Subtest: failed completed-marker cleanup keeps the authenticated profile closed
+ok 83 - failed completed-marker cleanup keeps the authenticated profile closed
+  ---
+  duration_ms: 0.26675
+  type: 'test'
+  ...
+# Subtest: a UID switch while fallback control persistence is pending closes only the captured scope
+ok 84 - a UID switch while fallback control persistence is pending closes only the captured scope
+  ---
+  duration_ms: 0.538125
+  type: 'test'
+  ...
+# Subtest: fallback setup failure never cleans cache from a blocked-only receipt
+ok 85 - fallback setup failure never cleans cache from a blocked-only receipt
+  ---
+  duration_ms: 0.28275
+  type: 'test'
+  ...
+# Subtest: stale sign-out completion closes its scope without publishing over the newer identity
+ok 86 - stale sign-out completion closes its scope without publishing over the newer identity
+  ---
+  duration_ms: 0.234291
+  type: 'test'
+  ...
+# Subtest: Firebase sign-out failure retains the matching block for manual retry
+ok 87 - Firebase sign-out failure retains the matching block for manual retry
+  ---
+  duration_ms: 0.400875
+  type: 'test'
+  ...
+# Subtest: Auth rejection remains pending until durable local sign-out reports success
+ok 88 - Auth rejection remains pending until durable local sign-out reports success
+  ---
+  duration_ms: 0.288
+  type: 'test'
+  ...
+# Subtest: ambiguous saved Guest profiles are reported as a choice requirement
+ok 89 - ambiguous saved Guest profiles are reported as a choice requirement
+  ---
+  duration_ms: 0.2945
+  type: 'test'
+  ...
+# Subtest: guest preparation failure closes the scope and returns to signed-out login
+ok 90 - guest preparation failure closes the scope and returns to signed-out login
+  ---
+  duration_ms: 0.197625
+  type: 'test'
+  ...
+# Subtest: Guest selection keeps the signed-out account entry mounted when no scope is active
+ok 91 - Guest selection keeps the signed-out account entry mounted when no scope is active
+  ---
+  duration_ms: 0.134666
+  type: 'test'
+  ...
+# Subtest: restored Guest validates persisted access before selecting or activating its scope
+ok 92 - restored Guest validates persisted access before selecting or activating its scope
+  ---
+  duration_ms: 0.32875
+  type: 'test'
+  ...
+# Subtest: invalid restored Guest access stays closed
+ok 93 - invalid restored Guest access stays closed
+  ---
+  duration_ms: 0.189375
+  type: 'test'
+  ...
+# Subtest: fresh installation opens Guest only after explicit choice
+ok 94 - fresh installation opens Guest only after explicit choice
+  ---
+  duration_ms: 0.219708
+  type: 'test'
+  ...
+# Subtest: getMe validates the complete canonical profile and preserves nullable fields
+ok 95 - getMe validates the complete canonical profile and preserves nullable fields
+  ---
+  duration_ms: 176.345292
+  type: 'test'
+  ...
+# Subtest: getMe rejects incomplete, mistyped, malformed, and extended account profiles
+ok 96 - getMe rejects incomplete, mistyped, malformed, and extended account profiles
+  ---
+  duration_ms: 55.774667
+  type: 'test'
+  ...
+# Subtest: deletion response methods bind exact proof and operation identity while preserving nullable pending proofs
+ok 97 - deletion response methods bind exact proof and operation identity while preserving nullable pending proofs
+  ---
+  duration_ms: 8.995833
+  type: 'test'
+  ...
+# Subtest: account and deletion parsers preserve the existing route, method, body, and auth modes
+ok 98 - account and deletion parsers preserve the existing route, method, body, and auth modes
+  ---
+  duration_ms: 3.013625
+  type: 'test'
+  ...
+# Subtest: client rejects an unconfigured environment and missing authentication
+ok 99 - client rejects an unconfigured environment and missing authentication
+  ---
+  duration_ms: 0.820167
+  type: 'test'
+  ...
+# Subtest: account session exchange sends an empty authenticated request and parses its custom token
+ok 100 - account session exchange sends an empty authenticated request and parses its custom token
+  ---
+  duration_ms: 3.290459
+  type: 'test'
+  ...
+# Subtest: account session exchange rejects a missing custom token
+ok 101 - account session exchange rejects a missing custom token
+  ---
+  duration_ms: 2.166125
+  type: 'test'
+  ...
+# Subtest: account registration validates and preserves distinct Terms and Privacy evidence
+ok 102 - account registration validates and preserves distinct Terms and Privacy evidence
+  ---
+  duration_ms: 1.539042
+  type: 'test'
+  ...
+# Subtest: session revocation accepts only the exact operation and a nonempty replacement token
+ok 103 - session revocation accepts only the exact operation and a nonempty replacement token
+  ---
+  duration_ms: 2.320459
+  type: 'test'
+  ...
+# Subtest: recovery operation methods use the canonical paths, proof body, and authentication modes
+ok 104 - recovery operation methods use the canonical paths, proof body, and authentication modes
+  ---
+  duration_ms: 15.409959
+  type: 'test'
+  ...
+# Subtest: recovery operation parsers reject malformed, mismatched, and extended server results
+ok 105 - recovery operation parsers reject malformed, mismatched, and extended server results
+  ---
+  duration_ms: 5.719375
+  type: 'test'
+  ...
+# Subtest: recovery calls reject invalid operation IDs and proofs before token acquisition or network use
+ok 106 - recovery calls reject invalid operation IDs and proofs before token acquisition or network use
+  ---
+  duration_ms: 0.589791
+  type: 'test'
+  ...
+# Subtest: recovery calls preserve typed server failures and Retry-After
+ok 107 - recovery calls preserve typed server failures and Retry-After
+  ---
+  duration_ms: 1.551625
+  type: 'test'
+  ...
+# Subtest: content package transport uses the authenticated App Check API and returns binary response headers
+ok 108 - content package transport uses the authenticated App Check API and returns binary response headers
+  ---
+  duration_ms: 58.217542
+  type: 'test'
+  ...
+# Subtest: content package transport caps streamed response bodies at two MiB
+ok 109 - content package transport caps streamed response bodies at two MiB
+  ---
+  duration_ms: 1.655667
+  type: 'test'
+  ...
+# Subtest: content package transport preserves typed backend admission codes
+ok 110 - content package transport preserves typed backend admission codes
+  ---
+  duration_ms: 2.355709
+  type: 'test'
+  ...
+# Subtest: mobile requests fail before transport when App Check is unavailable
+ok 111 - mobile requests fail before transport when App Check is unavailable
+  ---
+  duration_ms: 0.465542
+  type: 'test'
+  ...
+# Subtest: canonical progress transport has no protocol query or version labels
+ok 112 - canonical progress transport has no protocol query or version labels
+  ---
+  duration_ms: 3.614209
+  type: 'test'
+  ...
+# Subtest: client rejects removed protocol fields before sending a sync request
+ok 113 - client rejects removed protocol fields before sending a sync request
+  ---
+  duration_ms: 0.335
+  type: 'test'
+  ...
+# Subtest: client accepts canonical identity lengths supported by content
+ok 114 - client accepts canonical identity lengths supported by content
+  ---
+  duration_ms: 1.801
+  type: 'test'
+  ...
+# Subtest: client turns removed identity metadata in a response into a schema conflict
+ok 115 - client turns removed identity metadata in a response into a schema conflict
+  ---
+  duration_ms: 4.30875
+  type: 'test'
+  ...
+1..115
+# tests 127
+# suites 0
+# pass 127
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6523.069166

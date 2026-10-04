@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
-import { PatternlyApiClientError, type AdoptionPreviewResponseDto, type PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
+import { createPatternlyApiClient, PatternlyApiClientError, type AdoptionPreviewResponseDto, type PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { clearAccountDeletionOwnedLocalData, confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, loadAccountDataSession, retryPendingAccountDeletion } from "./accountDataService";
@@ -292,6 +292,67 @@ test("server reauthentication failures remain reauthentication failures with the
   const result = await deleteBoundAccount(client, accountId, uid, prepareDeletionLocalState);
   assert.deepEqual(result, { ok: false, failure: "reauthenticationRequired" });
   assert.equal(getAccountDeletionState()?.status, "remotePending");
+});
+
+test("an invalid deletion acknowledgement keeps the same operation pending until an explicit retry verifies proof", async () => {
+  const learningSession = guestSession("abandoned");
+  const proofId = "proof_abcdefghijklmnopqrstuvwx";
+  const deletionRequests: Array<Readonly<{ operationId: string; operationSecret: string }>> = [];
+  let deletionStatusCalls = 0;
+  let proofCalls = 0;
+  const transport = createPatternlyApiClient({
+    apiOrigin: "https://api.sandbox.patternly.invalid",
+    getIdToken: async () => "id-token",
+    getAppCheckToken: async () => "app-check-token",
+    fetchImplementation: async (input, init) => {
+      const url = new URL(String(input));
+      if (url.pathname === "/v1/account/deletion") {
+        const body = JSON.parse(String(init?.body)) as { operationId: string; operationSecret: string };
+        deletionRequests.push(body);
+        if (deletionRequests.length === 1) {
+          assert.equal(getAccountDeletionState()?.status, "remotePending");
+          await saveTrainingSession(learningSession);
+          assert.ok((await getTrainingSessions()).value.some((session) => session.id === learningSession.id));
+        }
+        const response = deletionRequests.length === 1
+          ? { status: "pending", operationId: body.operationId, proofId: 17 }
+          : { status: "deleted", operationId: body.operationId, proofId };
+        return new Response(JSON.stringify(response), { status: 200 });
+      }
+      if (url.pathname === "/v1/public/deletion-operations/status") {
+        deletionStatusCalls += 1;
+        return new Response(JSON.stringify({ status: "remote_deleted", operationId: deletionRequests.at(-1)?.operationId, proofId }), { status: 200 });
+      }
+      if (url.pathname === `/v1/public/deletion-proofs/${proofId}`) {
+        proofCalls += 1;
+        return new Response(JSON.stringify({ status: "deleted", operationId: deletionRequests.at(-1)?.operationId, proofId }), { status: 200 });
+      }
+      throw new Error("unexpected deletion transport path");
+    },
+  });
+  const client = api({
+    deleteAccount: transport.deleteAccount,
+    getDeletionProof: transport.getDeletionProof,
+    getDeletionOperationStatus: transport.getDeletionOperationStatus,
+  });
+
+  assert.deepEqual(await deleteBoundAccount(client, accountId, uid, prepareDeletionLocalState), { ok: false, failure: "remoteDeletionPending" });
+  const unresolved = getAccountDeletionState();
+  assert.equal(unresolved?.status, "remotePending");
+  assert.equal(unresolved?.lastFailureCode, "invalid_response");
+  assert.ok((await getTrainingSessions()).value.some((session) => session.id === learningSession.id), "learning progress stays available until proof is verified");
+  assert.equal((await getGuestInstallation())?.accountId, accountId);
+  assert.equal(deletionStatusCalls, 0, "a malformed success is not silently reconciled or retried");
+  assert.equal(proofCalls, 0, "an unvalidated acknowledgement cannot authorize proof or cleanup");
+  assert.equal(deletionRequests.length, 1);
+
+  assert.deepEqual(await retryPendingAccountDeletion(client, accountId, uid, prepareDeletionLocalState), { ok: true, proofId });
+  assert.equal(deletionRequests.length, 2, "only the explicit retry sends the idempotent request again");
+  assert.deepEqual(deletionRequests[1], deletionRequests[0], "the retry reuses the exact operation ID and secret");
+  assert.equal(deletionStatusCalls, 0);
+  assert.equal(proofCalls, 1);
+  assert.ok(!(await getTrainingSessions()).value.some((session) => session.id === learningSession.id), "verified deletion removes canonical learning progress");
+  assert.equal(getAccountDeletionState()?.status, "complete");
 });
 
 test("an uncertain server deletion failure resolves through the bound operation status", async () => {

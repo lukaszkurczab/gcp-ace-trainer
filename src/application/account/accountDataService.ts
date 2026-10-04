@@ -764,6 +764,12 @@ async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: st
             else pending = updateAccountDeletionState(pending, { status: "remotePending", lastFailureCode: failure });
             return deletionResultForFailure(failure);
           }
+        } else if (failure === "invalid_response") {
+          // A malformed 2xx may follow a completed remote deletion. Keep the
+          // same operation identity resumable; never mark it failed or create
+          // a fresh operation from an unvalidated acknowledgement.
+          pending = updateAccountDeletionState(pending, { status: "remotePending", lastFailureCode: failure });
+          return deletionResultForFailure(failure);
         } else {
           pending = updateAccountDeletionState(pending, { status: failure === "reauthentication_required" ? "remotePending" : "failed", lastFailureCode: failure });
           return deletionResultForFailure(failure);

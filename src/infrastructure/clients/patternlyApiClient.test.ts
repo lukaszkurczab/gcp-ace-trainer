@@ -11,6 +11,8 @@ const API_ORIGIN = "https://api.sandbox.patternly.invalid";
 const DEVICE_ID = "00000000-0000-4000-8000-000000000000";
 const FINGERPRINT = "a".repeat(64);
 const RECOVERY_OPERATION_ID = "00000000-0000-4000-8000-000000000101";
+const DELETION_OPERATION_ID = "00000000-0000-4000-8000-000000000202";
+const DELETION_PROOF_ID = "proof_abcdefghijklmnopqrstuvwx";
 const RECOVERY_CODE = "ABCD-EFGH-IJKL-MNOP";
 const RECOVERY_CODES = [
   "ABCD-EFGH-IJKL-MNOP", "BCDE-FGHI-JKLM-NPQR", "CDEF-GHIJ-KLMN-PQRS", "DEFG-HIJK-LMNO-QRST", "EFGH-IJKL-MNOP-RSTU",
@@ -51,6 +53,158 @@ function canonicalSyncRequest(mutation = activeTrackMutation()) {
     mutations: [mutation],
   };
 }
+
+function deletionResponse(status: string, operationId = DELETION_OPERATION_ID, proofId: unknown = DELETION_PROOF_ID) {
+  return { status, operationId, proofId };
+}
+
+test("getMe validates the complete canonical profile and preserves nullable fields", async () => {
+  const user = {
+    id: "00000000-0000-4000-8000-000000000303",
+    createdAt: "2026-10-04T10:20:30.000Z",
+    acceptedTermsVersion: null,
+    identity: { provider: "apple", subject: "provider-subject-distinct-from-account-and-firebase-uid", email: null, emailVerified: false },
+  };
+  const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ user }), { status: 200 }) });
+  assert.deepEqual(await client.getMe(), { user });
+
+  const withNullableValues = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({
+    user: { ...user, createdAt: "2026-10-04t12:20:30.123+02:30", acceptedTermsVersion: "", identity: { ...user.identity, email: "person@example.test", emailVerified: true } },
+  }), { status: 200 }) });
+  const accepted = await withNullableValues.getMe();
+  assert.equal(accepted.user.createdAt, "2026-10-04t12:20:30.123+02:30");
+  assert.equal(accepted.user.acceptedTermsVersion, "", "the wire schema permits any string or null for acceptedTermsVersion");
+  assert.equal(accepted.user.identity.email, "person@example.test");
+
+  for (const email of [`${"a".repeat(65)}@example.test`, `person@${"a".repeat(64)}.test`]) {
+    const longEmailClient = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({
+      user: { ...user, identity: { ...user.identity, email } },
+    }), { status: 200 }) });
+    assert.equal((await longEmailClient.getMe()).user.identity.email, email, "mirror the installed backend email format without adding absent length bounds");
+  }
+});
+
+test("getMe rejects incomplete, mistyped, malformed, and extended account profiles", async () => {
+  const canonical = {
+    id: "00000000-0000-4000-8000-000000000303",
+    createdAt: "2026-10-04T10:20:30.000Z",
+    acceptedTermsVersion: null,
+    identity: { provider: "firebase", subject: "provider-subject", email: null, emailVerified: true },
+  };
+  const invalidUsers = [
+    {},
+    { ...canonical, id: "not-an-account-id" },
+    { ...canonical, createdAt: "2026-02-31T10:20:30.000Z" },
+    { ...canonical, createdAt: "2026-10-04T24:00:00Z" },
+    { ...canonical, acceptedTermsVersion: 4 },
+    { ...canonical, identity: { ...canonical.identity, provider: "" } },
+    { ...canonical, identity: { ...canonical.identity, subject: "" } },
+    { ...canonical, identity: { ...canonical.identity, email: 4 } },
+    { ...canonical, identity: { ...canonical.identity, email: "" } },
+    { ...canonical, identity: { ...canonical.identity, email: "not-an-email" } },
+    { ...canonical, identity: { ...canonical.identity, email: "person@@example.test" } },
+    { ...canonical, identity: { ...canonical.identity, email: "person@-example.test" } },
+    { ...canonical, identity: { ...canonical.identity, emailVerified: "true" } },
+    { ...canonical, identity: { ...canonical.identity, unexpected: true } },
+    { ...canonical, unexpected: true },
+  ];
+  for (const user of invalidUsers) {
+    const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ user }), { status: 200 }) });
+    await assert.rejects(client.getMe(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  }
+});
+
+test("deletion response methods bind exact proof and operation identity while preserving nullable pending proofs", async () => {
+  const expectedDeletion = deletionResponse("deleted");
+  const deletionClient = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify(expectedDeletion), { status: 200 }) });
+  assert.deepEqual(await deletionClient.deleteAccount(DELETION_OPERATION_ID, "a".repeat(64)), expectedDeletion);
+
+  for (const malformed of [
+    deletionResponse("pending"),
+    deletionResponse("deleted", "00000000-0000-4000-8000-000000000999"),
+    deletionResponse("deleted", DELETION_OPERATION_ID, 123),
+    deletionResponse("deleted", DELETION_OPERATION_ID, "proof_too-short"),
+    { ...expectedDeletion, extra: true },
+  ]) {
+    const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify(malformed), { status: 200 }) });
+    await assert.rejects(client.deleteAccount(DELETION_OPERATION_ID, "a".repeat(64)), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  }
+
+  const proofClient = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify(deletionResponse("deleted")), { status: 200 }) });
+  assert.deepEqual(await proofClient.getDeletionProof(DELETION_PROOF_ID), deletionResponse("deleted"));
+  for (const malformed of [
+    deletionResponse("pending"),
+    deletionResponse("deleted", DELETION_OPERATION_ID, "proof_zyxwvutsrqponmlkjihgfedc"),
+    deletionResponse("deleted", "not-a-uuid"),
+    { ...deletionResponse("deleted"), extra: true },
+  ]) {
+    const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify(malformed), { status: 200 }) });
+    await assert.rejects(client.getDeletionProof(DELETION_PROOF_ID), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  }
+
+  const statusResponses = [
+    deletionResponse("pending", DELETION_OPERATION_ID, null),
+    deletionResponse("pending"),
+    deletionResponse("remote_deleted"),
+    deletionResponse("complete"),
+  ];
+  let statusIndex = 0;
+  const statusClient = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify(statusResponses[statusIndex++]), { status: 200 }) });
+  for (const expected of statusResponses) assert.deepEqual(await statusClient.getDeletionOperationStatus(DELETION_OPERATION_ID, "a".repeat(64)), expected);
+
+  for (const malformed of [
+    deletionResponse("failed"),
+    deletionResponse("pending", "00000000-0000-4000-8000-000000000999"),
+    deletionResponse(["pending"] as unknown as string),
+    deletionResponse(1 as unknown as string),
+    deletionResponse("remote_deleted", DELETION_OPERATION_ID, null),
+    deletionResponse("complete", DELETION_OPERATION_ID, null),
+    deletionResponse("pending", DELETION_OPERATION_ID, 123),
+    { status: "pending", operationId: DELETION_OPERATION_ID },
+    { ...deletionResponse("pending", DELETION_OPERATION_ID, null), extra: true },
+  ]) {
+    const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify(malformed), { status: 200 }) });
+    await assert.rejects(client.getDeletionOperationStatus(DELETION_OPERATION_ID, "a".repeat(64)), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
+  }
+});
+
+test("account and deletion parsers preserve the existing route, method, body, and auth modes", async () => {
+  const captured: Array<{ body: string | undefined; headers: Headers; method: string; url: string }> = [];
+  const client = createTestClient({ fetchImplementation: async (url, init) => {
+    captured.push({ body: init?.body === undefined ? undefined : String(init.body), headers: new Headers(init?.headers), method: init?.method ?? "", url: String(url) });
+    const path = new URL(String(url)).pathname;
+    if (path === "/v1/me") return new Response(JSON.stringify({ user: {
+      id: "00000000-0000-4000-8000-000000000303",
+      createdAt: "2026-10-04T10:20:30.000Z",
+      acceptedTermsVersion: null,
+      identity: { provider: "firebase", subject: "provider-subject", email: null, emailVerified: true },
+    } }), { status: 200 });
+    if (path === "/v1/account/deletion") return new Response(JSON.stringify(deletionResponse("deleted")), { status: 200 });
+    if (path === `/v1/public/deletion-proofs/${DELETION_PROOF_ID}`) return new Response(JSON.stringify(deletionResponse("deleted")), { status: 200 });
+    if (path === "/v1/public/deletion-operations/status") return new Response(JSON.stringify(deletionResponse("pending", DELETION_OPERATION_ID, null)), { status: 200 });
+    throw new Error(`unexpected path: ${path}`);
+  } });
+
+  await client.getMe();
+  await client.deleteAccount(DELETION_OPERATION_ID, "a".repeat(64));
+  await client.getDeletionProof(DELETION_PROOF_ID);
+  await client.getDeletionOperationStatus(DELETION_OPERATION_ID, "a".repeat(64));
+
+  assert.deepEqual(captured.map(({ method, url, body }) => ({ method, url, body })), [
+    { method: "GET", url: `${API_ORIGIN}/v1/me`, body: undefined },
+    { method: "POST", url: `${API_ORIGIN}/v1/account/deletion`, body: JSON.stringify({ operationId: DELETION_OPERATION_ID, operationSecret: "a".repeat(64) }) },
+    { method: "GET", url: `${API_ORIGIN}/v1/public/deletion-proofs/${DELETION_PROOF_ID}`, body: undefined },
+    { method: "POST", url: `${API_ORIGIN}/v1/public/deletion-operations/status`, body: JSON.stringify({ operationId: DELETION_OPERATION_ID, operationSecret: "a".repeat(64) }) },
+  ]);
+  assert.equal(captured[0]?.headers.get("authorization"), "Bearer id-token");
+  assert.equal(captured[0]?.headers.get("x-firebase-appcheck"), "app-check-token");
+  assert.equal(captured[1]?.headers.get("authorization"), "Bearer id-token");
+  assert.equal(captured[1]?.headers.get("x-firebase-appcheck"), "app-check-token");
+  assert.equal(captured[2]?.headers.get("authorization"), null);
+  assert.equal(captured[2]?.headers.get("x-firebase-appcheck"), "app-check-token");
+  assert.equal(captured[3]?.headers.get("authorization"), null);
+  assert.equal(captured[3]?.headers.get("x-firebase-appcheck"), "app-check-token");
+});
 
 test("client rejects an unconfigured environment and missing authentication", async () => {
   assert.throws(() => createPatternlyApiClient({ apiOrigin: "http://127.0.0.1:8080", getIdToken: async () => "token" }), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "client_unconfigured");

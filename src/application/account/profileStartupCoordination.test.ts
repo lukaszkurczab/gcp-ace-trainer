@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createPatternlyApiClient, PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 
 import {
   AccountSessionGenerationStaleError,
@@ -72,6 +73,26 @@ test("/me failure leaves prepared storage closed without selecting a profile", a
     selectAccount: async () => { operations.push("select"); return { profile: accountProfile }; },
     activate: () => { operations.push("activate"); },
   }), /backend_unavailable/u);
+
+  assert.deepEqual(operations, ["prepare", "me"]);
+});
+
+test("a malformed successful /me response cannot select or activate an account profile", async () => {
+  const operations: string[] = [];
+  const client = createPatternlyApiClient({
+    apiOrigin: "https://api.sandbox.patternly.invalid",
+    getIdToken: async () => "id-token",
+    getAppCheckToken: async () => "app-check-token",
+    fetchImplementation: async () => new Response(JSON.stringify({ user: { id: "backend-account" } }), { status: 200 }),
+  });
+
+  await assert.rejects(() => prepareAuthenticatedProfileScope({
+    canContinue: () => true,
+    prepareStorage: async () => { operations.push("prepare"); },
+    getMe: () => { operations.push("me"); return client.getMe(); },
+    selectAccount: async () => { operations.push("select"); return { profile: accountProfile }; },
+    activate: () => { operations.push("activate"); },
+  }), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "invalid_response");
 
   assert.deepEqual(operations, ["prepare", "me"]);
 });

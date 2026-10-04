@@ -13,6 +13,7 @@ const SHA256_PATTERN = /^[a-f0-9]{64}$/u;
 const MUTATION_ID_PATTERN = /^[A-Za-z0-9_-]{16,128}$/u;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const RECOVERY_CODE_PATTERN = /^[A-Z2-9]{4}(?:-[A-Z2-9]{4}){3}$/u;
+const DELETION_PROOF_ID_PATTERN = /^proof_[A-Za-z0-9_-]{20,128}$/u;
 const RECOVERY_OPERATION_PROGRESS_STATUSES = new Set(["in_progress", "acknowledged", "delivery_unconfirmed", "superseded", "expired_or_invalid", "provider_retryable"]);
 const PROGRESS_RECORD_TYPES = new Set(["active_track", "training_session_summary", "training_session_result", "training_attempt", "review_queue_entry", "goal", "learning_plan"]);
 const ADOPTION_CASES = new Set(["emptyLocalEmptyRemote", "populatedLocalEmptyRemote", "emptyLocalPopulatedRemote", "populatedLocalPopulatedRemote", "divergentRecord", "blocked"]);
@@ -70,6 +71,37 @@ function isSha256(value: unknown): value is string {
 
 function isMutationId(value: unknown): value is string {
   return typeof value === "string" && MUTATION_ID_PATTERN.test(value);
+}
+
+function isDeletionProofId(value: unknown): value is string {
+  return typeof value === "string" && DELETION_PROOF_ID_PATTERN.test(value);
+}
+
+function isEmailAddress(value: unknown): value is string {
+  if (typeof value !== "string" || value.length === 0 || value.trim() !== value) return false;
+  const [local, domain, extra] = value.split("@");
+  if (!local || !domain || extra !== undefined || local.startsWith(".") || local.endsWith(".") || local.includes("..")) return false;
+  if (!/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+$/u.test(local)) return false;
+  const labels = domain.split(".");
+  return labels.length >= 2 && labels.every((label) => /^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/u.test(label));
+}
+
+function isAccountDateTime(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  const match = /^(\d{4})-(\d{2})-(\d{2})[Tt](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?([Zz]|([+-])(\d{2}):(\d{2}))$/u.exec(value);
+  if (!match || !Number.isFinite(Date.parse(value))) return false;
+  const [, year, month, day, hour, minute, second, , , offsetHour, offsetMinute] = match;
+  if (Number(hour) > 23 || Number(minute) > 59 || Number(second) > 59) return false;
+  if (offsetHour !== undefined && (Number(offsetHour) > 23 || Number(offsetMinute) > 59)) return false;
+  const calendarDate = new Date(0);
+  calendarDate.setUTCFullYear(Number(year), Number(month) - 1, Number(day));
+  return calendarDate.getUTCFullYear() === Number(year)
+    && calendarDate.getUTCMonth() + 1 === Number(month)
+    && calendarDate.getUTCDate() === Number(day);
+}
+
+function isDeletionOperationSecret(value: unknown): value is string {
+  return typeof value === "string" && /^[a-f0-9]{64}$/u.test(value);
 }
 
 function assertCanonicalIdentityState(value: unknown): void {
@@ -512,6 +544,55 @@ function parseAccountRegistrationResponse(value: unknown): AccountRegistrationRe
   });
 }
 
+function parseMeResponse(value: unknown): MeResponseDto {
+  if (!isPlainRecord(value) || !hasExactKeys(value, ["user"]) || !isPlainRecord(value.user)
+    || !hasExactKeys(value.user, ["id", "createdAt", "acceptedTermsVersion", "identity"])) return invalidResponse();
+  const user = value.user;
+  const identity = user.identity;
+  if (!isUuid(user.id) || !isAccountDateTime(user.createdAt)
+    || !(user.acceptedTermsVersion === null || typeof user.acceptedTermsVersion === "string")
+    || !isPlainRecord(identity) || !hasExactKeys(identity, ["provider", "subject", "email", "emailVerified"])
+    || !isNonEmptyString(identity.provider) || !isNonEmptyString(identity.subject)
+    || !(identity.email === null || isEmailAddress(identity.email))
+    || typeof identity.emailVerified !== "boolean") return invalidResponse();
+  return Object.freeze({
+    user: Object.freeze({
+      id: user.id,
+      createdAt: user.createdAt,
+      acceptedTermsVersion: user.acceptedTermsVersion,
+      identity: Object.freeze({
+        provider: identity.provider,
+        subject: identity.subject,
+        email: identity.email,
+        emailVerified: identity.emailVerified,
+      }),
+    }),
+  });
+}
+
+function parseAccountDeletionResponse(value: unknown, expectedOperationId: string): AccountDeletionResponseDto {
+  if (!isUuid(expectedOperationId) || !isPlainRecord(value) || !hasExactKeys(value, ["status", "operationId", "proofId"])
+    || value.status !== "deleted" || value.operationId !== expectedOperationId || !isUuid(value.operationId)
+    || !isDeletionProofId(value.proofId)) return invalidResponse();
+  return Object.freeze({ status: "deleted", operationId: value.operationId, proofId: value.proofId });
+}
+
+function parsePublicDeletionProofResponse(value: unknown, expectedProofId: string): PublicDeletionProofResponseDto {
+  if (!isDeletionProofId(expectedProofId) || !isPlainRecord(value) || !hasExactKeys(value, ["status", "operationId", "proofId"])
+    || value.status !== "deleted" || !isUuid(value.operationId) || value.proofId !== expectedProofId
+    || !isDeletionProofId(value.proofId)) return invalidResponse();
+  return Object.freeze({ status: "deleted", operationId: value.operationId, proofId: value.proofId });
+}
+
+function parseDeletionOperationStatus(value: unknown, expectedOperationId: string): DeletionOperationStatusDto {
+  if (!isUuid(expectedOperationId) || !isPlainRecord(value) || !hasExactKeys(value, ["status", "operationId", "proofId"])
+    || value.operationId !== expectedOperationId || !isUuid(value.operationId)
+    || (value.status !== "pending" && value.status !== "remote_deleted" && value.status !== "complete")
+    || !(value.proofId === null || isDeletionProofId(value.proofId))
+    || ((value.status === "remote_deleted" || value.status === "complete") && value.proofId === null)) return invalidResponse();
+  return Object.freeze({ status: value.status as DeletionOperationStatusDto["status"], operationId: value.operationId, proofId: value.proofId });
+}
+
 export class PatternlyApiClientError extends Error {
   public constructor(readonly code: PatternlyApiClientErrorCode, readonly status?: number, readonly serverCode?: string, readonly retryAfterSeconds?: number) {
     super(code);
@@ -709,7 +790,7 @@ export function createPatternlyApiClient(input: Readonly<{
     getHealth: () => requestJson<HealthResponseDto>("/health", "GET", undefined, "none"),
     getReady: () => requestJson<ReadyResponseDto>("/ready", "GET", undefined, "none"),
     getOpenApi: () => requestJson<OpenApiResponseDto>("/openapi.json", "GET", undefined, "none"),
-    getMe: () => requestJson<MeResponseDto>("/v1/me", "GET"),
+    getMe: async () => parseMeResponse(await requestJson<unknown>("/v1/me", "GET")),
     exchangeAccountSession: async () => {
       const response = await requestJson<unknown>("/v1/account/session/exchange", "POST");
       if (!isRecord(response) || typeof response.customToken !== "string" || response.customToken.trim().length === 0) {
@@ -803,9 +884,18 @@ export function createPatternlyApiClient(input: Readonly<{
       }
       return Object.freeze({ status: "revoked" as const, operationId: response.operationId, customToken: response.customToken });
     },
-    deleteAccount: (operationId, operationSecret) => requestJson<AccountDeletionResponseDto>("/v1/account/deletion", "POST", { operationId, operationSecret }),
-    getDeletionProof: (proofId) => requestJson<PublicDeletionProofResponseDto>(`/v1/public/deletion-proofs/${proofId}`, "GET", undefined, "none"),
-    getDeletionOperationStatus: (operationId, operationSecret) => requestJson<DeletionOperationStatusDto>("/v1/public/deletion-operations/status", "POST", { operationId, operationSecret }, "none"),
+    deleteAccount: async (operationId, operationSecret) => {
+      if (!isUuid(operationId) || !isDeletionOperationSecret(operationSecret)) return invalidResponse();
+      return parseAccountDeletionResponse(await requestJson<unknown>("/v1/account/deletion", "POST", { operationId, operationSecret }), operationId);
+    },
+    getDeletionProof: async (proofId) => {
+      if (!isDeletionProofId(proofId)) return invalidResponse();
+      return parsePublicDeletionProofResponse(await requestJson<unknown>(`/v1/public/deletion-proofs/${encodeURIComponent(proofId)}`, "GET", undefined, "none"), proofId);
+    },
+    getDeletionOperationStatus: async (operationId, operationSecret) => {
+      if (!isUuid(operationId) || !isDeletionOperationSecret(operationSecret)) return invalidResponse();
+      return parseDeletionOperationStatus(await requestJson<unknown>("/v1/public/deletion-operations/status", "POST", { operationId, operationSecret }, "none"), operationId);
+    },
     getTracks: () => requestJson<TracksResponseDto>("/v1/tracks", "GET"),
     getContentVersions: () => requestJson<ContentVersionsResponseDto>("/v1/content/versions", "GET"),
     getContentPackage: requestContentPackage,

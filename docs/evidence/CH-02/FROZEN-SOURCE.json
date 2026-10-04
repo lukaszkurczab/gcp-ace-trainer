@@ -1,0 +1,26 @@
+{
+  "ownedFiles": [
+    "src/infrastructure/clients/PatternlyApiClientAdapter.ts",
+    "src/infrastructure/clients/patternlyApiClient.test.ts",
+    "src/application/account/accountDataService.ts",
+    "src/application/account/accountLifecycle.test.ts",
+    "src/application/account/profileStartupCoordination.test.ts"
+  ],
+  "ownedSha256": {
+    "src/infrastructure/clients/PatternlyApiClientAdapter.ts": "7375799a56eb111431f1a509791b444018cd2ac96ff4eb2e43f68ac1501d978d",
+    "src/infrastructure/clients/patternlyApiClient.test.ts": "1dbccc20b911e2238341de8ad2db83fd78af90a8e9d0ad1e42884854c95a0a30",
+    "src/application/account/accountDataService.ts": "a6aeb3d8d754ba56982eddb943c6aab7032b9bbb9ad51229349a34c62fd4195a",
+    "src/application/account/accountLifecycle.test.ts": "bc97477a423628ed3555a52653903ba38a4a958a323cf64b373441c4c77a1e8b",
+    "src/application/account/profileStartupCoordination.test.ts": "6ed19a40120dde43009c02d11aa16a5585e2c79aa11f3934cf1cf3640efcd50c"
+  },
+  "relevantDependencySha256": {
+    "src/application/account/AccountSessionProvider.tsx": "5e7618249db9383e367147dabe316c7a98dc7dc2c201b7a6f958be148076a000",
+    "src/application/account/accountSessionExchange.ts": "0cb25a4f2674ebe9822423f581006764f098c5d91adb731733fa3c08ef3b19e7",
+    "src/application/account/profileStartupCoordination.ts": "ce65cc2c799dfef5da313bfa1750c8ce8539a2a0c8160a9ea2183b637a77b8ee",
+    "src/storage/repositories/accountLifecycleRepository.ts": "e64e85cc81394d71331b20cd46812d28bc350265cb8d7088b8c62f0d08c0b7da",
+    "package.json": "28c6431dd731cf8fe3e2c5472d1f86c4878436b89c4b1ecc3a547e63d3f04654",
+    "package-lock.json": "0ababcb26d054bd5ea3f10e800e4049c273eb367baceef3b128a63f33e15f000"
+  },
+  "node": "22.22.3",
+  "status": "final frozen after backend email fidelity correction"
+}
