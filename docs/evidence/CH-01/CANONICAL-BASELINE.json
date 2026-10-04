@@ -1,0 +1,15 @@
+{
+  "contentHead": "4ab3301dd422ba432705f38d7a1c4bdf5062751f",
+  "appHead": "32f785940a8e78bf65b507888b1d5f5d38fe2c00",
+  "ownedSha256": {
+    "scripts/review/content-review-console.mjs": "1cb0b4a2b2bf47483bbc1f18ff5d274287cf670273bf2b7b9454ac3cbee16703",
+    "tests/contentReviewConsole.test.mjs": "6bbe08cef712c4926d5438a19aa1a5121e445066021b0478659fe7f20f7a72ab",
+    "README.md": "ac72d53eddfc22f637f83db8a4457f7c88fb8025f8003a0bb815b87345a71cb0"
+  },
+  "appPinSha256": {
+    "integration/contracts/content-release/release.lock.json": "28046b47ae03d6f089ac95b2c5a8feb96ffbbc040a4dcc663fc1e460e336e2c0",
+    "src/content/generated/canonical-content/content-lock.json": "81696237c0f1f87d17bd7d0f56b24a8b70cf89670d306831f55fa0666f74efd4",
+    "src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts": "7e38fda2e5c923fe792725d6534486e1a3bce69499e4ab6a2b0e00ad2703ebf7"
+  },
+  "execution": "content gitarchive exact HEAD + frozen own three files; temp outputs, read-only sibling app admission verifier/test"
+}
