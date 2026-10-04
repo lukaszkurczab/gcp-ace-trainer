@@ -1,0 +1,874 @@
+{
+  "schemaVersion": 1,
+  "verdict": "REVISE",
+  "unit": "OOD-N07-B08",
+  "reviewerRole": "Independent whole-object semantic and identity review; not author acceptance or producer/source approval",
+  "modelAndEffort": "gpt-6-luna / high",
+  "input": {
+    "path": "review-inputs/N07-B08-v4.json",
+    "sha256": "be7d5acfc2e2ccfa469ad6a70764572842bc873626e29414afd2f107f037bc2b",
+    "rootFrozenSha256": "be7d5acfc2e2ccfa469ad6a70764572842bc873626e29414afd2f107f037bc2b",
+    "questionCount": 18
+  },
+  "beforeSource": {
+    "path": "patternly-content/content/object-oriented-design-interview/persistence_repositories_serialization_and_domain_boundaries/OOD-N07-B08.json",
+    "sha256": "dfb46bf77f5f819acbac3e70123933c70f126441a29b17ae180b36ce7192511f"
+  },
+  "manifest": {
+    "path": "N07-MANIFEST.json",
+    "sha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01"
+  },
+  "mechanicalCheck": {
+    "result": "PASS",
+    "wholeObjectCount": 18,
+    "optionsChecked": 90,
+    "scope": "Mechanical schema/count/taxonomy/identity correspondence, actual scoring/reversal and exact wrong-diagnostic bindings only; no semantic or identity-action acceptance"
+  },
+  "v4Delta": {
+    "priorInputSha256": "493b6658598afb8199ff392eaf682906dce27ef68ba74dadd159e13eb27d6030",
+    "verifiedChanges": "errorCorrection Details suffixes were shortened for the 16 affected items, and constraints[0] for i001/i018 were corrected to state successful commit; remaining fields were unchanged."
+  },
+  "cohortFindings": [
+    {
+      "code": "NO_CURRENT_ITEM_BLOCKER",
+      "severity": "none",
+      "count": 0,
+      "questionIds": [],
+      "finding": "The two v3 ambiguity findings are resolved in v4: i001 now consistently states a successful $80 commit followed by changed-payload reuse, and i018 consistently states that cancellation committed before the response was lost. The repeated-result practice in i018 is close to accepted examples but is not itself a correctness defect."
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n07-b08-i001",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "bfaf48d2e163219353b79f5d32540e7c23d89cbfa1c2a2bde0a74226918fd076",
+      "currentWholeObjectSha256": "5d289465616040b595e7c1435b53ea677e998eefbbcd4b2bd28d0d7c064f9b3d",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i019",
+        "basis": "The before accepted answer applied the old case rule “the escalation keeps ownership and response deadlines” to its original escalation/consistency scenario. The current accepted answer instead chooses “Bind each operation ID to its first payload; reject reuse with a changed amount.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a customer-support escalation desk, the support lead must escalate a conversation. The escalation keeps ownership and response deadlines. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is an invalid-state probe: which decision best preserves the contract?",
+        "currentPrompt": "In marketplace payout service, release operation `op-428` committed for $80, but the response was lost. A retry reuses `op-428` with amount $95; the API contract says an operation ID names one immutable command payload. What should persistence do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i001_payload_binding",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “the escalation keeps ownership and response deadlines” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "the escalation keeps ownership and response deadlines",
+        "currentAcceptedMeaning": "Bind each operation ID to its first payload; reject reuse with a changed amount."
+      },
+      "decisiveFacts": [
+        "The first commit succeeded, and the retry carries the same operation identity.",
+        "The first commit succeeded, and the retry reuses the operation ID with a changed amount."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i001_payload_binding",
+        "text": "Bind each operation ID to its first payload; reject reuse with a changed amount.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i001_wrong_1",
+        "text": "Generate a new payout ID on each attempt and let finance reconcile duplicates later.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "A repeated operation ID is safe only when it still denotes the same command payload. The amount changed, so this is key reuse conflict, not a retry of the committed release. The original release remains associated with its original amount; the altered request cannot silently reuse that identity.",
+        "details": {
+          "mechanismOrProperty": "An idempotency key names a command payload; storing its fingerprint distinguishes a retry from key reuse.",
+          "scenarioApplication": "Operation op-428 remains tied to $80; the changed $95 request cannot silently claim that identity.",
+          "errorCorrection": "The changed amount is a different command payload, so the existing operation ID cannot be reused for it. If the caller retried with the original amount, the service could return the result already stored for that command.",
+          "boundaryOrTradeoff": "An identical retry can resolve the original result; a changed payload under the same identity must be rejected.",
+          "transfer": "Bind an operation identity to its canonical payload before applying or resolving the command."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": "The corrected constraints now consistently state that the original $80 commit succeeded and the changed $95 payload reuses its immutable operation ID. The answer and rejection condition follow directly."
+    },
+    {
+      "questionId": "ood-n07-b08-i002",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "3b4b420b967b979d02d21aec3d60c71bcb7eed293854ac34ab097c06be3cac49",
+      "currentWholeObjectSha256": "855052583f6af9884390967ac0a6baa3c5c7ba0ae118d1c03495c017cb3fec82",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i020",
+        "basis": "The before accepted answer applied the old case rule “a listing cannot become visible before its price and stock rule are valid” to its original escalation/consistency scenario. The current accepted answer instead chooses “Return the validation error; process corrected input as a new command.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a regional produce marketplace, the seller operations lead must publish a seasonal inventory change. A listing cannot become visible before its price and stock rule are valid. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a collaboration trace: which decision best preserves the contract?",
+        "currentPrompt": "In subscription packaging service, A catalog write is rejected by validation before a transaction begins. The caller receives a definitive invalid-price response and corrects the price before trying again. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i002_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “a listing cannot become visible before its price and stock rule are valid” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "a listing cannot become visible before its price and stock rule are valid",
+        "currentAcceptedMeaning": "Return the validation error; process corrected input as a new command."
+      },
+      "decisiveFacts": [
+        "The failure is known to occur before any transaction or persistence mutation.",
+        "Validation rejected the request before a transaction or database write began."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i002_failure_policy",
+        "text": "Return the validation error; process corrected input as a new command.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i002_wrong_1",
+        "text": "Replay the invalid payload until one attempt succeeds.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "Because validation stopped the command before persistence, there is no uncertain write to reconcile. The corrected price can be evaluated independently because the earlier invalid request changed no stored state.",
+        "details": {
+          "mechanismOrProperty": "A validation failure before persistence has no stored state to reconcile.",
+          "scenarioApplication": "The corrected price can be evaluated as a fresh command because the rejected input never mutated storage.",
+          "errorCorrection": "Retrying unchanged invalid input cannot repair its validation failure.",
+          "boundaryOrTradeoff": "If validation occurred after a possible write, the result would need reconciliation rather than this pre-write response.",
+          "transfer": "Distinguish a known pre-write rejection from a failure whose commit outcome is uncertain."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": null
+    },
+    {
+      "questionId": "ood-n07-b08-i003",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "7e8dd0c21d924de4b89b775a2946f52176970c26a3449c872bcab051a33138db",
+      "currentWholeObjectSha256": "5c8567f4dff943be42359a9b47bee4ecbd1ba6ae1dd107f6a501334571b4413f",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i021",
+        "basis": "The before accepted answer applied the old case rule “each split retains the original request identity and delivery promise” to its original escalation/consistency scenario. The current accepted answer instead chooses “Use the expected revision in the write and report a conflict if it no longer matches.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a repair-parts marketplace, the fulfillment specialist must split a backordered request across vendors. Each split retains the original request identity and delivery promise. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a counterexample: which decision best preserves the contract?",
+        "currentPrompt": "In local-first map editor, Two editors load revision 18. The first saves revision 19. The second submits an edit expecting revision 18; the product must show a conflict rather than overwrite accepted geometry. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i003_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “each split retains the original request identity and delivery promise” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "each split retains the original request identity and delivery promise",
+        "currentAcceptedMeaning": "Use the expected revision in the write and report a conflict if it no longer matches."
+      },
+      "decisiveFacts": [
+        "The second command is based on revision 18, while revision 19 is already accepted.",
+        "The submitted geometry was prepared against revision 18."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i003_failure_policy",
+        "text": "Use the expected revision in the write and report a conflict if it no longer matches.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i003_wrong_1",
+        "text": "Retry the second edit against revision 19 without showing the editor the intervening change.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "The expected revision is a write precondition; a stale edit must not replace a newer accepted geometry. An edit from revision 18 cannot overwrite geometry accepted as revision 19.",
+        "details": {
+          "mechanismOrProperty": "An expected revision is a compare-before-write condition for concurrent edits.",
+          "scenarioApplication": "The edit based on revision 18 cannot replace the geometry already accepted as revision 19.",
+          "errorCorrection": "Blind rebase can overwrite geometry the second editor never saw.",
+          "boundaryOrTradeoff": "If the product defined a merge rule for concurrent edits, it could offer a merge after detecting the version mismatch.",
+          "transfer": "Use concurrency tokens to detect stale writes; let the caller resolve conflicts when the contract requires explicit review."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": null
+    },
+    {
+      "questionId": "ood-n07-b08-i004",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "91edaba0df8142b265a5747c8877818b18808ac56e1a081dced79dc28f14d453",
+      "currentWholeObjectSha256": "f966f3b1041efd5c93c67b129ae32626b349a87caeca34614f06167f757395c7",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i022",
+        "basis": "The before accepted answer applied the old case rule “transfer preserves the plot boundary and approval history” to its original escalation/consistency scenario. The current accepted answer instead chooses “Commit the notice and dispatch intent together, then let the worker publish.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a community garden allocation tool, the plot steward must transfer a plot reservation. Transfer preserves the plot boundary and approval history. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a permission or trust boundary: which decision best preserves the contract?",
+        "currentPrompt": "In public-transit disruption board, A disruption notice and its database record must commit together. A worker may crash after commit but before publishing a notification; notifications have a stable notice ID and receivers can ignore repeats. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i004_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “transfer preserves the plot boundary and approval history” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "transfer preserves the plot boundary and approval history",
+        "currentAcceptedMeaning": "Commit the notice and dispatch intent together, then let the worker publish."
+      },
+      "decisiveFacts": [
+        "The notice must persist with dispatch intent, while the worker can stop between commit and publish.",
+        "The notice and dispatch intent share one local transaction; receivers ignore repeated notice IDs."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i004_failure_policy",
+        "text": "Commit the notice and dispatch intent together, then let the worker publish.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i004_wrong_1",
+        "text": "Publish the notification before saving the notice and assume the later database write will succeed.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "The local notice and dispatch intent can be committed atomically, but provider delivery occurs later and may repeat. The notice survives a worker crash with dispatch intent available for later delivery.",
+        "details": {
+          "mechanismOrProperty": "A transactional outbox stores local intent so dispatch can resume after a process interruption.",
+          "scenarioApplication": "The notice remains committed with dispatch intent even if the worker stops before publishing.",
+          "errorCorrection": "Publishing first can notify users about a notice that never commits.",
+          "boundaryOrTradeoff": "The design provides durable retryable intent and duplicate tolerance, not universal exactly-once delivery.",
+          "transfer": "When a local commit and an external notification must be coordinated, persist the delivery intent with the local change."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": "The scenario states one local transaction for notice plus dispatch intent, with later delivery and receiver tolerance for repeated stable IDs. The key does not promise exactly-once delivery."
+    },
+    {
+      "questionId": "ood-n07-b08-i005",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "71cc5bdf8f8dea939a38b30f27c9a9bcd41784dfd68f8fd0a220507a1983acc4",
+      "currentWholeObjectSha256": "93a5ab2b233f851a233efdfbb7c860ef78aebea56cfd9e8624bad33d712aebb0",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i023",
+        "basis": "The before accepted answer applied the old case rule “the bundle pricing policy remains consistent with its components” to its original escalation/consistency scenario. The current accepted answer instead chooses “Enforce the overlap rule at the shared write boundary, not with a process-local precheck.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a subscription packaging service, the catalog manager must add a regional bundle. The bundle pricing policy remains consistent with its components. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a retry or recovery path: which decision best preserves the contract?",
+        "currentPrompt": "In neighborhood energy-sharing service, Two requests concurrently reserve the same meter for an overlapping window. Both read the meter as available; the rule allows at most one committed reservation. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i005_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “the bundle pricing policy remains consistent with its components” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "the bundle pricing policy remains consistent with its components",
+        "currentAcceptedMeaning": "Enforce the overlap rule at the shared write boundary, not with a process-local precheck."
+      },
+      "decisiveFacts": [
+        "The requests can race after separately reading the same availability.",
+        "Both requests read the same meter availability before attempting their writes."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i005_failure_policy",
+        "text": "Enforce the overlap rule at the shared write boundary, not with a process-local precheck.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i005_wrong_1",
+        "text": "Check availability in each process and save after the check.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "Each request can pass a read-time availability check before either write; the shared persistence boundary must decide which reservation is accepted. At most one overlapping reservation may become committed even when both requests observed availability.",
+        "details": {
+          "mechanismOrProperty": "Concurrent requests must coordinate at the shared persistence boundary after their reads race.",
+          "scenarioApplication": "Only one overlapping meter reservation can commit even though both requests saw availability.",
+          "errorCorrection": "Both processes can pass their own check before either save completes.",
+          "boundaryOrTradeoff": "The implementation could use a database constraint or a transactionally checked write; the case does not prescribe one technology.",
+          "transfer": "Place a shared invariant where concurrent persisted changes are decided, not only in an earlier read."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": "Both requests can pass their read-time checks, while only one overlapping reservation may commit; enforcing the invariant at the shared write boundary is supported."
+    },
+    {
+      "questionId": "ood-n07-b08-i006",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "b264287dec037f41f3b0588ca27ab4228912e60847053f6930f00dc45fde2f36",
+      "currentWholeObjectSha256": "3a730e399c1fab995c0fb90de9b820281151381f887ea2a9cd831a7adca9745d",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i024",
+        "basis": "The before accepted answer applied the old case rule “charger capacity and reservation expiry are coordinated” to its original escalation/consistency scenario. The current accepted answer instead chooses “Keep the referral pending until a terminal remote outcome is confirmed.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a fleet charging coordinator, the station operator must reserve a charger. Charger capacity and reservation expiry are coordinated. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a direct application: which decision best preserves the contract?",
+        "currentPrompt": "In clinic referral coordinator, the remote API acknowledges that a referral request was queued, but its terminal decision callback is delayed. The local referral must remain pending until accepted or rejected status is confirmed. What should persistence do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i006_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “charger capacity and reservation expiry are coordinated” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "charger capacity and reservation expiry are coordinated",
+        "currentAcceptedMeaning": "Keep the referral pending until a terminal remote outcome is confirmed."
+      },
+      "decisiveFacts": [
+        "A missing callback does not tell the coordinator whether the remote system accepted the referral.",
+        "The remote API acknowledgement means the referral request was queued, not that its terminal decision is known."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i006_failure_policy",
+        "text": "Keep the referral pending until a terminal remote outcome is confirmed.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i006_wrong_1",
+        "text": "Mark the referral accepted as soon as the request is sent.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "Acknowledgement of queueing is not a terminal referral decision, so local status must not claim accepted or rejected yet. The referral remains visibly pending until the specialist system reports a terminal outcome.",
+        "details": {
+          "mechanismOrProperty": "A queued acknowledgement describes request receipt, not completion of remote business processing.",
+          "scenarioApplication": "The referral remains pending until the specialist system reports its terminal decision.",
+          "errorCorrection": "Sending is not the same as remote acceptance.",
+          "boundaryOrTradeoff": "If the remote API offered a definitive rejection response, the local state could transition directly to rejected.",
+          "transfer": "Represent unknown external outcomes explicitly and reconcile them using the operation’s stable identity."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": "The remote acknowledgment is queued-only and terminal status is unknown; keeping local status pending preserves the stated distinction."
+    },
+    {
+      "questionId": "ood-n07-b08-i007",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "b06e8e09d25107e9d3b5f665e49558a23f02dab1fb97485f705c3133da5d05b6",
+      "currentWholeObjectSha256": "57db9b8dd5a2c454c79df0d1ef4cca193b0086bab21a7f43e5bba435bfbe97f2",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i025",
+        "basis": "The before accepted answer applied the old case rule “asset identity remains stable while descriptive values are replaced” to its original escalation/consistency scenario. The current accepted answer instead chooses “Persist per-asset confirmation and resume only work not yet confirmed.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a photo-archive curation tool, the archivist must merge duplicate metadata. Asset identity remains stable while descriptive values are replaced. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a near-miss design: which decision best preserves the contract?",
+        "currentPrompt": "In photo-archive curation tool, A bulk metadata import processes 500 assets. The import contract permits partial completion and requires the operator to resume only assets not yet confirmed. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i007_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “asset identity remains stable while descriptive values are replaced” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "asset identity remains stable while descriptive values are replaced",
+        "currentAcceptedMeaning": "Persist per-asset confirmation and resume only work not yet confirmed."
+      },
+      "decisiveFacts": [
+        "The contract permits partial results and the process must resume from confirmed work.",
+        "The operator resumes the import from asset-level confirmations."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i007_failure_policy",
+        "text": "Persist per-asset confirmation and resume only work not yet confirmed.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i007_wrong_1",
+        "text": "Wrap all 500 assets in one all-or-nothing transaction even though the job may exceed the configured transaction limit.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "Asset-level confirmation identifies which part of a permitted partial import remains unfinished. Confirmed assets remain complete while only unconfirmed asset work resumes.",
+        "details": {
+          "mechanismOrProperty": "Per-item checkpoints distinguish confirmed effects from work that still needs resumption.",
+          "scenarioApplication": "Confirmed assets are skipped on resume while unconfirmed assets remain eligible for processing.",
+          "errorCorrection": "The case states one transaction may exceed its operational limit.",
+          "boundaryOrTradeoff": "If the batch contract required all assets to appear atomically, partial checkpoints would not satisfy it.",
+          "transfer": "Choose a checkpoint boundary that matches the job’s actual partial-completion contract."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": "The scenario explicitly allows partial completion and requires resume from asset-level confirmations; the selected checkpoint boundary follows."
+    },
+    {
+      "questionId": "ood-n07-b08-i008",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "f749371912aa01d84d9f09be722a812cad6bf7c47cd8fffc5bd82ce051375dfd",
+      "currentWholeObjectSha256": "f92f5471e01818a93acf36e16553e1cc34346a2ac8c9a99e091d47dfd91dff26",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i026",
+        "basis": "The before accepted answer applied the old case rule “approval requires an explicit territory and expiration” to its original escalation/consistency scenario. The current accepted answer instead chooses “Record the seven confirmed units and reconcile the uncertain remainder under the original request.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a digital rights clearance tool, the licensing analyst must approve a territory-specific usage. Approval requires an explicit territory and expiration. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a review of a common misconception: which decision best preserves the contract?",
+        "currentPrompt": "In repair-parts marketplace, A request for 12 parts is split across two vendors. Vendor A confirms 7 units; Vendor B times out before confirming the remaining 5. The customer promise and original request identity must remain intact. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i008_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “approval requires an explicit territory and expiration” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "approval requires an explicit territory and expiration",
+        "currentAcceptedMeaning": "Record the seven confirmed units and reconcile the uncertain remainder under the original request."
+      },
+      "decisiveFacts": [
+        "Only seven units are confirmed; the other five have an unknown vendor outcome.",
+        "Only seven units are confirmed; the remaining five have an unknown vendor outcome."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i008_failure_policy",
+        "text": "Record the seven confirmed units and reconcile the uncertain remainder under the original request.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i008_wrong_1",
+        "text": "Replace the original request with a new five-unit request and discard the confirmed allocation.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "The confirmed seven units are known work; the timeout leaves only the five-unit vendor outcome unresolved. The customer request and its confirmed quantity remain intact while the five-unit result is reconciled.",
+        "details": {
+          "mechanismOrProperty": "A partial outcome can be recorded without misclassifying an uncertain external remainder.",
+          "scenarioApplication": "The original request keeps its seven confirmed units while the five-unit outcome is reconciled.",
+          "errorCorrection": "Discarding the original link loses the delivery promise and confirmed work.",
+          "boundaryOrTradeoff": "If neither vendor response were known, both portions would remain unresolved rather than confirmed.",
+          "transfer": "Represent partial completion explicitly at the unit of work that can have a separate outcome."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": "Seven units are confirmed and five are unknown; retaining the original request and reconciling only the uncertain remainder preserves those facts."
+    },
+    {
+      "questionId": "ood-n07-b08-i009",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "b72dc641f50950915a575160cc6a6924fa9ba17d34eb410f71c4c8dd4efd5fc8",
+      "currentWholeObjectSha256": "c57c02634e70f925fecb77b11b2b419b6160309673c208aba868f76251cefa2a",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i027",
+        "basis": "The before accepted answer applied the old case rule “a battery cannot be assigned to two aircraft at once” to its original escalation/consistency scenario. The current accepted answer instead chooses “Look up the durable run state and report it as running; do not start another worker.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a drone maintenance planner, the fleet coordinator must schedule a battery replacement. A battery cannot be assigned to two aircraft at once. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a new requirement: which decision best preserves the contract?",
+        "currentPrompt": "In research-notebook platform, run `R-63` is still executing after its worker restarts. A retry with the same run ID must not launch duplicate experiment work; a different run ID starts a new experiment. What should persistence do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i009_running_state",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “a battery cannot be assigned to two aircraft at once” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "a battery cannot be assigned to two aircraft at once",
+        "currentAcceptedMeaning": "Look up the durable run state and report it as running; do not start another worker."
+      },
+      "decisiveFacts": [
+        "The run ID distinguishes retry of one experiment from an intentional new run.",
+        "The run store reports that this run ID is still executing after the worker restart."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i009_running_state",
+        "text": "Look up the durable run state and report it as running; do not start another worker.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i009_wrong_1",
+        "text": "Use the notebook title as the duplicate key, even when the author intentionally starts a new run.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "The stored Running state distinguishes this retry from both a completed result and a new experiment. The caller receives the current run status without launching duplicate experiment work.",
+        "details": {
+          "mechanismOrProperty": "A durable operation state distinguishes in-progress work from completed and newly requested work.",
+          "scenarioApplication": "Run R-63 is reported as running after restart, without starting another execution.",
+          "errorCorrection": "A title can be reused across separate experiments.",
+          "boundaryOrTradeoff": "If the caller used a new run ID, it would represent a new experiment under the stated contract.",
+          "transfer": "When a durable operation is still active, report its stored state instead of scheduling a second execution."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": "The store reports R-63 still executing; reporting durable Running state avoids launching duplicate work under the same ID."
+    },
+    {
+      "questionId": "ood-n07-b08-i010",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "7ad73a5ed6190d9c24b06a06ae9862cc2475ca6c15a6daecd8336d262a864ca7",
+      "currentWholeObjectSha256": "81dd5f513b8f55c01c6ef19b9d8be8b7eeb63c6fde868993656a234632c5e09b",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i028",
+        "basis": "The before accepted answer applied the old case rule “privacy and consent rules apply before external disclosure” to its original escalation/consistency scenario. The current accepted answer instead chooses “Persist the provider event ID with the transition and recognize a duplicate delivery.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a clinic referral coordinator, the care navigator must route a referral to a specialist. Privacy and consent rules apply before external disclosure. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a failure rehearsal: which decision best preserves the contract?",
+        "currentPrompt": "In permissions review service, A webhook for grant `G-71` is delivered twice with the same provider event ID. The audit must show one grant transition, and the second delivery should return an acknowledged duplicate. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i010_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “privacy and consent rules apply before external disclosure” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "privacy and consent rules apply before external disclosure",
+        "currentAcceptedMeaning": "Persist the provider event ID with the transition and recognize a duplicate delivery."
+      },
+      "decisiveFacts": [
+        "The event ID identifies a delivery, while a principal may receive multiple legitimate grants.",
+        "The event ID distinguishes deliveries from separate grant changes for the same principal."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i010_failure_policy",
+        "text": "Persist the provider event ID with the transition and recognize a duplicate delivery.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i010_wrong_1",
+        "text": "Use the principal ID as the duplicate key and ignore every later grant event for that principal.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "The provider event ID identifies one delivery, while principal identity alone would collapse later legitimate grants. A repeated delivery is acknowledged without applying the grant transition again.",
+        "details": {
+          "mechanismOrProperty": "A delivery identifier scopes deduplication more narrowly than the recipient identity.",
+          "scenarioApplication": "A repeated provider event is acknowledged once while later grants for the same principal remain distinct.",
+          "errorCorrection": "One principal ID would suppress valid later events.",
+          "boundaryOrTradeoff": "If the provider assigned a new event ID to a genuine correction, that correction should be processed as its own event.",
+          "transfer": "Deduplicate at the durable event identity and preserve distinct legitimate operations."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": null
+    },
+    {
+      "questionId": "ood-n07-b08-i011",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "353614692a823693515f5613306aa3ffeb8a1668c35536ab0499258420db7625",
+      "currentWholeObjectSha256": "70ce4df3f620c1a85b089c8be838a024d34431424b2fc2c9814a0379183e56dc",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i029",
+        "basis": "The before accepted answer applied the old case rule “completion records the exercise version and score policy” to its original escalation/consistency scenario. The current accepted answer instead chooses “Accept completion only when its lease token is still current.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a music practice tracker, the learner must complete a timed exercise. Completion records the exercise version and score policy. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a transfer to a neighboring domain: which decision best preserves the contract?",
+        "currentPrompt": "In volunteer coordination hub, A worker claims a shift reminder lease. The lease expires while the first worker is paused; a second worker claims it. A late completion from the first worker must not mark the second worker’s reminder complete. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i011_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “completion records the exercise version and score policy” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "completion records the exercise version and score policy",
+        "currentAcceptedMeaning": "Accept completion only when its lease token is still current."
+      },
+      "decisiveFacts": [
+        "A later claim can supersede an earlier lease while the first worker is still running.",
+        "The second worker holds the current lease after the first lease expires."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i011_failure_policy",
+        "text": "Accept completion only when its lease token is still current.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i011_wrong_1",
+        "text": "Accept any completion with the volunteer ID, regardless of which lease created it.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "A lease token distinguishes the current claim from the expired worker’s late completion. The expired worker cannot complete the reminder now owned by the second lease.",
+        "details": {
+          "mechanismOrProperty": "A changing lease token fences completion from a worker whose claim has expired.",
+          "scenarioApplication": "The first worker’s late result cannot complete the reminder under the second worker’s lease.",
+          "errorCorrection": "Volunteer identity does not distinguish two claims for the same reminder.",
+          "boundaryOrTradeoff": "If a lease could never be reassigned while work was active, the stale completion race would not arise.",
+          "transfer": "When ownership can move after timeout, validate the current ownership token at completion."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": "A later lease has superseded the first while it was paused; accepting only the current token fences the stale completion."
+    },
+    {
+      "questionId": "ood-n07-b08-i012",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "9a437ef2391e95515eb15dd8c28b1434426f41198b0744cfd4e7ba62751dd00c",
+      "currentWholeObjectSha256": "85ab3736165c71631e00cf433eebf0032499681ed96616997f550155eb0aa41c",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i030",
+        "basis": "The before accepted answer applied the old case rule “approval is attributable, bounded, and cannot bypass required controls” to its original escalation/consistency scenario. The current accepted answer instead chooses “Commit the balance update and allocation row in one local transaction.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a procurement approval queue, the purchasing manager must approve an exception. Approval is attributable, bounded, and cannot bypass required controls. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a design-review comparison: which decision best preserves the contract?",
+        "currentPrompt": "In cooperative lending ledger, Applying one allocation changes the outstanding balance and appends an allocation row. The ledger requires those two local database changes to succeed or fail together. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i012_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “approval is attributable, bounded, and cannot bypass required controls” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "approval is attributable, bounded, and cannot bypass required controls",
+        "currentAcceptedMeaning": "Commit the balance update and allocation row in one local transaction."
+      },
+      "decisiveFacts": [
+        "The balance and allocation row form one stated local consistency boundary.",
+        "The balance and allocation row are writes to the same local database."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i012_failure_policy",
+        "text": "Commit the balance update and allocation row in one local transaction.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i012_wrong_1",
+        "text": "Save the allocation first and update the balance later in a background task.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "The two local records are one stated consistency boundary, so an interrupted half-write must not be visible. Neither the balance nor the allocation row can appear without the other.",
+        "details": {
+          "mechanismOrProperty": "A database transaction keeps related local writes within one commit boundary.",
+          "scenarioApplication": "The balance and allocation row cannot become visible independently.",
+          "errorCorrection": "A crash between writes leaves the ledger inconsistent.",
+          "boundaryOrTradeoff": "If balance were derived solely from allocation rows, the stored balance update might not be needed.",
+          "transfer": "Use a transaction for related local persistence changes whose contract is all-or-nothing."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": "The two local writes must succeed or fail together in the same database; a local transaction directly matches that boundary."
+    },
+    {
+      "questionId": "ood-n07-b08-i013",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "7c526684360f46295e21e5a5e183b1273bf9b018d85cad7d1eb4bb1b489957f9",
+      "currentWholeObjectSha256": "53bd9340341c52ff7d20a6946e8e663f169c318aff159d96aba3c8158f74b5b9",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i031",
+        "basis": "The before accepted answer applied the old case rule “annotations follow stable segments rather than file offsets” to its original escalation/consistency scenario. The current accepted answer instead chooses “Return the known cancellation result without creating a seal record.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a podcast production desk, the episode producer must replace a source recording while preserving annotations. Annotations follow stable segments rather than file offsets. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a lifecycle boundary: which decision best preserves the contract?",
+        "currentPrompt": "In document notarization service, A notary requests a seal and the user cancels before the persistence call starts. The system knows no seal write was attempted and must report cancellation without a seal record. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i013_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “annotations follow stable segments rather than file offsets” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "annotations follow stable segments rather than file offsets",
+        "currentAcceptedMeaning": "Return the known cancellation result without creating a seal record."
+      },
+      "decisiveFacts": [
+        "The cancellation occurs before any persistence call begins.",
+        "No persistence call was started for the canceled seal attempt."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i013_failure_policy",
+        "text": "Return the known cancellation result without creating a seal record.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i013_wrong_1",
+        "text": "Create a pending seal before the persistence call so cancellation can be retried automatically.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "The system knows the persistence call never began; treating that as uncertain would invent a possible write. The canceled attempt has no seal row because no write was attempted.",
+        "details": {
+          "mechanismOrProperty": "Failure-stage knowledge determines whether a write outcome is uncertain or known absent.",
+          "scenarioApplication": "The canceled seal attempt has no persisted record because execution stopped before the call.",
+          "errorCorrection": "Creating pending work contradicts the stated no-write cancellation.",
+          "boundaryOrTradeoff": "If cancellation occurred after submission with unknown commit status, the system would need to reconcile the attempt instead.",
+          "transfer": "Use the stage of failure to distinguish safe cancellation from uncertain persistence outcomes."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": null
+    },
+    {
+      "questionId": "ood-n07-b08-i014",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "58b1a1c8ccd70dc29132c04f8d20dc6c285e18847c129433a5236b4ec113c53b",
+      "currentWholeObjectSha256": "27a2c9685b91083c428a864f8091e6b016784be1fe4aa94f0a831bd0da04e69e",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i032",
+        "basis": "The before accepted answer applied the old case rule “the role expires and is attributable to a specific approval” to its original escalation/consistency scenario. The current accepted answer instead chooses “Retain the settlement snapshot and policy revision used for the calculation.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a permissions review service, the security reviewer must grant a temporary role. The role expires and is attributable to a specific approval. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is an ownership dispute: which decision best preserves the contract?",
+        "currentPrompt": "In marketplace payout service, Payout amount is calculated from a settlement snapshot and policy revision. Operators may change both after calculation. A payout later under review must reproduce the amount originally calculated. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i014_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “the role expires and is attributable to a specific approval” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "the role expires and is attributable to a specific approval",
+        "currentAcceptedMeaning": "Retain the settlement snapshot and policy revision used for the calculation."
+      },
+      "decisiveFacts": [
+        "The underlying settlement and policy can change after the amount is calculated.",
+        "The calculation records a settlement snapshot and policy revision."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i014_failure_policy",
+        "text": "Retain the settlement snapshot and policy revision used for the calculation.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i014_wrong_1",
+        "text": "Recalculate using the current settlement and current policy whenever an operator opens the payout.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "The original inputs can change later, so the persisted revision pair is needed to reproduce this calculation. A later review can identify exactly which settlement and policy produced the amount.",
+        "details": {
+          "mechanismOrProperty": "Persisting input revisions preserves the lineage needed to reproduce a historical calculation.",
+          "scenarioApplication": "Review can retrieve the settlement snapshot and policy version used for the original payout amount.",
+          "errorCorrection": "Current inputs can produce a different amount from the original decision.",
+          "boundaryOrTradeoff": "If the product intentionally recalculated live payouts on every view, historical reproduction would not be required.",
+          "transfer": "For reproducible persisted results, record the specific immutable inputs that produced them."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": null
+    },
+    {
+      "questionId": "ood-n07-b08-i015",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "6bc21332919e79e6294bb665b6381ace0559c11bf875e40ea7ece894d245e2e6",
+      "currentWholeObjectSha256": "57188a980bc4f7dbb81fbe33679bc00a57ef657087ad4eecd212a58f840eee43",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i033",
+        "basis": "The before accepted answer applied the old case rule “the seal covers the exact immutable revision” to its original escalation/consistency scenario. The current accepted answer instead chooses “Validate both values and commit them before the listing becomes visible.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a document notarization service, the notary must seal a document revision. The seal covers the exact immutable revision. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a boundary decision: which decision best preserves the contract?",
+        "currentPrompt": "In regional produce marketplace, A listing update writes price and stock. The request must never expose a new price with old stock validation; both values are stored in one database. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i015_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “the seal covers the exact immutable revision” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "the seal covers the exact immutable revision",
+        "currentAcceptedMeaning": "Validate both values and commit them before the listing becomes visible."
+      },
+      "decisiveFacts": [
+        "The price and stock rule must be valid together before the listing is visible.",
+        "Price and stock validation are both stored in the same local database."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i015_failure_policy",
+        "text": "Validate both values and commit them before the listing becomes visible.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i015_wrong_1",
+        "text": "Publish the new price immediately and update stock after validation finishes.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "Listing visibility is conditional on both submitted values passing together; separate commits expose an invalid intermediate state. Consumers see the new listing only after price and stock form one valid stored state.",
+        "details": {
+          "mechanismOrProperty": "A transaction can couple validation, storage, and visibility for values sharing one local consistency rule.",
+          "scenarioApplication": "A listing becomes visible only with the accepted price and stock combination.",
+          "errorCorrection": "Price can become visible before stock validation.",
+          "boundaryOrTradeoff": "If price and stock were independent listing attributes under the product contract, separate writes could be acceptable.",
+          "transfer": "Group fields when the scenario says consumers must observe them as one valid state."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": null
+    },
+    {
+      "questionId": "ood-n07-b08-i016",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "15f284f5bc52af1498a07a46d3e3f5ee1d96a76fc686141bfe8ab06b4ab3f097",
+      "currentWholeObjectSha256": "fba7a33e1df9a2ad430cbafe1f5fe939eee35169a9d04acf431b283e23ef44b9",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i034",
+        "basis": "The before accepted answer applied the old case rule “release is idempotent and tied to a settled order” to its original escalation/consistency scenario. The current accepted answer instead chooses “Upsert by provider asset key while retaining the archive asset identity.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a marketplace payout service, the finance operator must release a seller payout. Release is idempotent and tied to a settled order. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a simplicity check: which decision best preserves the contract?",
+        "currentPrompt": "In photo-archive curation tool, An import job receives the same provider batch twice. Each row has a stable provider asset key; an already imported key should update descriptive metadata without creating a second asset identity. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i016_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "release is idempotent and tied to a settled order",
+        "currentAcceptedMeaning": "Upsert by provider asset key while retaining the archive asset identity."
+      },
+      "decisiveFacts": [
+        "A repeated delivery carries stable provider asset keys and must not duplicate asset identity.",
+        "The provider asset key is stable across deliveries of this batch."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i016_failure_policy",
+        "text": "Upsert by provider asset key while retaining the archive asset identity.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i016_wrong_1",
+        "text": "Create a new archive asset for every batch delivery and deduplicate titles afterward.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "The stable provider key identifies the same archive asset across the repeated batch. A repeated provider row updates metadata on the same archive asset.",
+        "details": {
+          "mechanismOrProperty": "A stable external key maps repeated deliveries to one persisted identity.",
+          "scenarioApplication": "The second batch updates descriptive fields on the existing archive asset.",
+          "errorCorrection": "Titles can collide and do not identify the provider asset.",
+          "boundaryOrTradeoff": "If the provider key could be reused for different assets, the import would need a broader identity scope.",
+          "transfer": "Use the identity explicitly guaranteed by the integration contract to make repeated imports recognizable."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": null
+    },
+    {
+      "questionId": "ood-n07-b08-i017",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "483ecd6b5f9327239aa630f2f32aedd838cf9936e94f085fbeeba150600b97e8",
+      "currentWholeObjectSha256": "d289318de49398eb62eda052d4df70c4f7d763c9a000821e74ddffc1bf056505",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i035",
+        "basis": "The before accepted answer applied the old case rule “passengers receive the change in the order in which it becomes effective” to its original escalation/consistency scenario. The current accepted answer instead chooses “Keep delivery unresolved and consult the provider status feed by its request reference before retrying.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a public-transit disruption board, the service controller must announce a platform change. Passengers receive the change in the order in which it becomes effective. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a testability review: which decision best preserves the contract?",
+        "currentPrompt": "In public-transit disruption board, a notice is committed and sent to a provider. The provider may have accepted the send before timing out. Its API accepts a caller-supplied notice reference and provides a status feed keyed by that reference, but does not promise duplicate-send suppression. What should persistence do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i017_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "passengers receive the change in the order in which it becomes effective",
+        "currentAcceptedMeaning": "Keep delivery unresolved and consult the provider status feed by its request reference before retrying."
+      },
+      "decisiveFacts": [
+        "The provider may have accepted the send even though the response timed out.",
+        "The provider accepts a caller-supplied notice reference and exposes delivery status by that reference; repeated sends are not documented as deduplicated."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i017_failure_policy",
+        "text": "Keep delivery unresolved and consult the provider status feed by its request reference before retrying.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i017_wrong_1",
+        "text": "Mark the notice undelivered because the provider response was lost.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "The provider reference supports status lookup, but the case gives no safe repeat-send guarantee while status is unknown. The notice stays pending until the feed reports delivery status; no unsafely repeated send is inferred.",
+        "details": {
+          "mechanismOrProperty": "A status query can resolve uncertainty only through a capability the provider actually exposes.",
+          "scenarioApplication": "The notice stays pending until the feed reports status for its request reference; resend safety is not assumed.",
+          "errorCorrection": "The timeout leaves delivery unresolved. The stated status feed can answer by the request reference, but the case does not authorize repeating the send while that status is unknown.",
+          "boundaryOrTradeoff": "If the provider returned a definitive rejection, the local delivery could be marked rejected instead of remaining unresolved.",
+          "transfer": "Keep external delivery outcome separate from local request dispatch when acknowledgement is uncertain."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": "The provider exposes status lookup by request reference but no duplicate-send suppression; querying status before retry avoids assuming an unprovided delivery guarantee."
+    },
+    {
+      "questionId": "ood-n07-b08-i018",
+      "verdict": "REVISE_IDENTITY",
+      "contentVerdict": "PASS",
+      "beforeWholeObjectSha256": "a72762145e08cc1eb34ac549417de8f63463bd2cb024af4a45217f1c44e20e72",
+      "currentWholeObjectSha256": "a32c14ffc2c3d9aa46177db6d09409dbb560ca0fe766afc19816e414e0147ab4",
+      "questionIdentity": {
+        "disposition": "REPLACE_WITH_RESERVED_QUESTION_ID",
+        "reservedQuestionId": "ood-n07-b08-i036",
+        "basis": "The before accepted answer applied the old case rule “a meter cannot be committed twice for an overlapping window” to its original escalation/consistency scenario. The current accepted answer instead chooses “Return the already committed cancellation outcome for the same command ID.” for a different prompt and decisive fact. That is a different item-level decision even though both belong to the persistence unit, so the reserved corresponding ID is required.",
+        "beforePrompt": "In a neighborhood energy-sharing service, the meter operator must reserve a discharge window. A meter cannot be committed twice for an overlapping window. The interview lens is “Persistence failures, idempotency, retries, and consistency boundaries”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a measured workload: which decision best preserves the contract?",
+        "currentPrompt": "In neighborhood energy-sharing service, A meter reservation is canceled and the cancellation write commits, but the client loses its response. A retry with the same cancellation command must leave the reservation canceled and return the existing outcome. What should the persistence workflow do?",
+        "oldAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b08_i018_failure_policy",
+        "oldAcceptedMeaning": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it.",
+        "oldScenarioRule": "a meter cannot be committed twice for an overlapping window",
+        "currentAcceptedMeaning": "Return the already committed cancellation outcome for the same command ID."
+      },
+      "decisiveFacts": [
+        "The cancellation commit succeeded and the retry uses the same command identity.",
+        "The cancellation write committed before the client lost its response."
+      ],
+      "correctOption": {
+        "optionId": "n07_b08_i018_failure_policy",
+        "text": "Return the already committed cancellation outcome for the same command ID.",
+        "assessment": "Supported by the visible prompt and constraints unless the item-specific finding below identifies a competing valid plan."
+      },
+      "nearestAlternative": {
+        "optionId": "n07_b08_i018_wrong_1",
+        "text": "Create a second cancellation record with a new command ID for every retry.",
+        "assessment": "No second supported answer identified from the visible contract; reviewed against the corrected v4 facts and current alternatives."
+      },
+      "explanationReview": {
+        "reason": "The first cancellation is committed; replaying the same command should resolve to its existing terminal outcome. The reservation stays canceled, and the repeated command returns that committed outcome.",
+        "details": {
+          "mechanismOrProperty": "A committed terminal command can resolve a repeated request from its stored outcome.",
+          "scenarioApplication": "The reservation stays canceled and the same cancellation command returns its original result.",
+          "errorCorrection": "New command IDs obscure that both requests represent the same cancellation.",
+          "boundaryOrTradeoff": "A new cancellation with a different command ID would need its own validation against current reservation state.",
+          "transfer": "Make retries return the operation outcome already associated with their stable command identity."
+        },
+        "assessment": "Reviewed against the exact current facts and key; no field was accepted solely because the mechanical check passes."
+      },
+      "allWrongOptionDiagnosticsReviewed": true,
+      "nonBlockingNote": "The revised constraints consistently say the cancellation commit succeeded and the retry reuses the same command identity. Returning the existing outcome is supported."
+    }
+  ],
+  "limits": [
+    "This review does not accept source activation, producer integration, app runtime, admission/release, native, Premium, or full BIZQ-01.",
+    "The ID disposition is this reviewer’s per-item determination, subject to independent cross-unit review."
+  ]
+}

@@ -1,0 +1,11 @@
+# N07 — current source freeze
+
+Root actual Node22 freeze and pre-authoring check: PASS. The closed [manifest](N07-MANIFEST.json) contains144 full before objects across OOD-N07-B01–B08, all raw source hashes, actual keys/fields/source references, and corresponding unused candidate IDs i019–i036. The [item ledger](N07-PREFLIGHT.json) reuses133 CONFIRMED and11 CONTRACT_GAP only after exact raw/whole equality to the prior item-level review21. Gaps remain ambiguity, not wrong-key proof; individual identity is undecided until proposal review.
+
+Current OOD v22:1413 questions/79sourcefiles, Qset c6cf903178b823fb71ac29040f3c5fa5f72c619d3adbb525fc7791756654ac3e. Source producer baseline5a8e895379bb0abcbb5d7a1dc89fcf02167a823e. [Actual source observations](N07-CURRENT-SOURCE-OBSERVATIONS.md), [independent design PASS](N07-DESIGN-QA.md), [root actual prerequisites](ROOT-PRE-AUTHORING-BINDINGS.json), [root checks log](ROOT-PRE-AUTHORING-BINDINGS.log). Canonical docs07 append-only receipt preserves the exact N06 and previous contract prefix. The stale reported checker digest was resolved against actual final helper bytes and its successful execution; failed receipt probe remains historical evidence.
+
+[Readonly before baseline](ROOT-N07-BASELINE.json) binds1269 otherOOD object fingerprints,945 acceptedN01–N06,945 untouched trackedcontent files,14 immutable business-quality proof/evidence JSON paths,8othertrack artifacts, current/historical locks, demo bytes andfourHEAD/upstream/stash inventories. Source and app artifact whole objects match. Foreign untracked audit/dist and foreign shared plan/state sections are preserved.
+
+Reproduce before-authoring observations with `check-current-source.mjs`, baseline capture with `capture-n07-baseline.mjs`, and frozen prerequisites with `check-pre-authoring-bindings.mjs`, using Node22. The freeze/capture helpers describe immutable before-state and must not be rerun to overwrite these receipts after source activation. Later checks compare against these frozen objects and hashes.
+
+This accepts prerequisites only: no authored proposal, identity map, source activation, producer migration, consumer, admission, native/Premium, full BIZQ or release readiness claim. Root and independent reviewers must inspect actual authored objects before activation.

@@ -1,0 +1,265 @@
+{
+  "schemaVersion": "patternly-n07-b03-v2-correction-v1",
+  "verdict": "READY_FOR_INDEPENDENT_REREVIEW",
+  "scope": "Bounded author correction to frozen B03 v1 review: option-form cue and missing visible domain meaning in i006 only; no semantic acceptance.",
+  "baseline": {
+    "frozenProposalSha256": "97cdc4698077a34576da5762805782c17edd34bcb08345d363df779c8b849865",
+    "semanticReviewMdSha256": "5dc52e9f758c792a9f5e0a6186e01f919e82e15aa86f011b7d7bc4c533ba263d",
+    "semanticReviewJsonSha256": "d517d1a8257ecb86500b7c9815cb373723d7cd130b82197a60bd43d00556aeca",
+    "formCueMdSha256": "30356b1aa2f05b066499d9038dde2deaa290c5081c6d8aa5660892662d79ca2b",
+    "formCueJsonSha256": "89604ff96f9f1ab7739cd1c67c63a8829397116d16956b0425af7a614a8bfcb6"
+  },
+  "proposalSha256": "0ba2bcd05ce9da659635f98a0605c3b33bada0bd262f537e34d4b0e828e3172c",
+  "mechanical": {
+    "result": "PASS",
+    "wholeObjectCount": 18,
+    "optionsChecked": 90,
+    "scope": "Mechanical schema/count/taxonomy/identity correspondence, actual scoring/reversal and exact wrong-diagnostic bindings only; no semantic or identity-action acceptance"
+  },
+  "changes": {
+    "questionIdsPreserved": true,
+    "acceptedOptionIdsPreserved": true,
+    "nearestCompetingMappingsExpanded": 18,
+    "i006": {
+      "addedVisibleMapping": "REVOKED maps to revoked; ACTIVE maps to unrevoked",
+      "updatedKeyReasonDetailsAndNearestDiagnostic": true
+    },
+    "wholeUnitKeyForm": "Replaced repeated long answer-plus-boundary phrasing with case-specific concise complete mapping choices and expanded competing boundary models. No word-count threshold or option-count rule was used."
+  },
+  "items": [
+    {
+      "questionId": "ood-n07-b03-i001",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Translate the integer to a named classification at the persistence boundary; let refund policy use that value.",
+      "optionIds": [
+        "n07_b03_i001_wrong_1",
+        "n07_b03_i001_wrong_2",
+        "n07_b03_i001_wrong_3",
+        "owner_preserves_contract",
+        "n07_b03_i001_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i002",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Assemble the separate dataset and code keys into the result’s exact revision references.",
+      "optionIds": [
+        "n07_b03_i002_wrong_1",
+        "owner_preserves_contract",
+        "n07_b03_i002_wrong_2",
+        "n07_b03_i002_wrong_3",
+        "n07_b03_i002_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i003",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Map author and revision IDs to comment references; leave address lookup to notification delivery.",
+      "optionIds": [
+        "n07_b03_i003_wrong_1",
+        "n07_b03_i003_wrong_2",
+        "n07_b03_i003_wrong_3",
+        "n07_b03_i003_wrong_4",
+        "owner_preserves_contract"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i004",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Decode the status byte into the domain state and pass the returned payload through; keep retry scheduling in workflow behavior.",
+      "optionIds": [
+        "n07_b03_i004_wrong_1",
+        "n07_b03_i004_wrong_2",
+        "owner_preserves_contract",
+        "n07_b03_i004_wrong_3",
+        "n07_b03_i004_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i005",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Assemble header, lines, and reissue reference into the invoice; let billing decide charge eligibility.",
+      "optionIds": [
+        "owner_preserves_contract",
+        "n07_b03_i005_wrong_1",
+        "n07_b03_i005_wrong_2",
+        "n07_b03_i005_wrong_3",
+        "n07_b03_i005_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i006",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Map `REVOKED`/`ACTIVE` to the domain state and UTC to an instant; keep access checking in the badge operation.",
+      "optionIds": [
+        "n07_b03_i006_wrong_1",
+        "n07_b03_i006_wrong_2",
+        "n07_b03_i006_wrong_3",
+        "owner_preserves_contract",
+        "n07_b03_i006_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i007",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Translate the operator-selected JSON revision into named address fields before rendering.",
+      "optionIds": [
+        "n07_b03_i007_wrong_1",
+        "owner_preserves_contract",
+        "n07_b03_i007_wrong_2",
+        "n07_b03_i007_wrong_3",
+        "n07_b03_i007_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i008",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Combine wall time with the saved offset into one interval, and map the room ID to its reference.",
+      "optionIds": [
+        "n07_b03_i008_wrong_1",
+        "n07_b03_i008_wrong_2",
+        "n07_b03_i008_wrong_3",
+        "n07_b03_i008_wrong_4",
+        "owner_preserves_contract"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i009",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Decode the integer mode and permission bits into named domain values before the command checks movement.",
+      "optionIds": [
+        "n07_b03_i009_wrong_1",
+        "n07_b03_i009_wrong_2",
+        "owner_preserves_contract",
+        "n07_b03_i009_wrong_3",
+        "n07_b03_i009_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i010",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Resolve stored aliases to the stable lesson reference; keep retirement behavior with the lesson domain model.",
+      "optionIds": [
+        "owner_preserves_contract",
+        "n07_b03_i010_wrong_1",
+        "n07_b03_i010_wrong_2",
+        "n07_b03_i010_wrong_3",
+        "n07_b03_i010_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i011",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Decode rows into named events and order them by committed sequence before returning domain history.",
+      "optionIds": [
+        "n07_b03_i011_wrong_1",
+        "n07_b03_i011_wrong_2",
+        "n07_b03_i011_wrong_3",
+        "owner_preserves_contract",
+        "n07_b03_i011_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i012",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Map UTC ticks to an instant and the staff key to a reference; leave feed creation to the escalation operation.",
+      "optionIds": [
+        "n07_b03_i012_wrong_1",
+        "owner_preserves_contract",
+        "n07_b03_i012_wrong_2",
+        "n07_b03_i012_wrong_3",
+        "n07_b03_i012_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i013",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Convert minor units to money and retain unknown stock distinctly; publication behavior validates the listing.",
+      "optionIds": [
+        "n07_b03_i013_wrong_1",
+        "n07_b03_i013_wrong_2",
+        "n07_b03_i013_wrong_3",
+        "n07_b03_i013_wrong_4",
+        "owner_preserves_contract"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i014",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Assemble one parent request, linked shipments, and their shared delivery promise.",
+      "optionIds": [
+        "n07_b03_i014_wrong_1",
+        "n07_b03_i014_wrong_2",
+        "owner_preserves_contract",
+        "n07_b03_i014_wrong_3",
+        "n07_b03_i014_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i015",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Resolve plot and reviewer codes to references while retaining the reservation’s full approval history.",
+      "optionIds": [
+        "owner_preserves_contract",
+        "n07_b03_i015_wrong_1",
+        "n07_b03_i015_wrong_2",
+        "n07_b03_i015_wrong_3",
+        "n07_b03_i015_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i016",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Map component IDs to references and the fixed adjustment to money; leave quote calculation to pricing.",
+      "optionIds": [
+        "n07_b03_i016_wrong_1",
+        "n07_b03_i016_wrong_2",
+        "n07_b03_i016_wrong_3",
+        "owner_preserves_contract",
+        "n07_b03_i016_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i017",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Map UTC timestamps to an interval and charger ID to a reference; let the reservation operation check expiry with its injected clock.",
+      "optionIds": [
+        "n07_b03_i017_wrong_1",
+        "owner_preserves_contract",
+        "n07_b03_i017_wrong_2",
+        "n07_b03_i017_wrong_3",
+        "n07_b03_i017_wrong_4"
+      ],
+      "keyedDiagnosticCount": 4
+    },
+    {
+      "questionId": "ood-n07-b03-i018",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Fold repeated tags into one set and translate the rights code without changing the asset ID.",
+      "optionIds": [
+        "n07_b03_i018_wrong_1",
+        "n07_b03_i018_wrong_2",
+        "n07_b03_i018_wrong_3",
+        "n07_b03_i018_wrong_4",
+        "owner_preserves_contract"
+      ],
+      "keyedDiagnosticCount": 4
+    }
+  ]
+}

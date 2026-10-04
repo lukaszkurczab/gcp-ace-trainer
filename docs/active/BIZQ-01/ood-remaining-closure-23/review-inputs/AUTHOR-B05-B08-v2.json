@@ -1,0 +1,1375 @@
+{
+  "items": [
+    {
+      "beforeQuestionId": "ood-n07-b05-i001",
+      "questionId": "ood-n07-b05-i019",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "The exchange uses proto3 binary messages. Older workers remain deployed during the rollout. For existing payouts, an absent memo has the same meaning as an empty memo.",
+      "nearestAlternative": "Reuse the number of a deleted payout field because its old name is gone.",
+      "changedCondition": "This works because an omitted memo is equivalent to the existing empty value. If absence later means “unknown” while empty means “intentionally blank,” the payload needs presence information instead of this default.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The accepted before/current decisions differ: the old case concerned idempotent payout release; the current case concerns additive proto3 memo compatibility. The B05 unit label does not preserve that primary decision, so the corresponding reserved question identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.",
+      "currentDecision": "Add the memo at a fresh tag, with absence retaining the existing empty-memo meaning.",
+      "keyDecision": "Add the memo at a fresh tag, with absence retaining the existing empty-memo meaning.",
+      "nearestAlternativeId": "n07b05_i019_reuse_retired_tag"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i002",
+      "questionId": "ood-n07-b05-i020",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "Some messages omit `delay_minutes`. Explicit zero clears a delay. Omission means inherit the route value. Keep the public `delay_minutes` field as a scalar; do not add a parallel presence field.",
+      "nearestAlternative": "Keep an implicit-presence scalar and treat zero as the clear command.",
+      "changedCondition": "Presence is needed because this API assigns different meanings to absent and explicit zero. If zero and absence had identical semantics, implicit presence would be simpler and sufficient.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case decided transit announcement ordering; the current case distinguishes omission from explicit zero in a serialized scalar. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/",
+        "https://protobuf.dev/programming-guides/field_presence/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.",
+      "currentDecision": "Use scalar presence so omission inherits while an explicit zero clears the delay.",
+      "keyDecision": "Use scalar presence so omission inherits while an explicit zero clears the delay.",
+      "nearestAlternativeId": "n07b05_i020_implicit_zero"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i003",
+      "questionId": "ood-n07-b05-i021",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "Old serialized meter messages remain in archives. They include field number 6 and the old name `legacy_peak`. The field’s business meaning has been retired. Archived ProtoJSON/TextFormat records also use the name `legacy_peak`.",
+      "nearestAlternative": "Reserve `legacy_peak`, but give `peak_source` a new number and leave old tag 6 unreserved.",
+      "changedCondition": "The revised stem explicitly states that archived textual payloads use the retired field name as well as binary records carrying tag 6.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case resolved a meter overlap rule; the current case retires a protobuf field identity across binary and text representations. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/",
+        "https://protobuf.dev/programming-guides/json/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it.",
+      "currentDecision": "Remove the field; reserve tag 6 and the `legacy_peak` name used by archived records.",
+      "keyDecision": "Remove the field; reserve tag 6 and the `legacy_peak` name used by archived records.",
+      "nearestAlternativeId": "n07b05_i021_reserve_name_only"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i004",
+      "questionId": "ood-n07-b05-i022",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "Clients consume ProtoJSON, not only binary messages. They persist the exact key `captionErrorCode`. The field’s value and wire number are unchanged.",
+      "nearestAlternative": "Rename the proto field and rely on the default JSON-name conversion.",
+      "changedCondition": "This preserves the JSON contract because clients persist that exact key. If consumers could migrate together, the service could instead coordinate a deliberate JSON-name change.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case selected a live-stream contract; the current case preserves a ProtoJSON field spelling across a proto rename. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/json/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “the current stream keeps its timing and error contract” inside the owner that can observe and enforce it.",
+      "currentDecision": "Declare `json_name: \"captionErrorCode\"` on the renamed proto field.",
+      "keyDecision": "Declare `json_name: \"captionErrorCode\"` on the renamed proto field.",
+      "nearestAlternativeId": "n07b05_i022_rename_only"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i005",
+      "questionId": "ood-n07-b05-i023",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "Older messages omit `RewardState`. An omitted state must not authorize a grant. The enum is proto3 and its first declared value is the default.",
+      "nearestAlternative": "Make `REWARD_STATE_ELIGIBLE = 0` the first value so old messages stay concise.",
+      "changedCondition": "This prevents default from granting because the scenario distinguishes “no decision” from “eligible.” If the old default already meant eligible, a zero sentinel would change the application contract and needs a migration plan.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case constrained assignment legality; the current case chooses a safe proto3 enum default for omitted legacy data. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “skills and availability constraints hold for both assignments” inside the owner that can observe and enforce it.",
+      "currentDecision": "Declare `UNSPECIFIED = 0` and grant only when the message explicitly says eligible.",
+      "keyDecision": "Declare `UNSPECIFIED = 0` and grant only when the message explicitly says eligible.",
+      "nearestAlternativeId": "n07b05_i023_active_zero"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i006",
+      "questionId": "ood-n07-b05-i024",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "Snapshots from three formats remain stored. Each format has a known decoder/migration path. A restore must not guess the format from whichever fields happen to be present.",
+      "nearestAlternative": "Guess the decoder from whichever optional fields happen to be present.",
+      "changedCondition": "A version field is useful here because multiple durable formats coexist and each has a known decoder. A format that is never stored beyond one coordinated deployment may not need this historical dispatch.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case handled offline merge conflicts; the current case dispatches archived snapshots by stored format. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “conflicts are explicit and never silently overwrite accepted geometry” inside the owner that can observe and enforce it.",
+      "currentDecision": "Persist a format version, then select that format’s decoder or migration.",
+      "keyDecision": "Persist a format version, then select that format’s decoder or migration.",
+      "nearestAlternativeId": "n07b05_i024_infer_by_fields"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i007",
+      "questionId": "ood-n07-b05-i025",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "Messages remain protobuf binary end to end. The relay uses the same parsed message object for reserialization. No JSON conversion or field-by-field reconstruction occurs.",
+      "nearestAlternative": "Round-trip through ProtoJSON before relaying the message.",
+      "changedCondition": "This relies on the scenario’s binary, message-oriented relay. A JSON intermediary or field-by-field mapping needs a different contract because it cannot rely on this unknown-field retention path.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case decided reward legality; the current case preserves unknown protobuf fields through a binary relay. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it.",
+      "currentDecision": "Reserialize the same parsed message object so unknown fields remain intact.",
+      "keyDecision": "Reserialize the same parsed message object so unknown fields remain intact.",
+      "nearestAlternativeId": "n07b05_i025_json_roundtrip"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i008",
+      "questionId": "ood-n07-b05-i026",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "Scan order is meaningful. Duplicate station codes are valid. The serialized payload must retain every scan event.",
+      "nearestAlternative": "Store the last scan for each station code in a map.",
+      "changedCondition": "A map is suitable if each station has one current value and ordering is irrelevant. The prompt instead requires an ordered history with repeated station codes.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case handled shipment hand-off; the current case preserves event order and duplicates in a serialized scan sequence. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it.",
+      "currentDecision": "Keep the scans in an ordered repeated message field.",
+      "keyDecision": "Keep the scans in an ordered repeated message field.",
+      "nearestAlternativeId": "n07b05_i026_map_by_station"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i009",
+      "questionId": "ood-n07-b05-i027",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "The field is a protobuf `int64`. Values may exceed JavaScript’s exact integer range. The receiver must echo the same identifier without rounding.",
+      "nearestAlternative": "Convert the int64 to a JavaScript number and echo that number.",
+      "changedCondition": "This choice follows ProtoJSON’s mapping for int64 and the client’s stated precision limit. A client with an exact 64-bit integer type could use that type internally after parsing the string.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case enforced nonnegative repayment; the current case preserves int64 identity through ProtoJSON and JavaScript. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/json/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “a repayment cannot reduce the outstanding balance below zero” inside the owner that can observe and enforce it.",
+      "currentDecision": "Keep the `int64` field and represent it as a decimal string in ProtoJSON for JavaScript.",
+      "keyDecision": "Keep the `int64` field and represent it as a decimal string in ProtoJSON for JavaScript.",
+      "nearestAlternativeId": "n07b05_i027_number_json"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i010",
+      "questionId": "ood-n07-b05-i028",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "The digest is compared across different protobuf implementations. The logical message may contain repeated values and unknown fields. The signature must identify the logical record, not one encoder’s byte layout.",
+      "nearestAlternative": "Rely on deterministic protobuf output as the permanent cross-version signing format.",
+      "changedCondition": "Canonicalization is warranted because the signature is compared across implementations and versions. If the digest were only an opaque checksum stored beside one exact byte sequence, hashing those stored bytes could be sufficient.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case advanced legal match state; the current case defines cross-implementation signing input. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “the bracket advances only from a legal match state” inside the owner that can observe and enforce it.",
+      "currentDecision": "Sign a canonical, versioned projection of the logical message rather than encoder bytes.",
+      "keyDecision": "Sign a canonical, versioned projection of the logical message rather than encoder bytes.",
+      "nearestAlternativeId": "n07b05_i028_deterministic_flag"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i011",
+      "questionId": "ood-n07-b05-i029",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "Stored ProtoJSON contains enum names as strings. Both names represent the same numeric enum value during rollout. Old serialized payloads remain readable until migration finishes.",
+      "nearestAlternative": "Keep the same numeric value but delete the old enum spelling.",
+      "changedCondition": "This staged alias process is useful because stored JSON outlives one release. If only binary protobuf data existed, numeric values—not enum spelling—would determine this particular compatibility issue.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case classified refunds; the current case migrates enum aliases while stored ProtoJSON remains readable. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/json/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it.",
+      "currentDecision": "Keep both names readable through migration; switch output after dual-name readers ship.",
+      "keyDecision": "Keep both names readable through migration; switch output after dual-name readers ship.",
+      "nearestAlternativeId": "n07b05_i029_same_number_no_alias"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i012",
+      "questionId": "ood-n07-b05-i012",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "Inputs and analysis-code revisions are immutable. Reviewers need to identify the exact pair used for the result. The scenario does not require schema evolution.",
+      "nearestAlternative": "Store display names and resolve the latest revisions when rerunning.",
+      "changedCondition": "Because the prompt guarantees immutable revisions and asks only for provenance, identifiers are enough; it does not justify an extra schema-version policy.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The predecessor and current decision both require reproducible provenance for a published result; the current case makes the immutable dataset/code pair explicit. The primary decision remains the same, so the existing question ID is preserved.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/versionNumber.html"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it.",
+      "currentDecision": "Store immutable dataset and code revision IDs with the published result snapshot.",
+      "keyDecision": "Store immutable dataset and code revision IDs with the published result snapshot.",
+      "nearestAlternativeId": "n07b05_i012_store_current_names"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i013",
+      "questionId": "ood-n07-b05-i031",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "`reviewer_note` supports explicit presence. Absent and empty have different application meanings. The consumer reads ProtoJSON.",
+      "nearestAlternative": "Omit empty strings so the JSON payload stays compact.",
+      "changedCondition": "This depends on a presence-aware field and the API’s two stated meanings. With an implicit scalar where presence is unavailable, a separate operation or explicit wrapper would be needed to express the distinction.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case separated comment author and revision; the current case preserves absent versus present-empty JSON meaning. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/json/",
+        "https://protobuf.dev/programming-guides/field_presence/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it.",
+      "currentDecision": "Preserve presence: absent is unchanged; present-empty is clear.",
+      "keyDecision": "Preserve presence: absent is unchanged; present-empty is clear.",
+      "nearestAlternativeId": "n07b05_i031_always_omit_empty"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i014",
+      "questionId": "ood-n07-b05-i032",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "Omission means no change. An explicit clear is a separate operation. ProtoJSON null is treated as an unset field.",
+      "nearestAlternative": "Send `inspectionNote: null` to clear the stored note.",
+      "changedCondition": "A separate clear operation is warranted because the API assigns distinct meanings to omission and deletion. If the endpoint instead defined null as clear, that protocol could use null consistently.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case distinguished completed from retryable inspection; the current case encodes no-op, set, and clear for a partial update. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/json/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “a submission is either complete or explicitly retryable” inside the owner that can observe and enforce it.",
+      "currentDecision": "Use a distinct clear operation; omission remains no change.",
+      "keyDecision": "Use a distinct clear operation; omission remains no change.",
+      "nearestAlternativeId": "n07b05_i032_null_clears"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i015",
+      "questionId": "ood-n07-b05-i015",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "Each issued payload is immutable after transmission. A corrected issue references the rejected issue. Auditors can request either historical issue.",
+      "nearestAlternative": "Append the corrected issue without its predecessor link.",
+      "changedCondition": "This version chain is needed because the prompt grants auditors access to either transmitted issue. A draft that was never sent could be edited in place if no reader depends on its prior form.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The predecessor and current decision both preserve traceable invoice issue history across correction. The concrete contract remains immutable transmitted payloads with a link to the prior issue, so the existing question ID is preserved.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/versionNumber.html"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “the new issue is traceable and does not double-charge the customer” inside the owner that can observe and enforce it.",
+      "currentDecision": "Append a new immutable issue and link it to the rejected issue.",
+      "keyDecision": "Append a new immutable issue and link it to the rejected issue.",
+      "nearestAlternativeId": "n07b05_i015_copy_without_link"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i016",
+      "questionId": "ood-n07-b05-i034",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "Each policy revision is immutable and addressable. The audit needs the exact policy used for the decision. A user’s current policy can differ from the historical one.",
+      "nearestAlternative": "Store only the decision timestamp and choose the nearest policy publication time.",
+      "changedCondition": "This is sufficient because the scenario guarantees immutable addressable policy revisions. If revisions could be deleted, retention would also need to keep the referenced revision available.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case enforced revocation before access; the current case records the exact historical policy revision used in a decision. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “revocation is visible to the door policy before access is granted” inside the owner that can observe and enforce it.",
+      "currentDecision": "Store the immutable policy-revision identifier with the allow or deny decision.",
+      "keyDecision": "Store the immutable policy-revision identifier with the allow or deny decision.",
+      "nearestAlternativeId": "n07b05_i034_timestamp_lookup"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i017",
+      "questionId": "ood-n07-b05-i035",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "The job may outlive a carrier outage. The shipment address may change while the job waits. The job must use the address revision approved at enqueue time.",
+      "nearestAlternative": "Use the enqueue time to look up the address active then.",
+      "changedCondition": "This applies because the prompt binds the job to enqueue-time approval. If the requirement were “always use the latest approved address,” latest-state lookup would be appropriate.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case selected current approved label data; the current case binds a delayed job to its enqueue-time approved revision. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/versionNumber.html"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “the printed label represents the current approved shipment data” inside the owner that can observe and enforce it.",
+      "currentDecision": "Bind the queued job to the address revision approved when it was enqueued.",
+      "keyDecision": "Bind the queued job to the address revision approved when it was enqueued.",
+      "nearestAlternativeId": "n07b05_i035_timestamp_infer"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i018",
+      "questionId": "ood-n07-b05-i036",
+      "mentalUnitId": "OOD-N07-B05",
+      "learningObjective": "Make a concrete serialization, schema-version, compatibility, or defaulting decision for the stated representation contract.",
+      "decisiveFact": "Legacy payloads omit the window field. For those records, omission means use the published room default. New records may explicitly choose a different window.",
+      "nearestAlternative": "Treat explicit zero as omission and substitute the default.",
+      "changedCondition": "The default is safe because the prompt fixes the legacy meaning and says it has not changed for these records. If defaults evolve, old records need a versioned/default snapshot to preserve that meaning.",
+      "identityAction": "replace_question_with_new_id",
+      "identityReason": "The old case balanced room and cancellation consistency; the current case distinguishes an absent serialized default from an explicit value. This is a changed primary decision, so the corresponding reserved identity is used.",
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ],
+      "beforeDecision": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “the room capacity and cancellation policy must remain consistent” inside the owner that can observe and enforce it.",
+      "currentDecision": "Default only an absent window; retain explicit values.",
+      "keyDecision": "Default only an absent window; retain explicit values.",
+      "nearestAlternativeId": "n07b05_i036_zero_as_absent"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i001",
+      "questionId": "ood-n07-b06-i001",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "The partner code is not stable identity; the policy revision is part of the completion facts.",
+      "nearestAlternative": "Let the completion entity retain the partner DTO so later scoring can read its original fields.",
+      "changedCondition": "If a partner code were itself the agreed durable domain identity, mapping that code would be reasonable.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “completion records the exercise version and score policy” inside the owner that can observe and enforce it.” and this case now asks “Map the partner payload at the adapter and pass the stable exercise identity, decimal score, and policy revision to the domain completion operation.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “completion records the exercise version and score policy” inside the owner that can observe and enforce it.",
+      "currentDecision": "Map the partner payload at the adapter and pass the stable exercise identity, decimal score, and policy revision to the domain completion operation.",
+      "keyDecision": "Map the partner payload at the adapter and pass the stable exercise identity, decimal score, and policy revision to the domain completion operation.",
+      "nearestAlternativeId": "n07_b06_i001_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i002",
+      "questionId": "ood-n07-b06-i002",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "The domain must not silently grant an unknown status, and reviewers need the raw supplier value.",
+      "nearestAlternative": "Deserialize unknown values as accepted because the supplier is expected to send valid statuses.",
+      "changedCondition": "If the domain explicitly defined an “unrecognized” terminal outcome, that could be mapped as such rather than quarantined.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “approval is attributable, bounded, and cannot bypass required controls” inside the owner that can observe and enforce it.” and this case now asks “Translate recognized supplier states into domain outcomes and preserve unknown raw values in a boundary error record for review.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “approval is attributable, bounded, and cannot bypass required controls” inside the owner that can observe and enforce it.",
+      "currentDecision": "Translate recognized supplier states into domain outcomes and preserve unknown raw values in a boundary error record for review.",
+      "keyDecision": "Translate recognized supplier states into domain outcomes and preserve unknown raw values in a boundary error record for review.",
+      "nearestAlternativeId": "n07_b06_i002_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i003",
+      "questionId": "ood-n07-b06-i003",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "Offsets move on replacement; annotations follow stable segment IDs.",
+      "nearestAlternative": "Store vendor offsets on annotations and recalculate them inside each annotation method.",
+      "changedCondition": "If annotations were defined against absolute media time and not stable segments, preserving offsets could be the domain contract.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “annotations follow stable segments rather than file offsets” inside the owner that can observe and enforce it.” and this case now asks “Resolve vendor offsets to stable segment IDs in the adapter before the domain replaces the recording.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “annotations follow stable segments rather than file offsets” inside the owner that can observe and enforce it.",
+      "currentDecision": "Resolve vendor offsets to stable segment IDs in the adapter before the domain replaces the recording.",
+      "keyDecision": "Resolve vendor offsets to stable segment IDs in the adapter before the domain replaces the recording.",
+      "nearestAlternativeId": "n07_b06_i003_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i004",
+      "questionId": "ood-n07-b06-i004",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "The email is not unique identity, and auditability requires the approval ID.",
+      "nearestAlternative": "Use the email string as the role owner ID because it is present on every provider response.",
+      "changedCondition": "If the provider guaranteed a stable identifier that the domain had adopted, that identifier could be mapped directly.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “the role expires and is attributable to a specific approval” inside the owner that can observe and enforce it.” and this case now asks “Resolve the email to the verified principal and map the approval and expiry into the role-grant command.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “the role expires and is attributable to a specific approval” inside the owner that can observe and enforce it.",
+      "currentDecision": "Resolve the email to the verified principal and map the approval and expiry into the role-grant command.",
+      "keyDecision": "Resolve the email to the verified principal and map the approval and expiry into the role-grant command.",
+      "nearestAlternativeId": "n07_b06_i004_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i005",
+      "questionId": "ood-n07-b06-i005",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "The signer selected an exact immutable revision; vendor lookup tokens are not that domain identity.",
+      "nearestAlternative": "Replace the selected revision with the vendor’s latest token before saving the seal.",
+      "changedCondition": "If the vendor token were the agreed immutable revision identifier, it could serve as the domain reference.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “the seal covers the exact immutable revision” inside the owner that can observe and enforce it.” and this case now asks “Map the vendor response onto the selected immutable revision identity, then record the seal against that revision.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “the seal covers the exact immutable revision” inside the owner that can observe and enforce it.",
+      "currentDecision": "Map the vendor response onto the selected immutable revision identity, then record the seal against that revision.",
+      "keyDecision": "Map the vendor response onto the selected immutable revision identity, then record the seal against that revision.",
+      "nearestAlternativeId": "n07_b06_i005_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i006",
+      "questionId": "ood-n07-b06-i006",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "Currency participates in value meaning, and the domain validates supported currencies.",
+      "nearestAlternative": "Convert cents to a floating-point number in the payout entity and infer currency from the seller profile.",
+      "changedCondition": "If every payout were contractually in one fixed currency, a currency-free amount could be justified by that explicit invariant.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.” and this case now asks “Map cents and currency into the validated Money value, then call the payout operation with the settled order ID.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.",
+      "currentDecision": "Map cents and currency into the validated Money value, then call the payout operation with the settled order ID.",
+      "keyDecision": "Map cents and currency into the validated Money value, then call the payout operation with the settled order ID.",
+      "nearestAlternativeId": "n07_b06_i006_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i007",
+      "questionId": "ood-n07-b06-i007",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "The same local clock value means different instants across route timezones, and original text is display data.",
+      "nearestAlternative": "Treat every local timestamp as UTC so all route notices share one parser.",
+      "changedCondition": "If the provider timestamp already included an unambiguous offset, parsing would not need a route timezone.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.” and this case now asks “Parse the timestamp using the stated route timezone, preserve original text separately, and pass the effective instant plus route identity to the domain.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.",
+      "currentDecision": "Parse the timestamp using the stated route timezone, preserve original text separately, and pass the effective instant plus route identity to the domain.",
+      "keyDecision": "Parse the timestamp using the stated route timezone, preserve original text separately, and pass the effective instant plus route identity to the domain.",
+      "nearestAlternativeId": "n07_b06_i007_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i008",
+      "questionId": "ood-n07-b06-i008",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "The limit and input use different units, and the vendor serial is not the registered identity.",
+      "nearestAlternative": "Compare vendor watt-hours directly with the kilowatt-hour limit and divide only for display.",
+      "changedCondition": "If the domain limit were also expressed in watt-hours and the serial were the agreed meter identity, direct mapping would work.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it.” and this case now asks “Convert units and resolve the registered meter ID before the domain checks the reservation limit.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it.",
+      "currentDecision": "Convert units and resolve the registered meter ID before the domain checks the reservation limit.",
+      "keyDecision": "Convert units and resolve the registered meter ID before the domain checks the reservation limit.",
+      "nearestAlternativeId": "n07_b06_i008_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i009",
+      "questionId": "ood-n07-b06-i009",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "Callers require stable categories, while unknown languages must not silently become a different language.",
+      "nearestAlternative": "Expose provider error strings directly in the stream API because they are the most detailed.",
+      "changedCondition": "If callers explicitly need provider-specific troubleshooting, a separate diagnostic field may expose that code.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “the current stream keeps its timing and error contract” inside the owner that can observe and enforce it.” and this case now asks “Map known language codes and provider errors into domain language and error values; preserve unknown provider codes in adapter diagnostics.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “the current stream keeps its timing and error contract” inside the owner that can observe and enforce it.",
+      "currentDecision": "Map known language codes and provider errors into domain language and error values; preserve unknown provider codes in adapter diagnostics.",
+      "keyDecision": "Map known language codes and provider errors into domain language and error values; preserve unknown provider codes in adapter diagnostics.",
+      "nearestAlternativeId": "n07_b06_i009_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i010",
+      "questionId": "ood-n07-b06-i010",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "The rule spans both assignments; partial sequential updates can leave only one side moved.",
+      "nearestAlternative": "Have the API controller update each assignment sequentially and compensate if the second update fails.",
+      "changedCondition": "If the business explicitly allowed partial swaps, independent updates could be appropriate.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “skills and availability constraints hold for both assignments” inside the owner that can observe and enforce it.” and this case now asks “Map the API request to the two domain volunteer identities and invoke one swap operation that validates both assignments before applying the swap.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “skills and availability constraints hold for both assignments” inside the owner that can observe and enforce it.",
+      "currentDecision": "Map the API request to the two domain volunteer identities and invoke one swap operation that validates both assignments before applying the swap.",
+      "keyDecision": "Map the API request to the two domain volunteer identities and invoke one swap operation that validates both assignments before applying the swap.",
+      "nearestAlternativeId": "n07_b06_i010_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i011",
+      "questionId": "ood-n07-b06-i011",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "The token is a precondition, and mismatch must become an explicit conflict.",
+      "nearestAlternative": "Treat any server token as newer and overwrite the local geometry.",
+      "changedCondition": "If the domain specified a coordinate-level merge rule for mismatched revisions, that rule could be applied after mapping.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “conflicts are explicit and never silently overwrite accepted geometry” inside the owner that can observe and enforce it.” and this case now asks “Map the patch into a domain edit and the token into the expected revision, then let the domain conflict rule decide acceptance.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “conflicts are explicit and never silently overwrite accepted geometry” inside the owner that can observe and enforce it.",
+      "currentDecision": "Map the patch into a domain edit and the token into the expected revision, then let the domain conflict rule decide acceptance.",
+      "keyDecision": "Map the patch into a domain edit and the token into the expected revision, then let the domain conflict rule decide acceptance.",
+      "nearestAlternativeId": "n07_b06_i011_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i012",
+      "questionId": "ood-n07-b06-i012",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "Unknown codes cannot be granted, and reward legality depends on current domain state.",
+      "nearestAlternative": "Map an unknown item code to the campaign’s default reward and apply it.",
+      "changedCondition": "If the provider and campaign shared a governed code set, a direct enum mapping could be safe.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it.” and this case now asks “Map the campaign ID and known item code into the domain reward command; quarantine an unknown code with the raw code for support.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it.",
+      "currentDecision": "Map the campaign ID and known item code into the domain reward command; quarantine an unknown code with the raw code for support.",
+      "keyDecision": "Map the campaign ID and known item code into the domain reward command; quarantine an unknown code with the raw code for support.",
+      "nearestAlternativeId": "n07_b06_i012_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i013",
+      "questionId": "ood-n07-b06-i013",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "The domain rule compares temperatures to Celsius limits and the handoff contract carries custody.",
+      "nearestAlternative": "Store the carrier code and Fahrenheit values on the shipment, converting only when the monitor displays them.",
+      "changedCondition": "If the domain itself used Fahrenheit and accepted carrier codes as identity, those conversions would be unnecessary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it.” and this case now asks “Resolve the carrier code, convert the threshold units, and construct the dispatch command with shipment ID and handoff facts.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it.",
+      "currentDecision": "Resolve the carrier code, convert the threshold units, and construct the dispatch command with shipment ID and handoff facts.",
+      "keyDecision": "Resolve the carrier code, convert the threshold units, and construct the dispatch command with shipment ID and handoff facts.",
+      "nearestAlternativeId": "n07_b06_i013_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i014",
+      "questionId": "ood-n07-b06-i014",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "A negative feed event is not the same command as a positive repayment; the reference identifies the external event.",
+      "nearestAlternative": "Take the absolute value of every amount and allocate it as a repayment.",
+      "changedCondition": "If the bank contract represented reversals with a separate explicit event type, use that marker instead of amount sign.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “a repayment cannot reduce the outstanding balance below zero” inside the owner that can observe and enforce it.” and this case now asks “Translate the feed into either a positive repayment command or an explicit reversal command, retaining the bank reference for deduplication.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “a repayment cannot reduce the outstanding balance below zero” inside the owner that can observe and enforce it.",
+      "currentDecision": "Translate the feed into either a positive repayment command or an explicit reversal command, retaining the bank reference for deduplication.",
+      "keyDecision": "Translate the feed into either a positive repayment command or an explicit reversal command, retaining the bank reference for deduplication.",
+      "nearestAlternativeId": "n07_b06_i014_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i015",
+      "questionId": "ood-n07-b06-i015",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "The timeout transition is state-dependent, and bracket advancement must follow a valid result once.",
+      "nearestAlternative": "Map timeout directly to forfeited for any match because the platform reports a timeout.",
+      "changedCondition": "If the tournament explicitly treated all platform timeouts as forfeits regardless of match state, that would change the domain contract.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “the bracket advances only from a legal match state” inside the owner that can observe and enforce it.” and this case now asks “Translate platform statuses into the bracket’s outcomes and invoke the state-checked result operation with the match identity.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “the bracket advances only from a legal match state” inside the owner that can observe and enforce it.",
+      "currentDecision": "Translate platform statuses into the bracket’s outcomes and invoke the state-checked result operation with the match identity.",
+      "keyDecision": "Translate platform statuses into the bracket’s outcomes and invoke the state-checked result operation with the match identity.",
+      "nearestAlternativeId": "n07_b06_i015_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i016",
+      "questionId": "ood-n07-b06-i016",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "Classification is evidence; refund eligibility is a distinct policy decision.",
+      "nearestAlternative": "Treat a high scanner confidence score as the domain’s refund decision.",
+      "changedCondition": "If the business explicitly authorized a calibrated score threshold as its refund rule, that threshold would need to be stated and owned.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it.” and this case now asks “Map scanner labels to inspection evidence and let the return policy evaluate refund eligibility separately.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it.",
+      "currentDecision": "Map scanner labels to inspection evidence and let the return policy evaluate refund eligibility separately.",
+      "keyDecision": "Map scanner labels to inspection evidence and let the return policy evaluate refund eligibility separately.",
+      "nearestAlternativeId": "n07_b06_i016_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i017",
+      "questionId": "ood-n07-b06-i017",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "The result must identify exact inputs, while the latest tag can point elsewhere later.",
+      "nearestAlternative": "Store only the latest tag so the publisher can always fetch the current inputs.",
+      "changedCondition": "If the “latest” tag were immutable by contract, it could be retained as the exact input identity.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it.” and this case now asks “Resolve the URI and latest tag to immutable dataset and commit identities before constructing the published result.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it.",
+      "currentDecision": "Resolve the URI and latest tag to immutable dataset and commit identities before constructing the published result.",
+      "keyDecision": "Resolve the URI and latest tag to immutable dataset and commit identities before constructing the published result.",
+      "nearestAlternativeId": "n07_b06_i017_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i018",
+      "questionId": "ood-n07-b06-i018",
+      "mentalUnitId": "OOD-N07-B06",
+      "learningObjective": "Choose where an external or persistence representation becomes a domain value, command, or outcome, while keeping the stated domain facts and ownership intact.",
+      "decisiveFact": "The accepted comment must retain author and exact revision, and notification is a separate effect.",
+      "nearestAlternative": "Store raw markdown in the comment entity and render it whenever the comment is read.",
+      "changedCondition": "If markup itself were the agreed comment domain language, retaining it could be correct.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it.” and this case now asks “Map markdown to the domain comment text and resolve author/revision identities before the comment is accepted; keep notification input separate.”. Both are retained under OOD-N07-B06 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "beforeDecision": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it.",
+      "currentDecision": "Map markdown to the domain comment text and resolve author/revision identities before the comment is accepted; keep notification input separate.",
+      "keyDecision": "Map markdown to the domain comment text and resolve author/revision identities before the comment is accepted; keep notification input separate.",
+      "nearestAlternativeId": "n07_b06_i018_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i001",
+      "questionId": "ood-n07-b07-i001",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The list needs counts only, not reservation objects.",
+      "nearestAlternative": "Load every reservation for all 40 stations and count them in the screen.",
+      "changedCondition": "If operators could inspect individual reservations inline, a bounded detail load for the selected station would be warranted.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “charger capacity and reservation expiry are coordinated” inside the owner that can observe and enforce it.” and this case now asks “Return a station projection with the count computed in the query; load reservation details only on a station-specific view.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “charger capacity and reservation expiry are coordinated” inside the owner that can observe and enforce it.",
+      "currentDecision": "Return a station projection with the count computed in the query; load reservation details only on a station-specific view.",
+      "keyDecision": "Return a station projection with the count computed in the query; load reservation details only on a station-specific view.",
+      "nearestAlternativeId": "n07_b07_i001_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i002",
+      "questionId": "ood-n07-b07-i002",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The page is limited to 25 plot rows but needs the gardener name on each row.",
+      "nearestAlternative": "Load all plots with gardeners, then take the first 25 in memory.",
+      "changedCondition": "If the list omitted gardener names, the plot page could be returned without loading gardeners.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “asset identity remains stable while descriptive values are replaced” inside the owner that can observe and enforce it.” and this case now asks “Page the plots and fetch the gardener data for those page IDs in one bounded query, or project the needed name in the page query.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “asset identity remains stable while descriptive values are replaced” inside the owner that can observe and enforce it.",
+      "currentDecision": "Page the plots and fetch the gardener data for those page IDs in one bounded query, or project the needed name in the page query.",
+      "keyDecision": "Page the plots and fetch the gardener data for those page IDs in one bounded query, or project the needed name in the page query.",
+      "nearestAlternativeId": "n07_b07_i002_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i003",
+      "questionId": "ood-n07-b07-i003",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The report consumes two aggregates, not annotation entities.",
+      "nearestAlternative": "Load every annotation and compute both values in application code.",
+      "changedCondition": "If the report later needs individual annotation text, it should use a separate detail query.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “approval requires an explicit territory and expiration” inside the owner that can observe and enforce it.” and this case now asks “Use a grouped projection for count and latest time; fetch annotations only in the episode review screen.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “approval requires an explicit territory and expiration” inside the owner that can observe and enforce it.",
+      "currentDecision": "Use a grouped projection for count and latest time; fetch annotations only in the episode review screen.",
+      "keyDecision": "Use a grouped projection for count and latest time; fetch annotations only in the episode review screen.",
+      "nearestAlternativeId": "n07_b07_i003_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i004",
+      "questionId": "ood-n07-b07-i004",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The export needs the approver name, and deferred reads would occur after the transaction closes.",
+      "nearestAlternative": "Return grant entities with deferred approver loads and serialize them after closing the transaction.",
+      "changedCondition": "If the upload were performed inside a streaming database scope by design, resource lifetime would need an explicit separate decision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “a battery cannot be assigned to two aircraft at once” inside the owner that can observe and enforce it.” and this case now asks “Load the approver data in the export query or project the name before the read transaction ends.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “a battery cannot be assigned to two aircraft at once” inside the owner that can observe and enforce it.",
+      "currentDecision": "Load the approver data in the export query or project the name before the read transaction ends.",
+      "keyDecision": "Load the approver data in the export query or project the name before the read transaction ends.",
+      "nearestAlternativeId": "n07_b07_i004_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i005",
+      "questionId": "ood-n07-b07-i005",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "Every current grant and expiry is displayed, and the child set has a small stated cap.",
+      "nearestAlternative": "Return a title proxy and fetch grants only when each row is painted.",
+      "changedCondition": "If the grant set were unbounded or only a subset were displayed, a separate paged query could be preferable.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “privacy and consent rules apply before external disclosure” inside the owner that can observe and enforce it.” and this case now asks “Load the bounded grant set with the title for this detail query.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “privacy and consent rules apply before external disclosure” inside the owner that can observe and enforce it.",
+      "currentDecision": "Load the bounded grant set with the title for this detail query.",
+      "keyDecision": "Load the bounded grant set with the title for this detail query.",
+      "nearestAlternativeId": "n07_b07_i005_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i006",
+      "questionId": "ood-n07-b07-i006",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The report uses a date, while the large notes are a separate selected-aircraft detail.",
+      "nearestAlternative": "Eager-load every battery note for every aircraft in the report.",
+      "changedCondition": "If replacement date must be derived from note history, the query should state that bounded aggregate explicitly.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “completion records the exercise version and score policy” inside the owner that can observe and enforce it.” and this case now asks “Project the replacement date into the report and load service notes only for the selected aircraft.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “completion records the exercise version and score policy” inside the owner that can observe and enforce it.",
+      "currentDecision": "Project the replacement date into the report and load service notes only for the selected aircraft.",
+      "keyDecision": "Project the replacement date into the report and load service notes only for the selected aircraft.",
+      "nearestAlternativeId": "n07_b07_i006_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i007",
+      "questionId": "ood-n07-b07-i007",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "Capacity is the only required related value; patient data is outside this screen.",
+      "nearestAlternative": "Eager-load all referrals and patient notes so capacity can be recalculated in memory.",
+      "changedCondition": "If capacity were not persisted and had to be calculated from active referrals, a controlled aggregate query would be needed.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “approval is attributable, bounded, and cannot bypass required controls” inside the owner that can observe and enforce it.” and this case now asks “Project clinic identity and capacity in the directory query without loading referral or note relationships.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “approval is attributable, bounded, and cannot bypass required controls” inside the owner that can observe and enforce it.",
+      "currentDecision": "Project clinic identity and capacity in the directory query without loading referral or note relationships.",
+      "keyDecision": "Project clinic identity and capacity in the directory query without loading referral or note relationships.",
+      "nearestAlternativeId": "n07_b07_i007_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i008",
+      "questionId": "ood-n07-b07-i008",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "Only 30 meter rows and one current owner name per row are needed.",
+      "nearestAlternative": "Lazy-load each owner as the dashboard paints meter rows.",
+      "changedCondition": "If each row also showed full owner history, that relationship would need its own explicit bounded access plan.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “annotations follow stable segments rather than file offsets” inside the owner that can observe and enforce it.” and this case now asks “Load the selected meter page and batch the owner names for those meter IDs.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “annotations follow stable segments rather than file offsets” inside the owner that can observe and enforce it.",
+      "currentDecision": "Load the selected meter page and batch the owner names for those meter IDs.",
+      "keyDecision": "Load the selected meter page and batch the owner names for those meter IDs.",
+      "nearestAlternativeId": "n07_b07_i008_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i009",
+      "questionId": "ood-n07-b07-i009",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The skill labels are needed for all rows, but the root page is bounded.",
+      "nearestAlternative": "Run a new skill query for every assignment while building the page.",
+      "changedCondition": "If only selected volunteers’ skills were shown, an explicit detail read after selection would be smaller.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “the role expires and is attributable to a specific approval” inside the owner that can observe and enforce it.” and this case now asks “Fetch the shift’s assignment page and batch the required skill labels for those volunteer IDs.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “the role expires and is attributable to a specific approval” inside the owner that can observe and enforce it.",
+      "currentDecision": "Fetch the shift’s assignment page and batch the required skill labels for those volunteer IDs.",
+      "keyDecision": "Fetch the shift’s assignment page and batch the required skill labels for those volunteer IDs.",
+      "nearestAlternativeId": "n07_b07_i009_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i010",
+      "questionId": "ood-n07-b07-i010",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The list needs only IDs and dataset revision; the large log belongs to selected detail.",
+      "nearestAlternative": "Eager-load all execution logs for every result in the list.",
+      "changedCondition": "If the list needed a small log status, project that status rather than the complete log.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “the seal covers the exact immutable revision” inside the owner that can observe and enforce it.” and this case now asks “Return the list projection without execution logs; load the selected result’s commit and log in a separate detail query.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “the seal covers the exact immutable revision” inside the owner that can observe and enforce it.",
+      "currentDecision": "Return the list projection without execution logs; load the selected result’s commit and log in a separate detail query.",
+      "keyDecision": "Return the list projection without execution logs; load the selected result’s commit and log in a separate detail query.",
+      "nearestAlternativeId": "n07_b07_i010_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i011",
+      "questionId": "ood-n07-b07-i011",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "This workflow uses all of one selected return’s bounded evidence before completing its decision.",
+      "nearestAlternative": "Return a return proxy and fetch each photo when it is drawn, after the read scope closes.",
+      "changedCondition": "If photo count were unbounded, the workflow would need a bounded evidence page rather than an unrestricted eager load.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.” and this case now asks “Load the bounded photos and classification history with the selected return for this decision workflow.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.",
+      "currentDecision": "Load the bounded photos and classification history with the selected return for this decision workflow.",
+      "keyDecision": "Load the bounded photos and classification history with the selected return for this decision workflow.",
+      "nearestAlternativeId": "n07_b07_i011_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i012",
+      "questionId": "ood-n07-b07-i012",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The search result consumes only three fields and opens text separately.",
+      "nearestAlternative": "Eager-load every notice body and attachment for all matching routes.",
+      "changedCondition": "If a search snippet were required, project only that bounded snippet.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.” and this case now asks “Project the three list fields and leave notice text to the selected notice detail query.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.",
+      "currentDecision": "Project the three list fields and leave notice text to the selected notice detail query.",
+      "keyDecision": "Project the three list fields and leave notice text to the selected notice detail query.",
+      "nearestAlternativeId": "n07_b07_i012_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i013",
+      "questionId": "ood-n07-b07-i013",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The edit uses current metadata; rendition history is a separate optional view.",
+      "nearestAlternative": "Eager-load every rendition and its metadata for all assets in the collection.",
+      "changedCondition": "If an edit action depended on a specific historical rendition, that revision should be loaded explicitly before the action.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it.” and this case now asks “Load the asset’s current metadata for editing and query rendition history only if the archivist opens it.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it.",
+      "currentDecision": "Load the asset’s current metadata for editing and query rendition history only if the archivist opens it.",
+      "keyDecision": "Load the asset’s current metadata for editing and query rendition history only if the archivist opens it.",
+      "nearestAlternativeId": "n07_b07_i013_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i014",
+      "questionId": "ood-n07-b07-i014",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The selected principal has a bounded active-grant set and every expiry is displayed.",
+      "nearestAlternative": "Lazy-load grants one at a time as the access screen checks each permission.",
+      "changedCondition": "If the grant count were unbounded, paginate the grant view instead of loading all rows.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “the current stream keeps its timing and error contract” inside the owner that can observe and enforce it.” and this case now asks “Query the selected principal’s active grants with expiry data in the detail request.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “the current stream keeps its timing and error contract” inside the owner that can observe and enforce it.",
+      "currentDecision": "Query the selected principal’s active grants with expiry data in the detail request.",
+      "keyDecision": "Query the selected principal’s active grants with expiry data in the detail request.",
+      "nearestAlternativeId": "n07_b07_i014_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i015",
+      "questionId": "ood-n07-b07-i015",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The search shows a summary; component detail is a separate user action.",
+      "nearestAlternative": "Load every component for every matching bundle before returning search results.",
+      "changedCondition": "If the search displayed component names, project those names or load a bounded summary for the result page.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “skills and availability constraints hold for both assignments” inside the owner that can observe and enforce it.” and this case now asks “Use a bundle summary projection for count and price; retrieve components for the opened bundle.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “skills and availability constraints hold for both assignments” inside the owner that can observe and enforce it.",
+      "currentDecision": "Use a bundle summary projection for count and price; retrieve components for the opened bundle.",
+      "keyDecision": "Use a bundle summary projection for count and price; retrieve components for the opened bundle.",
+      "nearestAlternativeId": "n07_b07_i015_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i016",
+      "questionId": "ood-n07-b07-i016",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The list uses metadata, and bytes are fetched only for the selected immutable revision.",
+      "nearestAlternative": "Load all revision bytes for every matching document into the search result.",
+      "changedCondition": "If the search needed a digest, project the digest field rather than loading the binary content.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “conflicts are explicit and never silently overwrite accepted geometry” inside the owner that can observe and enforce it.” and this case now asks “Project revision number and seal time for the search; fetch bytes for the selected sealed revision.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “conflicts are explicit and never silently overwrite accepted geometry” inside the owner that can observe and enforce it.",
+      "currentDecision": "Project revision number and seal time for the search; fetch bytes for the selected sealed revision.",
+      "keyDecision": "Project revision number and seal time for the search; fetch bytes for the selected sealed revision.",
+      "nearestAlternativeId": "n07_b07_i016_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i017",
+      "questionId": "ood-n07-b07-i017",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The summary needs totals, while row details are only used after seller selection.",
+      "nearestAlternative": "Load every payout and order for all sellers, then group in the dashboard.",
+      "changedCondition": "If the total were calculated from a domain rule not expressible as an aggregate, use an explicitly scoped domain query.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it.” and this case now asks “Use a grouped seller/window projection for totals and query payout rows only for the selected seller.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it.",
+      "currentDecision": "Use a grouped seller/window projection for totals and query payout rows only for the selected seller.",
+      "keyDecision": "Use a grouped seller/window projection for totals and query payout rows only for the selected seller.",
+      "nearestAlternativeId": "n07_b07_i017_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b07-i018",
+      "questionId": "ood-n07-b07-i018",
+      "mentalUnitId": "OOD-N07-B07",
+      "learningObjective": "Choose a query and relationship-loading shape from the caller’s actual access pattern, bounds, and data-access scope; avoid hidden or unnecessary I/O.",
+      "decisiveFact": "The operation needs one account and a bounded recent page; historical search is separate.",
+      "nearestAlternative": "Eager-load the account’s entire lifetime allocation history.",
+      "changedCondition": "If the balance must be recomputed from all allocations, that becomes an explicit aggregate requirement rather than an implicit graph load.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it.” and this case now asks “Load the account balance and recent allocation page for this operation; keep older history behind the separate query.”. Both are retained under OOD-N07-B07 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://docs.sqlalchemy.org/en/20/orm/queryguide/relationships.html",
+        "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+      ],
+      "beforeDecision": "Choose loading behavior from access ownership and query cost; do not let hidden I/O appear in ordinary domain methods. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it.",
+      "currentDecision": "Load the account balance and recent allocation page for this operation; keep older history behind the separate query.",
+      "keyDecision": "Load the account balance and recent allocation page for this operation; keep older history behind the separate query.",
+      "nearestAlternativeId": "n07_b07_i018_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i001",
+      "questionId": "ood-n07-b08-i001",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The first commit may have succeeded, and the retry carries the same operation identity.",
+      "nearestAlternative": "Generate a new payout ID on each attempt and let finance reconcile duplicates later.",
+      "changedCondition": "This is idempotency for the stated operation ID, not a claim that every distributed action executes exactly once.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “the escalation keeps ownership and response deadlines” inside the owner that can observe and enforce it.” and this case now asks “Use that operation ID as a durable unique key and return the already recorded release result on retry.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “the escalation keeps ownership and response deadlines” inside the owner that can observe and enforce it.",
+      "currentDecision": "Use that operation ID as a durable unique key and return the already recorded release result on retry.",
+      "keyDecision": "Use that operation ID as a durable unique key and return the already recorded release result on retry.",
+      "nearestAlternativeId": "n07_b08_i001_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i002",
+      "questionId": "ood-n07-b08-i002",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The failure is known to occur before any transaction or persistence mutation.",
+      "nearestAlternative": "Replay the invalid payload until one attempt succeeds.",
+      "changedCondition": "If validation occurred after a possible write, the result would need reconciliation rather than this pre-write response.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “a listing cannot become visible before its price and stock rule are valid” inside the owner that can observe and enforce it.” and this case now asks “Return the validation error and allow the corrected command as a new attempt; no persisted mutation needs replay protection for the rejected request.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “a listing cannot become visible before its price and stock rule are valid” inside the owner that can observe and enforce it.",
+      "currentDecision": "Return the validation error and allow the corrected command as a new attempt; no persisted mutation needs replay protection for the rejected request.",
+      "keyDecision": "Return the validation error and allow the corrected command as a new attempt; no persisted mutation needs replay protection for the rejected request.",
+      "nearestAlternativeId": "n07_b08_i002_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i003",
+      "questionId": "ood-n07-b08-i003",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The second command is based on revision 18, while revision 19 is already accepted.",
+      "nearestAlternative": "Retry the second edit against revision 19 without showing the editor the intervening change.",
+      "changedCondition": "If the product defined a merge rule for concurrent edits, it could offer a merge after detecting the version mismatch.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “each split retains the original request identity and delivery promise” inside the owner that can observe and enforce it.” and this case now asks “Use the expected revision in the write condition and return a conflict with the current revision when it no longer matches.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “each split retains the original request identity and delivery promise” inside the owner that can observe and enforce it.",
+      "currentDecision": "Use the expected revision in the write condition and return a conflict with the current revision when it no longer matches.",
+      "keyDecision": "Use the expected revision in the write condition and return a conflict with the current revision when it no longer matches.",
+      "nearestAlternativeId": "n07_b08_i003_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i004",
+      "questionId": "ood-n07-b08-i004",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The notice must persist with dispatch intent, while the worker can stop between commit and publish.",
+      "nearestAlternative": "Publish the notification before saving the notice and assume the later database write will succeed.",
+      "changedCondition": "The design provides durable retryable intent and duplicate tolerance, not universal exactly-once delivery.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “transfer preserves the plot boundary and approval history” inside the owner that can observe and enforce it.” and this case now asks “Record a pending notification in the same database transaction as the notice, then dispatch it and let receivers deduplicate by notice ID.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “transfer preserves the plot boundary and approval history” inside the owner that can observe and enforce it.",
+      "currentDecision": "Record a pending notification in the same database transaction as the notice, then dispatch it and let receivers deduplicate by notice ID.",
+      "keyDecision": "Record a pending notification in the same database transaction as the notice, then dispatch it and let receivers deduplicate by notice ID.",
+      "nearestAlternativeId": "n07_b08_i004_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i005",
+      "questionId": "ood-n07-b08-i005",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The requests can race after separately reading the same availability.",
+      "nearestAlternative": "Check availability in each process and save after the check.",
+      "changedCondition": "The implementation could use a database constraint or a transactionally checked write; the case does not prescribe one technology.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “the bundle pricing policy remains consistent with its components” inside the owner that can observe and enforce it.” and this case now asks “Enforce the non-overlap rule at the persisted reservation boundary so concurrent writes cannot both commit as available.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “the bundle pricing policy remains consistent with its components” inside the owner that can observe and enforce it.",
+      "currentDecision": "Enforce the non-overlap rule at the persisted reservation boundary so concurrent writes cannot both commit as available.",
+      "keyDecision": "Enforce the non-overlap rule at the persisted reservation boundary so concurrent writes cannot both commit as available.",
+      "nearestAlternativeId": "n07_b08_i005_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i006",
+      "questionId": "ood-n07-b08-i006",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "A missing callback does not tell the coordinator whether the remote system accepted the referral.",
+      "nearestAlternative": "Mark the referral accepted as soon as the request is sent.",
+      "changedCondition": "If the remote API offered a definitive rejection response, the local state could transition directly to rejected.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “charger capacity and reservation expiry are coordinated” inside the owner that can observe and enforce it.” and this case now asks “Persist a pending referral operation and reconcile it with the remote status before marking it accepted or rejected.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “charger capacity and reservation expiry are coordinated” inside the owner that can observe and enforce it.",
+      "currentDecision": "Persist a pending referral operation and reconcile it with the remote status before marking it accepted or rejected.",
+      "keyDecision": "Persist a pending referral operation and reconcile it with the remote status before marking it accepted or rejected.",
+      "nearestAlternativeId": "n07_b08_i006_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i007",
+      "questionId": "ood-n07-b08-i007",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The contract permits partial results and the process must resume from confirmed work.",
+      "nearestAlternative": "Wrap all 500 assets in one all-or-nothing transaction even though the job may exceed the configured transaction limit.",
+      "changedCondition": "If the batch contract required all assets to appear atomically, partial checkpoints would not satisfy it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “asset identity remains stable while descriptive values are replaced” inside the owner that can observe and enforce it.” and this case now asks “Persist each asset’s confirmed result or a resumable progress record, then continue from the first unconfirmed asset.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “asset identity remains stable while descriptive values are replaced” inside the owner that can observe and enforce it.",
+      "currentDecision": "Persist each asset’s confirmed result or a resumable progress record, then continue from the first unconfirmed asset.",
+      "keyDecision": "Persist each asset’s confirmed result or a resumable progress record, then continue from the first unconfirmed asset.",
+      "nearestAlternativeId": "n07_b08_i007_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i008",
+      "questionId": "ood-n07-b08-i008",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "Only seven units are confirmed; the other five have an unknown vendor outcome.",
+      "nearestAlternative": "Replace the original request with a new five-unit request and discard the confirmed allocation.",
+      "changedCondition": "If neither vendor response were known, both portions would remain unresolved rather than confirmed.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “approval requires an explicit territory and expiration” inside the owner that can observe and enforce it.” and this case now asks “Persist the confirmed seven-unit allocation and keep the remaining five units pending under the same request, with vendor attempts separately identified.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “approval requires an explicit territory and expiration” inside the owner that can observe and enforce it.",
+      "currentDecision": "Persist the confirmed seven-unit allocation and keep the remaining five units pending under the same request, with vendor attempts separately identified.",
+      "keyDecision": "Persist the confirmed seven-unit allocation and keep the remaining five units pending under the same request, with vendor attempts separately identified.",
+      "nearestAlternativeId": "n07_b08_i008_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i009",
+      "questionId": "ood-n07-b08-i009",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The run ID distinguishes retry of one experiment from an intentional new run.",
+      "nearestAlternative": "Use the notebook title as the duplicate key, even when the author intentionally starts a new run.",
+      "changedCondition": "If the caller used a new run ID, it would represent a new experiment under the stated contract.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “a battery cannot be assigned to two aircraft at once” inside the owner that can observe and enforce it.” and this case now asks “Persist the run ID with its final result and return that result when the same completed run is retried.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “a battery cannot be assigned to two aircraft at once” inside the owner that can observe and enforce it.",
+      "currentDecision": "Persist the run ID with its final result and return that result when the same completed run is retried.",
+      "keyDecision": "Persist the run ID with its final result and return that result when the same completed run is retried.",
+      "nearestAlternativeId": "n07_b08_i009_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i010",
+      "questionId": "ood-n07-b08-i010",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The event ID identifies a delivery, while a principal may receive multiple legitimate grants.",
+      "nearestAlternative": "Use the principal ID as the duplicate key and ignore every later grant event for that principal.",
+      "changedCondition": "If the provider assigned a new event ID to a genuine correction, that correction should be processed as its own event.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “privacy and consent rules apply before external disclosure” inside the owner that can observe and enforce it.” and this case now asks “Store the provider event ID with the applied transition and recognize a repeated ID before applying it again.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “privacy and consent rules apply before external disclosure” inside the owner that can observe and enforce it.",
+      "currentDecision": "Store the provider event ID with the applied transition and recognize a repeated ID before applying it again.",
+      "keyDecision": "Store the provider event ID with the applied transition and recognize a repeated ID before applying it again.",
+      "nearestAlternativeId": "n07_b08_i010_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i011",
+      "questionId": "ood-n07-b08-i011",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "A later claim can supersede an earlier lease while the first worker is still running.",
+      "nearestAlternative": "Accept any completion with the volunteer ID, regardless of which lease created it.",
+      "changedCondition": "If a lease could never be reassigned while work was active, the stale completion race would not arise.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “completion records the exercise version and score policy” inside the owner that can observe and enforce it.” and this case now asks “Attach a monotonically changing lease token to the claim and accept completion only for the current token.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “completion records the exercise version and score policy” inside the owner that can observe and enforce it.",
+      "currentDecision": "Attach a monotonically changing lease token to the claim and accept completion only for the current token.",
+      "keyDecision": "Attach a monotonically changing lease token to the claim and accept completion only for the current token.",
+      "nearestAlternativeId": "n07_b08_i011_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i012",
+      "questionId": "ood-n07-b08-i012",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The balance and allocation row form one stated local consistency boundary.",
+      "nearestAlternative": "Save the allocation first and update the balance later in a background task.",
+      "changedCondition": "If balance were derived solely from allocation rows, the stored balance update might not be needed.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “approval is attributable, bounded, and cannot bypass required controls” inside the owner that can observe and enforce it.” and this case now asks “Perform the balance update and allocation insert in one local transaction.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “approval is attributable, bounded, and cannot bypass required controls” inside the owner that can observe and enforce it.",
+      "currentDecision": "Perform the balance update and allocation insert in one local transaction.",
+      "keyDecision": "Perform the balance update and allocation insert in one local transaction.",
+      "nearestAlternativeId": "n07_b08_i012_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i013",
+      "questionId": "ood-n07-b08-i013",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The cancellation occurs before any persistence call begins.",
+      "nearestAlternative": "Create a pending seal before the persistence call so cancellation can be retried automatically.",
+      "changedCondition": "If cancellation occurred after submission with unknown commit status, the system would need to reconcile the attempt instead.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “annotations follow stable segments rather than file offsets” inside the owner that can observe and enforce it.” and this case now asks “Return the cancellation result without writing; a retry requires a new explicit user command.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “annotations follow stable segments rather than file offsets” inside the owner that can observe and enforce it.",
+      "currentDecision": "Return the cancellation result without writing; a retry requires a new explicit user command.",
+      "keyDecision": "Return the cancellation result without writing; a retry requires a new explicit user command.",
+      "nearestAlternativeId": "n07_b08_i013_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i014",
+      "questionId": "ood-n07-b08-i014",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The underlying settlement and policy can change after the amount is calculated.",
+      "nearestAlternative": "Recalculate using the current settlement and current policy whenever an operator opens the payout.",
+      "changedCondition": "If the product intentionally recalculated live payouts on every view, historical reproduction would not be required.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “the role expires and is attributable to a specific approval” inside the owner that can observe and enforce it.” and this case now asks “Store the settlement snapshot ID and policy revision with the payout calculation result.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “the role expires and is attributable to a specific approval” inside the owner that can observe and enforce it.",
+      "currentDecision": "Store the settlement snapshot ID and policy revision with the payout calculation result.",
+      "keyDecision": "Store the settlement snapshot ID and policy revision with the payout calculation result.",
+      "nearestAlternativeId": "n07_b08_i014_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i015",
+      "questionId": "ood-n07-b08-i015",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The price and stock rule must be valid together before the listing is visible.",
+      "nearestAlternative": "Publish the new price immediately and update stock after validation finishes.",
+      "changedCondition": "If price and stock were independent listing attributes under the product contract, separate writes could be acceptable.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “the seal covers the exact immutable revision” inside the owner that can observe and enforce it.” and this case now asks “Validate both submitted values and persist them in one transaction before marking the listing visible.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “the seal covers the exact immutable revision” inside the owner that can observe and enforce it.",
+      "currentDecision": "Validate both submitted values and persist them in one transaction before marking the listing visible.",
+      "keyDecision": "Validate both submitted values and persist them in one transaction before marking the listing visible.",
+      "nearestAlternativeId": "n07_b08_i015_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i016",
+      "questionId": "ood-n07-b08-i016",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "A repeated delivery carries stable provider asset keys and must not duplicate asset identity.",
+      "nearestAlternative": "Create a new archive asset for every batch delivery and deduplicate titles afterward.",
+      "changedCondition": "If the provider key could be reused for different assets, the import would need a broader identity scope.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.” and this case now asks “Upsert by the stable provider asset key and preserve the existing archive asset identity on repeat import.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.",
+      "currentDecision": "Upsert by the stable provider asset key and preserve the existing archive asset identity on repeat import.",
+      "keyDecision": "Upsert by the stable provider asset key and preserve the existing archive asset identity on repeat import.",
+      "nearestAlternativeId": "n07_b08_i016_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i017",
+      "questionId": "ood-n07-b08-i017",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The provider may have accepted the send even though the response timed out.",
+      "nearestAlternative": "Mark the notice undelivered because the provider response was lost.",
+      "changedCondition": "If the provider gave a definitive rejection, the status could be recorded as rejected rather than unresolved.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.” and this case now asks “Keep delivery status unresolved and reconcile the provider using the notice ID before retrying or marking delivered.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.",
+      "currentDecision": "Keep delivery status unresolved and reconcile the provider using the notice ID before retrying or marking delivered.",
+      "keyDecision": "Keep delivery status unresolved and reconcile the provider using the notice ID before retrying or marking delivered.",
+      "nearestAlternativeId": "n07_b08_i017_wrong_1"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i018",
+      "questionId": "ood-n07-b08-i018",
+      "mentalUnitId": "OOD-N07-B08",
+      "learningObjective": "Choose a persistence failure, retry, idempotency, or consistency response that matches the stated outcome and transaction boundary without claiming broader guarantees.",
+      "decisiveFact": "The cancellation commit may have succeeded and the retry uses the same command identity.",
+      "nearestAlternative": "Create a second cancellation record with a new command ID for every retry.",
+      "changedCondition": "A new cancellation with a different command ID would need its own validation against current reservation state.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Provisional author rationale: the source accepted decision was “Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it.” and this case now asks “Persist the cancellation operation identity and result so the retry can return the committed cancellation outcome.”. Both are retained under OOD-N07-B08 because the proposed case still exercises the same unit objective and decision boundary; the item-level reviewer must confirm that preservation. The accepted option ID is new because the option meaning was made case-specific.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/ef/core/saving/concurrency",
+        "https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency"
+      ],
+      "beforeDecision": "Make retry and consistency behavior explicit at the infrastructure boundary and keep domain state truthful. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it.",
+      "currentDecision": "Persist the cancellation operation identity and result so the retry can return the committed cancellation outcome.",
+      "keyDecision": "Persist the cancellation operation identity and result so the retry can return the committed cancellation outcome.",
+      "nearestAlternativeId": "n07_b08_i018_wrong_1"
+    }
+  ]
+}

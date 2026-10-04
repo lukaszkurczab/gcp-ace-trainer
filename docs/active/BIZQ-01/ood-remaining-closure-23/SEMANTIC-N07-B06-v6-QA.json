@@ -1,0 +1,1118 @@
+{
+  "schemaVersion": 1,
+  "verdict": "REVISE",
+  "unit": "OOD-N07-B06",
+  "reviewerRole": "Independent semantic and identity review; not author acceptance or producer/source approval",
+  "modelAndEffort": "gpt-6-luna / high",
+  "input": {
+    "path": "review-inputs/N07-B06-v6.json",
+    "sha256": "5eafc6852700e0efd4a14e6419146ead10314a261c067fd575e581a977a76cfd",
+    "rootFrozenSha256": "5eafc6852700e0efd4a14e6419146ead10314a261c067fd575e581a977a76cfd",
+    "questionCount": 18
+  },
+  "beforeSource": {
+    "path": "patternly-content/content/object-oriented-design-interview/persistence_repositories_serialization_and_domain_boundaries/OOD-N07-B06.json",
+    "sha256": "040d2eeb44b56fc1cf54e189534e4408a01034a74d394da763502ae879aa92c5"
+  },
+  "manifest": {
+    "path": "N07-MANIFEST.json",
+    "sha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01"
+  },
+  "mechanicalCheck": {
+    "result": "PASS",
+    "wholeObjectCount": 18,
+    "optionsChecked": 90,
+    "scope": "Mechanical schema/count/taxonomy/identity correspondence, actual scoring/reversal and exact wrong-diagnostic bindings only; no semantic or identity-action acceptance"
+  },
+  "v5ToV6Delta": {
+    "scope": "Actual v5 to v6 serialized diff bounds only; semantic acceptance pending",
+    "inputSha256": "5eafc6852700e0efd4a14e6419146ead10314a261c067fd575e581a977a76cfd",
+    "detailsFieldsChanged": 36,
+    "diagnosticTextsChanged": 22,
+    "perItem": [
+      {
+        "questionId": "ood-n07-b06-i001",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": []
+      },
+      {
+        "questionId": "ood-n07-b06-i002",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": []
+      },
+      {
+        "questionId": "ood-n07-b06-i003",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": [
+          "n07_b06_i003_wrong_1"
+        ]
+      },
+      {
+        "questionId": "ood-n07-b06-i004",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": []
+      },
+      {
+        "questionId": "ood-n07-b06-i005",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": []
+      },
+      {
+        "questionId": "ood-n07-b06-i006",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": []
+      },
+      {
+        "questionId": "ood-n07-b06-i007",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": []
+      },
+      {
+        "questionId": "ood-n07-b06-i008",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": [
+          "n07_b06_i008_wrong_2",
+          "n07_b06_i008_wrong_3"
+        ]
+      },
+      {
+        "questionId": "ood-n07-b06-i009",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": [
+          "n07_b06_i009_wrong_2",
+          "n07_b06_i009_wrong_3"
+        ]
+      },
+      {
+        "questionId": "ood-n07-b06-i010",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": [
+          "n07_b06_i010_wrong_2",
+          "n07_b06_i010_wrong_3",
+          "n07_b06_i010_wrong_4"
+        ]
+      },
+      {
+        "questionId": "ood-n07-b06-i011",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": []
+      },
+      {
+        "questionId": "ood-n07-b06-i012",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": [
+          "n07_b06_i012_wrong_3",
+          "n07_b06_i012_wrong_4"
+        ]
+      },
+      {
+        "questionId": "ood-n07-b06-i013",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": [
+          "n07_b06_i013_wrong_2",
+          "n07_b06_i013_wrong_3"
+        ]
+      },
+      {
+        "questionId": "ood-n07-b06-i014",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": []
+      },
+      {
+        "questionId": "ood-n07-b06-i015",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": [
+          "n07_b06_i015_wrong_2",
+          "n07_b06_i015_wrong_3"
+        ]
+      },
+      {
+        "questionId": "ood-n07-b06-i016",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": [
+          "n07_b06_i016_wrong_3",
+          "n07_b06_i016_wrong_4"
+        ]
+      },
+      {
+        "questionId": "ood-n07-b06-i017",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": [
+          "n07_b06_i017_wrong_2",
+          "n07_b06_i017_wrong_3",
+          "n07_b06_i017_wrong_4"
+        ]
+      },
+      {
+        "questionId": "ood-n07-b06-i018",
+        "changedDetailsFields": [
+          "feedback.details.mechanismOrProperty",
+          "feedback.details.scenarioApplication"
+        ],
+        "changedDiagnosticTargets": [
+          "n07_b06_i018_wrong_2",
+          "n07_b06_i018_wrong_3",
+          "n07_b06_i018_wrong_4"
+        ]
+      }
+    ]
+  },
+  "cohortFindings": [
+    {
+      "code": "DETAILS_ERROR_BOUNDARY_REDUNDANCY",
+      "severity": "blocking",
+      "count": 17,
+      "questionIds": [
+        "ood-n07-b06-i001",
+        "ood-n07-b06-i002",
+        "ood-n07-b06-i003",
+        "ood-n07-b06-i004",
+        "ood-n07-b06-i005",
+        "ood-n07-b06-i006",
+        "ood-n07-b06-i008",
+        "ood-n07-b06-i009",
+        "ood-n07-b06-i010",
+        "ood-n07-b06-i011",
+        "ood-n07-b06-i012",
+        "ood-n07-b06-i013",
+        "ood-n07-b06-i014",
+        "ood-n07-b06-i015",
+        "ood-n07-b06-i016",
+        "ood-n07-b06-i017",
+        "ood-n07-b06-i018"
+      ],
+      "finding": "For 17 items, errorCorrection ends with the exact same conditional sentence as boundaryOrTradeoff. The preceding errorCorrection sentence is case-specific and useful, but the repeated final sentence contributes no second explanation; removing that duplicate tail would preserve both the targeted misconception correction and the explicit boundary."
+    },
+    {
+      "code": "EXPLANATION_ROLE_REVIEW",
+      "severity": "review",
+      "count": 1,
+      "questionIds": [
+        "ood-n07-b06-i014"
+      ],
+      "finding": "The i014 wrong_4 diagnostic is not about currency/reference being absent; the option retains a signed amount and the issue is bypassing the positive allocation versus reversal operation."
+    },
+    {
+      "code": "SINGLE_CHOICE_UNDERDETERMINED",
+      "severity": "blocking",
+      "count": 1,
+      "questionIds": [
+        "ood-n07-b06-i016"
+      ],
+      "finding": "The prompt does not require classification evidence to be retained after refund eligibility is evaluated, so wrong_3 remains a plausible alternative. Its message assumes an unprovided traceability requirement."
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n07-b06-i001",
+      "beforeWholeObjectSha256": "3757818854bb8516017ec9a9a1d12da130d16a0b6bef7369ac3cf37764502f6a",
+      "currentWholeObjectSha256": "b32fb31b7e48ac62b68944b64e1708317d91b405bd0821a72165f8e7771cc7ab",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a music practice tracker, the learner must complete a timed exercise. Completion records the exercise version and score policy. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is an API or model evolution: which decision best preserves the contract?",
+        "currentPrompt": "In music practice tracker, A lesson completion arrives from a partner API with a decimal score and partner exercise code. The domain stores a stable exercise identity and a score policy revision; partner codes can change between API versions. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i001_domain_mapping",
+        "beforeScenarioRule": "completion records the exercise version and score policy",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “completion records the exercise version and score policy” inside the owner that can observe and enforce it.",
+        "currentKey": "Translate the partner code to the stable exercise ID; carry score and policy revision into completion.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “completion records the exercise version and score policy”; the current answer translates Translate the partner code to the stable exercise ID; carry score and policy revision into completion.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "The partner code is not stable identity; the policy revision is part of the completion facts.",
+        "The completion record retains the policy revision used for scoring."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "A code that changes between API versions cannot identify the same exercise reliably. The completion still points to the same exercise when partner codes change and retains the score-policy revision used.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "Partner labels can evolve independently of the exercise identity used by scoring.",
+        "scenarioApplication": "A renamed code still resolves to the same exercise, with the policy revision retained on its completion.",
+        "errorCorrection": "Keeping the transport type would couple scoring to partner field names; database names are also implementation details. If a partner code were itself the agreed durable domain identity, mapping that code would be reasonable.",
+        "boundaryOrTradeoff": "If a partner code were itself the agreed durable domain identity, mapping that code would be reasonable.",
+        "transfer": "If the partner payload is later reused by unrelated clients, keep its wire contract separate from completion semantics.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i002",
+      "beforeWholeObjectSha256": "6181d20bfed02c304ab40f2773ad9e8428575388ebcb2d85005279af34060b1a",
+      "currentWholeObjectSha256": "e2e0bffea6c59977e4890c14336a64c6fd57e311a02fba36c14f93cff83e295c",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a procurement approval queue, the purchasing manager must approve an exception. Approval is attributable, bounded, and cannot bypass required controls. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is an operational incident: which decision best preserves the contract?",
+        "currentPrompt": "In procurement approval queue, A supplier sends approval requests with `approved`, `denied`, or an unknown future status. The domain recognizes pending, accepted, and rejected; unknown values must be quarantined rather than treated as accepted. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i002_domain_mapping",
+        "beforeScenarioRule": "approval is attributable, bounded, and cannot bypass required controls",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “approval is attributable, bounded, and cannot bypass required controls” inside the owner that can observe and enforce it.",
+        "currentKey": "Map recognized statuses; retain an unknown supplier value with a quarantined review record.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “approval is attributable, bounded, and cannot bypass required controls”; the current answer translates Map recognized statuses; retain an unknown supplier value with a quarantined review record.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "The domain must not silently grant an unknown status, and reviewers need the raw supplier value.",
+        "The approval domain has no accepted outcome for an unrecognized status."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "The reviewer needs the literal supplier status to inspect a quarantined request. The boundary preserves unknown input without treating it as a business outcome.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "Unknown external values are evidence, not a new accepted business outcome.",
+        "scenarioApplication": "The quarantine record lets review inspect the supplier value without granting or silently rejecting it.",
+        "errorCorrection": "Treating an unknown value as accepted bypasses the stated control; discarding it loses the evidence needed for quarantine review. If the domain explicitly defined an “unrecognized” terminal outcome, that could be mapped as such rather than quarantined.",
+        "boundaryOrTradeoff": "If the domain explicitly defined an “unrecognized” terminal outcome, that could be mapped as such rather than quarantined.",
+        "transfer": "When an external vocabulary evolves independently, translate it before it reaches invariant-enforcing domain operations.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i003",
+      "beforeWholeObjectSha256": "84557b3ece835dad84b839bd442072b9d5c483654325a35bd05221872ba552aa",
+      "currentWholeObjectSha256": "b760b1b4e2949f123b4088951aec4ca00bd7bb334214235379e4f01fd68d91fe",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a podcast production desk, the episode producer must replace a source recording while preserving annotations. Annotations follow stable segments rather than file offsets. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is an invalid-state probe: which decision best preserves the contract?",
+        "currentPrompt": "In podcast production desk, The audio vendor returns segment offsets in milliseconds, while editorial annotations use stable segment IDs. A replacement recording may shift offsets without changing segment identity. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i003_domain_mapping",
+        "beforeScenarioRule": "annotations follow stable segments rather than file offsets",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “annotations follow stable segments rather than file offsets” inside the owner that can observe and enforce it.",
+        "currentKey": "Resolve vendor offsets to stable segment IDs before replacing the recording.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “annotations follow stable segments rather than file offsets”; the current answer translates Resolve vendor offsets to stable segment IDs before replacing the recording.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "Offsets move on replacement; annotations follow stable segment IDs.",
+        "Annotation references are retained across replacement recordings."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "The new recording may move offsets while preserving the annotated segment identities. The annotation remains attached to the same editorial segment after media coordinates change.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "Media offsets locate content in one recording; stable segment IDs identify editorial annotations.",
+        "scenarioApplication": "After replacement shifts the coordinates, annotation reads still find the same editorial segments.",
+        "errorCorrection": "Persisting offsets as identity breaks annotations when a recording changes; the vendor response does not own editorial meaning. If annotations were defined against absolute media time and not stable segments, preserving offsets could be the domain contract.",
+        "boundaryOrTradeoff": "If annotations were defined against absolute media time and not stable segments, preserving offsets could be the domain contract.",
+        "transfer": "When an external coordinate system differs from the domain’s identity, translate it at the integration boundary.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [
+        "n07_b06_i003_wrong_1"
+      ],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i004",
+      "beforeWholeObjectSha256": "96b88565ac4b5d1f9f40866877fb78683894eb702ad01830840ba8077eb3bf48",
+      "currentWholeObjectSha256": "b06a556b50a3e2236035a163e599016b28bfeea009ce0c67b3d344bb50749f23",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a permissions review service, the security reviewer must grant a temporary role. The role expires and is attributable to a specific approval. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a collaboration trace: which decision best preserves the contract?",
+        "currentPrompt": "In permissions review service, An approval provider sends an approver email and expiry timestamp. The role record needs a verified principal ID, approval ID, and UTC expiry; the provider’s email is not guaranteed unique. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i004_domain_mapping",
+        "beforeScenarioRule": "the role expires and is attributable to a specific approval",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “the role expires and is attributable to a specific approval” inside the owner that can observe and enforce it.",
+        "currentKey": "Resolve the provider email to a verified principal; retain approval ID and UTC expiry in the grant command.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “the role expires and is attributable to a specific approval”; the current answer translates Resolve the provider email to a verified principal; retain approval ID and UTC expiry in the grant command.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "The email is not unique identity, and auditability requires the approval ID.",
+        "The role grant is audited by approval ID and verified principal ID."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "An email can refer to more than one principal in this provider. The grant retains who was verified, which approval authorized it, and when it expires.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "Identity verification, approval provenance, and expiry answer different questions in a role grant.",
+        "scenarioApplication": "The grant identifies the verified person, the approval record, and the expiry independently of email uniqueness.",
+        "errorCorrection": "Using email as identity can merge or misaddress grants; dropping approval linkage prevents the stated audit. If the provider guaranteed a stable identifier that the domain had adopted, that identifier could be mapped directly.",
+        "boundaryOrTradeoff": "If the provider guaranteed a stable identifier that the domain had adopted, that identifier could be mapped directly.",
+        "transfer": "Translate identity and time formats before invoking a domain operation that records an attributable grant.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i005",
+      "beforeWholeObjectSha256": "76651ee871ba2ea53138857aed523744bb04ef9319db52d9db7f7c0f12abc251",
+      "currentWholeObjectSha256": "1fe96465c0ecdf991252003d0a0438e7e5d7715cbbc0b1900fddf7ae2f6a416c",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a document notarization service, the notary must seal a document revision. The seal covers the exact immutable revision. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a counterexample: which decision best preserves the contract?",
+        "currentPrompt": "In document notarization service, The notary vendor returns a document digest and a vendor revision token. The signer selected immutable revision R17, whose stored digest is D17. The vendor token is only for API lookup, and the response digest can be compared with D17. The seal must refer to R17. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i005_domain_mapping",
+        "beforeScenarioRule": "the seal covers the exact immutable revision",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “the seal covers the exact immutable revision” inside the owner that can observe and enforce it.",
+        "currentKey": "Verify the returned digest against the signer-selected revision; record that revision on the seal.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “the seal covers the exact immutable revision”; the current answer translates Verify the returned digest against the signer-selected revision; record that revision on the seal.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "The signer selected an exact immutable revision; vendor lookup tokens are not that domain identity.",
+        "The signer selected a specific immutable revision before the vendor request."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "The vendor token locates a response; the response digest is compared with the selected bytes. The seal remains tied to the content the signer chose, while the token remains a lookup handle.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "A lookup token locates a vendor response; a content digest can check which bytes were returned.",
+        "scenarioApplication": "The seal refers to the revision selected by the signer only when the digest matches D17.",
+        "errorCorrection": "Choosing “latest” can seal different bytes from those the signer reviewed; retaining a lookup token alone loses the domain link. If the vendor token were the agreed immutable revision identifier, it could serve as the domain reference.",
+        "boundaryOrTradeoff": "If the vendor token were the agreed immutable revision identifier, it could serve as the domain reference.",
+        "transfer": "At external-service seams, distinguish lookup handles from the identity the business operation promises to preserve.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i006",
+      "beforeWholeObjectSha256": "c5dcb9683d57dd9d7bc7ae3dddd57c4e2fcfe73172ab5618b1d910ce80d0b6e1",
+      "currentWholeObjectSha256": "e8c94ced28216a1f4abc2b3db0483734d5d4cfc655f5d78e05a444fbf9887862",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a marketplace payout service, the finance operator must release a seller payout. Release is idempotent and tied to a settled order. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a permission or trust boundary: which decision best preserves the contract?",
+        "currentPrompt": "In marketplace payout service, A finance API sends amounts as integer cents plus a currency code. The domain uses a Money value that rejects unsupported currencies; payouts are keyed by settled order identity. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i006_domain_mapping",
+        "beforeScenarioRule": "release is idempotent and tied to a settled order",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.",
+        "currentKey": "Construct Money from cents and currency; pass it with the settled order identity to payout.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “release is idempotent and tied to a settled order”; the current answer translates Construct Money from cents and currency; pass it with the settled order identity to payout.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "Currency participates in value meaning, and the domain validates supported currencies.",
+        "The Money value validates the currency together with the amount."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "The settled order, not the seller profile, identifies the payout. Currency and amount are validated as one value before payout eligibility is evaluated.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "An amount without its currency cannot be validated as the same monetary value.",
+        "scenarioApplication": "Money rejects unsupported currencies before the settled order’s payout rule is evaluated.",
+        "errorCorrection": "Floating point and inferred currency can change the payable amount; dropping currency makes equal numeric amounts ambiguous. If every payout were contractually in one fixed currency, a currency-free amount could be justified by that explicit invariant.",
+        "boundaryOrTradeoff": "If every payout were contractually in one fixed currency, a currency-free amount could be justified by that explicit invariant.",
+        "transfer": "When transport units differ from domain value semantics, map both amount and its unit before the operation.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i007",
+      "beforeWholeObjectSha256": "cf99064797838b0de73948033a4e216a9039535206215c33dd7459726526ccf5",
+      "currentWholeObjectSha256": "7b9478a694687e45ac95f5cd579779071e749d7854f5326508f2b93f4bf75be9",
+      "verdict": "PASS",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a public-transit disruption board, the service controller must announce a platform change. Passengers receive the change in the order in which it becomes effective. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a retry or recovery path: which decision best preserves the contract?",
+        "currentPrompt": "In public-transit disruption board, A notice provider sends local timestamp text, route timezone, and a numeric UTC offset even during a repeated daylight-saving hour. The board orders notices by effective instant and retains the provider’s original text for display. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i007_domain_mapping",
+        "beforeScenarioRule": "passengers receive the change in the order in which it becomes effective",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.",
+        "currentKey": "Parse the supplied offset into an instant; retain the original timestamp text for display.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “passengers receive the change in the order in which it becomes effective”; the current answer translates Parse the supplied offset into an instant; retain the original timestamp text for display.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "The same local clock value means different instants across route timezones, and original text is display data.",
+        "Each provider timestamp includes a numeric UTC offset, including repeated local clock times."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "The board orders by effective instant while operators see the original provider string. The offset disambiguates repeated local times without replacing the display value.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "A numeric offset resolves civil-time ambiguity; preserving source text serves a separate display need.",
+        "scenarioApplication": "Notices can be ordered by effective instant while operators still see the provider’s original timestamp.",
+        "errorCorrection": "Assuming UTC changes event order; lexical sorting does not compare effective instants. If the provider timestamp already included an unambiguous offset, parsing would not need a route timezone.",
+        "boundaryOrTradeoff": "If the provider omitted an offset, the interface would need an explicit rule for resolving repeated local clock times.",
+        "transfer": "Keep external presentation fields separate from normalized values used by domain decisions.",
+        "assessment": "Reviewed against prompt, key, and nearest alternative."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i008",
+      "beforeWholeObjectSha256": "83bcce35818dc301e2684fef63c2aedad8506f48f17d190081d4e0bc456f3650",
+      "currentWholeObjectSha256": "7f89ecff0e686975f4f40425c71137dd04dcd8b19f83faf342f186b2da70b5dc",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a neighborhood energy-sharing service, the meter operator must reserve a discharge window. A meter cannot be committed twice for an overlapping window. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a direct application: which decision best preserves the contract?",
+        "currentPrompt": "In neighborhood energy-sharing service, A meter vendor reports watt-hours, but the domain reservation uses kilowatt-hours and a meter ID from the registry. One reading can exceed the reservation limit after conversion. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i008_domain_mapping",
+        "beforeScenarioRule": "a meter cannot be committed twice for an overlapping window",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it.",
+        "currentKey": "Convert watt-hours to kilowatt-hours and resolve the registry meter ID before checking capacity.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “a meter cannot be committed twice for an overlapping window”; the current answer translates Convert watt-hours to kilowatt-hours and resolve the registry meter ID before checking capacity.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "The limit and input use different units, and the vendor serial is not the registered identity.",
+        "The registry ID is the meter identity used by reservations."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "The reservation threshold is expressed in kilowatt-hours. The capacity comparison receives a value and identity in the domain’s units.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "Unit normalization makes measurements comparable; registry resolution identifies the meter being checked.",
+        "scenarioApplication": "The capacity decision uses the registered meter and compares its converted reading with the reservation limit.",
+        "errorCorrection": "Comparing unlike units can admit an over-limit reading; late conversion spreads vendor semantics into the domain. If the domain limit were also expressed in watt-hours and the serial were the agreed meter identity, direct mapping would work.",
+        "boundaryOrTradeoff": "If the domain limit were also expressed in watt-hours and the serial were the agreed meter identity, direct mapping would work.",
+        "transfer": "Normalize measurement units and resolve external identifiers where their meaning enters a domain calculation.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [
+        "n07_b06_i008_wrong_2",
+        "n07_b06_i008_wrong_3"
+      ],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i009",
+      "beforeWholeObjectSha256": "540d2bec18b10dc4bdb3c702749c313b2ba0c828992edb346ba7f0585688d014",
+      "currentWholeObjectSha256": "d437b40eb5b95f0102c861b4b5a1db7b155f0fe4223da7230a847879de9ce74c",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a live captioning studio, the caption supervisor must switch the active language provider. The current stream keeps its timing and error contract. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a near-miss design: which decision best preserves the contract?",
+        "currentPrompt": "In live captioning studio, The caption provider returns language codes such as `en-US` and provider-specific error labels. The domain recognizes a supported language set and exposes stable error categories to callers. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i009_domain_mapping",
+        "beforeScenarioRule": "the current stream keeps its timing and error contract",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “the current stream keeps its timing and error contract” inside the owner that can observe and enforce it.",
+        "currentKey": "Translate supported language codes and provider errors; retain unknown codes in boundary diagnostics.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “the current stream keeps its timing and error contract”; the current answer translates Translate supported language codes and provider errors; retain unknown codes in boundary diagnostics.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "Callers require stable categories, while unknown languages must not silently become a different language.",
+        "Callers receive stable error categories rather than provider-specific labels."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "Unknown language codes are not interchangeable with another supported language. The adapter contains provider vocabulary while the domain keeps its supported language set.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "Provider labels are unstable integration vocabulary, while the domain language set is controlled.",
+        "scenarioApplication": "Callers receive stable error categories; support retains the raw code when no supported language matches.",
+        "errorCorrection": "Provider strings make callers depend on vendor wording; defaulting unknown language alters caption meaning. If callers explicitly need provider-specific troubleshooting, a separate diagnostic field may expose that code.",
+        "boundaryOrTradeoff": "If callers explicitly need provider-specific troubleshooting, a separate diagnostic field may expose that code.",
+        "transfer": "Anti-corruption mapping protects domain and caller vocabularies when provider terms evolve.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [
+        "n07_b06_i009_wrong_2",
+        "n07_b06_i009_wrong_3"
+      ],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i010",
+      "beforeWholeObjectSha256": "af59264fba44a063e77a6d012682c471170403ca696a8d55c4c30fce2f0a36ce",
+      "currentWholeObjectSha256": "df9d24f5096bc6f1b7c8740945e2f7c0d226232fa3a3b3f9602beac735755ca6",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a volunteer coordination hub, the shift manager must swap two volunteer assignments. Skills and availability constraints hold for both assignments. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a review of a common misconception: which decision best preserves the contract?",
+        "currentPrompt": "In volunteer coordination hub, A scheduling API accepts a pair of volunteer IDs and returns a new assignment token. The domain swap must validate both volunteers’ skills and availability before replacing either assignment. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i010_domain_mapping",
+        "beforeScenarioRule": "skills and availability constraints hold for both assignments",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “skills and availability constraints hold for both assignments” inside the owner that can observe and enforce it.",
+        "currentKey": "Map both volunteer IDs, then invoke the domain’s joint swap operation.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “skills and availability constraints hold for both assignments”; the current answer translates Map both volunteer IDs, then invoke the domain’s joint swap operation.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "The rule spans both assignments; partial sequential updates can leave only one side moved.",
+        "Both assignments must be legal before either assignment is replaced."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "A partial move is invalid even when one volunteer is available. The operation evaluates the two assignments as one domain decision.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "Swap legality depends on the combined state of both assignments, not either one in isolation.",
+        "scenarioApplication": "If either volunteer fails the skills or availability rule, neither assignment is replaced.",
+        "errorCorrection": "Controller compensation adds an unrequested partial-state path; DTO-aware entities couple domain logic to transport shape. If the business explicitly allowed partial swaps, independent updates could be appropriate.",
+        "boundaryOrTradeoff": "If the business explicitly allowed partial swaps, independent updates could be appropriate.",
+        "transfer": "Keep transport parsing separate from multi-entity domain decisions; do not push invariant checks into the adapter.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [
+        "n07_b06_i010_wrong_2",
+        "n07_b06_i010_wrong_3",
+        "n07_b06_i010_wrong_4"
+      ],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i011",
+      "beforeWholeObjectSha256": "b03bb99810456165feac3bf798ece80390afbf439edb9505f065476d67ef12f8",
+      "currentWholeObjectSha256": "4ca9de358196884c0a6557bd39341dabfa03086b8c7f2c9067337078517c1b6a",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a local-first map editor, the cartographer must merge an offline route edit. Conflicts are explicit and never silently overwrite accepted geometry. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a new requirement: which decision best preserves the contract?",
+        "currentPrompt": "In local-first map editor, A sync server sends a geometry patch and a revision token. The domain accepts edits only when the token matches the locally accepted revision; otherwise it records a visible conflict. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i011_domain_mapping",
+        "beforeScenarioRule": "conflicts are explicit and never silently overwrite accepted geometry",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “conflicts are explicit and never silently overwrite accepted geometry” inside the owner that can observe and enforce it.",
+        "currentKey": "Map the patch and expected revision; let the domain apply its conflict rule.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “conflicts are explicit and never silently overwrite accepted geometry”; the current answer translates Map the patch and expected revision; let the domain apply its conflict rule.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "The token is a precondition, and mismatch must become an explicit conflict.",
+        "Only a matching locally accepted revision permits the edit."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "A mismatched token is recorded as a visible conflict. The revision token is a precondition, not proof that the server copy is newer.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "The revision token is a precondition for applying an edit, not evidence that one side is newer.",
+        "scenarioApplication": "A stale patch becomes a visible conflict and leaves the accepted geometry unchanged.",
+        "errorCorrection": "Overwriting silently violates the conflict contract; raw JSON parsing leaks transport shape into map behavior. If the domain specified a coordinate-level merge rule for mismatched revisions, that rule could be applied after mapping.",
+        "boundaryOrTradeoff": "If the domain specified a coordinate-level merge rule for mismatched revisions, that rule could be applied after mapping.",
+        "transfer": "Translate wire changes into domain commands while preserving preconditions the domain needs to protect state.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i012",
+      "beforeWholeObjectSha256": "a0705705f9f402c02ee3efbfd58dc29507dc5a76b5cf4104f6bb6dc3165fefe5",
+      "currentWholeObjectSha256": "4bc0fa8d99db1034a5772cb4ab8df9d5a67d41339592a7701c3fb25c810236a6",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a board-game campaign manager, the campaign host must apply a reward to a character. Reward rules depend on the current legal campaign state. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a failure rehearsal: which decision best preserves the contract?",
+        "currentPrompt": "In board-game campaign manager, A reward provider returns an item code and campaign identifier. The campaign domain checks whether the reward is legal in the current campaign state; unknown item codes must be rejected with their source value retained for support. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i012_domain_mapping",
+        "beforeScenarioRule": "reward rules depend on the current legal campaign state",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it.",
+        "currentKey": "Translate known reward codes; preserve an unknown code for support and reject it.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “reward rules depend on the current legal campaign state”; the current answer translates Translate known reward codes; preserve an unknown code for support and reject it.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "Unknown codes cannot be granted, and reward legality depends on current domain state.",
+        "Reward legality depends on the current campaign state."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "Support needs the original code when no domain reward matches it. Vocabulary translation and campaign-state legality remain separate decisions.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "The campaign code catalogue and current campaign state govern separate parts of reward acceptance.",
+        "scenarioApplication": "An unknown item is rejected with its source code available to support; no default reward is granted.",
+        "errorCorrection": "A fallback grants a different item without authorization; duplicating state rules creates a second policy owner. If the provider and campaign shared a governed code set, a direct enum mapping could be safe.",
+        "boundaryOrTradeoff": "If the provider and campaign shared a governed code set, a direct enum mapping could be safe.",
+        "transfer": "Separate external code translation from the domain operation that enforces state-dependent rules.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [
+        "n07_b06_i012_wrong_3",
+        "n07_b06_i012_wrong_4"
+      ],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i013",
+      "beforeWholeObjectSha256": "5e7f0df3ebfcefd145a7578d647007ed9f18030dc27e2a28080549806019c9de",
+      "currentWholeObjectSha256": "c4597737f88dcf2884b8a7a4b4444e1c6603a9d12fc5a4416fbf2f6680cd8558",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a cold-chain logistics console, the dispatch planner must reassign a shipment to a carrier. Temperature restrictions and hand-off ownership travel with the shipment. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a transfer to a neighboring domain: which decision best preserves the contract?",
+        "currentPrompt": "In cold-chain logistics console, The carrier API uses a short shipment code and Fahrenheit thresholds. The domain shipment uses a registered shipment ID and Celsius limits; a dispatch handoff must retain both temperature limits and current custodian. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i013_domain_mapping",
+        "beforeScenarioRule": "temperature restrictions and hand-off ownership travel with the shipment",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it.",
+        "currentKey": "Resolve shipment identity and convert both temperatures before the handoff operation.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “temperature restrictions and hand-off ownership travel with the shipment”; the current answer translates Resolve shipment identity and convert both temperatures before the handoff operation.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "The domain rule compares temperatures to Celsius limits and the handoff contract carries custody.",
+        "The handoff retains current custodian and both temperature limits."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "The domain compares measurements in Celsius using registered shipment identity. The handoff carries normalized measurements with custody facts for one shipment.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "Registered shipment identity, normalized temperatures, and custody are independent handoff facts.",
+        "scenarioApplication": "The handoff carries both Celsius limits and the current custodian for the registry shipment.",
+        "errorCorrection": "Keeping vendor units on the entity spreads conversion; dropping the limit loses a dispatch constraint. If the domain itself used Fahrenheit and accepted carrier codes as identity, those conversions would be unnecessary.",
+        "boundaryOrTradeoff": "If the domain itself used Fahrenheit and accepted carrier codes as identity, those conversions would be unnecessary.",
+        "transfer": "Map external identifiers and units at the boundary that knows both vocabularies.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [
+        "n07_b06_i013_wrong_2",
+        "n07_b06_i013_wrong_3"
+      ],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i014",
+      "beforeWholeObjectSha256": "258986d1f84aba56039d65d8079dbaf5ecc3579c91b5e20b9a2a552d32615e55",
+      "currentWholeObjectSha256": "fd81539df8f4fa3b519c3ae68a637287762b5ff1bab84fc43c9e299185757063",
+      "verdict": "REVISE",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a cooperative lending ledger, the account steward must record a repayment allocation. A repayment cannot reduce the outstanding balance below zero. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a design-review comparison: which decision best preserves the contract?",
+        "currentPrompt": "In cooperative lending ledger, A bank feed sends repayments as a signed amount, currency, and bank reference. The domain allocation requires a positive Money amount and a unique bank reference; a reversal arrives as a separate negative event. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i014_domain_mapping",
+        "beforeScenarioRule": "a repayment cannot reduce the outstanding balance below zero",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “a repayment cannot reduce the outstanding balance below zero” inside the owner that can observe and enforce it.",
+        "currentKey": "Classify a positive repayment separately from a negative reversal; retain the bank reference.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “a repayment cannot reduce the outstanding balance below zero”; the current answer translates Classify a positive repayment separately from a negative reversal; retain the bank reference.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "A negative feed event is not the same command as a positive repayment; the reference identifies the external event.",
+        "A reversal is delivered as a separate negative event."
+      ],
+      "nearestAlternative": {
+        "optionId": "n07_b06_i014_wrong_4",
+        "text": "Store the signed bank amount unchanged as the account’s new balance delta.",
+        "diagnostic": "Currency and reference alone do not preserve whether the event is a reversal.",
+        "verdict": "WRONG_OPTION_DIAGNOSTIC_MISMATCH",
+        "analysis": "The target option already retains the signed amount; its defect is writing the negative event as an ordinary balance delta instead of using the distinct reversal operation. The current message discusses missing sign information, which the option does not omit.",
+        "smallestCorrection": "Explain that the option bypasses the distinct reversal path / positive-Money allocation contract."
+      },
+      "reason": {
+        "text": "Each feed reference identifies the external event being allocated. The signed amount’s direction distinguishes the two domain commands.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "Amount direction classifies the event; the bank reference identifies which external event was received.",
+        "scenarioApplication": "A negative event follows the reversal path and can be recognized by its bank reference.",
+        "errorCorrection": "Absolute value turns a reversal into a repayment; losing the reference removes the stated duplicate check. If the bank contract represented reversals with a separate explicit event type, use that marker instead of amount sign.",
+        "boundaryOrTradeoff": "If the bank contract represented reversals with a separate explicit event type, use that marker instead of amount sign.",
+        "transfer": "Do not let transport shortcuts erase distinctions between domain operations.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i015",
+      "beforeWholeObjectSha256": "7483a509d5713b645526c7e992be1fe315a4c58d262f12b2cbdeac33b5cd4a9d",
+      "currentWholeObjectSha256": "0edb222d383ef41855384e10dc8c907c4048d0c2686e334a394416b96e076473",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a tournament bracket service, the match official must forfeit a match after a timeout. The bracket advances only from a legal match state. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a lifecycle boundary: which decision best preserves the contract?",
+        "currentPrompt": "In tournament bracket service, An event platform sends match outcomes using its own status labels. The bracket recognizes only completed, forfeited, or pending; a timeout is valid only from a live match, and the result advances the bracket once. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i015_domain_mapping",
+        "beforeScenarioRule": "the bracket advances only from a legal match state",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “the bracket advances only from a legal match state” inside the owner that can observe and enforce it.",
+        "currentKey": "Translate the status and invoke the state-checked match result operation.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “the bracket advances only from a legal match state”; the current answer translates Translate the status and invoke the state-checked match result operation.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "The timeout transition is state-dependent, and bracket advancement must follow a valid result once.",
+        "Timeout is legal only while the match is live."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "A valid result advances the bracket once. The operation checks both the match state and the result transition.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "A provider status describes an event; only the match state determines whether that event is a legal transition.",
+        "scenarioApplication": "A timeout advances a live match once, while the domain rejects it in any other state.",
+        "errorCorrection": "Mapping timeout straight to forfeit ignores the live-state precondition; advancing first can publish an invalid bracket. If the tournament explicitly treated all platform timeouts as forfeits regardless of match state, that would change the domain contract.",
+        "boundaryOrTradeoff": "If the tournament explicitly treated all platform timeouts as forfeits regardless of match state, that would change the domain contract.",
+        "transfer": "Normalize external status labels but keep legal transitions in the state-owning domain.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [
+        "n07_b06_i015_wrong_2",
+        "n07_b06_i015_wrong_3"
+      ],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i016",
+      "beforeWholeObjectSha256": "d316ad398f0441e43cdf4df8baa52f95793e1bea7ec5ebc00fac6b62494288d0",
+      "currentWholeObjectSha256": "4610bce6b32d49eae4c7b62b30500f7acac38187e796ab64210e42db00c90b0a",
+      "verdict": "REVISE",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a returns inspection workflow, the warehouse inspector must classify a returned item. Classification and refund eligibility are not the same responsibility. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is an ownership dispute: which decision best preserves the contract?",
+        "currentPrompt": "In returns inspection workflow, A warehouse scanner labels an item as `damaged`, `opened`, or `unused`. The domain separately decides classification and refund eligibility; the scanner’s confidence value is not an approval. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i016_domain_mapping",
+        "beforeScenarioRule": "classification and refund eligibility are not the same responsibility",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it.",
+        "currentKey": "Record scanner labels as evidence; evaluate refund eligibility with the return policy.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “classification and refund eligibility are not the same responsibility”; the current answer translates Record scanner labels as evidence; evaluate refund eligibility with the return policy.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "Classification is evidence; refund eligibility is a distinct policy decision.",
+        "Refund eligibility is a separate policy decision."
+      ],
+      "nearestAlternative": {
+        "optionId": "n07_b06_i016_wrong_3",
+        "text": "Discard the observed condition after calculating eligibility because only the refund amount is stored.",
+        "diagnostic": "Without the observed condition, the saved refund cannot be traced back to the scanner evidence used for eligibility.",
+        "verdict": "SECOND_VALID_ANSWER",
+        "analysis": "The prompt requires separate classification and refund-eligibility decisions and says confidence is not approval. The alternative can still classify and evaluate eligibility first, then persist only the refund amount; the prompt does not require retaining evidence or later traceability. The message adds that unstated retention requirement.",
+        "smallestCorrection": "If persistence of the classification evidence is intended, state that premise; otherwise replace this alternative with one that actually conflates classification and refund eligibility."
+      },
+      "reason": {
+        "text": "The scanner confidence score describes the observation, not approval. Evidence and eligibility remain distinct inputs to the return decision.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "A scanner observation describes condition; refund eligibility is a separate authorization decision.",
+        "scenarioApplication": "The return policy evaluates the observed label and confidence without treating confidence as approval.",
+        "errorCorrection": "Confidence is not stated as approval, and combining classification with payment collapses distinct meanings. If the business explicitly authorized a calibrated score threshold as its refund rule, that threshold would need to be stated and owned.",
+        "boundaryOrTradeoff": "If the business explicitly authorized a calibrated score threshold as its refund rule, that threshold would need to be stated and owned.",
+        "transfer": "Map observations as evidence rather than turning them into an unstated business outcome.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [
+        "n07_b06_i016_wrong_3",
+        "n07_b06_i016_wrong_4"
+      ],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i017",
+      "beforeWholeObjectSha256": "aca9752ab3bd82a24280f4adcb93be1f8692201098cbc52fd4c982dcb0f4f3dd",
+      "currentWholeObjectSha256": "459ba492dbadfec0b5e3f409da1763afba7e689ae54502f1a0f98a3a5b7e9c5e",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a research-notebook platform, the experiment owner must publish a result snapshot. Published outputs reference immutable inputs and code versions. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a boundary decision: which decision best preserves the contract?",
+        "currentPrompt": "In research-notebook platform, A notebook runner reports a dataset URI, code commit, and a mutable “latest” tag. A published result must identify the exact dataset and code revisions used so another reviewer can retrieve those inputs. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i017_domain_mapping",
+        "beforeScenarioRule": "published outputs reference immutable inputs and code versions",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it.",
+        "currentKey": "Resolve both handles to immutable dataset and code revisions before publishing provenance.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “published outputs reference immutable inputs and code versions”; the current answer translates Resolve both handles to immutable dataset and code revisions before publishing provenance.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "The result must identify exact inputs, while the latest tag can point elsewhere later.",
+        "The “latest” tag may point to a different revision later."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "Reviewers must be able to retrieve the exact inputs used for publication. The published result names fixed inputs rather than mutable runner aliases.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "Mutable aliases locate inputs but cannot identify the exact revisions used by a published result.",
+        "scenarioApplication": "Reviewers can retrieve the dataset and code revisions that the result actually used.",
+        "errorCorrection": "A mutable tag does not identify a reproducible input; a display title cannot recover missing lineage. If the “latest” tag were immutable by contract, it could be retained as the exact input identity.",
+        "boundaryOrTradeoff": "If the “latest” tag were immutable by contract, it could be retained as the exact input identity.",
+        "transfer": "Convert temporary external references into the stable identities the domain publication contract requires.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [
+        "n07_b06_i017_wrong_2",
+        "n07_b06_i017_wrong_3",
+        "n07_b06_i017_wrong_4"
+      ],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i018",
+      "beforeWholeObjectSha256": "1c73f4c6c7d3d30f876deb60ff0aa756171795bbe0a83280c5c01964e87073c8",
+      "currentWholeObjectSha256": "ab334c475e03a7a037e938d9cb1e2392c8ae09e4b55cb08faf7d4349c34680c2",
+      "verdict": "REVISE_DETAILS_REDUNDANCY",
+      "identity": {
+        "disposition": "PRESERVE_QUESTION_ID",
+        "beforePrompt": "In a collaborative annotation workspace, the review editor must accept a comment and notify the assigned author. Accepted comments must retain their author and document revision. The interview lens is “DTOs, mappers, anti-corruption boundaries, and domain objects”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a simplicity check: which decision best preserves the contract?",
+        "currentPrompt": "In collaborative annotation workspace, A comment API accepts markdown and a document revision token. The domain stores plain text, author identity, and exact revision; notification is a separate effect after acceptance. Which boundary decision preserves that contract?",
+        "beforeAcceptedOptionId": "owner_preserves_contract",
+        "currentAcceptedOptionId": "n07_b06_i018_domain_mapping",
+        "beforeScenarioRule": "accepted comments must retain their author and document revision",
+        "beforeKey": "Translate external or persistence representations at an anti-corruption boundary rather than leaking them into the domain. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it.",
+        "currentKey": "Map markdown, author identity, and revision into the comment; notify only after acceptance.",
+        "basis": "The prior accepted answer translates external/persistence representation at the boundary to preserve “accepted comments must retain their author and document revision”; the current answer translates Map markdown, author identity, and revision into the comment; notify only after acceptance.. The current prompt makes the same boundary decision concrete for this item, so its primary accepted meaning remains."
+      },
+      "decisiveFacts": [
+        "The accepted comment must retain author and exact revision, and notification is a separate effect.",
+        "The submitted revision is checked when the comment is accepted."
+      ],
+      "nearestAlternative": null,
+      "reason": {
+        "text": "Notification is a separate effect after the comment decision. The stored comment has plain text and stable identities; rendering remains outside the incoming API shape.",
+        "assessment": "Reviewed for causal explanation from the visible facts; no exact echo of the two Details explanatory fields was found in v6."
+      },
+      "details": {
+        "mechanismOrProperty": "Comment content, author identity, revision precondition, and notification status have different meanings.",
+        "scenarioApplication": "The comment is accepted against the submitted revision; notification remains a separate post-acceptance effect.",
+        "errorCorrection": "Rendering raw transport markup leaks presentation policy; substituting current revision changes what the author reviewed. If markup itself were the agreed comment domain language, retaining it could be correct.",
+        "boundaryOrTradeoff": "If markup itself were the agreed comment domain language, retaining it could be correct.",
+        "transfer": "Map client representations at entry while preserving the domain facts needed to accept and identify the comment.",
+        "assessment": "Case-specific error diagnosis is useful, but its final conditional sentence exactly repeats boundaryOrTradeoff; this is redundant learner-facing explanation."
+      },
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+        "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+      ],
+      "wrongOptionDiagnosticsReviewed": true,
+      "diagnosticDeltaTargets": [
+        "n07_b06_i018_wrong_2",
+        "n07_b06_i018_wrong_3",
+        "n07_b06_i018_wrong_4"
+      ],
+      "detailsDeltaFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ]
+    }
+  ],
+  "limits": [
+    "No rule is inferred from unit membership alone; identities are compared against the exact before prompts and keyed meanings.",
+    "This review does not accept source activation, producer integration, app runtime, release/admission, native, Premium, or full BIZQ-01."
+  ]
+}

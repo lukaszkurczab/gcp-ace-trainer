@@ -1,0 +1,156 @@
+{
+  "result": "PASS",
+  "scope": "Mechanical schema/count/taxonomy/identity correspondence, actual scoring/reversal and exact wrong-diagnostic bindings only; no semantic or identity-action acceptance",
+  "unit": "OOD-N07-B06",
+  "proposal": "N07-B06.json",
+  "proposalSha256": "c0cc8fd32d0a19cd35d77fbe4d86e47b29ac0808bcd06e22bc42b436625d75ef",
+  "manifestSha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01",
+  "wholeObjectCount": 18,
+  "optionsChecked": 90,
+  "items": [
+    {
+      "beforeQuestionId": "ood-n07-b06-i001",
+      "questionId": "ood-n07-b06-i001",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "3757818854bb8516017ec9a9a1d12da130d16a0b6bef7369ac3cf37764502f6a",
+      "currentWholeObjectSha256": "5270ed2de058b56f5e80d26d260dae12aaab5817e027c9682a3d4dac16485d60",
+      "acceptedOptionId": "n07_b06_i001_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i002",
+      "questionId": "ood-n07-b06-i002",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "6181d20bfed02c304ab40f2773ad9e8428575388ebcb2d85005279af34060b1a",
+      "currentWholeObjectSha256": "841fe1b273bed168f8427c1256160c4d62f262373e546a6b61aa70d212dddd94",
+      "acceptedOptionId": "n07_b06_i002_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i003",
+      "questionId": "ood-n07-b06-i003",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "84557b3ece835dad84b839bd442072b9d5c483654325a35bd05221872ba552aa",
+      "currentWholeObjectSha256": "6d09a1a45d63a65130309cd001f5fabaa587d0d1b653caf346daea1fceef4230",
+      "acceptedOptionId": "n07_b06_i003_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i004",
+      "questionId": "ood-n07-b06-i004",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "96b88565ac4b5d1f9f40866877fb78683894eb702ad01830840ba8077eb3bf48",
+      "currentWholeObjectSha256": "e9672caa7e27d4355433ab4a18a7cbf98547af9311cf74faaa0210abe99fc6fa",
+      "acceptedOptionId": "n07_b06_i004_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i005",
+      "questionId": "ood-n07-b06-i005",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "76651ee871ba2ea53138857aed523744bb04ef9319db52d9db7f7c0f12abc251",
+      "currentWholeObjectSha256": "9a28fc32cfdbe3f9e516d0eca9e7c259eb1d839ee061890e886ebe24ce1b71d6",
+      "acceptedOptionId": "n07_b06_i005_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i006",
+      "questionId": "ood-n07-b06-i006",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "c5dcb9683d57dd9d7bc7ae3dddd57c4e2fcfe73172ab5618b1d910ce80d0b6e1",
+      "currentWholeObjectSha256": "85ad788cb87be1435034e9a256f5c8dd5cdf0431eb964ca22610f6cf2b86736c",
+      "acceptedOptionId": "n07_b06_i006_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i007",
+      "questionId": "ood-n07-b06-i007",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "cf99064797838b0de73948033a4e216a9039535206215c33dd7459726526ccf5",
+      "currentWholeObjectSha256": "5db2c2e99d75bd9ef20d7adeb57d548d75c8a1f165ec9df2e9a757979d3f9b7b",
+      "acceptedOptionId": "n07_b06_i007_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i008",
+      "questionId": "ood-n07-b06-i008",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "83bcce35818dc301e2684fef63c2aedad8506f48f17d190081d4e0bc456f3650",
+      "currentWholeObjectSha256": "5945f0f810bd18ad408d8c6a8b68ad25e93ffcb50489033ded07b7ced1ba8d97",
+      "acceptedOptionId": "n07_b06_i008_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i009",
+      "questionId": "ood-n07-b06-i009",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "540d2bec18b10dc4bdb3c702749c313b2ba0c828992edb346ba7f0585688d014",
+      "currentWholeObjectSha256": "f1001977a992764f29b9c2507f783908b7da94bf04ba514c6bfb31ea45e002f1",
+      "acceptedOptionId": "n07_b06_i009_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i010",
+      "questionId": "ood-n07-b06-i010",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "af59264fba44a063e77a6d012682c471170403ca696a8d55c4c30fce2f0a36ce",
+      "currentWholeObjectSha256": "f936f05d22021040513145138e4128a9bef6d4d9f246720dee8d5a3ac18d2b5f",
+      "acceptedOptionId": "n07_b06_i010_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i011",
+      "questionId": "ood-n07-b06-i011",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "b03bb99810456165feac3bf798ece80390afbf439edb9505f065476d67ef12f8",
+      "currentWholeObjectSha256": "472ace32b90b98cd93536e940915a0d1dde9566b592c4b67b80eda76c6864fcd",
+      "acceptedOptionId": "n07_b06_i011_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i012",
+      "questionId": "ood-n07-b06-i012",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "a0705705f9f402c02ee3efbfd58dc29507dc5a76b5cf4104f6bb6dc3165fefe5",
+      "currentWholeObjectSha256": "76bb2076ea3a6b937bd02f4f748c48359ce7e09643aef3fc793fddc18b728e28",
+      "acceptedOptionId": "n07_b06_i012_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i013",
+      "questionId": "ood-n07-b06-i013",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "5e7f0df3ebfcefd145a7578d647007ed9f18030dc27e2a28080549806019c9de",
+      "currentWholeObjectSha256": "e6d02fbe7d7666cd5d035b8f9925aa116e28c2c2d26ae5d4a4d629321347433b",
+      "acceptedOptionId": "n07_b06_i013_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i014",
+      "questionId": "ood-n07-b06-i014",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "258986d1f84aba56039d65d8079dbaf5ecc3579c91b5e20b9a2a552d32615e55",
+      "currentWholeObjectSha256": "59997913df0e39f5b10b1dc6382aa17732f7bfbb267193ca33764aa9b93e6751",
+      "acceptedOptionId": "n07_b06_i014_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i015",
+      "questionId": "ood-n07-b06-i015",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "7483a509d5713b645526c7e992be1fe315a4c58d262f12b2cbdeac33b5cd4a9d",
+      "currentWholeObjectSha256": "376ee7d3ba6aa8ba9e3c214d3805f9db82124eefc239f7547bce6adfb469f071",
+      "acceptedOptionId": "n07_b06_i015_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i016",
+      "questionId": "ood-n07-b06-i016",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "d316ad398f0441e43cdf4df8baa52f95793e1bea7ec5ebc00fac6b62494288d0",
+      "currentWholeObjectSha256": "e71d3f1cfcb23501623eb70310d8759bf9b7ea4872d759dc4dd40a9382bd94e1",
+      "acceptedOptionId": "n07_b06_i016_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i017",
+      "questionId": "ood-n07-b06-i017",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "aca9752ab3bd82a24280f4adcb93be1f8692201098cbc52fd4c982dcb0f4f3dd",
+      "currentWholeObjectSha256": "6884ea5948c39e13903cb5780ccc5e8d931b0c753353b6e8fabbf763aca6012e",
+      "acceptedOptionId": "n07_b06_i017_domain_mapping"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b06-i018",
+      "questionId": "ood-n07-b06-i018",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "1c73f4c6c7d3d30f876deb60ff0aa756171795bbe0a83280c5c01964e87073c8",
+      "currentWholeObjectSha256": "e8ff90266747ca79bd81bd3b7eb65a757d481ab8ddad7242e9cf12b90527aa79",
+      "acceptedOptionId": "n07_b06_i018_domain_mapping"
+    }
+  ]
+}

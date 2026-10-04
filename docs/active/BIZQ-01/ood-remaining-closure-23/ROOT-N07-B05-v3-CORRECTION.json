@@ -1,0 +1,34 @@
+{
+  "scope": "Root bounded B05v3 one-item correction; independent semantic acceptance pending",
+  "beforeSha256": "0c836263bf7f0724099436beedae72fd57b3c2e301d21b313b5fbb50da635f6f",
+  "currentSha256": "29555ebae14dd0a5df967178939d0c7c46bbd22996f8eeaf7a3b43618af113b7",
+  "changedQuestionId": "ood-n07-b05-i019",
+  "unchangedWholeObjects": 17,
+  "oldWrongOption": {
+    "optionId": "n07b05_i019_parallel_payout_type",
+    "text": "Introduce a versioned payout message and route older workers through a compatibility adapter."
+  },
+  "newWrongOption": {
+    "optionId": "n07b05_i019_renumber_settlement_fields",
+    "text": "Renumber the existing settlement fields onto unused tags and send that payload directly to unchanged workers."
+  },
+  "oldWrongDiagnosis": {
+    "kind": "wrong_option",
+    "targetId": "n07b05_i019_parallel_payout_type",
+    "text": "A versioned message could route old workers, but the scenario already permits a fresh additive tag and compatible absent value; the extra message type does not solve a stated incompatibility."
+  },
+  "newWrongDiagnosis": {
+    "kind": "wrong_option",
+    "targetId": "n07b05_i019_renumber_settlement_fields",
+    "text": "Older workers still read the original settlement tags. Moving those values to unused tags leaves their expected fields absent; a new message version cannot supply the missing values without translation."
+  },
+  "wrongOptionIdentityReason": "The former adapter design could preserve compatibility; current design changes existing wire identities without translation, a different misconception requiring a different ID.",
+  "questionIdAndAcceptedOptionIdUnchanged": true,
+  "primarySource": {
+    "url": "https://protobuf.dev/programming-guides/proto3/",
+    "verifiedClaim": "Field numbers identify fields on the wire; changing existing numbers is wire-unsafe. A differently named message alone does not establish incompatibility.",
+    "accessVerified": true
+  },
+  "newProductRequirementOrGate": false,
+  "sourceActivated": false
+}

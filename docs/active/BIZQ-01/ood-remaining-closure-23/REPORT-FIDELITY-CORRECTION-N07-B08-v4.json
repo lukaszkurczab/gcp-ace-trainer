@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "type": "report_fidelity_correction",
+  "unit": "OOD-N07-B08",
+  "reviewInput": "review-inputs/N07-B08-v4.json",
+  "reviewInputSha256": "be7d5acfc2e2ccfa469ad6a70764572842bc873626e29414afd2f107f037bc2b",
+  "mechanicalProposalSha256": "be7d5acfc2e2ccfa469ad6a70764572842bc873626e29414afd2f107f037bc2b",
+  "mechanicalResult": "PASS 18 whole objects / 90 option checks",
+  "originalReport": {
+    "path": "SEMANTIC-N07-B08-v4-QA.md",
+    "sha256": "3c751aaa036a767708ce31b3a63cbee29b93b9252abb272f44a4829ec2efbbe3",
+    "error": "The final identity paragraph said IDs were preserved, contradicting the accompanying JSON and the item-level old/current key comparison."
+  },
+  "correctedReport": {
+    "path": "SEMANTIC-N07-B08-v4-QA.md",
+    "sha256": "418816e6988ac224c42849495e3b8163152569426dc2e6ea639d0571b3f5590f",
+    "correction": "It now reports REVISE_IDENTITY for all 18 exact pairs and names the reserved corresponding IDs i019–i036."
+  },
+  "correctedJson": {
+    "path": "SEMANTIC-N07-B08-v4-QA.json",
+    "sha256": "8e2f07109c4361b96cdce31f7bf4e507dbd7a317872889272dd1f9a48192a2e6",
+    "perItemEvidence": "Each row binds the exact before/current whole-object hashes, prompts, accepted option IDs/texts, and original scenario rule."
+  },
+  "scope": "This record corrects report wording and evidence binding only. It does not amend proposals, source, producer, or the semantic verdict beyond making the existing item-level identity finding consistent across the report. Historical v3 QA reports remain unchanged."
+}

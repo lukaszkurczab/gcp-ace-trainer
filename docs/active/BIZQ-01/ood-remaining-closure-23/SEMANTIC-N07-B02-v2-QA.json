@@ -1,0 +1,459 @@
+{
+  "verdict": "PASS",
+  "unit": "OOD-N07-B02",
+  "scope": "Bounded independent semantic/form review of the exact accepted-key-text correction from frozen B02 v1 to v2. Reuses matching v1 review of unchanged whole-object facts, alternatives, diagnostics, Reason, Details and item identity; not full N07 cross-unit, source, producer, consumer, admission, runtime, native, Premium or full-BIZQ acceptance.",
+  "input": {
+    "path": "review-inputs/N07-B02-v2.json",
+    "sha256": "2d46dedd0f1e7fcc882a803c6a7192c15ac8705cded9b2ba965b54279ef90e9d"
+  },
+  "previousInput": {
+    "path": "review-inputs/N07-B02-v1.json",
+    "sha256": "57f9a6ed2c5342ec697025254d1a1bb56dd6ef82c089f42fc4a9474274ef6796"
+  },
+  "previousReview": {
+    "path": "SEMANTIC-N07-B02-v1-QA.json",
+    "sha256": "389c9777ed8be19530092e68e0dd35150b1cec78cb70a836a5db7e5295a78000",
+    "verdict": "REVISE",
+    "finding": "18/18 uniquely-longest keyed choices"
+  },
+  "manifest": {
+    "path": "N07-MANIFEST.json",
+    "sha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01"
+  },
+  "source": {
+    "path": "patternly-content/content/object-oriented-design-interview/persistence_repositories_serialization_and_domain_boundaries/OOD-N07-B02.json",
+    "sha256": "63d4793159e31c90e6f349b6b0ff2a8a9a6977937eb589283d22aa89afc0e825"
+  },
+  "correctionEvidence": {
+    "path": "ROOT-N07-B02-v2-CORRECTION.json",
+    "sha256": "afa17e00a78f624c5f9859ae554bc3570b10be5171ce85fcf0909c5d66624d48",
+    "changedFields": "accepted option text only for 18 items; IDs, options, facts, feedback and explanations preserved"
+  },
+  "mechanicalEvidence": {
+    "path": "ROOT-N07-B02-v2-MECHANICAL.json",
+    "sha256": "4a77c8393e0f283722f4ca5297ed06078c3e9524cfce9f745344a0cb529de71e",
+    "items": 18,
+    "optionScoreAndReversalCases": 90,
+    "result": "PASS",
+    "semanticAcceptance": false
+  },
+  "authorNotesSnapshot": {
+    "path": "AUTHOR-B01-B04.json",
+    "sha256": "f6432921636f76506bc0fa6d345edcca49f909c26fee4b8e49f9495833e2bbf9",
+    "role": "author hypotheses only; not acceptance evidence"
+  },
+  "criteria": {
+    "specPath": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "specSha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3",
+    "canonicalGuidelinesPath": "docs/07-content-guidelines.md",
+    "canonicalGuidelinesSha256": "cffd5dae0850ecd7fc1f2e05e28f7e83c7ca9460207f6f857713d196254773e5",
+    "contractPath": "N07-CONTRACT.json",
+    "contractSha256": "79c6dd8d2861d21eec0122675659840ba6f04883f546ec9ef4326f29320d4720",
+    "briefPath": "N07-BRIEFING.md",
+    "briefSha256": "9370339439c25f7fe065e3753af31f0436d0e0e78e9084815d83c5ad9039e4d3"
+  },
+  "findings": [],
+  "correctionAssessment": "The 18 revised accepted options are concise statements of the same scenario-specific consistency boundary. None relies on an unstated discriminator: independent or lag-tolerant behavior remains visible in the unchanged prompt/constraints and explanation. The previous uniquely-longest form cue is resolved; no key is uniquely longest by raw character count. Nine keys are now uniquely shortest, but that is not a reliable answer cue across the set because the corrected keys are not uniformly identifiable by length and all state a complete boundary. No equal-length/count threshold is applied. Existing alternatives remain unchanged and were checked as plausible scenario-specific competitors; no distractor was padded or removed. The before/current accepted option ID and question ID remain justified by the same aggregate-boundary decision and accepted meaning.",
+  "limitations": [
+    "Reuses B02 v1 semantic/identity review only for fields verified unchanged; no whole-N07 cross-unit comparison is claimed.",
+    "No source, producer, consumer, admission, runtime, native, Premium or full-BIZQ-01 acceptance is claimed."
+  ],
+  "items": [
+    {
+      "questionId": "ood-n07-b02-i001",
+      "beforeQuestionSha256": "e54b712feb34738a419ce876c154a49fea3fbfbaefcaf648106ed242c8c10fd3",
+      "v1WholeObjectSha256": "e9839392342f36d7e2c47718629b3f535c59189141e73cbf7ee77735fc87bff9",
+      "v2WholeObjectSha256": "6619711a13ad3e6c1cd06171bf03e74c4cd70de09c1f884b10384cdaaa3b70e4",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Keep the badge access state and revocation decision in one consistency boundary; publish the audit update separately.",
+      "v2KeyText": "Commit the badge’s revocation and access state in one boundary.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 63,
+      "allOptionLengths": [
+        100,
+        86,
+        63,
+        92,
+        94
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": true,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i002",
+      "beforeQuestionSha256": "bb6a9d660f2b2546b254f38238ac0caf05afc383102d661a54ef74b6e448e91e",
+      "v1WholeObjectSha256": "64709692c84c76f870c534691ec4897b0cb6ea0aba49b72e8376c2209ede0333",
+      "v2WholeObjectSha256": "be0371a591e54a9938a585daaf0cf7ad57cfbe3f9c956366c174f62e9d2ac70f",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Bind the label request to its approved shipment revision; keep printer-attempt status outside that shipment decision.",
+      "v2KeyText": "Bind each label request to its approved shipment revision.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 58,
+      "allOptionLengths": [
+        90,
+        74,
+        56,
+        88,
+        58
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": false,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i003",
+      "beforeQuestionSha256": "addb1fedf93a96b02346d0041c8ddfc6196322c060423bb804177402d7a950b4",
+      "v1WholeObjectSha256": "8e3b7f46e4fa18b9f36eebde73a019424cb2fd4e2f6a79ec9aa0cb969185bf97",
+      "v2WholeObjectSha256": "bc898efba266cbaaefab7136f72be61b40c585a367ece54053010ac1485b353e",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Coordinate the room’s overlapping reservations at the room-capacity boundary; calculate cancellation fees as a separate follow-up.",
+      "v2KeyText": "Arbitrate the room’s overlapping reservations at its capacity boundary.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 71,
+      "allOptionLengths": [
+        75,
+        71,
+        73,
+        75,
+        77
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": true,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i004",
+      "beforeQuestionSha256": "0f2dd99a7a6178984072295e321799f1f9c98293b9945050caa32fc69a3342fe",
+      "v1WholeObjectSha256": "4ddf8826acaf58a636dd01e3a8fbd92f1111486160a60cb30cf00c6446f1a24e",
+      "v2WholeObjectSha256": "3acf9c796c62ed22c1c36645eebf3e9ec64bd6b548784db41918fa1519608da8",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Keep maintenance mode and the arm-command guard in the exhibit control state; ingest telemetry independently.",
+      "v2KeyText": "Keep maintenance mode and the arm-command guard in the exhibit state.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 69,
+      "allOptionLengths": [
+        93,
+        69,
+        57,
+        69,
+        108
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": false,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i005",
+      "beforeQuestionSha256": "941f64f84a7bfcf0c30033499de6870c1069e3848d8fa7a23eed1dfb2b1dac24",
+      "v1WholeObjectSha256": "f92ce1ebd6bd0db2f6ce5d86403e94f4e3613def296d0968f0b1f8f0e20ead65",
+      "v2WholeObjectSha256": "6170eb33c9020aa8733909e0c4aaba26ef826e81e9c572a51280c3265a814be5",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Change the lesson’s assignment availability while retaining its stable identity; do not rewrite existing learner progress as part of retirement.",
+      "v2KeyText": "Retire assignment availability while keeping the lesson’s stable ID.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 68,
+      "allOptionLengths": [
+        68,
+        82,
+        94,
+        86,
+        70
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": true,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i006",
+      "beforeQuestionSha256": "dad3a2edbd72778dc514a131df23722e7edd9eb802f878f5a5b053ed41ef0eb0",
+      "v1WholeObjectSha256": "db9be5e38d3c54af57ab2dbb5db9765d1e9666639265039d38e109fabb9e84ae",
+      "v2WholeObjectSha256": "6ceb93e6596f77786bbfb35c071c15642d187fc9f7236bee3ddd8aced29658d4",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Record the close marker against the session event sequence and export that bounded sequence; send notification outside the close decision.",
+      "v2KeyText": "Commit the close marker with the session event-sequence boundary.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 65,
+      "allOptionLengths": [
+        103,
+        90,
+        65,
+        62,
+        88
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": false,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i007",
+      "beforeQuestionSha256": "ec8a2666950c8249b890f636f9b5f2d3112db4a78e91a8371ca2c1efb2b00d0e",
+      "v1WholeObjectSha256": "091cd21efd466ec266ab650aa0f3c5bf05db1b9d87fc4ecc144123634c88a445",
+      "v2WholeObjectSha256": "08ed2f8e52a3f09e7813773218e3cdf1dc71b8b7a85ee6b955ba83592b979947",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Accept the ownership and deadline change as one conversation transition; append the activity feed as a separate projection.",
+      "v2KeyText": "Commit owner and deadline as one conversation transition.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 57,
+      "allOptionLengths": [
+        63,
+        81,
+        90,
+        94,
+        57
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": true,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i008",
+      "beforeQuestionSha256": "23a413ee86460265809c4e94491e435d45f9bee858acbb62c4e0b5b3ca12e06d",
+      "v1WholeObjectSha256": "7a9df01b6be4e887200b0091a40e500c04690fc3651897787602e9d2203033e9",
+      "v2WholeObjectSha256": "2ee5df88f9c9b683c083a62d60a77ba7a3fa64b1764d8edee84b8f081131a65c",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Validate the price and stock together before marking the listing published; update the search index as a later projection.",
+      "v2KeyText": "Validate current price and stock in the listing publication transition.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 71,
+      "allOptionLengths": [
+        83,
+        71,
+        73,
+        80,
+        96
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": true,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i009",
+      "beforeQuestionSha256": "296c8a1ec801f0ed2f3e8a9870027a74e22b6a40c111533471ef2d07f293c830",
+      "v1WholeObjectSha256": "7d2d354b6b450ca60c9e3958cb44fe5e1970b29c471197617382ec4ed788f0d7",
+      "v2WholeObjectSha256": "fd3015e40c64ba43faf8bad0f7bb132a793e43dc14d0a22e29706e16812e7a56",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Keep the parent request and its split plan as the identity-preserving transition; record vendor confirmations separately as they arrive.",
+      "v2KeyText": "Commit the split plan under the parent request’s identity and promise.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 70,
+      "allOptionLengths": [
+        70,
+        84,
+        89,
+        70,
+        79
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": false,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i010",
+      "beforeQuestionSha256": "c87e973cd52dc9c9e3f70c4ca218fb4012adba2af4bec1dacc88443d89b0ee6c",
+      "v1WholeObjectSha256": "952ca29d6e91990524258f4fd36cf65d249633808a131c3098a08b6f0d67403a",
+      "v2WholeObjectSha256": "d3cb71652ea3769605acd865179a1c3116056ca4e089123f0743cf524852fd57",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Coordinate the plot’s active-reservation slot during transfer; preserve approval history as a separate append-only record.",
+      "v2KeyText": "Transfer the plot’s active-reservation slot in one coordinated change.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 70,
+      "allOptionLengths": [
+        70,
+        85,
+        65,
+        86,
+        87
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": false,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i011",
+      "beforeQuestionSha256": "aa6f357353ad194b25aa4804307af20fab6121899d58561cd88391c4e5a7794c",
+      "v1WholeObjectSha256": "f731440a51073ae0331cf77bbd209b30ba53d2aa143f7ea1f17f05ce6b1a5eca",
+      "v2WholeObjectSha256": "cd8f4075f08e9404bea401ea1bfe245e89583d9023f4234e84b6bdfc1d392a9e",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Capture the component revision references and adjustment in one immutable quote; keep later product-price updates separate.",
+      "v2KeyText": "Commit component revisions and the adjustment in an immutable quote.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 68,
+      "allOptionLengths": [
+        84,
+        83,
+        68,
+        92,
+        91
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": true,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i012",
+      "beforeQuestionSha256": "a544f034d4c59af6f680683006ce3817c1c1f0c1926f31093e34639706853ea9",
+      "v1WholeObjectSha256": "756f1229e7a9e7584e5074cd95b8670f0eb93672ae90c928a292803ca9b0f2e4",
+      "v2WholeObjectSha256": "7f23f38a79109044af2bf9d2d8f13f11de0fd283bf1459a739b215f9a610b2ea",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Arbitrate the interval set for that charger in the reservation decision; keep maintenance notes and their index separate.",
+      "v2KeyText": "Arbitrate the charger’s current reservation intervals together.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 63,
+      "allOptionLengths": [
+        80,
+        78,
+        63,
+        71,
+        63
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": false,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i013",
+      "beforeQuestionSha256": "7327146dfe6418acfb097538c6fadf3570d1de3f78bc20828892147c1b8d7efb",
+      "v1WholeObjectSha256": "cd0efc70630a944da60c133d5c48238626a7380733a569e7c1455fc904485acd",
+      "v2WholeObjectSha256": "cea68e5a95b1fd67c004c648a3f36f910b589d7c7ad1e61fc3cb0c2d939e7123",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Apply the selected metadata to the stable survivor asset and treat the redirect as a rebuildable projection.",
+      "v2KeyText": "Apply the selected metadata to the stable survivor asset.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 57,
+      "allOptionLengths": [
+        98,
+        57,
+        78,
+        69,
+        78
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": true,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i014",
+      "beforeQuestionSha256": "46951a579af6940e00a86b5b9106ed09fb2c8889a974d1ccf344dd2e548197a7",
+      "v1WholeObjectSha256": "2ebd0265c073d460a77e8963383141576b5d4e6e20c4a4d375913a729ac6c30f",
+      "v2WholeObjectSha256": "8c70ed8ea4b047f76f1c521017b1cbef397c2bc3d185799a3da1317a99e50261",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Arbitrate active approval uniqueness for one work-territory pair; keep other territory approvals and audit display outside that decision.",
+      "v2KeyText": "Arbitrate active approvals within one work-territory pair.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 58,
+      "allOptionLengths": [
+        67,
+        66,
+        80,
+        58,
+        74
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": true,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i015",
+      "beforeQuestionSha256": "6af96c1377ff6e039dd9a841c082bbcfce9fee1ffcac14f6ea3011e9f4b8eaf4",
+      "v1WholeObjectSha256": "d490cb84e0d6f0066645795ca058d2026ab7a3d37abeec3470234ceafbf0e72f",
+      "v2WholeObjectSha256": "41c678f08ce0cde6274393079142904af6d8ca9b57ab412bd869f7aa5d61f1cf",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Use the battery’s current-assignment boundary to arbitrate the move, then append the assignment history separately.",
+      "v2KeyText": "Arbitrate reassignment through the battery’s current-assignment boundary.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 73,
+      "allOptionLengths": [
+        73,
+        70,
+        85,
+        67,
+        95
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": false,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i016",
+      "beforeQuestionSha256": "3f78b170163ba74087a7f25fd7290f55e2292f0089edf1a70b7f7ed7e3c50c1c",
+      "v1WholeObjectSha256": "8057ab1f5b7aa499c25a0c7e89b83acfb15612d68ccb1f9fbfc083c0a9832cc6",
+      "v2WholeObjectSha256": "a346ee30445c4d907b3fdb8803b753b251d3bac8f2cc3947ff7c6db0ec5a4c5e",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Check and record the referral-recipient authorization decision locally; track external delivery attempts as a separate effect.",
+      "v2KeyText": "Commit current-consent authorization for the referral-recipient pair.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 69,
+      "allOptionLengths": [
+        99,
+        64,
+        69,
+        70,
+        70
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": false,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i017",
+      "beforeQuestionSha256": "07f042134ae20762bb6fd650941f2963361f38e944a67da115d4c53c4f2c736c",
+      "v1WholeObjectSha256": "d3817f9e7f0b85bef863e873f2dc33544a04663e3288058d045392f2f014dacd",
+      "v2WholeObjectSha256": "5099c4e29f44790805a88fdcd1dcf21e6be745593073aa99c01bc815dc3569e9",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Commit the completion with both immutable revision references; update profile and history projection independently.",
+      "v2KeyText": "Commit the completion with its exercise and scoring-policy revisions.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 69,
+      "allOptionLengths": [
+        87,
+        89,
+        100,
+        93,
+        69
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": true,
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b02-i018",
+      "beforeQuestionSha256": "950869c17e482468a2e6ff4951545cfbd876bf52e07ad45c6c753cc343660bee",
+      "v1WholeObjectSha256": "ca2219d90c3b237945eab325d93eaad48930b953830229d2dd2527c53c96e9ec",
+      "v2WholeObjectSha256": "bfc4a17658e618b0900c226edbc90c8892ddcf23315dabe6fb6d2b2e0adeccf3",
+      "acceptedOptionId": "owner_preserves_contract",
+      "v1KeyText": "Accept the exception with its reviewer and control results together; update the pending index as a projection.",
+      "v2KeyText": "Commit the exception approval with reviewer and control results.",
+      "keyMeaningAssessment": "Same scenario-specific aggregate consistency decision; compact wording retains decisive boundary, with remaining lagging/independent effects stated in prompt and explanation.",
+      "factsDiagnosticsReasonDetailsUnchangedFromV1": true,
+      "keyLength": 64,
+      "allOptionLengths": [
+        89,
+        64,
+        59,
+        69,
+        103
+      ],
+      "uniquelyLongest": false,
+      "uniquelyShortest": false,
+      "verdict": "PASS"
+    }
+  ]
+}

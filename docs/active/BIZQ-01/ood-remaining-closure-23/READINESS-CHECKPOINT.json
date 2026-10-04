@@ -1,0 +1,11 @@
+{
+  "commit": "49c5ec0fd13fc310327aaf3df21a0a5945ef6e85",
+  "scope": "Local candidate readiness checkpoint only; consumer/admission/package acceptance pending; no push",
+  "paths": [
+    "evidence/candidate-decisions/aws-02-codex-decision-v2.json",
+    "evidence/readiness/candidate-readiness-v2.json",
+    "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json",
+    "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts/object-oriented-design-interview.json",
+    "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json"
+  ]
+}

@@ -1,0 +1,332 @@
+{
+  "schemaVersion": "patternly-bizq01-ood-n07-b07-author-correction-v6-v1",
+  "status": "bounded author correction; semantic review pending; not acceptance",
+  "unit": "OOD-N07-B07",
+  "input": {
+    "path": "review-inputs/N07-B07-v5.json",
+    "sha256": "107f75af667532aaae86ee824ae1d4e4f39423b08928af307b8e02881bc1f0bd"
+  },
+  "proposal": {
+    "path": "proposals/N07-B07.json",
+    "sha256": "8c2fe085f6e08836b9bdabb8995b8d0a40172fd0dbf4833cd1f95497150fc92d"
+  },
+  "summary": "Addressed five reviewer-confirmed ambiguous alternatives with case-local facts, one real aggregation-grain distractor, and removal of two valid distractors. Preserved the existing read-plan primary decisions and all QIDs.",
+  "changedQuestionIds": [
+    "ood-n07-b07-i002",
+    "ood-n07-b07-i003",
+    "ood-n07-b07-i004",
+    "ood-n07-b07-i011",
+    "ood-n07-b07-i013"
+  ],
+  "changedLeaves": [
+    {
+      "questionId": "ood-n07-b07-i002",
+      "field": "constraints[2]",
+      "before": "The page request may read at most 25 plot rows and has a two-query budget for the complete page.",
+      "after": "The page may read at most 25 plots and has a two-query budget; all 25 gardeners are distinct and uncached, and this loader issues one query per lazy access without batching."
+    },
+    {
+      "questionId": "ood-n07-b07-i002",
+      "field": "feedback.details.errorCorrection",
+      "before": "Reading all plots exceeds the 25-row request bound; per-row lazy access exceeds the page’s two-query budget.",
+      "after": "Reading all plots exceeds the 25-row request bound; this loader’s uncached per-gardener reads exceed the page’s two-query budget."
+    },
+    {
+      "questionId": "ood-n07-b07-i002",
+      "field": "feedback.messages[1].text",
+      "before": "Per-row lazy access exceeds the two-query budget for the page.",
+      "after": "This case’s loader issues 25 separate reads for the 25 distinct uncached gardeners, exceeding the two-query budget."
+    },
+    {
+      "questionId": "ood-n07-b07-i003",
+      "field": "feedback.messages[2].targetId",
+      "before": "n07_b07_i003_wrong_3",
+      "after": "n07_b07_i003_wrong_3_groups_by_author"
+    },
+    {
+      "questionId": "ood-n07-b07-i003",
+      "field": "feedback.messages[2].text",
+      "before": "Returning annotation text and profiles would exceed the 1 MB data-access limit.",
+      "after": "Grouping by author splits an episode’s measures into several groups, but the report requires one count and latest time per episode."
+    },
+    {
+      "questionId": "ood-n07-b07-i003",
+      "field": "interaction.options[2].optionId",
+      "before": "n07_b07_i003_wrong_3",
+      "after": "n07_b07_i003_wrong_3_groups_by_author"
+    },
+    {
+      "questionId": "ood-n07-b07-i003",
+      "field": "interaction.options[2].text",
+      "before": "Join annotation text and author profiles into the report query and discard them after aggregation.",
+      "after": "Group by episode and author, then report each episode-author group as the episode total."
+    },
+    {
+      "questionId": "ood-n07-b07-i004",
+      "field": "constraints[1]",
+      "before": "No application code runs after the export transaction ends.",
+      "after": "Serialization and upload happen after the scoped database context closes; no database access is allowed afterward."
+    },
+    {
+      "questionId": "ood-n07-b07-i004",
+      "field": "constraints[2]",
+      "before": "The export contract closes the read transaction before the external upload starts; upload duration is unbounded.",
+      "after": "The read transaction closes before the external upload starts, whose duration is unbounded."
+    },
+    {
+      "questionId": "ood-n07-b07-i004",
+      "field": "feedback.messages",
+      "before": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i004_wrong_1",
+          "text": "Deferred access can attempt I/O after the bounded read scope is gone."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i004_wrong_2",
+          "text": "The contract requires closing the read transaction before this unbounded external upload."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i004_wrong_3",
+          "text": "The full graph is broader than the requested grant and approver fields."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i004_wrong_4",
+          "text": "The export must include approver names before its bounded read transaction closes."
+        }
+      ],
+      "after": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i004_wrong_1",
+          "text": "Deferred access can attempt I/O after the bounded read scope is gone."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i004_wrong_2",
+          "text": "The contract requires closing the read transaction before this unbounded external upload."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i004_wrong_4",
+          "text": "The export must include approver names before its bounded read transaction closes."
+        }
+      ]
+    },
+    {
+      "questionId": "ood-n07-b07-i004",
+      "field": "interaction.options",
+      "before": [
+        {
+          "optionId": "n07_b07_i004_wrong_1",
+          "text": "Return grant entities with deferred approver loads and serialize them after closing the transaction."
+        },
+        {
+          "optionId": "n07_b07_i004_loading_plan",
+          "text": "Return approver names before the bounded read transaction closes."
+        },
+        {
+          "optionId": "n07_b07_i004_wrong_2",
+          "text": "Keep the transaction open while an external file upload serializes the object graph."
+        },
+        {
+          "optionId": "n07_b07_i004_wrong_3",
+          "text": "Load all principals, approvals, grants, and role histories for the whole service before exporting."
+        },
+        {
+          "optionId": "n07_b07_i004_wrong_4",
+          "text": "Detach the grants and allow the serializer to issue a fresh principal query later."
+        }
+      ],
+      "after": [
+        {
+          "optionId": "n07_b07_i004_wrong_1",
+          "text": "Return grant entities with deferred approver loads and serialize them after closing the transaction."
+        },
+        {
+          "optionId": "n07_b07_i004_loading_plan",
+          "text": "Return approver names before the bounded read transaction closes."
+        },
+        {
+          "optionId": "n07_b07_i004_wrong_2",
+          "text": "Keep the transaction open while an external file upload serializes the object graph."
+        },
+        {
+          "optionId": "n07_b07_i004_wrong_4",
+          "text": "Detach the grants and allow the serializer to issue a fresh principal query later."
+        }
+      ]
+    },
+    {
+      "questionId": "ood-n07-b07-i004",
+      "field": "prompt",
+      "before": "In permissions review service, An audit export loads grant rows inside a bounded read transaction. Each exported row includes the approver’s display name; no later code runs after the transaction closes. Which read plan fits this caller?",
+      "after": "In permissions review service, An audit export loads grant rows inside a scoped read transaction. Each exported row includes the approver’s display name. Serialization and an external upload occur after the database context closes; no database access is allowed afterward. Which read plan fits this caller?"
+    },
+    {
+      "questionId": "ood-n07-b07-i011",
+      "field": "feedback.messages",
+      "before": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i011_wrong_1",
+          "text": "Deferred reads can occur outside the stated data scope."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i011_wrong_2",
+          "text": "Other returns are irrelevant to this selected decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i011_wrong_3",
+          "text": "Separate relationship reads require follow-up queries after selecting the return, violating the one-query evidence contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i011_wrong_4",
+          "text": "The decision uses both evidence sets before its request completes."
+        }
+      ],
+      "after": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i011_wrong_1",
+          "text": "Deferred reads can occur outside the stated data scope."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i011_wrong_3",
+          "text": "Separate relationship reads require follow-up queries after selecting the return, violating the one-query evidence contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b07_i011_wrong_4",
+          "text": "The decision uses both evidence sets before its request completes."
+        }
+      ]
+    },
+    {
+      "questionId": "ood-n07-b07-i011",
+      "field": "interaction.options",
+      "before": [
+        {
+          "optionId": "n07_b07_i011_wrong_1",
+          "text": "Return a return proxy and fetch each photo when it is drawn, after the read scope closes."
+        },
+        {
+          "optionId": "n07_b07_i011_wrong_2",
+          "text": "Load photos and histories for every return in the warehouse."
+        },
+        {
+          "optionId": "n07_b07_i011_wrong_3",
+          "text": "Return only the return ID and make the decision handler reread each relationship separately."
+        },
+        {
+          "optionId": "n07_b07_i011_wrong_4",
+          "text": "Return photo IDs but defer photo content and classification history until after the decision."
+        },
+        {
+          "optionId": "n07_b07_i011_loading_plan",
+          "text": "Load the selected return’s photos and classification history before its decision."
+        }
+      ],
+      "after": [
+        {
+          "optionId": "n07_b07_i011_wrong_1",
+          "text": "Return a return proxy and fetch each photo when it is drawn, after the read scope closes."
+        },
+        {
+          "optionId": "n07_b07_i011_wrong_3",
+          "text": "Return only the return ID and make the decision handler reread each relationship separately."
+        },
+        {
+          "optionId": "n07_b07_i011_wrong_4",
+          "text": "Return photo IDs but defer photo content and classification history until after the decision."
+        },
+        {
+          "optionId": "n07_b07_i011_loading_plan",
+          "text": "Load the selected return’s photos and classification history before its decision."
+        }
+      ]
+    },
+    {
+      "questionId": "ood-n07-b07-i013",
+      "field": "constraints[2]",
+      "before": "The edit endpoint reads only the selected asset’s current metadata; rendition history is fetched through a separate view only after that view is requested.",
+      "after": "Current metadata for the selected asset is 12 KB; its rendition history is 80 MB, and the edit request has a 1 MB data-transfer budget."
+    },
+    {
+      "questionId": "ood-n07-b07-i013",
+      "field": "feedback.details.scenarioApplication",
+      "before": "The edit reads current metadata only; rendition rows are fetched only when the separate history view is requested.",
+      "after": "The current metadata fits the 1 MB edit request; fetching the 80 MB rendition history during that request exceeds its transfer budget."
+    },
+    {
+      "questionId": "ood-n07-b07-i013",
+      "field": "feedback.details.errorCorrection",
+      "before": "The edit endpoint excludes rendition rows; only the separately requested history view may retrieve them.",
+      "after": "The 80 MB rendition history exceeds the edit request’s 1 MB transfer budget; the current metadata edit does not need that payload."
+    },
+    {
+      "questionId": "ood-n07-b07-i013",
+      "field": "feedback.messages[0].text",
+      "before": "The edit endpoint cannot read rendition rows or unrelated assets; history belongs to the separately requested view.",
+      "after": "Loading rendition data for the collection includes the 80 MB history, above the edit request’s 1 MB transfer budget."
+    },
+    {
+      "questionId": "ood-n07-b07-i013",
+      "field": "feedback.messages[1].text",
+      "before": "Evaluating the proxy reads history before the separately requested view, outside the edit endpoint’s current-metadata contract.",
+      "after": "Evaluating the proxy transfers the 80 MB history in a request limited to 1 MB, before the optional history view is opened."
+    },
+    {
+      "questionId": "ood-n07-b07-i013",
+      "field": "feedback.messages[2].text",
+      "before": "Re-reading rendition history during each metadata edit crosses the separate history-view boundary.",
+      "after": "Re-reading the 80 MB rendition history during a 1 MB metadata edit exceeds the request budget."
+    },
+    {
+      "questionId": "ood-n07-b07-i013",
+      "field": "feedback.messages[3].text",
+      "before": "Caching rendition rows during edit crosses the separate history-view boundary.",
+      "after": "Caching the 80 MB rendition collection when the form opens exceeds the edit request’s 1 MB budget."
+    },
+    {
+      "questionId": "ood-n07-b07-i013",
+      "field": "interaction.options[1].text",
+      "before": "Evaluate a lazy rendition-history proxy while building the edit form, before the separate history view is requested.",
+      "after": "Evaluate a lazy rendition-history proxy while building the edit form, transferring its full history before the optional history view is opened."
+    }
+  ],
+  "caseDecisionChanges": {
+    "ood-n07-b07-i002": "The case now states that its 25 gardeners are distinct and uncached and that the named loader issues one SQL read per lazy access without batching; this makes its two-query budget concrete for this scenario.",
+    "ood-n07-b07-i003": "Replaced the valid join-and-discard distractor with an aggregation-grain error: grouping by author splits the required per-episode measures. The changed distractor received a fresh option ID and matching diagnostic target.",
+    "ood-n07-b07-i004": "Clarified that serialization/upload occur after the scoped database context closes and no database access follows. Removed the whole-service preload option because it could satisfy the fields without violating a stated bound.",
+    "ood-n07-b07-i011": "Retained the one-query decision-evidence contract and removed the whole-warehouse eager-load option because it could return the selected evidence in one query.",
+    "ood-n07-b07-i013": "Replaced the answer-revealing read-policy constraint with fictional 12 KB/80 MB/1 MB case sizes. The 80 MB history options now concretely exceed the edit request budget; other constrained current-metadata facts remain."
+  },
+  "preservedScope": {
+    "questionIdsPreserved": true,
+    "acceptedOptionIdsPreserved": true,
+    "i001ExactV5": true,
+    "other13QuestionsExactV5": true,
+    "removedOptions": [
+      "ood-n07-b07-i004:n07_b07_i004_wrong_3",
+      "ood-n07-b07-i011:n07_b07_i011_wrong_2"
+    ],
+    "optionCount": 88
+  },
+  "mechanicalCheck": {
+    "result": "PASS",
+    "scope": "Mechanical schema/count/taxonomy/identity correspondence, actual scoring/reversal and exact wrong-diagnostic bindings only; no semantic or identity-action acceptance",
+    "unit": "OOD-N07-B07",
+    "proposal": "N07-B07.json",
+    "proposalSha256": "8c2fe085f6e08836b9bdabb8995b8d0a40172fd0dbf4833cd1f95497150fc92d",
+    "wholeObjectCount": 18,
+    "optionsChecked": 88
+  }
+}

@@ -1,0 +1,376 @@
+{
+  "type": "whole-object-hash-representation-correction",
+  "scope": "Additive hash-binding clarification only; original semantic reports and verdicts are preserved byte-for-byte. Reports used JSON.stringify in insertion order. Downstream producer evidence uses the existing content builder canonicalJson recursively sorted-key encoding. Both hashes identify the same exact frozen object.",
+  "hashMethods": {
+    "reviewReport": "sha256(JSON.stringify(question))",
+    "producerCanonical": "sha256(canonicalJson(question))",
+    "canonicalSource": "patternly-content/scripts/build.mjs:canonicalJson / sha256"
+  },
+  "corrections": [
+    {
+      "unit": "OOD-N07-B01",
+      "version": "v2",
+      "reportPath": "SEMANTIC-N07-B01-v2-QA.json",
+      "reportSha256": "4da84ceae4c65f476a6e36aec2b10d990e5a1026778e2b200580414591c5c8af",
+      "inputPath": "review-inputs/N07-B01-v2.json",
+      "inputSha256": "aebc7f8cc71f8203d0e53e0eda80118878758608a8cc447aad4dc45bb22f524a",
+      "itemCount": 18,
+      "recordedHashesVerifiedAgainstActualInsertionOrder": true,
+      "items": [
+        {
+          "questionId": "ood-n07-b01-i001",
+          "reviewReportRecordedInsertionOrderSha256": "380eb3f61d9ed180610aad7a5352c64973c6d501ddb06128978108e183adf8ae",
+          "producerCanonicalJsonSha256": "ecf6a0a8fe4e3617848948c2e3b991c0e067916860a2c1e189d6eff37f71bf5e",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i002",
+          "reviewReportRecordedInsertionOrderSha256": "d226563f12cf3dfcfa47599998c7286084a905fa36de81ee7743dbb10b5f0ce6",
+          "producerCanonicalJsonSha256": "0096e776a252ad772dcce6dac89868cc4694e795182518879941fd821bd0bdb9",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i003",
+          "reviewReportRecordedInsertionOrderSha256": "13b972d774642a517a7335f815fec7926d5573aa3a003b3e68f96866ceb96e2e",
+          "producerCanonicalJsonSha256": "4b3e733181914b31896f3a9f2aef61d29b53d78cbec5f268710e2a74d3cfbb17",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i004",
+          "reviewReportRecordedInsertionOrderSha256": "74c7b176eca7cf2c1063291a18798e29b58b9019e97fa0890611c62efa2b90a7",
+          "producerCanonicalJsonSha256": "c798860ee9f2558cf871d40007ee457d04d98673f41ec136492ac81ace98bc7d",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i005",
+          "reviewReportRecordedInsertionOrderSha256": "ed747662093af79e36f9c1b277929b241285ccc85b81dc00a62d889eaea4425b",
+          "producerCanonicalJsonSha256": "f8fde9b4aeed2f54b06a77bf9b0a9bb56df897348c9d3af655a8d5df83cdcea8",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i006",
+          "reviewReportRecordedInsertionOrderSha256": "ad64f94ad79e3090f14e0a2a9805cd03deeb2bcd7d98419f26088cb40fee31ae",
+          "producerCanonicalJsonSha256": "6f0c9af3e583ade434c58f368fa14dd055478d3654944ea8f56650ac06261fba",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i007",
+          "reviewReportRecordedInsertionOrderSha256": "7927f2b830ac0b9881119e02029e17fb12d8c8ec820aa167aafde7a2ead4de6f",
+          "producerCanonicalJsonSha256": "b79917f99bb71531f48f6599a8c79b8b08ec2beac4a911c05e5682fd858a64c4",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i008",
+          "reviewReportRecordedInsertionOrderSha256": "ef915a06ea85b230797be5e8f61bf256c71a85733299267174fd06a334efb6be",
+          "producerCanonicalJsonSha256": "ea2207be865e61d28ab816566ea15783de5cf3685a1f879c4ae22f61fe464b95",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i009",
+          "reviewReportRecordedInsertionOrderSha256": "066f4f3e356caf5b76391b76dcd365ef17adabb4fdbec8b7fd7ff0983ca19d88",
+          "producerCanonicalJsonSha256": "acc97502db3a323558eea64511da714a6e591f8332ad383d16f583e11148dcd3",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i010",
+          "reviewReportRecordedInsertionOrderSha256": "3434f9ad8ee31f034022858c38235e8069e65da4643753f2e864cfc63a9e0e92",
+          "producerCanonicalJsonSha256": "7d41aeef60566c931eb89b068f47314094a5f5220c792f677692c040ce6d6dfc",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i011",
+          "reviewReportRecordedInsertionOrderSha256": "6dc56be761c9ba30a40c5af93f7d68aba60f517b6a2ad756a6600230193bf3a7",
+          "producerCanonicalJsonSha256": "e335a2fe5035f61d7eeebeb65c3d1c5671da7756780d32bf1bfd93699735eda4",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i012",
+          "reviewReportRecordedInsertionOrderSha256": "53301736714e492553846d856b4edf03628c35dc9bda1ae89846492bbf0214cd",
+          "producerCanonicalJsonSha256": "31eb4c2ad48f6e8894780c10fd413bea2f1a5f268e31fc08e73a854ec9d17520",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i013",
+          "reviewReportRecordedInsertionOrderSha256": "5bb5d5c10163cb4d627c91566025db88f959e0859f19e89aa16ccf219f91450c",
+          "producerCanonicalJsonSha256": "f1c6bd9e1cd7e6f5f1b7e63049c18caa99be31d640379e81097c6259740feae8",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i014",
+          "reviewReportRecordedInsertionOrderSha256": "dbce074eae88f2a172b68c239e8fc83ea0847a53d0a8e6fdfded20198420da4a",
+          "producerCanonicalJsonSha256": "f5609a7a58700534a0c8f0114458d20f38a30a37dc23a5e3c2e2a1067cf8b7e9",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i015",
+          "reviewReportRecordedInsertionOrderSha256": "1badf3f918d47a1c6543777bea4615798a50c83520244c140222b8feafef4939",
+          "producerCanonicalJsonSha256": "3a5b04fdef70ba4d02ec48c94dddede395c384343538a40c0b249681d419291f",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i016",
+          "reviewReportRecordedInsertionOrderSha256": "de47be66e8259640c4a653e9274d5a77711fd90e4a228346cf1319ea44866802",
+          "producerCanonicalJsonSha256": "bdb7aadd0e219e510eb02eea77dac95abb42e2bd6089748db22df86754a6e5b0",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i017",
+          "reviewReportRecordedInsertionOrderSha256": "34040b32cf2d8bd287f395607c428d7d7ccb5dc4487b90cb3d5eb8cc4906ca2c",
+          "producerCanonicalJsonSha256": "825c6b00dde5e9b9bda64fa4b6306fe448a8936a35ea3c47c533669e989d4318",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b01-i018",
+          "reviewReportRecordedInsertionOrderSha256": "b6937dcfaca324d3f351c787ef68422c58acac1c693c578e40ce2e703b3f5205",
+          "producerCanonicalJsonSha256": "84046d089930ee49957e214a428b593fe4d99cd32640d3f068480a3ee9aa0f96",
+          "reportField": "currentWholeObjectSha256"
+        }
+      ]
+    },
+    {
+      "unit": "OOD-N07-B02",
+      "version": "v1",
+      "reportPath": "SEMANTIC-N07-B02-v1-QA.json",
+      "reportSha256": "389c9777ed8be19530092e68e0dd35150b1cec78cb70a836a5db7e5295a78000",
+      "inputPath": "review-inputs/N07-B02-v1.json",
+      "inputSha256": "57f9a6ed2c5342ec697025254d1a1bb56dd6ef82c089f42fc4a9474274ef6796",
+      "itemCount": 18,
+      "recordedHashesVerifiedAgainstActualInsertionOrder": true,
+      "items": [
+        {
+          "questionId": "ood-n07-b02-i001",
+          "reviewReportRecordedInsertionOrderSha256": "e9839392342f36d7e2c47718629b3f535c59189141e73cbf7ee77735fc87bff9",
+          "producerCanonicalJsonSha256": "3d2975e4a0d52a8001f1c90332c33d68551b75bf03e1be42e5dcf3bc6299cb14",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i002",
+          "reviewReportRecordedInsertionOrderSha256": "64709692c84c76f870c534691ec4897b0cb6ea0aba49b72e8376c2209ede0333",
+          "producerCanonicalJsonSha256": "3cf9f7c96d6a9db4d04a82ea89fc0b32cd19b451c449f1c0d3427708d376cab5",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i003",
+          "reviewReportRecordedInsertionOrderSha256": "8e3b7f46e4fa18b9f36eebde73a019424cb2fd4e2f6a79ec9aa0cb969185bf97",
+          "producerCanonicalJsonSha256": "7611505d2affb2e35db72f7326d8a6cdc0cf1c82a74e0134c81c6a10de3d2a35",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i004",
+          "reviewReportRecordedInsertionOrderSha256": "4ddf8826acaf58a636dd01e3a8fbd92f1111486160a60cb30cf00c6446f1a24e",
+          "producerCanonicalJsonSha256": "70cf56051078885c82211ab47ac94be6bd3f71251bb8385f13550a2ecb34b863",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i005",
+          "reviewReportRecordedInsertionOrderSha256": "f92ce1ebd6bd0db2f6ce5d86403e94f4e3613def296d0968f0b1f8f0e20ead65",
+          "producerCanonicalJsonSha256": "4a5d13d048f42652d91c0e297d7696100e265d65462defc50584705991cc4ed9",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i006",
+          "reviewReportRecordedInsertionOrderSha256": "db9be5e38d3c54af57ab2dbb5db9765d1e9666639265039d38e109fabb9e84ae",
+          "producerCanonicalJsonSha256": "91253dbea8a7386f3a40c6e2007408d90c19267acebe74436816cebb9c38eb84",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i007",
+          "reviewReportRecordedInsertionOrderSha256": "091cd21efd466ec266ab650aa0f3c5bf05db1b9d87fc4ecc144123634c88a445",
+          "producerCanonicalJsonSha256": "8622853c1e1e28b8706e40ffb41b74502d59ea837adee7943fe8d1f2d0286eaa",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i008",
+          "reviewReportRecordedInsertionOrderSha256": "7a9df01b6be4e887200b0091a40e500c04690fc3651897787602e9d2203033e9",
+          "producerCanonicalJsonSha256": "4b8a63a2494e92ccda41ee0cf003395f69fd05340598edb8a666c2730173c474",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i009",
+          "reviewReportRecordedInsertionOrderSha256": "7d2d354b6b450ca60c9e3958cb44fe5e1970b29c471197617382ec4ed788f0d7",
+          "producerCanonicalJsonSha256": "570d1202b29cb48c290059285c11f95cd2cc7f01767b65b32f2c99ad0169a17e",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i010",
+          "reviewReportRecordedInsertionOrderSha256": "952ca29d6e91990524258f4fd36cf65d249633808a131c3098a08b6f0d67403a",
+          "producerCanonicalJsonSha256": "acb45d295dd8179bbfbdd5a2de6713e325811c6a96bf40bb55494a9d77acdcd2",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i011",
+          "reviewReportRecordedInsertionOrderSha256": "f731440a51073ae0331cf77bbd209b30ba53d2aa143f7ea1f17f05ce6b1a5eca",
+          "producerCanonicalJsonSha256": "3bdd2fb948a4c855841cbf04521fa97e5eb08e3bd39064a327315ed1fcbe15c5",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i012",
+          "reviewReportRecordedInsertionOrderSha256": "756f1229e7a9e7584e5074cd95b8670f0eb93672ae90c928a292803ca9b0f2e4",
+          "producerCanonicalJsonSha256": "6b3e722817a770cfdea9f5deedf6872b317c2f957ab9b06fbf53a2b511c9d334",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i013",
+          "reviewReportRecordedInsertionOrderSha256": "cd0efc70630a944da60c133d5c48238626a7380733a569e7c1455fc904485acd",
+          "producerCanonicalJsonSha256": "02542e242ea2687db29878229631c13d973c5b8da033f1a072426c4911d55a78",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i014",
+          "reviewReportRecordedInsertionOrderSha256": "2ebd0265c073d460a77e8963383141576b5d4e6e20c4a4d375913a729ac6c30f",
+          "producerCanonicalJsonSha256": "0f4adcc0511186a59711587cbe632388a8535b44b252f8d52d18b1d1303a8ffe",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i015",
+          "reviewReportRecordedInsertionOrderSha256": "d490cb84e0d6f0066645795ca058d2026ab7a3d37abeec3470234ceafbf0e72f",
+          "producerCanonicalJsonSha256": "c534f9edcbb6046841e3119efd1036efa857b72e8a617e5fc28f46ca24e75cb7",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i016",
+          "reviewReportRecordedInsertionOrderSha256": "8057ab1f5b7aa499c25a0c7e89b83acfb15612d68ccb1f9fbfc083c0a9832cc6",
+          "producerCanonicalJsonSha256": "5b6e7267382bb5b6feeb254d43b740ff4c1a97aa2504aed62e58dd8cbcf1d03b",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i017",
+          "reviewReportRecordedInsertionOrderSha256": "d3817f9e7f0b85bef863e873f2dc33544a04663e3288058d045392f2f014dacd",
+          "producerCanonicalJsonSha256": "fe9e34327a2fdf21751787db8760fabed892e9afd8c59bedb4a66acf93816412",
+          "reportField": "currentWholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i018",
+          "reviewReportRecordedInsertionOrderSha256": "ca2219d90c3b237945eab325d93eaad48930b953830229d2dd2527c53c96e9ec",
+          "producerCanonicalJsonSha256": "a7c3636c4b622fa2fb18b39252adb22e04c9a6b94ff16edc95c6aa7e12797f55",
+          "reportField": "currentWholeObjectSha256"
+        }
+      ]
+    },
+    {
+      "unit": "OOD-N07-B02",
+      "version": "v2",
+      "reportPath": "SEMANTIC-N07-B02-v2-QA.json",
+      "reportSha256": "fb67163235ca1d3de62df8c41be9632f37bda37d73e3a5a82224676ced6c7d2b",
+      "inputPath": "review-inputs/N07-B02-v2.json",
+      "inputSha256": "2d46dedd0f1e7fcc882a803c6a7192c15ac8705cded9b2ba965b54279ef90e9d",
+      "itemCount": 18,
+      "recordedHashesVerifiedAgainstActualInsertionOrder": true,
+      "items": [
+        {
+          "questionId": "ood-n07-b02-i001",
+          "reviewReportRecordedInsertionOrderSha256": "6619711a13ad3e6c1cd06171bf03e74c4cd70de09c1f884b10384cdaaa3b70e4",
+          "producerCanonicalJsonSha256": "69c9515e1d6e19312deb2d89390842288b22542e66dd3999dde9d9d9c4e981d2",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i002",
+          "reviewReportRecordedInsertionOrderSha256": "be0371a591e54a9938a585daaf0cf7ad57cfbe3f9c956366c174f62e9d2ac70f",
+          "producerCanonicalJsonSha256": "847822b98800b750412f7ac4ad0cc63178c5a3befae9559bb0ca3ae503da9e65",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i003",
+          "reviewReportRecordedInsertionOrderSha256": "bc898efba266cbaaefab7136f72be61b40c585a367ece54053010ac1485b353e",
+          "producerCanonicalJsonSha256": "45d6a7abfb8d9bba163a7c0e736c26ab853e292ad2631208d619069525381596",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i004",
+          "reviewReportRecordedInsertionOrderSha256": "3acf9c796c62ed22c1c36645eebf3e9ec64bd6b548784db41918fa1519608da8",
+          "producerCanonicalJsonSha256": "2ddfd0f79d94d08ce28bcb5b51971e9c14e969fc49cd84af96f01b7ffee49c0d",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i005",
+          "reviewReportRecordedInsertionOrderSha256": "6170eb33c9020aa8733909e0c4aaba26ef826e81e9c572a51280c3265a814be5",
+          "producerCanonicalJsonSha256": "27aa8fc2d497cab2525a1b2bc1ef09d3c6eb7dfdf542eaf782df03125b003f39",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i006",
+          "reviewReportRecordedInsertionOrderSha256": "6ceb93e6596f77786bbfb35c071c15642d187fc9f7236bee3ddd8aced29658d4",
+          "producerCanonicalJsonSha256": "7fe1fc4bdeb7d6c5dc95e9b8784a5f38b67159ef25e9ea40d376800210684291",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i007",
+          "reviewReportRecordedInsertionOrderSha256": "08ed2f8e52a3f09e7813773218e3cdf1dc71b8b7a85ee6b955ba83592b979947",
+          "producerCanonicalJsonSha256": "a2089af4b7c56a86915d422c5d56d2adf782ad3c3eb8cf36a7806165173eb1c6",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i008",
+          "reviewReportRecordedInsertionOrderSha256": "2ee5df88f9c9b683c083a62d60a77ba7a3fa64b1764d8edee84b8f081131a65c",
+          "producerCanonicalJsonSha256": "97d2a642621a6b8ca309a80fc2b910157cae98379d254463dd5be87bf427af8c",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i009",
+          "reviewReportRecordedInsertionOrderSha256": "fd3015e40c64ba43faf8bad0f7bb132a793e43dc14d0a22e29706e16812e7a56",
+          "producerCanonicalJsonSha256": "d31a48318cafd2e383f6676694406188c10823ed0fb61cd65bf1aa6d8ea69602",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i010",
+          "reviewReportRecordedInsertionOrderSha256": "d3cb71652ea3769605acd865179a1c3116056ca4e089123f0743cf524852fd57",
+          "producerCanonicalJsonSha256": "efcaf9e6777c4e3042be4606ecafc274c20efc4704a7d00f88317c219e18c3a0",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i011",
+          "reviewReportRecordedInsertionOrderSha256": "cd8f4075f08e9404bea401ea1bfe245e89583d9023f4234e84b6bdfc1d392a9e",
+          "producerCanonicalJsonSha256": "04a848a13cf0dc43b75d3f2dee66986fadd7cf87fadda4962c6371bdb1f19e15",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i012",
+          "reviewReportRecordedInsertionOrderSha256": "7f23f38a79109044af2bf9d2d8f13f11de0fd283bf1459a739b215f9a610b2ea",
+          "producerCanonicalJsonSha256": "590c1cceebfbb00412901aec31f13fbe3241eec9ba047cb3da9a3ff7a72efd97",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i013",
+          "reviewReportRecordedInsertionOrderSha256": "cea68e5a95b1fd67c004c648a3f36f910b589d7c7ad1e61fc3cb0c2d939e7123",
+          "producerCanonicalJsonSha256": "e23b50ccfcf94f63641f25a524134ab68ed234e7f0ab0450297aa0f3fa2854e4",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i014",
+          "reviewReportRecordedInsertionOrderSha256": "8c70ed8ea4b047f76f1c521017b1cbef397c2bc3d185799a3da1317a99e50261",
+          "producerCanonicalJsonSha256": "356cf3768e5bdbc211c0b328239c285c44cd5efaba6d21570061aea53581d441",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i015",
+          "reviewReportRecordedInsertionOrderSha256": "41c678f08ce0cde6274393079142904af6d8ca9b57ab412bd869f7aa5d61f1cf",
+          "producerCanonicalJsonSha256": "7cbd96cc1bc3f921dc274a35053bc2b3920c53d3a9c57776004c19e8827aa4ed",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i016",
+          "reviewReportRecordedInsertionOrderSha256": "a346ee30445c4d907b3fdb8803b753b251d3bac8f2cc3947ff7c6db0ec5a4c5e",
+          "producerCanonicalJsonSha256": "4c44ed50d2a4a69de4004ad34e4f4d9a88cf248419e54058c2baad36d10a9f4c",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i017",
+          "reviewReportRecordedInsertionOrderSha256": "5099c4e29f44790805a88fdcd1dcf21e6be745593073aa99c01bc815dc3569e9",
+          "producerCanonicalJsonSha256": "07efe1ac0d5419df2837f80e909ed401f3c544f2be39f57f41819a784d18f17e",
+          "reportField": "v2WholeObjectSha256"
+        },
+        {
+          "questionId": "ood-n07-b02-i018",
+          "reviewReportRecordedInsertionOrderSha256": "bfc4a17658e618b0900c226edbc90c8892ddcf23315dabe6fb6d2b2e0adeccf3",
+          "producerCanonicalJsonSha256": "23887b5300d3b3e32b8c7a7ef1f3af78873748a5c589099b8c4ce6839c8edcff",
+          "reportField": "v2WholeObjectSha256"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "matchingAffectedReportRows": true,
+    "b05v1ReviewHashesChecked": "all 18 match both encodings on actual bytes",
+    "semanticVerdictsChanged": false
+  }
+}

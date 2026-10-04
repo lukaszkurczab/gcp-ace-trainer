@@ -1,0 +1,1263 @@
+[
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "An export is for one session and must read its committed event sequence.",
+      "The storage key and paging scheme may change independently of the board use case."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Expose sessions and their committed history through a collection-shaped contract; its adapter can page event rows without teaching the export handler their keys.",
+        "scenarioApplication": "For this board, the export requests one session’s committed sequence, while workspace listing is a separate domain query; neither should expose the event table layout.",
+        "errorCorrection": "An ORM query in the export handler would couple a domain use case to the current row keys and paging scheme. A cached snapshot adds a freshness contract the prompt never asks for.",
+        "boundaryOrTradeoff": "The repository boundary earns its cost here because multiple domain queries and storage-specific paging must coexist; a small one-table CRUD path would not automatically need a custom repository.",
+        "transfer": "Use this boundary when callers need domain objects or queries and mapping details vary; keep presentation-only reads as projections when they do not change domain state."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i001_wrong_1",
+          "text": "The handler would now own row keys and paging as well as export behavior; a storage layout change would alter the use case."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i001_wrong_2",
+          "text": "A per-table repository exposes the storage split; the caller would have to reconstruct session meaning and order."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i001_wrong_3",
+          "text": "That moves query vocabulary and paging details into the caller, so it does not protect the board model from mapping changes."
+        }
+      ],
+      "reason": "Keep the session lookup in a domain collection boundary because the use case needs a session and its committed ordered history, while the row key and page mechanics are explicitly changeable.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i001_wrong_1",
+          "text": "Have the export handler compose SQL against event rows and assemble the session itself."
+        },
+        {
+          "optionId": "n07_b01_i001_wrong_2",
+          "text": "Create a repository for every event table and have the handler join their returned records."
+        },
+        {
+          "optionId": "n07_b01_i001_wrong_3",
+          "text": "Pass a database-shaped filter and sort expression through a generic repository to the handler."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Use a session query for committed history in order; hide row keys and paging in the adapter."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a shared whiteboard application, a session host closes a board and exports its history. Each export must use the committed event sequence for one session; callers also need to list sessions by workspace. Board events are stored as rows whose keys and paging rules may change. What should the application depend on for session lookup?",
+    "questionId": "ood-n07-b01-i001",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The conversation has one current owner, a response deadline, and escalation history.",
+      "The endpoint queries open cases for one team from a large indexed case set.",
+    "Measured full-table materialization exceeds the endpoint’s 200 ms p95 target."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A repository can present the persisted conversations like a collection and provide the named team query, while the persistence adapter joins the separate rows.",
+        "scenarioApplication": "Here the alternative table repositories expose the storage decomposition, and the generic filter leaks SQL-like vocabulary; neither returns the domain unit needed by the escalation.",
+        "errorCorrection": "A full load would materialize about 250,000 conversations and misses the stated 200 ms p95 target; the indexed team/open retrieval is the supported path for this endpoint.",
+        "boundaryOrTradeoff": "The repository exposes the conversation query and mapping boundary; the measured retrieval budget, not a general rule that every query must use a custom repository, rules out loading all cases here.",
+        "transfer": "When mapping changes without changing the business query, preserve the domain query and change only its adapter."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i002_wrong_1",
+          "text": "The handler would need to know the persistence split and would return a record shape instead of the conversation the rule operates on."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i002_wrong_2",
+          "text": "That preserves table boundaries as the public contract; it leaves the caller to rebuild which rows form a conversation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i002_wrong_4",
+          "text": "This would materialize the full 250,000-row set and exceed the endpoint’s stated 200 ms p95 budget."
+        }
+      ],
+      "reason": "The caller asks for open conversations by team and then escalates a domain conversation; the collection contract can hide the separate owner/history rows without inventing a new state owner.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i002_wrong_1",
+          "text": "Join the ownership and history tables in the use-case handler, then pass the combined record to the escalation code."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Use a conversation collection with a team/open query; keep ownership/history mapping behind it."
+        },
+        {
+          "optionId": "n07_b01_i002_wrong_2",
+          "text": "Give each table a repository and let the handler coordinate their calls for every escalation."
+        },
+        {
+          "optionId": "n07_b01_i002_wrong_4",
+          "text": "Load every conversation into memory and filter by team in the domain layer."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+  "prompt": "In a customer-support escalation desk, the lead escalates a conversation. A conversation may have one current owner, a response deadline, and a sequence of prior escalations; the application searches the open cases for one team. The database stores ownership and history separately. The open-case table has about 250,000 rows, the endpoint has a 200 ms p95 target, and measured full-table materialization exceeds that budget. Which contract should the escalation use case call?",
+    "questionId": "ood-n07-b01-i002",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Publishing must validate price and stock before visibility changes.",
+      "The catalog asks for visible listings by region; storage keeps price and stock separately."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The repository contract returns listings and supports the visible-by-region search; its adapter can join the price and stock tables.",
+        "scenarioApplication": "In this case the UI needs a listing, not an ORM graph, and publishing must validate before setting visibility; exposing independent rows splits one rule among callers.",
+        "errorCorrection": "Keep arbitrary read projections outside this boundary when they are display-only, but route state-changing publication through the domain listing contract.",
+        "boundaryOrTradeoff": "The repository is justified by the domain query and separated mapping here, not by a rule that every table deserves a repository.",
+        "transfer": "If a future catalog projection does not invoke a domain rule, it may use a read query; do not let that projection become the write contract."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i003_wrong_1",
+          "text": "The controller would duplicate mapping and move the publish rule out of the domain operation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i003_wrong_2",
+          "text": "Visibility depends on both values, so separate row access makes each caller responsible for the same domain rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i003_wrong_3",
+          "text": "That makes the presentation code depend on the current mapping graph rather than the listing contract."
+        }
+      ],
+      "reason": "The source facts make listing visibility a domain rule across two stored values and give callers a domain-shaped query; a listing collection contract keeps that meaning outside table joins.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i003_wrong_1",
+          "text": "Have the catalog controller join price and stock rows and decide which listing becomes visible."
+        },
+        {
+          "optionId": "n07_b01_i003_wrong_2",
+          "text": "Expose independent price and stock repositories and require each caller to decide when a listing is visible."
+        },
+        {
+          "optionId": "n07_b01_i003_wrong_3",
+          "text": "Return the ORM entities to the catalog and let it traverse persistence navigation properties."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep price/stock publication and region search in a listing contract; map rows in persistence."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a regional produce marketplace, the seller publishes seasonal inventory. A listing is visible only after its price and available stock have been validated together. Catalog screens also ask for visible listings in a region, while the database keeps prices and stock in separate tables. Which access contract best fits the publishing and listing code?",
+    "questionId": "ood-n07-b01-i003",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Each split retains the original request identity and delivery promise.",
+      "A deterministic test seam is required; callers should not depend on the marketplace database."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A domain collection query can return the backordered request as one object even when fulfillment uses several vendor rows.",
+        "scenarioApplication": "Both use cases can use the same seam in tests; split identity and delivery promise stay on the request instead of being recreated by each caller.",
+        "errorCorrection": "Direct SQL or raw-record repositories make each caller repeat the mapping and can lose the original request relationship during a split.",
+        "boundaryOrTradeoff": "Use a repository contract for this shared domain access. A process-wide cache is not required and would add lifecycle behavior absent from the scenario.",
+        "transfer": "When two operations need the same domain query and persistence layout must stay private, keep the contract stable and vary the adapter."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i004_wrong_1",
+          "text": "Both callers would duplicate the row mapping and split logic, so identity and promise rules could diverge."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i004_wrong_2",
+          "text": "The callers would still own the mapping from vendor records back to one original request and its promise."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i004_wrong_4",
+          "text": "That keeps table representation visible to both callers and forces them to reconstruct the same domain request."
+        }
+      ],
+      "reason": "The two use cases need the same backordered-request query, while each split keeps one request identity and delivery promise. A domain collection contract lets both callers use that request without rebuilding its relationship from vendor rows.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i004_wrong_1",
+          "text": "Have each use case query vendor and request tables directly, then build split requests in the caller."
+        },
+        {
+          "optionId": "n07_b01_i004_wrong_2",
+          "text": "Create separate repositories for request rows and vendor rows and make each caller combine them."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Share one backordered-request collection query across both workflows; keep vendor rows behind it."
+        },
+        {
+          "optionId": "n07_b01_i004_wrong_4",
+          "text": "Return raw request and vendor records from a generic repository to keep the interface small."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a repair-parts marketplace, a fulfillment specialist splits one backordered request across vendors. Every split must retain the request identity and delivery promise. Two use cases need to find backordered requests, and tests must exercise them without the marketplace database. Which contract should both use cases depend on?",
+    "questionId": "ood-n07-b01-i004",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The plot ID is stable across a transfer.",
+      "The caller needs reservation lookup and pending approvals for a plot."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The repository returns reservation objects and supports the approval query; the adapter maps relational rows or documents into that same domain contract.",
+        "scenarioApplication": "Stable reservation identity and retained approval history rule out treating a transfer as a plot-key overwrite.",
+        "errorCorrection": "A generic interface that accepts storage query strings would only hide the branch syntactically; callers would still depend on each persistence format.",
+        "boundaryOrTradeoff": "The domain contract is justified because the persistence model may vary independently. It does not require a custom repository for every simple stored value.",
+        "transfer": "Keep persistence selection in composition/configuration and keep the use case expressed in reservation language."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i005_wrong_1",
+          "text": "The business workflow would become responsible for deployment-specific persistence details and both branches could drift."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i005_wrong_2",
+          "text": "The use case needs the reservation and pending status; interpreting raw history rows in the caller leaks the mapping."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i005_wrong_4",
+          "text": "Storage query strings are precisely what must vary; putting them in the contract defeats the stated boundary."
+        }
+      ],
+      "reason": "The reservation remains a domain object across transfer, while the store may change; callers should ask the collection contract for a reservation rather than choose its persistence format.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep reservation lookup in domain terms while the adapter changes from relational rows to documents."
+        },
+        {
+          "optionId": "n07_b01_i005_wrong_1",
+          "text": "Put relational and document-store branches in the steward workflow so it can select the current schema."
+        },
+        {
+          "optionId": "n07_b01_i005_wrong_2",
+          "text": "Return approval-history rows and let the steward infer the active reservation from their order."
+        },
+        {
+          "optionId": "n07_b01_i005_wrong_4",
+          "text": "Expose a generic repository that accepts storage-specific query strings so both adapters can share one interface."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a community garden tool, a steward transfers a plot reservation between gardeners. The reservation has an approval history and its plot ID never changes. A steward can look up one reservation or list pending approvals for a plot; the storage engine may later change from relational rows to documents. Which boundary should expose these operations?",
+    "questionId": "ood-n07-b01-i005",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The bundle price is derived from the current component prices and regional adjustment.",
+      "Operators search active bundles using region and status."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The caller searches bundles by region and active state through a domain query; the adapter can combine bundle and component persistence shapes.",
+        "scenarioApplication": "Calculate the price at the bundle/domain operation so every caller observes the same derived rule rather than reimplementing it in a screen.",
+        "errorCorrection": "A wide record or per-region subtype makes the storage shape control the domain contract without a stated behavioral variation.",
+        "boundaryOrTradeoff": "Use the repository for this domain query and save path. Keep a display-only aggregate projection separate if it does not own the price rule.",
+        "transfer": "When the relational or document representation changes, callers can continue to request the same bundle concept."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i006_wrong_1",
+          "text": "That duplicates a price rule in a display caller and permits different callers to calculate different bundle values."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i006_wrong_2",
+          "text": "The callers would need to reconstruct the bundle from storage-specific pieces and apply the same domain calculation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i006_wrong_3",
+          "text": "That couples the domain bundle contract to a particular schema and breaks when component storage changes."
+        }
+      ],
+      "reason": "Bundle lookup and pricing are domain operations, while bundle and component rows have different shapes; the repository contract keeps that mapping out of the catalog callers.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i006_wrong_1",
+          "text": "Have the catalog screen read component rows and calculate the bundle price before saving."
+        },
+        {
+          "optionId": "n07_b01_i006_wrong_2",
+          "text": "Expose a repository per component table and a separate bundle-row repository to all callers."
+        },
+        {
+          "optionId": "n07_b01_i006_wrong_3",
+          "text": "Return one wide persistence record containing every regional component column."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Expose bundles as domain values and map component rows behind the persistence boundary."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a subscription packaging service, a catalog manager creates a regional bundle from existing components. The bundle price is derived from component prices plus a regional adjustment; operators search bundles by region and active status. Components and bundles have different stored shapes. Which access contract should the bundle use?",
+    "questionId": "ood-n07-b01-i006",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Capacity is computed from active reservations after expired holds are released.",
+      "The query is for reservations belonging to one charger, not raw reservation rows."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The repository query returns active reservations for a charger and coordinates the domain lookup used by the expiry-aware release path.",
+        "scenarioApplication": "The charger row cannot answer capacity alone because the reservation facts are stored separately.",
+        "errorCorrection": "Filtering raw rows in each caller would make expiration semantics vary; an unsupported background counter would add a new consistency contract.",
+        "boundaryOrTradeoff": "A domain collection boundary is useful where multiple stored records participate in a domain query; it should not be an excuse for an unrelated cache.",
+        "transfer": "Callers should depend on charger/reservation concepts while adapters own joins and persistence filters."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i007_wrong_1",
+          "text": "That duplicates expiration and capacity logic in every handler and exposes both table layouts."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i007_wrong_2",
+          "text": "The prompt says reservations live separately and capacity is computed from them, so metadata alone is insufficient."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i007_wrong_3",
+          "text": "That makes callers interpret persistence status fields and risks inconsistent expiry handling."
+        }
+      ],
+      "reason": "The use case needs active reservation objects and a consistent expiry rule from the domain boundary; the storage split should not make each caller assemble capacity.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i007_wrong_1",
+          "text": "Let the scheduling handler query charger and reservation tables and implement expiration on each call."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Use an availability query by aircraft type, with assignment joins kept behind the collection."
+        },
+        {
+          "optionId": "n07_b01_i007_wrong_2",
+          "text": "Read charger metadata and assume its stored capacity already reflects every active reservation."
+        },
+        {
+          "optionId": "n07_b01_i007_wrong_3",
+          "text": "Return reservation rows to each caller and let it filter status and expiry locally."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a fleet charging coordinator, an operator reserves a charger. The system must return active reservations for a charger and release expired ones before it offers capacity. Reservation records are stored separately from charger metadata. Which API boundary should the scheduling use case use?",
+    "questionId": "ood-n07-b01-i007",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The asset identifier stays fixed while descriptive values change.",
+      "The screen asks for the current descriptions by language."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The screen asks for an asset and descriptions by language through domain terms, not by column selection.",
+        "scenarioApplication": "The merge replaces descriptions without replacing the asset. A snapshot-only identity or language-specific subtype would change facts not requested.",
+        "errorCorrection": "Keeping the SQL join in the screen leaks normalization; returning the raw document leaks the current serialization shape.",
+        "boundaryOrTradeoff": "Repositories can expose domain queries while hiding storage mapping; do not turn language selection into a new subtype hierarchy.",
+        "transfer": "Transfer the same contract if descriptions move from normalized rows to embedded values."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i008_wrong_1",
+          "text": "The screen would depend on the current normalization and column name rather than the asset description contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i008_wrong_3",
+          "text": "Language is a query criterion; the facts do not establish different asset behavior for each language."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i008_wrong_4",
+          "text": "That transfers mapping and localization rules to the UI and makes a schema change visible to the caller."
+        }
+      ],
+      "reason": "The stable identifier and replaceable localized descriptions are separate domain facts; the asset collection contract can preserve identity while the adapter changes table layout.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i008_wrong_1",
+          "text": "Join the asset and description tables in the screen and select the language column directly."
+        },
+        {
+          "optionId": "n07_b01_i008_wrong_3",
+          "text": "Create a distinct asset subtype for every language and store the description on that subtype."
+        },
+        {
+          "optionId": "n07_b01_i008_wrong_4",
+          "text": "Expose the persistence document to the archivist and let the UI select fields from its current shape."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Expose lookup by asset and language, with normalized descriptions mapped behind the contract."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a photo archive, an archivist merges duplicate descriptions for one asset. Asset identity is stable, but descriptions can be replaced. A review screen needs the asset by stable ID and all current descriptions in a chosen language; the database may normalize descriptions into another table. Which interface should the screen call?",
+    "questionId": "ood-n07-b01-i008",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "An approval is scoped by an explicit territory and expiry.",
+      "Audit queries list approvals for a work."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The domain query takes a work and territory and returns only approvals whose expiry satisfies the rule.",
+        "scenarioApplication": "Treating any join row as an approval ignores expiry; making approval global ignores territory scope.",
+        "errorCorrection": "Territory code is a domain value, while the join table is persistence mapping. The caller should not provide SQL fragments.",
+        "boundaryOrTradeoff": "Keep the collection boundary because the audit and approval use cases share the same domain criteria.",
+        "transfer": "If the database later embeds territories, the domain query can remain the same."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i009_wrong_1",
+          "text": "That can omit the expiry condition and puts the join-table representation in presentation code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i009_wrong_3",
+          "text": "Territories are data values in this case, not distinct approval behavior requiring separate types."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i009_wrong_4",
+          "text": "That keeps the adapter hidden but still makes the rights caller depend on the storage query language."
+        }
+      ],
+      "reason": "An approval must be queried with territory and expiry, so a domain collection contract can express the rights rule while its adapter handles join rows.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i009_wrong_1",
+          "text": "Make the audit screen join work and territory tables and treat any returned row as an approval."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Use domain approval criteria for work, territory, and expiry; keep the join mapping private."
+        },
+        {
+          "optionId": "n07_b01_i009_wrong_3",
+          "text": "Create a type per territory and put the expiry rule in each type."
+        },
+        {
+          "optionId": "n07_b01_i009_wrong_4",
+          "text": "Make callers pass territory-code SQL fragments to the repository."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a digital-rights tool, an analyst approves a use for one territory. The approval lookup must require both territory and expiry, and the audit screen lists approvals for a work. The database stores territory codes in a join table. Which contract keeps those queries in the rights domain?",
+    "questionId": "ood-n07-b01-i009",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Availability is determined from assignments plus battery specifications.",
+      "The screen searches by aircraft type before scheduling."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The query accepts aircraft type and returns batteries not already assigned; its adapter can read the two stored shapes.",
+        "scenarioApplication": "Letting a screen filter specifications locally duplicates the one-aircraft invariant; a process-local list lacks a stated freshness contract.",
+        "errorCorrection": "Do not treat a search result as the authority for assignment state: the prompt makes assignment records part of availability, so callers should request the combined domain result.",
+        "boundaryOrTradeoff": "Use this interface for the scheduling decision, but do not infer a distributed locking or transaction guarantee from the query itself.",
+        "transfer": "The repository hides how assignments and specifications are stored while preserving the domain meaning of “available battery.”"
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i010_wrong_1",
+          "text": "That moves the single-assignment rule to a display caller and exposes both storage layouts."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i010_wrong_2",
+          "text": "Every caller would reimplement the same availability rule and could disagree about assignments."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i010_wrong_4",
+          "text": "The prompt identifies assignments as part of availability and provides no cache refresh or cross-process consistency contract."
+        }
+      ],
+      "reason": "Availability depends on two persistence sets but is one domain query; the repository boundary returns available batteries without making the screen rebuild the rule.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Use a domain availability query by aircraft type; keep assignment joins in persistence."
+        },
+        {
+          "optionId": "n07_b01_i010_wrong_1",
+          "text": "Have the screen join assignment and specification tables and decide availability itself."
+        },
+        {
+          "optionId": "n07_b01_i010_wrong_2",
+          "text": "Return all specifications and ask each caller to remove assigned battery IDs."
+        },
+        {
+          "optionId": "n07_b01_i010_wrong_4",
+          "text": "Keep one process-wide list of free batteries and use it instead of the assignment records."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a drone maintenance planner, a battery can be assigned to only one aircraft at a time. The fleet screen searches available batteries by aircraft type, then schedules one. Assignments and battery specifications are stored separately. Which boundary should expose the available-battery query?",
+    "questionId": "ood-n07-b01-i010",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The send operation checks consent before external disclosure.",
+      "The clinic report needs domain referrals awaiting review."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The repository query expresses “awaiting review for this clinic” and returns a referral domain object; the adapter resolves stored consent details.",
+        "scenarioApplication": "Do not move consent decisions to each caller or a cache without a stated freshness rule.",
+        "errorCorrection": "The consent check belongs to the send decision, but raw consent columns stay unavailable to the navigator; the repository contract must return a consent-aware referral rather than expose those columns.",
+        "boundaryOrTradeoff": "A domain collection contract limits what the navigator depends on; it does not itself promise an external send transaction.",
+        "transfer": "Keep privacy policy in the domain operation and keep storage columns behind the adapter."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i011_wrong_1",
+          "text": "That exposes sensitive persistence columns to the caller and risks reproducing the consent predicate differently."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i011_wrong_2",
+          "text": "The prompt does not state a freshness interval or allow an out-of-date consent decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i011_wrong_3",
+          "text": "That makes every caller responsible for enforcing the same disclosure boundary."
+        }
+      ],
+      "reason": "Consent has to be checked at the domain send operation while the caller is forbidden from reading its storage columns; a domain repository can supply the required consent-aware referral.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i011_wrong_1",
+          "text": "Have the navigator read referral and consent tables directly before sending."
+        },
+        {
+          "optionId": "n07_b01_i011_wrong_2",
+          "text": "Copy consent into a long-lived referral cache and trust the copy for all sends."
+        },
+        {
+          "optionId": "n07_b01_i011_wrong_3",
+          "text": "Return raw referral and consent records from separate repositories for every caller to combine."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Expose consent-aware referral access without raw consent columns in caller code."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a clinic referral coordinator, the navigator checks consent before sending a referral externally. A report also lists referrals awaiting review for a clinic. Consent facts are stored separately from referral details, and the navigator must not read raw consent-table columns. Which access contract fits?",
+    "questionId": "ood-n07-b01-i011",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Completion history must retain the exact exercise and score-policy revisions.",
+      "The screen queries by stable attempt ID."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The completion repository offers a domain lookup by attempt ID and maps its stored attempt and revision rows together.",
+        "scenarioApplication": "Using latest policy changes the historical meaning of the attempt; raw row mapping makes the UI responsible for that distinction.",
+        "errorCorrection": "A history read must follow the attempt’s recorded revision references; resolving the latest policy would rewrite the meaning of a completed score.",
+        "boundaryOrTradeoff": "The repository hides the persistence split but preserves the immutable revision references; it does not need to store the whole item as a blob.",
+        "transfer": "When a domain object records a stable historical reference, make the collection query return that same reference."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i012_wrong_1",
+          "text": "That couples the screen to the split storage model and can accidentally select the latest rather than recorded policy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i012_wrong_2",
+          "text": "That contradicts the exact revision references captured when the completion was made."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i012_wrong_4",
+          "text": "That duplicates revision mapping in the caller and risks using mutable current policy instead of the recorded one."
+        }
+      ],
+      "reason": "The attempt points to immutable revisions, so repository lookup by attempt identity must return those recorded references rather than resolve current policy.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i012_wrong_1",
+          "text": "Have the history screen join attempts and policies using their current database keys."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Load the completion by stable attempt ID with its exact recorded revisions."
+        },
+        {
+          "optionId": "n07_b01_i012_wrong_2",
+          "text": "Load the current exercise and policy and display them for any attempt."
+        },
+        {
+          "optionId": "n07_b01_i012_wrong_4",
+          "text": "Return raw rows and let the screen assemble the completion domain object."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a music practice tracker, the learner completes a timed exercise. A completion record points to the exact exercise revision and score policy. The history screen looks up one completion by stable attempt ID; storage may split attempts from policy revisions. Which API boundary should the screen use?",
+    "questionId": "ood-n07-b01-i012",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "A decision records its reviewer and cannot bypass the required controls.",
+      "Reviewers need pending exceptions within an assigned category."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A domain collection query can return pending exception cases; the adapter reads the separate approval and category records.",
+        "scenarioApplication": "The UI and arbitrary SQL alternatives move the policy predicate into callers; per-table repositories leave them to rebuild the case.",
+        "errorCorrection": "Keep the pending-category query separate from the decision controls: the category scopes the queue, while the approval workflow still applies its required controls.",
+        "boundaryOrTradeoff": "Keep the repository query constrained to the category and pending status. The approval operation still enforces controls when a decision is made.",
+        "transfer": "Use a domain collection boundary when the stored graph is not the contract the workflow should manipulate."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i013_wrong_1",
+          "text": "The UI would own the approval predicate and could expose a case that has not passed controls."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i013_wrong_2",
+          "text": "The workflow would have to reconstruct pending cases from storage pieces instead of consuming a domain queue."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i013_wrong_4",
+          "text": "The caller needs a category-scoped domain queue; SQL filters leak storage semantics and can bypass the policy query."
+        }
+      ],
+      "reason": "The pending queue is a domain query scoped by reviewer category, and approval controls belong to the workflow rather than the presentation join.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i013_wrong_1",
+          "text": "Have the reviewer UI join category and approval tables and decide which exceptions are pending."
+        },
+        {
+          "optionId": "n07_b01_i013_wrong_2",
+          "text": "Create one public repository per approval, reviewer, and category table."
+        },
+        {
+          "optionId": "n07_b01_i013_wrong_4",
+          "text": "Expose a generic repository that accepts arbitrary sort and filter SQL from reviewers."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Query pending exceptions by category in domain terms, leaving row mapping in the adapter."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a procurement approval queue, an exception must have an attributable decision and pass required controls. Reviewers need a queue of pending exceptions for their assigned category. Approvals and category assignments are separate records. Which access contract should the approval workflow use?",
+    "questionId": "ood-n07-b01-i013",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Annotation identity follows the stable segment rather than the recording offset.",
+      "The editor retrieves annotations by segment ID."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The collection contract retrieves annotations by segment ID and preserves their identity across source replacement.",
+        "scenarioApplication": "Offset-based lookup is invalidated by the explicit identity rule; recording-based IDs would make replacement change identity.",
+        "errorCorrection": "Do not recalculate annotation identity from waveform offsets after recording replacement; the stated stable segment ID is the lookup identity.",
+        "boundaryOrTradeoff": "Keep format-specific offsets in the mapper, not the editor. No new annotation subtype is required by the stated formats.",
+        "transfer": "The domain query can survive a storage or recording-format change because it uses the stable segment association."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i014_wrong_1",
+          "text": "Byte offsets are explicitly not the annotation identity; the screen would have to reverse-engineer the mapping."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i014_wrong_2",
+          "text": "That would change annotation identity even though the facts say stable segment IDs own it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i014_wrong_3",
+          "text": "That makes the editor depend on the persistence representation and reintroduces the known offset mismatch."
+        }
+      ],
+      "reason": "The stable segment ID is the domain association; a persistence mapper can translate the separate waveform offsets without exposing them to the editor.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i014_wrong_1",
+          "text": "Have the editor read offset rows and adjust each annotation after replacement."
+        },
+        {
+          "optionId": "n07_b01_i014_wrong_2",
+          "text": "Key all annotations only by the current recording file and rewrite their IDs after each replacement."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Retrieve by stable segment identity; translate waveform offsets behind the collection."
+        },
+        {
+          "optionId": "n07_b01_i014_wrong_3",
+          "text": "Return database rows so the editor can infer segment identity from current offsets."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a podcast production desk, an editor replaces a source recording. Annotations attach to stable segment IDs, not byte offsets, and the editor searches annotations by segment. The database stores waveform offsets in a separate table. Which contract should the editor use?",
+    "questionId": "ood-n07-b01-i014",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Every grant points to its approval and expiry.",
+      "Auditors search active grants by principal."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The repository exposes the same grant collection to lookup and audit callers while keeping key translation private.",
+        "scenarioApplication": "A second principal copy would add synchronization, while per-caller joins would duplicate the active predicate.",
+        "errorCorrection": "An active-grant query must evaluate the grant’s approval and expiry together; a principal copy or caller-side joins would create a second interpretation of those facts.",
+        "boundaryOrTradeoff": "An active grant query may take a time input, but its contract should not expose database keys or create role subclasses for data variants.",
+        "transfer": "Use domain criteria in the repository API and adapt storage-specific keys behind it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i015_wrong_1",
+          "text": "That duplicates the time and approval predicates and risks inconsistent access reports."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i015_wrong_2",
+          "text": "The prompt does not define synchronization or a second authoritative copy for active grants."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i015_wrong_4",
+          "text": "That leaks row keys into the audit caller instead of using principal/time domain criteria."
+        }
+      ],
+      "reason": "The audit needs the active-grant domain view with its approval link and expiry, although the database stores those facts under separate keys.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Query active grants by principal and time through a grant-domain collection."
+        },
+        {
+          "optionId": "n07_b01_i015_wrong_1",
+          "text": "Let each auditor query the two tables and decide whether a grant is active."
+        },
+        {
+          "optionId": "n07_b01_i015_wrong_2",
+          "text": "Copy active roles into a principal record whenever a grant changes."
+        },
+        {
+          "optionId": "n07_b01_i015_wrong_4",
+          "text": "Pass database key and time filters from the audit screen into a generic repository."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a permissions review service, a temporary role is granted only after a named approval and expires at a stated time. Auditors search active grants for one principal. Approval and grant rows use different storage keys. Which contract should the audit and grant workflows share?",
+    "questionId": "ood-n07-b01-i015",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "A seal is attached to an exact immutable revision.",
+      "A notary lists sealed revisions by document ID."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The collection can list sealed revisions by document and resolve the referenced bytes through its adapter.",
+        "scenarioApplication": "Loading the latest revision would silently change what was sealed; returning seal rows alone separates the linked domain facts.",
+        "errorCorrection": "Resolve the seal’s exact revision reference, not the document’s latest revision; that preserves what was signed while hiding the two-store join.",
+        "boundaryOrTradeoff": "The contract keeps the exact revision visible and storage joins private, without promising a particular blob-store implementation.",
+        "transfer": "When a persisted object spans metadata and payload stores, expose the linked domain object if callers reason about that link."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i016_wrong_1",
+          "text": "That couples the signing path to the storage split and can confuse the exact revision with the current document."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i016_wrong_2",
+          "text": "A seal points to an immutable exact revision, not whichever revision is latest at read time."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i016_wrong_3",
+          "text": "That leaves each caller to maintain the seal-to-revision relationship from two storage channels."
+        }
+      ],
+      "reason": "The immutable revision reference is part of the seal domain object, so the signing workflow should not recreate that association from storage keys.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i016_wrong_1",
+          "text": "Have the signing handler load revision bytes and seal rows itself before returning a result."
+        },
+        {
+          "optionId": "n07_b01_i016_wrong_2",
+          "text": "Resolve the document ID to the latest revision whenever a seal is read."
+        },
+        {
+          "optionId": "n07_b01_i016_wrong_3",
+          "text": "Return seal rows only and make callers retrieve revision bytes independently."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the exact sealed revision by document ID; map seal and bytes behind the contract."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a document notarization service, a seal refers to one immutable document revision. A notary may list sealed revisions by document ID, but the database stores seals and revision bytes separately. Which contract should the signing workflow depend on?",
+    "questionId": "ood-n07-b01-i016",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "A payout release is tied to a settled order and must not create a second release for the same operation.",
+      "Audit lookup is by seller and settlement window."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The repository operation can enforce the stated idempotent release key and provide seller/window domain lookup.",
+        "scenarioApplication": "A caller precheck or process-local set cannot replace one shared persisted operation contract across the described callers.",
+        "errorCorrection": "Apply the settled-order duplicate rule at the persisted payout operation; caller prechecks and a process-local set do not represent the shared release contract.",
+        "boundaryOrTradeoff": "The contract is limited to the specified settled-order idempotency; it does not assert a distributed exactly-once protocol.",
+        "transfer": "Keep persistence mapping behind the domain boundary and keep the guarantee no broader than the scenario states."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i017_wrong_1",
+          "text": "A caller-side precheck cannot be the shared domain contract and duplicates the idempotency decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i017_wrong_2",
+          "text": "The scenario gives no process lifetime or cross-instance guarantee for such a set."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i017_wrong_3",
+          "text": "That requires callers to reconstruct settlement and payout meaning from storage details."
+        }
+      ],
+      "reason": "The release and audit paths share payout-domain semantics, while the settlement and payout rows are only the current representation of those facts.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i017_wrong_1",
+          "text": "Let every caller query settlement and payout tables before attempting a release."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Expose payout release and seller/window lookup through a domain contract."
+        },
+        {
+          "optionId": "n07_b01_i017_wrong_2",
+          "text": "Use a process-local set of released order IDs as the only duplicate guard."
+        },
+        {
+          "optionId": "n07_b01_i017_wrong_3",
+          "text": "Expose raw order and payout rows through a generic data gateway."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a marketplace payout service, each release is idempotent for a settled order. Operations can inspect payouts by seller and settlement window; order settlement facts and payout rows are stored separately. Which interface should release and audit callers use?",
+    "questionId": "ood-n07-b01-i017",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The notice history is ordered by when changes became effective.",
+      "The query is scoped to route and service day."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The repository returns notice objects in the specified effective order for a route and day.",
+        "scenarioApplication": "Ordering by row creation or keeping only the latest value would violate the history contract.",
+        "errorCorrection": "Use effective time for the notice order and retain prior notices; row insertion order and a latest-value snapshot answer different questions.",
+        "boundaryOrTradeoff": "Keep effective-time ordering as a domain query rule; do not mistake the database insertion sequence for the stated order.",
+        "transfer": "If route and notice tables are later reorganized, the same route-history contract can remain stable."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i018_wrong_1",
+          "text": "Creation time is not the stated effective order, and the screen would depend on the storage join."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i018_wrong_2",
+          "text": "The scenario requires a notice history, so a latest-value snapshot cannot answer the audit query."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b01_i018_wrong_3",
+          "text": "That moves route association and effective-order semantics into every consumer."
+        }
+      ],
+      "reason": "The operator needs route-scoped notice history ordered by effective time; a domain collection query expresses both while hiding route/notice storage records.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b01_i018_wrong_1",
+          "text": "Have the operator screen join route and notice tables and order by the database row creation time."
+        },
+        {
+          "optionId": "n07_b01_i018_wrong_2",
+          "text": "Keep only the latest platform value on the route and discard prior notices."
+        },
+        {
+          "optionId": "n07_b01_i018_wrong_3",
+          "text": "Return raw notice rows and let each client reconstruct the route and effective sequence."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Query route/day notices in effective-time order; keep row sequence mechanics in persistence."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B01",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a public-transit disruption board, passengers must receive platform changes in effective order. Operators also search the notice history for a route and service day; storage uses separate route and notice records. Which contract should the operator workflow call?",
+    "questionId": "ood-n07-b01-i018",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/repository.html",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

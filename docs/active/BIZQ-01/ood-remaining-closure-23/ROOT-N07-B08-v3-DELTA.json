@@ -1,0 +1,134 @@
+{
+  "result": "PASS",
+  "scope": "Actual v2 to v3 Details-only diff; no semantic acceptance",
+  "inputSha256": "493b6658598afb8199ff392eaf682906dce27ef68ba74dadd159e13eb27d6030",
+  "fieldsChanged": 36,
+  "items": [
+    {
+      "questionId": "ood-n07-b08-i001",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i002",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i003",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i004",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i005",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i006",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i007",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i008",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i009",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i010",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i011",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i012",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i013",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i014",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i015",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i016",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i017",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b08-i018",
+      "changedDetailsFields": [
+        "mechanismOrProperty",
+        "scenarioApplication"
+      ]
+    }
+  ]
+}

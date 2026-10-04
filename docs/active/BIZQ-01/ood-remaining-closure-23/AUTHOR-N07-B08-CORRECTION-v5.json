@@ -1,0 +1,216 @@
+{
+  "schemaVersion": "patternly-bizq01-ood-n07-b08-author-correction-v5-v1",
+  "status": "bounded author correction; independent review pending; not semantic acceptance",
+  "unit": "B08",
+  "input": {
+    "path": "review-inputs/N07-B08-v4.json",
+    "sha256": "be7d5acfc2e2ccfa469ad6a70764572842bc873626e29414afd2f107f037bc2b"
+  },
+  "proposal": {
+    "path": "proposals/N07-B08.json",
+    "sha256": "7063afa97f8bb5cf004042d7b32b847610da80417a7864aacf52b5ad4073a9a2"
+  },
+  "summary": "Changed only the 18 questionIds from the original i001–i018 IDs to the corresponding manifest-reserved i019–i036 IDs, as bound by the independent content review and root identity check.",
+  "actualDifferenceCount": 18,
+  "actualDifferences": [
+    {
+      "questionId": "ood-n07-b08-i001",
+      "field": "questionId",
+      "before": "ood-n07-b08-i001",
+      "after": "ood-n07-b08-i019"
+    },
+    {
+      "questionId": "ood-n07-b08-i002",
+      "field": "questionId",
+      "before": "ood-n07-b08-i002",
+      "after": "ood-n07-b08-i020"
+    },
+    {
+      "questionId": "ood-n07-b08-i003",
+      "field": "questionId",
+      "before": "ood-n07-b08-i003",
+      "after": "ood-n07-b08-i021"
+    },
+    {
+      "questionId": "ood-n07-b08-i004",
+      "field": "questionId",
+      "before": "ood-n07-b08-i004",
+      "after": "ood-n07-b08-i022"
+    },
+    {
+      "questionId": "ood-n07-b08-i005",
+      "field": "questionId",
+      "before": "ood-n07-b08-i005",
+      "after": "ood-n07-b08-i023"
+    },
+    {
+      "questionId": "ood-n07-b08-i006",
+      "field": "questionId",
+      "before": "ood-n07-b08-i006",
+      "after": "ood-n07-b08-i024"
+    },
+    {
+      "questionId": "ood-n07-b08-i007",
+      "field": "questionId",
+      "before": "ood-n07-b08-i007",
+      "after": "ood-n07-b08-i025"
+    },
+    {
+      "questionId": "ood-n07-b08-i008",
+      "field": "questionId",
+      "before": "ood-n07-b08-i008",
+      "after": "ood-n07-b08-i026"
+    },
+    {
+      "questionId": "ood-n07-b08-i009",
+      "field": "questionId",
+      "before": "ood-n07-b08-i009",
+      "after": "ood-n07-b08-i027"
+    },
+    {
+      "questionId": "ood-n07-b08-i010",
+      "field": "questionId",
+      "before": "ood-n07-b08-i010",
+      "after": "ood-n07-b08-i028"
+    },
+    {
+      "questionId": "ood-n07-b08-i011",
+      "field": "questionId",
+      "before": "ood-n07-b08-i011",
+      "after": "ood-n07-b08-i029"
+    },
+    {
+      "questionId": "ood-n07-b08-i012",
+      "field": "questionId",
+      "before": "ood-n07-b08-i012",
+      "after": "ood-n07-b08-i030"
+    },
+    {
+      "questionId": "ood-n07-b08-i013",
+      "field": "questionId",
+      "before": "ood-n07-b08-i013",
+      "after": "ood-n07-b08-i031"
+    },
+    {
+      "questionId": "ood-n07-b08-i014",
+      "field": "questionId",
+      "before": "ood-n07-b08-i014",
+      "after": "ood-n07-b08-i032"
+    },
+    {
+      "questionId": "ood-n07-b08-i015",
+      "field": "questionId",
+      "before": "ood-n07-b08-i015",
+      "after": "ood-n07-b08-i033"
+    },
+    {
+      "questionId": "ood-n07-b08-i016",
+      "field": "questionId",
+      "before": "ood-n07-b08-i016",
+      "after": "ood-n07-b08-i034"
+    },
+    {
+      "questionId": "ood-n07-b08-i017",
+      "field": "questionId",
+      "before": "ood-n07-b08-i017",
+      "after": "ood-n07-b08-i035"
+    },
+    {
+      "questionId": "ood-n07-b08-i018",
+      "field": "questionId",
+      "before": "ood-n07-b08-i018",
+      "after": "ood-n07-b08-i036"
+    }
+  ],
+  "mechanicalCheck": {
+    "result": "PASS",
+    "scope": "Mechanical schema/count/taxonomy/identity correspondence, actual scoring/reversal and exact wrong-diagnostic bindings only; no semantic or identity-action acceptance",
+    "unit": "OOD-N07-B08",
+    "proposal": "N07-B08.json",
+    "proposalSha256": "7063afa97f8bb5cf004042d7b32b847610da80417a7864aacf52b5ad4073a9a2",
+    "wholeObjectCount": 18,
+    "optionsChecked": 90
+  },
+  "identityEvidence": {
+    "path": "ROOT-N07-B08-v4-IDENTITY-BINDINGS.json",
+    "sha256": "735e6d3c4a006c9f444eaea8686dcfcf3024d3f13e8231f41387c6e936e827b8",
+    "result": "PASS_BINDINGS",
+    "reviewJsonSha256": "e3c6e4b1c93f9ba6f67ff82a7a9f659e55564e483eaa6364a98a8d88e641617d",
+    "allContentVerdictsPass": true
+  },
+  "identityMap": [
+    {
+      "beforeQuestionId": "ood-n07-b08-i001",
+      "questionId": "ood-n07-b08-i019"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i002",
+      "questionId": "ood-n07-b08-i020"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i003",
+      "questionId": "ood-n07-b08-i021"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i004",
+      "questionId": "ood-n07-b08-i022"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i005",
+      "questionId": "ood-n07-b08-i023"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i006",
+      "questionId": "ood-n07-b08-i024"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i007",
+      "questionId": "ood-n07-b08-i025"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i008",
+      "questionId": "ood-n07-b08-i026"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i009",
+      "questionId": "ood-n07-b08-i027"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i010",
+      "questionId": "ood-n07-b08-i028"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i011",
+      "questionId": "ood-n07-b08-i029"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i012",
+      "questionId": "ood-n07-b08-i030"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i013",
+      "questionId": "ood-n07-b08-i031"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i014",
+      "questionId": "ood-n07-b08-i032"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i015",
+      "questionId": "ood-n07-b08-i033"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i016",
+      "questionId": "ood-n07-b08-i034"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i017",
+      "questionId": "ood-n07-b08-i035"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i018",
+      "questionId": "ood-n07-b08-i036"
+    }
+  ],
+  "scopeGuarantee": "The parsed JSON diff contains only the questionId leaf for each of the 18 items; every other proposal field equals the frozen v4 object."
+}

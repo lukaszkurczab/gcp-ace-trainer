@@ -1,0 +1,10 @@
+{
+  "result": "PASS",
+  "scope": "Root actual files and independently reviewed PO-directed section7 delta, all other specbytes/currentforeignstatefooter unchanged. Not implementation/knowncriticalrisk/release acceptance.",
+  "qaJsonSha256": "c66c527d75de31ad0b7ec8549f7d4c12e52a83674b3244ddb5f267e63c097647",
+  "qaMdSha256": "4799456ad740bd639afff66f346f0cf84ac86ebe66992b40bc0a8d77c74a0055",
+  "specSha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3",
+  "exactRestoredHeadSpecSha256": "67aba008969eb570c86e1fbefc5b88a5e65f422d160fc7dcfd38084b59ff67d5",
+  "allQaInputBindingsMatched": true,
+  "foreignFooterPreserved": true
+}

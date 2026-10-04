@@ -1,0 +1,228 @@
+{
+  "unit": "OOD-N07-B06",
+  "correctionRevision": 5,
+  "proposalSha256": "495d6b144b2ad2d682b11d3fb771c108707026519456031982b8f9eb6e1d1136",
+  "priorFrozenInput": "docs/active/BIZQ-01/ood-remaining-closure-23/review-inputs/N07-B06-v4.json",
+  "priorFrozenInputSha256": "c0cc8fd32d0a19cd35d77fbe4d86e47b29ac0808bcd06e22bc42b436625d75ef",
+  "manifestSha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01",
+  "verification": {
+    "command": "node docs/active/BIZQ-01/ood-remaining-closure-23/check-proposal-unit.mjs N07-B06.json",
+    "result": "PASS",
+    "wholeObjects": 18,
+    "optionsChecked": 90,
+    "wrongOptionMessagesActuallyChanged": 72,
+    "scope": "Mechanical schema/count/taxonomy/identity correspondence, scoring/reversal, exact message target binding. No semantic acceptance."
+  },
+  "specialFindings": {
+    "i005": "Prompt now binds returned digest to selected immutable revision R17 (D17) so verification against signer-selected bytes is evidenced.",
+    "i007": "Prompt supplies a numeric UTC offset, including repeated DST local times; alternate boundary no longer claims offset is absent.",
+    "i001": "wrong_3 diagnostic addresses version-specific domain branching.",
+    "i002": "wrong_1 diagnostic addresses silent acceptance without attributing unmentioned evidence loss."
+  },
+  "identity": "All 18 QIDs and accepted option IDs preserved; primary mapping decision remains unchanged.",
+  "items": [
+    {
+      "questionId": "ood-n07-b06-i001",
+      "beforeQuestionId": "ood-n07-b06-i001",
+      "priorDecision": "Translate the partner code to the stable exercise ID; carry score and policy revision into completion.",
+      "currentDecision": "Translate the partner code to the stable exercise ID; carry score and policy revision into completion.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four option diagnostics corrected to actual target decisions",
+        "case application text"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i002",
+      "beforeQuestionId": "ood-n07-b06-i002",
+      "priorDecision": "Map recognized statuses; retain an unknown supplier value with a quarantined review record.",
+      "currentDecision": "Map recognized statuses; retain an unknown supplier value with a quarantined review record.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four option diagnostics corrected to actual target decisions",
+        "case application text"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i003",
+      "beforeQuestionId": "ood-n07-b06-i003",
+      "priorDecision": "Resolve vendor offsets to stable segment IDs before replacing the recording.",
+      "currentDecision": "Resolve vendor offsets to stable segment IDs before replacing the recording.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i004",
+      "beforeQuestionId": "ood-n07-b06-i004",
+      "priorDecision": "Resolve the provider email to a verified principal; retain approval ID and UTC expiry in the grant command.",
+      "currentDecision": "Resolve the provider email to a verified principal; retain approval ID and UTC expiry in the grant command.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i005",
+      "beforeQuestionId": "ood-n07-b06-i005",
+      "priorDecision": "Verify the returned digest against the signer-selected revision; record that revision on the seal.",
+      "currentDecision": "Verify the returned digest against the signer-selected revision; record that revision on the seal.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i006",
+      "beforeQuestionId": "ood-n07-b06-i006",
+      "priorDecision": "Construct Money from cents and currency; pass it with the settled order identity to payout.",
+      "currentDecision": "Construct Money from cents and currency; pass it with the settled order identity to payout.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i007",
+      "beforeQuestionId": "ood-n07-b06-i007",
+      "priorDecision": "Parse the supplied offset into an instant; retain the original timestamp text for display.",
+      "currentDecision": "Parse the supplied offset into an instant; retain the original timestamp text for display.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four option diagnostics",
+        "scenarioApplication",
+        "reason",
+        "tradeoff corrected to match supplied offset"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i008",
+      "beforeQuestionId": "ood-n07-b06-i008",
+      "priorDecision": "Convert watt-hours to kilowatt-hours and resolve the registry meter ID before checking capacity.",
+      "currentDecision": "Convert watt-hours to kilowatt-hours and resolve the registry meter ID before checking capacity.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i009",
+      "beforeQuestionId": "ood-n07-b06-i009",
+      "priorDecision": "Translate supported language codes and provider errors; retain unknown codes in boundary diagnostics.",
+      "currentDecision": "Translate supported language codes and provider errors; retain unknown codes in boundary diagnostics.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i010",
+      "beforeQuestionId": "ood-n07-b06-i010",
+      "priorDecision": "Map both volunteer IDs, then invoke the domain’s joint swap operation.",
+      "currentDecision": "Map both volunteer IDs, then invoke the domain’s joint swap operation.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i011",
+      "beforeQuestionId": "ood-n07-b06-i011",
+      "priorDecision": "Map the patch and expected revision; let the domain apply its conflict rule.",
+      "currentDecision": "Map the patch and expected revision; let the domain apply its conflict rule.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i012",
+      "beforeQuestionId": "ood-n07-b06-i012",
+      "priorDecision": "Translate known reward codes; preserve an unknown code for support and reject it.",
+      "currentDecision": "Translate known reward codes; preserve an unknown code for support and reject it.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i013",
+      "beforeQuestionId": "ood-n07-b06-i013",
+      "priorDecision": "Resolve shipment identity and convert both temperatures before the handoff operation.",
+      "currentDecision": "Resolve shipment identity and convert both temperatures before the handoff operation.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i014",
+      "beforeQuestionId": "ood-n07-b06-i014",
+      "priorDecision": "Classify a positive repayment separately from a negative reversal; retain the bank reference.",
+      "currentDecision": "Classify a positive repayment separately from a negative reversal; retain the bank reference.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i015",
+      "beforeQuestionId": "ood-n07-b06-i015",
+      "priorDecision": "Translate the status and invoke the state-checked match result operation.",
+      "currentDecision": "Translate the status and invoke the state-checked match result operation.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i016",
+      "beforeQuestionId": "ood-n07-b06-i016",
+      "priorDecision": "Record scanner labels as evidence; evaluate refund eligibility with the return policy.",
+      "currentDecision": "Record scanner labels as evidence; evaluate refund eligibility with the return policy.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i017",
+      "beforeQuestionId": "ood-n07-b06-i017",
+      "priorDecision": "Resolve both handles to immutable dataset and code revisions before publishing provenance.",
+      "currentDecision": "Resolve both handles to immutable dataset and code revisions before publishing provenance.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i018",
+      "beforeQuestionId": "ood-n07-b06-i018",
+      "priorDecision": "Map markdown, author identity, and revision into the comment; notify only after acceptance.",
+      "currentDecision": "Map markdown, author identity, and revision into the comment; notify only after acceptance.",
+      "identityAction": "preserve_question_id",
+      "rationale": "Both versions ask how to map an external representation to the existing domain contract; only premises and case-specific mapping/explanations changed.",
+      "actualChanges": [
+        "all four wrong-option messages rewritten to diagnose the exact selected misconception"
+      ]
+    }
+  ]
+}

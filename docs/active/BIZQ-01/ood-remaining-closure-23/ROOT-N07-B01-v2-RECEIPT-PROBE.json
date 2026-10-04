@@ -1,0 +1,20 @@
+{
+  "result": "FAIL_EXACT_OBJECT_HASH_BINDING",
+  "stage": "Root independent B01v2 per-object receipt check",
+  "rawInputAndCriteriaBindingsMatch": true,
+  "semanticReviewNotInvalidatedByThisProbe": true,
+  "canonicalRootFirstHash": "ecf6a0a8fe4e3617848948c2e3b991c0e067916860a2c1e189d6eff37f71bf5e",
+  "reportedFirstHash": "380eb3f61d9ed180610aad7a5352c64973c6d501ddb06128978108e183adf8ae",
+  "candidateSerializerMatches": [
+    {
+      "ensure_ascii": false,
+      "sort_keys": false,
+      "separators": [
+        ",",
+        ":"
+      ],
+      "newline": false
+    }
+  ],
+  "action": "Reviewer must supplement exact producer canonical hashes and prove same reviewed whole objects; preserve original QA; no source activation"
+}

@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "patternly-bizq01-ood-n07-b08-author-correction-v4-v1",
+  "status": "bounded author correction; submitted for independent review; not semantic acceptance",
+  "unit": "B08",
+  "frozenV3": {
+    "path": "review-inputs/N07-B08-v3.json",
+    "sha256": "493b6658598afb8199ff392eaf682906dce27ef68ba74dadd159e13eb27d6030"
+  },
+  "currentProposal": {
+    "path": "proposals/N07-B08.json",
+    "sha256": "be7d5acfc2e2ccfa469ad6a70764572842bc873626e29414afd2f107f037bc2b"
+  },
+  "changeSummary": "Remove only the exact duplicate BoundaryOrTradeoff sentence from ErrorCorrection in the 16 items where it was present; align the certainty wording in constraints[0] for i001 and i018 with the prompt’s confirmed commit.",
+  "changedFields": [
+    {
+      "questionId": "ood-n07-b08-i001",
+      "field": "constraints[0]",
+      "before": "The first commit may have succeeded, and the retry carries the same operation identity.",
+      "after": "The first commit succeeded, and the retry carries the same operation identity."
+    },
+    {
+      "questionId": "ood-n07-b08-i002",
+      "field": "feedback.details.errorCorrection",
+      "before": "Retrying unchanged invalid input cannot repair its validation failure. If validation occurred after a possible write, the result would need reconciliation rather than this pre-write response.",
+      "after": "Retrying unchanged invalid input cannot repair its validation failure."
+    },
+    {
+      "questionId": "ood-n07-b08-i003",
+      "field": "feedback.details.errorCorrection",
+      "before": "Blind rebase can overwrite geometry the second editor never saw. If the product defined a merge rule for concurrent edits, it could offer a merge after detecting the version mismatch.",
+      "after": "Blind rebase can overwrite geometry the second editor never saw."
+    },
+    {
+      "questionId": "ood-n07-b08-i004",
+      "field": "feedback.details.errorCorrection",
+      "before": "Publishing first can notify users about a notice that never commits. The design provides durable retryable intent and duplicate tolerance, not universal exactly-once delivery.",
+      "after": "Publishing first can notify users about a notice that never commits."
+    },
+    {
+      "questionId": "ood-n07-b08-i005",
+      "field": "feedback.details.errorCorrection",
+      "before": "Both processes can pass their own check before either save completes. The implementation could use a database constraint or a transactionally checked write; the case does not prescribe one technology.",
+      "after": "Both processes can pass their own check before either save completes."
+    },
+    {
+      "questionId": "ood-n07-b08-i006",
+      "field": "feedback.details.errorCorrection",
+      "before": "Sending is not the same as remote acceptance. If the remote API offered a definitive rejection response, the local state could transition directly to rejected.",
+      "after": "Sending is not the same as remote acceptance."
+    },
+    {
+      "questionId": "ood-n07-b08-i007",
+      "field": "feedback.details.errorCorrection",
+      "before": "The case states one transaction may exceed its operational limit. If the batch contract required all assets to appear atomically, partial checkpoints would not satisfy it.",
+      "after": "The case states one transaction may exceed its operational limit."
+    },
+    {
+      "questionId": "ood-n07-b08-i008",
+      "field": "feedback.details.errorCorrection",
+      "before": "Discarding the original link loses the delivery promise and confirmed work. If neither vendor response were known, both portions would remain unresolved rather than confirmed.",
+      "after": "Discarding the original link loses the delivery promise and confirmed work."
+    },
+    {
+      "questionId": "ood-n07-b08-i009",
+      "field": "feedback.details.errorCorrection",
+      "before": "A title can be reused across separate experiments. If the caller used a new run ID, it would represent a new experiment under the stated contract.",
+      "after": "A title can be reused across separate experiments."
+    },
+    {
+      "questionId": "ood-n07-b08-i010",
+      "field": "feedback.details.errorCorrection",
+      "before": "One principal ID would suppress valid later events. If the provider assigned a new event ID to a genuine correction, that correction should be processed as its own event.",
+      "after": "One principal ID would suppress valid later events."
+    },
+    {
+      "questionId": "ood-n07-b08-i011",
+      "field": "feedback.details.errorCorrection",
+      "before": "Volunteer identity does not distinguish two claims for the same reminder. If a lease could never be reassigned while work was active, the stale completion race would not arise.",
+      "after": "Volunteer identity does not distinguish two claims for the same reminder."
+    },
+    {
+      "questionId": "ood-n07-b08-i012",
+      "field": "feedback.details.errorCorrection",
+      "before": "A crash between writes leaves the ledger inconsistent. If balance were derived solely from allocation rows, the stored balance update might not be needed.",
+      "after": "A crash between writes leaves the ledger inconsistent."
+    },
+    {
+      "questionId": "ood-n07-b08-i013",
+      "field": "feedback.details.errorCorrection",
+      "before": "Creating pending work contradicts the stated no-write cancellation. If cancellation occurred after submission with unknown commit status, the system would need to reconcile the attempt instead.",
+      "after": "Creating pending work contradicts the stated no-write cancellation."
+    },
+    {
+      "questionId": "ood-n07-b08-i014",
+      "field": "feedback.details.errorCorrection",
+      "before": "Current inputs can produce a different amount from the original decision. If the product intentionally recalculated live payouts on every view, historical reproduction would not be required.",
+      "after": "Current inputs can produce a different amount from the original decision."
+    },
+    {
+      "questionId": "ood-n07-b08-i015",
+      "field": "feedback.details.errorCorrection",
+      "before": "Price can become visible before stock validation. If price and stock were independent listing attributes under the product contract, separate writes could be acceptable.",
+      "after": "Price can become visible before stock validation."
+    },
+    {
+      "questionId": "ood-n07-b08-i016",
+      "field": "feedback.details.errorCorrection",
+      "before": "Titles can collide and do not identify the provider asset. If the provider key could be reused for different assets, the import would need a broader identity scope.",
+      "after": "Titles can collide and do not identify the provider asset."
+    },
+    {
+      "questionId": "ood-n07-b08-i018",
+      "field": "feedback.details.errorCorrection",
+      "before": "New command IDs obscure that both requests represent the same cancellation. A new cancellation with a different command ID would need its own validation against current reservation state.",
+      "after": "New command IDs obscure that both requests represent the same cancellation."
+    },
+    {
+      "questionId": "ood-n07-b08-i018",
+      "field": "constraints[0]",
+      "before": "The cancellation commit may have succeeded and the retry uses the same command identity.",
+      "after": "The cancellation commit succeeded and the retry uses the same command identity."
+    }
+  ],
+  "mechanicalCheck": {
+    "result": "PASS",
+    "scope": "Mechanical schema/count/taxonomy/identity correspondence, actual scoring/reversal and exact wrong-diagnostic bindings only; no semantic or identity-action acceptance",
+    "unit": "OOD-N07-B08",
+    "proposal": "N07-B08.json",
+    "proposalSha256": "be7d5acfc2e2ccfa469ad6a70764572842bc873626e29414afd2f107f037bc2b",
+    "wholeObjectCount": 18,
+    "optionsChecked": 90
+  }
+}

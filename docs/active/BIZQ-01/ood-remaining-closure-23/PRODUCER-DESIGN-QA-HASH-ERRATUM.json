@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "record": "producer-design-qa-hash-erratum",
+  "scope": "Metadata correction only; the original design QA report and JSON are preserved unchanged.",
+  "originalReports": [
+    {
+      "path": "PRODUCER-DESIGN-QA.md",
+      "sha256": "f9dce195fdef63ebc3b43762b9e9a6e4f35e0fc828a6f3a9c9b5c963590906d7"
+    },
+    {
+      "path": "PRODUCER-DESIGN-QA.json",
+      "sha256": "ffa0cff10dd7baf6fa6105128bcd2b0ccd35c4a751b89c5cc28fd0ffbe95c378"
+    }
+  ],
+  "hashCorrection": {
+    "file": "PRODUCER-N07-23-BRIEFING.md",
+    "incorrectHashQuotedInOriginalMarkdown": "383e3c2ed23a466dd4c5a0784bbf2cc5f3bcd36c9c8eff3548d69784c0853100",
+    "correctFinalHash": "79fb6f297937f4ffec75b81a6617bb6b4a09ac2d0fe9cb1c49e3f5d904d683dc",
+    "originalReviewJsonAlreadyBindsCorrectHash": true
+  },
+  "otherBindingsUnchanged": {
+    "briefingJsonSha256": "5e6c18a36589c729305482beb4c54afbfd62af53dcdca77a9a4a9e6679bef6b6",
+    "producerMapSha256": "f64e82bdf4a997d28a30c44774cd1280beec303620bda3e758150638b2ba9414",
+    "preparedFixedProofSha256": "f1f69a22382dd3acac3e1b0ec8122693265e31a21e2997e467b22985b3831d76"
+  },
+  "unchangedDecision": {
+    "verdict": "PASS",
+    "scores": {
+      "objectiveFit": 0.95,
+      "simplicity": 0.86,
+      "risk": 0.84,
+      "maintainability": 0.84,
+      "minimum": 0.84
+    },
+    "implementationDetail": "Restore questionLocations for replaced N07 IDs with their prior question objects in the private v22 canonical view."
+  },
+  "acceptanceBoundary": "Design review only; no implementation, source, consumer, candidate, admission, release, native/Premium, or full BIZQ-01 acceptance."
+}

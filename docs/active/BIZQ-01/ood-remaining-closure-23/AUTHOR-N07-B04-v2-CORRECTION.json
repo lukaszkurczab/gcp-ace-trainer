@@ -1,0 +1,242 @@
+{
+  "schemaVersion": "patternly-n07-b04-v2-correction-v1",
+  "verdict": "READY_FOR_INDEPENDENT_REREVIEW",
+  "scope": "Bounded author correction of B04 v1 form-cue finding only; does not accept semantics or introduce a count/style threshold.",
+  "baseline": {
+    "frozenProposalSha256": "39a1ff59885a25605201d27f0943816dbda6b44c0890709c12c6ed6c9363ad94",
+    "semanticReviewMdSha256": "c5db6caa981a99febc80dc76536e14e28b36886686e5fe717c1a4131c75c531f",
+    "semanticReviewJsonSha256": "82086cfa526d8dd09265e07203a20ac62bae682f5763599e4e500bc84d95e2c1"
+  },
+  "proposalSha256": "587ce71b9b6dafed7151c52a248a084b1a59623d7e04c1a5c367d63fffbfddc9",
+  "mechanical": {
+    "result": "PASS",
+    "wholeObjectCount": 18,
+    "optionsChecked": 90,
+    "scope": "Mechanical schema/count/taxonomy/identity correspondence, actual scoring/reversal and exact wrong-diagnostic bindings only; no semantic or identity-action acceptance"
+  },
+  "changes": {
+    "questionIdsPreserved": true,
+    "acceptedOptionIdsPreserved": true,
+    "caseSpecificCompetingApproaches": 18,
+    "formCueApproach": "Rewrote accepted choices as concise, case-specific operation-scoped identity/UoW decisions and expanded one competing path per item into a complete alternative with a concrete failure against visible case facts. Option specificity varied naturally; no padding, equal-length, option-count or rank threshold was imposed.",
+    "externalEffectBoundary": "Retained local work-unit boundaries and specified after-commit sequencing; no answer implies an atomic transaction with an external provider."
+  },
+  "items": [
+    {
+      "questionId": "ood-n07-b04-i001",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Resolve route ID and tile search to one route instance; track geometry until explicit conflict resolution.",
+      "expandedAlternativeId": "n07_b04_i001_wrong_4",
+      "wrongOptionTargets": [
+        "n07_b04_i001_wrong_1",
+        "n07_b04_i001_wrong_2",
+        "n07_b04_i001_wrong_3",
+        "n07_b04_i001_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i002",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Return one character for both reads and track validated inventory and score together.",
+      "expandedAlternativeId": "n07_b04_i002_wrong_4",
+      "wrongOptionTargets": [
+        "n07_b04_i002_wrong_1",
+        "n07_b04_i002_wrong_2",
+        "n07_b04_i002_wrong_3",
+        "n07_b04_i002_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i003",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Use one shipment instance; track carrier and handoff until validation succeeds.",
+      "expandedAlternativeId": "n07_b04_i003_wrong_4",
+      "wrongOptionTargets": [
+        "n07_b04_i003_wrong_1",
+        "n07_b04_i003_wrong_2",
+        "n07_b04_i003_wrong_3",
+        "n07_b04_i003_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i004",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Track one account’s balance with its matching allocation in a single work unit.",
+      "expandedAlternativeId": "n07_b04_i004_wrong_1",
+      "wrongOptionTargets": [
+        "n07_b04_i004_wrong_1",
+        "n07_b04_i004_wrong_2",
+        "n07_b04_i004_wrong_3",
+        "n07_b04_i004_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i005",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Track match and bracket outcome together; notify after the local commit.",
+      "expandedAlternativeId": "n07_b04_i005_wrong_2",
+      "wrongOptionTargets": [
+        "n07_b04_i005_wrong_1",
+        "n07_b04_i005_wrong_2",
+        "n07_b04_i005_wrong_3",
+        "n07_b04_i005_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i006",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Return one revision identity from both lookups for the signing request.",
+      "expandedAlternativeId": "n07_b04_i006_wrong_1",
+      "wrongOptionTargets": [
+        "n07_b04_i006_wrong_1",
+        "n07_b04_i006_wrong_2",
+        "n07_b04_i006_wrong_3",
+        "n07_b04_i006_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i007",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Track the result and both revision links; publish only when the snapshot is complete.",
+      "expandedAlternativeId": "n07_b04_i007_wrong_3",
+      "wrongOptionTargets": [
+        "n07_b04_i007_wrong_1",
+        "n07_b04_i007_wrong_2",
+        "n07_b04_i007_wrong_3",
+        "n07_b04_i007_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i008",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Commit the comment and author/revision links before separate notification.",
+      "expandedAlternativeId": "n07_b04_i008_wrong_4",
+      "wrongOptionTargets": [
+        "n07_b04_i008_wrong_1",
+        "n07_b04_i008_wrong_2",
+        "n07_b04_i008_wrong_3",
+        "n07_b04_i008_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i009",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Track evidence and completion together; mark complete only after required evidence passes.",
+      "expandedAlternativeId": "n07_b04_i009_wrong_2",
+      "wrongOptionTargets": [
+        "n07_b04_i009_wrong_1",
+        "n07_b04_i009_wrong_2",
+        "n07_b04_i009_wrong_3",
+        "n07_b04_i009_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i010",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Save the new invoice with its rejected-issue reference before requesting payment.",
+      "expandedAlternativeId": "n07_b04_i010_wrong_3",
+      "wrongOptionTargets": [
+        "n07_b04_i010_wrong_1",
+        "n07_b04_i010_wrong_2",
+        "n07_b04_i010_wrong_3",
+        "n07_b04_i010_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i011",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Resolve one badge per request; check revocation before granting access.",
+      "expandedAlternativeId": "n07_b04_i011_wrong_3",
+      "wrongOptionTargets": [
+        "n07_b04_i011_wrong_1",
+        "n07_b04_i011_wrong_2",
+        "n07_b04_i011_wrong_3",
+        "n07_b04_i011_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i012",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Save the label and approved-revision link before retryable printing.",
+      "expandedAlternativeId": "n07_b04_i012_wrong_2",
+      "wrongOptionTargets": [
+        "n07_b04_i012_wrong_1",
+        "n07_b04_i012_wrong_2",
+        "n07_b04_i012_wrong_3",
+        "n07_b04_i012_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i013",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Track room and interval after capacity validation; calculate fees later.",
+      "expandedAlternativeId": "n07_b04_i013_wrong_3",
+      "wrongOptionTargets": [
+        "n07_b04_i013_wrong_1",
+        "n07_b04_i013_wrong_2",
+        "n07_b04_i013_wrong_3",
+        "n07_b04_i013_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i014",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Commit maintenance mode with the technician before acknowledging entry.",
+      "expandedAlternativeId": "n07_b04_i014_wrong_1",
+      "wrongOptionTargets": [
+        "n07_b04_i014_wrong_1",
+        "n07_b04_i014_wrong_2",
+        "n07_b04_i014_wrong_3",
+        "n07_b04_i014_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i015",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Use one lesson instance; retire it without changing progress identity.",
+      "expandedAlternativeId": "n07_b04_i015_wrong_1",
+      "wrongOptionTargets": [
+        "n07_b04_i015_wrong_1",
+        "n07_b04_i015_wrong_2",
+        "n07_b04_i015_wrong_3",
+        "n07_b04_i015_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i016",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Save the close marker with the final event cutoff before starting export.",
+      "expandedAlternativeId": "n07_b04_i016_wrong_3",
+      "wrongOptionTargets": [
+        "n07_b04_i016_wrong_1",
+        "n07_b04_i016_wrong_2",
+        "n07_b04_i016_wrong_3",
+        "n07_b04_i016_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i017",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Use one conversation; save owner and deadline as the accepted pair.",
+      "expandedAlternativeId": "n07_b04_i017_wrong_2",
+      "wrongOptionTargets": [
+        "n07_b04_i017_wrong_1",
+        "n07_b04_i017_wrong_2",
+        "n07_b04_i017_wrong_3",
+        "n07_b04_i017_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b04-i018",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedText": "Load one listing; validate price and stock, then save its published state.",
+      "expandedAlternativeId": "n07_b04_i018_wrong_1",
+      "wrongOptionTargets": [
+        "n07_b04_i018_wrong_1",
+        "n07_b04_i018_wrong_2",
+        "n07_b04_i018_wrong_3",
+        "n07_b04_i018_wrong_4"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "result": "PASS",
+  "scope": "Root exact unit proposal review bindings only; cross-unit/source/producer/admission pending",
+  "unit": "B05",
+  "version": "v3",
+  "qaJsonSha256": "df0b3f54f18d620c04a32a43b8daeba3c264e401797dfae96050f1534041c390",
+  "inputSha256": "29555ebae14dd0a5df967178939d0c7c46bbd22996f8eeaf7a3b43618af113b7",
+  "wholeObjectsMatched": 18,
+  "bindings": [
+    {
+      "path": "review-inputs/N07-B05-v3.json",
+      "sha256": "29555ebae14dd0a5df967178939d0c7c46bbd22996f8eeaf7a3b43618af113b7"
+    },
+    {
+      "path": "review-inputs/N07-B05-v2.json",
+      "sha256": "0c836263bf7f0724099436beedae72fd57b3c2e301d21b313b5fbb50da635f6f"
+    },
+    {
+      "path": "SEMANTIC-N07-B05-v2-QA.json",
+      "sha256": "c8879beb595ef2eff57e1b8a7bb52cd81e9d526412181dd4bdb1ebe65e80a594"
+    },
+    {
+      "path": "N07-MANIFEST.json",
+      "sha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01"
+    },
+    {
+      "path": "patternly-content/content/object-oriented-design-interview/persistence_repositories_serialization_and_domain_boundaries/OOD-N07-B05.json",
+      "sha256": "5b83e98882bd8172df47be1e02dd1cadfdaa107afd1753edf8af90b36343a76b"
+    },
+    {
+      "path": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+      "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3"
+    },
+    {
+      "path": "docs/07-content-guidelines.md",
+      "sha256": "cffd5dae0850ecd7fc1f2e05e28f7e83c7ca9460207f6f857713d196254773e5"
+    },
+    {
+      "path": "N07-CONTRACT.json",
+      "sha256": "79c6dd8d2861d21eec0122675659840ba6f04883f546ec9ef4326f29320d4720"
+    },
+    {
+      "path": "N07-BRIEFING.md",
+      "sha256": "9370339439c25f7fe065e3753af31f0436d0e0e78e9084815d83c5ad9039e4d3"
+    },
+    {
+      "path": "ROOT-N07-B05-v3-MECHANICAL.json",
+      "sha256": "f717476ed58e4cf90a874ec2072318bbabd764e43e1ff0df967569b34c5ac0c5"
+    },
+    {
+      "path": "ROOT-N07-B05-v3-FREEZE.json",
+      "sha256": "422a4a862bb3789ae64355e23fddbefb44a823515bc878bac4cbbefd23f1ad67"
+    },
+    {
+      "path": "ROOT-N07-B05-v3-CORRECTION.json",
+      "sha256": "5b1191e9910c610b8812fa14d279180b2b3db6475ddef6d2bc296b47de48f272"
+    }
+  ],
+  "packageAcceptance": false,
+  "sourceActivation": false
+}

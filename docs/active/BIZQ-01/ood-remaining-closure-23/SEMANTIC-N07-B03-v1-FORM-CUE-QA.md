@@ -1,0 +1,9 @@
+# N07 B03 v1 form-cue supplement
+
+**Verdict: REVISE.** Frozen proposal SHA-256 `97cdc4698077a34576da5762805782c17edd34bcb08345d363df779c8b849865`. This supplement adds an independent §4.3 assessment to the unit review; it preserves the original report and does not create a numeric gate.
+
+I measured the JavaScript character length of each authored option and found the accepted choice by its answer.optionId. The accepted answer is uniquely longest in **17 of 18** questions: ood-n07-b03-i001, ood-n07-b03-i003, ood-n07-b03-i004, ood-n07-b03-i005, ood-n07-b03-i006, ood-n07-b03-i007, ood-n07-b03-i008, ood-n07-b03-i009, ood-n07-b03-i010, ood-n07-b03-i011, ood-n07-b03-i012, ood-n07-b03-i013, ood-n07-b03-i014, ood-n07-b03-i015, ood-n07-b03-i016, ood-n07-b03-i017, ood-n07-b03-i018. In most, the key spells out the full mapping plus which policy/effect remains elsewhere, while competing choices are much shorter and frequently state only one bad action. This creates a cohort-level longest-choice signal even though a longer response can be justified in an individual item. The 17/18 figure describes the observed cue; it is not a threshold.
+
+BIZQ-01 §4.3 expressly says not to require equal word counts but to remove a systematic longest-correct signal. The correction should make credible competing mapping alternatives sufficiently complete, or make supported keys more concise where possible. Do not add padding or an equal-length rule. Recheck option-to-feedback targeting after edits; retain each option ID only when its answer meaning remains unchanged.
+
+Detailed per-item option character counts and the method are recorded in the JSON. The original whole-object review remains bound to the same frozen input and records a separate i006 premise gap. No N07 cross-unit or source/producer/runtime acceptance is claimed.

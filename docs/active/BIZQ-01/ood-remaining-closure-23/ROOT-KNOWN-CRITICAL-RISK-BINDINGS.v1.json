@@ -1,0 +1,22 @@
+{
+  "result": "PASS",
+  "scope": "Root exact prior46 whole-object finding reuse and actual current configured runtime-pool membership only; sourcecue/staticrenderer risk, no native or release acceptance",
+  "knownCriticalReviewedObjects": 46,
+  "ordinaryPoolMembers": [
+    "besd-n01-b01-i005",
+    "besd-n01-b06-i011",
+    "fesd-n01-b07-i017",
+    "fesd-n01-b01-i011"
+  ],
+  "ordinaryPoolAbsentCount": 42,
+  "runtimeEvidenceSha256": "312035fb30a49fab4281b48766842c233b7c9368fe7ffe1a4e946eb2ce207dcd",
+  "helperSha256": "d6952b0ae8d8a2072cdb3d5c3611a57a659ecb6090fe28433fbe7bf14b22260b",
+  "currentAppFileBindings": {
+    "src/features/practice/DesignInterviewPracticeScreen.tsx": "a18f3881c56b79ee2988c9bd4ee913f733822f715f96b72f4ff2d7d3b4b3feb9",
+    "src/features/practice/PracticeQuestionCard.tsx": "f8bed97ece78c1767820926f832601e998dd765d5d3c5dc0129e7caf2c53b25a",
+    "src/content/canonical/runtimeCatalog.ts": "06c1959bab4747dc26c91f497d94b8fda6a7115f1ad6f2df307288e80c545657",
+    "src/content/canonical/productModeConfig.ts": "a65e60a2ebf6f61813a1277b4058ab9b28c60b82e7b2fa7f592b08f640fe04f3"
+  },
+  "risk": "Existing learner-visible answer-direction cue remains in four configured ordinary Design pools and is forwarded/rendered as constraints. Educational reasoning risk; not a new bank review or authorization to repair deferred bank content.",
+  "nativePerformed": false
+}

@@ -1,0 +1,1424 @@
+[
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Both lookups refer to the same route row in this merge operation.",
+      "A conflict requires an explicit resolution before save."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The identity map makes both paths observe the same route instance; the unit of work holds the edit until the merge is resolved.",
+        "scenarioApplication": "The route opened by the tile search and by ID is the same persisted route within this merge operation.",
+        "errorCorrection": "Saving a duplicate or each edit can overwrite accepted geometry before the user chooses a conflict result.",
+        "boundaryOrTradeoff": "The map is scoped to this merge, not shared across users or future operations.",
+        "transfer": "When an operation reaches one record through several paths, keep one in-memory identity and stage its accepted changes."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i001_wrong_1",
+          "text": "Two in-memory copies of one route can diverge and let a later write silently replace accepted geometry."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i001_wrong_2",
+          "text": "Identity continuity is needed within this merge; a process-wide map would also share edits across unrelated operations."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i001_wrong_3",
+          "text": "The prompt requires conflict resolution before save, so immediate writes can persist a rejected edit."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i001_wrong_4",
+          "text": "Saving the last-loaded copy can discard the geometry edit from the other path instead of presenting the required conflict for explicit resolution."
+        }
+      ],
+      "reason": "The two retrieval paths point to one persisted route in one merge, and geometry cannot be saved until a conflict is resolved. Reuse that operation’s instance and track its change through the chosen save.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i001_wrong_1",
+          "text": "Let the tile search create another route object and save whichever copy was loaded last."
+        },
+        {
+          "optionId": "n07_b04_i001_wrong_2",
+          "text": "Keep every route in a process-wide identity map shared by all user operations."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Resolve route ID and tile search to one route instance; track geometry until explicit conflict resolution."
+        },
+        {
+          "optionId": "n07_b04_i001_wrong_3",
+          "text": "Write every geometry point to storage as soon as the editor changes it."
+        },
+        {
+          "optionId": "n07_b04_i001_wrong_4",
+          "text": "Save whichever route instance was loaded last, so the tile-search copy overwrites the geometry edit when the merge unit commits."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "A cartographer edits a route offline. During one merge command, the editor loads the same route by route ID and again through a tile search; a conflict must be shown, never silently overwrite accepted geometry. What object-handling approach supports that command?",
+    "questionId": "ood-n07-b04-i001",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Both code paths resolve the same character in one command.",
+      "Inventory and campaign score changes are saved after reward validation."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Identity resolution avoids competing character copies, while the unit of work tracks the changes made during validation.",
+        "scenarioApplication": "The reward rule and screen inspect one character while the inventory and score changes are pending.",
+        "errorCorrection": "Saving before validation or splitting screen and rule writes can persist a partial reward.",
+        "boundaryOrTradeoff": "The useful identity scope is one command; no fact supports a process-wide character cache.",
+        "transfer": "Within one business operation, resolve duplicate loads consistently and commit its accepted changes as a unit."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i002_wrong_1",
+          "text": "The copies can disagree about the same inventory and score changes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i002_wrong_2",
+          "text": "The rule must validate before the reward changes are saved."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i002_wrong_3",
+          "text": "The prompt needs one identity during this command, not shared mutable state across separate commands."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i002_wrong_4",
+          "text": "Separate copies and writes can leave inventory changed without the matching campaign score, contrary to the post-validation outcome."
+        }
+      ],
+      "reason": "Both reads identify one character during the same command, and reward validation precedes persistence. Keep one instance and collect the accepted changes before writing them.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i002_wrong_1",
+          "text": "Keep one character copy for the reward screen and another for the campaign rule, then write both."
+        },
+        {
+          "optionId": "n07_b04_i002_wrong_2",
+          "text": "Persist the inventory change before checking whether the reward is legal in the campaign."
+        },
+        {
+          "optionId": "n07_b04_i002_wrong_3",
+          "text": "Retain the character instance in a singleton across later campaign commands."
+        },
+        {
+          "optionId": "n07_b04_i002_wrong_4",
+          "text": "Let the reward screen save its character copy first, then have the campaign rule update score in a later write."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return one character for both reads and track validated inventory and score together."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In a campaign manager, applying a reward changes a character’s inventory and campaign score. The command loads that character through both the reward screen and the campaign rule; both reads identify the same character row. What should the persistence session do?",
+    "questionId": "ood-n07-b04-i002",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The map and planner refer to one shipment in the reassignment.",
+      "Carrier validation occurs before any write."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The unit of work holds the validated change on the same shipment instance used by the map path.",
+        "scenarioApplication": "The map path and dispatch path resolve to the shipment being reassigned, not independent shipment records.",
+        "errorCorrection": "Writing a carrier field before checking its restrictions exposes an invalid transition; reconciling after both writes is too late.",
+        "boundaryOrTradeoff": "The shipment identity requirement applies to one operation, not all dispatch requests.",
+        "transfer": "Use operation-scoped identity and deferred persistence when one validation governs several field changes."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i003_wrong_1",
+          "text": "The map and planner would then hold competing versions of the same shipment during one operation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i003_wrong_2",
+          "text": "That can leave the shipment assigned to a carrier that violates its validated restrictions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i003_wrong_3",
+          "text": "Identity Map consistency is needed within this operation; sharing mutable instances across requests risks stale edits."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i003_wrong_4",
+          "text": "Saving both copies before reconciling allows the same shipment to retain conflicting carrier or handoff values."
+        }
+      ],
+      "reason": "The two paths load the same shipment during one reassignment, and validation must precede persistence. One operation-scoped instance lets the accepted carrier and handoff state be tracked together.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i003_wrong_1",
+          "text": "Let the map keep its own shipment instance and save the planner’s copy immediately."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Use one shipment instance; track carrier and handoff until validation succeeds."
+        },
+        {
+          "optionId": "n07_b04_i003_wrong_2",
+          "text": "Persist the carrier field first, then check temperature limits and handoff ownership."
+        },
+        {
+          "optionId": "n07_b04_i003_wrong_3",
+          "text": "Reuse one shipment object across all dispatch requests for the day."
+        },
+        {
+          "optionId": "n07_b04_i003_wrong_4",
+          "text": "Save both map and planner shipment copies, then reconcile any carrier disagreement in the next dispatch report."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "A dispatch planner reassigns a shipment to a carrier. The temperature limit and carrier handoff owner are fields on the same shipment record; the operation validates the new carrier before saving. A map view also loads the shipment by ID during that operation. Which persistence behavior fits?",
+    "questionId": "ood-n07-b04-i003",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The two reads identify one account during this allocation.",
+      "Balance and allocation record must agree when saved."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "One identity ensures both services calculate and record against the same loaded balance; the unit of work gathers the update and insertion.",
+        "scenarioApplication": "The allocation’s account balance and ledger entry describe the same repayment result.",
+        "errorCorrection": "Writing only one side first risks mismatched ledger state, and a negative balance is explicitly disallowed.",
+        "boundaryOrTradeoff": "The identity map is per allocation operation rather than a global mutable cache.",
+        "transfer": "When a business action updates an object and adds its corresponding record, track both before completing persistence."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i004_wrong_1",
+          "text": "Separate copies can calculate against different balances and leave the allocation record inconsistent with the saved account balance."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i004_wrong_2",
+          "text": "A failure between writes leaves a balance change with no matching allocation record."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i004_wrong_3",
+          "text": "The nonnegative balance is an immediate condition, not a later reporting correction."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i004_wrong_4",
+          "text": "The prompt requires one identity within this allocation, not shared account state across concurrent operations."
+        }
+      ],
+      "reason": "The repeated account ID is one account within this allocation, and its final balance must match the allocation record without going below zero. Track the account and inserted record in one work unit after calculation.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i004_wrong_1",
+          "text": "Load separate account copies for principal and interest, apply each portion independently, then reconcile their balances in the ledger."
+        },
+        {
+          "optionId": "n07_b04_i004_wrong_2",
+          "text": "Save the reduced balance before inserting the allocation record."
+        },
+        {
+          "optionId": "n07_b04_i004_wrong_3",
+          "text": "Apply the repayment even if it makes the balance negative, then reconcile the ledger later."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Track one account’s balance with its matching allocation in a single work unit."
+        },
+        {
+          "optionId": "n07_b04_i004_wrong_4",
+          "text": "Share a mutable account object among all repayment operations."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "A lending ledger allocates one repayment across principal and interest. The resulting outstanding balance cannot be negative, and the allocation record must match the balance change. The repository reads the account once, then the allocation service reads the same account ID again. How should the operation manage these changes?",
+    "questionId": "ood-n07-b04-i004",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The match result and next bracket participant are one local accepted outcome.",
+      "Player notification is sent after the local update."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The unit of work gathers the match and bracket updates before the notification is sent.",
+        "scenarioApplication": "The match outcome and the bracket participant are the local records changed by this forfeit.",
+        "errorCorrection": "A separate bracket write can expose inconsistent progression, while an external acknowledgement is not part of the local persistence commit.",
+        "boundaryOrTradeoff": "No fact requires loading or locking unrelated matches in the tournament.",
+        "transfer": "Use a unit of work for the local set of changes that form one accepted result; perform later external effects separately."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i005_wrong_1",
+          "text": "Players could receive a result that storage has not accepted."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i005_wrong_2",
+          "text": "The result and next participant could diverge between writes even though the prompt defines them as one accepted match outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i005_wrong_3",
+          "text": "Notification is an external follow-up; the prompt does not say it shares the local persistence transaction."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i005_wrong_4",
+          "text": "Only this match and its immediate bracket update participate in the described result."
+        }
+      ],
+      "reason": "The local result consists of a forfeited match and the corresponding next bracket participant; the notification follows after the local update. Track those two changes together without extending persistence across the network.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Track match and bracket outcome together; notify after the local commit."
+        },
+        {
+          "optionId": "n07_b04_i005_wrong_1",
+          "text": "Send the forfeit notice before persisting the match result and bracket change."
+        },
+        {
+          "optionId": "n07_b04_i005_wrong_2",
+          "text": "Save the forfeit result first and advance the bracket participant in a second, uncoordinated write."
+        },
+        {
+          "optionId": "n07_b04_i005_wrong_3",
+          "text": "Keep the database transaction open until every player notification is acknowledged."
+        },
+        {
+          "optionId": "n07_b04_i005_wrong_4",
+          "text": "Load and track every match in the tournament before a single forfeit can be committed."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "A tournament official forfeits a match after timeout. The match result and the bracket’s next participant must reflect one legal match outcome; the persistence API can commit these local updates together. A notification to players is sent afterward. What should the unit of work include?",
+    "questionId": "ood-n07-b04-i005",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Both paths identify the same revision row.",
+      "The seal does not move to the document’s latest revision."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The Identity Map resolves both paths through the same revision identity for this operation.",
+        "scenarioApplication": "Both signing views read the same immutable revision named by this seal.",
+        "errorCorrection": "Loading the latest revision or replacing the seal target would change the notarized content.",
+        "boundaryOrTradeoff": "Object reuse is limited to the request; it does not turn revision objects into a global cache.",
+        "transfer": "When two paths reach one immutable record, preserve one operation-scoped identity and its established references."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i006_wrong_1",
+          "text": "That substitutes a different immutable revision for the exact one named by the seal."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i006_wrong_2",
+          "text": "Two instances for the same row can drift within one request and confuse which revision the seal refers to."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i006_wrong_3",
+          "text": "The requirement is same identity within this request, not indefinite mutable reuse across requests."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i006_wrong_4",
+          "text": "The prompt says the seal retains an exact immutable revision, not whichever object was loaded last."
+        }
+      ],
+      "reason": "Both lookups name the same immutable revision in one request. Reusing one request-scoped instance preserves that reference without substituting the latest revision.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i006_wrong_1",
+          "text": "Let history load the document’s latest revision even when the seal lookup returned its named earlier revision."
+        },
+        {
+          "optionId": "n07_b04_i006_wrong_2",
+          "text": "Construct separate revision objects for the two paths and let each apply its own edits."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return one revision identity from both lookups for the signing request."
+        },
+        {
+          "optionId": "n07_b04_i006_wrong_3",
+          "text": "Keep every revision loaded by all signing requests in one process-wide map."
+        },
+        {
+          "optionId": "n07_b04_i006_wrong_4",
+          "text": "Update the seal to reference the object most recently loaded by either path."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "A document notarization service loads a sealed revision through both a seal lookup and a document-history view during one signing request. The seal names an exact immutable revision. What should those two paths return?",
+    "questionId": "ood-n07-b04-i006",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The result and both revision links are written as one completed snapshot.",
+      "The report is a later projection."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The unit of work collects the new object and relationship writes until the complete snapshot can be stored.",
+        "scenarioApplication": "The result row and its two revision relationships together describe one publishable snapshot.",
+        "errorCorrection": "Publishing before the links exist or replacing them with latest revisions loses required provenance.",
+        "boundaryOrTradeoff": "The report is downstream, and an in-memory process map cannot replace a durable published result.",
+        "transfer": "Track all local records that make one published artifact complete before marking it published."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i007_wrong_1",
+          "text": "That exposes a published result without the exact inputs the scenario requires."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i007_wrong_2",
+          "text": "The report is built later and does not define whether the snapshot has its revision links."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i007_wrong_3",
+          "text": "The result would no longer identify the exact dataset and code revisions used for its snapshot."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i007_wrong_4",
+          "text": "A later request needs the persisted published snapshot; shared unsaved mutable state is not a persistence record."
+        }
+      ],
+      "reason": "A publishable result includes both exact revision links, so the unit of work must track the new result and links before publication completes. The later report consumes that completed snapshot.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i007_wrong_1",
+          "text": "Publish the result row first and insert revision links in later calls."
+        },
+        {
+          "optionId": "n07_b04_i007_wrong_2",
+          "text": "Include the future report build in the same write unit as snapshot publication."
+        },
+        {
+          "optionId": "n07_b04_i007_wrong_3",
+          "text": "Keep the revision links only in memory, then replace them with whichever revisions are latest when the result is persisted."
+        },
+        {
+          "optionId": "n07_b04_i007_wrong_4",
+          "text": "Keep unsaved snapshot objects in a process-wide map for future requests."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Track the result and both revision links; publish only when the snapshot is complete."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "An experiment owner publishes a result snapshot. The write creates a result row and two links to exact dataset and code revisions; the result may be published only if both links are present. A report is built later. What does the unit of work track?",
+    "questionId": "ood-n07-b04-i007",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Comment persistence establishes the accepted comment before notification.",
+      "Provider failure does not undo the comment."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The unit of work persists the complete comment relationship; notification handling can observe the accepted comment afterward.",
+        "scenarioApplication": "The comment becomes locally accepted before the separate notification attempt.",
+        "errorCorrection": "Sending first or rolling back on provider outage gives the external system authority over a comment the prompt says remains valid.",
+        "boundaryOrTradeoff": "Keep author and revision in the accepted record; do not widen the local transaction to the notification provider.",
+        "transfer": "Separate a durable local decision from a subsequent external notification when their success conditions differ."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i008_wrong_1",
+          "text": "A provider outage would prevent the valid accepted comment from being recorded."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i008_wrong_2",
+          "text": "The prompt makes notification failure independent of the comment’s validity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i008_wrong_3",
+          "text": "The accepted comment must retain both references at acceptance."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i008_wrong_4",
+          "text": "The prompt says provider failure does not undo the accepted comment; rollback would discard valid local state because of a separate effect."
+        }
+      ],
+      "reason": "The comment is locally valid once its body, author, and revision are committed; delivery is a later external effect. Record the comment before attempting notification.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i008_wrong_1",
+          "text": "Send the notification first and persist the comment only after the provider confirms."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Commit the comment and author/revision links before separate notification."
+        },
+        {
+          "optionId": "n07_b04_i008_wrong_2",
+          "text": "Keep the local database transaction open until the notification provider confirms delivery."
+        },
+        {
+          "optionId": "n07_b04_i008_wrong_3",
+          "text": "Save the comment body now and add its author and revision in a later cleanup."
+        },
+        {
+          "optionId": "n07_b04_i008_wrong_4",
+          "text": "Roll back the accepted comment and its references whenever notification fails, so the database and provider appear consistent."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "An annotation editor accepts a comment. The comment must retain the author and document revision; a notification is sent only after the comment is committed. If the notification provider is unavailable, the accepted comment remains valid. What is the appropriate save sequence?",
+    "questionId": "ood-n07-b04-i008",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "All required evidence and the complete state belong to one submission outcome.",
+      "Retryable is a valid outcome when evidence is incomplete."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The unit of work observes the evidence set and persists the submission outcome consistently.",
+        "scenarioApplication": "The required evidence set determines whether this inspection is complete or retryable.",
+        "errorCorrection": "Completing before evidence is present or ignoring failed evidence writes violates the submission rule.",
+        "boundaryOrTradeoff": "An incomplete inspection remains retryable rather than being deleted or treated as complete.",
+        "transfer": "A unit of work should collect the local changes that support a state transition before recording that transition."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i009_wrong_1",
+          "text": "That exposes the complete state before all required evidence is present."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i009_wrong_2",
+          "text": "The required set may be incomplete, so separate writes cannot justify the complete state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i009_wrong_3",
+          "text": "The prompt explicitly defines retryable as the incomplete outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i009_wrong_4",
+          "text": "A notification says nothing about whether the required evidence rows are present."
+        }
+      ],
+      "reason": "Completeness depends on the full required evidence set, while retryable represents the valid incomplete case. Collect the evidence and state transition before recording completion.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i009_wrong_1",
+          "text": "Mark the submission complete, then add missing evidence in the next request."
+        },
+        {
+          "optionId": "n07_b04_i009_wrong_2",
+          "text": "Commit evidence rows independently, then mark the submission complete even if only some writes succeeded."
+        },
+        {
+          "optionId": "n07_b04_i009_wrong_3",
+          "text": "Delete the inspection whenever evidence is incomplete instead of leaving it retryable."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Track evidence and completion together; mark complete only after required evidence passes."
+        },
+        {
+          "optionId": "n07_b04_i009_wrong_4",
+          "text": "Use a notification delivery receipt as proof that all evidence was persisted."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "A field inspection has evidence rows and a submission state. It becomes complete only when all required evidence is present; otherwise it stays explicitly retryable. Several evidence rows are added before the user submits. Which work should be collected before marking complete?",
+    "questionId": "ood-n07-b04-i009",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The new invoice and its rejected-invoice reference are recorded together.",
+      "Payment request happens after saving."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The unit of work tracks the new issue and its lineage before the provider request.",
+        "scenarioApplication": "The reissue has its own identity and points back to the rejected issue before payment is attempted.",
+        "errorCorrection": "Overwriting loses history; adding the link later creates a temporarily untraceable issue.",
+        "boundaryOrTradeoff": "No external payment atomicity or timeout guarantee is stated.",
+        "transfer": "Keep a new record and the relationship that explains its origin together before performing a later effect."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i010_wrong_1",
+          "text": "That erases the rejected issue that must remain in history and breaks reissue traceability."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i010_wrong_2",
+          "text": "Payment is a later request and no shared local/external transaction is specified."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i010_wrong_3",
+          "text": "The new issue would be persisted without the required link during the interval before the later job."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i010_wrong_4",
+          "text": "The prompt says the reissue is saved before payment is requested, so provider outcome does not define its local identity."
+        }
+      ],
+      "reason": "The local reissue is complete when the new invoice and its link to the rejected issue are recorded. The payment request follows and does not replace that local work unit.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Save the new invoice with its rejected-issue reference before requesting payment."
+        },
+        {
+          "optionId": "n07_b04_i010_wrong_1",
+          "text": "Overwrite the rejected invoice row with the new issue and remove its prior ID."
+        },
+        {
+          "optionId": "n07_b04_i010_wrong_2",
+          "text": "Hold the invoice transaction open until the payment provider confirms."
+        },
+        {
+          "optionId": "n07_b04_i010_wrong_3",
+          "text": "Save the reissue now and attach its rejected-invoice reference in a later audit job."
+        },
+        {
+          "optionId": "n07_b04_i010_wrong_4",
+          "text": "Create the invoice only if payment succeeds and discard it on a provider timeout."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "A billing operator reissues a rejected invoice. The new issue must reference the rejected invoice ID, and the payment request is made only after the reissue is saved. Rejected invoices remain in the audit history. Which changes belong in the local work unit?",
+    "questionId": "ood-n07-b04-i010",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Both loads identify the same badge during one access request.",
+      "The access decision observes revocation before granting entry."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The Identity Map unifies the direct and employee-list paths while the command reads the current state.",
+        "scenarioApplication": "The employee’s active-badge list and direct lookup resolve the badge used for this access check.",
+        "errorCorrection": "A stale employee-list copy could permit access; checking after grant reverses the required order.",
+        "boundaryOrTradeoff": "The prompt does not require a global cache or audit projection in the authorization path.",
+        "transfer": "When several paths feed one decision, resolve them to the same operation-scoped object before applying the rule."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i011_wrong_1",
+          "text": "The grant path could then observe the stale copy and authorize access after revocation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i011_wrong_2",
+          "text": "The needed identity is within one request; cross-request mutable sharing is not required and can leak stale state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i011_wrong_3",
+          "text": "Refreshing afterward is too late: the access decision must observe revocation before granting."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i011_wrong_4",
+          "text": "The prompt names the access request’s badge state as authority, not a separate audit view."
+        }
+      ],
+      "reason": "Both reads resolve the same badge in one access operation, and revocation must be seen before entry is granted. One request-scoped identity avoids divergent badge copies.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i011_wrong_1",
+          "text": "Let the employee list hold its own badge copy while the direct lookup updates another."
+        },
+        {
+          "optionId": "n07_b04_i011_wrong_2",
+          "text": "Share mutable badge entities globally across all door requests."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Resolve one badge per request; check revocation before granting access."
+        },
+        {
+          "optionId": "n07_b04_i011_wrong_3",
+          "text": "Grant from the employee-list copy first, then refresh badge state through the direct lookup afterward."
+        },
+        {
+          "optionId": "n07_b04_i011_wrong_4",
+          "text": "Wait for the audit projection to update before using either badge object."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "A facilities administrator revokes a badge. In one access request, the badge is loaded by badge ID and again through the employee’s active-badge list; revocation must be visible before that request grants entry. What identity scope matters?",
+    "questionId": "ood-n07-b04-i011",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Label record and approved revision link are saved before print attempts.",
+      "A print retry does not change the approved revision."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The unit of work persists the label and source reference; the printer consumes the committed record afterward.",
+        "scenarioApplication": "The label’s approved-revision link must be durable before a printer retry can run.",
+        "errorCorrection": "Printing first or looking up the latest shipment revision can lose the operator’s selected source.",
+        "boundaryOrTradeoff": "Retryability separates print status from the accepted local label association.",
+        "transfer": "Persist the reference that fixes the meaning of an external artifact before invoking the external action."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i012_wrong_1",
+          "text": "A later retry or shipment edit could leave the printed label with no durable revision link."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i012_wrong_2",
+          "text": "A later approved address could silently replace the revision this label was requested to use."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i012_wrong_3",
+          "text": "Printing is explicitly retryable after save, so it is not part of the local persistence completion."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i012_wrong_4",
+          "text": "The label must record which approved revision it represents at the time of the request."
+        }
+      ],
+      "reason": "The saved label identity and approved revision reference must exist before printing begins. A retry repeats the external print effect for that same linked label.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i012_wrong_1",
+          "text": "Print the label before saving which shipment revision it represents."
+        },
+        {
+          "optionId": "n07_b04_i012_wrong_2",
+          "text": "Resolve the shipment’s latest revision on every retry, even when the label was approved against an earlier revision."
+        },
+        {
+          "optionId": "n07_b04_i012_wrong_3",
+          "text": "Keep the persistence unit open until every print attempt succeeds."
+        },
+        {
+          "optionId": "n07_b04_i012_wrong_4",
+          "text": "Save the label without its approved revision link and reconstruct the source later."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Save the label and approved-revision link before retryable printing."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "A shipping operator approves a shipment revision and requests a label. The label record must link to that approved revision; printing can be retried after the record is saved. Which work unit should the application use?",
+    "questionId": "ood-n07-b04-i012",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Room and interval change are one accepted booking move.",
+      "Cancellation fee calculation is later."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The unit of work collects both changed booking fields before persistence.",
+        "scenarioApplication": "The destination room and interval jointly describe the accepted booking move.",
+        "errorCorrection": "Writing the room before validation or changing the interval later can expose a partial move.",
+        "boundaryOrTradeoff": "The fee service is outside the described operation and no cross-service transaction is required.",
+        "transfer": "Track all fields that together express an accepted local change, but leave later independent work separate."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i013_wrong_1",
+          "text": "That can persist a move the scheduler must reject."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i013_wrong_2",
+          "text": "The fee is explicitly calculated later and does not define acceptance of the room move."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i013_wrong_3",
+          "text": "That leaves the accepted booking with a room and interval that do not form the same move."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i013_wrong_4",
+          "text": "Only the moved booking and destination capacity check are part of this operation."
+        }
+      ],
+      "reason": "After the destination passes capacity validation, the booking’s room and interval form one accepted move. The later fee calculation does not join that local write.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i013_wrong_1",
+          "text": "Save the new room before validating whether its interval has capacity."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Track room and interval after capacity validation; calculate fees later."
+        },
+        {
+          "optionId": "n07_b04_i013_wrong_2",
+          "text": "Include fee calculation and its service call in the booking persistence transaction."
+        },
+        {
+          "optionId": "n07_b04_i013_wrong_3",
+          "text": "Change the room now but keep the old interval until a background job updates it later."
+        },
+        {
+          "optionId": "n07_b04_i013_wrong_4",
+          "text": "Track every booking in every room whenever one booking moves."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "A rehearsal move changes the booking’s room and its reserved interval. The scheduler validates destination capacity before accepting the move; a cancellation fee is calculated later by another service. What should the unit of work track?",
+    "questionId": "ood-n07-b04-i013",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Maintenance mode and technician are the recorded maintenance event.",
+      "Movement is disabled until maintenance ends."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The unit of work gathers the two values that explain this maintenance entry.",
+        "scenarioApplication": "Maintenance is the state of one exhibit, recorded with the technician responsible for entry.",
+        "errorCorrection": "Persisting only a mode loses who opened the panel; a screen-only block does not govern controller commands.",
+        "boundaryOrTradeoff": "Only this exhibit is in scope, not all telemetry or a process-wide flag.",
+        "transfer": "Track state and its required attribution together when they form one recorded change."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i014_wrong_1",
+          "text": "The system could acknowledge or act on maintenance without the technician attribution that belongs to the recorded event."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i014_wrong_2",
+          "text": "Other controller callers could still issue a move before the persisted guard changes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i014_wrong_3",
+          "text": "The entry records one exhibit’s mode and technician; unrelated telemetry is not part of it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i014_wrong_4",
+          "text": "The prompt identifies one exhibit controller’s state, not a global mode."
+        }
+      ],
+      "reason": "Maintenance entry is represented by the mode and responsible technician together. Commit that local record before treating maintenance as active.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i014_wrong_1",
+          "text": "Persist maintenance mode immediately, then append the technician reference in a later audit update."
+        },
+        {
+          "optionId": "n07_b04_i014_wrong_2",
+          "text": "Disable movement in the screen but save maintenance mode after panel work begins."
+        },
+        {
+          "optionId": "n07_b04_i014_wrong_3",
+          "text": "Include all temperature readings from all exhibits in the maintenance commit."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Commit maintenance mode with the technician before acknowledging entry."
+        },
+        {
+          "optionId": "n07_b04_i014_wrong_4",
+          "text": "Store maintenance mode as a process-wide flag shared by every exhibit."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "An exhibit enters maintenance mode. The controller records the mode and the technician who opened the panel; movement commands are rejected until maintenance ends. The controller’s persistence layer can save both fields together. What should the work unit commit?",
+    "questionId": "ood-n07-b04-i014",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Both paths refer to the same lesson record in the retirement command.",
+      "Progress keeps the lesson ID after retirement."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "An operation-scoped identity map gives the editor and progress path one current lesson object.",
+        "scenarioApplication": "The editor and progress view encounter the same lesson while its lifecycle state changes.",
+        "errorCorrection": "Separate copies can disagree about retirement; rewriting or deleting the lesson breaks stable progress references.",
+        "boundaryOrTradeoff": "The map is not a global object cache and no bulk progress rewrite is required.",
+        "transfer": "Use identity resolution within an operation when several paths depend on one entity’s transition."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i015_wrong_1",
+          "text": "The two paths would disagree about lifecycle state for the same lesson during retirement."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i015_wrong_2",
+          "text": "The prompt says existing progress retains the stable lesson ID."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i015_wrong_3",
+          "text": "The requirement is one identity during this command, not shared mutable process state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i015_wrong_4",
+          "text": "Existing learners continue to reference the lesson after retirement."
+        }
+      ],
+      "reason": "Both access paths identify the same lesson during retirement; the command changes lifecycle availability while preserving the lesson identity used by progress.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Use one lesson instance; retire it without changing progress identity."
+        },
+        {
+          "optionId": "n07_b04_i015_wrong_1",
+          "text": "Let the progress view keep a separate lesson copy so its pre-retirement lifecycle state survives this command."
+        },
+        {
+          "optionId": "n07_b04_i015_wrong_2",
+          "text": "Change all learner progress to a new lesson ID during retirement."
+        },
+        {
+          "optionId": "n07_b04_i015_wrong_3",
+          "text": "Keep a single mutable lesson object shared by all learners indefinitely."
+        },
+        {
+          "optionId": "n07_b04_i015_wrong_4",
+          "text": "Remove the lesson from persistence so both reads return no object."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "A curriculum editor retires a lesson. Existing progress continues to reference the stable lesson ID, and the lesson is loaded once by the editor and once through a learner-progress view during the same command. Which object behavior is needed?",
+    "questionId": "ood-n07-b04-i015",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Close marker and event cutoff define one exportable session state.",
+      "Email follows the export job start."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The unit of work records the session boundary before export begins.",
+        "scenarioApplication": "The export consumer needs the session close boundary and final event cutoff already saved.",
+        "errorCorrection": "Starting export or calculating the cutoff later can expose an unstable session state.",
+        "boundaryOrTradeoff": "One session’s event history is the scope; other boards and email delivery are independent.",
+        "transfer": "Persist the state required by a background consumer as one coherent local result before starting it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i016_wrong_1",
+          "text": "The export could include events outside the final cutoff or miss the state that defines its boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i016_wrong_2",
+          "text": "Email happens afterward and does not define the final event sequence."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i016_wrong_3",
+          "text": "The export could start from a close state that does not yet identify its final committed event boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i016_wrong_4",
+          "text": "The operation concerns this session and its event sequence only."
+        }
+      ],
+      "reason": "The export job needs a saved close marker and its final event cutoff together. Email is a later effect and does not belong in the state that defines export contents.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i016_wrong_1",
+          "text": "Start export from the live event stream before saving the close marker."
+        },
+        {
+          "optionId": "n07_b04_i016_wrong_2",
+          "text": "Wait for email delivery confirmation before committing the session close."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Save the close marker with the final event cutoff before starting export."
+        },
+        {
+          "optionId": "n07_b04_i016_wrong_3",
+          "text": "Save the close marker now and calculate the final event cutoff in a separate future query before exporting."
+        },
+        {
+          "optionId": "n07_b04_i016_wrong_4",
+          "text": "Close every active board in the same work unit because one host triggered the action."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "A session host closes a whiteboard. The close marker and final committed event sequence are stored before an export job starts; email is sent afterward. Which state should be tracked together before launching the job?",
+    "questionId": "ood-n07-b04-i016",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Both paths load one conversation in the escalation command.",
+      "Owner and deadline form the accepted pair."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The identity map unifies the two reads; the unit of work tracks the pair as one operation’s changes.",
+        "scenarioApplication": "The queue and direct lookup both refer to the conversation whose owner and deadline are changing.",
+        "errorCorrection": "Updating separate copies or writing only one field can expose a contradictory escalation.",
+        "boundaryOrTradeoff": "The queue projection is not the authoritative state, and no shared global object is needed.",
+        "transfer": "Combine same-entity edits made through multiple paths in one operation-scoped work unit."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i017_wrong_1",
+          "text": "The same operation would then hold conflicting owner/deadline states for one conversation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i017_wrong_2",
+          "text": "Readers can observe an owner without the matching accepted deadline, although the prompt requires the pair together."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i017_wrong_3",
+          "text": "An operation-scoped identity map is sufficient; global mutable sharing is not stated or safe from stale changes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i017_wrong_4",
+          "text": "The prompt asks for the accepted conversation state, not a later activity feed reconstruction."
+        }
+      ],
+      "reason": "The queue and direct lookup refer to one conversation during the command, and its accepted state is the new owner/deadline pair. Track both edits on one instance before saving.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i017_wrong_1",
+          "text": "Update the direct-lookup copy and leave the queue copy unchanged until refresh."
+        },
+        {
+          "optionId": "n07_b04_i017_wrong_2",
+          "text": "Save the owner now and let a later job apply the response deadline, leaving a temporary mixed pair."
+        },
+        {
+          "optionId": "n07_b04_i017_wrong_3",
+          "text": "Use one mutable conversation object shared by all support leads and requests."
+        },
+        {
+          "optionId": "n07_b04_i017_wrong_4",
+          "text": "Treat the activity feed entry as the authoritative owner and deadline after the update."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Use one conversation; save owner and deadline as the accepted pair."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "An escalation changes a conversation owner and response deadline. The support lead can load the conversation from both the open-case queue and a direct ID lookup during one command. The accepted escalation must show the new pair together. What persistence mechanism fits?",
+    "questionId": "ood-n07-b04-i017",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Both paths identify one listing in this command.",
+      "Price and stock checks precede publication."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "An identity map prevents the seller list and command path from applying separate versions of the listing.",
+        "scenarioApplication": "The draft-list and ID paths refer to the same listing whose publication checks have just run.",
+        "errorCorrection": "Publishing a different copy or saving before validation can expose an invalid listing.",
+        "boundaryOrTradeoff": "The needed object scope is this command; global cache state and search indexing are not authorities here.",
+        "transfer": "Resolve duplicate loads consistently, validate, then persist the accepted state change."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i018_wrong_1",
+          "text": "The two paths refer to one listing row, so publishing only one in-memory copy leaves the loaded state inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i018_wrong_2",
+          "text": "That exposes a searchable listing before its stated publication checks pass."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i018_wrong_3",
+          "text": "The required identity scope is one publish command, not mutable state shared across sessions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b04_i018_wrong_4",
+          "text": "The prompt assigns validation before publication; the search projection is not that decision."
+        }
+      ],
+      "reason": "The ID lookup and draft list point to one row during this publish command. Validate that one object before tracking and saving the published state.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b04_i018_wrong_1",
+          "text": "Publish the ID-loaded copy while leaving the seller’s draft-list copy unchanged, then reconcile the search view later."
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Load one listing; validate price and stock, then save its published state."
+        },
+        {
+          "optionId": "n07_b04_i018_wrong_2",
+          "text": "Save the published flag before validating the current price and stock."
+        },
+        {
+          "optionId": "n07_b04_i018_wrong_3",
+          "text": "Share draft listing objects globally across all seller sessions."
+        },
+        {
+          "optionId": "n07_b04_i018_wrong_4",
+          "text": "Let the search index determine whether the listing is valid and published."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B04",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "A seller publishes a seasonal listing after price and stock validation. The publish command loads the listing by ID and again through the seller’s draft list; both paths return the same listing row. What should happen to the in-memory listing and save?",
+    "questionId": "ood-n07-b04-i018",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/identityMap.html",
+      "https://martinfowler.com/eaaCatalog/unitOfWork.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

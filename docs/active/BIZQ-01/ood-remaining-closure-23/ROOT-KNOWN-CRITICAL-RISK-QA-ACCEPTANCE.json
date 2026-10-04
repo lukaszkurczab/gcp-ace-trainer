@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "scope": "Root checked exact independent risk QA bytes, all input hashes,46 identity/fingerprint rows and4/42 membership totals; bounded reconciliation only",
+  "independentQaSha256": "1e07a2a66c1d8d1a14003c1f09f10b85c0b9e9bcc2b5763771de2a8cee068f9a",
+  "fullBankAcceptance": false,
+  "nativePerformed": false,
+  "repairsImplemented": false,
+  "releaseReadinessEstablished": false
+}

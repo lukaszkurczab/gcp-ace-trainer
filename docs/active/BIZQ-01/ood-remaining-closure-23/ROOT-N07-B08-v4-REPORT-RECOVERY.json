@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "scope": "Exact recovered original reports and corrected metadata bindings only; no semantic/source/producer/admission acceptance",
+  "recovery": "Original v4 reports were overwritten; recovered copies match both independently recorded original raw SHA256 values exactly. Current JSON adds only whole-object fingerprints; all18 content/identity conclusions are unchanged. MD corrected to agree with those existing actions.",
+  "originalJson": {
+    "path": "review-inputs/SEMANTIC-N07-B08-v4-QA-original.json",
+    "sha256": "e3c6e4b1c93f9ba6f67ff82a7a9f659e55564e483eaa6364a98a8d88e641617d"
+  },
+  "originalMd": {
+    "path": "review-inputs/SEMANTIC-N07-B08-v4-QA-original.md",
+    "sha256": "3c751aaa036a767708ce31b3a63cbee29b93b9252abb272f44a4829ec2efbbe3"
+  },
+  "currentJsonSha256": "8e2f07109c4361b96cdce31f7bf4e507dbd7a317872889272dd1f9a48192a2e6",
+  "currentMdSha256": "418816e6988ac224c42849495e3b8163152569426dc2e6ea639d0571b3f5590f",
+  "wholeObjectBindingsMatched": 18,
+  "contentVerdict": "PASS",
+  "identityDisposition": "REPLACE18_WITH_MANIFEST_RESERVED_IDS",
+  "sourceActivation": false
+}

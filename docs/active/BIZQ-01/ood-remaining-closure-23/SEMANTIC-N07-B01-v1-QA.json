@@ -1,0 +1,345 @@
+{
+  "verdict": "REVISE",
+  "unit": "OOD-N07-B01",
+  "scope": "Independent whole-object semantic and identity review of the exact frozen v1 proposal only; not N07 cross-unit or implementation acceptance.",
+  "input": {
+    "path": "review-inputs/N07-B01-v1.json",
+    "sha256": "4f327d79af5941d617f8c211cd70bb84ca450a1f8bc08bce4d0b034c8c526df2"
+  },
+  "manifest": {
+    "path": "N07-MANIFEST.json",
+    "sha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01"
+  },
+  "source": {
+    "path": "content/object-oriented-design-interview/persistence_repositories_serialization_and_domain_boundaries/OOD-N07-B01.json",
+    "sha256": "647f8594ec29f5d565d79e558e94c6ecf0f25637198b141cbb7dfbe0b10fe4df"
+  },
+  "mechanicalEvidence": {
+    "path": "ROOT-N07-B01-v1-MECHANICAL.json",
+    "sha256": "44ca40a222a0864881b174746c33efdb62a856bb5d078259b78ec061705774af",
+    "items": 18,
+    "optionScoreAndReversalCases": 90,
+    "semanticAcceptance": false
+  },
+  "authorNotesSnapshot": {
+    "path": "AUTHOR-B01-B04.json",
+    "sha256": "5d77746660b61f3460d20e7abf86d5938749825625e13e9718b7f667bea07aab",
+    "role": "author hypothesis only"
+  },
+  "criteria": {
+    "specSha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3",
+    "contractSha256": "79c6dd8d2861d21eec0122675659840ba6f04883f546ec9ef4326f29320d4720",
+    "briefSha256": "9370339439c25f7fe065e3753af31f0436d0e0e78e9084815d83c5ad9039e4d3"
+  },
+  "findings": [
+    {
+      "id": "N07-B01-F1",
+      "severity": "blocking_for_unit_acceptance",
+      "criterion": "BIZQ-01 §4.3",
+      "items": [
+        "ood-n07-b01-i001",
+        "ood-n07-b01-i002",
+        "ood-n07-b01-i003",
+        "ood-n07-b01-i004",
+        "ood-n07-b01-i005",
+        "ood-n07-b01-i006",
+        "ood-n07-b01-i007",
+        "ood-n07-b01-i008",
+        "ood-n07-b01-i009",
+        "ood-n07-b01-i010",
+        "ood-n07-b01-i011",
+        "ood-n07-b01-i012",
+        "ood-n07-b01-i013",
+        "ood-n07-b01-i014",
+        "ood-n07-b01-i015",
+        "ood-n07-b01-i016",
+        "ood-n07-b01-i017",
+        "ood-n07-b01-i018"
+      ],
+      "finding": "Every keyed option is strictly longer than all four distractors. This is a repeated correct-answer form cue independent of the scenario decision.",
+      "requiredCorrection": "Replace the distractors with credible, complete competing policies whose specific boundary failure is grounded in each prompt; do not pad or remove options. Preserve the keyed decision meaning and update diagnostics only when option meaning changes.",
+      "notARequirement": "No equal-word-count, maximum-length, option-count, or zero-warning quota."
+    },
+    {
+      "id": "N07-B01-F2",
+      "severity": "blocking_for_item_acceptance",
+      "criterion": "BIZQ-01 §4.1",
+      "items": [
+        "ood-n07-b01-i002"
+      ],
+      "finding": "The full-load/filter-by-team distractor can satisfy the visible query/mapping requirements for a small bounded dataset; the prompt states no volume/selectivity requirement, but Details call the work unbounded.",
+      "requiredCorrection": "Make the data/query constraint that rules this approach out visible, or replace it with a clearly contract-violating alternative."
+    }
+  ],
+  "cohortAssessment": "The repeated repository/collection boundary is legitimate practice for the declared unit objective because each item tests a different visible invariant, query, identity, storage mapping, or freshness/order discriminator. No unique-concept quota is imposed. The repeated correct-option length cue is independently blocking under §4.3.",
+  "references": [
+    {
+      "title": "Microsoft: Designing the infrastructure persistence layer — Repository pattern",
+      "url": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design#the-repository-pattern",
+      "scope": "Supports domain persistence abstractions implemented by persistence-specific adapters, cautions against one repository per table, notes repositories are not mandatory."
+    },
+    {
+      "title": "Microsoft: Implementing a microservice domain model",
+      "url": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model",
+      "scope": "Supports placing repository contracts in the domain model and implementations in infrastructure."
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n07-b01-i001",
+      "beforeQuestionSha256": "7423af26cdfabbb1b0579d3f271c1e7105b2c48918b69bc89ca28a6e16f6b6d3",
+      "currentWholeObjectSha256": "03ea3675e5843bf38c1decdf99bd066f1e5f9f75897ce09e8bcf170485cb2cdc",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "committed ordered session events; session/workspace collection queries; row keys and paging may change",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i002",
+      "beforeQuestionSha256": "a1a5dd304103829c30ff6b80bf81c5e29e0c4dbb28ccc6c8fdd73671671d6551",
+      "currentWholeObjectSha256": "d7ef0fe4daac02864e4280d7cfeaf831b3a0974eb5d306e61049eb2ce6822e66",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "conversation owner/deadline/history; open cases by team; split owner/history rows",
+      "semanticAssessment": "REVISE due cohort-level sole-longest-key cue and an unstated scale/selectivity premise for the full-load/filter distractor",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i003",
+      "beforeQuestionSha256": "42da43c8d0fc7b4424fa1744d1cf231f0feaa935055402d50b43fabab43ace15",
+      "currentWholeObjectSha256": "0a036309ac8b1589c8ec74127a3313d9d3552caa5c21d5bb6f6c03f1da2bb4f1",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "validate price and stock together before listing visibility; regional visible-listing query; separate tables",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i004",
+      "beforeQuestionSha256": "5f5a4d874e14a88468803b8bdfa27e2ce33fef319c4975106428247c375e9dcb",
+      "currentWholeObjectSha256": "4c511bd5c048acc2b4f7e0c215dfe5c2ca357d9a248fc22983eba876c897a64f",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "preserve one request identity and delivery promise across vendor split; shared backordered query",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i005",
+      "beforeQuestionSha256": "14f8448c08d470442077240d4be6f172676a67829161f1d2fc14384cf629302c",
+      "currentWholeObjectSha256": "7dc3b1a5fc28567af41e9541336b34c52a734742c278d4101cbcac2cde9d17b3",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "reservation identity/history survives transfer and relational-to-document storage change",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i006",
+      "beforeQuestionSha256": "ac9262216d7a654f6b39d3ff1540ea37c20ed299026a3166e592040647eb1d3f",
+      "currentWholeObjectSha256": "56b3e054695e11d455b2646651771d2d78c84cfb8275faa60bfe386fb7040db8",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "derived bundle price and regional active query across differing component/bundle shapes",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i007",
+      "beforeQuestionSha256": "6d88f23ed83f2162122d82f42abc40b126fa2ef47942655f88970e58bd98316d",
+      "currentWholeObjectSha256": "036558c9622794e54a058b488992b809fb26f46b1c4f415dc09de0235d69b019",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "active reservations and expiry-aware release inform charger capacity; metadata stored separately",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i008",
+      "beforeQuestionSha256": "283eee62be6f499d7726f7c7413e40a540008b5ceb641a9229ad9f51da30f7d0",
+      "currentWholeObjectSha256": "ca13f605abf1f7345da2e4780557f96fe32de6705691ce4caafb64c4649fedcc",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "stable asset ID with replaceable localized descriptions and normalized storage",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i009",
+      "beforeQuestionSha256": "8313a55372f43509c5abb46b897463cac67184687702b17d9bd05f580e24664f",
+      "currentWholeObjectSha256": "4c2d28fa82761967bb7d5f73b16ea8919216e9f4e43f14ecc081f33e22eca300",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "approval query requires both territory and expiry; territory is a join row",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i010",
+      "beforeQuestionSha256": "f7a5815f9b87dff8e0cf89afebc9717ee342ceaddff31df56b433c9254f1854b",
+      "currentWholeObjectSha256": "a4606fa8f601c15dd4e83d1e99aa00d20c9647f4c6780f280c40dbf0c5fa5c90",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "one battery per aircraft; availability query combines assignment and specification records",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i011",
+      "beforeQuestionSha256": "7a3e39812818520f0402ac5a1d2ae5b0f8b128c2f1510795f709eaabb130e319",
+      "currentWholeObjectSha256": "04348cb14f67a9b7066c7a440db8494c550b64c2ac7797a110365e078dec1074",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "consent check before external send; callers cannot read raw consent columns",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i012",
+      "beforeQuestionSha256": "3e8a20b8c2d0bb081f3b43c8adb3c663ec131624b2213f4a714c70c6dda934bb",
+      "currentWholeObjectSha256": "4e4c60008120027a843974dec383ae70844b051bb74c622ba7bb058b8bb3560f",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "completion by stable attempt ID must return exact captured exercise/policy revisions",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i013",
+      "beforeQuestionSha256": "d5fccfb710c5bc1a76bc33ee11eea7e557fd24f33a162f6f836136b258728041",
+      "currentWholeObjectSha256": "1e5063854290b7ac5171f05a0822320e88787843b34a47ed27a90c1e3e63cf71",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "pending exceptions queried by reviewer category; controls remain on decision operation",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i014",
+      "beforeQuestionSha256": "4c6419077da06b0da12096af57037c974ca23de4c937a3cf8b3cd1324a95d378",
+      "currentWholeObjectSha256": "3e9be7b6da6d4ba6b91c5da5d62c6c6155b1b5480205480ea8258943656d5d47",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "annotation identity is stable segment ID, not byte offset, across recording replacement",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i015",
+      "beforeQuestionSha256": "ffc5a748c7d40109b1faeb5c3730314c94d30886c8d6157f5767436148e47a95",
+      "currentWholeObjectSha256": "70b8fa713d802f65701d15227f5efc0765092b6393e5a0256ff7d4a32966447c",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "temporary grant requires approval and expiry; active query by principal/time",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i016",
+      "beforeQuestionSha256": "b66b8df5cbcae60be8fc43babb5f96948578dd901f266176a6ee52dfdb32b01c",
+      "currentWholeObjectSha256": "9530162863bc92f6d0a4f25e501fffa691887b9bdd6e1411090b3a2016cc9c63",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "seal points to exact immutable revision; list by document ID across separate stores",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i017",
+      "beforeQuestionSha256": "e58d06ab8d2d7fc8777a81a9a9a551a8410f1d4d64e3776052e333d43a82d6be",
+      "currentWholeObjectSha256": "0993c08f04e9d1beb741d827f241ee93ad1dedade5a9ffe108b2fe3a10cce4c0",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "idempotent payout release for settled order plus seller/window audit; settlement and payout records separate",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    },
+    {
+      "questionId": "ood-n07-b01-i018",
+      "beforeQuestionSha256": "043bba751ea1e3cd8319ec34afb6063cc9612ae49ce36eb3c16d437cdde0829b",
+      "currentWholeObjectSha256": "7ebe13389d76edeff19cfd0f8197df0e70e57eca6f96149e6811edde620455c4",
+      "questionIdentityAction": "preserve_question_id",
+      "acceptedOptionIdBefore": "owner_preserves_contract",
+      "acceptedOptionIdCurrent": "owner_preserves_contract",
+      "acceptedOptionIdentityAction": "preserve_option_id",
+      "identityRationale": "The accepted predecessor option and current key both instantiate the same domain-collection/repository boundary decision; current facts make the case concrete without changing its primary archetype.",
+      "caseDiscriminator": "route/day notice history ordered by effective time rather than row creation",
+      "semanticAssessment": "PASS case-specific decision and explanations; item remains affected by cohort-level sole-longest-key cue",
+      "soleLongestKeyObserved": true,
+      "cohortFinding": "N07-B01-F1"
+    }
+  ],
+  "limitations": [
+    "No comprehensive cross-unit comparison against all accepted945 N01–N06 decisions is claimed here; that remains the planned whole-node review.",
+    "No source/proof/consumer/admission/native/Premium/release acceptance is claimed."
+  ]
+}

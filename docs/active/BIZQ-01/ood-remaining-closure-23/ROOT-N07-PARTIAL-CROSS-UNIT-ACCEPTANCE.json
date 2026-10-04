@@ -1,0 +1,11 @@
+{
+  "result": "PASS_WITH_ADVISORY",
+  "scope": "Root exact partial90 review/input/control bindings only; final144 semantic/source/producer/admission pending",
+  "qaJsonSha256": "ec734deff5b8e86bf817852668fb1896a396c0212fcb36feaec7c9bc2286805e",
+  "wholeProposalObjectsMatched": 90,
+  "acceptedControlSourceObjects": 945,
+  "rawBindingsMatched": 84,
+  "nonBlockingWarning": "N07B05i012 provenance reinforcement documented; no unique-concept quota",
+  "packageAcceptance": false,
+  "sourceActivation": false
+}

@@ -1,0 +1,714 @@
+{
+  "verdict": "PASS",
+  "unit": "OOD-N07-B01",
+  "scope": "Bounded independent semantic re-review of the exact frozen v2 correction to the frozen v1 B01 whole-object review. Reuses matching v1 semantic findings only for unchanged facts/fields; not final N07 cross-unit, source, producer, consumer, admission, runtime, native, Premium, or full-BIZQ acceptance.",
+  "input": {
+    "path": "review-inputs/N07-B01-v2.json",
+    "sha256": "aebc7f8cc71f8203d0e53e0eda80118878758608a8cc447aad4dc45bb22f524a"
+  },
+  "previousInput": {
+    "path": "review-inputs/N07-B01-v1.json",
+    "sha256": "4f327d79af5941d617f8c211cd70bb84ca450a1f8bc08bce4d0b034c8c526df2"
+  },
+  "previousReview": {
+    "path": "SEMANTIC-N07-B01-v1-QA.json",
+    "sha256": "03b12333d54c9decc7a0f4013356d4704df6295664442716e734b6a3e597fa89",
+    "verdict": "REVISE"
+  },
+  "manifest": {
+    "path": "N07-MANIFEST.json",
+    "sha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01"
+  },
+  "source": {
+    "path": "patternly-content/content/object-oriented-design-interview/persistence_repositories_serialization_and_domain_boundaries/OOD-N07-B01.json",
+    "sha256": "647f8594ec29f5d565d79e558e94c6ecf0f25637198b141cbb7dfbe0b10fe4df"
+  },
+  "mechanicalEvidence": {
+    "path": "ROOT-N07-B01-v2-MECHANICAL.json",
+    "sha256": "27416754634c3b8c5460575b7e3535eb25bd2b0421194060b0dd74a0d6603d1f",
+    "items": 18,
+    "optionScoreAndReversalCases": 72,
+    "result": "PASS",
+    "semanticAcceptance": false
+  },
+  "authorNotesSnapshot": {
+    "path": "AUTHOR-B01-B04.json",
+    "sha256": "f6432921636f76506bc0fa6d345edcca49f909c26fee4b8e49f9495833e2bbf9",
+    "role": "author hypotheses only; not acceptance evidence"
+  },
+  "criteria": {
+    "specPath": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "specSha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3",
+    "canonicalGuidelinesPath": "docs/07-content-guidelines.md",
+    "canonicalGuidelinesSha256": "cffd5dae0850ecd7fc1f2e05e28f7e83c7ca9460207f6f857713d196254773e5",
+    "contractPath": "N07-CONTRACT.json",
+    "contractSha256": "79c6dd8d2861d21eec0122675659840ba6f04883f546ec9ef4326f29320d4720",
+    "briefPath": "N07-BRIEFING.md",
+    "briefSha256": "9370339439c25f7fe065e3753af31f0436d0e0e78e9084815d83c5ad9039e4d3"
+  },
+  "correctionReview": {
+    "v1Findings": {
+      "systematicKeyLengthCue": "RESOLVED",
+      "i002UnsupportedFullLoadRejection": "RESOLVED"
+    },
+    "choiceCountChange": "Every question now has four options, with one prior distractor removed. The existing contract and mechanical schema/scoring check permit this shape; no five-option or minimum-count rule applies. Removed alternatives were assessed for whether their loss leaves a meaningful set of competitors.",
+    "optionBalance": "No current item has a uniquely longest keyed choice by raw character count. Some are uniquely shortest; this is not itself a defect. Current key lengths vary, and the accepted policies retain the conditions needed to answer from the scenario. No equal-length or warning-count requirement is applied."
+  },
+  "findings": [],
+  "cohortAssessment": "The v2 correction retains all 18 question IDs and all accepted option IDs. The accepted options still express the repository/domain-collection boundary: domain callers ask for domain entities or domain queries, while storage row layouts and mapping remain in persistence. The scenario facts continue to determine what query or behavior the contract needs. The same-ID conclusion follows the unchanged primary objective and accepted meaning, not merely the unit name. Removing one distractor per question is allowed by the existing contract and leaves three distinguishable alternatives; no item was left without credible competition. B01-i002 now states the 250,000-row open-case set, 200 ms p95 target, and measured full-materialization failure in the prompt/constraints, so its full-load alternative is defeated by visible evidence rather than an unstated performance preference.",
+  "itemReviewBasis": "Compared every v2 object to its exact v1 whole object and the manifest before object. Re-read the changed accepted-option text, removed alternative, remaining alternatives, target-specific feedback and i002 new prompt/constraints/error correction/boundary. Reused v1 findings only for unchanged core item meaning/Reason/Details; supporting claims remain consistent. The actual key is resolved by answer.optionId, never option position.",
+  "limitations": [
+    "Final N07 cross-unit comparison against the other seven current units and accepted945 N01–N06 remains pending.",
+    "No source, producer, consumer, admission, runtime, native, Premium, or full-BIZQ-01 acceptance is claimed."
+  ],
+  "items": [
+    {
+      "questionIdBefore": "ood-n07-b01-i001",
+      "questionIdCurrent": "ood-n07-b01-i001",
+      "beforeQuestionSha256": "7423af26cdfabbb1b0579d3f271c1e7105b2c48918b69bc89ca28a6e16f6b6d3",
+      "currentWholeObjectSha256": "380eb3f61d9ed180610aad7a5352c64973c6d501ddb06128978108e183adf8ae",
+      "v1WholeObjectSha256": "335d988d3ca062108d5c75cb521fdae3f537c883b5657124aa45b32d01423712",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “export observes a stable session state” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Use a session query for committed history in order; hide row keys and paging in the adapter.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i001_wrong_4"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 92,
+      "optionLengthCharactersByCurrentOrder": [
+        87,
+        91,
+        94,
+        92
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i002",
+      "questionIdCurrent": "ood-n07-b01-i002",
+      "beforeQuestionSha256": "a1a5dd304103829c30ff6b80bf81c5e29e0c4dbb28ccc6c8fdd73671671d6551",
+      "currentWholeObjectSha256": "d226563f12cf3dfcfa47599998c7286084a905fa36de81ee7743dbb10b5f0ce6",
+      "v1WholeObjectSha256": "6b2bc6d6e4f6180eb8a5b0a851ef884e16e3573b1fe13fa3f207042a5854dd82",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “the escalation keeps ownership and response deadlines” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Use a conversation collection with a team/open query; keep ownership/history mapping behind it.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i002_wrong_3"
+        ],
+        "promptChanged": true,
+        "constraintsChanged": true,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 95,
+      "optionLengthCharactersByCurrentOrder": [
+        116,
+        95,
+        93,
+        75
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i003",
+      "questionIdCurrent": "ood-n07-b01-i003",
+      "beforeQuestionSha256": "42da43c8d0fc7b4424fa1744d1cf231f0feaa935055402d50b43fabab43ace15",
+      "currentWholeObjectSha256": "13b972d774642a517a7335f815fec7926d5573aa3a003b3e68f96866ceb96e2e",
+      "v1WholeObjectSha256": "3c1c2488b108da9ba37b52ad095b77a1e20737d74fdf4b8367100032549d370f",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “a listing cannot become visible before its price and stock rule are valid” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Keep price/stock publication and region search in a listing contract; map rows in persistence.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i003_wrong_4"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 94,
+      "optionLengthCharactersByCurrentOrder": [
+        95,
+        108,
+        93,
+        94
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i004",
+      "questionIdCurrent": "ood-n07-b01-i004",
+      "beforeQuestionSha256": "5f5a4d874e14a88468803b8bdfa27e2ce33fef319c4975106428247c375e9dcb",
+      "currentWholeObjectSha256": "74c7b176eca7cf2c1063291a18798e29b58b9019e97fa0890611c62efa2b90a7",
+      "v1WholeObjectSha256": "9620b78fe0ee5585c2d6762952852aee3ba56683303a4d32d431ff59b64db320",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “each split retains the original request identity and delivery promise” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Share one backordered-request collection query across both workflows; keep vendor rows behind it.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i004_wrong_3"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 97,
+      "optionLengthCharactersByCurrentOrder": [
+        101,
+        96,
+        97,
+        92
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i005",
+      "questionIdCurrent": "ood-n07-b01-i005",
+      "beforeQuestionSha256": "14f8448c08d470442077240d4be6f172676a67829161f1d2fc14384cf629302c",
+      "currentWholeObjectSha256": "ed747662093af79e36f9c1b277929b241285ccc85b81dc00a62d889eaea4425b",
+      "v1WholeObjectSha256": "310ac1162bf9c3b6ed3974768fde8247ef98262c1bab65b097991b0fccd40646",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “transfer preserves the plot boundary and approval history” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Keep reservation lookup in domain terms while the adapter changes from relational rows to documents.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i005_wrong_3"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 100,
+      "optionLengthCharactersByCurrentOrder": [
+        100,
+        103,
+        95,
+        113
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i006",
+      "questionIdCurrent": "ood-n07-b01-i006",
+      "beforeQuestionSha256": "ac9262216d7a654f6b39d3ff1540ea37c20ed299026a3166e592040647eb1d3f",
+      "currentWholeObjectSha256": "ad64f94ad79e3090f14e0a2a9805cd03deeb2bcd7d98419f26088cb40fee31ae",
+      "v1WholeObjectSha256": "ccf41617226197ba4fbf3b6021426923c50680807d22903eb1c909b112376771",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “the bundle pricing policy remains consistent with its components” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Expose bundles as domain values and map component rows behind the persistence boundary.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i006_wrong_4"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 87,
+      "optionLengthCharactersByCurrentOrder": [
+        89,
+        92,
+        78,
+        87
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i007",
+      "questionIdCurrent": "ood-n07-b01-i007",
+      "beforeQuestionSha256": "6d88f23ed83f2162122d82f42abc40b126fa2ef47942655f88970e58bd98316d",
+      "currentWholeObjectSha256": "7927f2b830ac0b9881119e02029e17fb12d8c8ec820aa167aafde7a2ead4de6f",
+      "v1WholeObjectSha256": "c522b8aba56afec69c6982163f0bc0c0d46758e1992ae63e7cd5882fe8dbce73",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “charger capacity and reservation expiry are coordinated” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Use an availability query by aircraft type, with assignment joins kept behind the collection.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i007_wrong_4"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 93,
+      "optionLengthCharactersByCurrentOrder": [
+        102,
+        93,
+        95,
+        83
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i008",
+      "questionIdCurrent": "ood-n07-b01-i008",
+      "beforeQuestionSha256": "283eee62be6f499d7726f7c7413e40a540008b5ceb641a9229ad9f51da30f7d0",
+      "currentWholeObjectSha256": "ef915a06ea85b230797be5e8f61bf256c71a85733299267174fd06a334efb6be",
+      "v1WholeObjectSha256": "8a32f3cfd627c264dbc0fc6c3c63dfb9f2d5eb6bb6a3c87bd5bfa9051d603a09",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “asset identity remains stable while descriptive values are replaced” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Expose lookup by asset and language, with normalized descriptions mapped behind the contract.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i008_wrong_2"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 93,
+      "optionLengthCharactersByCurrentOrder": [
+        92,
+        93,
+        101,
+        93
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i009",
+      "questionIdCurrent": "ood-n07-b01-i009",
+      "beforeQuestionSha256": "8313a55372f43509c5abb46b897463cac67184687702b17d9bd05f580e24664f",
+      "currentWholeObjectSha256": "066f4f3e356caf5b76391b76dcd365ef17adabb4fdbec8b7fd7ff0983ca19d88",
+      "v1WholeObjectSha256": "19e92e05b06482002484e1c18ccb7f9febd9cb7b3910e7b90d608f6ed3a231c8",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “approval requires an explicit territory and expiration” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Use domain approval criteria for work, territory, and expiry; keep the join mapping private.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i009_wrong_2"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 92,
+      "optionLengthCharactersByCurrentOrder": [
+        95,
+        92,
+        65,
+        65
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i010",
+      "questionIdCurrent": "ood-n07-b01-i010",
+      "beforeQuestionSha256": "f7a5815f9b87dff8e0cf89afebc9717ee342ceaddff31df56b433c9254f1854b",
+      "currentWholeObjectSha256": "3434f9ad8ee31f034022858c38235e8069e65da4643753f2e864cfc63a9e0e92",
+      "v1WholeObjectSha256": "02aec37300a8158ad945ab2e13bf4a4d53b944dc5511556a136724cec629097a",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “a battery cannot be assigned to two aircraft at once” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Use a domain availability query by aircraft type; keep assignment joins in persistence.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i010_wrong_3"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 87,
+      "optionLengthCharactersByCurrentOrder": [
+        87,
+        88,
+        77,
+        90
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i011",
+      "questionIdCurrent": "ood-n07-b01-i011",
+      "beforeQuestionSha256": "7a3e39812818520f0402ac5a1d2ae5b0f8b128c2f1510795f709eaabb130e319",
+      "currentWholeObjectSha256": "6dc56be761c9ba30a40c5af93f7d68aba60f517b6a2ad756a6600230193bf3a7",
+      "v1WholeObjectSha256": "1c9f22fe87c2458ab39631320822584871a85673e8f7fae455780d91e7647c45",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “privacy and consent rules apply before external disclosure” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Expose consent-aware referral access without raw consent columns in caller code.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i011_wrong_4"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 80,
+      "optionLengthCharactersByCurrentOrder": [
+        76,
+        79,
+        95,
+        80
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i012",
+      "questionIdCurrent": "ood-n07-b01-i012",
+      "beforeQuestionSha256": "3e8a20b8c2d0bb081f3b43c8adb3c663ec131624b2213f4a714c70c6dda934bb",
+      "currentWholeObjectSha256": "53301736714e492553846d856b4edf03628c35dc9bda1ae89846492bbf0214cd",
+      "v1WholeObjectSha256": "931c4d8e6209a563444135071403851b6b9c92dfcac63b0dfb6093031efbfeb3",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “completion records the exercise version and score policy” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Load the completion by stable attempt ID with its exact recorded revisions.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i012_wrong_3"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 75,
+      "optionLengthCharactersByCurrentOrder": [
+        85,
+        75,
+        70,
+        73
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i013",
+      "questionIdCurrent": "ood-n07-b01-i013",
+      "beforeQuestionSha256": "d5fccfb710c5bc1a76bc33ee11eea7e557fd24f33a162f6f836136b258728041",
+      "currentWholeObjectSha256": "5bb5d5c10163cb4d627c91566025db88f959e0859f19e89aa16ccf219f91450c",
+      "v1WholeObjectSha256": "48af8225cc6142a3fafd13469efec08911b8c8d78ca3323ac44e37860cf5ff60",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “approval is attributable, bounded, and cannot bypass required controls” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Query pending exceptions by category in domain terms, leaving row mapping in the adapter.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i013_wrong_3"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 89,
+      "optionLengthCharactersByCurrentOrder": [
+        95,
+        72,
+        86,
+        89
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i014",
+      "questionIdCurrent": "ood-n07-b01-i014",
+      "beforeQuestionSha256": "4c6419077da06b0da12096af57037c974ca23de4c937a3cf8b3cd1324a95d378",
+      "currentWholeObjectSha256": "dbce074eae88f2a172b68c239e8fc83ea0847a53d0a8e6fdfded20198420da4a",
+      "v1WholeObjectSha256": "f9daff6c55cfd4c32dca2ec12d43e1b0d8d0e6813f01defaff2593a2fa02b3f6",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “annotations follow stable segments rather than file offsets” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Retrieve by stable segment identity; translate waveform offsets behind the collection.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i014_wrong_4"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 86,
+      "optionLengthCharactersByCurrentOrder": [
+        78,
+        100,
+        86,
+        83
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i015",
+      "questionIdCurrent": "ood-n07-b01-i015",
+      "beforeQuestionSha256": "ffc5a748c7d40109b1faeb5c3730314c94d30886c8d6157f5767436148e47a95",
+      "currentWholeObjectSha256": "1badf3f918d47a1c6543777bea4615798a50c83520244c140222b8feafef4939",
+      "v1WholeObjectSha256": "232a01de9ff69ece49082bffc29db53f6ba06524f31400eeb0e89f092c0f7eeb",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “the role expires and is attributable to a specific approval” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Query active grants by principal and time through a grant-domain collection.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i015_wrong_3"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 76,
+      "optionLengthCharactersByCurrentOrder": [
+        76,
+        75,
+        67,
+        83
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i016",
+      "questionIdCurrent": "ood-n07-b01-i016",
+      "beforeQuestionSha256": "b66b8df5cbcae60be8fc43babb5f96948578dd901f266176a6ee52dfdb32b01c",
+      "currentWholeObjectSha256": "de47be66e8259640c4a653e9274d5a77711fd90e4a228346cf1319ea44866802",
+      "v1WholeObjectSha256": "a1283ec1c743ec5f78acbd7c7c6f9c91972e7bb5cf0753032b4dddae5b04c996",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “the seal covers the exact immutable revision” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Return the exact sealed revision by document ID; map seal and bytes behind the contract.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i016_wrong_4"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 88,
+      "optionLengthCharactersByCurrentOrder": [
+        92,
+        71,
+        77,
+        88
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i017",
+      "questionIdCurrent": "ood-n07-b01-i017",
+      "beforeQuestionSha256": "e58d06ab8d2d7fc8777a81a9a9a551a8410f1d4d64e3776052e333d43a82d6be",
+      "currentWholeObjectSha256": "34040b32cf2d8bd287f395607c428d7d7ccb5dc4487b90cb3d5eb8cc4906ca2c",
+      "v1WholeObjectSha256": "4b843f7b3d23c5bcbd25e4811ed9432621080302d125ad06691286fcf676edcc",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Expose payout release and seller/window lookup through a domain contract.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i017_wrong_4"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 73,
+      "optionLengthCharactersByCurrentOrder": [
+        80,
+        73,
+        74,
+        64
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b01-i018",
+      "questionIdCurrent": "ood-n07-b01-i018",
+      "beforeQuestionSha256": "043bba751ea1e3cd8319ec34afb6063cc9612ae49ce36eb3c16d437cdde0829b",
+      "currentWholeObjectSha256": "b6937dcfaca324d3f351c787ef68422c58acac1c693c578e40ce2e703b3f5205",
+      "v1WholeObjectSha256": "d1542c1465a31ed6d02eb0a2064d05f0162ca638d6e8fa6fef8b537612828f86",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "oldAcceptedOptionText": "Expose domain-oriented collection access while keeping query and storage mechanics in infrastructure. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Query route/day notices in effective-time order; keep row sequence mechanics in persistence.",
+      "questionIdentityDisposition": "retain_same_primary_decision_and_objective",
+      "acceptedOptionIdentityDisposition": "retain_same_repository_domain_collection_meaning",
+      "correctionDeltaComparedWithV1": {
+        "removedOptionIds": [
+          "n07_b01_i018_wrong_4"
+        ],
+        "promptChanged": false,
+        "constraintsChanged": false,
+        "answerIdChanged": false
+      },
+      "keyLengthCharacters": 92,
+      "optionLengthCharactersByCurrentOrder": [
+        98,
+        75,
+        88,
+        92
+      ],
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "uniquelyShortestKeyByRawCharacterLength": false,
+      "semanticDisposition": "PASS",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/repository.html",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-design"
+      ]
+    }
+  ]
+}

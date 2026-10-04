@@ -1,0 +1,215 @@
+{
+  "unit": "OOD-N07-B08",
+  "correctionRevision": 3,
+  "proposalSha256": "493b6658598afb8199ff392eaf682906dce27ef68ba74dadd159e13eb27d6030",
+  "priorFrozenInput": "docs/active/BIZQ-01/ood-remaining-closure-23/review-inputs/N07-B08-v2.json",
+  "priorFrozenInputSha256": "4d7c1657a4a8746ed0c12bbe8636a409b03a781894659c2b00f9b512c854e2e0",
+  "verification": {
+    "command": "node docs/active/BIZQ-01/ood-remaining-closure-23/check-proposal-unit.mjs N07-B08.json",
+    "result": "PASS",
+    "wholeObjects": 18,
+    "optionsChecked": 90,
+    "changedFields": 36,
+    "scope": "Only feedback.details.mechanismOrProperty and feedback.details.scenarioApplication changed for all 18 objects; no semantic acceptance."
+  },
+  "items": [
+    {
+      "questionId": "ood-n07-b08-i001",
+      "priorDetails": {
+        "mechanismOrProperty": "A repeated operation ID is safe only when it still denotes the same command payload. The amount changed, so this is key reuse conflict, not a retry of the committed release.",
+        "scenarioApplication": "The original release remains associated with its original amount; the altered request cannot silently reuse that identity."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "An idempotency key names a command payload; storing its fingerprint distinguishes a retry from key reuse.",
+        "scenarioApplication": "Operation op-428 remains tied to $80; the changed $95 request cannot silently claim that identity."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i002",
+      "priorDetails": {
+        "mechanismOrProperty": "Because validation stopped the command before persistence, there is no uncertain write to reconcile.",
+        "scenarioApplication": "The corrected price can be evaluated independently because the earlier invalid request changed no stored state."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "A validation failure before persistence has no stored state to reconcile.",
+        "scenarioApplication": "The corrected price can be evaluated as a fresh command because the rejected input never mutated storage."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i003",
+      "priorDetails": {
+        "mechanismOrProperty": "The expected revision is a write precondition; a stale edit must not replace a newer accepted geometry.",
+        "scenarioApplication": "An edit from revision 18 cannot overwrite geometry accepted as revision 19."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "An expected revision is a compare-before-write condition for concurrent edits.",
+        "scenarioApplication": "The edit based on revision 18 cannot replace the geometry already accepted as revision 19."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i004",
+      "priorDetails": {
+        "mechanismOrProperty": "The local notice and dispatch intent can be committed atomically, but provider delivery occurs later and may repeat.",
+        "scenarioApplication": "The notice survives a worker crash with dispatch intent available for later delivery."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "A transactional outbox stores local intent so dispatch can resume after a process interruption.",
+        "scenarioApplication": "The notice remains committed with dispatch intent even if the worker stops before publishing."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i005",
+      "priorDetails": {
+        "mechanismOrProperty": "Each request can pass a read-time availability check before either write; the shared persistence boundary must decide which reservation is accepted.",
+        "scenarioApplication": "At most one overlapping reservation may become committed even when both requests observed availability."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "Concurrent requests must coordinate at the shared persistence boundary after their reads race.",
+        "scenarioApplication": "Only one overlapping meter reservation can commit even though both requests saw availability."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i006",
+      "priorDetails": {
+        "mechanismOrProperty": "Acknowledgement of queueing is not a terminal referral decision, so local status must not claim accepted or rejected yet.",
+        "scenarioApplication": "The referral remains visibly pending until the specialist system reports a terminal outcome."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "A queued acknowledgement describes request receipt, not completion of remote business processing.",
+        "scenarioApplication": "The referral remains pending until the specialist system reports its terminal decision."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i007",
+      "priorDetails": {
+        "mechanismOrProperty": "Asset-level confirmation identifies which part of a permitted partial import remains unfinished.",
+        "scenarioApplication": "Confirmed assets remain complete while only unconfirmed asset work resumes."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "Per-item checkpoints distinguish confirmed effects from work that still needs resumption.",
+        "scenarioApplication": "Confirmed assets are skipped on resume while unconfirmed assets remain eligible for processing."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i008",
+      "priorDetails": {
+        "mechanismOrProperty": "The confirmed seven units are known work; the timeout leaves only the five-unit vendor outcome unresolved.",
+        "scenarioApplication": "The customer request and its confirmed quantity remain intact while the five-unit result is reconciled."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "A partial outcome can be recorded without misclassifying an uncertain external remainder.",
+        "scenarioApplication": "The original request keeps its seven confirmed units while the five-unit outcome is reconciled."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i009",
+      "priorDetails": {
+        "mechanismOrProperty": "The stored Running state distinguishes this retry from both a completed result and a new experiment.",
+        "scenarioApplication": "The caller receives the current run status without launching duplicate experiment work."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "A durable operation state distinguishes in-progress work from completed and newly requested work.",
+        "scenarioApplication": "Run R-63 is reported as running after restart, without starting another execution."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i010",
+      "priorDetails": {
+        "mechanismOrProperty": "The provider event ID identifies one delivery, while principal identity alone would collapse later legitimate grants.",
+        "scenarioApplication": "A repeated delivery is acknowledged without applying the grant transition again."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "A delivery identifier scopes deduplication more narrowly than the recipient identity.",
+        "scenarioApplication": "A repeated provider event is acknowledged once while later grants for the same principal remain distinct."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i011",
+      "priorDetails": {
+        "mechanismOrProperty": "A lease token distinguishes the current claim from the expired worker’s late completion.",
+        "scenarioApplication": "The expired worker cannot complete the reminder now owned by the second lease."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "A changing lease token fences completion from a worker whose claim has expired.",
+        "scenarioApplication": "The first worker’s late result cannot complete the reminder under the second worker’s lease."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i012",
+      "priorDetails": {
+        "mechanismOrProperty": "The two local records are one stated consistency boundary, so an interrupted half-write must not be visible.",
+        "scenarioApplication": "Neither the balance nor the allocation row can appear without the other."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "A database transaction keeps related local writes within one commit boundary.",
+        "scenarioApplication": "The balance and allocation row cannot become visible independently."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i013",
+      "priorDetails": {
+        "mechanismOrProperty": "The system knows the persistence call never began; treating that as uncertain would invent a possible write.",
+        "scenarioApplication": "The canceled attempt has no seal row because no write was attempted."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "Failure-stage knowledge determines whether a write outcome is uncertain or known absent.",
+        "scenarioApplication": "The canceled seal attempt has no persisted record because execution stopped before the call."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i014",
+      "priorDetails": {
+        "mechanismOrProperty": "The original inputs can change later, so the persisted revision pair is needed to reproduce this calculation.",
+        "scenarioApplication": "A later review can identify exactly which settlement and policy produced the amount."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "Persisting input revisions preserves the lineage needed to reproduce a historical calculation.",
+        "scenarioApplication": "Review can retrieve the settlement snapshot and policy version used for the original payout amount."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i015",
+      "priorDetails": {
+        "mechanismOrProperty": "Listing visibility is conditional on both submitted values passing together; separate commits expose an invalid intermediate state.",
+        "scenarioApplication": "Consumers see the new listing only after price and stock form one valid stored state."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "A transaction can couple validation, storage, and visibility for values sharing one local consistency rule.",
+        "scenarioApplication": "A listing becomes visible only with the accepted price and stock combination."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i016",
+      "priorDetails": {
+        "mechanismOrProperty": "The stable provider key identifies the same archive asset across the repeated batch.",
+        "scenarioApplication": "A repeated provider row updates metadata on the same archive asset."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "A stable external key maps repeated deliveries to one persisted identity.",
+        "scenarioApplication": "The second batch updates descriptive fields on the existing archive asset."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i017",
+      "priorDetails": {
+        "mechanismOrProperty": "The provider reference supports status lookup, but the case gives no safe repeat-send guarantee while status is unknown.",
+        "scenarioApplication": "The notice stays pending until the feed reports delivery status; no unsafely repeated send is inferred."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "A status query can resolve uncertainty only through a capability the provider actually exposes.",
+        "scenarioApplication": "The notice stays pending until the feed reports status for its request reference; resend safety is not assumed."
+      }
+    },
+    {
+      "questionId": "ood-n07-b08-i018",
+      "priorDetails": {
+        "mechanismOrProperty": "The first cancellation is committed; replaying the same command should resolve to its existing terminal outcome.",
+        "scenarioApplication": "The reservation stays canceled, and the repeated command returns that committed outcome."
+      },
+      "currentDetails": {
+        "mechanismOrProperty": "A committed terminal command can resolve a repeated request from its stored outcome.",
+        "scenarioApplication": "The reservation stays canceled and the same cancellation command returns its original result."
+      }
+    }
+  ]
+}

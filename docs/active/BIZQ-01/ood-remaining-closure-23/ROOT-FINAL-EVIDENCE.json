@@ -1,0 +1,115 @@
+{
+  "result": "PASS",
+  "scope": "Actual source/consumer/admission/provenance verification; final independent package QA and ordinarypush pending; no native/Premium/fullBIZQ acceptance",
+  "candidateId": "4b8b820120248d8a24883960ed2347d7625af43c5f9ebec9863cab6870752b28",
+  "sourceCheckpoint": "3be6feef80975ed7f3ca87893b743668227e4a64",
+  "consumerCheckpoint": "50a6811cde15b662e8c45f777fcc9c447a482d3a",
+  "currentContentHead": "27b7b7c9ece584e9904b343e63b49cd8a7f087c6",
+  "admissionBoundary": "local_verified_artifacts_no_deployment",
+  "checks": {
+    "canonical": {
+      "tests": 183,
+      "pass": 183,
+      "fail": 0
+    },
+    "rootProducerFocused": {
+      "tests": 10,
+      "pass": 10
+    },
+    "independentProducerFocused": {
+      "tests": 15,
+      "pass": 15
+    },
+    "rootConsumerFocused": {
+      "tests": 13,
+      "pass": 13
+    },
+    "independentConsumerFocused": {
+      "tests": 13,
+      "pass": 13
+    },
+    "postAdmission": {
+      "tests": 7,
+      "pass": 7
+    },
+    "static": {
+      "tests": 1875,
+      "pass": 1871,
+      "fail": 0,
+      "skip": 4
+    },
+    "exporter": "passed",
+    "exporterCheck": "passed",
+    "webLocal": "passed",
+    "candidateReleaseGate": "passed"
+  },
+  "files": {
+    "src/content/generated/canonical-content/object-oriented-design-interview.json": "932b7370d7be44bb5274ad8bc5a31b45f0479b3ff4251160af1ed2b170ca80d7",
+    "src/content/generated/canonical-content/content-lock.json": "0cb1306dc4f75c5278165e35c5e06691671b8c18c7416e4fba9bda36ab0bf32c",
+    "integration/contracts/content-release/release.lock.json": "8dbc9052cda40ae0c1c4b4839f21834df58bb334cbd1fc9b7ef260791fba458d",
+    "integration/contracts/content-release/release.lock.historical-0024.json": "d5058e8678ceab38fbdb3fc6ea423b80e21571885549df9b42dd6e3916312195",
+    "src/content/bizq01OodNodeClosure23.test.ts": "7862ca87418c36e0f9b58c864d69f0628e46f465b85069a084c938c580d47438",
+    "src/content/bizq01OodNodeClosure21.test.ts": "0a44ef819c4eb503b9570c8901e0e1f7e01d2ef57e1808e999a5a11404413107",
+    "src/content/bizq01OodNodeClosure22.test.ts": "4f2cca823c8cc1d6f7185b16f932fec35cfe6db117d62c109a549aaa9c4fd77c",
+    "src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts": "0a398abb2ed16913d49ee6d3fa9f11b0f4faa6aed8d65a4dd82cc87e49c63879"
+  },
+  "producerEvidenceFiles": {
+    "evidence/admissions/candidate-admission-v3.json": "80bb66c3813d1283101fde50d5d563ee8987d26516f16338a68e63803c1653d5",
+    "evidence/admissions/runtime/4b8b820120248d8a24883960ed2347d7625af43c5f9ebec9863cab6870752b28-50a6811cde15b662e8c45f777fcc9c447a482d3a.json": "97812e1b35af778cd86a542f3aa81cee3fe335c850c581a05294680d43bc7970",
+    "evidence/readiness/candidate-readiness-v2.json": "0097588a98a5b3289708763bd3e282f0819186d42d0c774cd201d2a1fc4e7c5f",
+    "evidence/candidate-decisions/aws-02-codex-decision-v2.json": "358a75b54e96df2b6e743ca2b77d4f5f424509d4941099141c1f34fa04abf9c1",
+    "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json": "31d83dcbfe9c5e3571cb7962f29928d73157669ff3bb88ee7397ceb7f04f3250",
+    "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json": "64a1563c798868fb400be51ce46835e23f0797cc0d7d0e791f9c2fe0d9bf94b7"
+  },
+  "demoSha256": "86ff78bbf2b92aac838e83143e47321db2382e4dec3831fa799ef54dc33a722b",
+  "preservation": {
+    "verdict": "PASS",
+    "scope": "N07/23 consumer and demo preservation; no native/full BIZQ acceptance",
+    "contentVersion": "object-oriented-design-interview-authoring-v2026.10.05-bizq01-23",
+    "reviewedN07": 144,
+    "preservedOtherOOD": 1269,
+    "unchangedArtifacts": 8,
+    "historicalLockSha256": "d5058e8678ceab38fbdb3fc6ea423b80e21571885549df9b42dd6e3916312195",
+    "oodArtifactSha256": "932b7370d7be44bb5274ad8bc5a31b45f0479b3ff4251160af1ed2b170ca80d7",
+    "demoPayloadsUnchanged": true,
+    "changes": [
+      {
+        "questionId": "alg-complexity-time-005",
+        "changedFields": [
+          "admissionSha256",
+          "appContentLockSha256",
+          "candidateId",
+          "producerCommit",
+          "releaseId",
+          "releaseLockSha256",
+          "runtimeEvidenceSha256",
+          "sourceReleaseSha256"
+        ]
+      },
+      {
+        "questionId": "aws-saa-c03-architecture-001-odk096",
+        "changedFields": [
+          "admissionSha256",
+          "appContentLockSha256",
+          "candidateId",
+          "producerCommit",
+          "releaseId",
+          "releaseLockSha256",
+          "runtimeEvidenceSha256",
+          "sourceReleaseSha256"
+        ]
+      }
+    ]
+  },
+  "logs": {
+    "ROOT-CANONICAL-FINAL.log": "79d1a057914ce50ddfcdeb33ac73f9aa9c1a50709ec55f51b30ddb5cedc915c7",
+    "ROOT-PRODUCER-FOCUSED.log": "f97402dbfd3115b2f60ab304111f5c6ec1cf94dcd1b7219ca926ee4cc75a04ab",
+    "ROOT-MIGRATION-FINAL.log": "b392c1bc40cd67a32d7e97ef8cf9350b7aab1b86d4f9c31dee6cd25beb5f28aa",
+    "ROOT-CONSUMER-FOCUSED.log": "4b818e3f7f32479ba0f25c71d88feee3cf009ebe38c3df7e00a35c97ebbd1275",
+    "ROOT-POST-ADMISSION.log": "0aac56e49fd745685996f3cf552f46ce6e71de964c2a15cf7f024c0c551bc326",
+    "ROOT-QA-STATIC-FINAL.log": "0589e3c83b50abb94b7b4fe94265863c21a1e22a18f7814cb7d52dceb127106f",
+    "ROOT-DEMO-EXPORT.log": "9e5bb322cff796ba2e192f2b3434bcb995081e3813ad391743daec1b3dd4d69a",
+    "ROOT-WEB-VERIFY.log": "c819854da7f9772728b6bee7a1aa3feed505242fa786d2774411abaada1cf110",
+    "ROOT-CANDIDATE-RELEASE-GATE.log": "660998f46af18e4c343b605b4c8818b84375e4db7b21757324685ae4f5ecddc7"
+  }
+}

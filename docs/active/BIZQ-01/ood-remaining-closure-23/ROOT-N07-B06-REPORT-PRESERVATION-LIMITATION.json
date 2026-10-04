@@ -1,0 +1,23 @@
+{
+  "scope": "Explicit author-report preservation limitation, not semantic acceptance",
+  "removedOwnedInterimReports": [
+    "AUTHOR-N07-B06-CORRECTION-v2.md",
+    "AUTHOR-N07-B06-CORRECTION-v2.json",
+    "AUTHOR-N07-B06-CORRECTION-v3.md",
+    "AUTHOR-N07-B06-CORRECTION-v3.json"
+  ],
+  "originalBytesRecoverable": false,
+  "source": "Author acknowledged deletion of own untracked inaccurate interim reports; root confirmed current paths absent. No claim original bytes were restored.",
+  "retainedAuthoritativeEvidence": [
+    "review-inputs/N07-B06-v3.json",
+    "review-inputs/N07-B06-v4.json",
+    "review-inputs/N07-B06-v5.json",
+    "SEMANTIC-N07-B06-v3-QA.json",
+    "ROOT-N07-B06-v4-DIAGNOSTIC-DELTA.json",
+    "ROOT-N07-B06-v5-DIAGNOSTIC-DELTA.json"
+  ],
+  "failedClaim": "The v4 attempt reported72diagnosis rewrites; root actual comparison found0. V5 actualcomparison found72 savedchanges.",
+  "reportedCause": "Author used questionId prefixood-n07 instead of actual stored option IDs n07_b06 in diagnostic lookup; corrected actual-target lookup.",
+  "limitation": "One unpublished intermediate proposal/report mentioned by author was not root-frozen; no claim its exact bytes are available. Before-source and exact reviewed/published-stable proposal inputs remain frozen.",
+  "futureInstruction": "Keep superseded/failed reports as labelled historical evidence; do not delete or fabricate original report bytes."
+}

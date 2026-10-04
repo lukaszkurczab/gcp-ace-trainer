@@ -1,0 +1,227 @@
+{
+  "unit": "OOD-N07-B08",
+  "correctionRevision": 2,
+  "proposalSha256": "4d7c1657a4a8746ed0c12bbe8636a409b03a781894659c2b00f9b512c854e2e0",
+  "priorFrozenInput": "docs/active/BIZQ-01/ood-remaining-closure-23/review-inputs/N07-B08-v1.json",
+  "priorFrozenInputSha256": "03261f032a56acf2a523096d8cfc40746f319abbd8288dbab7e1b4ae5071ae0a",
+  "manifestSha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01",
+  "verification": {
+    "command": "node docs/active/BIZQ-01/ood-remaining-closure-23/check-proposal-unit.mjs N07-B08.json",
+    "result": "PASS",
+    "wholeObjects": 18,
+    "optionsChecked": 90,
+    "wrongOptionMessagesChanged": 9,
+    "changedAcceptedOptionIds": [
+      "n07_b08_i001_payload_binding",
+      "n07_b08_i009_running_state"
+    ],
+    "scope": "Mechanical schema/count/taxonomy/identity correspondence, scoring/reversal and exact diagnostic bindings only; no semantic acceptance."
+  },
+  "riskResolutions": {
+    "i006": "Clarified queued acknowledgement versus terminal referral outcome.",
+    "i017": "Added explicit provider-supplied status-feed capability keyed by request reference; did not assume repeat-send deduplication.",
+    "i001": "Changed payload under a committed operation ID is a conflict, not a retry of the original payload.",
+    "i009": "An operation known to be Running returns active status rather than a completed result or new execution."
+  },
+  "identity": "All 18 QIDs preserved; new answer IDs only for changed i001 and i009 answer meanings. Independent review pending.",
+  "items": [
+    {
+      "questionId": "ood-n07-b08-i001",
+      "beforeQuestionId": "ood-n07-b08-i001",
+      "priorDecision": "Use that operation ID as a durable unique key and return the already recorded release result on retry.",
+      "currentDecision": "Bind each operation ID to its first payload; reject reuse with a changed amount.",
+      "oldAcceptedOptionId": "n07_b08_i001_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i001_payload_binding",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Changed amount under the same operation ID is now explicit; the existing key is bound to the original payload and misuse is rejected."
+    },
+    {
+      "questionId": "ood-n07-b08-i002",
+      "beforeQuestionId": "ood-n07-b08-i002",
+      "priorDecision": "Return the validation error and allow the corrected command as a new attempt; no persisted mutation needs replay protection for the rejected request.",
+      "currentDecision": "Return the validation error; process corrected input as a new command.",
+      "oldAcceptedOptionId": "n07_b08_i002_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i002_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    },
+    {
+      "questionId": "ood-n07-b08-i003",
+      "beforeQuestionId": "ood-n07-b08-i003",
+      "priorDecision": "Use the expected revision in the write condition and return a conflict with the current revision when it no longer matches.",
+      "currentDecision": "Use the expected revision in the write and report a conflict if it no longer matches.",
+      "oldAcceptedOptionId": "n07_b08_i003_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i003_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    },
+    {
+      "questionId": "ood-n07-b08-i004",
+      "beforeQuestionId": "ood-n07-b08-i004",
+      "priorDecision": "Record a pending notification in the same database transaction as the notice, then dispatch it and let receivers deduplicate by notice ID.",
+      "currentDecision": "Commit the notice and dispatch intent together, then let the worker publish.",
+      "oldAcceptedOptionId": "n07_b08_i004_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i004_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    },
+    {
+      "questionId": "ood-n07-b08-i005",
+      "beforeQuestionId": "ood-n07-b08-i005",
+      "priorDecision": "Enforce the non-overlap rule at the persisted reservation boundary so concurrent writes cannot both commit as available.",
+      "currentDecision": "Enforce the overlap rule at the shared write boundary, not with a process-local precheck.",
+      "oldAcceptedOptionId": "n07_b08_i005_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i005_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    },
+    {
+      "questionId": "ood-n07-b08-i006",
+      "beforeQuestionId": "ood-n07-b08-i006",
+      "priorDecision": "Persist a pending referral operation and reconcile it with the remote status before marking it accepted or rejected.",
+      "currentDecision": "Keep the referral pending until a terminal remote outcome is confirmed.",
+      "oldAcceptedOptionId": "n07_b08_i006_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i006_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Remote acknowledgement is explicitly only queued/accepted-for-processing; terminal referral state remains unknown."
+    },
+    {
+      "questionId": "ood-n07-b08-i007",
+      "beforeQuestionId": "ood-n07-b08-i007",
+      "priorDecision": "Persist each asset’s confirmed result or a resumable progress record, then continue from the first unconfirmed asset.",
+      "currentDecision": "Persist per-asset confirmation and resume only work not yet confirmed.",
+      "oldAcceptedOptionId": "n07_b08_i007_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i007_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    },
+    {
+      "questionId": "ood-n07-b08-i008",
+      "beforeQuestionId": "ood-n07-b08-i008",
+      "priorDecision": "Persist the confirmed seven-unit allocation and keep the remaining five units pending under the same request, with vendor attempts separately identified.",
+      "currentDecision": "Record the seven confirmed units and reconcile the uncertain remainder under the original request.",
+      "oldAcceptedOptionId": "n07_b08_i008_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i008_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    },
+    {
+      "questionId": "ood-n07-b08-i009",
+      "beforeQuestionId": "ood-n07-b08-i009",
+      "priorDecision": "Persist the run ID with its final result and return that result when the same completed run is retried.",
+      "currentDecision": "Look up the durable run state and report it as running; do not start another worker.",
+      "oldAcceptedOptionId": "n07_b08_i009_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i009_running_state",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "The persisted run state is explicitly Running; the item tests reporting active state without launching duplicate work."
+    },
+    {
+      "questionId": "ood-n07-b08-i010",
+      "beforeQuestionId": "ood-n07-b08-i010",
+      "priorDecision": "Store the provider event ID with the applied transition and recognize a repeated ID before applying it again.",
+      "currentDecision": "Persist the provider event ID with the transition and recognize a duplicate delivery.",
+      "oldAcceptedOptionId": "n07_b08_i010_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i010_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    },
+    {
+      "questionId": "ood-n07-b08-i011",
+      "beforeQuestionId": "ood-n07-b08-i011",
+      "priorDecision": "Attach a monotonically changing lease token to the claim and accept completion only for the current token.",
+      "currentDecision": "Accept completion only when its lease token is still current.",
+      "oldAcceptedOptionId": "n07_b08_i011_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i011_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    },
+    {
+      "questionId": "ood-n07-b08-i012",
+      "beforeQuestionId": "ood-n07-b08-i012",
+      "priorDecision": "Perform the balance update and allocation insert in one local transaction.",
+      "currentDecision": "Commit the balance update and allocation row in one local transaction.",
+      "oldAcceptedOptionId": "n07_b08_i012_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i012_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    },
+    {
+      "questionId": "ood-n07-b08-i013",
+      "beforeQuestionId": "ood-n07-b08-i013",
+      "priorDecision": "Return the cancellation result without writing; a retry requires a new explicit user command.",
+      "currentDecision": "Return the known cancellation result without creating a seal record.",
+      "oldAcceptedOptionId": "n07_b08_i013_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i013_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    },
+    {
+      "questionId": "ood-n07-b08-i014",
+      "beforeQuestionId": "ood-n07-b08-i014",
+      "priorDecision": "Store the settlement snapshot ID and policy revision with the payout calculation result.",
+      "currentDecision": "Retain the settlement snapshot and policy revision used for the calculation.",
+      "oldAcceptedOptionId": "n07_b08_i014_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i014_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    },
+    {
+      "questionId": "ood-n07-b08-i015",
+      "beforeQuestionId": "ood-n07-b08-i015",
+      "priorDecision": "Validate both submitted values and persist them in one transaction before marking the listing visible.",
+      "currentDecision": "Validate both values and commit them before the listing becomes visible.",
+      "oldAcceptedOptionId": "n07_b08_i015_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i015_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    },
+    {
+      "questionId": "ood-n07-b08-i016",
+      "beforeQuestionId": "ood-n07-b08-i016",
+      "priorDecision": "Upsert by the stable provider asset key and preserve the existing archive asset identity on repeat import.",
+      "currentDecision": "Upsert by provider asset key while retaining the archive asset identity.",
+      "oldAcceptedOptionId": "n07_b08_i016_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i016_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    },
+    {
+      "questionId": "ood-n07-b08-i017",
+      "beforeQuestionId": "ood-n07-b08-i017",
+      "priorDecision": "Keep delivery status unresolved and reconcile the provider using the notice ID before retrying or marking delivered.",
+      "currentDecision": "Keep delivery unresolved and consult the provider status feed by its request reference before retrying.",
+      "oldAcceptedOptionId": "n07_b08_i017_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i017_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Status lookup uses the provider-supported request reference and no dedupe guarantee is inferred."
+    },
+    {
+      "questionId": "ood-n07-b08-i018",
+      "beforeQuestionId": "ood-n07-b08-i018",
+      "priorDecision": "Persist the cancellation operation identity and result so the retry can return the committed cancellation outcome.",
+      "currentDecision": "Return the already committed cancellation outcome for the same command ID.",
+      "oldAcceptedOptionId": "n07_b08_i018_failure_policy",
+      "currentAcceptedOptionId": "n07_b08_i018_failure_policy",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The item remains in persistence failure/retry boundaries; the corrected operation decision is case-specific within that objective. Independent identity review remains pending.",
+      "special": "Constraint and scenario application now state case facts/effects instead of repeating the keyed policy."
+    }
+  ]
+}

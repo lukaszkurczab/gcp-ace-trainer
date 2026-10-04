@@ -1,0 +1,109 @@
+{
+  "scope": "Exact bounded correction instructions from independent frozen B05 review; no semantic acceptance/source activation",
+  "reviewMdSha256": "3d6a1c524852165f7b1c7af56545fc648cfeff6ff98b8b819b11905869145683",
+  "reviewJsonSha256": "3687bbe68dbd3605e6034af425211d12826fae7bc5aaeb97bbe3f3dd8fb81fef",
+  "manifestSha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01",
+  "identityActions": [
+    {
+      "beforeQuestionId": "ood-n07-b05-i001",
+      "afterQuestionId": "ood-n07-b05-i019",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i002",
+      "afterQuestionId": "ood-n07-b05-i020",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i003",
+      "afterQuestionId": "ood-n07-b05-i021",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i004",
+      "afterQuestionId": "ood-n07-b05-i022",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i005",
+      "afterQuestionId": "ood-n07-b05-i023",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i006",
+      "afterQuestionId": "ood-n07-b05-i024",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i007",
+      "afterQuestionId": "ood-n07-b05-i025",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i008",
+      "afterQuestionId": "ood-n07-b05-i026",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i009",
+      "afterQuestionId": "ood-n07-b05-i027",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i010",
+      "afterQuestionId": "ood-n07-b05-i028",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i011",
+      "afterQuestionId": "ood-n07-b05-i029",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i012",
+      "afterQuestionId": "ood-n07-b05-i012",
+      "identityAction": "preserve"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i013",
+      "afterQuestionId": "ood-n07-b05-i031",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i014",
+      "afterQuestionId": "ood-n07-b05-i032",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i015",
+      "afterQuestionId": "ood-n07-b05-i015",
+      "identityAction": "preserve"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i016",
+      "afterQuestionId": "ood-n07-b05-i034",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i017",
+      "afterQuestionId": "ood-n07-b05-i035",
+      "identityAction": "replace_primary_semantics"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b05-i018",
+      "afterQuestionId": "ood-n07-b05-i036",
+      "identityAction": "replace_primary_semantics"
+    }
+  ],
+  "count": {
+    "replacement": 16,
+    "sameQuestionId": 2
+  },
+  "semanticCorrections": [
+    "Remove repeated form cue through credible alternative policy or concise complete key, no quota",
+    "Resolve i003 missing textual-format premise or narrow key to binary number",
+    "Do not claim inaccessible FowlerURL verified technical support"
+  ],
+  "mechanicalRequirement": "Existing actual schema/scoring/diagnostics contract; checker must resolve corrected QIDs by frozen corresponding identity mapping, no source count/word gate",
+  "sourceActivation": false
+}

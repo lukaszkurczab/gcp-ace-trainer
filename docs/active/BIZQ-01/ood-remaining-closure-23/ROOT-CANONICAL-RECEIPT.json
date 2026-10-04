@@ -1,0 +1,13 @@
+{
+  "result": "PASS",
+  "sourceCheckpoint": "3be6feef80975ed7f3ca87893b743668227e4a64",
+  "command": "PATH=/opt/homebrew/opt/node@22/bin:$PATH npm run test:canonical",
+  "nodeVersion": "v22.22.3",
+  "tests": 183,
+  "pass": 183,
+  "fail": 0,
+  "skip": 0,
+  "logPath": "ROOT-CANONICAL-FINAL.log",
+  "logSha256": "79d1a057914ce50ddfcdeb33ac73f9aa9c1a50709ec55f51b30ddb5cedc915c7",
+  "scope": "Producer canonical suite only; consumer/admission/full BIZQ acceptance pending"
+}

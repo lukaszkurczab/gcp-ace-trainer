@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "patternly-bizq01-ood-n07-b06-author-correction-v7-v1",
+  "status": "bounded author correction; independent review pending; not semantic acceptance",
+  "unit": "B06",
+  "input": {
+    "path": "review-inputs/N07-B06-v6.json",
+    "sha256": "5eafc6852700e0efd4a14e6419146ead10314a261c067fd575e581a977a76cfd"
+  },
+  "proposal": {
+    "path": "proposals/N07-B06.json",
+    "sha256": "18b0c6e2f3b783d35482f68d3c14703300a8ce8991a9dda0db5b5a13984a2287"
+  },
+  "summary": "Removed only the exact repeated boundary sentence from 17 ErrorCorrection fields, corrected the i014 wrong_4 diagnosis to match the signed-delta alternative, and added a case-specific retained-observation requirement for i016 so the existing traceability answer is supported.",
+  "actualDifferenceCount": 20,
+  "actualDifferences": [
+    {
+      "questionId": "ood-n07-b06-i001",
+      "field": "feedback.details.errorCorrection",
+      "before": "Keeping the transport type would couple scoring to partner field names; database names are also implementation details. If a partner code were itself the agreed durable domain identity, mapping that code would be reasonable.",
+      "after": "Keeping the transport type would couple scoring to partner field names; database names are also implementation details."
+    },
+    {
+      "questionId": "ood-n07-b06-i002",
+      "field": "feedback.details.errorCorrection",
+      "before": "Treating an unknown value as accepted bypasses the stated control; discarding it loses the evidence needed for quarantine review. If the domain explicitly defined an “unrecognized” terminal outcome, that could be mapped as such rather than quarantined.",
+      "after": "Treating an unknown value as accepted bypasses the stated control; discarding it loses the evidence needed for quarantine review."
+    },
+    {
+      "questionId": "ood-n07-b06-i003",
+      "field": "feedback.details.errorCorrection",
+      "before": "Persisting offsets as identity breaks annotations when a recording changes; the vendor response does not own editorial meaning. If annotations were defined against absolute media time and not stable segments, preserving offsets could be the domain contract.",
+      "after": "Persisting offsets as identity breaks annotations when a recording changes; the vendor response does not own editorial meaning."
+    },
+    {
+      "questionId": "ood-n07-b06-i004",
+      "field": "feedback.details.errorCorrection",
+      "before": "Using email as identity can merge or misaddress grants; dropping approval linkage prevents the stated audit. If the provider guaranteed a stable identifier that the domain had adopted, that identifier could be mapped directly.",
+      "after": "Using email as identity can merge or misaddress grants; dropping approval linkage prevents the stated audit."
+    },
+    {
+      "questionId": "ood-n07-b06-i005",
+      "field": "feedback.details.errorCorrection",
+      "before": "Choosing “latest” can seal different bytes from those the signer reviewed; retaining a lookup token alone loses the domain link. If the vendor token were the agreed immutable revision identifier, it could serve as the domain reference.",
+      "after": "Choosing “latest” can seal different bytes from those the signer reviewed; retaining a lookup token alone loses the domain link."
+    },
+    {
+      "questionId": "ood-n07-b06-i006",
+      "field": "feedback.details.errorCorrection",
+      "before": "Floating point and inferred currency can change the payable amount; dropping currency makes equal numeric amounts ambiguous. If every payout were contractually in one fixed currency, a currency-free amount could be justified by that explicit invariant.",
+      "after": "Floating point and inferred currency can change the payable amount; dropping currency makes equal numeric amounts ambiguous."
+    },
+    {
+      "questionId": "ood-n07-b06-i008",
+      "field": "feedback.details.errorCorrection",
+      "before": "Comparing unlike units can admit an over-limit reading; late conversion spreads vendor semantics into the domain. If the domain limit were also expressed in watt-hours and the serial were the agreed meter identity, direct mapping would work.",
+      "after": "Comparing unlike units can admit an over-limit reading; late conversion spreads vendor semantics into the domain."
+    },
+    {
+      "questionId": "ood-n07-b06-i009",
+      "field": "feedback.details.errorCorrection",
+      "before": "Provider strings make callers depend on vendor wording; defaulting unknown language alters caption meaning. If callers explicitly need provider-specific troubleshooting, a separate diagnostic field may expose that code.",
+      "after": "Provider strings make callers depend on vendor wording; defaulting unknown language alters caption meaning."
+    },
+    {
+      "questionId": "ood-n07-b06-i010",
+      "field": "feedback.details.errorCorrection",
+      "before": "Controller compensation adds an unrequested partial-state path; DTO-aware entities couple domain logic to transport shape. If the business explicitly allowed partial swaps, independent updates could be appropriate.",
+      "after": "Controller compensation adds an unrequested partial-state path; DTO-aware entities couple domain logic to transport shape."
+    },
+    {
+      "questionId": "ood-n07-b06-i011",
+      "field": "feedback.details.errorCorrection",
+      "before": "Overwriting silently violates the conflict contract; raw JSON parsing leaks transport shape into map behavior. If the domain specified a coordinate-level merge rule for mismatched revisions, that rule could be applied after mapping.",
+      "after": "Overwriting silently violates the conflict contract; raw JSON parsing leaks transport shape into map behavior."
+    },
+    {
+      "questionId": "ood-n07-b06-i012",
+      "field": "feedback.details.errorCorrection",
+      "before": "A fallback grants a different item without authorization; duplicating state rules creates a second policy owner. If the provider and campaign shared a governed code set, a direct enum mapping could be safe.",
+      "after": "A fallback grants a different item without authorization; duplicating state rules creates a second policy owner."
+    },
+    {
+      "questionId": "ood-n07-b06-i013",
+      "field": "feedback.details.errorCorrection",
+      "before": "Keeping vendor units on the entity spreads conversion; dropping the limit loses a dispatch constraint. If the domain itself used Fahrenheit and accepted carrier codes as identity, those conversions would be unnecessary.",
+      "after": "Keeping vendor units on the entity spreads conversion; dropping the limit loses a dispatch constraint."
+    },
+    {
+      "questionId": "ood-n07-b06-i014",
+      "field": "feedback.details.errorCorrection",
+      "before": "Absolute value turns a reversal into a repayment; losing the reference removes the stated duplicate check. If the bank contract represented reversals with a separate explicit event type, use that marker instead of amount sign.",
+      "after": "Absolute value turns a reversal into a repayment; losing the reference removes the stated duplicate check."
+    },
+    {
+      "questionId": "ood-n07-b06-i014",
+      "field": "feedback.messages[3].text",
+      "before": "Currency and reference alone do not preserve whether the event is a reversal.",
+      "after": "Storing a signed delta bypasses the distinct reversal operation and the positive-amount repayment allocation."
+    },
+    {
+      "questionId": "ood-n07-b06-i015",
+      "field": "feedback.details.errorCorrection",
+      "before": "Mapping timeout straight to forfeit ignores the live-state precondition; advancing first can publish an invalid bracket. If the tournament explicitly treated all platform timeouts as forfeits regardless of match state, that would change the domain contract.",
+      "after": "Mapping timeout straight to forfeit ignores the live-state precondition; advancing first can publish an invalid bracket."
+    },
+    {
+      "questionId": "ood-n07-b06-i016",
+      "field": "constraints",
+      "before": [
+        "Classification is evidence; refund eligibility is a distinct policy decision.",
+        "Refund eligibility is a separate policy decision."
+      ],
+      "after": [
+        "Classification is evidence; refund eligibility is a distinct policy decision.",
+        "Refund eligibility is a separate policy decision.",
+        "The return record retains the scanner observation used to explain each refund-eligibility decision."
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i016",
+      "field": "feedback.details.scenarioApplication",
+      "before": "The return policy evaluates the observed label and confidence without treating confidence as approval.",
+      "after": "The saved return retains the scanner observation, while the return policy separately evaluates eligibility."
+    },
+    {
+      "questionId": "ood-n07-b06-i016",
+      "field": "feedback.details.errorCorrection",
+      "before": "Confidence is not stated as approval, and combining classification with payment collapses distinct meanings. If the business explicitly authorized a calibrated score threshold as its refund rule, that threshold would need to be stated and owned.",
+      "after": "Confidence is not stated as approval, and combining classification with payment collapses distinct meanings."
+    },
+    {
+      "questionId": "ood-n07-b06-i017",
+      "field": "feedback.details.errorCorrection",
+      "before": "A mutable tag does not identify a reproducible input; a display title cannot recover missing lineage. If the “latest” tag were immutable by contract, it could be retained as the exact input identity.",
+      "after": "A mutable tag does not identify a reproducible input; a display title cannot recover missing lineage."
+    },
+    {
+      "questionId": "ood-n07-b06-i018",
+      "field": "feedback.details.errorCorrection",
+      "before": "Rendering raw transport markup leaks presentation policy; substituting current revision changes what the author reviewed. If markup itself were the agreed comment domain language, retaining it could be correct.",
+      "after": "Rendering raw transport markup leaks presentation policy; substituting current revision changes what the author reviewed."
+    }
+  ],
+  "mechanicalCheck": {
+    "result": "PASS",
+    "scope": "Mechanical schema/count/taxonomy/identity correspondence, actual scoring/reversal and exact wrong-diagnostic bindings only; no semantic or identity-action acceptance",
+    "unit": "OOD-N07-B06",
+    "proposal": "N07-B06.json",
+    "proposalSha256": "18b0c6e2f3b783d35482f68d3c14703300a8ce8991a9dda0db5b5a13984a2287",
+    "wholeObjectCount": 18,
+    "optionsChecked": 90
+  },
+  "scopeGuarantee": "The parsed JSON diff contains 17 errorCorrection leaves, i014 wrong_4 feedback text, and i016 constraints plus scenarioApplication only."
+}

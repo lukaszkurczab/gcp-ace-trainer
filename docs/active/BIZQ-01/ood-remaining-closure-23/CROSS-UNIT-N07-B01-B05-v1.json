@@ -1,0 +1,1097 @@
+{
+  "verdict": "PASS_WITH_ADVISORY",
+  "scope": "Partial independent cross-unit review of accepted N07 B01–B05 proposals: 90 whole objects compared within the slice and against accepted N01–N06 controls. One close provenance reinforcement is recorded as a nonblocking curriculum warning. Final N07 review remains open for B06–B08. No source, producer, consumer, admission, runtime, native, Premium, full-bank, or full-BIZQ acceptance is claimed.",
+  "criteria": {
+    "specPath": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "specSha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3",
+    "contractPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-23/N07-CONTRACT.json",
+    "contractSha256": "79c6dd8d2861d21eec0122675659840ba6f04883f546ec9ef4326f29320d4720",
+    "briefPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-23/N07-BRIEFING.md",
+    "briefSha256": "9370339439c25f7fe065e3753af31f0436d0e0e78e9084815d83c5ad9039e4d3",
+    "guidelinesPath": "docs/07-content-guidelines.md",
+    "guidelinesSha256": "cffd5dae0850ecd7fc1f2e05e28f7e83c7ca9460207f6f857713d196254773e5"
+  },
+  "acceptedControl": {
+    "totalQuestions": 945,
+    "n01n05": {
+      "count": 765,
+      "baselinePath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-N06-BASELINE.json",
+      "baselineSha256": "fecaa5dc403753a21653865960d96a1516e280a3ff51b8683ca336a0ae5641ef",
+      "matchedActualCurrentSourceObjects": 765,
+      "exactCanonicalHashMatches": 765,
+      "sourceFiles": [
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B01.json",
+          "sha256": "14689bf58bc6b5fc92e19b58f3ea6c030d0d876b9d7f7d0226639f1078b1a3ab"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B02.json",
+          "sha256": "07dc546ab1fe0b27faf59b90415dce6d19c5f84fb3d9e0b5d9b9367089540027"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B03.json",
+          "sha256": "df3d74abef8658fe3a038af2975644dea70240e549da3c84d0b6358dc27cd770"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B04.json",
+          "sha256": "111104dbb3d8b2c1d09c49d824a23719808a194bd4d53842cc573724df003f55"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B05.json",
+          "sha256": "87d3159243ad32fcf4739799478a69b2f8d9eb22994a9a2b701ecaa2752e5950"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B06.json",
+          "sha256": "ae0a8306d017225a899a8aa7b4038eca836550c51c702a9c9e3c49fd1c30eef0"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B07.json",
+          "sha256": "17e336e71bc3690f9c2bf6d0783099261662fb5551f8e2d942df22948bee217f"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B08.json",
+          "sha256": "431555e485c0362703faa4bcd660ad8627774bd6d02619d12520d35d53caf183"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/interfaces_polymorphism_substitution_and_extensibility/OOD-N04-B09.json",
+          "sha256": "f51418182cf1beee23a947de3f67771bddfd023a5e6599350c6be63e9b15a87c"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B01.json",
+          "sha256": "f8fc32c69779ba29c77f775aa247fb4d0b4576b3cb198dbad18032b906f692c5"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B02.json",
+          "sha256": "c76c1b8fdb62287cd2b91cbb77e27b5225ed0a8bc09569a2011390caf0662d1e"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B03.json",
+          "sha256": "83a9f24c229ba2101192a098e0c43ef925ff8790b7192dfd857ae6b0c963bcbe"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B04.json",
+          "sha256": "1473daeddbf9a840d1e47be4e3d6fa0332fc236d6173cc376a5c7487339cbf7e"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B05.json",
+          "sha256": "c093cdb37379a70944ee47a8fa3023f10413aef08e66751b128821d645fd73c7"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B06.json",
+          "sha256": "cc9b8ce09703e0e55608928b1ed7b2b166153ba3f161fe86277ea3942e2620d4"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B07.json",
+          "sha256": "fea2b87ad0f74c74aeb9bdc658b155bdb5233d5be58d746a96a1b49e2bcb0c9a"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B08.json",
+          "sha256": "abb091b8de4ab4774437f41b880c68e04246c7502eb3b865a884dae9d0c9887a"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B09.json",
+          "sha256": "8367a6c998d6ef385881a7c3a946b5efe9da82f30c5261a85dc5c07cc4d396a4"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B01.json",
+          "sha256": "8d858a2491ea8c320d687efc7d427fa469df6bc227fd238b02fc19af0f8fcddf"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B02.json",
+          "sha256": "03fa49cfcb122f03241f16b826716c8221fd809b3ff5e21706927245208f54f3"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B03.json",
+          "sha256": "6a1ce440ba1ce098ebeb4decd991d8d270dd275c0c4f51bf78403ac9d77d89b1"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B04.json",
+          "sha256": "17d4027ea20cab4946d0a10508798ed4db3f9cc264769f3bafb75bdbe44ab622"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B05.json",
+          "sha256": "17907deacb33b6f1d6dac02c33e30625feef5f13fcf2f8ab2225f5160dc48f1e"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B06.json",
+          "sha256": "ed0c5d818f351713fd891c0c470927e1515f120342be2a6e1d12491cb87be638"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B07.json",
+          "sha256": "e71e17e0366922a268d536518917c9e6a8692a495b30cc88c4a9c042d0fab14f"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B08.json",
+          "sha256": "a7187fd7159997b338285a732eb436cf799953d78a527ef1ce45b2612ed8e4b1"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B01.json",
+          "sha256": "77c68c1e8258deaca67490d1abb5f38d26674038e0f760e756b85166bf33671e"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+          "sha256": "30a103966dbfd6fb44271b1b15f09f1c71248b213d8a4c4b3ad89d98ab28c597"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+          "sha256": "2af1b7be2536fd420022e0c50e6d01935a9206990529f603db3f7e48ab13e62c"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B04.json",
+          "sha256": "20a31ab14e6f7d01d132d064b14f347c30483931862409916b232e5df996ae03"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B05.json",
+          "sha256": "583aa495eae6e3ac5e47e4ec9b6ce87a0ac3c9cc826216723e0155547a2bbf05"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B06.json",
+          "sha256": "8b19701bf0b18d25b0984323a7c0d5601eb324d6fb4dbebb690b9956fbd7da09"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B07.json",
+          "sha256": "1490651f9a176dc61dc92c56733aafefd2010c47340b899a1ccf218cd804e4bd"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B08.json",
+          "sha256": "bdbab1f296a2816fdc91d64dca06d38b982d001365e27ec3f7bbef3ff5fbb0c1"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B09.json",
+          "sha256": "a03c8e4fb5404b2e8568946a53c28da215777142acb12d506c48275af3e6ea80"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B01.json",
+          "sha256": "224c0d2d9fd5c367a0c8a7a8c0e139ca827d308d7d60fdce7d18c627ba1dbfa0"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B02.json",
+          "sha256": "215397c1609b3f058dee249c6ef54c43a4a0696e9aa94c80c673a046b6b8b5a9"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B03.json",
+          "sha256": "3fe8c393ee1d336cd1ea2fb39ceae7c9eb891184ab0e4dc26b07285a26b70575"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B04.json",
+          "sha256": "24ff127bcf9b1a1e9eae5e0ac51e048a590661ff16e67c3469fee78cd8e153a5"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B05.json",
+          "sha256": "9a8bc00943bf65ea36223f9d5513c7cfa26df7357e77e99848faf3c88235556d"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B06.json",
+          "sha256": "d09097dc78773ac03587b649e4d4e78f672208ef554b21eb76dfb801d7393c7b"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B07.json",
+          "sha256": "a3e7964e959f710e2d2029e8b98c7f3b9135deaee7f98ada02f3862fa60a5e43"
+        },
+        {
+          "path": "patternly-content/content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B08.json",
+          "sha256": "0c1053f6c6e722dc6954c4dc56cfbeed407d9ad9082ed3550129acb565612319"
+        }
+      ]
+    },
+    "n06": {
+      "count": 180,
+      "semanticAcceptancePath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-22/SEMANTIC-CURRENT-ACCEPTED-QA.json",
+      "semanticAcceptanceSha256": "3ddac680b864069af4295ac5c2f90d8a83564431b996188b85bdc49effe84ff8",
+      "currentSourceObjectsEqualAcceptedInputs": 180,
+      "unitFiles": [
+        {
+          "unit": "OOD-N06-B01",
+          "sourcePath": "patternly-content/content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B01.json",
+          "sourceFileSha256": "581a1094a3fa32b88afa34a364f4791c541dac2cf672ccf7b3de4fcf98e76f6c",
+          "acceptedProposalPath": "review-inputs/N06-B01-v2.json",
+          "acceptedProposalSha256": "4170cbff0600f28b0989faf1c476e0a20c4c235b03ad33b83eafd210e6477705",
+          "wholeQuestionCount": 18,
+          "wholeObjectsExact": true
+        },
+        {
+          "unit": "OOD-N06-B02",
+          "sourcePath": "patternly-content/content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B02.json",
+          "sourceFileSha256": "611342b51ef2c460767535e958ce50163cfd8675a3005b2e1d357f1517127554",
+          "acceptedProposalPath": "review-inputs/N06-B02-v2.json",
+          "acceptedProposalSha256": "2bcb129d105b26b8b84ed9c2898df5a85e062a650103995ab4264952868e674e",
+          "wholeQuestionCount": 18,
+          "wholeObjectsExact": true
+        },
+        {
+          "unit": "OOD-N06-B03",
+          "sourcePath": "patternly-content/content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B03.json",
+          "sourceFileSha256": "029f23e1df2be8b328da02891a93b65c068223afa0db82058ad2a67982b0fb41",
+          "acceptedProposalPath": "review-inputs/N06-B03-v2.json",
+          "acceptedProposalSha256": "f6914b67481515b1a1c6b1b7bd190c8ced85beeeae9fcf13c1834a7e4acc3667",
+          "wholeQuestionCount": 18,
+          "wholeObjectsExact": true
+        },
+        {
+          "unit": "OOD-N06-B04",
+          "sourcePath": "patternly-content/content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B04.json",
+          "sourceFileSha256": "1c14024c49a36db41ec734431a73548acbead36e69c0dc946622f04adc22c373",
+          "acceptedProposalPath": "review-inputs/N06-B04-v1.json",
+          "acceptedProposalSha256": "7a31f2f34c67f5614f6c46a64c88fd113e732b07d56d702cddeafa3b5b7c2eda",
+          "wholeQuestionCount": 18,
+          "wholeObjectsExact": true
+        },
+        {
+          "unit": "OOD-N06-B05",
+          "sourcePath": "patternly-content/content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B05.json",
+          "sourceFileSha256": "41d5b1aa268615a34e370715192dd1def1d1b665960173f03f303ae3427358d3",
+          "acceptedProposalPath": "review-inputs/N06-B05-v3.json",
+          "acceptedProposalSha256": "4dd9d2657b754c3c73b353aa8348af44b78545e14c251f36bf14ac97d73e3add",
+          "wholeQuestionCount": 18,
+          "wholeObjectsExact": true
+        },
+        {
+          "unit": "OOD-N06-B06",
+          "sourcePath": "patternly-content/content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B06.json",
+          "sourceFileSha256": "2a7a29f59dd976cc670944db46fbdd58036d4975920124fa89d0f331a3aeeb73",
+          "acceptedProposalPath": "review-inputs/N06-B06-v4.json",
+          "acceptedProposalSha256": "b7333dfb35f9b1f0066e4d0ad8144f8ea41264470cfca6c27ac82ca8895fa8ef",
+          "wholeQuestionCount": 18,
+          "wholeObjectsExact": true
+        },
+        {
+          "unit": "OOD-N06-B07",
+          "sourcePath": "patternly-content/content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B07.json",
+          "sourceFileSha256": "f28b46aaf72dbaa88f277fd903dcc9939afb72dbf8c32fb9a718ddc5d971e491",
+          "acceptedProposalPath": "review-inputs/N06-B07-v5.json",
+          "acceptedProposalSha256": "77fd48660671d6ac4e57eaa212f98a8114670de4c3078cf2835e346876a9e342",
+          "wholeQuestionCount": 18,
+          "wholeObjectsExact": true
+        },
+        {
+          "unit": "OOD-N06-B08",
+          "sourcePath": "patternly-content/content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B08.json",
+          "sourceFileSha256": "d4d48a3cf6480809e5795bc805532ef76d1932afdf4c4dd674991479f7981273",
+          "acceptedProposalPath": "review-inputs/N06-B08-v5.json",
+          "acceptedProposalSha256": "6a6c6f39eb91c3f80117ed9b55f223977e9d670c734452701299ba111a945baa",
+          "wholeQuestionCount": 18,
+          "wholeObjectsExact": true
+        },
+        {
+          "unit": "OOD-N06-B09",
+          "sourcePath": "patternly-content/content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B09.json",
+          "sourceFileSha256": "e9410177d5e7cc670ef097ac797a4ccaa20729916d367564e93dbf75f435d1d4",
+          "acceptedProposalPath": "review-inputs/N06-B09-v3.json",
+          "acceptedProposalSha256": "ed9c57ba6289e07441455deaabb6526d35277ca7fcfb0ac4ae2cb93cda38efbe",
+          "wholeQuestionCount": 18,
+          "wholeObjectsExact": true
+        },
+        {
+          "unit": "OOD-N06-B10",
+          "sourcePath": "patternly-content/content/object-oriented-design-interview/behavior_state_commands_events_and_workflows/OOD-N06-B10.json",
+          "sourceFileSha256": "f14efa21b7d16c7dab7c81c788d3ef11bb90d0632f69bc09ab48a04057b4831e",
+          "acceptedProposalPath": "review-inputs/N06-B10-v3.json",
+          "acceptedProposalSha256": "e959f3b8c5a843f0fdc917784c24cb83cf2b3b87a26e28fbd996d55cc8f22c72",
+          "wholeQuestionCount": 18,
+          "wholeObjectsExact": true
+        }
+      ]
+    }
+  },
+  "reviewedUnits": [
+    {
+      "unit": "OOD-N07-B01",
+      "proposalPath": "review-inputs/N07-B01-v2.json",
+      "proposalSha256": "aebc7f8cc71f8203d0e53e0eda80118878758608a8cc447aad4dc45bb22f524a",
+      "semanticReportPath": "SEMANTIC-N07-B01-v2-QA.json",
+      "semanticReportSha256": "4da84ceae4c65f476a6e36aec2b10d990e5a1026778e2b200580414591c5c8af",
+      "acceptanceReceiptPath": "ROOT-N07-B01-v2-ACCEPTANCE.json",
+      "acceptanceReceiptSha256": "fd501e32431a069f5665ab8f1872eba66d07333d197ce71c617b6fbdf2788d0b",
+      "questionCount": 18,
+      "unitProposalVerdict": "PASS",
+      "primaryObjective": "repository/domain collection access"
+    },
+    {
+      "unit": "OOD-N07-B02",
+      "proposalPath": "review-inputs/N07-B02-v2.json",
+      "proposalSha256": "2d46dedd0f1e7fcc882a803c6a7192c15ac8705cded9b2ba965b54279ef90e9d",
+      "semanticReportPath": "SEMANTIC-N07-B02-v2-QA.json",
+      "semanticReportSha256": "fb67163235ca1d3de62df8c41be9632f37bda37d73e3a5a82224676ced6c7d2b",
+      "acceptanceReceiptPath": "ROOT-N07-B02-v2-ACCEPTANCE.json",
+      "acceptanceReceiptSha256": "2ea1442eb50831f8235a13914a7899a0bf144dfe231d561197b0eac0976477a8",
+      "questionCount": 18,
+      "unitProposalVerdict": "PASS",
+      "primaryObjective": "aggregate, invariant, and transaction boundary"
+    },
+    {
+      "unit": "OOD-N07-B03",
+      "proposalPath": "review-inputs/N07-B03-v2.json",
+      "proposalSha256": "0ba2bcd05ce9da659635f98a0605c3b33bada0bd262f537e34d4b0e828e3172c",
+      "semanticReportPath": "SEMANTIC-N07-B03-v2-QA.json",
+      "semanticReportSha256": "bdc371ee665d1e657a8c2f9cc40f11af1a89e623731c554c88a43265c6126934",
+      "acceptanceReceiptPath": "ROOT-N07-B03-v2-ACCEPTANCE.json",
+      "acceptanceReceiptSha256": "785acc642d37dcf26a962c37e52925767b048f0c2c27bbde0653a9dfd02cf8ed",
+      "questionCount": 18,
+      "unitProposalVerdict": "PASS",
+      "primaryObjective": "ORM and persistence mapping"
+    },
+    {
+      "unit": "OOD-N07-B04",
+      "proposalPath": "review-inputs/N07-B04-v2.json",
+      "proposalSha256": "587ce71b9b6dafed7151c52a248a084b1a59623d7e04c1a5c367d63fffbfddc9",
+      "semanticReportPath": "SEMANTIC-N07-B04-v2-QA.json",
+      "semanticReportSha256": "8dbdea369b7ad1cc899b44f12cc7953945b238354af97533a6cd2e37741e0787",
+      "acceptanceReceiptPath": "ROOT-N07-B04-v2-ACCEPTANCE.json",
+      "acceptanceReceiptSha256": "45a98ad4d6edc5b644ea941a90cfb48d00d711dca8183661b0a00ebe416de982",
+      "questionCount": 18,
+      "unitProposalVerdict": "PASS",
+      "primaryObjective": "identity map and unit-of-work behavior"
+    },
+    {
+      "unit": "OOD-N07-B05",
+      "proposalPath": "review-inputs/N07-B05-v3.json",
+      "proposalSha256": "29555ebae14dd0a5df967178939d0c7c46bbd22996f8eeaf7a3b43618af113b7",
+      "semanticReportPath": "SEMANTIC-N07-B05-v3-QA.json",
+      "semanticReportSha256": "df0b3f54f18d620c04a32a43b8daeba3c264e401797dfae96050f1534041c390",
+      "acceptanceReceiptPath": "ROOT-N07-B05-v3-ACCEPTANCE.json",
+      "acceptanceReceiptSha256": "0edbf925de114dd265c083d5548eeccd0a67989cf9d880847c4533ccd9d109c0",
+      "questionCount": 18,
+      "unitProposalVerdict": "PASS",
+      "primaryObjective": "serialization, compatibility, versions, and defaults"
+    }
+  ],
+  "reviewedWholeObjects": [
+    {
+      "questionId": "ood-n07-b01-i001",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "ecf6a0a8fe4e3617848948c2e3b991c0e067916860a2c1e189d6eff37f71bf5e",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Use a session query for committed history in order; hide row keys and paging in the adapter."
+    },
+    {
+      "questionId": "ood-n07-b01-i002",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "0096e776a252ad772dcce6dac89868cc4694e795182518879941fd821bd0bdb9",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Use a conversation collection with a team/open query; keep ownership/history mapping behind it."
+    },
+    {
+      "questionId": "ood-n07-b01-i003",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "4b3e733181914b31896f3a9f2aef61d29b53d78cbec5f268710e2a74d3cfbb17",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Keep price/stock publication and region search in a listing contract; map rows in persistence."
+    },
+    {
+      "questionId": "ood-n07-b01-i004",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "c798860ee9f2558cf871d40007ee457d04d98673f41ec136492ac81ace98bc7d",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Share one backordered-request collection query across both workflows; keep vendor rows behind it."
+    },
+    {
+      "questionId": "ood-n07-b01-i005",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "f8fde9b4aeed2f54b06a77bf9b0a9bb56df897348c9d3af655a8d5df83cdcea8",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Keep reservation lookup in domain terms while the adapter changes from relational rows to documents."
+    },
+    {
+      "questionId": "ood-n07-b01-i006",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "6f0c9af3e583ade434c58f368fa14dd055478d3654944ea8f56650ac06261fba",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Expose bundles as domain values and map component rows behind the persistence boundary."
+    },
+    {
+      "questionId": "ood-n07-b01-i007",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "b79917f99bb71531f48f6599a8c79b8b08ec2beac4a911c05e5682fd858a64c4",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Use an availability query by aircraft type, with assignment joins kept behind the collection."
+    },
+    {
+      "questionId": "ood-n07-b01-i008",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "ea2207be865e61d28ab816566ea15783de5cf3685a1f879c4ae22f61fe464b95",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Expose lookup by asset and language, with normalized descriptions mapped behind the contract."
+    },
+    {
+      "questionId": "ood-n07-b01-i009",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "acc97502db3a323558eea64511da714a6e591f8332ad383d16f583e11148dcd3",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Use domain approval criteria for work, territory, and expiry; keep the join mapping private."
+    },
+    {
+      "questionId": "ood-n07-b01-i010",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "7d41aeef60566c931eb89b068f47314094a5f5220c792f677692c040ce6d6dfc",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Use a domain availability query by aircraft type; keep assignment joins in persistence."
+    },
+    {
+      "questionId": "ood-n07-b01-i011",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "e335a2fe5035f61d7eeebeb65c3d1c5671da7756780d32bf1bfd93699735eda4",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Expose consent-aware referral access without raw consent columns in caller code."
+    },
+    {
+      "questionId": "ood-n07-b01-i012",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "31eb4c2ad48f6e8894780c10fd413bea2f1a5f268e31fc08e73a854ec9d17520",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Load the completion by stable attempt ID with its exact recorded revisions."
+    },
+    {
+      "questionId": "ood-n07-b01-i013",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "f1c6bd9e1cd7e6f5f1b7e63049c18caa99be31d640379e81097c6259740feae8",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Query pending exceptions by category in domain terms, leaving row mapping in the adapter."
+    },
+    {
+      "questionId": "ood-n07-b01-i014",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "f5609a7a58700534a0c8f0114458d20f38a30a37dc23a5e3c2e2a1067cf8b7e9",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Retrieve by stable segment identity; translate waveform offsets behind the collection."
+    },
+    {
+      "questionId": "ood-n07-b01-i015",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "3a5b04fdef70ba4d02ec48c94dddede395c384343538a40c0b249681d419291f",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Query active grants by principal and time through a grant-domain collection."
+    },
+    {
+      "questionId": "ood-n07-b01-i016",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "bdb7aadd0e219e510eb02eea77dac95abb42e2bd6089748db22df86754a6e5b0",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Return the exact sealed revision by document ID; map seal and bytes behind the contract."
+    },
+    {
+      "questionId": "ood-n07-b01-i017",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "825c6b00dde5e9b9bda64fa4b6306fe448a8936a35ea3c47c533669e989d4318",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Expose payout release and seller/window lookup through a domain contract."
+    },
+    {
+      "questionId": "ood-n07-b01-i018",
+      "mentalUnitId": "OOD-N07-B01",
+      "wholeObjectSha256": "84046d089930ee49957e214a428b593fe4d99cd32640d3f068480a3ee9aa0f96",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Query route/day notices in effective-time order; keep row sequence mechanics in persistence."
+    },
+    {
+      "questionId": "ood-n07-b02-i001",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "69c9515e1d6e19312deb2d89390842288b22542e66dd3999dde9d9d9c4e981d2",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Commit the badge’s revocation and access state in one boundary."
+    },
+    {
+      "questionId": "ood-n07-b02-i002",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "847822b98800b750412f7ac4ad0cc63178c5a3befae9559bb0ca3ae503da9e65",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Bind each label request to its approved shipment revision."
+    },
+    {
+      "questionId": "ood-n07-b02-i003",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "45d6a7abfb8d9bba163a7c0e736c26ab853e292ad2631208d619069525381596",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Arbitrate the room’s overlapping reservations at its capacity boundary."
+    },
+    {
+      "questionId": "ood-n07-b02-i004",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "2ddfd0f79d94d08ce28bcb5b51971e9c14e969fc49cd84af96f01b7ffee49c0d",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Keep maintenance mode and the arm-command guard in the exhibit state."
+    },
+    {
+      "questionId": "ood-n07-b02-i005",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "27aa8fc2d497cab2525a1b2bc1ef09d3c6eb7dfdf542eaf782df03125b003f39",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Retire assignment availability while keeping the lesson’s stable ID."
+    },
+    {
+      "questionId": "ood-n07-b02-i006",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "7fe1fc4bdeb7d6c5dc95e9b8784a5f38b67159ef25e9ea40d376800210684291",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Commit the close marker with the session event-sequence boundary."
+    },
+    {
+      "questionId": "ood-n07-b02-i007",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "a2089af4b7c56a86915d422c5d56d2adf782ad3c3eb8cf36a7806165173eb1c6",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Commit owner and deadline as one conversation transition."
+    },
+    {
+      "questionId": "ood-n07-b02-i008",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "97d2a642621a6b8ca309a80fc2b910157cae98379d254463dd5be87bf427af8c",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Validate current price and stock in the listing publication transition."
+    },
+    {
+      "questionId": "ood-n07-b02-i009",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "d31a48318cafd2e383f6676694406188c10823ed0fb61cd65bf1aa6d8ea69602",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Commit the split plan under the parent request’s identity and promise."
+    },
+    {
+      "questionId": "ood-n07-b02-i010",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "efcaf9e6777c4e3042be4606ecafc274c20efc4704a7d00f88317c219e18c3a0",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Transfer the plot’s active-reservation slot in one coordinated change."
+    },
+    {
+      "questionId": "ood-n07-b02-i011",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "04a848a13cf0dc43b75d3f2dee66986fadd7cf87fadda4962c6371bdb1f19e15",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Commit component revisions and the adjustment in an immutable quote."
+    },
+    {
+      "questionId": "ood-n07-b02-i012",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "590c1cceebfbb00412901aec31f13fbe3241eec9ba047cb3da9a3ff7a72efd97",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Arbitrate the charger’s current reservation intervals together."
+    },
+    {
+      "questionId": "ood-n07-b02-i013",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "e23b50ccfcf94f63641f25a524134ab68ed234e7f0ab0450297aa0f3fa2854e4",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Apply the selected metadata to the stable survivor asset."
+    },
+    {
+      "questionId": "ood-n07-b02-i014",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "356cf3768e5bdbc211c0b328239c285c44cd5efaba6d21570061aea53581d441",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Arbitrate active approvals within one work-territory pair."
+    },
+    {
+      "questionId": "ood-n07-b02-i015",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "7cbd96cc1bc3f921dc274a35053bc2b3920c53d3a9c57776004c19e8827aa4ed",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Arbitrate reassignment through the battery’s current-assignment boundary."
+    },
+    {
+      "questionId": "ood-n07-b02-i016",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "4c44ed50d2a4a69de4004ad34e4f4d9a88cf248419e54058c2baad36d10a9f4c",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Commit current-consent authorization for the referral-recipient pair."
+    },
+    {
+      "questionId": "ood-n07-b02-i017",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "07efe1ac0d5419df2837f80e909ed401f3c544f2be39f57f41819a784d18f17e",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Commit the completion with its exercise and scoring-policy revisions."
+    },
+    {
+      "questionId": "ood-n07-b02-i018",
+      "mentalUnitId": "OOD-N07-B02",
+      "wholeObjectSha256": "23887b5300d3b3e32b8c7a7ef1f3af78873748a5c589099b8c4ce6839c8edcff",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Commit the exception approval with reviewer and control results."
+    },
+    {
+      "questionId": "ood-n07-b03-i001",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "281a35d464bf2a3adf335e4906a4fdc68548a4bfeceb4f4a8ffeb2b25e99c6c6",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Translate the integer to a named classification at the persistence boundary; let refund policy use that value."
+    },
+    {
+      "questionId": "ood-n07-b03-i002",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "c9937ef7469e28458f8f5f206c919593539e02ae3b24e29ce227557e49f289e3",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Assemble the separate dataset and code keys into the result’s exact revision references."
+    },
+    {
+      "questionId": "ood-n07-b03-i003",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "333d6ca834dfe053083ad53ddf4d0ee8911be684c36dc740ce9eff4f2d266b07",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Map author and revision IDs to comment references; leave address lookup to notification delivery."
+    },
+    {
+      "questionId": "ood-n07-b03-i004",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "b43a8ee0b56185544804dd7d35272903de5deaa64c01b3b8ebe46c243e7a5445",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Decode the status byte into the domain state and pass the returned payload through; keep retry scheduling in workflow behavior."
+    },
+    {
+      "questionId": "ood-n07-b03-i005",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "02d5d6ed7def6b0a17477421f846d02fe14a370bc30c2e27b4ed37cce5d5bf7e",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Assemble header, lines, and reissue reference into the invoice; let billing decide charge eligibility."
+    },
+    {
+      "questionId": "ood-n07-b03-i006",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "8884ffb3b5c43e5927a940bb99f39b86a7cfabd6b4a78be56c4cdc06c3fbb60f",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Map `REVOKED`/`ACTIVE` to the domain state and UTC to an instant; keep access checking in the badge operation."
+    },
+    {
+      "questionId": "ood-n07-b03-i007",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "e6174d94abb00019c1b2591cbe245aed250c9055e24be788161d94888f17d20d",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Translate the operator-selected JSON revision into named address fields before rendering."
+    },
+    {
+      "questionId": "ood-n07-b03-i008",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "fe05085fea124cb23fe54d5ca54522ee8a77d35b4a63f39c4181a7f6cc1e1d4f",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Combine wall time with the saved offset into one interval, and map the room ID to its reference."
+    },
+    {
+      "questionId": "ood-n07-b03-i009",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "2c373903786ce35f129a22445592bd9f7228b8a25d4d0104fa0cb50ceedcb873",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Decode the integer mode and permission bits into named domain values before the command checks movement."
+    },
+    {
+      "questionId": "ood-n07-b03-i010",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "7bdb292429ad3a5371688428468410d96d67555b5bad84074010e365de0cc0cd",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Resolve stored aliases to the stable lesson reference; keep retirement behavior with the lesson domain model."
+    },
+    {
+      "questionId": "ood-n07-b03-i011",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "e125610c01455ba83fd6bd81f8b642d91e0afa0630bab987840862e1df3916b6",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Decode rows into named events and order them by committed sequence before returning domain history."
+    },
+    {
+      "questionId": "ood-n07-b03-i012",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "227fe281ddd1c7e12ac4a2e3f094b9076fed55949ad06beb9630b727b1f35f63",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Map UTC ticks to an instant and the staff key to a reference; leave feed creation to the escalation operation."
+    },
+    {
+      "questionId": "ood-n07-b03-i013",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "5d530a4ce832395de4783d444953400a994bdf307bba33143de017ec4f0f4639",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Convert minor units to money and retain unknown stock distinctly; publication behavior validates the listing."
+    },
+    {
+      "questionId": "ood-n07-b03-i014",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "6c19210c8e9b210d588b06d97ec1f0c8470e344446c294ecca39652c05d938c0",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Assemble one parent request, linked shipments, and their shared delivery promise."
+    },
+    {
+      "questionId": "ood-n07-b03-i015",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "d0a105b0ca28034c7e8f92057fb47ef1c2fcc42b7ab0a5875a385f8510b2d49c",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Resolve plot and reviewer codes to references while retaining the reservation’s full approval history."
+    },
+    {
+      "questionId": "ood-n07-b03-i016",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "66a063a534ffd0607b95002bc6eebe7b773b476356cb5951e8688bd4c5c7821c",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Map component IDs to references and the fixed adjustment to money; leave quote calculation to pricing."
+    },
+    {
+      "questionId": "ood-n07-b03-i017",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "804a9bee7eeb352d18360d46e861197a9484bd0055b910513f4950389f364950",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Map UTC timestamps to an interval and charger ID to a reference; let the reservation operation check expiry with its injected clock."
+    },
+    {
+      "questionId": "ood-n07-b03-i018",
+      "mentalUnitId": "OOD-N07-B03",
+      "wholeObjectSha256": "bef26cceb36f922bd5af4ecd455507e0bfa764d22274f3f20fbabc1a26940459",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Fold repeated tags into one set and translate the rights code without changing the asset ID."
+    },
+    {
+      "questionId": "ood-n07-b04-i001",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "2bea3dc392c5e9ff23ba26a371c5fefb804e6fde5ac3e37793b79849bcea6893",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Resolve route ID and tile search to one route instance; track geometry until explicit conflict resolution."
+    },
+    {
+      "questionId": "ood-n07-b04-i002",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "9a23e57d03b309451d6a5a2071cd0e5fbaff15e4ee991042c5df9811ab0a31be",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Return one character for both reads and track validated inventory and score together."
+    },
+    {
+      "questionId": "ood-n07-b04-i003",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "21103391d6f031ed3e28facec88b3bdaab0bf8083c322eed24544db16e2b3db9",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Use one shipment instance; track carrier and handoff until validation succeeds."
+    },
+    {
+      "questionId": "ood-n07-b04-i004",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "6975f9f3fdf49bc616cf68df52ca1ac1d4052753e875ba8db4e37c90b730df17",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Track one account’s balance with its matching allocation in a single work unit."
+    },
+    {
+      "questionId": "ood-n07-b04-i005",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "f88f7a05a6d0f534c043351ca4fba88a56acb9c4a428ee9f47a41d2bafc5cb7b",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Track match and bracket outcome together; notify after the local commit."
+    },
+    {
+      "questionId": "ood-n07-b04-i006",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "8e3c02a3488e76161ed9d0ade91f8eeee4cca7a2c33512ee5ae8e2c1702fd95f",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Return one revision identity from both lookups for the signing request."
+    },
+    {
+      "questionId": "ood-n07-b04-i007",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "16ee9718531b854fe8bc1db538c40b1f3b8fbb4beb6190f696eb88677d94eb5b",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Track the result and both revision links; publish only when the snapshot is complete."
+    },
+    {
+      "questionId": "ood-n07-b04-i008",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "7dfaba854bffa462aa2a42458ab4469d794c971c9ead74a58943a0b2db49eca9",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Commit the comment and author/revision links before separate notification."
+    },
+    {
+      "questionId": "ood-n07-b04-i009",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "94041ba78b487409b868bfe4cc939621674aa1cf16a5e4e2fa7bb7850c26c970",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Track evidence and completion together; mark complete only after required evidence passes."
+    },
+    {
+      "questionId": "ood-n07-b04-i010",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "b1e5e16bc559557160374db5c48740eece394f718adbadd18685b3ddbfc40d60",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Save the new invoice with its rejected-issue reference before requesting payment."
+    },
+    {
+      "questionId": "ood-n07-b04-i011",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "09b468c6e4489ffa300378db309ee116fbd69b8af4dff6a047e6907d787629a9",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Resolve one badge per request; check revocation before granting access."
+    },
+    {
+      "questionId": "ood-n07-b04-i012",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "47e2581cdad9b969291a22606f23c9bd75894d6eb3da1608dbdf72fd6e850ad4",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Save the label and approved-revision link before retryable printing."
+    },
+    {
+      "questionId": "ood-n07-b04-i013",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "5b37a1ddca0107b7c06443eb52e4c3d60b5e53e031e1fcae4ffad02254e92c85",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Track room and interval after capacity validation; calculate fees later."
+    },
+    {
+      "questionId": "ood-n07-b04-i014",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "0b4c935c927e1a4dc0ce579687d231a1406390cdc34a55f3ba371780b420cc46",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Commit maintenance mode with the technician before acknowledging entry."
+    },
+    {
+      "questionId": "ood-n07-b04-i015",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "73305b3c835b467b86c3744866e25b05c027da1288748f7c2648239c0f58291d",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Use one lesson instance; retire it without changing progress identity."
+    },
+    {
+      "questionId": "ood-n07-b04-i016",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "bc0279d91115e7f25fe1c9f6c83ba81a05ea61cfd788a415bd8d9e2ed3886811",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Save the close marker with the final event cutoff before starting export."
+    },
+    {
+      "questionId": "ood-n07-b04-i017",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "4bed04e6450f8bd20cb94a86ee6173910db4dd2795dff086068e0201f2658e98",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Use one conversation; save owner and deadline as the accepted pair."
+    },
+    {
+      "questionId": "ood-n07-b04-i018",
+      "mentalUnitId": "OOD-N07-B04",
+      "wholeObjectSha256": "0898a6af236eff36edbf129c7fc6a065a391f9d969481708ef9b8b641e71fa2b",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionText": "Load one listing; validate price and stock, then save its published state."
+    },
+    {
+      "questionId": "ood-n07-b05-i019",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "e1f2730dbcd7b0cbda9186df2396209a8b7732a59af1025a4a981efb3ecea37c",
+      "acceptedOptionId": "n07b05_i019_key",
+      "acceptedOptionText": "Add the memo at a fresh tag, with absence retaining the existing empty-memo meaning."
+    },
+    {
+      "questionId": "ood-n07-b05-i020",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "0f14798ea4d5d0f1bef6856329dd06c61f72d3dcb8a06188b25f248172d97b2f",
+      "acceptedOptionId": "n07b05_i020_key",
+      "acceptedOptionText": "Use scalar presence so omission inherits while an explicit zero clears the delay."
+    },
+    {
+      "questionId": "ood-n07-b05-i021",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "376894493099fc122ee2a3599d20f3612053fab5c4f8a49cb3a58a0fb78ac7b3",
+      "acceptedOptionId": "n07b05_i021_key",
+      "acceptedOptionText": "Remove the field; reserve tag 6 and the `legacy_peak` name used by archived records."
+    },
+    {
+      "questionId": "ood-n07-b05-i022",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "07bd1138775248be2d56a87fb758e0562415ae668fe7eae8d629a951356e242c",
+      "acceptedOptionId": "n07b05_i022_key",
+      "acceptedOptionText": "Declare `json_name: \"captionErrorCode\"` on the renamed proto field."
+    },
+    {
+      "questionId": "ood-n07-b05-i023",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "76bc6554bea81820fd4a316f5a72f6337a571aa185dcfab4ffdba6f3855ab01c",
+      "acceptedOptionId": "n07b05_i023_key",
+      "acceptedOptionText": "Declare `UNSPECIFIED = 0` and grant only when the message explicitly says eligible."
+    },
+    {
+      "questionId": "ood-n07-b05-i024",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "b85fdb5e166a284ca33db78629e94e0067016644ab7d6e0fb2573858fa66719f",
+      "acceptedOptionId": "n07b05_i024_key",
+      "acceptedOptionText": "Persist a format version, then select that format’s decoder or migration."
+    },
+    {
+      "questionId": "ood-n07-b05-i025",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "0df6fc87e394a656f874509e0d23d9e48589a4ab2a28d26f5e6d3272f4e5ec9b",
+      "acceptedOptionId": "n07b05_i025_key",
+      "acceptedOptionText": "Reserialize the same parsed message object so unknown fields remain intact."
+    },
+    {
+      "questionId": "ood-n07-b05-i026",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "d0b879bf2adb55bddd7bf08a5b9cbdb67d8893024ce80d0dc6553b3f01060b5d",
+      "acceptedOptionId": "n07b05_i026_key",
+      "acceptedOptionText": "Keep the scans in an ordered repeated message field."
+    },
+    {
+      "questionId": "ood-n07-b05-i027",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "1a969df64dfc2d6241abb717a4015f346951d1efd2b8ae68ac776a7e7457c2be",
+      "acceptedOptionId": "n07b05_i027_key",
+      "acceptedOptionText": "Keep the `int64` field and represent it as a decimal string in ProtoJSON for JavaScript."
+    },
+    {
+      "questionId": "ood-n07-b05-i028",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "a969396c6460af3743c2127ca99b992074249e9b519088df45283eaf3b1a531a",
+      "acceptedOptionId": "n07b05_i028_key",
+      "acceptedOptionText": "Sign a canonical, versioned projection of the logical message rather than encoder bytes."
+    },
+    {
+      "questionId": "ood-n07-b05-i029",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "1c567cb4bc7c3f186009b97e62d93af77da7f8e5a43875fe49f3b9e48897fc95",
+      "acceptedOptionId": "n07b05_i029_key",
+      "acceptedOptionText": "Keep both names readable through migration; switch output after dual-name readers ship."
+    },
+    {
+      "questionId": "ood-n07-b05-i012",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "05b338f124fb6ce780af1eed49c0f800756d155c7e6199bb7e228b3c276b046a",
+      "acceptedOptionId": "n07b05_i012_key",
+      "acceptedOptionText": "Store immutable dataset and code revision IDs with the published result snapshot."
+    },
+    {
+      "questionId": "ood-n07-b05-i031",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "4f6c278fa4a378ffe87117c745ac153f9f70bf5cf3786155e7fda971c2108182",
+      "acceptedOptionId": "n07b05_i031_key",
+      "acceptedOptionText": "Preserve presence: absent is unchanged; present-empty is clear."
+    },
+    {
+      "questionId": "ood-n07-b05-i032",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "2a032610b53457d71b287ae97f0c399912ec74219d5a6989421caa7bc60ac928",
+      "acceptedOptionId": "n07b05_i032_key",
+      "acceptedOptionText": "Use a distinct clear operation; omission remains no change."
+    },
+    {
+      "questionId": "ood-n07-b05-i015",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "335099ff6a0a218b32becd167033974e59acf437a8fb491a7bf8396db4771c47",
+      "acceptedOptionId": "n07b05_i015_key",
+      "acceptedOptionText": "Append a new immutable issue and link it to the rejected issue."
+    },
+    {
+      "questionId": "ood-n07-b05-i034",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "7aa03d6fb43baf643c1cffcd8fbc31d221aadedb37cb8ea210971b93551f166f",
+      "acceptedOptionId": "n07b05_i034_key",
+      "acceptedOptionText": "Store the immutable policy-revision identifier with the allow or deny decision."
+    },
+    {
+      "questionId": "ood-n07-b05-i035",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "522006f0f5528d6121e3c91a1acc26f61de462d13c602ff3e5ccbc387f70cd51",
+      "acceptedOptionId": "n07b05_i035_key",
+      "acceptedOptionText": "Bind the queued job to the address revision approved when it was enqueued."
+    },
+    {
+      "questionId": "ood-n07-b05-i036",
+      "mentalUnitId": "OOD-N07-B05",
+      "wholeObjectSha256": "c543b6ab6efc748260d81e8818a13cb56aea06a267c42111caabbc18199f3e0a",
+      "acceptedOptionId": "n07b05_i036_key",
+      "acceptedOptionText": "Default only an absent window; retain explicit values."
+    }
+  ],
+  "comparisonMethod": "All 90 N07 questions are bound to exact frozen inputs and their accepted answers resolved by answer.optionId. I compared their primary actions across the five unit objectives and screened each prompt/key against all 945 accepted questions. Text similarity only located candidate overlaps; the exact whole objects for likely pairs were then read and compared for prompt facts, keyed action, unit objective, and decisive alternatives. Whole-object hashes use producer canonicalJson from patternly-content/scripts/build.mjs.",
+  "crossUnitFindings": [
+    {
+      "verdict": "PASS_WITH_ADVISORY",
+      "current": "ood-n07-b05-i012",
+      "accepted": "ood-n02-b05-i028",
+      "currentPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-23/review-inputs/N07-B05-v3.json",
+      "acceptedPath": "patternly-content/content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B05.json",
+      "assessment": "This is a close reinforcement of accepted N02 B05 i028: both ask learners to retain exact immutable dataset/code revision identifiers for a published result, and both keys express that same underlying provenance invariant. N07 frames the decision at the serialized-snapshot boundary, which aligns it with the N07-B05 serialization/versioning objective; the prompt’s no-schema-evolution fact removes a migration distractor but does not create a new primary concept. The overlap can prime recall of the earlier answer and lowers the incremental decision value, so it is recorded as a nonblocking near-duplicate warning. The current question remains a valid application of the serialization-boundary objective; the contract does not require every question to introduce a unique concept or scenario.",
+      "correction": "No correction is required for this bounded review. For future curriculum revisions, an optional way to increase transfer value would be to make the serialized representation boundary decisive (for example, distinguish embedded immutable revision references from mutable labels in the stored snapshot) while retaining the existing supported provenance intent. Do not change the accepted N02 item or require a new N07 identity solely for variety.",
+      "currentWholeObjectSha256": "05b338f124fb6ce780af1eed49c0f800756d155c7e6199bb7e228b3c276b046a",
+      "currentAcceptedOptionId": "n07b05_i012_key",
+      "currentAcceptedOptionText": "Store immutable dataset and code revision IDs with the published result snapshot.",
+      "acceptedWholeObjectSha256": "2effef08b8f98d1bf545ffe520e2f3ff1ab9fd3c472f86adc98d91a247d08eb6",
+      "acceptedOptionId": "b05_i028_snapshot",
+      "acceptedOptionText": "Persist exact immutable dataset/code revision references on the audit-retained result; do not resolve “current” inputs later.",
+      "currentPrompt": "The notebook publishes a result together with the exact input dataset revision and analysis-code revision that produced it. Those revisions are immutable, and reviewers later rerun the same result. No schema change or old-reader migration is requested. What should the serialized snapshot retain?",
+      "acceptedPrompt": "In a research-notebook platform, the experiment owner must publish a result snapshot. Published outputs reference immutable inputs and code versions. A published run is retained for audit after current inputs change; it must point to the exact dataset and code revisions used. How should the published result retain provenance?"
+    },
+    {
+      "verdict": "PASS_DISTINCT_DECISION",
+      "current": "ood-n07-b02-i017",
+      "accepted": "ood-n01-b03-i021",
+      "currentPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-23/review-inputs/N07-B02-v2.json",
+      "acceptedPath": "patternly-content/content/object-oriented-design-interview/requirements_use_cases_domain_vocabulary_and_model_boundaries/OOD-N01-B03.json",
+      "assessment": "Both mention exact exercise and scoring-policy revisions. N01 asks what defines the completion association. N07 asks what belongs in the completion commit and adds independently mutable profile state and an asynchronously rebuilt history projection; its alternatives and boundary explanation test whether those separate states belong in the completion transaction. This is a transaction-scope decision within B02, not simply another request to store the same references. The shared answer supports legitimate cross-unit reinforcement.",
+      "currentWholeObjectSha256": "07efe1ac0d5419df2837f80e909ed401f3c544f2be39f57f41819a784d18f17e",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionText": "Commit the completion with its exercise and scoring-policy revisions.",
+      "acceptedWholeObjectSha256": "eba7218b7913cceca6c347e0729d901b97d70c24652f0619471179163010c44f",
+      "acceptedOptionId": "b03_i021_a",
+      "acceptedOptionText": "Reference the exact exercise revision and scoring-policy version from completion, despite later reuse of the title.",
+      "currentPrompt": "A practice tracker records a learner’s completed exercise. The completion must retain the exact exercise and scoring-policy revisions used; the learner’s current profile can change independently. A history projection is rebuilt asynchronously. Which state should the completion commit?",
+      "acceptedPrompt": "A practice tracker stores each published exercise revision by ID. Each completion points to that revision and the scoring-policy version used at the time; two revisions may display the same title. What should define a completed exercise’s association?"
+    },
+    {
+      "verdict": "PASS_DISTINCT_DECISION_WITH_CLOSE_CONTEXT",
+      "current": "ood-n07-b05-i015",
+      "accepted": "ood-n02-b06-i036",
+      "currentPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-23/review-inputs/N07-B05-v3.json",
+      "acceptedPath": "patternly-content/content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B06.json",
+      "assessment": "Both use corrected invoices and a new issue linked to the rejected issue. N02 asks how retry identity differs from corrected-reissue identity. N07 provides an immutable serialized-exchange requirement and asks how to preserve exactly what auditors may later read; overwrite/rebuild alternatives fail that historical-representation requirement. The business case is close, but the immutable serialized-history boundary adds a distinct decision, so this is valid transfer practice rather than the same learner action.",
+      "currentWholeObjectSha256": "335099ff6a0a218b32becd167033974e59acf437a8fb491a7bf8396db4771c47",
+      "currentAcceptedOptionId": "n07b05_i015_key",
+      "currentAcceptedOptionText": "Append a new immutable issue and link it to the rejected issue.",
+      "acceptedWholeObjectSha256": "dc08a7828ad861acc8b5e9799a7bde6d2a4d137cd60b752c5c445b4954da1532",
+      "acceptedOptionId": "b06_i036_identity",
+      "acceptedOptionText": "Retry uses the existing issue ID; corrected reissue is a new issue record with a new ID and a link to the rejected one.",
+      "currentPrompt": "An invoice issue is serialized as an immutable exchange record. A corrected invoice must point to the rejected issue, and auditors may later read either issue exactly as it was sent. Which persistence shape preserves that history?",
+      "acceptedPrompt": "In a digital invoice exchange, the billing operator must reissue a rejected invoice. The new issue is traceable and does not double-charge the customer. Each invoice issue has an issue ID. Delivery retry repeats that issue ID; a corrected reissue gets a new issue ID and points to the rejected issue. How should the service distinguish retry from reissue?"
+    }
+  ],
+  "withinN07Patterns": [
+    {
+      "items": [
+        "ood-n07-b01-i001",
+        "ood-n07-b02-i006",
+        "ood-n07-b03-i011",
+        "ood-n07-b04-i016"
+      ],
+      "distinction": "The recurring whiteboard story tests repository access, committed event cutoff, row-to-event mapping, and unit-of-work close before export. Those are separate layer decisions."
+    },
+    {
+      "items": [
+        "ood-n07-b01-i004",
+        "ood-n07-b02-i009",
+        "ood-n07-b03-i014"
+      ],
+      "distinction": "The backordered-request story tests collection access, parent/child split transaction, and persistence mapping. Shared identity/promise facts are relevant to distinct decisions."
+    },
+    {
+      "items": [
+        "ood-n07-b02-i001",
+        "ood-n07-b03-i006",
+        "ood-n07-b04-i011",
+        "ood-n07-b05-i034"
+      ],
+      "distinction": "The badge/revocation story tests consistency scope, column mapping, identity across loads, and serialized policy revision. The keyed actions differ by unit."
+    },
+    {
+      "items": [
+        "ood-n07-b03-i005",
+        "ood-n07-b04-i010",
+        "ood-n07-b05-i015",
+        "ood-n02-b06-i036"
+      ],
+      "distinction": "The invoice cluster spans mapping, local save ordering, immutable serialized history, and retry-versus-reissue identity. B05 i015 is assessed separately; no general same-story prohibition is applied."
+    }
+  ],
+  "qualityDisposition": {
+    "confirmedIssue": "No blocking cross-unit defect was confirmed in this B01–B05 slice. N07 B05 i012 is a close reinforcement of accepted N02 B05 i028: the keyed provenance action is nearly the same, so it carries a nonblocking answer-priming/redundancy warning. Its explicit serialized-snapshot framing fits the N07-B05 objective, and neither the spec nor contract requires unique concepts or scenarios.",
+    "legitimateReinforcement": "N07 B02 i017 and N07 B05 i015 share facts/answer concepts with accepted questions but add distinct transaction-scope and serialized-history decisions respectively. Repeated scenario nouns or principles alone are not defects.",
+    "noQuota": "No unique-concept, unique-scenario, length, or option-count quota is applied.",
+    "nonBlockingWarning": {
+      "items": [
+        "ood-n07-b05-i012",
+        "ood-n02-b05-i028"
+      ],
+      "risk": "The shared notebook/published-result facts and same exact-revision action may let a learner recall the earlier provenance answer, reducing this item’s incremental decision value.",
+      "disposition": "Accepted as reinforcement at a different representation boundary: N02 asks for provenance on an audit-retained result; N07 asks what the serialized snapshot must retain. This is a quality warning, not a failure under the existing contract."
+    }
+  },
+  "limitations": [
+    "This covers only B01–B05 (90 of 144 N07 questions); B06–B08 and the remaining 54-question cross-unit review are pending.",
+    "The B05 i012 near-duplicate warning is recorded as nonblocking; no source or proposal change is requested by this review.",
+    "No source, producer, consumer, admission, runtime, native, Premium, full-bank or full-BIZQ acceptance."
+  ]
+}

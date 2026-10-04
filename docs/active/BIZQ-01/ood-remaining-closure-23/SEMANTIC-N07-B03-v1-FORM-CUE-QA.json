@@ -1,0 +1,558 @@
+{
+  "verdict": "REVISE",
+  "unit": "OOD-N07-B03",
+  "input": {
+    "path": "review-inputs/N07-B03-v1.json",
+    "sha256": "97cdc4698077a34576da5762805782c17edd34bcb08345d363df779c8b849865"
+  },
+  "mainReview": {
+    "path": "SEMANTIC-N07-B03-v1-QA.json",
+    "sha256": "d517d1a8257ecb86500b7c9815cb373723d7cd130b82197a60bd43d00556aeca",
+    "verdict": "REVISE",
+    "existingFinding": "i006 domain value for separate door-policy code is not visible"
+  },
+  "criterion": {
+    "path": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3",
+    "section": "4.3"
+  },
+  "measurement": {
+    "method": "JavaScript String.length over each authored option text in the frozen whole object; the accepted choice is selected by answer.optionId, never array position.",
+    "questions": 18,
+    "acceptedAnswersUniquelyLongest": 17,
+    "flaggedQuestionIds": [
+      "ood-n07-b03-i001",
+      "ood-n07-b03-i003",
+      "ood-n07-b03-i004",
+      "ood-n07-b03-i005",
+      "ood-n07-b03-i006",
+      "ood-n07-b03-i007",
+      "ood-n07-b03-i008",
+      "ood-n07-b03-i009",
+      "ood-n07-b03-i010",
+      "ood-n07-b03-i011",
+      "ood-n07-b03-i012",
+      "ood-n07-b03-i013",
+      "ood-n07-b03-i014",
+      "ood-n07-b03-i015",
+      "ood-n07-b03-i016",
+      "ood-n07-b03-i017",
+      "ood-n07-b03-i018"
+    ],
+    "tiedOrNotLongestQuestionIds": [
+      "ood-n07-b03-i002"
+    ],
+    "thresholdUsed": false
+  },
+  "finding": {
+    "severity": "blocking",
+    "description": "The accepted choice is uniquely longest in 17 of 18 items. Across the cohort, keys routinely state a complete two-part mapping and responsibility boundary while distractors are markedly shorter, often a single flawed action. The fact that an individual correct answer needs more detail can be legitimate, but the repeated cohort-wide form makes the longest-choice heuristic highly predictive without evaluating the mapping decision. This is the systematic longest-correct signal §4.3 says to remove; the 17/18 observation is evidence of the signal, not a numeric acceptance threshold.",
+    "minimumCorrection": "Within the same 18-item unit, make credible competing storage/domain mapping alternatives comparably complete where the current length cue arises, or make supported accepted keys more concise without dropping a necessary decision. Do not pad, impose equal lengths, or remove meaningful choices merely to change a count. Rebind exact choices and their diagnostics; retain an option ID if its semantic answer remains the same, otherwise apply the existing option-identity rule."
+  },
+  "items": [
+    {
+      "questionId": "ood-n07-b03-i001",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 122,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i001_wrong_1",
+          "chars": 87
+        },
+        {
+          "optionId": "n07_b03_i001_wrong_2",
+          "chars": 71
+        },
+        {
+          "optionId": "n07_b03_i001_wrong_3",
+          "chars": 54
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 122
+        },
+        {
+          "optionId": "n07_b03_i001_wrong_4",
+          "chars": 86
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i002",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 93,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i002_wrong_1",
+          "chars": 96
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 93
+        },
+        {
+          "optionId": "n07_b03_i002_wrong_2",
+          "chars": 89
+        },
+        {
+          "optionId": "n07_b03_i002_wrong_3",
+          "chars": 90
+        },
+        {
+          "optionId": "n07_b03_i002_wrong_4",
+          "chars": 96
+        }
+      ],
+      "acceptedIsUniqueLongest": false
+    },
+    {
+      "questionId": "ood-n07-b03-i003",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 131,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i003_wrong_1",
+          "chars": 95
+        },
+        {
+          "optionId": "n07_b03_i003_wrong_2",
+          "chars": 72
+        },
+        {
+          "optionId": "n07_b03_i003_wrong_3",
+          "chars": 88
+        },
+        {
+          "optionId": "n07_b03_i003_wrong_4",
+          "chars": 91
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 131
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i004",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 115,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i004_wrong_1",
+          "chars": 87
+        },
+        {
+          "optionId": "n07_b03_i004_wrong_2",
+          "chars": 93
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 115
+        },
+        {
+          "optionId": "n07_b03_i004_wrong_3",
+          "chars": 90
+        },
+        {
+          "optionId": "n07_b03_i004_wrong_4",
+          "chars": 69
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i005",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 124,
+      "optionCharacterCounts": [
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 124
+        },
+        {
+          "optionId": "n07_b03_i005_wrong_1",
+          "chars": 78
+        },
+        {
+          "optionId": "n07_b03_i005_wrong_2",
+          "chars": 74
+        },
+        {
+          "optionId": "n07_b03_i005_wrong_3",
+          "chars": 75
+        },
+        {
+          "optionId": "n07_b03_i005_wrong_4",
+          "chars": 58
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i006",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 125,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i006_wrong_1",
+          "chars": 74
+        },
+        {
+          "optionId": "n07_b03_i006_wrong_2",
+          "chars": 68
+        },
+        {
+          "optionId": "n07_b03_i006_wrong_3",
+          "chars": 86
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 125
+        },
+        {
+          "optionId": "n07_b03_i006_wrong_4",
+          "chars": 95
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i007",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 123,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i007_wrong_1",
+          "chars": 73
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 123
+        },
+        {
+          "optionId": "n07_b03_i007_wrong_2",
+          "chars": 101
+        },
+        {
+          "optionId": "n07_b03_i007_wrong_3",
+          "chars": 83
+        },
+        {
+          "optionId": "n07_b03_i007_wrong_4",
+          "chars": 93
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i008",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 135,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i008_wrong_1",
+          "chars": 80
+        },
+        {
+          "optionId": "n07_b03_i008_wrong_2",
+          "chars": 69
+        },
+        {
+          "optionId": "n07_b03_i008_wrong_3",
+          "chars": 56
+        },
+        {
+          "optionId": "n07_b03_i008_wrong_4",
+          "chars": 77
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 135
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i009",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 97,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i009_wrong_1",
+          "chars": 93
+        },
+        {
+          "optionId": "n07_b03_i009_wrong_2",
+          "chars": 78
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 97
+        },
+        {
+          "optionId": "n07_b03_i009_wrong_3",
+          "chars": 89
+        },
+        {
+          "optionId": "n07_b03_i009_wrong_4",
+          "chars": 53
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i010",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 127,
+      "optionCharacterCounts": [
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 127
+        },
+        {
+          "optionId": "n07_b03_i010_wrong_1",
+          "chars": 59
+        },
+        {
+          "optionId": "n07_b03_i010_wrong_2",
+          "chars": 82
+        },
+        {
+          "optionId": "n07_b03_i010_wrong_3",
+          "chars": 69
+        },
+        {
+          "optionId": "n07_b03_i010_wrong_4",
+          "chars": 59
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i011",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 106,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i011_wrong_1",
+          "chars": 85
+        },
+        {
+          "optionId": "n07_b03_i011_wrong_2",
+          "chars": 56
+        },
+        {
+          "optionId": "n07_b03_i011_wrong_3",
+          "chars": 76
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 106
+        },
+        {
+          "optionId": "n07_b03_i011_wrong_4",
+          "chars": 58
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i012",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 109,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i012_wrong_1",
+          "chars": 52
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 109
+        },
+        {
+          "optionId": "n07_b03_i012_wrong_2",
+          "chars": 79
+        },
+        {
+          "optionId": "n07_b03_i012_wrong_3",
+          "chars": 86
+        },
+        {
+          "optionId": "n07_b03_i012_wrong_4",
+          "chars": 68
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i013",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 150,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i013_wrong_1",
+          "chars": 69
+        },
+        {
+          "optionId": "n07_b03_i013_wrong_2",
+          "chars": 75
+        },
+        {
+          "optionId": "n07_b03_i013_wrong_3",
+          "chars": 89
+        },
+        {
+          "optionId": "n07_b03_i013_wrong_4",
+          "chars": 81
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 150
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i014",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 128,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i014_wrong_1",
+          "chars": 85
+        },
+        {
+          "optionId": "n07_b03_i014_wrong_2",
+          "chars": 66
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 128
+        },
+        {
+          "optionId": "n07_b03_i014_wrong_3",
+          "chars": 82
+        },
+        {
+          "optionId": "n07_b03_i014_wrong_4",
+          "chars": 84
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i015",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 112,
+      "optionCharacterCounts": [
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 112
+        },
+        {
+          "optionId": "n07_b03_i015_wrong_1",
+          "chars": 54
+        },
+        {
+          "optionId": "n07_b03_i015_wrong_2",
+          "chars": 70
+        },
+        {
+          "optionId": "n07_b03_i015_wrong_3",
+          "chars": 64
+        },
+        {
+          "optionId": "n07_b03_i015_wrong_4",
+          "chars": 69
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i016",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 120,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i016_wrong_1",
+          "chars": 74
+        },
+        {
+          "optionId": "n07_b03_i016_wrong_2",
+          "chars": 77
+        },
+        {
+          "optionId": "n07_b03_i016_wrong_3",
+          "chars": 68
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 120
+        },
+        {
+          "optionId": "n07_b03_i016_wrong_4",
+          "chars": 84
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i017",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 140,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i017_wrong_1",
+          "chars": 89
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 140
+        },
+        {
+          "optionId": "n07_b03_i017_wrong_2",
+          "chars": 83
+        },
+        {
+          "optionId": "n07_b03_i017_wrong_3",
+          "chars": 76
+        },
+        {
+          "optionId": "n07_b03_i017_wrong_4",
+          "chars": 84
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    },
+    {
+      "questionId": "ood-n07-b03-i018",
+      "acceptedOptionId": "owner_preserves_contract",
+      "acceptedChars": 108,
+      "optionCharacterCounts": [
+        {
+          "optionId": "n07_b03_i018_wrong_1",
+          "chars": 84
+        },
+        {
+          "optionId": "n07_b03_i018_wrong_2",
+          "chars": 59
+        },
+        {
+          "optionId": "n07_b03_i018_wrong_3",
+          "chars": 63
+        },
+        {
+          "optionId": "n07_b03_i018_wrong_4",
+          "chars": 57
+        },
+        {
+          "optionId": "owner_preserves_contract",
+          "chars": 108
+        }
+      ],
+      "acceptedIsUniqueLongest": true
+    }
+  ]
+}

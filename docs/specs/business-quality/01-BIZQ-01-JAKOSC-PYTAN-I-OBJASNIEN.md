@@ -177,9 +177,11 @@ Testy contentu nie zastępują zobaczenia prawdziwej treści w rzeczywistym runn
 
 ## 7. Warunki odbioru
 
-BIZQ-01 można zamknąć, gdy wszystkie potwierdzone krytyczne defekty z A1 i rozszerzonego przeglądu mają naprawy, dokładny inventory i zgodny artefakt; nowe semantyczne zmiany przeszły właściwe admission; renderer nie zdradza odpowiedzi; scoring nie zależy od pozycji opcji; wszystkie istotne ostrzeżenia dotyczące zmienionych batchy są rozstrzygnięte.
+Zgodnie z dyspozycją PO z 04.10.2026 ([jedyna kanoniczna kolejka, row19a](../../PATTERNLY-WORKING-PLAN.md)) bieżący odbiór BIZQ-01 obejmuje domknięcie i udokumentowany odbiór OOD N01–N09 oraz pozostałe wymagane wspólne prace runtime, renderer, scoring, feedback i weryfikację aplikacji. Potwierdzone krytyczne defekty OOD z A1 i rozszerzonego przeglądu mają naprawy, dokładny inventory i zgodny artefakt; nowe semantyczne zmiany przechodzą właściwe admission; renderer nie zdradza odpowiedzi; scoring nie zależy od pozycji opcji; wszystkie istotne ostrzeżenia dotyczące zmienionych batchy są rozstrzygnięte. Macierz Q01–Q14 i wymagany odbiór rzeczywistego runnera/iOS pozostają w mocy.
 
-Raport podaje zakres faktycznie oceniony merytorycznie i zakres tylko automatycznie przeskanowany. Nie wolno napisać „cały content wysokiej jakości” na podstawie próby 24/track. Otwarte krytyczne wady aktywnego contentu uniemożliwiają pełne zamknięcie, nawet gdy inne batche są gotowe.
+Dalszy przegląd i naprawy treści pozostałych ośmiu banków są odłożone do utrzymania, gdy aplikacja będzie gotowa do releasu. Sam brak pełnego przeglądu odłożonych banków nie stanowi bramki releasu ani wymogu ukończenia bieżącego zakresu BIZQ-01. Znane nierozwiązane krytyczne defekty pozostają jawne: raport wskazuje konkretny defekt, aktualne dowody i ocenę rzeczywistego ryzyka dla releasu; odłożenie nie oznacza ich naprawy lub odbioru jakościowego. Dotychczasowe naprawy i dowody zostają zachowane. BIZQ-02–06 realizować normalnie zgodnie z ich wymaganiami i zależnościami; bez nowej autoryzacji deployu, publikacji lub zmian usług.
+
+Raport podaje zakres faktycznie oceniony merytorycznie i zakres tylko automatycznie przeskanowany, a bieżący odbiór odnosi do powyższego zakresu. Nie wolno napisać „cały content wysokiej jakości” na podstawie próby 24/track ani uznać niesprawdzonych banków za odebrane.
 
 W raporcie pokaż przynajmniej trzy konkretne before/after: wyciek odpowiedzi, pozorny distractor i niespójność mechanizmu. Wskaż, czego użytkownik może się nauczyć po poprawce, czego nie mógł ustalić z wcześniejszej wersji.
 

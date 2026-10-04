@@ -1,0 +1,118 @@
+{
+  "result": "PASS_BINDINGS",
+  "scope": "Root exact18 contentPASS/identityREVISE findings bindings only; MD discrepancy pending additive correction, final cross-unit/migration/producer/admission pending",
+  "qaJsonSha256": "e3c6e4b1c93f9ba6f67ff82a7a9f659e55564e483eaa6364a98a8d88e641617d",
+  "inputSha256": "be7d5acfc2e2ccfa469ad6a70764572842bc873626e29414afd2f107f037bc2b",
+  "manifestSha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n07-b08-i001",
+      "reservedQuestionId": "ood-n07-b08-i019",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i002",
+      "reservedQuestionId": "ood-n07-b08-i020",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i003",
+      "reservedQuestionId": "ood-n07-b08-i021",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i004",
+      "reservedQuestionId": "ood-n07-b08-i022",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i005",
+      "reservedQuestionId": "ood-n07-b08-i023",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i006",
+      "reservedQuestionId": "ood-n07-b08-i024",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i007",
+      "reservedQuestionId": "ood-n07-b08-i025",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i008",
+      "reservedQuestionId": "ood-n07-b08-i026",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i009",
+      "reservedQuestionId": "ood-n07-b08-i027",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i010",
+      "reservedQuestionId": "ood-n07-b08-i028",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i011",
+      "reservedQuestionId": "ood-n07-b08-i029",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i012",
+      "reservedQuestionId": "ood-n07-b08-i030",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i013",
+      "reservedQuestionId": "ood-n07-b08-i031",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i014",
+      "reservedQuestionId": "ood-n07-b08-i032",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i015",
+      "reservedQuestionId": "ood-n07-b08-i033",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i016",
+      "reservedQuestionId": "ood-n07-b08-i034",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i017",
+      "reservedQuestionId": "ood-n07-b08-i035",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b08-i018",
+      "reservedQuestionId": "ood-n07-b08-i036",
+      "contentVerdict": "PASS",
+      "identityAction": "REPLACE"
+    }
+  ],
+  "sourceActivation": false
+}

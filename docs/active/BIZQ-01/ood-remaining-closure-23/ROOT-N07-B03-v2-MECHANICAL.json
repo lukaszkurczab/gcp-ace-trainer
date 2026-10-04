@@ -1,0 +1,156 @@
+{
+  "result": "PASS",
+  "scope": "Mechanical schema/count/taxonomy/identity correspondence, actual scoring/reversal and exact wrong-diagnostic bindings only; no semantic or identity-action acceptance",
+  "unit": "OOD-N07-B03",
+  "proposal": "N07-B03.json",
+  "proposalSha256": "0ba2bcd05ce9da659635f98a0605c3b33bada0bd262f537e34d4b0e828e3172c",
+  "manifestSha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01",
+  "wholeObjectCount": 18,
+  "optionsChecked": 90,
+  "items": [
+    {
+      "beforeQuestionId": "ood-n07-b03-i001",
+      "questionId": "ood-n07-b03-i001",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "43f6581cbfe477b367ccd1e1f87bd52456acb80a4360875c83f3940e14bebe05",
+      "currentWholeObjectSha256": "281a35d464bf2a3adf335e4906a4fdc68548a4bfeceb4f4a8ffeb2b25e99c6c6",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i002",
+      "questionId": "ood-n07-b03-i002",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "d4a69efe91c9cb4c15bf0405308fe886750716d39b4dfad093d699d13190ded1",
+      "currentWholeObjectSha256": "c9937ef7469e28458f8f5f206c919593539e02ae3b24e29ce227557e49f289e3",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i003",
+      "questionId": "ood-n07-b03-i003",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "f4de84904f6211ad701b57c173b420b5e141e4af11852b664cab6889dcd1264f",
+      "currentWholeObjectSha256": "333d6ca834dfe053083ad53ddf4d0ee8911be684c36dc740ce9eff4f2d266b07",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i004",
+      "questionId": "ood-n07-b03-i004",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "a5856aa5d746a70032ece20a630d8175394f54887ed770eddcab4d8345243e56",
+      "currentWholeObjectSha256": "b43a8ee0b56185544804dd7d35272903de5deaa64c01b3b8ebe46c243e7a5445",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i005",
+      "questionId": "ood-n07-b03-i005",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "e1243f330a49af2d757056f759d84814071a5120857894bf36b0814a5c28f1cc",
+      "currentWholeObjectSha256": "02d5d6ed7def6b0a17477421f846d02fe14a370bc30c2e27b4ed37cce5d5bf7e",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i006",
+      "questionId": "ood-n07-b03-i006",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "ce7eafed0967e025661946b6f10c9e15fa5c52503d69b6b2bd1b05d295a777af",
+      "currentWholeObjectSha256": "8884ffb3b5c43e5927a940bb99f39b86a7cfabd6b4a78be56c4cdc06c3fbb60f",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i007",
+      "questionId": "ood-n07-b03-i007",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "c78debb03ad6c3d8d7912e6e00ce74f49671e17c852e1e90e1a5eb525de8ae0d",
+      "currentWholeObjectSha256": "e6174d94abb00019c1b2591cbe245aed250c9055e24be788161d94888f17d20d",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i008",
+      "questionId": "ood-n07-b03-i008",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "89893fc9090c1a99a499fcd523c574158d553c669fc3796ccfd2dec66dd95d74",
+      "currentWholeObjectSha256": "fe05085fea124cb23fe54d5ca54522ee8a77d35b4a63f39c4181a7f6cc1e1d4f",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i009",
+      "questionId": "ood-n07-b03-i009",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "956975248929fe354cb057f25f095e42cb95c2e3539b878166f68e38cb2a1cf8",
+      "currentWholeObjectSha256": "2c373903786ce35f129a22445592bd9f7228b8a25d4d0104fa0cb50ceedcb873",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i010",
+      "questionId": "ood-n07-b03-i010",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "cfac51b6f1fcca304b8d4843382cb1b6e9835d6a3de20eedec09f2bb5a3a86c7",
+      "currentWholeObjectSha256": "7bdb292429ad3a5371688428468410d96d67555b5bad84074010e365de0cc0cd",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i011",
+      "questionId": "ood-n07-b03-i011",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "848d057921372f72a2eb1b7426aa651d20470a0aad1e26400e5d9eef32cac4f4",
+      "currentWholeObjectSha256": "e125610c01455ba83fd6bd81f8b642d91e0afa0630bab987840862e1df3916b6",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i012",
+      "questionId": "ood-n07-b03-i012",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "ca57878d74fc0c5b36ae1ad93f173f3c3cef30b0587eedd1c43627fd5fe9f5cf",
+      "currentWholeObjectSha256": "227fe281ddd1c7e12ac4a2e3f094b9076fed55949ad06beb9630b727b1f35f63",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i013",
+      "questionId": "ood-n07-b03-i013",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "010784a90f5dc0fb8413c2c471cddf8db675c76fe0faf259faa74e7928619cfa",
+      "currentWholeObjectSha256": "5d530a4ce832395de4783d444953400a994bdf307bba33143de017ec4f0f4639",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i014",
+      "questionId": "ood-n07-b03-i014",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "502853381d27c02be47ea6b4702c3df2d27eae4295adf3f95308a018f1134de5",
+      "currentWholeObjectSha256": "6c19210c8e9b210d588b06d97ec1f0c8470e344446c294ecca39652c05d938c0",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i015",
+      "questionId": "ood-n07-b03-i015",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "b2f0ecb6b4f23f2aff55fab8ea5e83c12824a6fa2882df9201a4b35fb28f4dfa",
+      "currentWholeObjectSha256": "d0a105b0ca28034c7e8f92057fb47ef1c2fcc42b7ab0a5875a385f8510b2d49c",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i016",
+      "questionId": "ood-n07-b03-i016",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "a45b3779a36ec6d6b43e745be1150c6922c18cc5ea3c588daddcf493bf2b3a67",
+      "currentWholeObjectSha256": "66a063a534ffd0607b95002bc6eebe7b773b476356cb5951e8688bd4c5c7821c",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i017",
+      "questionId": "ood-n07-b03-i017",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "1d5f1dc4772fec365817ece92fadd36a8d86503cdba9231797e9093deee5d750",
+      "currentWholeObjectSha256": "804a9bee7eeb352d18360d46e861197a9484bd0055b910513f4950389f364950",
+      "acceptedOptionId": "owner_preserves_contract"
+    },
+    {
+      "beforeQuestionId": "ood-n07-b03-i018",
+      "questionId": "ood-n07-b03-i018",
+      "identityShape": "same-ID proposal; meaning review pending",
+      "beforeQuestionSha256": "3e068c93a346128e7c540d5c3ce66631d56f03f55eaf9a44c7435591db6b1c51",
+      "currentWholeObjectSha256": "bef26cceb36f922bd5af4ecd455507e0bfa764d22274f3f20fbabc1a26940459",
+      "acceptedOptionId": "owner_preserves_contract"
+    }
+  ]
+}

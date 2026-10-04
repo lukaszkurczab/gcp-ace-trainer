@@ -1,0 +1,266 @@
+{
+  "result": "PASS",
+  "scope": "Root exact correction-field delta only, independent semantic review pending",
+  "beforeSha256": "4f327d79af5941d617f8c211cd70bb84ca450a1f8bc08bce4d0b034c8c526df2",
+  "currentSha256": "aebc7f8cc71f8203d0e53e0eda80118878758608a8cc447aad4dc45bb22f524a",
+  "sameQuestionIds": 18,
+  "sameAcceptedOptionIds": 18,
+  "items": [
+    {
+      "questionId": "ood-n07-b01-i001",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i001_wrong_4"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i002",
+      "changedTopLevelFields": [
+        "constraints",
+        "feedback",
+        "interaction",
+        "prompt"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i002_wrong_3"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i003",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i003_wrong_4"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i004",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i004_wrong_3"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i005",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i005_wrong_3"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i006",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i006_wrong_4"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i007",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i007_wrong_4"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i008",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i008_wrong_2"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i009",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i009_wrong_2"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i010",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i010_wrong_3"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i011",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i011_wrong_4"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i012",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i012_wrong_3"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i013",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i013_wrong_3"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i014",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i014_wrong_4"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i015",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i015_wrong_3"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i016",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i016_wrong_4"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i017",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i017_wrong_4"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b01-i018",
+      "changedTopLevelFields": [
+        "feedback",
+        "interaction"
+      ],
+      "removedOptionIds": [
+        "n07_b01_i018_wrong_4"
+      ],
+      "addedOptionIds": [],
+      "changedOptionTextIds": [
+        "owner_preserves_contract"
+      ]
+    }
+  ],
+  "optionCountGateAdded": false,
+  "sourceActivation": false
+}

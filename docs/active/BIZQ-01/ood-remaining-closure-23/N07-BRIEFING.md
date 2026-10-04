@@ -1,0 +1,35 @@
+# BIZQ-01 — N07: Cel / Ustalenia / Podejście
+
+## Cel
+
+Doprowadzić całe N07 (144 pytania / osiem istniejących mental units) do udokumentowanego odbioru jakości źródła, obowiązującego admission i synchronizacji konsumentów. BIZQ-01 pozostaje głównym obszarem ze statusem partial. N06/22 ma niezależny final PASS, zwykły push i oba wymagane joby exact CI37226328318 SUCCESS; nie wracamy do odebranej implementacji przez sam HEAD. Ten briefing zatwierdza podejście do nieaktywnych propozycji, nie nieznany jeszcze kształt migracji.
+
+## Ustalenia
+
+[Current source observations](N07-CURRENT-SOURCE-OBSERVATIONS.json) wiążą 8 raw source hashes i 144 whole objects z wcześniejszym item-level preflight21. Current OOD v22, 1413 pytań, Qset c6cf903178b823fb71ac29040f3c5fa5f72c619d3adbb525fc7791756654ac3e. Reuse133 CONFIRMED /11 CONTRACT_GAP obowiązuje tylko po sprawdzeniu dokładnych bytes i całych obiektów. Jedenaście pełnych gap objects oraz kontrola B01 i004 zostały ponownie przeanalizowane; pozostałe132 findings są reused, nie nowo niezależnie odebrane. Dziewięć gapów B02 nie określa granicy invariant/aggregate/transaction; B05 i012 nie podaje granicy snapshot/schema compatibility; B08 i016 nie rozstrzyga persistence failure/retry/idempotency boundary. Gap to brak rozstrzygających faktów, nie dowód wrong key. Generic alternatives/Reason/Details/diagnostics wymagają naprawy w konkretnym istniejącym celu.
+
+Objectives B01–B08: repository/domain collection; aggregate/invariant/transaction scope; ORM mapping; Identity Map/Unit of Work; serialization/versioning/defaults; DTO/mapping/anti-corruption/domain objects; lazy/eager/proxy/query ownership; persistence failure/idempotency/retries/consistency. Każdy ma18 istniejących decyzji. Poza zakresem1269 OOD, w tym945 odebranych N01–N06; osiem innych track artifact bytes i ordinary N01/136 pools zachowane. Source node nie ustanawia session reachability ani native/Premium acceptance.
+
+## Podejście
+
+[N07 contract receipt](N07-CONTRACT.json) wiąże append-only doprecyzowanie docs07 przed authoring i byte-exact prefix wszystkich wcześniejszych reguł. Root zamraża manifest144 full before objects/raw bytes/keys/sourceRefs/unused corresponding i019–i036 przed propozycjami. Nie zmienia source przed independent design PASS i actual pre-authoring bindings PASS.
+
+Autorzy zapisują arrays proposals/N07-Bxx.json. Każdy item ma widoczne decisive facts i konkretny unit-specific decision, najbliższą sensowną alternatywę, causal Reason, wszystkie istniejące Details i authored stable-ID diagnostics. Dopuszczalne hipotetyczne fakty scenariusza są jawne; techniczne twierdzenia wymagają primary sources i wskazania właściwej granicy ORM, transakcji lub protokołu. Nie wprowadzać uniwersalnych twierdzeń o atomowości, distributed retries czy loading. Bez globalnego option-ID gate, prose quota lub replacement quota.
+
+Whole-object semantic/identity review ustala action dla każdego item: unchanged primary decision/accepted meaning zachowuje ID; prawdziwa zmiana primary semantics/archetype używa corresponding unused i019–i036. Option ID nie oznacza nowej decyzji pod starą tożsamością. CONTRACT_GAP zachowuje supported facet; dodanie faktów nie ustanawia automatycznie same-ID. Cross-unit review porównuje144 actual decisions i accepted945, nie same nazwy domen. Taxonomy/type/scoring/difficulty/counts nie zmieniają się.
+
+Własność: istniejący ood_cohort_author Luna High B01–B04; istniejący closure02 Luna High B05–B08. Są rozłączni, nie akceptują własnych pytań; HOLD przed root authoring prerequisites PASS. Istniejący batch_design_review Luna High: independent design/semantic/cross-unit/acceptance. Root: canonical contract/manifest, source activation, orchestration/admission/locks/queue/state/push. Autorzy nie zmieniają canonical source, verifier ani consumers w czasie propozycji. Foreign AUD/ARCH/PERF/CH, appendix/footer/content dist/full audit pozostają readonly; nie tworzymy konkurencyjnego ownera.
+
+Po semantic acceptance i frozen actual identity map root przygotuje exact producer brief: fixed23 proof eight-source old/current whole objects/version/Qset, private byte-exact v22 reconstruction→unchanged22→21→20→19a→19→17→16→13→12→11. Independent review konkretnego proof shape przed producer implementation/source activation. Preserve13 literal descriptors/5 private guards, wszystkie immutable predecessor proofs; history594 replacements/351 same-ID/25 Reason przed23. Bez generic override/archive/secondary pipeline/schema migration/nowej authority.
+
+Existing source→validator/scorer→canonical build→candidate/readiness→app sync/locks→delegated runtime admission/local release gate→provenance-only dwa authorized web demos. Root i niezależny reviewer sprawdzają whole objects, klucze, wszystkie option scores/permutation/diagnostics, preserved source/history/negative guards i consumers. Nowy23 consumer test wiąże actual whole current Qset; existing21/22 tests zachowują własne proof/map i accepted objects, aktualizując wyłącznie bieżący runtime contentVersion/whole-current-Qset pin wymagany przez nową wersję. Nie osłabiać assertion ani skipować history. Required repo gates według aktualnych contracts; matching wcześniejsze dowody reuse. Independent QA plus root actual evidence przed ordinary push; push nie zamyka BIZQ.
+
+## Pełny odbiór i pozostały zakres
+
+Pełny BIZQ-01 w zakresie aktualnej dyspozycji PO: domknięty i odebrany OOD oraz wymagane wspólne prace BIZQ-01; exact inventory/artifact/admission; brak disclosure/position scoring; rozstrzygnięte istotne warnings; wymagane Q01–Q14/actual runner/iOS. Po N07 pozostaną N08/N09 324 obiekty oraz wymagany wspólny runtime/renderer/scoring/feedback i weryfikacja aplikacji. Dalszy przegląd i naprawy pozostałych ośmiu banków są odłożone przez PO do utrzymania, gdy aplikacja będzie gotowa do releasu; dotychczasowe naprawy i dowody pozostają. Sam brak ich pełnego przeglądu nie jest bramką releasu; konkretne znane defekty krytyczne wymagają jawnej oceny rzeczywistego ryzyka. GCP ARCH03/F18, BESD ARCH02, PO authorized Premium profile i valid-partial denominator pozostają istniejącymi zależnościami. Nie ponawiać pytań ani przyjmować zgody; wykonujemy niezależny source scope. BIZQ-02..06 zachowują kolejkę i ustalone dependencies; nie przełączamy po pushu.
+
+Atomic goal+accepted plan/local reminders/real Premium/existing admission zachowane. Jeden runtime; mobile tylko istniejący iPhone17 7F315654-3175-4F3C-BB24-B0263F59360C; VO poza testami/accessibility obowiązuje. Bez deploy/publikacji/produkcyjnych zakupów/service config/stash/reset/force/cudzych zmian. Ten pakiet nie deklaruje native/Premium/full-bank/full-BIZQ acceptance.
+
+## Oceny materialnego podejścia
+
+Fit0.94: domykamy cały istniejący node pod wymagania01. Simplicity0.86: osiem powiązanych units dzieli przygotowanie/migrację/admission, jeden existing pipeline. Risk0.84: exact current bindings, nieaktywne propozycje, indywidualna identity i review przed activation. Maintainability0.84: closed proof, immutable chain, brak nowej authority. Minimum0.84≥0.8. To ocena podejścia, nie dowód implementacji ani gotowości runtime.

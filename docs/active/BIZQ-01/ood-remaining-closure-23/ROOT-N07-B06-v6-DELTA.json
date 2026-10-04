@@ -1,0 +1,185 @@
+{
+  "result": "PASS",
+  "scope": "Actual v5 to v6 serialized diff bounds only; semantic acceptance pending",
+  "inputSha256": "5eafc6852700e0efd4a14e6419146ead10314a261c067fd575e581a977a76cfd",
+  "detailsFieldsChanged": 36,
+  "diagnosticTextsChanged": 22,
+  "items": [
+    {
+      "questionId": "ood-n07-b06-i001",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": []
+    },
+    {
+      "questionId": "ood-n07-b06-i002",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": []
+    },
+    {
+      "questionId": "ood-n07-b06-i003",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": [
+        "n07_b06_i003_wrong_1"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i004",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": []
+    },
+    {
+      "questionId": "ood-n07-b06-i005",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": []
+    },
+    {
+      "questionId": "ood-n07-b06-i006",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": []
+    },
+    {
+      "questionId": "ood-n07-b06-i007",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": []
+    },
+    {
+      "questionId": "ood-n07-b06-i008",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": [
+        "n07_b06_i008_wrong_2",
+        "n07_b06_i008_wrong_3"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i009",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": [
+        "n07_b06_i009_wrong_2",
+        "n07_b06_i009_wrong_3"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i010",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": [
+        "n07_b06_i010_wrong_2",
+        "n07_b06_i010_wrong_3",
+        "n07_b06_i010_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i011",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": []
+    },
+    {
+      "questionId": "ood-n07-b06-i012",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": [
+        "n07_b06_i012_wrong_3",
+        "n07_b06_i012_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i013",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": [
+        "n07_b06_i013_wrong_2",
+        "n07_b06_i013_wrong_3"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i014",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": []
+    },
+    {
+      "questionId": "ood-n07-b06-i015",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": [
+        "n07_b06_i015_wrong_2",
+        "n07_b06_i015_wrong_3"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i016",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": [
+        "n07_b06_i016_wrong_3",
+        "n07_b06_i016_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i017",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": [
+        "n07_b06_i017_wrong_2",
+        "n07_b06_i017_wrong_3",
+        "n07_b06_i017_wrong_4"
+      ]
+    },
+    {
+      "questionId": "ood-n07-b06-i018",
+      "changedDetailsFields": [
+        "feedback.details.mechanismOrProperty",
+        "feedback.details.scenarioApplication"
+      ],
+      "changedDiagnosticTargets": [
+        "n07_b06_i018_wrong_2",
+        "n07_b06_i018_wrong_3",
+        "n07_b06_i018_wrong_4"
+      ]
+    }
+  ]
+}

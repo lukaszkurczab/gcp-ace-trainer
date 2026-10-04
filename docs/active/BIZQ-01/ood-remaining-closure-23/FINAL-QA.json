@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "patternly-bizq-final-package-qa-v1",
+  "verdict": "PASS",
+  "scope": "Bounded N07/23 source, producer/history chain, current app consumer, local admission and demo provenance package; no native/Premium/full BIZQ-01/external release acceptance.",
+  "source": {
+    "sourceCheckpoint": "3be6feef80975ed7f3ca87893b743668227e4a64",
+    "sourceHead": "27b7b7c9ece584e9904b343e63b49cd8a7f087c6",
+    "producerMapSha256": "f64e82bdf4a997d28a30c44774cd1280beec303620bda3e758150638b2ba9414",
+    "proofSha256": "f1f69a22382dd3acac3e1b0ec8122693265e31a21e2997e467b22985b3831d76",
+    "contentVersion": "object-oriented-design-interview-authoring-v2026.10.05-bizq01-23",
+    "questionSetSha256": "cdb6b644d1029b0ffc5d1a09cbaed2aecb3f7785d718bb056c5d6a0cbd5eeefa",
+    "currentItems": 144,
+    "replacements": 34,
+    "sameIdCorrections": 110,
+    "checkpointFilesRechecked": 26,
+    "checkpointMismatches": 0
+  },
+  "currentRepositories": {
+    "content": "27b7b7c9ece584e9904b343e63b49cd8a7f087c6",
+    "appConsumer": "50a6811cde15b662e8c45f777fcc9c447a482d3a",
+    "web": "c50cd2748b498924f53a53587d7122322b8f134a",
+    "backend": "039f7f000e701c4fbc69e18a1fb66528cbc5cdcb"
+  },
+  "candidateAndAdmission": {
+    "candidateId": "4b8b820120248d8a24883960ed2347d7625af43c5f9ebec9863cab6870752b28",
+    "readinessSha256": "d7487565142490e86493674ef402c39271321c18aff1c7020cede58e8d350e2e",
+    "admissionCommit": "27b7b7c9ece584e9904b343e63b49cd8a7f087c6",
+    "admissionBoundary": "local_verified_artifacts_no_deployment",
+    "releaseId": "patternly-candidate-3be6feef8097",
+    "candidateReleaseGate": "PASS",
+    "postAdmissionTests": { "passed": 7, "failed": 0 }
+  },
+  "boundReports": {
+    "producerQaMarkdownSha256": "b07d0fdbbbe7c4c867c11abd0aca98a700c9c96f5e0b95659ece326ca28e9d22",
+    "producerQaJsonSha256": "68fe23e2e37630f81f166108765012215b57581490b375f4cbeca384fe0366f6",
+    "consumerQaMarkdownSha256": "59a9b8adc677cfcecbc766c7e70966f61b06cf0a436e8e31d519c40ae84b11ff",
+    "consumerQaJsonSha256": "1ba20cad48f7cffc61b4122ee38b0e7494d6681ebc1c46324d5e31d0f5be25fa",
+    "consumerMetadataErratumMarkdownSha256": "205166dc4aab0170b116a02f3ab44d5b8303af379a480b0a177a0a977f2ca2af",
+    "consumerMetadataErratumJsonSha256": "3e038db53a87b9abb0a8d3de47c28197362f9d3933c13283cb33f685cad7a9a8",
+    "rootFinalEvidenceSha256": "f422087e5f4e00fffd9d72270bb05061799542cc21d75b30304001c5e5521d01",
+    "reportMarkdownSha256": "f014ff38d9d7bfecbc1fe0721cc692bbea6c0ff96a0583d8f6980fc895797b2a"
+  },
+  "independentChecks": [
+    {
+      "name": "Current app consumer tests and candidate launch binding",
+      "runtime": "Node 22.22.3",
+      "command": "node --import tsx --test src/content/bizq01OodNodeClosure23.test.ts src/content/bizq01OodNodeClosure22.test.ts src/content/bizq01OodNodeClosure21.test.ts src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts",
+      "result": "PASS",
+      "passed": 13,
+      "failed": 0
+    },
+    {
+      "name": "Existing candidate release gate",
+      "command": "npm run candidate:release-gate-v2",
+      "result": "PASS",
+      "candidateId": "4b8b820120248d8a24883960ed2347d7625af43c5f9ebec9863cab6870752b28"
+    },
+    {
+      "name": "Existing no-argument consumer and demo preservation verifier",
+      "command": "node check-consumer-preservation.mjs",
+      "result": "PASS",
+      "reviewedItems": 144,
+      "preservedOtherOod": 1269,
+      "unchangedArtifacts": 8,
+      "demoPayloadsUnchanged": true,
+      "allowedChangedProvenanceFieldsPerDemo": 8,
+      "historicalLockSha256": "d5058e8678ceab38fbdb3fc6ea423b80e21571885549df9b42dd6e3916312195"
+    },
+    {
+      "name": "Independent ROOT-FINAL-EVIDENCE file, log, and demo hash reconciliation",
+      "result": "PASS",
+      "hashBindingsChecked": 24,
+      "mismatches": 0,
+      "repoHeadsMatched": true,
+      "admissionBoundaryMatched": true
+    }
+  ],
+  "rootEvidence": {
+    "finalEvidencePath": "ROOT-FINAL-EVIDENCE.json",
+    "canonical": { "tests": 183, "passed": 183, "failed": 0, "skipped": 0 },
+    "producerFocused": { "tests": 10, "passed": 10 },
+    "independentProducerFocused": { "tests": 15, "passed": 15 },
+    "consumerFocused": { "tests": 13, "passed": 13 },
+    "postAdmission": { "tests": 7, "passed": 7 },
+    "static": { "tests": 1875, "passed": 1871, "failed": 0, "existingSkipped": 4 },
+    "recovery": "PASS",
+    "typecheck": "PASS",
+    "contentBoundary": "PASS",
+    "runtimePrivacyBoundary": "PASS",
+    "exporter": "PASS",
+    "exporterCheck": "PASS",
+    "webLocal": "PASS",
+    "candidateReleaseGate": "PASS",
+    "initialPreAdmissionFailuresPreservedAndResolved": 17
+  },
+  "preservation": {
+    "preservationReceiptSha256": "cea78e1d8a9d4680979e70a0be4a7dc2ec8050abaaf58a2a564b745aff1764b9",
+    "otherOodQuestions": 1269,
+    "acceptedN01N06Questions": 945,
+    "otherContentFiles": 945,
+    "immutableHistoricalProofs": 14,
+    "otherAppArtifacts": 8,
+    "historicalAppLockSha256": "d5058e8678ceab38fbdb3fc6ea423b80e21571885549df9b42dd6e3916312195",
+    "preservedDemoQuestionPayloads": true,
+    "knownPreexistingWorkspaceContentUntouched": true,
+    "fourRepositoryPreservationReceiptSha256": "e50a22e597ce1ec09232a584f2aaae489bb339011161ac6dc00e3b926ad9706a"
+  },
+  "historicalReview18": {
+    "reconciliationSha256": "c02f0d7a8f1a557db37d18032a0da434f72a5a2c6ee0260544967c4f92659732",
+    "acceptanceReceiptSha256": "63dbeb69018017aed75f3b974de6abf4cba83304f821ef92ce2a5a0430def9a4",
+    "sampleItems": 216,
+    "exactPass": 79,
+    "historicalDefects": 123,
+    "retiredIds": 5,
+    "misattachedFindingExcluded": 1,
+    "changedOrReplacedObjectsWithOwnSemanticPass": 9,
+    "wholeBankQualityRateClaim": false
+  },
+  "statusAndScope": {
+    "currentReportSha256": "f014ff38d9d7bfecbc1fe0721cc692bbea6c0ff96a0583d8f6980fc895797b2a",
+    "workingPlanSha256": "1ad3874c745f2fc3692f16ff589b2ae05c9b3f7dda33e00c2e3146516272d3d5",
+    "workingStateSha256": "8125f9d819a73cd400a51f4c6033ec4433fc66390caa601cf5ccd0af9a5eb0f9",
+    "bizq01SpecSha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3",
+    "bizq01Status": "partial",
+    "externalDeploymentOrPublicationClaim": false,
+    "nativeOrPremiumAcceptanceClaim": false,
+    "pushPerformedByReviewer": false
+  },
+  "limitations": [
+    "Four existing skips are reported as skips, not passes.",
+    "The delegated admission is local_verified_artifacts_no_deployment and does not document external deployment or publication.",
+    "N08/N09 and shared runtime, renderer, scoring, feedback, Q01-Q14, actual runner/iOS, Premium, native, and full BIZQ-01 acceptance remain outside this package.",
+    "The ordinary push is root-owned and remains pending this final QA and root binding checks."
+  ]
+}

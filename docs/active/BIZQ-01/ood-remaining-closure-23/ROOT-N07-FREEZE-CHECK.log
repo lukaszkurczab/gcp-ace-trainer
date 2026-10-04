@@ -1,0 +1,16 @@
+{
+  "result": "PASS",
+  "producerRepositoryHead": "5a8e895379bb0abcbb5d7a1dc89fcf02167a823e",
+  "contentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-22",
+  "questionSetSha256": "c6cf903178b823fb71ac29040f3c5fa5f72c619d3adbb525fc7791756654ac3e",
+  "sourceFileCount": 8,
+  "questionCount": 144,
+  "sourceHashesAndWholeObjectsUnchanged": true,
+  "confirmed": 133,
+  "contractGaps": 11,
+  "acceptedN01N06Questions": 945,
+  "preservedOtherOodQuestions": 1269,
+  "reservedQuestionIdsUnusedAcross1413": 144,
+  "manifestSha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01",
+  "preflightSha256": "6f20b27eda2bfae21a4369f504c4aa842923f5928563d9dd581ba0c13363fe90"
+}

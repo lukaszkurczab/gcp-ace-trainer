@@ -1,0 +1,19 @@
+{
+  "scope": "Readonly actual application contract inspection for variable choice cardinality; no native execution or consumer23 acceptance",
+  "observation": "Existing canonical view-model maps all interaction.options; response-control projection maps all renderer.options by stable ID; actual UI maps all control.options and uses single-mode radio semantics. No fixed five-choice count is present in those touched paths. Existing22 consumer test exercises actual app scorer/presentation;23 equivalent verification will cover final current proposals after accepted activation.",
+  "bindings": {
+    "src/features/practice/canonicalQuestionViewModel.ts": "dcf17cee634856644f9f077665033f305d98f75b5d16737f4630cddc789ac1e3",
+    "src/features/practice/practiceSessionPresentation.ts": "9f415ca46ac12a09df54cdbb9df4e45592f3bfe87504deea360308e6870f9f99",
+    "src/features/practice/PracticeResponseControls.tsx": "bd6238fe06ab1481bc2a3a3ca4c766619758f15ff8e3cf4ca867fde51c21576f",
+    "src/content/bizq01OodNodeClosure22.test.ts": "0bf638a4680822c6d08bc3e88f1a65248ce9822bd4355fcfd6eb921f86dd5e20"
+  },
+  "lineReferences": {
+    "canonicalQuestionViewModel.ts": 20,
+    "practiceSessionPresentation.ts": 206,
+    "PracticeResponseControls.tsx": 38,
+    "bizq01OodNodeClosure22.test.ts": 182
+  },
+  "nativePerformed": false,
+  "newGate": false,
+  "probeLimitation": "Initial search also named nonexistent src/domain/practice; corrected to actual discovered source paths. Source inspection is not a runtime test."
+}

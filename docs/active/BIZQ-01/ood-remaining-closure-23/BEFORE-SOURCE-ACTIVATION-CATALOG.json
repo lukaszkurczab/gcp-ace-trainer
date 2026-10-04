@@ -1,0 +1,44 @@
+{
+  "catalog": {
+    "schemaVersion": "patternly-content-catalog-v1",
+    "tracks": [
+      {
+        "contentVersion": "aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096",
+        "trackId": "aws-certified-solutions-architect-associate"
+      },
+      {
+        "contentVersion": "backend-system-design-interview-authoring-v2026.10.03-bizq01-14",
+        "trackId": "backend-system-design-interview"
+      },
+      {
+        "contentVersion": "ccarp-2026.09.03",
+        "trackId": "claude-certified-architect-professional-certification"
+      },
+      {
+        "contentVersion": "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04",
+        "trackId": "coding-interview-dsa-problem-solving"
+      },
+      {
+        "contentVersion": "frontend-system-design-interview-candidate-v2026.08.15",
+        "trackId": "frontend-system-design-interview"
+      },
+      {
+        "contentVersion": "google-cloud-associate-cloud-engineer-authoring-v2026.08.11",
+        "trackId": "google-cloud-associate-cloud-engineer"
+      },
+      {
+        "contentVersion": "microsoft-azure-administrator-associate-az-104-authoring-v2026.08.15",
+        "trackId": "microsoft-azure-administrator-associate-az-104"
+      },
+      {
+        "contentVersion": "microsoft-azure-ai-fundamentals-ai-901-authoring-v2026.08.15",
+        "trackId": "microsoft-azure-ai-fundamentals-ai-901"
+      },
+      {
+        "contentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-22",
+        "trackId": "object-oriented-design-interview"
+      }
+    ]
+  },
+  "catalogRawSha256": "c8661e0ed07f1e69dc943d07c9005836a85787b0ef7c92da38b8006e37351727"
+}

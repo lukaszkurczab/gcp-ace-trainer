@@ -1,0 +1,24 @@
+{
+  "result": "PASS",
+  "scope": "ActualB06v1\u2192v2difference only source option ordering, all18wholeobjects identical after sorting options bystableID. This is not semanticacceptance; newraw/currentmechanical binding follows.",
+  "priorFrozenSha256": "82d1687a76324a4d8a416d34fab5f03bf7cb40d0f77d5a7d91acf5572ee28d8c",
+  "currentProposalSha256": "1f5b44635215fe80658a90ad8eb5960863ab46960e775d4fc02c89107b7742af",
+  "onlyOptionOrderingChanged": true,
+  "changedQuestionIds": [
+    "ood-n07-b06-i001",
+    "ood-n07-b06-i002",
+    "ood-n07-b06-i004",
+    "ood-n07-b06-i005",
+    "ood-n07-b06-i006",
+    "ood-n07-b06-i008",
+    "ood-n07-b06-i009",
+    "ood-n07-b06-i010",
+    "ood-n07-b06-i012",
+    "ood-n07-b06-i013",
+    "ood-n07-b06-i014",
+    "ood-n07-b06-i016",
+    "ood-n07-b06-i017",
+    "ood-n07-b06-i018"
+  ],
+  "originalFrozenInputPreserved": true
+}

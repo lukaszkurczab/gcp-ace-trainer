@@ -1,0 +1,7 @@
+{
+  "result": "FAILED_BEFORE_RECEIPT_WRITE",
+  "stage": "exact_report_identity_action_literal",
+  "cause": "Initial reader expected REPLACE_QUESTION_ID while actual scoped reviewer schema uses USE_RESERVED_ID",
+  "correction": "Match actual explicit report literal; still requires exact manifest reserved ID, before/current whole objects and accepted meaning",
+  "sourceEffect": false
+}

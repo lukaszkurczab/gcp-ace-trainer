@@ -1,0 +1,525 @@
+{
+  "verdict": "REVISE",
+  "unit": "OOD-N07-B05",
+  "scope": "Independent whole-object semantic and item-identity review of the exact frozen v1 proposal; not whole-N07 cross-unit, producer, source, consumer, admission, native, Premium, or full-BIZQ acceptance.",
+  "input": {
+    "path": "review-inputs/N07-B05-v1.json",
+    "sha256": "7e127c0bbe6bdc367f747b00a0cc3cbe1e65c6568aceb2325d1dad2785a1af1d"
+  },
+  "manifest": {
+    "path": "N07-MANIFEST.json",
+    "sha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01"
+  },
+  "source": {
+    "path": "patternly-content/content/object-oriented-design-interview/persistence_repositories_serialization_and_domain_boundaries/OOD-N07-B05.json",
+    "sha256": "5b83e98882bd8172df47be1e02dd1cadfdaa107afd1753edf8af90b36343a76b"
+  },
+  "mechanicalEvidence": {
+    "path": "ROOT-N07-B05-v1-MECHANICAL.json",
+    "sha256": "70a3d49e1443dc0f0227f51c8b46509bd0503e86f4beca7b8c361eee667ec8c8",
+    "items": 18,
+    "optionScoreAndReversalCases": 90,
+    "result": "PASS",
+    "semanticAcceptance": false
+  },
+  "authorNotesSnapshot": {
+    "path": "AUTHOR-B05-B08.json",
+    "sha256": "7ea1f5a224be0560d93227592305f466919b5261e24bb475b9c1416b50833d52",
+    "role": "author hypothesis only; not acceptance evidence"
+  },
+  "criteria": {
+    "specSha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3",
+    "contractSha256": "79c6dd8d2861d21eec0122675659840ba6f04883f546ec9ef4326f29320d4720",
+    "briefSha256": "9370339439c25f7fe065e3753af31f0436d0e0e78e9084815d83c5ad9039e4d3"
+  },
+  "findings": [
+    {
+      "id": "N07-B05-F1",
+      "severity": "blocking_for_unit_acceptance",
+      "criterion": "BIZQ-01 §5C and N07 contract",
+      "items": [
+        "ood-n07-b05-i001",
+        "ood-n07-b05-i002",
+        "ood-n07-b05-i003",
+        "ood-n07-b05-i004",
+        "ood-n07-b05-i005",
+        "ood-n07-b05-i006",
+        "ood-n07-b05-i007",
+        "ood-n07-b05-i008",
+        "ood-n07-b05-i009",
+        "ood-n07-b05-i010",
+        "ood-n07-b05-i011",
+        "ood-n07-b05-i013",
+        "ood-n07-b05-i014",
+        "ood-n07-b05-i016",
+        "ood-n07-b05-i017",
+        "ood-n07-b05-i018"
+      ],
+      "finding": "These predecessor/current pairs change the primary decision rather than merely adding decisive protocol facts to the same answer: the old visible cases concern domain transaction rules (for example, settled payout idempotency or room cancellation consistency), while the current items ask separate wire-format, presence, field-identity, representation, or signing decisions. The old accepted option is one generic owner/defaulting rule applied to those domain facts; the new keys are specific operations with different meanings. Same unit label alone does not establish same question identity.",
+      "requiredCorrection": "Use each corresponding reserved question ID for the changed primary decision/archetype; keep only items i012 and i015 on their current question IDs, where the visible predecessor and current objectives both concern reproducible immutable result provenance and traceable corrected-invoice history. Existing current accepted option IDs are appropriately new and must remain bound to their meanings. This is a meaning-based disposition, not a replacement quota."
+    },
+    {
+      "id": "N07-B05-F2",
+      "severity": "blocking_for_unit_acceptance",
+      "criterion": "BIZQ-01 §4.3",
+      "items": [
+        "ood-n07-b05-i001",
+        "ood-n07-b05-i002",
+        "ood-n07-b05-i003",
+        "ood-n07-b05-i005",
+        "ood-n07-b05-i006",
+        "ood-n07-b05-i007",
+        "ood-n07-b05-i009",
+        "ood-n07-b05-i010",
+        "ood-n07-b05-i011",
+        "ood-n07-b05-i013",
+        "ood-n07-b05-i014",
+        "ood-n07-b05-i015",
+        "ood-n07-b05-i017",
+        "ood-n07-b05-i018"
+      ],
+      "finding": "The keyed option is uniquely longest by raw character count in 14 of 18 items (i001, i002, i003, i005, i006, i007, i009, i010, i011, i013, i014, i015, i017, i018). The actual distractors are often individually relevant, but the repeated form gives a test-taking shortcut independent of the protocol facts, especially where the key combines multiple clauses and the competing choices are short fragments.",
+      "requiredCorrection": "Revise only the options whose actual comparison gives a reliable length cue: preserve the correct decision while making the nearest competing policy complete and case-specific, or make the key concise without omitting a necessary condition. Re-run existing option-ID scoring/feedback checks if option meanings change. No equal-word-count, minimum-option-count, or zero-warning rule is imposed."
+    },
+    {
+      "id": "N07-B05-F3",
+      "severity": "blocking_for_item_acceptance",
+      "criterion": "BIZQ-01 §§4.1 and 4.3",
+      "items": [
+        "ood-n07-b05-i003"
+      ],
+      "finding": "The stem says archived meter messages contain field number 6 named legacy_peak and that future code must not reinterpret those bytes. That supports reserving field number 6 for binary wire compatibility, but it does not say that archived ProtoJSON or TextFormat payloads containing the field name are retained. The keyed answer and explanation require reserving both number and name; name reservation is specifically relevant to those textual representations.",
+      "requiredCorrection": "State that retained/replayed ProtoJSON or TextFormat payloads use the old name, or narrow the keyed decision to the visible binary-tag requirement. Keep the discriminator tied to the existing schema-retirement objective."
+    }
+  ],
+  "cohortAssessment": "The new set has meaningful, distinct serialization decisions across field addition/defaults, presence, retirement, JSON naming, enums, format dispatch, unknown-field forwarding, collection shape, numeric representation, signing, and immutable provenance. This breadth is appropriate to the declared N07-B05 objective and is not a uniqueness defect. The identified blockers are the specific question-identity changes, the §4.3 longest-key cue, and i003’s unsupported name-reservation premise—not a demand for 18 unrelated concepts.",
+  "sourceReview": {
+    "verifiedPrimarySources": [
+      {
+        "title": "Protocol Buffers proto3 Language Guide",
+        "url": "https://protobuf.dev/programming-guides/proto3/",
+        "supports": "Additive binary fields, unknown-field compatibility, defaults/presence, enum zero/default rules, reserving removed field identifiers."
+      },
+      {
+        "title": "Protocol Buffers Field Presence Application Note",
+        "url": "https://protobuf.dev/programming-guides/field_presence/",
+        "supports": "Explicit versus implicit proto3 field presence and zero-value distinction."
+      },
+      {
+        "title": "ProtoJSON Format",
+        "url": "https://protobuf.dev/programming-guides/json/",
+        "supports": "JSON field names/json_name, int64 string representation, enum names/alias serialization, null semantics."
+      },
+      {
+        "title": "Protocol Buffer Serialization Is Not Canonical",
+        "url": "https://protobuf.dev/programming-guides/serialization-not-canonical/",
+        "supports": "Ordinary/deterministic protobuf serialization is not canonical; unknown fields complicate generic fingerprints; application-specific canonical projection is recommended."
+      }
+    ],
+    "limitedReference": "For i012/i015/i017, the source URL points to Martin Fowler’s Version Number catalog page. Direct open was unavailable in this review; the current hypotheticals make immutable-revision and history needs explicit, but that link was not independently confirmed to support those particular storage decisions. No claim is made that it proves a protobuf rule."
+  },
+  "limitations": [
+    "No full 144-question cross-unit comparison against accepted945 N01–N06 decisions is claimed; that remains the final N07 review.",
+    "No source/producer/consumer/admission/runtime/native/Premium/full-BIZQ acceptance is claimed."
+  ],
+  "items": [
+    {
+      "questionIdBefore": "ood-n07-b05-i001",
+      "questionIdCurrent": "ood-n07-b05-i001",
+      "beforeQuestionSha256": "0af8437bbbc0d14decfdc0faca0944acb2e0adc39cc508ce6c3d9bf935c10d93",
+      "currentWholeObjectSha256": "5633dc7bae6cf5800e4580b51a211b03ef418f86b925445b4516974db6982ee5",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i001_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Add the memo at a fresh field number and make its absent value preserve the existing empty-memo behavior.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i019",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 105,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old item decides whether payout release remains idempotent for a settled order; current asks how to add a compatible memo field to proto3 while older readers remain deployed.",
+      "semanticDisposition": "PASS_WITH_COHORT_LENGTH_FINDING",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i002",
+      "questionIdCurrent": "ood-n07-b05-i002",
+      "beforeQuestionSha256": "ffaae4dadad637113b0b461a28fd4bce4197013d458af18c25e2167e4ce22dc8",
+      "currentWholeObjectSha256": "cc31ba2dd5717920c571284c15f1935c63997f3f8e9aafcfa91d32a958b5e99f",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i002_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Use explicit field presence for `delay_minutes`, so zero and absent remain different states.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i020",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 92,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old item decides transit announcement ordering; current asks how to represent explicit zero versus omitted/inherited scalar.",
+      "semanticDisposition": "PASS_WITH_COHORT_LENGTH_FINDING",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/",
+        "https://protobuf.dev/programming-guides/field_presence/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i003",
+      "questionIdCurrent": "ood-n07-b05-i003",
+      "beforeQuestionSha256": "050931cfb9e7ab0572e7f77c92da55ce42526f39e724c979d5cd22b2660943ed",
+      "currentWholeObjectSha256": "6241c468bcda3e196a4a18c965697d897ede11cbde717a15ee8f76f39aabdf6d",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i003_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Remove the field from the active message and reserve both its field number and name.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i021",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 84,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old item decides meter commit-overlap prevention; current asks how to retire and reserve a protobuf field identity.",
+      "semanticDisposition": "REVISE",
+      "itemSpecificFinding": "i003 also lacks a visible fact establishing that retained ProtoJSON/TextFormat name identity must be protected in addition to the archived binary field number.",
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i004",
+      "questionIdCurrent": "ood-n07-b05-i004",
+      "beforeQuestionSha256": "cf575f4a2d7510cbd1d5f4cebefeb3f5481358f1a6fa04d9c729792aa3ff9129",
+      "currentWholeObjectSha256": "cc07daccf006c084bb7a1998c36e4db8cc363143ca4c0263238430a994d91024",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i004_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “the current stream keeps its timing and error contract” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Declare `json_name: \"captionErrorCode\"` on the renamed proto field.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i022",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 67,
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "primaryDecisionComparison": "Old item decides live-stream timing/error contract; current asks how to preserve an externally stored ProtoJSON key while renaming the proto field.",
+      "semanticDisposition": "PASS",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/json/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i005",
+      "questionIdCurrent": "ood-n07-b05-i005",
+      "beforeQuestionSha256": "2c136b3fc028c435f174aab0c3a28660b3b95b2007c3835098b07f6feeabeb6c",
+      "currentWholeObjectSha256": "468cb7366720c0693ada6f189d740ee339e2c8c5f92ffe0ee25aeba05d8c89c2",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i005_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “skills and availability constraints hold for both assignments” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Declare `REWARD_STATE_UNSPECIFIED = 0` first and require an explicit grant state before granting.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i023",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 97,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old item decides skill/availability constraints during assignment swap; current asks how enum omission maps safely to a grant state.",
+      "semanticDisposition": "PASS_WITH_COHORT_LENGTH_FINDING",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i006",
+      "questionIdCurrent": "ood-n07-b05-i006",
+      "beforeQuestionSha256": "a230cb01c9aed3d0f43650148bc1498ab371e5f5904bd59b8b15564593ae41ff",
+      "currentWholeObjectSha256": "f3b3aba61d31c41eb09ddb055b3855ade213dae679cb38a09fe69e3552399559",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i006_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “conflicts are explicit and never silently overwrite accepted geometry” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Persist an explicit format version and dispatch each snapshot through its matching decoder or migration.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i024",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 104,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old item decides explicit offline-map conflict handling; current asks which decoder handles three stored serialization formats.",
+      "semanticDisposition": "PASS_WITH_COHORT_LENGTH_FINDING",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i007",
+      "questionIdCurrent": "ood-n07-b05-i007",
+      "beforeQuestionSha256": "4fff62ef96dcdb7589f41349c79f5cd71846869d15e071a2b6c03dd3d986b613",
+      "currentWholeObjectSha256": "d36cd44d8caa8796e057ed0c8229cf5ee7da75ad4d00dea6909518388fd49b0b",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i007_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Keep the unknown field in the parsed message and serialize that message object onward.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i025",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 86,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old item decides reward eligibility under legal campaign state; current asks whether an older binary relay retains an unknown field.",
+      "semanticDisposition": "PASS_WITH_COHORT_LENGTH_FINDING",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i008",
+      "questionIdCurrent": "ood-n07-b05-i008",
+      "beforeQuestionSha256": "f782a7c6ac3440126c9821d0d7200bc6d9557918c7f47badf9dc99760b730076",
+      "currentWholeObjectSha256": "343e7570585f5fe1ffa062b98fcad6485c59213f7db4e0c0589df91d5acb4ca4",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i008_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Keep the scans in an ordered repeated message field.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i026",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 52,
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "primaryDecisionComparison": "Old item decides logistics hand-off ownership; current asks whether repeated scan order and duplicate station codes survive serialization.",
+      "semanticDisposition": "PASS",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i009",
+      "questionIdCurrent": "ood-n07-b05-i009",
+      "beforeQuestionSha256": "3c64853adbfc0834db636d7aed6e97d17fac9258d9e3ce88d4f1c3a44e608a65",
+      "currentWholeObjectSha256": "af12b375d9be126a2af622f2f02ca79f7e756f531302f676f8924922310ad84c",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i009_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “a repayment cannot reduce the outstanding balance below zero” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Keep the protobuf `int64` and use its ProtoJSON string representation in the JavaScript contract.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i027",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 97,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old item decides nonnegative repayment allocation; current asks how an int64 identifier survives ProtoJSON/JavaScript precision limits.",
+      "semanticDisposition": "PASS_WITH_COHORT_LENGTH_FINDING",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/json/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i010",
+      "questionIdCurrent": "ood-n07-b05-i010",
+      "beforeQuestionSha256": "f77679d1e61b39ac24c4150f117b3d31e495826be54cc202d03aee6f5942ea27",
+      "currentWholeObjectSha256": "2bdbcbaa5927c05602219ecc0d0040cd9bf4183e497cf9787dcffcce1a91be1f",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i010_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “the bracket advances only from a legal match state” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Define a canonical, versioned signing projection and hash those canonical bytes rather than raw protobuf serialization.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i028",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 119,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old item decides whether a match may advance after a timeout; current asks for a signing input stable across protobuf implementations and versions.",
+      "semanticDisposition": "PASS_WITH_COHORT_LENGTH_FINDING",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i011",
+      "questionIdCurrent": "ood-n07-b05-i011",
+      "beforeQuestionSha256": "b59fc71cd17721e92793f1684eb950f906afd5813bdd70b664f87c3a7699f46c",
+      "currentWholeObjectSha256": "3231736d9b7e3930f8b06741478d502997534cfe317b74b99abab291d8980a75",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i011_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Add the new enum name as an alias, deploy it below the old name first, then switch serializer order and remove the old alias only after old data no longer needs parsing.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i029",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 169,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old item decides the separation between return classification and refund eligibility; current asks how to roll out an enum-name change in stored ProtoJSON.",
+      "semanticDisposition": "PASS_WITH_COHORT_LENGTH_FINDING",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/json/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i012",
+      "questionIdCurrent": "ood-n07-b05-i012",
+      "beforeQuestionSha256": "612fa78fbba0d81bba8acfe1ae2e05fb841be7a62f5586dc517f8bafcd2ba5b3",
+      "currentWholeObjectSha256": "c626a6d694c2047dd3ae7e07f2378f8ead9cae37794c2f28fa04565c63702317",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i012_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Store the immutable dataset and code revision identifiers with the published result snapshot.",
+      "questionIdentityDisposition": "preserve_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i012",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 93,
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "primaryDecisionComparison": "Old and current prompts both center on reproducible published results tied to immutable input/code revisions; current supplies the missing exact snapshot-identity details. QID may remain, but answer ID correctly changes to identify a concrete accepted operation.",
+      "semanticDisposition": "PASS",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/versionNumber.html"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i013",
+      "questionIdCurrent": "ood-n07-b05-i013",
+      "beforeQuestionSha256": "5bdedf73ab4fba2063b8d67d57b4a0684c3c344036d4cc9d77c307c21e7c6ee1",
+      "currentWholeObjectSha256": "29cf844ff4bf73aac0863be2217a39631414435e08be171659ff92817927a561",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i013_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Emit the field only when present, including an empty string when the sender explicitly clears the note.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i031",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 103,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old item decides comment author/revision retention; current asks how ProtoJSON distinguishes absent note from explicitly present empty string.",
+      "semanticDisposition": "PASS_WITH_COHORT_LENGTH_FINDING",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/json/",
+        "https://protobuf.dev/programming-guides/field_presence/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i014",
+      "questionIdCurrent": "ood-n07-b05-i014",
+      "beforeQuestionSha256": "b91009bab3c8faa7485e86d9c0c5d8935bf3786077dd0a601c73230e72f442f3",
+      "currentWholeObjectSha256": "1d1a413f7340bed056114a79d6e71a52c374dc731362ff5c4b37397f74c5dee1",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i014_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “a submission is either complete or explicitly retryable” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Represent the update as an explicit operation or field mask that distinguishes “leave unchanged” from “clear note.”",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i032",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 115,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old item decides complete versus retryable inspection submission; current asks how partial updates encode no-op, set, and clear.",
+      "semanticDisposition": "PASS_WITH_COHORT_LENGTH_FINDING",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/json/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i015",
+      "questionIdCurrent": "ood-n07-b05-i015",
+      "beforeQuestionSha256": "222667533d3f867e5732fbbe75de810258effe7ab9066a593b3553a6871245e0",
+      "currentWholeObjectSha256": "5c7aee9e428b786a4bf32821c345f6b604caa633fb353fa56788365dd11ec553",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i015_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “the new issue is traceable and does not double-charge the customer” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Append a new versioned issue record with its own payload and a reference to the prior issue.",
+      "questionIdentityDisposition": "preserve_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i015",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 92,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old and current prompts both center on traceable corrected invoice reissue; current adds immutable sent-payload retention and predecessor linkage. QID may remain, but answer ID correctly changes to identify the concrete record operation.",
+      "semanticDisposition": "PASS_WITH_COHORT_LENGTH_FINDING",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/versionNumber.html"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i016",
+      "questionIdCurrent": "ood-n07-b05-i016",
+      "beforeQuestionSha256": "3360cf5f64ca26b5afcabcbfd33cb53edacfce8c55431e2dd43addb11b8e674c",
+      "currentWholeObjectSha256": "c1f049e6378e1672d55b68f08e98e2f9d26ee5be5e29ee397d1dbd889eb2b0b5",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i016_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “revocation is visible to the door policy before access is granted” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Store the immutable policy-revision identifier with the allow or deny decision.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i034",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 79,
+      "uniquelyLongestKeyByRawCharacterLength": false,
+      "primaryDecisionComparison": "Old item decides revocation visibility before access; current asks how a decision identifies the immutable policy revision used for audit.",
+      "semanticDisposition": "PASS",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i017",
+      "questionIdCurrent": "ood-n07-b05-i017",
+      "beforeQuestionSha256": "f94766d6bc252a9160fa7c6e49670cec074b1ce5e729870ee971ded4036fef4e",
+      "currentWholeObjectSha256": "efa4e00c1e7059f02dad8b9f7eae5677c3a4f4fb201768736bf0fc17aedc60ca",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i017_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “the printed label represents the current approved shipment data” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Capture the approved shipment revision identifier in the queued job and render from that immutable revision.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i035",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 108,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old item says print current approved shipment data; current binds a queued job to the address revision approved at enqueue time, a materially different time-of-read rule.",
+      "semanticDisposition": "PASS_WITH_COHORT_LENGTH_FINDING",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://martinfowler.com/eaaCatalog/versionNumber.html"
+      ]
+    },
+    {
+      "questionIdBefore": "ood-n07-b05-i018",
+      "questionIdCurrent": "ood-n07-b05-i018",
+      "beforeQuestionSha256": "8936d1c5a650165751931a2b3fd3fc143993a0fac5304931de0091541291a8d9",
+      "currentWholeObjectSha256": "cc4b2d3571b00b4400b2e927595fc800013156acc3aa9399a236f67f7ab64442",
+      "oldAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "n07b05_i018_key",
+      "oldAcceptedOptionText": "Version serialized data explicitly and apply defaults at the boundary without weakening current domain invariants. In this case, that keeps the rule “the room capacity and cancellation policy must remain consistent” inside the owner that can observe and enforce it.",
+      "currentAcceptedOptionText": "Apply the published default only when the field is absent, and preserve any explicitly serialized window value.",
+      "questionIdentityDisposition": "use_corresponding_reserved_new_question_id",
+      "recommendedQuestionId": "ood-n07-b05-i036",
+      "acceptedOptionIdentityDisposition": "current_proposal_uses_new_option_id",
+      "keyLengthCharacters": 111,
+      "uniquelyLongestKeyByRawCharacterLength": true,
+      "primaryDecisionComparison": "Old item decides room-capacity/cancellation consistency; current asks how absent and explicitly stored default values remain distinct.",
+      "semanticDisposition": "PASS_WITH_COHORT_LENGTH_FINDING",
+      "itemSpecificFinding": null,
+      "detailsAndWrongFeedbackReviewed": true,
+      "sourceRefs": [
+        "https://protobuf.dev/programming-guides/proto3/"
+      ]
+    }
+  ]
+}

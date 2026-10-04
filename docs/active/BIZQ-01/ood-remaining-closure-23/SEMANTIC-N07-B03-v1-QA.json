@@ -1,0 +1,233 @@
+{
+  "verdict": "REVISE",
+  "unit": "OOD-N07-B03",
+  "scope": "Independent whole-object semantic and identity review of the exact frozen B03 v1 proposal. All 18 prompts, constraints, keyed answers resolved by answer.optionId, distractors, Reason, five Details fields, target-specific wrong-option messages and source references were examined against the frozen before objects and existing BIZQ-01 requirements. This is a unit-level review only; whole-N07 cross-unit review remains pending.",
+  "input": {
+    "path": "review-inputs/N07-B03-v1.json",
+    "sha256": "97cdc4698077a34576da5762805782c17edd34bcb08345d363df779c8b849865"
+  },
+  "manifest": {
+    "path": "N07-MANIFEST.json",
+    "sha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01"
+  },
+  "source": {
+    "path": "patternly-content/content/object-oriented-design-interview/persistence_repositories_serialization_and_domain_boundaries/OOD-N07-B03.json",
+    "sha256": "375090ab835f289e5edd2574dffff666c107e6193748af12b15496cbdfde2409"
+  },
+  "mechanicalEvidence": {
+    "path": "ROOT-N07-B03-v1-MECHANICAL.json",
+    "sha256": "861144362108e815a0a9c4fd765cad4ad0d6788ccee7ad11ce88937ff6907389",
+    "items": 18,
+    "optionsChecked": 90,
+    "result": "PASS",
+    "semanticAcceptance": false
+  },
+  "criteria": {
+    "specPath": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "specSha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3",
+    "canonicalGuidelinesPath": "docs/07-content-guidelines.md",
+    "canonicalGuidelinesSha256": "cffd5dae0850ecd7fc1f2e05e28f7e83c7ca9460207f6f857713d196254773e5",
+    "contractPath": "N07-CONTRACT.json",
+    "contractSha256": "79c6dd8d2861d21eec0122675659840ba6f04883f546ec9ef4326f29320d4720",
+    "briefPath": "N07-BRIEFING.md",
+    "briefSha256": "9370339439c25f7fe065e3753af31f0436d0e0e78e9084815d83c5ad9039e4d3"
+  },
+  "findings": [
+    {
+      "id": "B03-i006-domain-value-not-specified",
+      "severity": "blocking",
+      "questionId": "ood-n07-b03-i006",
+      "requirement": "BIZQ-01 §4.1: the visible facts must make exactly one option satisfy the contract; a decisive premise cannot appear only in Reason/Details.",
+      "finding": "The prompt names a UTC revocation timestamp and a separate door-policy code, then says the domain uses a revoked/unrevoked value and an instant. It does not state that the door-policy code represents the revoked/unrevoked value or identify a domain value for the door policy. Nevertheless the keyed option says to translate both the timestamp and policy code into domain values, and the explanations diagnose alternatives on that same basis. The choice to map that second code is not established by the prompt.",
+      "minimumCorrection": "State visibly that the door-policy code encodes the domain revoked/unrevoked state (or identify the domain representation the code maps to), then align the key and explanation. Alternatively, remove the unexplained code from the keyed mapping decision and revise the corresponding distractor/diagnostic if needed."
+    }
+  ],
+  "unitAssessment": "17 items PASS; i006 REVISE. Across the unit, the accepted keyed answer continues the already-reviewed objective: translate persistence representation into the domain-facing value/relationship, while leaving policy or side effects with the operation named in the case. It is not a new archetype merely because each example uses different stored fields. The concrete schemas, values and nearest misconceptions differ; the distractors include believable failures such as exposing raw keys/rows, substituting current revisions, losing null/history/identity distinctions, or moving policy into a mapper. A few extreme distractors (for example a new reservation on load in i017) are plainly wrong, but they do not alone defeat the alternatives that test realistic boundary errors. Reason and Details generally derive the mapping from visible storage/domain facts and do not claim guarantees beyond the prompt. The specific i006 mapping obligation is underdetermined as described above.",
+  "limitations": [
+    "No whole-N07 cross-unit comparison against other N07 units or accepted N01–N06 controls is claimed.",
+    "Mechanical schema/scoring/reversal PASS is not semantic acceptance.",
+    "No source activation, producer, runtime, consumer, admission, native, Premium, or full-BIZQ-01 acceptance is claimed."
+  ],
+  "items": [
+    {
+      "questionId": "ood-n07-b03-i001",
+      "beforeQuestionSha256": "43f6581cbfe477b367ccd1e1f87bd52456acb80a4360875c83f3940e14bebe05",
+      "currentWholeObjectSha256": "cc263a9153c72690c071e3e0429313e714f7fb7fea110893a14786c674c9dd18",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "integer classification code becomes named domain classification; refund policy stays downstream.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i002",
+      "beforeQuestionSha256": "d4a69efe91c9cb4c15bf0405308fe886750716d39b4dfad093d699d13190ded1",
+      "currentWholeObjectSha256": "7b91296c98bd22eddcecd9a485625e9cbce818a70aed15cc8c599da6004b8437",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "separate stored dataset/code keys are assembled into the exact immutable revision references.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i003",
+      "beforeQuestionSha256": "f4de84904f6211ad701b57c173b420b5e141e4af11852b664cab6889dcd1264f",
+      "currentWholeObjectSha256": "40be7c5cfc7d5b3f2f8f48ef2b0c5c96a266119090b2c0bae08cc5cc6d21d1ff",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "comment author/revision keys become domain references; notification address lookup/effect stays separate.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i004",
+      "beforeQuestionSha256": "a5856aa5d746a70032ece20a630d8175394f54887ed770eddcab4d8345243e56",
+      "currentWholeObjectSha256": "85881cbd402036eb1a25fab3812132db901eca3cd607ac04cf5ba2ea07765c7e",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "compact status/encrypted storage representation becomes retryable/complete domain state; retry scheduling stays outside mapping.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i005",
+      "beforeQuestionSha256": "e1243f330a49af2d757056f759d84814071a5120857894bf36b0814a5c28f1cc",
+      "currentWholeObjectSha256": "06935d021d2c6637a806bf5857e2380c2da4f18916ef790400cdc76e1fc182b5",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "header/line rows and reissue lineage become an invoice model; double-charge policy remains in billing behavior.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i006",
+      "beforeQuestionSha256": "ce7eafed0967e025661946b6f10c9e15fa5c52503d69b6b2bd1b05d295a777af",
+      "currentWholeObjectSha256": "4eb7fe0d0c46646b00a4c6da17121b5cb2b106a2a3e1bab8c696e2f37832258d",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "UTC revocation time and a purported door-policy code become badge domain values; the prompt does not identify the domain value represented by that policy code.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "REVISE"
+    },
+    {
+      "questionId": "ood-n07-b03-i007",
+      "beforeQuestionSha256": "c78debb03ad6c3d8d7912e6e00ce74f49671e17c852e1e90e1a5eb525de8ae0d",
+      "currentWholeObjectSha256": "2eff7ebcf38a237d0763a264a8e0e6b4ba20560556a7d4ecc05c788201238994",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "versioned JSON fields become named address fields while retaining the operator-selected approved revision.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i008",
+      "beforeQuestionSha256": "89893fc9090c1a99a499fcd523c574158d553c669fc3796ccfd2dec66dd95d74",
+      "currentWholeObjectSha256": "53537716370ca7419f1dde87b6ce7cb5fd8313317e8e669c42ec448c3af7494c",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "stored wall time plus resolved offset becomes the interval and room reference without resolving DST again.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i009",
+      "beforeQuestionSha256": "956975248929fe354cb057f25f095e42cb95c2e3539b878166f68e38cb2a1cf8",
+      "currentWholeObjectSha256": "060ea92a5124e6a20ffb6e0bff782616bebd3ceb03dc3e472f2921dcf55aa326",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "integer maintenance mode and permission flags become named command inputs; movement guard stays with command behavior.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i010",
+      "beforeQuestionSha256": "cfac51b6f1fcca304b8d4843382cb1b6e9835d6a3de20eedec09f2bb5a3a86c7",
+      "currentWholeObjectSha256": "8dc0363c945206280c8cce69c8c42fe95bf8d9d247e8c5ecd131071c021808f5",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "legacy lesson aliases become one stable lesson reference without migration or retirement-policy decisions on load.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i011",
+      "beforeQuestionSha256": "848d057921372f72a2eb1b7426aa651d20470a0aad1e26400e5d9eef32cac4f4",
+      "currentWholeObjectSha256": "b9b11697767b72ae9003747cb02c13d08d374950c18668922353a418408556e2",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "event-code/payload rows become named events in committed sequence order; exporter consumes domain history.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i012",
+      "beforeQuestionSha256": "ca57878d74fc0c5b36ae1ad93f173f3c3cef30b0587eedd1c43627fd5fe9f5cf",
+      "currentWholeObjectSha256": "1bbd09a7dbb23117f3936b6164da98a39455b4a8b1add9dbeca1d2f4c954f8e5",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "UTC ticks and staff key become an instant and staff reference; activity-feed creation remains an operation.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i013",
+      "beforeQuestionSha256": "010784a90f5dc0fb8413c2c471cddf8db675c76fe0faf259faa74e7928619cfa",
+      "currentWholeObjectSha256": "2343a1bb3e5f5e204b6ad52cfad519fcc8be1dbe4a83b66417e937328c938bed",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "minor units/currency become money and null stock stays distinct from zero; publication validates separately.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i014",
+      "beforeQuestionSha256": "502853381d27c02be47ea6b4702c3df2d27eae4295adf3f95308a018f1134de5",
+      "currentWholeObjectSha256": "4b4c087e781ec6dcdc53dc9386375bc9c742724077af1ee7df1879add0212055",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "request/shipment rows become a parent-linked request with a shared delivery promise.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i015",
+      "beforeQuestionSha256": "b2f0ecb6b4f23f2aff55fab8ea5e83c12824a6fa2882df9201a4b35fb28f4dfa",
+      "currentWholeObjectSha256": "ff6c602861cbf4a4274e0e86d710627fb9e913e526535dfc9a47109ceadcf701",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "plot/reviewer codes become references while transfer preserves plot identity and approval history.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i016",
+      "beforeQuestionSha256": "a45b3779a36ec6d6b43e745be1150c6922c18cc5ea3c588daddcf493bf2b3a67",
+      "currentWholeObjectSha256": "d7fbcc211826cb00c2a69b4ee0a94cc4310ab8211c9331d7664c1309be5bac7e",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "component IDs and fixed adjustment become references/money; quote calculation stays outside loading.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i017",
+      "beforeQuestionSha256": "1d5f1dc4772fec365817ece92fadd36a8d86503cdba9231797e9093deee5d750",
+      "currentWholeObjectSha256": "abc5129c45f88b49c8887871ddb8599d035a52fa31f01882fa0d1c1fcccce6c6",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "timestamps and charger key become interval/reference; expiry uses the reservation operation’s injected clock.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n07-b03-i018",
+      "beforeQuestionSha256": "3e068c93a346128e7c540d5c3ce66631d56f03f55eaf9a44c7435591db6b1c51",
+      "currentWholeObjectSha256": "3615216b508b55a789ccce67cd8a478f4c4034b18c1a0353799f705dfdc7ce0e",
+      "acceptedOptionId": "owner_preserves_contract",
+      "identityAction": "RETAIN_QUESTION_ID_AND_ACCEPTED_OPTION_ID",
+      "primaryDecisionAssessment": "repeated tag rows become one asset’s tag set, rights code becomes a domain value, and asset identity remains stable.",
+      "identityRationale": "The predecessor accepted answer is the general persistence-mapping boundary: keep storage-shape translation out of domain behavior where the two concerns change for different reasons. The current case supplies a concrete persistence representation and asks the mapper to translate it while preserving the stated domain value/relationship and leaving its policy or side effect to the named operation. That is a grounded instance of the same decision, not a new primary mechanism or archetype.",
+      "verdict": "PASS"
+    }
+  ]
+}

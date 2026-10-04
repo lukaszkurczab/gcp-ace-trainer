@@ -1,0 +1,371 @@
+{
+  "result": "REVISE_OBSERVED",
+  "scope": "Root actual v3→v4 diagnostic delta; not independent semantic acceptance",
+  "claimedRewrittenDiagnostics": 72,
+  "actuallyChangedDiagnostics": 0,
+  "unchangedDiagnostics": [
+    {
+      "questionId": "ood-n07-b06-i001",
+      "targetId": "n07_b06_i001_wrong_1",
+      "text": "This choice Keeping the transport type would couple scoring to partner field names; database names are also implementation details. The stated the partner code is not stable identity; the policy revision is part of the completion facts."
+    },
+    {
+      "questionId": "ood-n07-b06-i001",
+      "targetId": "n07_b06_i001_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Map the partner code directly to a database column name and use that string as the domain identity. The case requires the partner code is not stable identity; the policy revision is part of the completion facts."
+    },
+    {
+      "questionId": "ood-n07-b06-i001",
+      "targetId": "n07_b06_i001_wrong_3",
+      "text": "This removes or duplicates a domain fact: Create a second domain type for every partner API version and make the use case branch on version. The mapper should preserve the partner code is not stable identity; the policy revision is part of the completion facts."
+    },
+    {
+      "questionId": "ood-n07-b06-i001",
+      "targetId": "n07_b06_i001_wrong_4",
+      "text": "Then completion cannot resolve which stable exercise the score belongs to."
+    },
+    {
+      "questionId": "ood-n07-b06-i002",
+      "targetId": "n07_b06_i002_wrong_1",
+      "text": "This choice Treating an unknown value as accepted bypasses the stated control; discarding it loses the evidence needed for quarantine review. The stated the domain must not silently grant an unknown status, and reviewers need the raw supplier value."
+    },
+    {
+      "questionId": "ood-n07-b06-i002",
+      "targetId": "n07_b06_i002_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Add every supplier status string directly to the domain enum and expose it to all callers. The case requires the domain must not silently grant an unknown status, and reviewers need the raw supplier value."
+    },
+    {
+      "questionId": "ood-n07-b06-i002",
+      "targetId": "n07_b06_i002_wrong_3",
+      "text": "This removes or duplicates a domain fact: Map unknown status to rejected and discard the original value, even when review needs to identify the supplier response. The mapper should preserve the domain must not silently grant an unknown status, and reviewers need the raw supplier value."
+    },
+    {
+      "questionId": "ood-n07-b06-i002",
+      "targetId": "n07_b06_i002_wrong_4",
+      "text": "Quarantine is required here; admitting the unknown status expands the domain outcome set."
+    },
+    {
+      "questionId": "ood-n07-b06-i003",
+      "targetId": "n07_b06_i003_wrong_1",
+      "text": "This choice Persisting offsets as identity breaks annotations when a recording changes; the vendor response does not own editorial meaning. The stated offsets move on replacement; annotations follow stable segment ids."
+    },
+    {
+      "questionId": "ood-n07-b06-i003",
+      "targetId": "n07_b06_i003_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Make the vendor response object the annotation aggregate so it can carry both offsets and comments. The case requires offsets move on replacement; annotations follow stable segment ids."
+    },
+    {
+      "questionId": "ood-n07-b06-i003",
+      "targetId": "n07_b06_i003_wrong_3",
+      "text": "This removes or duplicates a domain fact: Discard segment identity and attach annotations to the new file’s byte offsets. The mapper should preserve offsets move on replacement; annotations follow stable segment ids."
+    },
+    {
+      "questionId": "ood-n07-b06-i003",
+      "targetId": "n07_b06_i003_wrong_4",
+      "text": "Offsets move with the replacement audio, so the annotation still loses its stable segment link."
+    },
+    {
+      "questionId": "ood-n07-b06-i004",
+      "targetId": "n07_b06_i004_wrong_1",
+      "text": "This choice Using email as identity can merge or misaddress grants; dropping approval linkage prevents the stated audit. The stated the email is not unique identity, and auditability requires the approval id."
+    },
+    {
+      "questionId": "ood-n07-b06-i004",
+      "targetId": "n07_b06_i004_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Pass the entire provider response to the role entity and let it decide how to find the principal. The case requires the email is not unique identity, and auditability requires the approval id."
+    },
+    {
+      "questionId": "ood-n07-b06-i004",
+      "targetId": "n07_b06_i004_wrong_3",
+      "text": "This removes or duplicates a domain fact: Drop the approval ID after the lookup and retain only the role name and expiry. The mapper should preserve the email is not unique identity, and auditability requires the approval id."
+    },
+    {
+      "questionId": "ood-n07-b06-i004",
+      "targetId": "n07_b06_i004_wrong_4",
+      "text": "The address is not unique and would conflate the person lookup with the approval record."
+    },
+    {
+      "questionId": "ood-n07-b06-i005",
+      "targetId": "n07_b06_i005_wrong_1",
+      "text": "This choice Choosing “latest” can seal different bytes from those the signer reviewed; retaining a lookup token alone loses the domain link. The stated the signer selected an exact immutable revision; vendor lookup tokens are not that domain identity."
+    },
+    {
+      "questionId": "ood-n07-b06-i005",
+      "targetId": "n07_b06_i005_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Store the raw vendor token as the seal’s domain revision ID. The case requires the signer selected an exact immutable revision; vendor lookup tokens are not that domain identity."
+    },
+    {
+      "questionId": "ood-n07-b06-i005",
+      "targetId": "n07_b06_i005_wrong_3",
+      "text": "This removes or duplicates a domain fact: Let the signing handler parse the vendor JSON and attach whichever revision field is nonempty. The mapper should preserve the signer selected an exact immutable revision; vendor lookup tokens are not that domain identity."
+    },
+    {
+      "questionId": "ood-n07-b06-i005",
+      "targetId": "n07_b06_i005_wrong_4",
+      "text": "The seal would no longer identify the immutable revision selected by the signer."
+    },
+    {
+      "questionId": "ood-n07-b06-i006",
+      "targetId": "n07_b06_i006_wrong_1",
+      "text": "This choice Floating point and inferred currency can change the payable amount; dropping currency makes equal numeric amounts ambiguous. The stated currency participates in value meaning, and the domain validates supported currencies."
+    },
+    {
+      "questionId": "ood-n07-b06-i006",
+      "targetId": "n07_b06_i006_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Store the finance API amount object unchanged so calculations can use its vendor rounding rules. The case requires currency participates in value meaning, and the domain validates supported currencies."
+    },
+    {
+      "questionId": "ood-n07-b06-i006",
+      "targetId": "n07_b06_i006_wrong_3",
+      "text": "This removes or duplicates a domain fact: Map all amounts to a decimal without currency and attach the currency only in the display layer. The mapper should preserve currency participates in value meaning, and the domain validates supported currencies."
+    },
+    {
+      "questionId": "ood-n07-b06-i006",
+      "targetId": "n07_b06_i006_wrong_4",
+      "text": "Validation needs the currency together with the amount, before payout rules run."
+    },
+    {
+      "questionId": "ood-n07-b06-i007",
+      "targetId": "n07_b06_i007_wrong_1",
+      "text": "This choice Assuming UTC changes event order; lexical sorting does not compare effective instants. The stated the same local clock value means different instants across route timezones, and original text is display data."
+    },
+    {
+      "questionId": "ood-n07-b06-i007",
+      "targetId": "n07_b06_i007_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Store only the provider timestamp string and sort it lexically in the domain. The case requires the same local clock value means different instants across route timezones, and original text is display data."
+    },
+    {
+      "questionId": "ood-n07-b06-i007",
+      "targetId": "n07_b06_i007_wrong_3",
+      "text": "This removes or duplicates a domain fact: Convert to UTC but discard the original text even though operators must display it. The mapper should preserve the same local clock value means different instants across route timezones, and original text is display data."
+    },
+    {
+      "questionId": "ood-n07-b06-i007",
+      "targetId": "n07_b06_i007_wrong_4",
+      "text": "That can place the notice at the wrong instant for the route."
+    },
+    {
+      "questionId": "ood-n07-b06-i008",
+      "targetId": "n07_b06_i008_wrong_1",
+      "text": "This choice Comparing unlike units can admit an over-limit reading; late conversion spreads vendor semantics into the domain. The stated the limit and input use different units, and the vendor serial is not the registered identity."
+    },
+    {
+      "questionId": "ood-n07-b06-i008",
+      "targetId": "n07_b06_i008_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Let the reservation entity retain the vendor response and convert it whenever it checks capacity. The case requires the limit and input use different units, and the vendor serial is not the registered identity."
+    },
+    {
+      "questionId": "ood-n07-b06-i008",
+      "targetId": "n07_b06_i008_wrong_3",
+      "text": "This removes or duplicates a domain fact: Use the vendor’s serial string as the meter ID without checking the registry mapping. The mapper should preserve the limit and input use different units, and the vendor serial is not the registered identity."
+    },
+    {
+      "questionId": "ood-n07-b06-i008",
+      "targetId": "n07_b06_i008_wrong_4",
+      "text": "The serial has not been resolved to the registered meter identity."
+    },
+    {
+      "questionId": "ood-n07-b06-i009",
+      "targetId": "n07_b06_i009_wrong_1",
+      "text": "This choice Provider strings make callers depend on vendor wording; defaulting unknown language alters caption meaning. The stated callers require stable categories, while unknown languages must not silently become a different language."
+    },
+    {
+      "questionId": "ood-n07-b06-i009",
+      "targetId": "n07_b06_i009_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Convert every unknown language to English so the stream can continue. The case requires callers require stable categories, while unknown languages must not silently become a different language."
+    },
+    {
+      "questionId": "ood-n07-b06-i009",
+      "targetId": "n07_b06_i009_wrong_3",
+      "text": "This removes or duplicates a domain fact: Create a domain error subtype for each provider’s full response payload. The mapper should preserve callers require stable categories, while unknown languages must not silently become a different language."
+    },
+    {
+      "questionId": "ood-n07-b06-i009",
+      "targetId": "n07_b06_i009_wrong_4",
+      "text": "The caller contract requires stable error categories and unknown language must not be silently hidden."
+    },
+    {
+      "questionId": "ood-n07-b06-i010",
+      "targetId": "n07_b06_i010_wrong_1",
+      "text": "This choice Controller compensation adds an unrequested partial-state path; DTO-aware entities couple domain logic to transport shape. The stated the rule spans both assignments; partial sequential updates can leave only one side moved."
+    },
+    {
+      "questionId": "ood-n07-b06-i010",
+      "targetId": "n07_b06_i010_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Pass API request DTOs into the volunteer entities so each can interpret the other’s availability. The case requires the rule spans both assignments; partial sequential updates can leave only one side moved."
+    },
+    {
+      "questionId": "ood-n07-b06-i010",
+      "targetId": "n07_b06_i010_wrong_3",
+      "text": "This removes or duplicates a domain fact: Create a database-shaped swap record and let the UI decide whether the two assignments are legal. The mapper should preserve the rule spans both assignments; partial sequential updates can leave only one side moved."
+    },
+    {
+      "questionId": "ood-n07-b06-i010",
+      "targetId": "n07_b06_i010_wrong_4",
+      "text": "That can leave a half-swap even though legality is a joint condition."
+    },
+    {
+      "questionId": "ood-n07-b06-i011",
+      "targetId": "n07_b06_i011_wrong_1",
+      "text": "This choice Overwriting silently violates the conflict contract; raw JSON parsing leaks transport shape into map behavior. The stated the token is a precondition, and mismatch must become an explicit conflict."
+    },
+    {
+      "questionId": "ood-n07-b06-i011",
+      "targetId": "n07_b06_i011_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Pass the raw JSON patch into the map entity and let it parse transport field names. The case requires the token is a precondition, and mismatch must become an explicit conflict."
+    },
+    {
+      "questionId": "ood-n07-b06-i011",
+      "targetId": "n07_b06_i011_wrong_3",
+      "text": "This removes or duplicates a domain fact: Drop the revision token and merge every coordinate that differs. The mapper should preserve the token is a precondition, and mismatch must become an explicit conflict."
+    },
+    {
+      "questionId": "ood-n07-b06-i011",
+      "targetId": "n07_b06_i011_wrong_4",
+      "text": "The expected revision is a precondition for acceptance, not just audit metadata."
+    },
+    {
+      "questionId": "ood-n07-b06-i012",
+      "targetId": "n07_b06_i012_wrong_1",
+      "text": "This choice A fallback grants a different item without authorization; duplicating state rules creates a second policy owner. The stated unknown codes cannot be granted, and reward legality depends on current domain state."
+    },
+    {
+      "questionId": "ood-n07-b06-i012",
+      "targetId": "n07_b06_i012_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Expose the provider item code directly as the campaign’s reward type. The case requires unknown codes cannot be granted, and reward legality depends on current domain state."
+    },
+    {
+      "questionId": "ood-n07-b06-i012",
+      "targetId": "n07_b06_i012_wrong_3",
+      "text": "This removes or duplicates a domain fact: Resolve legality in the API mapper by duplicating the campaign state rules there. The mapper should preserve unknown codes cannot be granted, and reward legality depends on current domain state."
+    },
+    {
+      "questionId": "ood-n07-b06-i012",
+      "targetId": "n07_b06_i012_wrong_4",
+      "text": "The adapter cannot choose a reward the campaign contract does not recognize."
+    },
+    {
+      "questionId": "ood-n07-b06-i013",
+      "targetId": "n07_b06_i013_wrong_1",
+      "text": "This choice Keeping vendor units on the entity spreads conversion; dropping the limit loses a dispatch constraint. The stated the domain rule compares temperatures to celsius limits and the handoff contract carries custody."
+    },
+    {
+      "questionId": "ood-n07-b06-i013",
+      "targetId": "n07_b06_i013_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Resolve the shipment ID but drop the temperature threshold because the carrier owns it. The case requires the domain rule compares temperatures to celsius limits and the handoff contract carries custody."
+    },
+    {
+      "questionId": "ood-n07-b06-i013",
+      "targetId": "n07_b06_i013_wrong_3",
+      "text": "This removes or duplicates a domain fact: Let each downstream consumer independently map carrier code and temperature units. The mapper should preserve the domain rule compares temperatures to celsius limits and the handoff contract carries custody."
+    },
+    {
+      "questionId": "ood-n07-b06-i013",
+      "targetId": "n07_b06_i013_wrong_4",
+      "text": "The shipment’s Celsius limit and the incoming Fahrenheit threshold cannot be compared directly."
+    },
+    {
+      "questionId": "ood-n07-b06-i014",
+      "targetId": "n07_b06_i014_wrong_1",
+      "text": "This choice Absolute value turns a reversal into a repayment; losing the reference removes the stated duplicate check. The stated a negative feed event is not the same command as a positive repayment; the reference identifies the external event."
+    },
+    {
+      "questionId": "ood-n07-b06-i014",
+      "targetId": "n07_b06_i014_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Pass the bank feed record directly to the account and let it infer whether a negative amount means reversal. The case requires a negative feed event is not the same command as a positive repayment; the reference identifies the external event."
+    },
+    {
+      "questionId": "ood-n07-b06-i014",
+      "targetId": "n07_b06_i014_wrong_3",
+      "text": "This removes or duplicates a domain fact: Discard the bank reference after parsing because account balance alone determines duplicate status. The mapper should preserve a negative feed event is not the same command as a positive repayment; the reference identifies the external event."
+    },
+    {
+      "questionId": "ood-n07-b06-i014",
+      "targetId": "n07_b06_i014_wrong_4",
+      "text": "A negative feed value represents a distinct reversal command in this contract."
+    },
+    {
+      "questionId": "ood-n07-b06-i015",
+      "targetId": "n07_b06_i015_wrong_1",
+      "text": "This choice Mapping timeout straight to forfeit ignores the live-state precondition; advancing first can publish an invalid bracket. The stated the timeout transition is state-dependent, and bracket advancement must follow a valid result once."
+    },
+    {
+      "questionId": "ood-n07-b06-i015",
+      "targetId": "n07_b06_i015_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Let the platform DTO update the next bracket slot before the domain validates the match state. The case requires the timeout transition is state-dependent, and bracket advancement must follow a valid result once."
+    },
+    {
+      "questionId": "ood-n07-b06-i015",
+      "targetId": "n07_b06_i015_wrong_3",
+      "text": "This removes or duplicates a domain fact: Add every platform status label to the bracket domain and let each caller decide which advance. The mapper should preserve the timeout transition is state-dependent, and bracket advancement must follow a valid result once."
+    },
+    {
+      "questionId": "ood-n07-b06-i015",
+      "targetId": "n07_b06_i015_wrong_4",
+      "text": "The match must be live before timeout can create a legal result."
+    },
+    {
+      "questionId": "ood-n07-b06-i016",
+      "targetId": "n07_b06_i016_wrong_1",
+      "text": "This choice Confidence is not stated as approval, and combining classification with payment collapses distinct meanings. The stated classification is evidence; refund eligibility is a distinct policy decision."
+    },
+    {
+      "questionId": "ood-n07-b06-i016",
+      "targetId": "n07_b06_i016_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Use the scanner label directly as a refund enum so one value drives both classification and payment. The case requires classification is evidence; refund eligibility is a distinct policy decision."
+    },
+    {
+      "questionId": "ood-n07-b06-i016",
+      "targetId": "n07_b06_i016_wrong_3",
+      "text": "This removes or duplicates a domain fact: Discard the observed condition after calculating eligibility because only the refund amount is stored. The mapper should preserve classification is evidence; refund eligibility is a distinct policy decision."
+    },
+    {
+      "questionId": "ood-n07-b06-i016",
+      "targetId": "n07_b06_i016_wrong_4",
+      "text": "The score is evidence and the domain has a separate eligibility decision."
+    },
+    {
+      "questionId": "ood-n07-b06-i017",
+      "targetId": "n07_b06_i017_wrong_1",
+      "text": "This choice A mutable tag does not identify a reproducible input; a display title cannot recover missing lineage. The stated the result must identify exact inputs, while the latest tag can point elsewhere later."
+    },
+    {
+      "questionId": "ood-n07-b06-i017",
+      "targetId": "n07_b06_i017_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Copy the runner response wholesale into the domain result and make its URI fields the result identity. The case requires the result must identify exact inputs, while the latest tag can point elsewhere later."
+    },
+    {
+      "questionId": "ood-n07-b06-i017",
+      "targetId": "n07_b06_i017_wrong_3",
+      "text": "This removes or duplicates a domain fact: Store the result’s displayed title and omit dataset/code provenance because the runner can be queried later. The mapper should preserve the result must identify exact inputs, while the latest tag can point elsewhere later."
+    },
+    {
+      "questionId": "ood-n07-b06-i017",
+      "targetId": "n07_b06_i017_wrong_4",
+      "text": "A mutable tag does not retain which dataset revision the result used."
+    },
+    {
+      "questionId": "ood-n07-b06-i018",
+      "targetId": "n07_b06_i018_wrong_1",
+      "text": "This choice Rendering raw transport markup leaks presentation policy; substituting current revision changes what the author reviewed. The stated the accepted comment must retain author and exact revision, and notification is a separate effect."
+    },
+    {
+      "questionId": "ood-n07-b06-i018",
+      "targetId": "n07_b06_i018_wrong_2",
+      "text": "This moves representation or policy into the wrong owner: Accept comments against the current document revision even when the client submitted a different revision token. The case requires the accepted comment must retain author and exact revision, and notification is a separate effect."
+    },
+    {
+      "questionId": "ood-n07-b06-i018",
+      "targetId": "n07_b06_i018_wrong_3",
+      "text": "This removes or duplicates a domain fact: Put notification delivery status into the comment value so the domain can retry the API call. The mapper should preserve the accepted comment must retain author and exact revision, and notification is a separate effect."
+    },
+    {
+      "questionId": "ood-n07-b06-i018",
+      "targetId": "n07_b06_i018_wrong_4",
+      "text": "That records a mismatch instead of enforcing the submitted revision precondition."
+    }
+  ],
+  "specificUnresolvedBlocker": "B06-i001 wrong_3 still says removes or duplicates a domain fact, while target creates domain type per partner API version and version branching; exact v3 independent mismatch persists.",
+  "additionalObservation": "i007 boundary text still frames supplied unambiguous offset as an if-condition despite current fact that every timestamp has it; explanation needs actual current-boundary wording.",
+  "sourceActivated": false
+}

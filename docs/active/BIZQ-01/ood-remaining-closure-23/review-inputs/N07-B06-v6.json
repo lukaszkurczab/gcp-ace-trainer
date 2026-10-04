@@ -1,0 +1,1442 @@
+[
+  {
+    "answer": {
+      "optionId": "n07_b06_i001_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The partner code is not stable identity; the policy revision is part of the completion facts.",
+      "The completion record retains the policy revision used for scoring."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Partner labels can evolve independently of the exercise identity used by scoring.",
+        "scenarioApplication": "A renamed code still resolves to the same exercise, with the policy revision retained on its completion.",
+        "errorCorrection": "Keeping the transport type would couple scoring to partner field names; database names are also implementation details. If a partner code were itself the agreed durable domain identity, mapping that code would be reasonable.",
+        "boundaryOrTradeoff": "If a partner code were itself the agreed durable domain identity, mapping that code would be reasonable.",
+        "transfer": "If the partner payload is later reused by unrelated clients, keep its wire contract separate from completion semantics."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i001_wrong_1",
+          "text": "This keeps the partner DTO coupled to later scoring, so a field rename changes the domain read path."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i001_wrong_2",
+          "text": "The database column is a storage label, not a stable exercise identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i001_wrong_3",
+          "text": "Version-specific domain branches multiply transport variants instead of translating them at the seam."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i001_wrong_4",
+          "text": "A display-only code leaves no stable exercise identity for the completion."
+        }
+      ],
+      "reason": "A code that changes between API versions cannot identify the same exercise reliably. The completion still points to the same exercise when partner codes change and retains the score-policy revision used.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i001_wrong_1",
+          "text": "Let the completion entity retain the partner DTO so later scoring can read its original fields."
+        },
+        {
+          "optionId": "n07_b06_i001_wrong_2",
+          "text": "Map the partner code directly to a database column name and use that string as the domain identity."
+        },
+        {
+          "optionId": "n07_b06_i001_wrong_3",
+          "text": "Create a second domain type for every partner API version and make the use case branch on version."
+        },
+        {
+          "optionId": "n07_b06_i001_wrong_4",
+          "text": "Treat the partner exercise code as a display label and store no exercise identity."
+        },
+        {
+          "optionId": "n07_b06_i001_domain_mapping",
+          "text": "Translate the partner code to the stable exercise ID; carry score and policy revision into completion."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In music practice tracker, A lesson completion arrives from a partner API with a decimal score and partner exercise code. The domain stores a stable exercise identity and a score policy revision; partner codes can change between API versions. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i001",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i002_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The domain must not silently grant an unknown status, and reviewers need the raw supplier value.",
+      "The approval domain has no accepted outcome for an unrecognized status."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Unknown external values are evidence, not a new accepted business outcome.",
+        "scenarioApplication": "The quarantine record lets review inspect the supplier value without granting or silently rejecting it.",
+        "errorCorrection": "Treating an unknown value as accepted bypasses the stated control; discarding it loses the evidence needed for quarantine review. If the domain explicitly defined an “unrecognized” terminal outcome, that could be mapped as such rather than quarantined.",
+        "boundaryOrTradeoff": "If the domain explicitly defined an “unrecognized” terminal outcome, that could be mapped as such rather than quarantined.",
+        "transfer": "When an external vocabulary evolves independently, translate it before it reaches invariant-enforcing domain operations."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i002_wrong_1",
+          "text": "An unknown value would be granted despite the explicit quarantine requirement."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i002_wrong_2",
+          "text": "Adding supplier strings to the domain vocabulary makes external labels part of every caller contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i002_wrong_3",
+          "text": "Mapping the value to rejected would lose the distinction between a known denial and an unknown status."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i002_wrong_4",
+          "text": "Treating “unmapped” as accepted still lets the request proceed instead of quarantine."
+        }
+      ],
+      "reason": "The reviewer needs the literal supplier status to inspect a quarantined request. The boundary preserves unknown input without treating it as a business outcome.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i002_domain_mapping",
+          "text": "Map recognized statuses; retain an unknown supplier value with a quarantined review record."
+        },
+        {
+          "optionId": "n07_b06_i002_wrong_1",
+          "text": "Deserialize unknown values as accepted because the supplier is expected to send valid statuses."
+        },
+        {
+          "optionId": "n07_b06_i002_wrong_2",
+          "text": "Add every supplier status string directly to the domain enum and expose it to all callers."
+        },
+        {
+          "optionId": "n07_b06_i002_wrong_3",
+          "text": "Map unknown status to rejected and discard the original value, even when review needs to identify the supplier response."
+        },
+        {
+          "optionId": "n07_b06_i002_wrong_4",
+          "text": "Keep an `unmapped` status as an accepted domain outcome and let every approval rule interpret it."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In procurement approval queue, A supplier sends approval requests with `approved`, `denied`, or an unknown future status. The domain recognizes pending, accepted, and rejected; unknown values must be quarantined rather than treated as accepted. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i002",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i003_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Offsets move on replacement; annotations follow stable segment IDs.",
+      "Annotation references are retained across replacement recordings."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Media offsets locate content in one recording; stable segment IDs identify editorial annotations.",
+        "scenarioApplication": "After replacement shifts the coordinates, annotation reads still find the same editorial segments.",
+        "errorCorrection": "Persisting offsets as identity breaks annotations when a recording changes; the vendor response does not own editorial meaning. If annotations were defined against absolute media time and not stable segments, preserving offsets could be the domain contract.",
+        "boundaryOrTradeoff": "If annotations were defined against absolute media time and not stable segments, preserving offsets could be the domain contract.",
+        "transfer": "When an external coordinate system differs from the domain’s identity, translate it at the integration boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i003_wrong_1",
+          "text": "Recalculating vendor offsets inside every annotation method spreads coordinate conversion across domain behavior; replacement changes the coordinates those methods use."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i003_wrong_2",
+          "text": "A vendor response object would own editorial comments as well as transport coordinates."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i003_wrong_3",
+          "text": "Byte offsets would point to different content after the replacement."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i003_wrong_4",
+          "text": "Import logs do not keep the stable segment relationship available to annotation reads."
+        }
+      ],
+      "reason": "The new recording may move offsets while preserving the annotated segment identities. The annotation remains attached to the same editorial segment after media coordinates change.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i003_wrong_1",
+          "text": "Store vendor offsets on annotations and recalculate them inside each annotation method."
+        },
+        {
+          "optionId": "n07_b06_i003_wrong_2",
+          "text": "Make the vendor response object the annotation aggregate so it can carry both offsets and comments."
+        },
+        {
+          "optionId": "n07_b06_i003_wrong_3",
+          "text": "Discard segment identity and attach annotations to the new file’s byte offsets."
+        },
+        {
+          "optionId": "n07_b06_i003_domain_mapping",
+          "text": "Resolve vendor offsets to stable segment IDs before replacing the recording."
+        },
+        {
+          "optionId": "n07_b06_i003_wrong_4",
+          "text": "Attach comments to the vendor’s segment offset and keep the stable ID only in import logs."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In podcast production desk, The audio vendor returns segment offsets in milliseconds, while editorial annotations use stable segment IDs. A replacement recording may shift offsets without changing segment identity. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i003",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i004_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The email is not unique identity, and auditability requires the approval ID.",
+      "The role grant is audited by approval ID and verified principal ID."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Identity verification, approval provenance, and expiry answer different questions in a role grant.",
+        "scenarioApplication": "The grant identifies the verified person, the approval record, and the expiry independently of email uniqueness.",
+        "errorCorrection": "Using email as identity can merge or misaddress grants; dropping approval linkage prevents the stated audit. If the provider guaranteed a stable identifier that the domain had adopted, that identifier could be mapped directly.",
+        "boundaryOrTradeoff": "If the provider guaranteed a stable identifier that the domain had adopted, that identifier could be mapped directly.",
+        "transfer": "Translate identity and time formats before invoking a domain operation that records an attributable grant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i004_wrong_1",
+          "text": "A nonunique email could attach the role to the wrong principal."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i004_wrong_2",
+          "text": "The role entity would depend on provider-specific response parsing and lookup behavior."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i004_wrong_3",
+          "text": "Without approval ID, the grant cannot be traced to its authorization record."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i004_wrong_4",
+          "text": "One provider email cannot safely stand for both person identity and approval identity."
+        }
+      ],
+      "reason": "An email can refer to more than one principal in this provider. The grant retains who was verified, which approval authorized it, and when it expires.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i004_wrong_1",
+          "text": "Use the email string as the role owner ID because it is present on every provider response."
+        },
+        {
+          "optionId": "n07_b06_i004_domain_mapping",
+          "text": "Resolve the provider email to a verified principal; retain approval ID and UTC expiry in the grant command."
+        },
+        {
+          "optionId": "n07_b06_i004_wrong_2",
+          "text": "Pass the entire provider response to the role entity and let it decide how to find the principal."
+        },
+        {
+          "optionId": "n07_b06_i004_wrong_3",
+          "text": "Drop the approval ID after the lookup and retain only the role name and expiry."
+        },
+        {
+          "optionId": "n07_b06_i004_wrong_4",
+          "text": "Use the approval provider email as both principal and approval identity."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In permissions review service, An approval provider sends an approver email and expiry timestamp. The role record needs a verified principal ID, approval ID, and UTC expiry; the provider’s email is not guaranteed unique. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i004",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i005_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The signer selected an exact immutable revision; vendor lookup tokens are not that domain identity.",
+      "The signer selected a specific immutable revision before the vendor request."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A lookup token locates a vendor response; a content digest can check which bytes were returned.",
+        "scenarioApplication": "The seal refers to the revision selected by the signer only when the digest matches D17.",
+        "errorCorrection": "Choosing “latest” can seal different bytes from those the signer reviewed; retaining a lookup token alone loses the domain link. If the vendor token were the agreed immutable revision identifier, it could serve as the domain reference.",
+        "boundaryOrTradeoff": "If the vendor token were the agreed immutable revision identifier, it could serve as the domain reference.",
+        "transfer": "At external-service seams, distinguish lookup handles from the identity the business operation promises to preserve."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i005_wrong_1",
+          "text": "“Latest” may resolve to different bytes than the selected revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i005_wrong_2",
+          "text": "The lookup token is not the revision identity required by the seal."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i005_wrong_3",
+          "text": "Parsing a nonempty field does not establish that the returned digest matches the signed content."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i005_wrong_4",
+          "text": "Using “latest” discards the signer’s exact revision choice."
+        }
+      ],
+      "reason": "The vendor token locates a response; the response digest is compared with the selected bytes. The seal remains tied to the content the signer chose, while the token remains a lookup handle.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i005_wrong_1",
+          "text": "Replace the selected revision with the vendor’s latest token before saving the seal."
+        },
+        {
+          "optionId": "n07_b06_i005_wrong_2",
+          "text": "Store the raw vendor token as the seal’s domain revision ID."
+        },
+        {
+          "optionId": "n07_b06_i005_domain_mapping",
+          "text": "Verify the returned digest against the signer-selected revision; record that revision on the seal."
+        },
+        {
+          "optionId": "n07_b06_i005_wrong_3",
+          "text": "Let the signing handler parse the vendor JSON and attach whichever revision field is nonempty."
+        },
+        {
+          "optionId": "n07_b06_i005_wrong_4",
+          "text": "Seal whichever revision the vendor currently labels latest and retain the signer selection as display text."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In document notarization service, The notary vendor returns a document digest and a vendor revision token. The signer selected immutable revision R17, whose stored digest is D17. The vendor token is only for API lookup, and the response digest can be compared with D17. The seal must refer to R17. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i005",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i006_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Currency participates in value meaning, and the domain validates supported currencies.",
+      "The Money value validates the currency together with the amount."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "An amount without its currency cannot be validated as the same monetary value.",
+        "scenarioApplication": "Money rejects unsupported currencies before the settled order’s payout rule is evaluated.",
+        "errorCorrection": "Floating point and inferred currency can change the payable amount; dropping currency makes equal numeric amounts ambiguous. If every payout were contractually in one fixed currency, a currency-free amount could be justified by that explicit invariant.",
+        "boundaryOrTradeoff": "If every payout were contractually in one fixed currency, a currency-free amount could be justified by that explicit invariant.",
+        "transfer": "When transport units differ from domain value semantics, map both amount and its unit before the operation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i006_wrong_1",
+          "text": "Floating-point conversion and inferred currency can alter the payable value."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i006_wrong_2",
+          "text": "Vendor rounding behavior would become part of domain calculation semantics."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i006_wrong_3",
+          "text": "A bare decimal loses which currency gives the amount its meaning."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i006_wrong_4",
+          "text": "Attaching currency only for display leaves domain validation without it."
+        }
+      ],
+      "reason": "The settled order, not the seller profile, identifies the payout. Currency and amount are validated as one value before payout eligibility is evaluated.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i006_wrong_1",
+          "text": "Convert cents to a floating-point number in the payout entity and infer currency from the seller profile."
+        },
+        {
+          "optionId": "n07_b06_i006_wrong_2",
+          "text": "Store the finance API amount object unchanged so calculations can use its vendor rounding rules."
+        },
+        {
+          "optionId": "n07_b06_i006_wrong_3",
+          "text": "Map all amounts to a decimal without currency and attach the currency only in the display layer."
+        },
+        {
+          "optionId": "n07_b06_i006_wrong_4",
+          "text": "Round cents into a decimal amount first and attach the currency only when the payout is displayed."
+        },
+        {
+          "optionId": "n07_b06_i006_domain_mapping",
+          "text": "Construct Money from cents and currency; pass it with the settled order identity to payout."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In marketplace payout service, A finance API sends amounts as integer cents plus a currency code. The domain uses a Money value that rejects unsupported currencies; payouts are keyed by settled order identity. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i006",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i007_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The same local clock value means different instants across route timezones, and original text is display data.",
+      "Each provider timestamp includes a numeric UTC offset, including repeated local clock times."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A numeric offset resolves civil-time ambiguity; preserving source text serves a separate display need.",
+        "scenarioApplication": "Notices can be ordered by effective instant while operators still see the provider’s original timestamp.",
+        "errorCorrection": "Assuming UTC changes event order; lexical sorting does not compare effective instants. If the provider timestamp already included an unambiguous offset, parsing would not need a route timezone.",
+        "boundaryOrTradeoff": "If the provider omitted an offset, the interface would need an explicit rule for resolving repeated local clock times.",
+        "transfer": "Keep external presentation fields separate from normalized values used by domain decisions."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i007_wrong_1",
+          "text": "Assuming UTC ignores the supplied offset and changes the represented instant."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i007_wrong_2",
+          "text": "Lexical ordering of local strings does not order events by effective instant."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i007_wrong_3",
+          "text": "Discarding source text breaks the display requirement."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i007_wrong_4",
+          "text": "The server timezone is unrelated to the route timestamp’s supplied offset."
+        }
+      ],
+      "reason": "The board orders by effective instant while operators see the original provider string. The offset disambiguates repeated local times without replacing the display value.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i007_domain_mapping",
+          "text": "Parse the supplied offset into an instant; retain the original timestamp text for display."
+        },
+        {
+          "optionId": "n07_b06_i007_wrong_1",
+          "text": "Treat every local timestamp as UTC so all route notices share one parser."
+        },
+        {
+          "optionId": "n07_b06_i007_wrong_2",
+          "text": "Store only the provider timestamp string and sort it lexically in the domain."
+        },
+        {
+          "optionId": "n07_b06_i007_wrong_3",
+          "text": "Convert to UTC but discard the original text even though operators must display it."
+        },
+        {
+          "optionId": "n07_b06_i007_wrong_4",
+          "text": "Parse the provider timestamp in the server timezone and discard the route timezone."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In public-transit disruption board, A notice provider sends local timestamp text, route timezone, and a numeric UTC offset even during a repeated daylight-saving hour. The board orders notices by effective instant and retains the provider’s original text for display. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i007",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i008_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The limit and input use different units, and the vendor serial is not the registered identity.",
+      "The registry ID is the meter identity used by reservations."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Unit normalization makes measurements comparable; registry resolution identifies the meter being checked.",
+        "scenarioApplication": "The capacity decision uses the registered meter and compares its converted reading with the reservation limit.",
+        "errorCorrection": "Comparing unlike units can admit an over-limit reading; late conversion spreads vendor semantics into the domain. If the domain limit were also expressed in watt-hours and the serial were the agreed meter identity, direct mapping would work.",
+        "boundaryOrTradeoff": "If the domain limit were also expressed in watt-hours and the serial were the agreed meter identity, direct mapping would work.",
+        "transfer": "Normalize measurement units and resolve external identifiers where their meaning enters a domain calculation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i008_wrong_1",
+          "text": "Comparing watt-hours directly with a kilowatt-hour threshold misstates capacity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i008_wrong_2",
+          "text": "Keeping the vendor response inside the reservation entity couples capacity checks to provider fields and repeats unit conversion in domain behavior."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i008_wrong_3",
+          "text": "Converting the watt-hours would fix units, but an unregistered serial still does not identify the reserved meter."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i008_wrong_4",
+          "text": "The capacity rule still needs the registered meter identity."
+        }
+      ],
+      "reason": "The reservation threshold is expressed in kilowatt-hours. The capacity comparison receives a value and identity in the domain’s units.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i008_wrong_1",
+          "text": "Compare vendor watt-hours directly with the kilowatt-hour limit and divide only for display."
+        },
+        {
+          "optionId": "n07_b06_i008_wrong_2",
+          "text": "Let the reservation entity retain the vendor response and convert it whenever it checks capacity."
+        },
+        {
+          "optionId": "n07_b06_i008_wrong_3",
+          "text": "Use the vendor’s serial string as the meter ID without checking the registry mapping."
+        },
+        {
+          "optionId": "n07_b06_i008_domain_mapping",
+          "text": "Convert watt-hours to kilowatt-hours and resolve the registry meter ID before checking capacity."
+        },
+        {
+          "optionId": "n07_b06_i008_wrong_4",
+          "text": "Treat the vendor serial as the meter identity and convert only the reservation limit."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In neighborhood energy-sharing service, A meter vendor reports watt-hours, but the domain reservation uses kilowatt-hours and a meter ID from the registry. One reading can exceed the reservation limit after conversion. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i008",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i009_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Callers require stable categories, while unknown languages must not silently become a different language.",
+      "Callers receive stable error categories rather than provider-specific labels."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Provider labels are unstable integration vocabulary, while the domain language set is controlled.",
+        "scenarioApplication": "Callers receive stable error categories; support retains the raw code when no supported language matches.",
+        "errorCorrection": "Provider strings make callers depend on vendor wording; defaulting unknown language alters caption meaning. If callers explicitly need provider-specific troubleshooting, a separate diagnostic field may expose that code.",
+        "boundaryOrTradeoff": "If callers explicitly need provider-specific troubleshooting, a separate diagnostic field may expose that code.",
+        "transfer": "Anti-corruption mapping protects domain and caller vocabularies when provider terms evolve."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i009_wrong_1",
+          "text": "Exposing raw errors makes callers depend on provider wording."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i009_wrong_2",
+          "text": "Defaulting an unsupported code to English changes the requested language."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i009_wrong_3",
+          "text": "Creating one error subtype per provider payload expands domain errors with transport shapes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i009_wrong_4",
+          "text": "Using raw provider values as domain statuses moves the same coupling to another field."
+        }
+      ],
+      "reason": "Unknown language codes are not interchangeable with another supported language. The adapter contains provider vocabulary while the domain keeps its supported language set.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i009_wrong_1",
+          "text": "Expose provider error strings directly in the stream API because they are the most detailed."
+        },
+        {
+          "optionId": "n07_b06_i009_domain_mapping",
+          "text": "Translate supported language codes and provider errors; retain unknown codes in boundary diagnostics."
+        },
+        {
+          "optionId": "n07_b06_i009_wrong_2",
+          "text": "Convert every unknown language to English so the stream can continue."
+        },
+        {
+          "optionId": "n07_b06_i009_wrong_3",
+          "text": "Create a domain error subtype for each provider’s full response payload."
+        },
+        {
+          "optionId": "n07_b06_i009_wrong_4",
+          "text": "Expose provider error strings as the domain categories but hide unsupported language codes."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In live captioning studio, The caption provider returns language codes such as `en-US` and provider-specific error labels. The domain recognizes a supported language set and exposes stable error categories to callers. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i009",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i010_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The rule spans both assignments; partial sequential updates can leave only one side moved.",
+      "Both assignments must be legal before either assignment is replaced."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Swap legality depends on the combined state of both assignments, not either one in isolation.",
+        "scenarioApplication": "If either volunteer fails the skills or availability rule, neither assignment is replaced.",
+        "errorCorrection": "Controller compensation adds an unrequested partial-state path; DTO-aware entities couple domain logic to transport shape. If the business explicitly allowed partial swaps, independent updates could be appropriate.",
+        "boundaryOrTradeoff": "If the business explicitly allowed partial swaps, independent updates could be appropriate.",
+        "transfer": "Keep transport parsing separate from multi-entity domain decisions; do not push invariant checks into the adapter."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i010_wrong_1",
+          "text": "Sequential writes expose a half-swapped state before compensation can run."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i010_wrong_2",
+          "text": "The volunteer entities now depend on API DTO structure to interpret skills and availability."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i010_wrong_3",
+          "text": "The UI is not the owner of the pair’s legality rule; it could submit an invalid combination."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i010_wrong_4",
+          "text": "Keeping the first move when the second fails leaves the forbidden partial swap."
+        }
+      ],
+      "reason": "A partial move is invalid even when one volunteer is available. The operation evaluates the two assignments as one domain decision.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i010_wrong_1",
+          "text": "Have the API controller update each assignment sequentially and compensate if the second update fails."
+        },
+        {
+          "optionId": "n07_b06_i010_wrong_2",
+          "text": "Pass API request DTOs into the volunteer entities so each can interpret the other’s availability."
+        },
+        {
+          "optionId": "n07_b06_i010_domain_mapping",
+          "text": "Map both volunteer IDs, then invoke the domain’s joint swap operation."
+        },
+        {
+          "optionId": "n07_b06_i010_wrong_3",
+          "text": "Create a database-shaped swap record and let the UI decide whether the two assignments are legal."
+        },
+        {
+          "optionId": "n07_b06_i010_wrong_4",
+          "text": "Move the two assignments sequentially and keep the first if the second validation fails."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In volunteer coordination hub, A scheduling API accepts a pair of volunteer IDs and returns a new assignment token. The domain swap must validate both volunteers’ skills and availability before replacing either assignment. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i010",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i011_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The token is a precondition, and mismatch must become an explicit conflict.",
+      "Only a matching locally accepted revision permits the edit."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The revision token is a precondition for applying an edit, not evidence that one side is newer.",
+        "scenarioApplication": "A stale patch becomes a visible conflict and leaves the accepted geometry unchanged.",
+        "errorCorrection": "Overwriting silently violates the conflict contract; raw JSON parsing leaks transport shape into map behavior. If the domain specified a coordinate-level merge rule for mismatched revisions, that rule could be applied after mapping.",
+        "boundaryOrTradeoff": "If the domain specified a coordinate-level merge rule for mismatched revisions, that rule could be applied after mapping.",
+        "transfer": "Translate wire changes into domain commands while preserving preconditions the domain needs to protect state."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i011_wrong_1",
+          "text": "Treating every server token as newer can overwrite a local accepted edit."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i011_wrong_2",
+          "text": "Keeping the provider token opaque prevents the expected-revision comparison."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i011_wrong_3",
+          "text": "The controller would bypass the explicit mismatch outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i011_wrong_4",
+          "text": "A new revision value must be checked against the locally accepted one."
+        }
+      ],
+      "reason": "A mismatched token is recorded as a visible conflict. The revision token is a precondition, not proof that the server copy is newer.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i011_wrong_1",
+          "text": "Treat any server token as newer and overwrite the local geometry."
+        },
+        {
+          "optionId": "n07_b06_i011_wrong_2",
+          "text": "Pass the raw JSON patch into the map entity and let it parse transport field names."
+        },
+        {
+          "optionId": "n07_b06_i011_wrong_3",
+          "text": "Drop the revision token and merge every coordinate that differs."
+        },
+        {
+          "optionId": "n07_b06_i011_wrong_4",
+          "text": "Apply a patch whenever its geometry parses, then attach the revision token to the audit record."
+        },
+        {
+          "optionId": "n07_b06_i011_domain_mapping",
+          "text": "Map the patch and expected revision; let the domain apply its conflict rule."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In local-first map editor, A sync server sends a geometry patch and a revision token. The domain accepts edits only when the token matches the locally accepted revision; otherwise it records a visible conflict. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i011",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i012_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Unknown codes cannot be granted, and reward legality depends on current domain state.",
+      "Reward legality depends on the current campaign state."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The campaign code catalogue and current campaign state govern separate parts of reward acceptance.",
+        "scenarioApplication": "An unknown item is rejected with its source code available to support; no default reward is granted.",
+        "errorCorrection": "A fallback grants a different item without authorization; duplicating state rules creates a second policy owner. If the provider and campaign shared a governed code set, a direct enum mapping could be safe.",
+        "boundaryOrTradeoff": "If the provider and campaign shared a governed code set, a direct enum mapping could be safe.",
+        "transfer": "Separate external code translation from the domain operation that enforces state-dependent rules."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i012_wrong_1",
+          "text": "A default reward would grant an item that the campaign did not authorize."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i012_wrong_2",
+          "text": "The raw external code is not itself a recognized domain reward."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i012_wrong_3",
+          "text": "Duplicating campaign-state rules in the mapper creates a second policy implementation that can drift."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i012_wrong_4",
+          "text": "Choosing a default in the adapter grants a reward the domain did not recognize."
+        }
+      ],
+      "reason": "Support needs the original code when no domain reward matches it. Vocabulary translation and campaign-state legality remain separate decisions.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i012_domain_mapping",
+          "text": "Translate known reward codes; preserve an unknown code for support and reject it."
+        },
+        {
+          "optionId": "n07_b06_i012_wrong_1",
+          "text": "Map an unknown item code to the campaign’s default reward and apply it."
+        },
+        {
+          "optionId": "n07_b06_i012_wrong_2",
+          "text": "Expose the provider item code directly as the campaign’s reward type."
+        },
+        {
+          "optionId": "n07_b06_i012_wrong_3",
+          "text": "Resolve legality in the API mapper by duplicating the campaign state rules there."
+        },
+        {
+          "optionId": "n07_b06_i012_wrong_4",
+          "text": "Map an unknown reward code to a default legal reward chosen by the adapter."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In board-game campaign manager, A reward provider returns an item code and campaign identifier. The campaign domain checks whether the reward is legal in the current campaign state; unknown item codes must be rejected with their source value retained for support. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i012",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i013_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The domain rule compares temperatures to Celsius limits and the handoff contract carries custody.",
+      "The handoff retains current custodian and both temperature limits."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Registered shipment identity, normalized temperatures, and custody are independent handoff facts.",
+        "scenarioApplication": "The handoff carries both Celsius limits and the current custodian for the registry shipment.",
+        "errorCorrection": "Keeping vendor units on the entity spreads conversion; dropping the limit loses a dispatch constraint. If the domain itself used Fahrenheit and accepted carrier codes as identity, those conversions would be unnecessary.",
+        "boundaryOrTradeoff": "If the domain itself used Fahrenheit and accepted carrier codes as identity, those conversions would be unnecessary.",
+        "transfer": "Map external identifiers and units at the boundary that knows both vocabularies."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i013_wrong_1",
+          "text": "Display-only conversion leaves the comparison in incompatible units."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i013_wrong_2",
+          "text": "Dropping the threshold removes a required handoff fact, even if shipment identity was resolved."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i013_wrong_3",
+          "text": "Independent downstream mappings can disagree about shipment identity or temperature units."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i013_wrong_4",
+          "text": "A Fahrenheit threshold cannot be compared directly with the Celsius measurement."
+        }
+      ],
+      "reason": "The domain compares measurements in Celsius using registered shipment identity. The handoff carries normalized measurements with custody facts for one shipment.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i013_wrong_1",
+          "text": "Store the carrier code and Fahrenheit values on the shipment, converting only when the monitor displays them."
+        },
+        {
+          "optionId": "n07_b06_i013_wrong_2",
+          "text": "Resolve the shipment ID but drop the temperature threshold because the carrier owns it."
+        },
+        {
+          "optionId": "n07_b06_i013_wrong_3",
+          "text": "Let each downstream consumer independently map carrier code and temperature units."
+        },
+        {
+          "optionId": "n07_b06_i013_domain_mapping",
+          "text": "Resolve shipment identity and convert both temperatures before the handoff operation."
+        },
+        {
+          "optionId": "n07_b06_i013_wrong_4",
+          "text": "Resolve the carrier code but keep Fahrenheit values in the domain shipment."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In cold-chain logistics console, The carrier API uses a short shipment code and Fahrenheit thresholds. The domain shipment uses a registered shipment ID and Celsius limits; a dispatch handoff must retain both temperature limits and current custodian. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i013",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i014_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "A negative feed event is not the same command as a positive repayment; the reference identifies the external event.",
+      "A reversal is delivered as a separate negative event."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Amount direction classifies the event; the bank reference identifies which external event was received.",
+        "scenarioApplication": "A negative event follows the reversal path and can be recognized by its bank reference.",
+        "errorCorrection": "Absolute value turns a reversal into a repayment; losing the reference removes the stated duplicate check. If the bank contract represented reversals with a separate explicit event type, use that marker instead of amount sign.",
+        "boundaryOrTradeoff": "If the bank contract represented reversals with a separate explicit event type, use that marker instead of amount sign.",
+        "transfer": "Do not let transport shortcuts erase distinctions between domain operations."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i014_wrong_1",
+          "text": "Taking an absolute value turns a reversal into a repayment."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i014_wrong_2",
+          "text": "A feed DTO’s rounding and field semantics would leak into allocation rules."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i014_wrong_3",
+          "text": "Dropping the reference loses the event identity used for deduplication."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i014_wrong_4",
+          "text": "Currency and reference alone do not preserve whether the event is a reversal."
+        }
+      ],
+      "reason": "Each feed reference identifies the external event being allocated. The signed amount’s direction distinguishes the two domain commands.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i014_wrong_1",
+          "text": "Take the absolute value of every amount and allocate it as a repayment."
+        },
+        {
+          "optionId": "n07_b06_i014_domain_mapping",
+          "text": "Classify a positive repayment separately from a negative reversal; retain the bank reference."
+        },
+        {
+          "optionId": "n07_b06_i014_wrong_2",
+          "text": "Pass the bank feed record directly to the account and let it infer whether a negative amount means reversal."
+        },
+        {
+          "optionId": "n07_b06_i014_wrong_3",
+          "text": "Discard the bank reference after parsing because account balance alone determines duplicate status."
+        },
+        {
+          "optionId": "n07_b06_i014_wrong_4",
+          "text": "Store the signed bank amount unchanged as the account’s new balance delta."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In cooperative lending ledger, A bank feed sends repayments as a signed amount, currency, and bank reference. The domain allocation requires a positive Money amount and a unique bank reference; a reversal arrives as a separate negative event. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i014",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i015_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The timeout transition is state-dependent, and bracket advancement must follow a valid result once.",
+      "Timeout is legal only while the match is live."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A provider status describes an event; only the match state determines whether that event is a legal transition.",
+        "scenarioApplication": "A timeout advances a live match once, while the domain rejects it in any other state.",
+        "errorCorrection": "Mapping timeout straight to forfeit ignores the live-state precondition; advancing first can publish an invalid bracket. If the tournament explicitly treated all platform timeouts as forfeits regardless of match state, that would change the domain contract.",
+        "boundaryOrTradeoff": "If the tournament explicitly treated all platform timeouts as forfeits regardless of match state, that would change the domain contract.",
+        "transfer": "Normalize external status labels but keep legal transitions in the state-owning domain."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i015_wrong_1",
+          "text": "A timeout on a non-live match would create an invalid transition."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i015_wrong_2",
+          "text": "This publishes the next bracket slot before the state-checked result operation can reject an illegal transition."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i015_wrong_3",
+          "text": "Letting each caller decide advancement creates multiple owners for the same bracket transition rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i015_wrong_4",
+          "text": "A timeout must not be reclassified as a forfeit without the domain rule."
+        }
+      ],
+      "reason": "A valid result advances the bracket once. The operation checks both the match state and the result transition.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i015_wrong_1",
+          "text": "Map timeout directly to forfeited for any match because the platform reports a timeout."
+        },
+        {
+          "optionId": "n07_b06_i015_wrong_2",
+          "text": "Let the platform DTO update the next bracket slot before the domain validates the match state."
+        },
+        {
+          "optionId": "n07_b06_i015_domain_mapping",
+          "text": "Translate the status and invoke the state-checked match result operation."
+        },
+        {
+          "optionId": "n07_b06_i015_wrong_3",
+          "text": "Add every platform status label to the bracket domain and let each caller decide which advance."
+        },
+        {
+          "optionId": "n07_b06_i015_wrong_4",
+          "text": "Treat every platform timeout as a completed forfeit and publish the next bracket slot immediately."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In tournament bracket service, An event platform sends match outcomes using its own status labels. The bracket recognizes only completed, forfeited, or pending; a timeout is valid only from a live match, and the result advances the bracket once. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i015",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i016_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Classification is evidence; refund eligibility is a distinct policy decision.",
+      "Refund eligibility is a separate policy decision."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A scanner observation describes condition; refund eligibility is a separate authorization decision.",
+        "scenarioApplication": "The return policy evaluates the observed label and confidence without treating confidence as approval.",
+        "errorCorrection": "Confidence is not stated as approval, and combining classification with payment collapses distinct meanings. If the business explicitly authorized a calibrated score threshold as its refund rule, that threshold would need to be stated and owned.",
+        "boundaryOrTradeoff": "If the business explicitly authorized a calibrated score threshold as its refund rule, that threshold would need to be stated and owned.",
+        "transfer": "Map observations as evidence rather than turning them into an unstated business outcome."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i016_wrong_1",
+          "text": "Confidence is not authorization to refund."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i016_wrong_2",
+          "text": "The scanner’s classification vocabulary is not the refund rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i016_wrong_3",
+          "text": "Without the observed condition, the saved refund cannot be traced back to the scanner evidence used for eligibility."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i016_wrong_4",
+          "text": "Confidence measures the scanner’s certainty; the case does not make it the refund amount."
+        }
+      ],
+      "reason": "The scanner confidence score describes the observation, not approval. Evidence and eligibility remain distinct inputs to the return decision.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i016_wrong_1",
+          "text": "Treat a high scanner confidence score as the domain’s refund decision."
+        },
+        {
+          "optionId": "n07_b06_i016_wrong_2",
+          "text": "Use the scanner label directly as a refund enum so one value drives both classification and payment."
+        },
+        {
+          "optionId": "n07_b06_i016_wrong_3",
+          "text": "Discard the observed condition after calculating eligibility because only the refund amount is stored."
+        },
+        {
+          "optionId": "n07_b06_i016_wrong_4",
+          "text": "Let the classifier’s confidence score directly set the refund amount."
+        },
+        {
+          "optionId": "n07_b06_i016_domain_mapping",
+          "text": "Record scanner labels as evidence; evaluate refund eligibility with the return policy."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In returns inspection workflow, A warehouse scanner labels an item as `damaged`, `opened`, or `unused`. The domain separately decides classification and refund eligibility; the scanner’s confidence value is not an approval. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i016",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i017_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The result must identify exact inputs, while the latest tag can point elsewhere later.",
+      "The “latest” tag may point to a different revision later."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Mutable aliases locate inputs but cannot identify the exact revisions used by a published result.",
+        "scenarioApplication": "Reviewers can retrieve the dataset and code revisions that the result actually used.",
+        "errorCorrection": "A mutable tag does not identify a reproducible input; a display title cannot recover missing lineage. If the “latest” tag were immutable by contract, it could be retained as the exact input identity.",
+        "boundaryOrTradeoff": "If the “latest” tag were immutable by contract, it could be retained as the exact input identity.",
+        "transfer": "Convert temporary external references into the stable identities the domain publication contract requires."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i017_wrong_1",
+          "text": "A mutable tag cannot reproduce which dataset was used."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i017_wrong_2",
+          "text": "A URI field can locate data but does not say which immutable revision the result used."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i017_wrong_3",
+          "text": "A title plus omitted provenance gives reviewers no dataset or code revision to retrieve."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i017_wrong_4",
+          "text": "Resolving `latest` during each audit can return different inputs from those used at publication."
+        }
+      ],
+      "reason": "Reviewers must be able to retrieve the exact inputs used for publication. The published result names fixed inputs rather than mutable runner aliases.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i017_domain_mapping",
+          "text": "Resolve both handles to immutable dataset and code revisions before publishing provenance."
+        },
+        {
+          "optionId": "n07_b06_i017_wrong_1",
+          "text": "Store only the latest tag so the publisher can always fetch the current inputs."
+        },
+        {
+          "optionId": "n07_b06_i017_wrong_2",
+          "text": "Copy the runner response wholesale into the domain result and make its URI fields the result identity."
+        },
+        {
+          "optionId": "n07_b06_i017_wrong_3",
+          "text": "Store the result’s displayed title and omit dataset/code provenance because the runner can be queried later."
+        },
+        {
+          "optionId": "n07_b06_i017_wrong_4",
+          "text": "Keep only a reproducible URL string and resolve its `latest` target during every audit."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In research-notebook platform, A notebook runner reports a dataset URI, code commit, and a mutable “latest” tag. A published result must identify the exact dataset and code revisions used so another reviewer can retrieve those inputs. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i017",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n07_b06_i018_domain_mapping",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The accepted comment must retain author and exact revision, and notification is a separate effect.",
+      "The submitted revision is checked when the comment is accepted."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Comment content, author identity, revision precondition, and notification status have different meanings.",
+        "scenarioApplication": "The comment is accepted against the submitted revision; notification remains a separate post-acceptance effect.",
+        "errorCorrection": "Rendering raw transport markup leaks presentation policy; substituting current revision changes what the author reviewed. If markup itself were the agreed comment domain language, retaining it could be correct.",
+        "boundaryOrTradeoff": "If markup itself were the agreed comment domain language, retaining it could be correct.",
+        "transfer": "Map client representations at entry while preserving the domain facts needed to accept and identify the comment."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i018_wrong_1",
+          "text": "Storing markdown as the domain value couples comment semantics to the provider format."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i018_wrong_2",
+          "text": "The submitted token is the precondition; accepting against the current revision would bypass a stale-token conflict."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i018_wrong_3",
+          "text": "Notification delivery status is not part of comment content and cannot change the comment’s acceptance."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n07_b06_i018_wrong_4",
+          "text": "Recording the submitted token as an attribute does not make a comment on the current revision satisfy the token precondition."
+        }
+      ],
+      "reason": "Notification is a separate effect after the comment decision. The stored comment has plain text and stable identities; rendering remains outside the incoming API shape.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n07_b06_i018_wrong_1",
+          "text": "Store raw markdown in the comment entity and render it whenever the comment is read."
+        },
+        {
+          "optionId": "n07_b06_i018_wrong_2",
+          "text": "Accept comments against the current document revision even when the client submitted a different revision token."
+        },
+        {
+          "optionId": "n07_b06_i018_wrong_3",
+          "text": "Put notification delivery status into the comment value so the domain can retry the API call."
+        },
+        {
+          "optionId": "n07_b06_i018_domain_mapping",
+          "text": "Map markdown, author identity, and revision into the comment; notify only after acceptance."
+        },
+        {
+          "optionId": "n07_b06_i018_wrong_4",
+          "text": "Accept against the current revision and record the client revision as a comment attribute."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N07-B06",
+    "nodeId": "persistence_repositories_serialization_and_domain_boundaries",
+    "prompt": "In collaborative annotation workspace, A comment API accepts markdown and a document revision token. The domain stores plain text, author identity, and exact revision; notification is a separate effect after acceptance. Which boundary decision preserves that contract?",
+    "questionId": "ood-n07-b06-i018",
+    "sourceRefs": [
+      "https://martinfowler.com/eaaCatalog/dataTransferObject.html",
+      "https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

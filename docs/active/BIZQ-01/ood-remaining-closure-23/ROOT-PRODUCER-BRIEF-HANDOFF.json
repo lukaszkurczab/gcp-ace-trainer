@@ -1,0 +1,11 @@
+{
+  "scope": "Owned briefing preparation handoff only; no accepted report was overwritten",
+  "workerJsonSha256": "5e6c18a36589c729305482beb4c54afbfd62af53dcdca77a9a4a9e6679bef6b6",
+  "finalRootMdSha256": "79fb6f297937f4ffec75b81a6617bb6b4a09ac2d0fe9cb1c49e3f5d904d683dc",
+  "workerDraft": {
+    "path": "review-inputs/PRODUCER-N07-23-BRIEFING-worker-original.md",
+    "sha256": "408fcb5575fbb952fa35a6ff3cc3c155ee8701bc343414b772bff703e13d41df",
+    "origin": "Reconstructed from generated tool literal with bound map/proof interpolation; worker reports original MD write failed at parse time before creating a file; no prior on-disk SHA exists. Do not claim byte-exact recovery of a former disk file."
+  },
+  "handOff": "Root interrupted its owned briefing task, wrote compact MD, retained already written worker JSON. Root exclusive JSON create safely rejected existing file; JSON unmodified. Both current inputs received independent design review, finalMD hash correctly bound in QA JSON; prose hash corrected additively."
+}

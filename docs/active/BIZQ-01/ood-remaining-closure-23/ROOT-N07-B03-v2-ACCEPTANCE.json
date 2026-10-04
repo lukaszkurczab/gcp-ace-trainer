@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "scope": "Root exact B03v2 bounded semantic correction evidence only; cross-unit/source/producer/admission pending",
+  "qaJsonSha256": "bdc371ee665d1e657a8c2f9cc40f11af1a89e623731c554c88a43265c6126934",
+  "inputSha256": "0ba2bcd05ce9da659635f98a0605c3b33bada0bd262f537e34d4b0e828e3172c",
+  "wholeObjectsMatched": 18,
+  "sameQuestionIds": 18,
+  "allInputCriteriaSourceAndMechanicalBindingsMatched": true,
+  "packageAcceptance": false,
+  "sourceActivation": false
+}

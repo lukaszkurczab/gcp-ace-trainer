@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "patternly-bizq-producer-qa-v1",
+  "verdict": "PASS",
+  "scope": "Bounded N07/23 producer implementation and exact historical reconstruction only; not app consumer/admission, native/Premium, deployment, or full BIZQ-01 acceptance.",
+  "sourceCheckpoint": {
+    "commit": "3be6feef80975ed7f3ca87893b743668227e4a64",
+    "path": "SOURCE-CHECKPOINT.json",
+    "proofSha256": "f1f69a22382dd3acac3e1b0ec8122693265e31a21e2997e467b22985b3831d76",
+    "contentVersion": "object-oriented-design-interview-authoring-v2026.10.05-bizq01-23",
+    "questionSetSha256": "cdb6b644d1029b0ffc5d1a09cbaed2aecb3f7785d718bb056c5d6a0cbd5eeefa"
+  },
+  "producerContract": {
+    "briefingPath": "PRODUCER-N07-23-BRIEFING.json",
+    "briefingSha256": "5e6c18a36589c729305482beb4c54afbfd62af53dcdca77a9a4a9e6679bef6b6",
+    "mapPath": "ROOT-N07-PRODUCER-MAP.json",
+    "mapSha256": "f64e82bdf4a997d28a30c44774cd1280beec303620bda3e758150638b2ba9414",
+    "fixedProofPath": "PREPARED-FIXED-PROOF23.json",
+    "fixedProofSha256": "f1f69a22382dd3acac3e1b0ec8122693265e31a21e2997e467b22985b3831d76",
+    "beforeContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-22",
+    "beforeQuestionSetSha256": "c6cf903178b823fb71ac29040f3c5fa5f72c619d3adbb525fc7791756654ac3e",
+    "sourceFiles": 8,
+    "currentQuestions": 144,
+    "replacements": 34,
+    "sameIdCorrections": 110,
+    "cumulativeReplacements": 628,
+    "cumulativeSameIdCorrections": 461,
+    "reasonAmendments": 25
+  },
+  "implementationFiles": [
+    { "path": "patternly-content/scripts/content/verify-migration.mjs", "sha256": "1020e7c6dfd91aa5e87bc77877d7f8e6d087ed0f7a3ed29b555e3740775977de" },
+    { "path": "patternly-content/evidence/business-quality/bizq-01-ood-node-closure-23.json", "sha256": "f1f69a22382dd3acac3e1b0ec8122693265e31a21e2997e467b22985b3831d76" },
+    { "path": "patternly-content/tests/bizq01-ood-node-closure-23.test.mjs", "sha256": "5358ac0700422f71afeccbe5d3ab38e7bb011aa63256f02300e13cbf6cfce18b" },
+    { "path": "patternly-content/tests/ood-cohort16-historical-fixture.mjs", "sha256": "2daf345a79164ae581b187071f97c085419cd15a449e50d6fcf876f71b7898d1" },
+    { "path": "patternly-content/tests/bizq01-ood-node-closure-22.test.mjs", "sha256": "e366cfb2c69e677cfaa6f4fc0e3582f42bc28ed02bbf960ffd7456bd730e037c" },
+    { "path": "patternly-content/tests/bizq01-ood-node-closure-21.test.mjs", "sha256": "79df0c2150d3820c47a614f66f8441373e5e3286e0fc7509eb58389dc7872f68" },
+    { "path": "patternly-content/tests/bizq01-migration-proof.test.mjs", "sha256": "392e5d7cd747e3cb53b5fe523bd6db87e71b347fafd987190a1daf08bf3e8818" },
+    { "path": "patternly-content/package.json", "sha256": "c0b2d1910f54ac5941f22ffd4551bff4396df6102a3625985a17ebd1f91e2f50" }
+  ],
+  "baselinePreservation": {
+    "receipt": "ROOT-PREVIOUS-GUARDS-FINAL.json",
+    "receiptSha256": "e5dc87c3392307436caf544c0faa1b0ba37f16702b4e95007851bc041abf8256",
+    "unchangedDescriptors": 13,
+    "unchangedPrivateGuardBodies": 5,
+    "sourcePreservationReceipt": "ROOT-SOURCE-PRESERVATION-FINAL.json",
+    "sourcePreservationSha256": "ab689e79c4bdabcd90b1f82656ba8c1414d5655b8b08dde614f5d2d8ab9dbbd0",
+    "preservedOtherOodQuestions": 1269,
+    "preservedAcceptedN01N06Questions": 945,
+    "untouchedContentFiles": 945,
+    "immutableProofFiles": 14,
+    "otherArtifacts": 8
+  },
+  "verification": [
+    {
+      "name": "Focused N07/23 plus historical v22 and v21 suites",
+      "command": "PATH=/opt/homebrew/opt/node@22/bin:$PATH node --test tests/bizq01-ood-node-closure-23.test.mjs tests/bizq01-ood-node-closure-22.test.mjs tests/bizq01-ood-node-closure-21.test.mjs",
+      "result": "PASS",
+      "tests": 15,
+      "failures": 0
+    },
+    {
+      "name": "Producer migration verification",
+      "command": "PATH=/opt/homebrew/opt/node@22/bin:$PATH npm run verify:migration",
+      "result": "PASS",
+      "currentQuestions": 16077,
+      "historicalQuestions": 16041,
+      "cumulativeReplacements": 628,
+      "cumulativeSameIdCorrections": 461,
+      "reasonAmendments": 25
+    },
+    {
+      "name": "OOD track validation",
+      "command": "PATH=/opt/homebrew/opt/node@22/bin:$PATH node scripts/build.mjs validate --track object-oriented-design-interview",
+      "result": "PASS",
+      "questions": 1413
+    },
+    {
+      "name": "Private output OOD build",
+      "command": "PATH=/opt/homebrew/opt/node@22/bin:$PATH node scripts/build.mjs build --track object-oriented-design-interview --output-root /private/tmp/patternly-n07-23-build-qa",
+      "result": "PASS",
+      "questions": 1413,
+      "artifactSha256": "932b7370d7be44bb5274ad8bc5a31b45f0479b3ff4251160af1ed2b170ca80d7"
+    },
+    {
+      "name": "Canonical producer suite at exact source checkpoint",
+      "receipt": "ROOT-CANONICAL-FINAL.log",
+      "receiptSha256": "79d1a057914ce50ddfcdeb33ac73f9aa9c1a50709ec55f51b30ddb5cedc915c7",
+      "result": "PASS",
+      "tests": 183,
+      "passed": 183,
+      "failed": 0,
+      "skipped": 0,
+      "checkpoint": "3be6feef80975ed7f3ca87893b743668227e4a64"
+    }
+  ],
+  "limitations": [
+    "This report accepts only the N07/23 producer implementation and its historical proof reconstruction.",
+    "App consumer synchronization, candidate/readiness, admission, export/web provenance, deployment/publication, native/Premium, and full BIZQ-01 remain outside this verdict."
+  ]
+}

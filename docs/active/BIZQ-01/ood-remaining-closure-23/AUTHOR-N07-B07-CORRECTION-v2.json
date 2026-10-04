@@ -1,0 +1,186 @@
+{
+  "unit": "OOD-N07-B07",
+  "correctionRevision": 2,
+  "proposalSha256": "090f086b76bfc91d7d03ef6fbaec5b27a3cc1b1a53b7bdef38e1ecfd2a1d2ca1",
+  "priorFrozenInput": "docs/active/BIZQ-01/ood-remaining-closure-23/review-inputs/N07-B07-v1.json",
+  "priorFrozenInputSha256": "85c578e041b4b25b45f5e55173baa71cc5a8eff1afa2b3b1fbf0c5bacd8124bd",
+  "manifestSha256": "07b9663946f5de9587434e9a3bd5836f71fa70dec772bfced94524ab3fc4fc01",
+  "verification": {
+    "command": "node docs/active/BIZQ-01/ood-remaining-closure-23/check-proposal-unit.mjs N07-B07.json",
+    "result": "PASS",
+    "wholeObjects": 18,
+    "optionsChecked": 90,
+    "wrongOptionMessagesChanged": 54,
+    "scope": "Mechanical schema/count/taxonomy/identity correspondence, scoring/reversal and diagnostic bindings. No semantic acceptance."
+  },
+  "addedScenarioFacts": {
+    "i008": "At most two database reads per dashboard request.",
+    "i009": "At most two database reads regardless of the 20-row page size.",
+    "i014": "At most two database reads for the selected-principal detail request."
+  },
+  "identity": "All 18 question IDs and accepted option IDs preserved; caller-specific read-plan objective remains. Independent semantic review pending.",
+  "items": [
+    {
+      "questionId": "ood-n07-b07-i001",
+      "beforeQuestionId": "ood-n07-b07-i001",
+      "oldDecision": "Return a station projection with the count computed in the query; load reservation details only on a station-specific view.",
+      "currentDecision": "Project each station with its active-reservation count.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i002",
+      "beforeQuestionId": "ood-n07-b07-i002",
+      "oldDecision": "Page the plots and fetch the gardener data for those page IDs in one bounded query, or project the needed name in the page query.",
+      "currentDecision": "Fetch gardener names for only the 25 plots in the requested page.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i003",
+      "beforeQuestionId": "ood-n07-b07-i003",
+      "oldDecision": "Use a grouped projection for count and latest time; fetch annotations only in the episode review screen.",
+      "currentDecision": "Group by episode to return annotation count and latest time.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i004",
+      "beforeQuestionId": "ood-n07-b07-i004",
+      "oldDecision": "Load the approver data in the export query or project the name before the read transaction ends.",
+      "currentDecision": "Return approver names before the bounded read transaction closes.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i005",
+      "beforeQuestionId": "ood-n07-b07-i005",
+      "oldDecision": "Load the bounded grant set with the title for this detail query.",
+      "currentDecision": "Load the title and its capped grant set with expiries for this detail view.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i006",
+      "beforeQuestionId": "ood-n07-b07-i006",
+      "oldDecision": "Project the replacement date into the report and load service notes only for the selected aircraft.",
+      "currentDecision": "Project the next replacement date; read service notes after an aircraft is selected.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i007",
+      "beforeQuestionId": "ood-n07-b07-i007",
+      "oldDecision": "Project clinic identity and capacity in the directory query without loading referral or note relationships.",
+      "currentDecision": "Project clinic identity and capacity without referral or patient-note data.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i008",
+      "beforeQuestionId": "ood-n07-b07-i008",
+      "oldDecision": "Load the selected meter page and batch the owner names for those meter IDs.",
+      "currentDecision": "Fetch owner names in one batch for the 30 meter IDs.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Added the hypothetical two-read endpoint contract; a lookup per meter exceeds it."
+    },
+    {
+      "questionId": "ood-n07-b07-i009",
+      "beforeQuestionId": "ood-n07-b07-i009",
+      "oldDecision": "Fetch the shift’s assignment page and batch the required skill labels for those volunteer IDs.",
+      "currentDecision": "Fetch skill labels for the assignment page in one scoped read.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Added the hypothetical two-read page contract; per-assignment lookup count would vary with page size."
+    },
+    {
+      "questionId": "ood-n07-b07-i010",
+      "beforeQuestionId": "ood-n07-b07-i010",
+      "oldDecision": "Return the list projection without execution logs; load the selected result’s commit and log in a separate detail query.",
+      "currentDecision": "Project list fields and load the large execution log on result detail.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i011",
+      "beforeQuestionId": "ood-n07-b07-i011",
+      "oldDecision": "Load the bounded photos and classification history with the selected return for this decision workflow.",
+      "currentDecision": "Load the selected return’s photos and classification history before its decision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i012",
+      "beforeQuestionId": "ood-n07-b07-i012",
+      "oldDecision": "Project the three list fields and leave notice text to the selected notice detail query.",
+      "currentDecision": "Project notice ID, effective time, and platform for search results.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i013",
+      "beforeQuestionId": "ood-n07-b07-i013",
+      "oldDecision": "Load the asset’s current metadata for editing and query rendition history only if the archivist opens it.",
+      "currentDecision": "Load current metadata for editing; query rendition history only when opened.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i014",
+      "beforeQuestionId": "ood-n07-b07-i014",
+      "oldDecision": "Query the selected principal’s active grants with expiry data in the detail request.",
+      "currentDecision": "Fetch the selected principal and active grants with expiries in one related-data read.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Added the hypothetical two-read detail contract; per-grant lookup exceeds it."
+    },
+    {
+      "questionId": "ood-n07-b07-i015",
+      "beforeQuestionId": "ood-n07-b07-i015",
+      "oldDecision": "Use a bundle summary projection for count and price; retrieve components for the opened bundle.",
+      "currentDecision": "Project component count and current price; load components for the opened bundle.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i016",
+      "beforeQuestionId": "ood-n07-b07-i016",
+      "oldDecision": "Project revision number and seal time for the search; fetch bytes for the selected sealed revision.",
+      "currentDecision": "Project revision number and seal time; download bytes only for the selected revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i017",
+      "beforeQuestionId": "ood-n07-b07-i017",
+      "oldDecision": "Use a grouped seller/window projection for totals and query payout rows only for the selected seller.",
+      "currentDecision": "Group payout rows by seller and settlement window for dashboard totals.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    },
+    {
+      "questionId": "ood-n07-b07-i018",
+      "beforeQuestionId": "ood-n07-b07-i018",
+      "oldDecision": "Load the account balance and recent allocation page for this operation; keep older history behind the separate query.",
+      "currentDecision": "Read current balance and the 12-row recent allocation page; leave older history to search.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The caller-specific read-plan decision remains the primary decision; the revision removes disclosed prescriptions and clarifies the request facts.",
+      "caseCorrection": "Replaced answer-revealing constraint with a neutral caller/data fact and aligned case explanation."
+    }
+  ]
+}

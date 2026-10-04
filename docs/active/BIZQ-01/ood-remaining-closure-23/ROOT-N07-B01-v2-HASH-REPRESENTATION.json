@@ -1,0 +1,117 @@
+{
+  "result": "PASS",
+  "scope": "Exact same frozen18 objects represented by different serialization; not new semantic review or source acceptance",
+  "reviewSha256": "4da84ceae4c65f476a6e36aec2b10d990e5a1026778e2b200580414591c5c8af",
+  "inputSha256": "aebc7f8cc71f8203d0e53e0eda80118878758608a8cc447aad4dc45bb22f524a",
+  "diagnosis": "Reviewer used JSON.stringify preserving insertion order; producer canonicalJson sorts object keys recursively. All18 reviewed insertion hashes and root canonical hashes independently match the same frozen objects.",
+  "items": [
+    {
+      "questionId": "ood-n07-b01-i001",
+      "reviewedInsertionOrderSha256": "380eb3f61d9ed180610aad7a5352c64973c6d501ddb06128978108e183adf8ae",
+      "producerCanonicalSha256": "ecf6a0a8fe4e3617848948c2e3b991c0e067916860a2c1e189d6eff37f71bf5e",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i002",
+      "reviewedInsertionOrderSha256": "d226563f12cf3dfcfa47599998c7286084a905fa36de81ee7743dbb10b5f0ce6",
+      "producerCanonicalSha256": "0096e776a252ad772dcce6dac89868cc4694e795182518879941fd821bd0bdb9",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i003",
+      "reviewedInsertionOrderSha256": "13b972d774642a517a7335f815fec7926d5573aa3a003b3e68f96866ceb96e2e",
+      "producerCanonicalSha256": "4b3e733181914b31896f3a9f2aef61d29b53d78cbec5f268710e2a74d3cfbb17",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i004",
+      "reviewedInsertionOrderSha256": "74c7b176eca7cf2c1063291a18798e29b58b9019e97fa0890611c62efa2b90a7",
+      "producerCanonicalSha256": "c798860ee9f2558cf871d40007ee457d04d98673f41ec136492ac81ace98bc7d",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i005",
+      "reviewedInsertionOrderSha256": "ed747662093af79e36f9c1b277929b241285ccc85b81dc00a62d889eaea4425b",
+      "producerCanonicalSha256": "f8fde9b4aeed2f54b06a77bf9b0a9bb56df897348c9d3af655a8d5df83cdcea8",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i006",
+      "reviewedInsertionOrderSha256": "ad64f94ad79e3090f14e0a2a9805cd03deeb2bcd7d98419f26088cb40fee31ae",
+      "producerCanonicalSha256": "6f0c9af3e583ade434c58f368fa14dd055478d3654944ea8f56650ac06261fba",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i007",
+      "reviewedInsertionOrderSha256": "7927f2b830ac0b9881119e02029e17fb12d8c8ec820aa167aafde7a2ead4de6f",
+      "producerCanonicalSha256": "b79917f99bb71531f48f6599a8c79b8b08ec2beac4a911c05e5682fd858a64c4",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i008",
+      "reviewedInsertionOrderSha256": "ef915a06ea85b230797be5e8f61bf256c71a85733299267174fd06a334efb6be",
+      "producerCanonicalSha256": "ea2207be865e61d28ab816566ea15783de5cf3685a1f879c4ae22f61fe464b95",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i009",
+      "reviewedInsertionOrderSha256": "066f4f3e356caf5b76391b76dcd365ef17adabb4fdbec8b7fd7ff0983ca19d88",
+      "producerCanonicalSha256": "acc97502db3a323558eea64511da714a6e591f8332ad383d16f583e11148dcd3",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i010",
+      "reviewedInsertionOrderSha256": "3434f9ad8ee31f034022858c38235e8069e65da4643753f2e864cfc63a9e0e92",
+      "producerCanonicalSha256": "7d41aeef60566c931eb89b068f47314094a5f5220c792f677692c040ce6d6dfc",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i011",
+      "reviewedInsertionOrderSha256": "6dc56be761c9ba30a40c5af93f7d68aba60f517b6a2ad756a6600230193bf3a7",
+      "producerCanonicalSha256": "e335a2fe5035f61d7eeebeb65c3d1c5671da7756780d32bf1bfd93699735eda4",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i012",
+      "reviewedInsertionOrderSha256": "53301736714e492553846d856b4edf03628c35dc9bda1ae89846492bbf0214cd",
+      "producerCanonicalSha256": "31eb4c2ad48f6e8894780c10fd413bea2f1a5f268e31fc08e73a854ec9d17520",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i013",
+      "reviewedInsertionOrderSha256": "5bb5d5c10163cb4d627c91566025db88f959e0859f19e89aa16ccf219f91450c",
+      "producerCanonicalSha256": "f1c6bd9e1cd7e6f5f1b7e63049c18caa99be31d640379e81097c6259740feae8",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i014",
+      "reviewedInsertionOrderSha256": "dbce074eae88f2a172b68c239e8fc83ea0847a53d0a8e6fdfded20198420da4a",
+      "producerCanonicalSha256": "f5609a7a58700534a0c8f0114458d20f38a30a37dc23a5e3c2e2a1067cf8b7e9",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i015",
+      "reviewedInsertionOrderSha256": "1badf3f918d47a1c6543777bea4615798a50c83520244c140222b8feafef4939",
+      "producerCanonicalSha256": "3a5b04fdef70ba4d02ec48c94dddede395c384343538a40c0b249681d419291f",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i016",
+      "reviewedInsertionOrderSha256": "de47be66e8259640c4a653e9274d5a77711fd90e4a228346cf1319ea44866802",
+      "producerCanonicalSha256": "bdb7aadd0e219e510eb02eea77dac95abb42e2bd6089748db22df86754a6e5b0",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i017",
+      "reviewedInsertionOrderSha256": "34040b32cf2d8bd287f395607c428d7d7ccb5dc4487b90cb3d5eb8cc4906ca2c",
+      "producerCanonicalSha256": "825c6b00dde5e9b9bda64fa4b6306fe448a8936a35ea3c47c533669e989d4318",
+      "sameExactReviewedWholeObject": true
+    },
+    {
+      "questionId": "ood-n07-b01-i018",
+      "reviewedInsertionOrderSha256": "b6937dcfaca324d3f351c787ef68422c58acac1c693c578e40ce2e703b3f5205",
+      "producerCanonicalSha256": "84046d089930ee49957e214a428b593fe4d99cd32640d3f068480a3ee9aa0f96",
+      "sameExactReviewedWholeObject": true
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "verdict": "PASS",
+  "scope": "Actual AST-selected existing13 descriptors and closed17/19/19a/20/21/22 private-guard bytes versus accepted baseline; additive23 dispatch/global history assembly are not covered by this check and require actual implementation review",
+  "baselineCommit": "5a8e895379bb0abcbb5d7a1dc89fcf02167a823e",
+  "currentVerifierSha256": "1020e7c6dfd91aa5e87bc77877d7f8e6d087ed0f7a3ed29b555e3740775977de",
+  "unchangedDescriptors": [
+    "BIZQ01_PROOF",
+    "BIZQ01_BESD_COHORT14_PROOF",
+    "BIZQ01_COPY_PROOF",
+    "BIZQ01_OOD_PROOF",
+    "BIZQ01_OOD_SUCCESSOR_PROOF",
+    "BIZQ01_OOD_COHORT13_PROOF",
+    "BIZQ01_OOD_COHORT16_PROOF",
+    "BIZQ01_OOD_COHORT17_PROOF",
+    "BIZQ01_OOD_COHORT19_PROOF",
+    "BIZQ01_OOD_COHORT22_PROOF",
+    "BIZQ01_OOD_COHORT21_PROOF",
+    "BIZQ01_OOD_COHORT20_PROOF",
+    "BIZQ01_OOD_REASON_AMENDMENT_19A_PROOF"
+  ],
+  "unchangedPrivateGuardFunctions": [
+    "validateBizq01OodClosedCohortProof",
+    "validateBizq01OodReasonAmendment19a",
+    "validateBizq01OodCohort20Proof",
+    "validateBizq01OodCohort21Proof",
+    "validateBizq01OodCohort22Proof"
+  ]
+}

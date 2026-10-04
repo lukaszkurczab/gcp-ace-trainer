@@ -1,0 +1,13 @@
+{
+  "result": "PASS",
+  "scope": "Root exact frozen unit semantic correction evidence only; cross-unit/source/producer/admission acceptance pending",
+  "unit": "OOD-N07-B02",
+  "inputSha256": "2d46dedd0f1e7fcc882a803c6a7192c15ac8705cded9b2ba965b54279ef90e9d",
+  "independentQaSha256": "fb67163235ca1d3de62df8c41be9632f37bda37d73e3a5a82224676ced6c7d2b",
+  "hashRepresentationSupplementSha256": "04691f7cca0eb6fe9a2d82624397b97a888295a7d0ec62acf02ef0c64af5db85",
+  "wholeObjectsMatched": 18,
+  "sameQuestionIds": 18,
+  "allFrozenInputCriteriaSourceAndMechanicalBindingsMatched": true,
+  "sourceActivation": false,
+  "packageAcceptance": false
+}

@@ -1,0 +1,10 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {dirname,resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import assert from 'node:assert/strict';
+import {sha256} from '../../../../../patternly-content/scripts/build.mjs';
+const packet=dirname(fileURLToPath(import.meta.url));const root=resolve(packet,'../../../../..');
+const manifest=JSON.parse(readFileSync(resolve(packet,'N07-MANIFEST.json'),'utf8'));
+const units=manifest.units.map(unit=>{const actual=readFileSync(resolve(root,'patternly-content',unit.sourcePath));const before=unit.beforeItems.map(i=>i.beforeQuestion).sort((a,b)=>a.questionId.localeCompare(b.questionId));const reconstructed=Buffer.from(JSON.stringify(before));assert.equal(sha256(actual),unit.sourceSha256);assert.ok(actual.equals(reconstructed),unit.sourcePath);return {unit:unit.mentalUnitId,sourcePath:unit.sourcePath,sourceSha256:unit.sourceSha256,byteExact:true,items:before.length};});
+const result={result:'PASS',scope:'Exact current v22 N07 source reconstruction only; not new proof/migration acceptance',serialization:'JSON.stringify sorted beforeQuestion array without newline',units};
+writeFileSync(resolve(packet,'ROOT-N07-PREDECESSOR-SOURCE-BYTES.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({result:'PASS',sources:units.length,objects:units.reduce((n,u)=>n+u.items,0)}));

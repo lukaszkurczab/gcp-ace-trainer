@@ -1,0 +1,56 @@
+{
+  "result": "PASS",
+  "scope": "Root exact prior46 whole-object finding reuse and actual current configured runtime-pool membership only; two BESD cue risks and two FESD case/key/explanation risks, no native/release acceptance",
+  "knownCriticalReviewedObjects": 46,
+  "ordinaryPoolMembers": [
+    "besd-n01-b01-i005",
+    "besd-n01-b06-i011",
+    "fesd-n01-b07-i017",
+    "fesd-n01-b01-i011"
+  ],
+  "ordinaryPoolAbsentCount": 42,
+  "runtimeEvidenceSha256": "312035fb30a49fab4281b48766842c233b7c9368fe7ffe1a4e946eb2ce207dcd",
+  "helperSha256": "d6952b0ae8d8a2072cdb3d5c3611a57a659ecb6090fe28433fbe7bf14b22260b",
+  "currentAppFileBindings": {
+    "src/features/practice/DesignInterviewPracticeScreen.tsx": "a18f3881c56b79ee2988c9bd4ee913f733822f715f96b72f4ff2d7d3b4b3feb9",
+    "src/features/practice/PracticeQuestionCard.tsx": "f8bed97ece78c1767820926f832601e998dd765d5d3c5dc0129e7caf2c53b25a",
+    "src/content/canonical/runtimeCatalog.ts": "06c1959bab4747dc26c91f497d94b8fda6a7115f1ad6f2df307288e80c545657",
+    "src/content/canonical/productModeConfig.ts": "a65e60a2ebf6f61813a1277b4058ab9b28c60b82e7b2fa7f592b08f640fe04f3"
+  },
+  "risk": "Two BESD ordinary-pool items explicitly cue their keyed direction; two FESD ordinary-pool items retain underdetermined case/key and generic-explanation defects. FESD source wrong_element learner exposure is not established; no new bank review/repair authority.",
+  "nativePerformed": false,
+  "classifications": [
+    {
+      "questionId": "besd-n01-b01-i005",
+      "type": "Explicit answer-direction cue in constraints",
+      "priorCriticalFindingReused": true,
+      "currentFingerprint": "603191fb70acd29c9548befdddbabd50420133814383ba93316ddc3cc70538a4",
+      "ordinaryConfiguredPoolMembership": true,
+      "nativeSelectionObserved": false
+    },
+    {
+      "questionId": "besd-n01-b06-i011",
+      "type": "Explicit answer-direction cue in constraints",
+      "priorCriticalFindingReused": true,
+      "currentFingerprint": "5443bde02cfe2bd93b41d425df6b9978efc345068c0ca06fb284571a009c9c42",
+      "ordinaryConfiguredPoolMembership": true,
+      "nativeSelectionObserved": false
+    },
+    {
+      "questionId": "fesd-n01-b07-i017",
+      "type": "Case/key underdetermination and generic explanation",
+      "priorCriticalFindingReused": true,
+      "currentFingerprint": "7a66753d5bf91340f099a5b30dd1dfb5734323f420a29c88af0840e8284403c4",
+      "ordinaryConfiguredPoolMembership": true,
+      "nativeSelectionObserved": false
+    },
+    {
+      "questionId": "fesd-n01-b01-i011",
+      "type": "Case/key underdetermination and generic explanation",
+      "priorCriticalFindingReused": true,
+      "currentFingerprint": "0bbef378b2e9d1ac1b1d009299efdb8801f9229c4eeb213226f3c0959268d776",
+      "ordinaryConfiguredPoolMembership": true,
+      "nativeSelectionObserved": false
+    }
+  ]
+}
