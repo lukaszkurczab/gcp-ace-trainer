@@ -1,0 +1,36 @@
+[
+  {
+    "path": [
+      2,
+      "question",
+      "interaction",
+      "options",
+      1,
+      "text"
+    ],
+    "before": "Leave the session in Closing and permit export retry; mark Closed only after a complete export is confirmed.",
+    "after": "Stay Closing and retry; close only after a complete export."
+  },
+  {
+    "path": [
+      2,
+      "question",
+      "feedback",
+      "reason"
+    ],
+    "before": "Use an explicit intermediate state when completion depends on a fallible operation. In this case, Leave the session in Closing and permit export retry; mark Closed only after a complete export is confirmed.",
+    "after": "Use an explicit intermediate state when completion depends on a fallible operation. In this case, Stay Closing and retry; close only after a complete export."
+  },
+  {
+    "path": [
+      3,
+      "question",
+      "interaction",
+      "options",
+      0,
+      "text"
+    ],
+    "before": "Apply an acceptance only when its proposal ID matches the currently pending proposal; otherwise record it as stale and leave current state unchanged.",
+    "after": "Apply only a response for the current pending proposal; mark delayed P1 stale."
+  }
+]

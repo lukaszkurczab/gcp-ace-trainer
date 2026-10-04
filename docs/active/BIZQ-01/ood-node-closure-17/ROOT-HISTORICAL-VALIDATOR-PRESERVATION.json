@@ -1,0 +1,6 @@
+{
+  "result": "PASS",
+  "unchangedHistoricalFunction": "validateBizq01OodCohort16Proof",
+  "bodySha256": "2c99043c5fb3136e564fb73f5f9a9c0bc08c2b893b03170574247fcdb9c93c38",
+  "interpretation": "Root actual text binding of unchanged v16 validator; running historical negatives and full288 mappings remain separate evidence."
+}

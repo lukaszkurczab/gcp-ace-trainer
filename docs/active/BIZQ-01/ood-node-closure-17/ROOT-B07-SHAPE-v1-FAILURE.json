@@ -1,0 +1,13 @@
+{
+  "result": "FAIL",
+  "stage": "proposal explicit learning objective",
+  "input": "REVIEWED-B07-v1.json",
+  "sha256": "eac373701dff51f923dabe23ab47a112d5d4ace217e24e31bb43dc964a513df5",
+  "runner": "check-proposals.mjs combined B04 B07",
+  "actualFailure": "AssertionError: explicit objective missing",
+  "confirmedWhitespaceObjectives": [
+    "ood-n02-b07-i026",
+    "ood-n02-b07-i028"
+  ],
+  "next": "Fill exact case-specific objectives under same fixed mapping; run actual checker again. Production unchanged."
+}

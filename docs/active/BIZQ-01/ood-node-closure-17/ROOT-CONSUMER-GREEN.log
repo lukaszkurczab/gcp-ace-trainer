@@ -1,0 +1,130 @@
+TAP version 13
+# Subtest: OOD17 frozen bindings cover the eight frozen 19-item payloads
+ok 1 - OOD17 frozen bindings cover the eight frozen 19-item payloads
+  ---
+  duration_ms: 6.5895
+  type: 'test'
+  ...
+# Subtest: OOD17 preserves all 136 accepted N01 source and artifact objects
+ok 2 - OOD17 preserves all 136 accepted N01 source and artifact objects
+  ---
+  duration_ms: 395.064959
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B01 source payloads, replacement identities and retired IDs are exact
+ok 3 - OOD17 OOD-N02-B01 source payloads, replacement identities and retired IDs are exact
+  ---
+  duration_ms: 1.074875
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B01 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+ok 4 - OOD17 OOD-N02-B01 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+  ---
+  duration_ms: 2.155125
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B02 source payloads, replacement identities and retired IDs are exact
+ok 5 - OOD17 OOD-N02-B02 source payloads, replacement identities and retired IDs are exact
+  ---
+  duration_ms: 0.821792
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B02 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+ok 6 - OOD17 OOD-N02-B02 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+  ---
+  duration_ms: 0.902625
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B03 source payloads, replacement identities and retired IDs are exact
+ok 7 - OOD17 OOD-N02-B03 source payloads, replacement identities and retired IDs are exact
+  ---
+  duration_ms: 1.223125
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B03 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+ok 8 - OOD17 OOD-N02-B03 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+  ---
+  duration_ms: 0.832583
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B04 source payloads, replacement identities and retired IDs are exact
+ok 9 - OOD17 OOD-N02-B04 source payloads, replacement identities and retired IDs are exact
+  ---
+  duration_ms: 0.890542
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B04 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+ok 10 - OOD17 OOD-N02-B04 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+  ---
+  duration_ms: 1.025458
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B05 source payloads, replacement identities and retired IDs are exact
+ok 11 - OOD17 OOD-N02-B05 source payloads, replacement identities and retired IDs are exact
+  ---
+  duration_ms: 0.853417
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B05 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+ok 12 - OOD17 OOD-N02-B05 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+  ---
+  duration_ms: 1.138084
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B06 source payloads, replacement identities and retired IDs are exact
+ok 13 - OOD17 OOD-N02-B06 source payloads, replacement identities and retired IDs are exact
+  ---
+  duration_ms: 0.790583
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B06 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+ok 14 - OOD17 OOD-N02-B06 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+  ---
+  duration_ms: 1.102791
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B07 source payloads, replacement identities and retired IDs are exact
+ok 15 - OOD17 OOD-N02-B07 source payloads, replacement identities and retired IDs are exact
+  ---
+  duration_ms: 0.815792
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B07 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+ok 16 - OOD17 OOD-N02-B07 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+  ---
+  duration_ms: 1.186334
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B08 source payloads, replacement identities and retired IDs are exact
+ok 17 - OOD17 OOD-N02-B08 source payloads, replacement identities and retired IDs are exact
+  ---
+  duration_ms: 0.824042
+  type: 'test'
+  ...
+# Subtest: OOD17 OOD-N02-B08 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+ok 18 - OOD17 OOD-N02-B08 real choice scoring, accessibility and submitted feedback follow fixed option IDs
+  ---
+  duration_ms: 1.037667
+  type: 'test'
+  ...
+# Subtest: OOD17 N02 source quality does not widen the three ordinary N01 mode pools
+ok 19 - OOD17 N02 source quality does not widen the three ordinary N01 mode pools
+  ---
+  duration_ms: 0.394958
+  type: 'test'
+  ...
+# Subtest: runtime admission resolves the exact candidate lock for every canonical launch track
+ok 20 - runtime admission resolves the exact candidate lock for every canonical launch track
+  ---
+  duration_ms: 341.276334
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1060.693417

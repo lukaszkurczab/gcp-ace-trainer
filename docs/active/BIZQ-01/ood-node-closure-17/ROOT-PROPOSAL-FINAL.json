@@ -1,0 +1,80 @@
+{
+  "result": "PASS",
+  "interpretation": "proposal schema/identity/fixed-ID scoring and reversal only; style counts are warnings, not semantic verdicts or numeric gates",
+  "questionCount": 152,
+  "optionCases": 1214,
+  "units": [
+    {
+      "unit": "OOD-N02-B01",
+      "proposalSha256": "9ce1b243551a97356bcab6ae093df0a463dc2f9e978d96456329b555e8efff58",
+      "questionCount": 19,
+      "advisory": {
+        "soleLongestCorrect": 5,
+        "repeatedReasonApplication": 0
+      }
+    },
+    {
+      "unit": "OOD-N02-B02",
+      "proposalSha256": "2990cbe047af3761b107b19460346b8020747a0b5621521c08f32a5d6189b8bf",
+      "questionCount": 19,
+      "advisory": {
+        "soleLongestCorrect": 8,
+        "repeatedReasonApplication": 0
+      }
+    },
+    {
+      "unit": "OOD-N02-B03",
+      "proposalSha256": "1e2ffd502acc9ee098e51c80633151ec2b9009590455b2726701a733c97fe795",
+      "questionCount": 19,
+      "advisory": {
+        "soleLongestCorrect": 3,
+        "repeatedReasonApplication": 0
+      }
+    },
+    {
+      "unit": "OOD-N02-B04",
+      "proposalSha256": "61b729c8d159391deef0a1d0cebd17b3e19e5ee339fde49c9a586d579819fd33",
+      "questionCount": 19,
+      "advisory": {
+        "soleLongestCorrect": 0,
+        "repeatedReasonApplication": 0
+      }
+    },
+    {
+      "unit": "OOD-N02-B05",
+      "proposalSha256": "ac6e20b5eb4d2602ddf294185809d49465de9444d1f725330e5793dcfe4b455c",
+      "questionCount": 19,
+      "advisory": {
+        "soleLongestCorrect": 8,
+        "repeatedReasonApplication": 0
+      }
+    },
+    {
+      "unit": "OOD-N02-B06",
+      "proposalSha256": "46ba770ef4ebeb58c0f4a7e0dc312afb89c4d5efd17474612276276b6975249b",
+      "questionCount": 19,
+      "advisory": {
+        "soleLongestCorrect": 6,
+        "repeatedReasonApplication": 0
+      }
+    },
+    {
+      "unit": "OOD-N02-B07",
+      "proposalSha256": "781ed817fdddc5e6533e46136ecbae1aef116ab53ae7b4ed2f3c9cf7d198881e",
+      "questionCount": 19,
+      "advisory": {
+        "soleLongestCorrect": 3,
+        "repeatedReasonApplication": 0
+      }
+    },
+    {
+      "unit": "OOD-N02-B08",
+      "proposalSha256": "d0e6d4dce12cbb74caf50d7fc41d7637abd4f133e6fe22016a0555c355a17169",
+      "questionCount": 19,
+      "advisory": {
+        "soleLongestCorrect": 5,
+        "repeatedReasonApplication": 0
+      }
+    }
+  ]
+}

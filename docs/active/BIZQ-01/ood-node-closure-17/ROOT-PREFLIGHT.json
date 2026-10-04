@@ -1,0 +1,100 @@
+{
+  "status": "actual baseline reproduced",
+  "structuralValidation": {
+    "valid": true,
+    "errors": []
+  },
+  "scoring": {
+    "status": "correct",
+    "earnedPoints": 1,
+    "maxPoints": 1,
+    "selectedOptionId": "owner_preserves_contract",
+    "correctOptionId": "owner_preserves_contract"
+  },
+  "repeatedOwnerKeyCount": 152,
+  "exactItem": {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "each split retains the original request identity and delivery promise",
+      "the change should have a bounded blast radius.",
+      "The rule must remain testable without requiring a live a repair-parts marketplace integration.",
+      "Existing callers must retain their observable contract unless the scenario explicitly requests evolution."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "boundaryOrTradeoff": "This choice is strongest when the change should have a bounded blast radius; if the requirement changes to an independently owned lifecycle or a genuinely different collaboration protocol, revisit the boundary instead of preserving the abstraction by habit.",
+        "errorCorrection": "The tempting alternatives either export state to a coordinator, weaken a subtype or ownership contract, or add indirection without a demonstrated need. Each makes the named constraint depend on behavior outside its owner.",
+        "mechanismOrProperty": "The learner must make the “State and behavior cohesion” design decision while preserving the relevant ownership, invariant, contract, and change boundary. The mechanism is to keep behavior with the state and rule it protects unless a separate policy boundary is explicit.",
+        "scenarioApplication": "the fulfillment specialist can apply the decision at the design boundary for state and behavior cohesion while keeping duplicate fulfillment visible as a failure rather than silently passing it to another caller.",
+        "transfer": "Transfer rule: locate the information and authority that can enforce the invariant, keep the contract there, and move only orchestration or translation across the boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "coordinator_exports_state",
+          "text": "It moves state and behavior cohesion is the primary decision; the decisive pressure is the change should have a bounded blast radius. into caller discipline and makes duplicate fulfillment possible when a different caller forgets the sequence."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "inheritance_for_reuse",
+          "text": "Reuse does not establish a valid subtype contract; this choice can change each split retains the original request identity and delivery promise or force unrelated scenarios into one hierarchy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "representation_leaks",
+          "text": "The caller becomes coupled to representation and can observe or create an invalid intermediate state instead of asking the owner to enforce the rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "speculative_indirection",
+          "text": "The added registry and event chain introduce lifecycle and debugging cost without a demonstrated second variation, ownership boundary, or delivery requirement."
+        }
+      ],
+      "reason": "Keep behavior with the state and rule it protects unless a separate policy boundary is explicit. That keeps the decisive design property inside an owner with the information and authority to enforce it, even as a second workflow variant is introduced.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep behavior with the state and rule it protects unless a separate policy boundary is explicit. In this case, that keeps the rule “each split retains the original request identity and delivery promise” inside the owner that can observe and enforce it."
+        },
+        {
+          "optionId": "coordinator_exports_state",
+          "text": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence."
+        },
+        {
+          "optionId": "inheritance_for_reuse",
+          "text": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract."
+        },
+        {
+          "optionId": "representation_leaks",
+          "text": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation."
+        },
+        {
+          "optionId": "speculative_indirection",
+          "text": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N02-B01",
+    "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+    "prompt": "In a repair-parts marketplace, the fulfillment specialist must split a backordered request across vendors. Each split retains the original request identity and delivery promise. The interview lens is “State and behavior cohesion”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a new requirement: which decision best preserves the contract?",
+    "questionId": "ood-n02-b01-i001",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/tutorial/java/concepts/index.html",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/tutorials/oop",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/net-core-microservice-domain-model",
+      "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/equality-comparisons"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  "interpretation": "Structural/scoring acceptance coexists with visible generic instructional lens/template distractors; 152 auxiliary individual review leads are not newsemantic approval. Actual B01sample inspected, matching8compactsource arrays captured. No production changes."
+}

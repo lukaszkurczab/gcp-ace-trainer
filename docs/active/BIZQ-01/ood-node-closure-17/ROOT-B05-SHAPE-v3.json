@@ -1,0 +1,17 @@
+{
+  "result": "PASS",
+  "interpretation": "proposal schema/identity/fixed-ID scoring and reversal only; style counts are warnings, not semantic verdicts or numeric gates",
+  "questionCount": 19,
+  "optionCases": 190,
+  "units": [
+    {
+      "unit": "OOD-N02-B05",
+      "proposalSha256": "2041196c63e85c69f93755e62aee19e96f16962a53d8b2630f489f9f92050723",
+      "questionCount": 19,
+      "advisory": {
+        "soleLongestCorrect": 11,
+        "repeatedReasonApplication": 0
+      }
+    }
+  ]
+}

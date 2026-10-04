@@ -1,0 +1,17 @@
+{
+  "result": "passed",
+  "counts": {
+    "tracks": 9,
+    "nodes": 117,
+    "mentalUnits": 943,
+    "questions": 16077
+  },
+  "historicalCounts": {
+    "tracks": 9,
+    "nodes": 117,
+    "mentalUnits": 932,
+    "questions": 16041
+  },
+  "semanticReplacementCount": 288,
+  "limits": "Root actual migration verification, not semantic/consumer/admission/native/full BIZQ acceptance"
+}

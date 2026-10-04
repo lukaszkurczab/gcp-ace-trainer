@@ -1,0 +1,1180 @@
+[
+  {
+    "beforeQuestionId": "ood-n02-b04-i001",
+    "questionId": "ood-n02-b04-i020",
+    "learningObjective": "Choose a responsibility boundary that lets each change follow its own cause.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b04-i020",
+      "prompt": "A cooperative loan record tracks principal and repayment allocations. The allocation rule changes only when lending terms change; bank-transfer message fields change whenever a payment network revises its API. Choose a responsibility boundary that lets each change follow its own cause.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i020_cohesion",
+            "text": "Keep repayment allocation with LoanAccount and put network message translation in a payment adapter."
+          },
+          {
+            "optionId": "b04_i020_alt_a",
+            "text": "Move both allocation and payment message construction into the bank adapter so the account need not know about repayment."
+          },
+          {
+            "optionId": "b04_i020_alt_b",
+            "text": "Split every repayment field into its own service because several teams touch the loan."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i020_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Separate responsibilities when their change triggers are independent; keep the loan’s allocation rule with its debt state. In this case, Keep repayment allocation with LoanAccount and put network message translation in a payment adapter.",
+        "details": {
+          "mechanismOrProperty": "Debt allocation follows loan terms, while external message formatting follows a provider contract.",
+          "scenarioApplication": "A bank API field update can be isolated without altering the borrower’s allocation rule.",
+          "errorCorrection": "The adapter protocol can change without changing how debt is allocated; combining them couples unrelated revisions. The prompt identifies two change causes, not a reason to scatter the allocation rule across field owners.",
+          "boundaryOrTradeoff": "If allocation policy itself changes, it still belongs with the loan facts that define the amount.",
+          "transfer": "Use the causes of change to draw a boundary, not the number of fields or teams."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i020_alt_a",
+            "text": "The adapter protocol can change without changing how debt is allocated; combining them couples unrelated revisions."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i020_alt_b",
+            "text": "The prompt identifies two change causes, not a reason to scatter the allocation rule across field owners."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i002",
+    "questionId": "ood-n02-b04-i021",
+    "learningObjective": "Choose how to isolate the independent time-source change.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "foundational_boundary",
+      "questionId": "ood-n02-b04-i021",
+      "prompt": "A tournament match tracks score and whether it is forfeited. The forfeit rule is set by the tournament format; the time source adapter changes when the venue changes its clock hardware. Choose how to isolate the independent time-source change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i021_alt_a",
+            "text": "Move score, time acquisition, and forfeit outcome into the venue clock driver."
+          },
+          {
+            "optionId": "b04_i021_alt_b",
+            "text": "Create a separate service for every score field so the match object has no state."
+          },
+          {
+            "optionId": "b04_i021_cohesion",
+            "text": "Let a ClockSource provide the time, while Match applies the tournament’s forfeit rule to its own state."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i021_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Separate time acquisition from match outcome while keeping the forfeit decision tied to the match and tournament rule. In this case, Let a ClockSource provide the time, while Match applies the tournament’s forfeit rule to its own state.",
+        "details": {
+          "mechanismOrProperty": "The match owns score and format-specific outcome; the clock adapter owns hardware communication.",
+          "scenarioApplication": "A clock replacement changes time acquisition while the match rule stays stable.",
+          "errorCorrection": "The clock hardware contract changes independently and does not own tournament score or forfeit policy. That fragments one match outcome without any separate change trigger in the scenario.",
+          "boundaryOrTradeoff": "If tournament formats become independently configurable, supply the selected format as explicit match context.",
+          "transfer": "Keep responsibilities together when their rules change together and separate the external mechanism with its own change cause."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i021_alt_a",
+            "text": "The clock hardware contract changes independently and does not own tournament score or forfeit policy."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i021_alt_b",
+            "text": "That fragments one match outcome without any separate change trigger in the scenario."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i003",
+    "questionId": "ood-n02-b04-i022",
+    "learningObjective": "Choose how to keep a camera replacement from changing return classification behavior.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "intermediate",
+      "questionId": "ood-n02-b04-i022",
+      "prompt": "A returns record stores a classification and inspector notes. Classification criteria are revised by the product-safety committee; camera file formats change when inspection tablets are replaced. Choose how to keep a camera replacement from changing return classification behavior.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i022_alt_b",
+            "text": "Duplicate classification rules in each tablet integration so each device can tune its own result."
+          },
+          {
+            "optionId": "b04_i022_cohesion",
+            "text": "Let ReturnInspection apply the committee’s classification criteria; a media adapter translates tablet files into inspection evidence."
+          },
+          {
+            "optionId": "b04_i022_alt_a",
+            "text": "Move classification into the camera adapter because it already receives the inspection images."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i022_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep the classification responsibility with return facts and isolate camera-format translation. In this case, Let ReturnInspection apply the committee’s classification criteria; a media adapter translates tablet files into inspection evidence.",
+        "details": {
+          "mechanismOrProperty": "Classification changes with safety criteria; file decoding changes with tablet technology.",
+          "scenarioApplication": "A new camera format can be supported without changing the decision made from the same evidence.",
+          "errorCorrection": "A device-format update would then alter product-safety decisions even though those criteria change for another reason. The committee owns one stated criteria set, so duplicated copies can diverge without a product reason.",
+          "boundaryOrTradeoff": "If a safety committee changes an input field, update the classification rule at its owner rather than the decoder.",
+          "transfer": "Separate a volatile technical representation from the stable responsibility that interprets domain facts."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i022_alt_b",
+            "text": "The committee owns one stated criteria set, so duplicated copies can diverge without a product reason."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i022_alt_a",
+            "text": "A device-format update would then alter product-safety decisions even though those criteria change for another reason."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i004",
+    "questionId": "ood-n02-b04-i023",
+    "learningObjective": "Choose the boundary that preserves scientific meaning across a renderer update.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "intermediate_transfer",
+      "questionId": "ood-n02-b04-i023",
+      "prompt": "A research notebook publishes a result snapshot. Scientific inclusion rules change when a study protocol changes; the PDF rendering library changes when the publishing platform updates. Choose the boundary that preserves scientific meaning across a renderer update.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i023_cohesion",
+            "text": "Have Notebook create the selected immutable result snapshot and pass it to a PDF renderer."
+          },
+          {
+            "optionId": "b04_i023_alt_a",
+            "text": "Let the PDF renderer choose which observations count as the result while it formats the page."
+          },
+          {
+            "optionId": "b04_i023_alt_b",
+            "text": "Have every notebook screen select observations and produce its own PDF bytes."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i023_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep snapshot selection with notebook study state and isolate output rendering as a separate change responsibility. In this case, Have Notebook create the selected immutable result snapshot and pass it to a PDF renderer.",
+        "details": {
+          "mechanismOrProperty": "Study protocol governs snapshot selection; document technology governs rendering.",
+          "scenarioApplication": "The platform can change its PDF library without changing which observations a result contains.",
+          "errorCorrection": "A rendering-library change would then change scientific inclusion semantics. The same study could publish different result sets from different screens.",
+          "boundaryOrTradeoff": "A renderer may report that it cannot represent a value, but it should not decide whether that value belongs in the study result.",
+          "transfer": "Separate interpretation from representation when they respond to different changes."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i023_alt_a",
+            "text": "A rendering-library change would then change scientific inclusion semantics."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i023_alt_b",
+            "text": "The same study could publish different result sets from different screens."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i005",
+    "questionId": "ood-n02-b04-i024",
+    "learningObjective": "Choose how to isolate the mail-provider revision.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "advanced_tradeoff",
+      "questionId": "ood-n02-b04-i024",
+      "prompt": "A review workspace accepts a comment into an article thread and notifies the assigned author. Acceptance rules change with editorial policy; notification-provider APIs change when the mail vendor changes. Choose how to isolate the mail-provider revision.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i024_alt_a",
+            "text": "Move comment acceptance into the mail adapter because it knows the assigned author’s address."
+          },
+          {
+            "optionId": "b04_i024_alt_b",
+            "text": "Copy editorial rules into each notification provider implementation."
+          },
+          {
+            "optionId": "b04_i024_cohesion",
+            "text": "Have ReviewThread accept the comment under editorial rules, then send a notification through a provider adapter."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i024_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep the editorial acceptance decision with the thread and separate delivery translation. In this case, Have ReviewThread accept the comment under editorial rules, then send a notification through a provider adapter.",
+        "details": {
+          "mechanismOrProperty": "The thread owns comment acceptance; provider integration owns message delivery.",
+          "scenarioApplication": "A mail-vendor API change affects delivery code without changing article review rules.",
+          "errorCorrection": "Changing mail delivery should not change which comments the editorial policy accepts. Provider changes can then create inconsistent acceptance decisions across the same workspace.",
+          "boundaryOrTradeoff": "Notification failure can be handled separately from whether the comment was accepted.",
+          "transfer": "Distinguish the decision that changes domain state from the independently changing means of communicating it."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i024_alt_a",
+            "text": "Changing mail delivery should not change which comments the editorial policy accepts."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i024_alt_b",
+            "text": "Provider changes can then create inconsistent acceptance decisions across the same workspace."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i006",
+    "questionId": "ood-n02-b04-i025",
+    "learningObjective": "Choose how to limit changes caused by a new offline transport protocol.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "advanced_failure",
+      "questionId": "ood-n02-b04-i025",
+      "prompt": "A field inspection app stores observations and an inspector’s signed submission. Conflict resolution rules change when the inspection program changes; the offline transport protocol changes with mobile platform releases. Choose how to limit changes caused by a new offline transport protocol.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i025_alt_b",
+            "text": "Reimplement the reconciliation rule in every mobile screen that can edit an inspection."
+          },
+          {
+            "optionId": "b04_i025_cohesion",
+            "text": "Keep observation reconciliation under the inspection program’s rules and isolate offline queue encoding in a sync adapter."
+          },
+          {
+            "optionId": "b04_i025_alt_a",
+            "text": "Let the sync adapter decide which conflicting observation is authoritative based on arrival order."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i025_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep inspection interpretation with its domain record and separate synchronization mechanics. In this case, Keep observation reconciliation under the inspection program’s rules and isolate offline queue encoding in a sync adapter.",
+        "details": {
+          "mechanismOrProperty": "The inspection record and program rules determine the accepted observations; transport carries pending edits.",
+          "scenarioApplication": "A platform protocol change does not redefine which submitted observation is valid.",
+          "errorCorrection": "Transport arrival order changes with connectivity and is not the stated inspection-program rule. Each screen can then preserve a different signed result for the same inspection facts.",
+          "boundaryOrTradeoff": "If the program changes how conflicts are resolved, revise that rule independently of queue serialization.",
+          "transfer": "Place changeable integration mechanics outside the domain decision they carry."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i025_alt_b",
+            "text": "Each screen can then preserve a different signed result for the same inspection facts."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i025_alt_a",
+            "text": "Transport arrival order changes with connectivity and is not the stated inspection-program rule."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i007",
+    "questionId": "ood-n02-b04-i026",
+    "learningObjective": "Choose how to handle a partner layout revision.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b04-i026",
+      "prompt": "An invoice exchange owns invoice lines and tax totals. Tax rules change when jurisdiction policy changes; document layout changes when a trading partner revises its required file format. Choose how to handle a partner layout revision.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i026_cohesion",
+            "text": "Have Invoice calculate its tax total and let a partner formatter map the invoice into the required file."
+          },
+          {
+            "optionId": "b04_i026_alt_a",
+            "text": "Put tax calculation in each partner formatter because it already writes the tax field."
+          },
+          {
+            "optionId": "b04_i026_alt_b",
+            "text": "Build one formatter that hard-codes every partner layout and tax rule into the invoice object."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i026_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep tax calculation with invoice facts and isolate partner-specific document mapping. In this case, Have Invoice calculate its tax total and let a partner formatter map the invoice into the required file.",
+        "details": {
+          "mechanismOrProperty": "Tax interpretation and partner representation have independent change triggers.",
+          "scenarioApplication": "A partner’s renamed field can be mapped without altering the invoice’s calculated total.",
+          "errorCorrection": "A file-layout revision would then risk changing a tax result whose change source is jurisdiction policy. The invoice would change for unrelated external partner formats as well as tax policy.",
+          "boundaryOrTradeoff": "A tax rule update may affect many partner outputs, but does not require changing each mapping.",
+          "transfer": "Separate policy from partner representation when each changes for a different reason."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i026_alt_a",
+            "text": "A file-layout revision would then risk changing a tax result whose change source is jurisdiction policy."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i026_alt_b",
+            "text": "The invoice would change for unrelated external partner formats as well as tax policy."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i008",
+    "questionId": "ood-n02-b04-i027",
+    "learningObjective": "Choose a boundary for the new lock vendor integration.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "foundational_boundary",
+      "questionId": "ood-n02-b04-i027",
+      "prompt": "An access controller records badge grants and revocations. Revocation policy changes with facility rules; lock-device command framing changes when a door vendor is replaced. Choose a boundary for the new lock vendor integration.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i027_alt_a",
+            "text": "Let the lock adapter decide whether a badge is revoked based on the device’s local cache."
+          },
+          {
+            "optionId": "b04_i027_alt_b",
+            "text": "Embed each lock vendor’s command format in AccessGrant so it can send hardware instructions directly."
+          },
+          {
+            "optionId": "b04_i027_cohesion",
+            "text": "Have AccessGrant record revocation under facility policy and use a lock adapter to translate resulting access changes."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i027_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep the access decision in the grant lifecycle and isolate device command framing. In this case, Have AccessGrant record revocation under facility policy and use a lock adapter to translate resulting access changes.",
+        "details": {
+          "mechanismOrProperty": "Facility policy governs grant state; vendor framing governs communication with a lock.",
+          "scenarioApplication": "The new device can use different commands while a revoked badge remains revoked by the same rule.",
+          "errorCorrection": "A vendor’s cache behavior would then determine facility authorization policy. A hardware replacement would force grant lifecycle changes unrelated to revocation policy.",
+          "boundaryOrTradeoff": "The adapter may report device failure, but that does not reverse the access decision automatically.",
+          "transfer": "Separate a policy decision from the external mechanism that enacts it."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i027_alt_a",
+            "text": "A vendor’s cache behavior would then determine facility authorization policy."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i027_alt_b",
+            "text": "A hardware replacement would force grant lifecycle changes unrelated to revocation policy."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i009",
+    "questionId": "ood-n02-b04-i028",
+    "learningObjective": "Choose what should change when a carrier adds a required label field.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "intermediate",
+      "questionId": "ood-n02-b04-i028",
+      "prompt": "A shipment owns its destination and shipping status. Carrier label APIs add fields on their own schedule; fulfillment changes when operations revise the handoff rule. Choose what should change when a carrier adds a required label field.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i028_alt_b",
+            "text": "Let the carrier adapter decide whether the shipment is ready for handoff from its request fields."
+          },
+          {
+            "optionId": "b04_i028_cohesion",
+            "text": "Keep handoff status on Shipment and let the carrier adapter map its destination and package facts into the expanded label request."
+          },
+          {
+            "optionId": "b04_i028_alt_a",
+            "text": "Add every carrier-specific field to Shipment and make the shipment object construct each carrier request."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i028_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Separate carrier protocol mapping from shipment fulfillment responsibility. In this case, Keep handoff status on Shipment and let the carrier adapter map its destination and package facts into the expanded label request.",
+        "details": {
+          "mechanismOrProperty": "Shipment owns its fulfillment state; the adapter owns carrier-specific request shape.",
+          "scenarioApplication": "Adding a carrier field changes the mapping while the handoff policy can remain unchanged.",
+          "errorCorrection": "A carrier-specific API revision would force the domain shipment model to change for an external format. The adapter’s required fields do not define the fulfillment readiness rule.",
+          "boundaryOrTradeoff": "If the fulfillment rule itself changes, that is a separate domain change to Shipment.",
+          "transfer": "Use the reason for a change to distinguish business state from an external contract."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i028_alt_b",
+            "text": "The adapter’s required fields do not define the fulfillment readiness rule."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i028_alt_a",
+            "text": "A carrier-specific API revision would force the domain shipment model to change for an external format."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i010",
+    "questionId": "ood-n02-b04-i029",
+    "learningObjective": "Choose how to respond to a new localized time format.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "intermediate_transfer",
+      "questionId": "ood-n02-b04-i029",
+      "prompt": "A rehearsal schedule checks room availability and renders start times in a chosen locale. Room-capacity policy changes when the venue updates safety limits; time formatting changes when localization rules or supported languages change. Choose how to respond to a new localized time format.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i029_cohesion",
+            "text": "Let Schedule apply the current capacity rule and a presenter format its chosen start time for each locale."
+          },
+          {
+            "optionId": "b04_i029_alt_a",
+            "text": "Move capacity checks into the locale formatter because it already receives the room and start time."
+          },
+          {
+            "optionId": "b04_i029_alt_b",
+            "text": "Store one localized display string as the authoritative schedule time and use it for room checks."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i029_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep room eligibility with schedule facts and separate localized presentation. In this case, Let Schedule apply the current capacity rule and a presenter format its chosen start time for each locale.",
+        "details": {
+          "mechanismOrProperty": "Capacity and localized presentation respond to different change causes.",
+          "scenarioApplication": "A translation update does not change the room decision or scheduled instant.",
+          "errorCorrection": "A translation change should not alter whether the venue has enough capacity. A display representation can vary by viewer and is not a stable input to capacity eligibility.",
+          "boundaryOrTradeoff": "If time-zone interpretation affects the actual scheduled instant, model that scheduling fact separately from display formatting.",
+          "transfer": "Keep a business rule and a viewer-specific representation separate when their change triggers differ."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i029_alt_a",
+            "text": "A translation change should not alter whether the venue has enough capacity."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i029_alt_b",
+            "text": "A display representation can vary by viewer and is not a stable input to capacity eligibility."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i011",
+    "questionId": "ood-n02-b04-i030",
+    "learningObjective": "Choose where the protocol upgrade should be handled.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "advanced_tradeoff",
+      "questionId": "ood-n02-b04-i030",
+      "prompt": "An exhibit controller stores its operating mode and rejects unsafe commands in maintenance mode. The safety rule changes with exhibit procedures; remote command framing changes when the control-panel protocol is upgraded. Choose where the protocol upgrade should be handled.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i030_alt_a",
+            "text": "Move the maintenance rule into the new panel protocol adapter."
+          },
+          {
+            "optionId": "b04_i030_alt_b",
+            "text": "Have every panel implement its own maintenance-mode check before sending commands."
+          },
+          {
+            "optionId": "b04_i030_cohesion",
+            "text": "Have ExhibitController enforce the safety rule and use a protocol adapter to translate remote commands."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i030_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep mode-dependent safety behavior with exhibit state and isolate control-panel framing. In this case, Have ExhibitController enforce the safety rule and use a protocol adapter to translate remote commands.",
+        "details": {
+          "mechanismOrProperty": "The controller owns mode and safety behavior; the adapter owns panel protocol translation.",
+          "scenarioApplication": "A protocol upgrade does not change the exhibit’s maintenance rule.",
+          "errorCorrection": "A panel protocol update would then alter safety behavior that changes with exhibit procedures. Local and remote panels can then disagree about which operations are unsafe.",
+          "boundaryOrTradeoff": "A local panel can call the same controller behavior without the remote adapter.",
+          "transfer": "Separate the rule from the channel that invokes it when those responsibilities change independently."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i030_alt_a",
+            "text": "A panel protocol update would then alter safety behavior that changes with exhibit procedures."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i030_alt_b",
+            "text": "Local and remote panels can then disagree about which operations are unsafe."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i012",
+    "questionId": "ood-n02-b04-i031",
+    "learningObjective": "Choose how to accommodate a streaming vendor API change.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "advanced_failure",
+      "questionId": "ood-n02-b04-i031",
+      "prompt": "A lesson library stores stable lesson identity and learner progress. Course content editors revise lesson text; video-host APIs change when the streaming vendor changes. Choose how to accommodate a streaming vendor API change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i031_alt_b",
+            "text": "Put video-host request fields directly on Lesson and update the domain model whenever the vendor adds one."
+          },
+          {
+            "optionId": "b04_i031_cohesion",
+            "text": "Keep progress linked to Lesson identity and use a media adapter to translate the selected content into the video host request."
+          },
+          {
+            "optionId": "b04_i031_alt_a",
+            "text": "Move learner progress into the video-host adapter so it can follow each vendor’s identifiers."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i031_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep lesson identity and progress separate from the independently changing stream provider mapping. In this case, Keep progress linked to Lesson identity and use a media adapter to translate the selected content into the video host request.",
+        "details": {
+          "mechanismOrProperty": "Lesson owns educational identity and progress references; the adapter owns streaming protocol details.",
+          "scenarioApplication": "A vendor replacement can preserve lesson history while its request mapping changes.",
+          "errorCorrection": "Replacing the vendor would then change progress continuity even though the lesson identity stays stable. A vendor API change is independent of the lesson and progress relationship.",
+          "boundaryOrTradeoff": "A content edit may create a new content revision without changing the lesson identity if that is the library’s rule.",
+          "transfer": "Protect domain continuity from changes in an external delivery contract."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i031_alt_b",
+            "text": "A vendor API change is independent of the lesson and progress relationship."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i031_alt_a",
+            "text": "Replacing the vendor would then change progress continuity even though the lesson identity stays stable."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i013",
+    "questionId": "ood-n02-b04-i032",
+    "learningObjective": "Choose how to prepare for a new archive schema.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b04-i032",
+      "prompt": "A whiteboard session owns accepted strokes and a closing state. The export archive format changes when storage vendors revise their file schema; the collaboration rule changes when product policy changes how concurrent strokes are resolved. Choose how to prepare for a new archive schema.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i032_cohesion",
+            "text": "Have WhiteboardSession provide a stable accepted-stroke snapshot to an archive serializer for the selected file schema."
+          },
+          {
+            "optionId": "b04_i032_alt_a",
+            "text": "Move concurrent-stroke acceptance into the serializer so it can write whichever format is current."
+          },
+          {
+            "optionId": "b04_i032_alt_b",
+            "text": "Keep a separate accepted-stroke list in each archive writer."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i032_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep stroke acceptance with session behavior and isolate archive serialization. In this case, Have WhiteboardSession provide a stable accepted-stroke snapshot to an archive serializer for the selected file schema.",
+        "details": {
+          "mechanismOrProperty": "The session owns accepted collaboration state; archive code owns output representation.",
+          "scenarioApplication": "A new archive format can encode the same accepted session snapshot differently.",
+          "errorCorrection": "A storage schema revision would then change which participant strokes become accepted. Writers could export different session histories from the same board.",
+          "boundaryOrTradeoff": "If conflict policy changes, update the session’s collaboration behavior independently.",
+          "transfer": "Separate what the domain has accepted from how a particular storage format encodes it."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i032_alt_a",
+            "text": "A storage schema revision would then change which participant strokes become accepted."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i032_alt_b",
+            "text": "Writers could export different session histories from the same board."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i014",
+    "questionId": "ood-n02-b04-i033",
+    "learningObjective": "Choose how to isolate a messaging vendor replacement.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "foundational_boundary",
+      "questionId": "ood-n02-b04-i033",
+      "prompt": "A support case owns assignee and response deadline. Escalation priority changes with support policy; the notification system changes when the messaging vendor changes. Choose how to isolate a messaging vendor replacement.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i033_alt_a",
+            "text": "Let the messaging adapter decide which cases are urgent based on message type."
+          },
+          {
+            "optionId": "b04_i033_alt_b",
+            "text": "Put vendor-specific message fields on SupportCase and update it with each provider contract."
+          },
+          {
+            "optionId": "b04_i033_cohesion",
+            "text": "Have SupportCase determine its escalation state and let a notifier adapter deliver the assigned team’s message."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i033_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep case escalation policy with case facts and separate the changing delivery channel. In this case, Have SupportCase determine its escalation state and let a notifier adapter deliver the assigned team’s message.",
+        "details": {
+          "mechanismOrProperty": "Support policy governs escalation; provider integration governs notification delivery.",
+          "scenarioApplication": "A new vendor can receive the same escalation decision through a different message shape.",
+          "errorCorrection": "The provider’s message categories do not define the support policy that sets urgency. The case lifecycle would change for an unrelated communication format revision.",
+          "boundaryOrTradeoff": "Notification failure should be observable without silently changing the case’s urgency.",
+          "transfer": "Separate policy from the means of communicating its outcome when they change for different reasons."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i033_alt_a",
+            "text": "The provider’s message categories do not define the support policy that sets urgency."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i033_alt_b",
+            "text": "The case lifecycle would change for an unrelated communication format revision."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i015",
+    "questionId": "ood-n02-b04-i034",
+    "learningObjective": "Choose a design that accommodates a new thumbnail format without moving listing eligibility rules.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "intermediate",
+      "questionId": "ood-n02-b04-i034",
+      "prompt": "A produce listing stores price, stock, and publication status. Publication eligibility changes with market rules; image thumbnails change format when the CDN changes. Choose a design that accommodates a new thumbnail format without moving listing eligibility rules.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i034_alt_b",
+            "text": "Store thumbnail transformation policy and publication status in one Listing method."
+          },
+          {
+            "optionId": "b04_i034_cohesion",
+            "text": "Have Listing evaluate publication from price and stock, while an image adapter produces the CDN’s requested thumbnail format."
+          },
+          {
+            "optionId": "b04_i034_alt_a",
+            "text": "Move listing publication into the CDN adapter because it already receives the product image."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i034_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep listing publication with its market facts and isolate image transformation. In this case, Have Listing evaluate publication from price and stock, while an image adapter produces the CDN’s requested thumbnail format.",
+        "details": {
+          "mechanismOrProperty": "Listing owns publication state; the image adapter owns CDN representation.",
+          "scenarioApplication": "The CDN can switch formats without changing whether the listing is eligible to publish.",
+          "errorCorrection": "A media-format update should not change the market rule for price and stock. The transform can change independently while listing eligibility remains governed by different facts.",
+          "boundaryOrTradeoff": "A new market eligibility rule belongs with Listing even if a thumbnail format is unchanged.",
+          "transfer": "Separate responsibilities by the change that should make each one move."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i034_alt_b",
+            "text": "The transform can change independently while listing eligibility remains governed by different facts."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i034_alt_a",
+            "text": "A media-format update should not change the market rule for price and stock."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i016",
+    "questionId": "ood-n02-b04-i035",
+    "learningObjective": "Choose how a clearing-network field addition should affect repayment allocation.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "intermediate_transfer",
+      "questionId": "ood-n02-b04-i035",
+      "prompt": "A lending ledger stores repayment amount and how it is allocated across loans. The allocation rule changes when a loan contract changes; bank settlement messages change when the clearing network changes. Choose how a clearing-network field addition should affect repayment allocation.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i035_cohesion",
+            "text": "Have LoanAccount allocate the repayment under its contract and let a settlement adapter encode the resulting transfer."
+          },
+          {
+            "optionId": "b04_i035_alt_a",
+            "text": "Move allocation into the clearing adapter so it can populate the network’s new field."
+          },
+          {
+            "optionId": "b04_i035_alt_b",
+            "text": "Make each bank integration compute its own allocation from the repayment amount."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i035_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep contract allocation attached to loan state and isolate clearing-message mapping. In this case, Have LoanAccount allocate the repayment under its contract and let a settlement adapter encode the resulting transfer.",
+        "details": {
+          "mechanismOrProperty": "Loan contract governs allocation; clearing network governs settlement representation.",
+          "scenarioApplication": "A new network field changes encoding without changing how the repayment is divided.",
+          "errorCorrection": "A clearing protocol update would then change a borrower’s contract allocation. Different clearing networks could allocate the same contract repayment differently.",
+          "boundaryOrTradeoff": "The adapter can report a rejected transfer while the loan records the settlement outcome separately.",
+          "transfer": "Keep a domain calculation with its governing contract and isolate external transport changes."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i035_alt_a",
+            "text": "A clearing protocol update would then change a borrower’s contract allocation."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i035_alt_b",
+            "text": "Different clearing networks could allocate the same contract repayment differently."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i017",
+    "questionId": "ood-n02-b04-i036",
+    "learningObjective": "Choose how to accommodate a new map-tile provider.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "advanced_tradeoff",
+      "questionId": "ood-n02-b04-i036",
+      "prompt": "A garden allocation records plot assignment and soil approval. Eligibility criteria change when the community revises its growing rules; map tiles change when the geographic provider changes. Choose how to accommodate a new map-tile provider.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i036_alt_a",
+            "text": "Let the map adapter decide whether the gardener qualifies because it receives the plot coordinates."
+          },
+          {
+            "optionId": "b04_i036_alt_b",
+            "text": "Put plot geometry, eligibility rules, and tile request details into each map screen."
+          },
+          {
+            "optionId": "b04_i036_cohesion",
+            "text": "Have PlotAssignment apply the soil and eligibility rules; a map adapter renders the plot geometry from the selected map provider."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i036_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep plot eligibility with the allocation facts and separate geographic rendering. In this case, Have PlotAssignment apply the soil and eligibility rules; a map adapter renders the plot geometry from the selected map provider.",
+        "details": {
+          "mechanismOrProperty": "Eligibility and provider rendering respond to different changes.",
+          "scenarioApplication": "A map provider change affects display without changing who qualifies for a plot.",
+          "errorCorrection": "A tile provider’s changes do not define the community’s eligibility criteria. Map screens can then apply inconsistent eligibility decisions while duplicating provider mapping.",
+          "boundaryOrTradeoff": "If plot boundaries change, update the authoritative allocation geometry separately from its rendered tiles.",
+          "transfer": "Keep the domain decision stable when its presentation provider changes."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i036_alt_a",
+            "text": "A tile provider’s changes do not define the community’s eligibility criteria."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i036_alt_b",
+            "text": "Map screens can then apply inconsistent eligibility decisions while duplicating provider mapping."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i018",
+    "questionId": "ood-n02-b04-i037",
+    "learningObjective": "Choose a boundary for the catalog search schema revision.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "advanced_failure",
+      "questionId": "ood-n02-b04-i037",
+      "prompt": "A bundle record selects component offers and has a price calculation. Pricing rules change when commercial terms change; search-index fields change when the catalog search vendor revises its schema. Choose a boundary for the catalog search schema revision.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i037_alt_b",
+            "text": "Copy component selection and price into each search index writer."
+          },
+          {
+            "optionId": "b04_i037_cohesion",
+            "text": "Have Bundle calculate its price from selected offers and let a search adapter map the bundle into the vendor document."
+          },
+          {
+            "optionId": "b04_i037_alt_a",
+            "text": "Move price calculation into the search adapter because it already reads component fields."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i037_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep bundle composition and pricing under domain rules while isolating search-document mapping. In this case, Have Bundle calculate its price from selected offers and let a search adapter map the bundle into the vendor document.",
+        "details": {
+          "mechanismOrProperty": "Commercial terms govern price; search schema governs indexing representation.",
+          "scenarioApplication": "The vendor can add or rename a field without changing the bundle price rule.",
+          "errorCorrection": "A search schema change would then alter the price customers see. Different writers can publish different prices for the same bundle state.",
+          "boundaryOrTradeoff": "A search projection may be rebuilt from the bundle but should not become a second price authority.",
+          "transfer": "Separate a customer-facing rule from a technical projection whose schema changes independently."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i037_alt_b",
+            "text": "Different writers can publish different prices for the same bundle state."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i037_alt_a",
+            "text": "A search schema change would then alter the price customers see."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b04-i019",
+    "questionId": "ood-n02-b04-i038",
+    "learningObjective": "Choose how to respond to a billing-provider API change.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B04",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b04-i038",
+      "prompt": "A charging reservation stores connector, window, and reservation status. Reservation policy changes with utility programs; billing-provider APIs change when payment vendors add fields. Choose how to respond to a billing-provider API change.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b04_i038_cohesion",
+            "text": "Have ChargingReservation apply utility reservation rules and let a billing adapter translate completed usage into the provider request."
+          },
+          {
+            "optionId": "b04_i038_alt_a",
+            "text": "Let the billing adapter decide whether a connector may be reserved based on its payment fields."
+          },
+          {
+            "optionId": "b04_i038_alt_b",
+            "text": "Add each provider’s billing fields to ChargingReservation and let it construct vendor-specific requests."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b04_i038_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep the reservation lifecycle with its operational state and isolate billing translation. In this case, Have ChargingReservation apply utility reservation rules and let a billing adapter translate completed usage into the provider request.",
+        "details": {
+          "mechanismOrProperty": "Utility policy governs reservations; billing integration governs provider communication.",
+          "scenarioApplication": "A billing vendor can change without altering which time windows are reservable.",
+          "errorCorrection": "Payment request shape does not define the utility’s reservation eligibility rule. A provider revision would then change the reservation model despite separate change triggers.",
+          "boundaryOrTradeoff": "The reservation may supply completed usage to the adapter without transferring ownership of its lifecycle.",
+          "transfer": "Separate operational responsibility from an external service contract when each changes for its own reason."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i038_alt_a",
+            "text": "Payment request shape does not define the utility’s reservation eligibility rule."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b04_i038_alt_b",
+            "text": "A provider revision would then change the reservation model despite separate change triggers."
+          }
+        ]
+      }
+    }
+  }
+]

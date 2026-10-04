@@ -1,0 +1,66 @@
+{
+  "result": "PASS",
+  "artifactCount": 9,
+  "questionCount": 16077,
+  "preservedOtherArtifactBytes": 8,
+  "preservedOtherOODQuestionObjects": 1261,
+  "preservedOtherGlobalQuestionObjects": 15925,
+  "oodMetadataChange": "contentVersion only; questions fixed152 replacement; simulationProfiles/schemaVersion/trackId exact. Ordinary pools checked separately in ROOT-CONSUMER-GREEN.log.",
+  "artifacts": [
+    {
+      "trackId": "aws-certified-solutions-architect-associate",
+      "sha256": "c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9",
+      "unchanged": true,
+      "questionCount": 2604
+    },
+    {
+      "trackId": "backend-system-design-interview",
+      "sha256": "5a202c133d78b908e2e73870e426c379f529b65ad89add0ebdfec0be72e92942",
+      "unchanged": true,
+      "questionCount": 1569
+    },
+    {
+      "trackId": "claude-certified-architect-professional-certification",
+      "sha256": "7d6d12a49d67642e3144d062a6d237bec4604917ab34124e4ee121263c6beb2d",
+      "unchanged": true,
+      "questionCount": 300
+    },
+    {
+      "trackId": "coding-interview-dsa-problem-solving",
+      "sha256": "4ceb71ebf2edd963dd6f1bdd274dface6da667dd7d3586fa44b52efe45f263f6",
+      "unchanged": true,
+      "questionCount": 3404
+    },
+    {
+      "trackId": "frontend-system-design-interview",
+      "sha256": "7de3a0bd8860eef726c6bb11cbf8e0bbc88ff0282d1a4575cbf94cc5fb9dd9bf",
+      "unchanged": true,
+      "questionCount": 1766
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "sha256": "eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9",
+      "unchanged": true,
+      "questionCount": 2981
+    },
+    {
+      "trackId": "microsoft-azure-administrator-associate-az-104",
+      "sha256": "80e5b920beade4a9b540dfa505aa67368c07c99497998314935be53da9013975",
+      "unchanged": true,
+      "questionCount": 1288
+    },
+    {
+      "trackId": "microsoft-azure-ai-fundamentals-ai-901",
+      "sha256": "ef25741799306c6cfbc7cc90cb7d76492f3df639c056b61b1c2b0492f5fbb9d4",
+      "unchanged": true,
+      "questionCount": 752
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sha256": "0415eae170f08689d775d77507ace85e2e38212119c7a7ead330a8a91ab2c8be",
+      "unchanged": false,
+      "questionCount": 1413
+    }
+  ],
+  "limits": "Actual bundled catalog preservation; persisted/native/Premium behavior not asserted"
+}

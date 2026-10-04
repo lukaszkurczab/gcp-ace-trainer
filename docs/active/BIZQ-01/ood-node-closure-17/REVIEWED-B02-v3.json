@@ -1,0 +1,1180 @@
+[
+  {
+    "beforeQuestionId": "ood-n02-b02-i001",
+    "questionId": "ood-n02-b02-i020",
+    "learningObjective": "Choose the retirement transition that preserves the stated enrollment and progress behavior.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b02-i020",
+      "prompt": "A course lesson has states Draft, Published, and Retired. Retirement prevents new enrollment, while existing learners keep their progress record linked to the lesson ID. Choose the retirement transition that preserves the stated enrollment and progress behavior.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i020_cohesion",
+            "text": "Have Lesson.retire stop new enrollment and mark the lesson retired without changing its stable ID."
+          },
+          {
+            "optionId": "b02_i020_alt_a",
+            "text": "Delete the lesson row and let progress records recreate it if a learner opens an old course."
+          },
+          {
+            "optionId": "b02_i020_alt_b",
+            "text": "Keep the lesson published but ask each enrollment screen to hide it from new learners."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i020_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Represent retirement as a valid lifecycle transition while preserving the identity needed by existing records. In this case, Have Lesson.retire stop new enrollment and mark the lesson retired without changing its stable ID.",
+        "details": {
+          "mechanismOrProperty": "The lesson owns its lifecycle status and stable identity; its transition changes availability without erasing the referent.",
+          "scenarioApplication": "Existing progress continues to refer to the same lesson while new enrollment is stopped.",
+          "errorCorrection": "Deletion removes the referent the prompt says existing progress must continue to use. Another enrollment path can still accept a learner because the lifecycle state never changed.",
+          "boundaryOrTradeoff": "If historical records need a display snapshot, that can be added without replacing the lesson identity.",
+          "transfer": "A legal transition should change the intended state while retaining other facts the prompt says remain valid."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i020_alt_a",
+            "text": "Deletion removes the referent the prompt says existing progress must continue to use."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i020_alt_b",
+            "text": "Another enrollment path can still accept a learner because the lifecycle state never changed."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i002",
+    "questionId": "ood-n02-b02-i021",
+    "learningObjective": "Choose how a room move should handle one accepted input and one rejected input.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "foundational_boundary",
+      "questionId": "ood-n02-b02-i021",
+      "prompt": "A studio booking may move from Requested to Confirmed only after the room and time are both accepted. A rejected move must leave the previous confirmed slot intact. Choose how a room move should handle one accepted input and one rejected input.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i021_alt_a",
+            "text": "Write the new room immediately, then keep the old time if the time check fails."
+          },
+          {
+            "optionId": "b02_i021_alt_b",
+            "text": "Clear the existing slot first so no old booking can survive a failed move."
+          },
+          {
+            "optionId": "b02_i021_cohesion",
+            "text": "Have Booking propose the new room and time, then replace the confirmed slot only after both acceptances succeed."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i021_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Make a multi-field state transition preserve the old valid state when its preconditions are not all met. In this case, Have Booking propose the new room and time, then replace the confirmed slot only after both acceptances succeed.",
+        "details": {
+          "mechanismOrProperty": "Booking owns the confirmed room/time pair and the move transition.",
+          "scenarioApplication": "A failed proposal leaves the original pair intact; a successful one replaces both fields together.",
+          "errorCorrection": "That leaves a mixed slot that was never accepted as a room-and-time pair. The prompt explicitly requires the previous confirmed slot to remain when the move is rejected.",
+          "boundaryOrTradeoff": "If the system later permits partial holds, represent that as a separate state with its own meaning.",
+          "transfer": "For a transition over coupled fields, preserve the previous valid state until the replacement is accepted."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i021_alt_a",
+            "text": "That leaves a mixed slot that was never accepted as a room-and-time pair."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i021_alt_b",
+            "text": "The prompt explicitly requires the previous confirmed slot to remain when the move is rejected."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i003",
+    "questionId": "ood-n02-b02-i022",
+    "learningObjective": "Choose the transition after an export attempt reports a failure.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "intermediate",
+      "questionId": "ood-n02-b02-i022",
+      "prompt": "A whiteboard session can be Open, Closing, or Closed. Export is available only after all accepted strokes are included; a failed export keeps the session Closing and retryable. Choose the transition after an export attempt reports a failure.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i022_alt_b",
+            "text": "Return the session to Open after failure and allow new strokes to arrive."
+          },
+          {
+            "optionId": "b02_i022_cohesion",
+            "text": "Leave the session in Closing and permit export retry; mark Closed only after a complete export is confirmed."
+          },
+          {
+            "optionId": "b02_i022_alt_a",
+            "text": "Mark the session Closed before export starts, then discard it if the writer fails."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i022_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Use an explicit intermediate state when completion depends on a fallible operation. In this case, Leave the session in Closing and permit export retry; mark Closed only after a complete export is confirmed.",
+        "details": {
+          "mechanismOrProperty": "The session owns the lifecycle that gates edits and export completion.",
+          "scenarioApplication": "A retry continues the same closing attempt without admitting post-close strokes.",
+          "errorCorrection": "The state claims completion even though the required export did not complete. That makes it unclear whether a retry should include strokes added after closing began.",
+          "boundaryOrTradeoff": "If export is optional, the state machine can be simpler; this prompt makes it a close precondition.",
+          "transfer": "Use a lifecycle state that distinguishes work in progress from confirmed completion."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i022_alt_b",
+            "text": "That makes it unclear whether a retry should include strokes added after closing began."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i022_alt_a",
+            "text": "The state claims completion even though the required export did not complete."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i004",
+    "questionId": "ood-n02-b02-i023",
+    "learningObjective": "Apply an asynchronous acceptance only to the exact proposal that is still pending; preserve the active package and newer proposal after a stale response.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "intermediate_transfer",
+      "questionId": "ood-n02-b02-i023",
+      "prompt": "In a curriculum publishing desk, proposal P1 is pending while the current package remains active. An editor replaces P1 with P2 before P1’s delayed acceptance arrives. A response must affect publication only if it names the proposal currently pending; a stale response must not publish its old package or clear P2. What should the response handler do?",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i023_request_correlation",
+            "text": "Apply an acceptance only when its proposal ID matches the currently pending proposal; otherwise record it as stale and leave current state unchanged."
+          },
+          {
+            "optionId": "b02_i023_stale_acceptance",
+            "text": "Publish any proposal as soon as an acceptance arrives, even if a newer proposal is now pending."
+          },
+          {
+            "optionId": "b02_i023_ignore_all",
+            "text": "Ignore every acceptance after a replacement is submitted, including one that matches the current pending proposal."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i023_request_correlation"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "The response must be correlated to the proposal that is still pending. P1’s late acceptance is stale after P2 replaced it, so it cannot change the active package or pending proposal.",
+        "details": {
+          "mechanismOrProperty": "A proposal ID identifies one pending transition attempt; matching it prevents a delayed result from being applied to a different current attempt.",
+          "scenarioApplication": "The P1 acceptance is recorded as stale after P2 becomes pending. P2 remains available for its own response, and the currently active package stays unchanged until P2 is accepted.",
+          "errorCorrection": "Publishing any acceptance would let the obsolete P1 overwrite the package after the editor deliberately replaced it.",
+          "boundaryOrTradeoff": "If the editor had not replaced P1, an acceptance that still matches pending P1 could be applied. The rule is correlation, not rejection of every delayed response.",
+          "transfer": "When asynchronous results can outlive the request that produced them, bind each result to the current attempt before applying a lifecycle change."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i023_stale_acceptance",
+            "text": "P1 no longer matches the pending proposal after replacement, so its delayed acceptance must not publish P1 or clear P2."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i023_ignore_all",
+            "text": "A matching acceptance for current P2 is valid under the prompt; discarding all responses would block the current transition too."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i005",
+    "questionId": "ood-n02-b02-i024",
+    "learningObjective": "Choose the publish behavior when the stock count is negative.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "advanced_tradeoff",
+      "questionId": "ood-n02-b02-i024",
+      "prompt": "A produce listing can be Draft or Published. Publishing requires a nonnegative price and stock count; failed validation must leave the draft editable. Choose the publish behavior when the stock count is negative.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i024_alt_a",
+            "text": "Set the listing Published, then hide it if a later page notices the negative stock."
+          },
+          {
+            "optionId": "b02_i024_alt_b",
+            "text": "Erase the entered stock count when validation fails."
+          },
+          {
+            "optionId": "b02_i024_cohesion",
+            "text": "Reject publication and leave the listing Draft with its entered fields available for correction."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i024_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Validate transition preconditions before changing a draft into a published state. In this case, Reject publication and leave the listing Draft with its entered fields available for correction.",
+        "details": {
+          "mechanismOrProperty": "Listing owns its status and the fields that determine whether publication is allowed.",
+          "scenarioApplication": "A corrected draft can be submitted again without inventing a partially published state.",
+          "errorCorrection": "The public state is reached before the stated publication condition is checked. The prompt says the draft remains editable; clearing input destroys useful draft state.",
+          "boundaryOrTradeoff": "A separate moderation state is only needed if the product actually distinguishes pending review.",
+          "transfer": "Check transition guards before exposing the new lifecycle state."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i024_alt_a",
+            "text": "The public state is reached before the stated publication condition is checked."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i024_alt_b",
+            "text": "The prompt says the draft remains editable; clearing input destroys useful draft state."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i006",
+    "questionId": "ood-n02-b02-i025",
+    "learningObjective": "Choose what approval should do when one requested quantity exceeds delivery.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "advanced_failure",
+      "questionId": "ood-n02-b02-i025",
+      "prompt": "A return request lists item quantities already delivered. Approval is allowed only when each requested quantity is at most the delivered quantity; rejection leaves the request editable. Choose what approval should do when one requested quantity exceeds delivery.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i025_alt_b",
+            "text": "Approve the full request and reconcile the excess during refund calculation."
+          },
+          {
+            "optionId": "b02_i025_cohesion",
+            "text": "Reject approval while preserving the editable request so the quantity can be corrected."
+          },
+          {
+            "optionId": "b02_i025_alt_a",
+            "text": "Approve the lines that fit and silently remove the excess quantity from the other line."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i025_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Guard approval using the state facts that bound the transition. In this case, Reject approval while preserving the editable request so the quantity can be corrected.",
+        "details": {
+          "mechanismOrProperty": "ReturnRequest owns the requested lines and the delivered quantities used by the guard.",
+          "scenarioApplication": "The request remains correctable and no return is approved with an over-delivered quantity.",
+          "errorCorrection": "That changes the customer’s requested return instead of reporting that its precondition failed. Approval has already accepted a quantity the prompt explicitly says must not exceed delivery.",
+          "boundaryOrTradeoff": "If partial approval is a product behavior, it needs an explicit result the customer can review.",
+          "transfer": "A state transition should not silently rewrite its inputs to make a failed guard pass."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i025_alt_b",
+            "text": "Approval has already accepted a quantity the prompt explicitly says must not exceed delivery."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i025_alt_a",
+            "text": "That changes the customer’s requested return instead of reporting that its precondition failed."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i007",
+    "questionId": "ood-n02-b02-i026",
+    "learningObjective": "Choose how to respond when Plot B becomes occupied before the transfer commits.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b02-i026",
+      "prompt": "A garden plot reservation moves from Plot A to Plot B. Plot B must be vacant at commit time; a denied transfer must preserve Plot A and its approval history. Choose how to respond when Plot B becomes occupied before the transfer commits.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i026_cohesion",
+            "text": "Keep the reservation on Plot A and reject the transfer because Plot B is no longer vacant."
+          },
+          {
+            "optionId": "b02_i026_alt_a",
+            "text": "Move the reservation anyway and displace the newer Plot B reservation."
+          },
+          {
+            "optionId": "b02_i026_alt_b",
+            "text": "Remove the reservation from Plot A first, then ask the steward to choose another destination later."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i026_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Guard a transfer against the current destination state and preserve the source assignment on failure. In this case, Keep the reservation on Plot A and reject the transfer because Plot B is no longer vacant.",
+        "details": {
+          "mechanismOrProperty": "The reservation owns the current plot and transfer history; the destination is checked before changing that state.",
+          "scenarioApplication": "A denied transfer has no partial effect, while a later attempt can use another vacant plot.",
+          "errorCorrection": "That violates the stated vacancy precondition and overwrites another active reservation. A failed transfer is required to preserve the Plot A reservation and its approval history.",
+          "boundaryOrTradeoff": "If the business supports a temporary unassigned state, it must be specified separately.",
+          "transfer": "Check a transition’s destination precondition before surrendering the current valid state."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i026_alt_a",
+            "text": "That violates the stated vacancy precondition and overwrites another active reservation."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i026_alt_b",
+            "text": "A failed transfer is required to preserve the Plot A reservation and its approval history."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i008",
+    "questionId": "ood-n02-b02-i027",
+    "learningObjective": "Choose what activation should do if the third component is no longer active.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "foundational_boundary",
+      "questionId": "ood-n02-b02-i027",
+      "prompt": "A regional bundle is Draft until all three component offers are active for the chosen region. Component availability can change while the draft is being reviewed. Choose what activation should do if the third component is no longer active.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i027_alt_a",
+            "text": "Activate the bundle from the earlier review result and let checkout discover the missing component."
+          },
+          {
+            "optionId": "b02_i027_alt_b",
+            "text": "Remove the third component automatically and publish a two-component bundle."
+          },
+          {
+            "optionId": "b02_i027_cohesion",
+            "text": "Keep the bundle Draft and report the unavailable component; activate only when all three are active."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i027_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Recheck all required member states at the activation boundary. In this case, Keep the bundle Draft and report the unavailable component; activate only when all three are active.",
+        "details": {
+          "mechanismOrProperty": "Bundle owns its component selection and the activation transition checks the required current states.",
+          "scenarioApplication": "No customer can see an active bundle whose selected component is unavailable.",
+          "errorCorrection": "The component can change during review, so the old check does not satisfy the activation condition. That changes the defined bundle instead of satisfying its all-three-components condition.",
+          "boundaryOrTradeoff": "If a component can be optional, model that selection explicitly before activation.",
+          "transfer": "Re-evaluate a volatile precondition when the state transition actually commits."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i027_alt_a",
+            "text": "The component can change during review, so the old check does not satisfy the activation condition."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i027_alt_b",
+            "text": "That changes the defined bundle instead of satisfying its all-three-components condition."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i009",
+    "questionId": "ood-n02-b02-i028",
+    "learningObjective": "Choose the state when the expiry instant passes and no vehicle connected.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "intermediate",
+      "questionId": "ood-n02-b02-i028",
+      "prompt": "A charging controller records a connector as Available, Reserved, or Charging. A reservation expires at its stated instant unless a vehicle has connected. Choose the state when the expiry instant passes and no vehicle connected.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i028_alt_b",
+            "text": "Change it directly to Charging because the reserved driver may arrive later."
+          },
+          {
+            "optionId": "b02_i028_cohesion",
+            "text": "Change the connector from Reserved to Available when its reservation expires without connection."
+          },
+          {
+            "optionId": "b02_i028_alt_a",
+            "text": "Keep it Reserved until an operator manually clears it."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i028_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Apply the lifecycle’s explicit expiry transition based on stored status and time. In this case, Change the connector from Reserved to Available when its reservation expires without connection.",
+        "details": {
+          "mechanismOrProperty": "Connector state and its reservation expiry govern the transition.",
+          "scenarioApplication": "The resource becomes available for another valid reservation after the deadline.",
+          "errorCorrection": "That leaves an expired reservation consuming a state the prompt says should be released. A reservation without a connection is not evidence that charging began.",
+          "boundaryOrTradeoff": "A late arrival may request a new reservation; it does not revive the expired one implicitly.",
+          "transfer": "Time-triggered transitions should use the lifecycle fact that defines their boundary."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i028_alt_b",
+            "text": "A reservation without a connection is not evidence that charging began."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i028_alt_a",
+            "text": "That leaves an expired reservation consuming a state the prompt says should be released."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i010",
+    "questionId": "ood-n02-b02-i029",
+    "learningObjective": "Choose how to commit the merge without losing the source descriptions.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "intermediate_transfer",
+      "questionId": "ood-n02-b02-i029",
+      "prompt": "A photo archive merges two metadata records for the same asset. The curator selects the winning title, while both original source descriptions must remain inspectable. Choose how to commit the merge without losing the source descriptions.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i029_cohesion",
+            "text": "Store the selected title as current metadata and retain both original descriptions as merge provenance."
+          },
+          {
+            "optionId": "b02_i029_alt_a",
+            "text": "Replace both source descriptions with the winning title after the merge."
+          },
+          {
+            "optionId": "b02_i029_alt_b",
+            "text": "Keep both metadata records active and make each screen choose whichever title it prefers."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i029_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Transition the aggregate to a merged state while retaining explicitly preserved history. In this case, Store the selected title as current metadata and retain both original descriptions as merge provenance.",
+        "details": {
+          "mechanismOrProperty": "The archive record owns the selected current metadata and the source history for this merge.",
+          "scenarioApplication": "The result has one current title while the two prior descriptions remain auditable.",
+          "errorCorrection": "The prompt requires the originals to remain inspectable, so replacement destroys required history. The merge would not establish one selected current title as requested.",
+          "boundaryOrTradeoff": "If provenance is stored in a separate immutable record, that is still part of the merge transition’s result.",
+          "transfer": "A transition can replace current state while preserving history the scenario explicitly retains."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i029_alt_a",
+            "text": "The prompt requires the originals to remain inspectable, so replacement destroys required history."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i029_alt_b",
+            "text": "The merge would not establish one selected current title as requested."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i011",
+    "questionId": "ood-n02-b02-i030",
+    "learningObjective": "Choose how to handle a request to change the territory of an approved permit.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "advanced_tradeoff",
+      "questionId": "ood-n02-b02-i030",
+      "prompt": "A machine-use permit moves from Draft to Approved only when both territory and expiry are present. Once approved, those fields cannot be edited; a correction requires a new draft. Choose how to handle a request to change the territory of an approved permit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i030_alt_a",
+            "text": "Edit the territory on the approved permit and keep its old approval timestamp."
+          },
+          {
+            "optionId": "b02_i030_alt_b",
+            "text": "Erase the permit and its approval history before creating the corrected one."
+          },
+          {
+            "optionId": "b02_i030_cohesion",
+            "text": "Keep the approved permit unchanged and create a new draft for the corrected territory."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i030_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Represent post-approval correction as a new lifecycle path when the approved record is immutable. In this case, Keep the approved permit unchanged and create a new draft for the corrected territory.",
+        "details": {
+          "mechanismOrProperty": "Permit owns its lifecycle state and the fields reviewed at approval.",
+          "scenarioApplication": "The existing decision remains accurate, while the correction can receive its own review.",
+          "errorCorrection": "The approval would now refer to a territory that was never reviewed. The prompt requires approved fields to remain unchanged, not the approval history to disappear.",
+          "boundaryOrTradeoff": "If revocation is needed, model revocation explicitly rather than rewriting the approved record.",
+          "transfer": "Preserve the meaning of a completed transition by directing corrections through a new state path."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i030_alt_a",
+            "text": "The approval would now refer to a territory that was never reviewed."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i030_alt_b",
+            "text": "The prompt requires approved fields to remain unchanged, not the approval history to disappear."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i012",
+    "questionId": "ood-n02-b02-i031",
+    "learningObjective": "Choose the result when the proposed replacement is incompatible.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "advanced_failure",
+      "questionId": "ood-n02-b02-i031",
+      "prompt": "A drone maintenance job assigns a replacement battery to one aircraft. The old battery must be returned to Available only after the new battery passes the aircraft’s compatibility check. Choose the result when the proposed replacement is incompatible.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i031_alt_b",
+            "text": "Record the incompatible battery as installed but mark the job incomplete."
+          },
+          {
+            "optionId": "b02_i031_cohesion",
+            "text": "Reject the replacement and leave the current battery assignment unchanged."
+          },
+          {
+            "optionId": "b02_i031_alt_a",
+            "text": "Release the current battery first, then report that the new battery is incompatible."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i031_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep a coupled replacement transition from releasing the current resource until the new one is valid. In this case, Reject the replacement and leave the current battery assignment unchanged.",
+        "details": {
+          "mechanismOrProperty": "MaintenanceJob owns the replacement attempt; assignment changes only after its compatibility precondition succeeds.",
+          "scenarioApplication": "A failed replacement leaves the aircraft and old battery in their prior state.",
+          "errorCorrection": "The aircraft loses its valid assignment even though no replacement can be made. That makes the assignment state contradict the compatibility result.",
+          "boundaryOrTradeoff": "A separate diagnostic record can explain the failed proposal without changing the assignment.",
+          "transfer": "For replacement transitions, validate the incoming state before removing the outgoing one."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i031_alt_b",
+            "text": "That makes the assignment state contradict the compatibility result."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i031_alt_a",
+            "text": "The aircraft loses its valid assignment even though no replacement can be made."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i013",
+    "questionId": "ood-n02-b02-i032",
+    "learningObjective": "Choose the transition after consent has been revoked but before dispatch.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b02-i032",
+      "prompt": "A referral moves from Ready to Sent only when consent is active at dispatch. If consent is revoked before dispatch, no specialist receives the referral. Choose the transition after consent has been revoked but before dispatch.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i032_cohesion",
+            "text": "Keep the referral Ready or mark it blocked; do not transition to Sent or disclose it."
+          },
+          {
+            "optionId": "b02_i032_alt_a",
+            "text": "Mark it Sent when the care navigator queued it, then suppress future status updates."
+          },
+          {
+            "optionId": "b02_i032_alt_b",
+            "text": "Send the referral without details so the specialist can request the missing information."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i032_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Recheck a required authorization at the moment an external transition occurs. In this case, Keep the referral Ready or mark it blocked; do not transition to Sent or disclose it.",
+        "details": {
+          "mechanismOrProperty": "Referral state and consent status jointly determine whether dispatch is allowed.",
+          "scenarioApplication": "Revocation before dispatch prevents any external recipient from receiving the referral.",
+          "errorCorrection": "Queueing is not dispatch, and the prompt requires consent at the actual disclosure boundary. Even a minimal external disclosure is prohibited by the stated no-send condition.",
+          "boundaryOrTradeoff": "If consent is restored later, dispatch can be reconsidered under the then-current state.",
+          "transfer": "Place the guard at the irreversible transition point rather than an earlier preparation step."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i032_alt_a",
+            "text": "Queueing is not dispatch, and the prompt requires consent at the actual disclosure boundary."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i032_alt_b",
+            "text": "Even a minimal external disclosure is prohibited by the stated no-send condition."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i014",
+    "questionId": "ood-n02-b02-i033",
+    "learningObjective": "Choose how a late submission should be recorded.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "foundational_boundary",
+      "questionId": "ood-n02-b02-i033",
+      "prompt": "A timed exercise attempt changes from InProgress to Submitted. The submitted attempt pins its exercise revision and scoring policy; late submission is allowed but marked late. Choose how a late submission should be recorded.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i033_alt_a",
+            "text": "Reject the attempt because its deadline passed."
+          },
+          {
+            "optionId": "b02_i033_alt_b",
+            "text": "Rescore it using the policy currently published when the learner submits."
+          },
+          {
+            "optionId": "b02_i033_cohesion",
+            "text": "Submit the attempt with its pinned revision and policy and mark its result late."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i033_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Apply the stated transition result without changing the attempt’s pinned interpretation. In this case, Submit the attempt with its pinned revision and policy and mark its result late.",
+        "details": {
+          "mechanismOrProperty": "Attempt owns its submission state and pinned interpretation.",
+          "scenarioApplication": "Late status is recorded while the submitted work remains scored under its original policy.",
+          "errorCorrection": "The prompt explicitly permits late submission; rejection would remove a valid outcome. That replaces the policy the attempt pinned when it began.",
+          "boundaryOrTradeoff": "A new attempt may use a newer revision; this attempt does not change retroactively.",
+          "transfer": "Separate the outcome marker from the captured rules used to interpret that outcome."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i033_alt_a",
+            "text": "The prompt explicitly permits late submission; rejection would remove a valid outcome."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i033_alt_b",
+            "text": "That replaces the policy the attempt pinned when it began."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i015",
+    "questionId": "ood-n02-b02-i034",
+    "learningObjective": "Choose what a delegate’s approval action should do.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "intermediate",
+      "questionId": "ood-n02-b02-i034",
+      "prompt": "A procurement exception moves to Approved only after the named manager signs it. A delegate may prepare the request but cannot approve it. Choose what a delegate’s approval action should do.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i034_alt_b",
+            "text": "Replace the named manager with the delegate in the approval record."
+          },
+          {
+            "optionId": "b02_i034_cohesion",
+            "text": "Leave the exception Pending until the named manager signs."
+          },
+          {
+            "optionId": "b02_i034_alt_a",
+            "text": "Mark it Approved because the delegate completed all required form fields."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i034_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Enforce the actor precondition at the transition that grants approval. In this case, Leave the exception Pending until the named manager signs.",
+        "details": {
+          "mechanismOrProperty": "Exception state changes only through a signature from the named manager.",
+          "scenarioApplication": "The delegate can prepare but cannot create an approval state.",
+          "errorCorrection": "Preparation completeness does not satisfy the stated signer requirement. That changes who is authorized rather than applying the given transition rule.",
+          "boundaryOrTradeoff": "If delegation authority is later granted, it must be an explicit authorization fact.",
+          "transfer": "Keep the transition guard tied to the exact authority the scenario specifies."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i034_alt_b",
+            "text": "That changes who is authorized rather than applying the given transition rule."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i034_alt_a",
+            "text": "Preparation completeness does not satisfy the stated signer requirement."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i016",
+    "questionId": "ood-n02-b02-i035",
+    "learningObjective": "Choose the booking state while the refund provider is still processing.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "intermediate_transfer",
+      "questionId": "ood-n02-b02-i035",
+      "prompt": "A room booking moves from Confirmed to Cancelled when the organizer cancels. Cancellation frees the room immediately and creates a cancellation record; a separate payment provider may take time to return any refundable amount. Choose the booking state while the refund provider is still processing.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i035_cohesion",
+            "text": "Mark the booking Cancelled and record a pending refund outcome in the payment workflow."
+          },
+          {
+            "optionId": "b02_i035_alt_a",
+            "text": "Keep the booking Confirmed until the refund provider responds."
+          },
+          {
+            "optionId": "b02_i035_alt_b",
+            "text": "Delete the booking and its history when cancellation is requested."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i035_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Represent the booking cancellation as complete while tracking the financial follow-up separately. In this case, Mark the booking Cancelled and record a pending refund outcome in the payment workflow.",
+        "details": {
+          "mechanismOrProperty": "Booking owns room availability and its cancellation lifecycle; refund settlement is a separate outcome.",
+          "scenarioApplication": "The room can be booked again while the payment workflow remains visibly pending.",
+          "errorCorrection": "That keeps the room unavailable after the prompt says cancellation frees it immediately. The cancellation record is required and should survive the separate refund outcome.",
+          "boundaryOrTradeoff": "If a refund fails, report that financial result without silently restoring the canceled room booking.",
+          "transfer": "Separate a completed domain transition from an asynchronous follow-up when each has its own state and consequence."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i035_alt_a",
+            "text": "That keeps the room unavailable after the prompt says cancellation frees it immediately."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i035_alt_b",
+            "text": "The cancellation record is required and should survive the separate refund outcome."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i017",
+    "questionId": "ood-n02-b02-i036",
+    "learningObjective": "Choose how denial should affect the pending grant.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "advanced_tradeoff",
+      "questionId": "ood-n02-b02-i036",
+      "prompt": "A temporary role grant moves from Pending to Active only after the reviewer approves it. Its expiry remains scheduled from the approved start time; denial leaves an audit record. Choose how denial should affect the pending grant.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i036_alt_a",
+            "text": "Delete the pending grant so the user can no longer see what was decided."
+          },
+          {
+            "optionId": "b02_i036_alt_b",
+            "text": "Transition it to Active and immediately schedule a revoke."
+          },
+          {
+            "optionId": "b02_i036_cohesion",
+            "text": "Transition the grant to Denied and retain the decision record; do not expose the role as active."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i036_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Use a distinct terminal outcome that records denial without making the authority active. In this case, Transition the grant to Denied and retain the decision record; do not expose the role as active.",
+        "details": {
+          "mechanismOrProperty": "Grant owns its lifecycle and decision record; Active is reachable only through approval.",
+          "scenarioApplication": "A denied grant remains explainable and never provides the permission.",
+          "errorCorrection": "The prompt requires an audit record of the denial. That creates an interval of authority despite the reviewer denying it.",
+          "boundaryOrTradeoff": "A later request should have a new review identity rather than altering the denied decision.",
+          "transfer": "Model rejection as its own result instead of conflating it with activation or deletion."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i036_alt_a",
+            "text": "The prompt requires an audit record of the denial."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i036_alt_b",
+            "text": "That creates an interval of authority despite the reviewer denying it."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i018",
+    "questionId": "ood-n02-b02-i037",
+    "learningObjective": "Choose what to do when the document changes after confirmation but before sealing.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "advanced_failure",
+      "questionId": "ood-n02-b02-i037",
+      "prompt": "A notarization request seals a document revision only after the signer confirms the displayed digest. A changed revision has a different digest. Choose what to do when the document changes after confirmation but before sealing.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i037_alt_b",
+            "text": "Restore the earlier revision silently and seal that revision."
+          },
+          {
+            "optionId": "b02_i037_cohesion",
+            "text": "Do not seal; require confirmation of the changed revision’s digest."
+          },
+          {
+            "optionId": "b02_i037_alt_a",
+            "text": "Seal the latest revision using the earlier confirmation because the document ID is unchanged."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i037_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Guard an irreversible transition with the exact state version that was confirmed. In this case, Do not seal; require confirmation of the changed revision’s digest.",
+        "details": {
+          "mechanismOrProperty": "The seal transition binds to a confirmed revision digest.",
+          "scenarioApplication": "No seal can claim a signer confirmed content they did not see.",
+          "errorCorrection": "The confirmation is for a different digest, even though the document identity stayed the same. The prompt does not authorize silently discarding the newer document state.",
+          "boundaryOrTradeoff": "A user can review and confirm the new revision to continue.",
+          "transfer": "Tie an irreversible state transition to the exact version on which its prerequisite was satisfied."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i037_alt_b",
+            "text": "The prompt does not authorize silently discarding the newer document state."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i037_alt_a",
+            "text": "The confirmation is for a different digest, even though the document identity stayed the same."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b02-i019",
+    "questionId": "ood-n02-b02-i038",
+    "learningObjective": "Choose how to handle a timeout when the release outcome is not yet visible to the caller.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B02",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b02-i038",
+      "prompt": "A seller payout moves from Ready to Released after settlement. A release request may be retried after a timeout; the payment provider returns the same transfer reference for a repeated request ID. Choose how to handle a timeout when the release outcome is not yet visible to the caller.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b02_i038_cohesion",
+            "text": "Retry with the same payout request ID and reconcile the returned transfer reference before reporting Released."
+          },
+          {
+            "optionId": "b02_i038_alt_a",
+            "text": "Create a new request ID so the provider can attempt the payout again immediately."
+          },
+          {
+            "optionId": "b02_i038_alt_b",
+            "text": "Mark the payout Released as soon as the request is sent."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b02_i038_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Make a retry converge on the same transition rather than creating another release. In this case, Retry with the same payout request ID and reconcile the returned transfer reference before reporting Released.",
+        "details": {
+          "mechanismOrProperty": "Payout owns its release state and stable request identity; the provider reference resolves the attempt.",
+          "scenarioApplication": "The retry can discover the first release without creating a second one.",
+          "errorCorrection": "A second identity can request a second transfer while the first result is unknown. A timeout does not prove the provider completed the release.",
+          "boundaryOrTradeoff": "If the provider does not guarantee repeated request identity, the scenario needs a different reconciliation contract.",
+          "transfer": "Represent an uncertain external outcome as pending until evidence confirms the state transition."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i038_alt_a",
+            "text": "A second identity can request a second transfer while the first result is unknown."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b02_i038_alt_b",
+            "text": "A timeout does not prove the provider completed the release."
+          }
+        ]
+      }
+    }
+  }
+]

@@ -1,0 +1,287 @@
+[
+  {
+    "path": "/0/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/0/question/interaction/options/0/text",
+    "before": "Keep repayment allocation with LoanAccount and put network message translation in a payment adapter.",
+    "after": "Keep LoanAccount allocation by contract; map network messages in a payment adapter."
+  },
+  {
+    "path": "/0/question/feedback/reason",
+    "before": "Separate responsibilities when their change triggers are independent; keep the loan\u2019s allocation rule with its debt state. In this case, Keep repayment allocation with LoanAccount and put network message translation in a payment adapter.",
+    "after": "Separate responsibilities when their change triggers are independent; keep the loan\u2019s allocation rule with its debt state. In this case, Keep LoanAccount allocation by contract; map network messages in a payment adapter."
+  },
+  {
+    "path": "/1/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/1/question/interaction/options/2/text",
+    "before": "Let a ClockSource provide the time, while Match applies the tournament\u2019s forfeit rule to its own state.",
+    "after": "Have Match apply the forfeit rule to time from ClockSource."
+  },
+  {
+    "path": "/1/question/feedback/reason",
+    "before": "Separate time acquisition from match outcome while keeping the forfeit decision tied to the match and tournament rule. In this case, Let a ClockSource provide the time, while Match applies the tournament\u2019s forfeit rule to its own state.",
+    "after": "Separate time acquisition from match outcome while keeping the forfeit decision tied to the match and tournament rule. In this case, Have Match apply the forfeit rule to time from ClockSource."
+  },
+  {
+    "path": "/2/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/2/question/interaction/options/1/text",
+    "before": "Let ReturnInspection apply the committee\u2019s classification criteria; a media adapter translates tablet files into inspection evidence.",
+    "after": "Keep criteria on ReturnInspection; translate tablet files in a media adapter."
+  },
+  {
+    "path": "/2/question/feedback/reason",
+    "before": "Keep the classification responsibility with return facts and isolate camera-format translation. In this case, Let ReturnInspection apply the committee\u2019s classification criteria; a media adapter translates tablet files into inspection evidence.",
+    "after": "Keep the classification responsibility with return facts and isolate camera-format translation. In this case, Keep criteria on ReturnInspection; translate tablet files in a media adapter."
+  },
+  {
+    "path": "/3/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/3/question/interaction/options/0/text",
+    "before": "Have Notebook create the selected immutable result snapshot and pass it to a PDF renderer.",
+    "after": "Let Notebook select the snapshot; let a renderer encode the PDF."
+  },
+  {
+    "path": "/3/question/feedback/reason",
+    "before": "Keep snapshot selection with notebook study state and isolate output rendering as a separate change responsibility. In this case, Have Notebook create the selected immutable result snapshot and pass it to a PDF renderer.",
+    "after": "Keep snapshot selection with notebook study state and isolate output rendering as a separate change responsibility. In this case, Let Notebook select the snapshot; let a renderer encode the PDF."
+  },
+  {
+    "path": "/4/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/4/question/interaction/options/2/text",
+    "before": "Have ReviewThread accept the comment under editorial rules, then send a notification through a provider adapter.",
+    "after": "Let ReviewThread accept comments; let a notifier send the author message."
+  },
+  {
+    "path": "/4/question/feedback/reason",
+    "before": "Keep the editorial acceptance decision with the thread and separate delivery translation. In this case, Have ReviewThread accept the comment under editorial rules, then send a notification through a provider adapter.",
+    "after": "Keep the editorial acceptance decision with the thread and separate delivery translation. In this case, Let ReviewThread accept comments; let a notifier send the author message."
+  },
+  {
+    "path": "/5/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/5/question/interaction/options/1/text",
+    "before": "Keep observation reconciliation under the inspection program\u2019s rules and isolate offline queue encoding in a sync adapter.",
+    "after": "Keep inspection reconciliation with its program rule; encode queued edits separately."
+  },
+  {
+    "path": "/5/question/feedback/reason",
+    "before": "Keep inspection interpretation with its domain record and separate synchronization mechanics. In this case, Keep observation reconciliation under the inspection program\u2019s rules and isolate offline queue encoding in a sync adapter.",
+    "after": "Keep inspection interpretation with its domain record and separate synchronization mechanics. In this case, Keep inspection reconciliation with its program rule; encode queued edits separately."
+  },
+  {
+    "path": "/6/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/6/question/interaction/options/0/text",
+    "before": "Have Invoice calculate its tax total and let a partner formatter map the invoice into the required file.",
+    "after": "Have Invoice calculate tax; map it into each partner file separately."
+  },
+  {
+    "path": "/6/question/feedback/reason",
+    "before": "Keep tax calculation with invoice facts and isolate partner-specific document mapping. In this case, Have Invoice calculate its tax total and let a partner formatter map the invoice into the required file.",
+    "after": "Keep tax calculation with invoice facts and isolate partner-specific document mapping. In this case, Have Invoice calculate tax; map it into each partner file separately."
+  },
+  {
+    "path": "/7/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/7/question/interaction/options/2/text",
+    "before": "Have AccessGrant record revocation under facility policy and use a lock adapter to translate resulting access changes.",
+    "after": "Keep grant revocation with AccessGrant; isolate lock-device translation."
+  },
+  {
+    "path": "/7/question/feedback/reason",
+    "before": "Keep the access decision in the grant lifecycle and isolate device command framing. In this case, Have AccessGrant record revocation under facility policy and use a lock adapter to translate resulting access changes.",
+    "after": "Keep the access decision in the grant lifecycle and isolate device command framing. In this case, Keep grant revocation with AccessGrant; isolate lock-device translation."
+  },
+  {
+    "path": "/8/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/8/question/interaction/options/1/text",
+    "before": "Keep handoff status on Shipment and let the carrier adapter map its destination and package facts into the expanded label request.",
+    "after": "Keep handoff status on Shipment; map its facts in a carrier adapter."
+  },
+  {
+    "path": "/8/question/feedback/reason",
+    "before": "Separate carrier protocol mapping from shipment fulfillment responsibility. In this case, Keep handoff status on Shipment and let the carrier adapter map its destination and package facts into the expanded label request.",
+    "after": "Separate carrier protocol mapping from shipment fulfillment responsibility. In this case, Keep handoff status on Shipment; map its facts in a carrier adapter."
+  },
+  {
+    "path": "/9/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/9/question/interaction/options/0/text",
+    "before": "Let Schedule apply the current capacity rule and a presenter format its chosen start time for each locale.",
+    "after": "Keep capacity checks in Schedule; localize start times in a presenter."
+  },
+  {
+    "path": "/9/question/feedback/reason",
+    "before": "Keep room eligibility with schedule facts and separate localized presentation. In this case, Let Schedule apply the current capacity rule and a presenter format its chosen start time for each locale.",
+    "after": "Keep room eligibility with schedule facts and separate localized presentation. In this case, Keep capacity checks in Schedule; localize start times in a presenter."
+  },
+  {
+    "path": "/10/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/10/question/interaction/options/2/text",
+    "before": "Have ExhibitController enforce the safety rule and use a protocol adapter to translate remote commands.",
+    "after": "Let ExhibitController enforce safety; translate remote commands in an adapter."
+  },
+  {
+    "path": "/10/question/feedback/reason",
+    "before": "Keep mode-dependent safety behavior with exhibit state and isolate control-panel framing. In this case, Have ExhibitController enforce the safety rule and use a protocol adapter to translate remote commands.",
+    "after": "Keep mode-dependent safety behavior with exhibit state and isolate control-panel framing. In this case, Let ExhibitController enforce safety; translate remote commands in an adapter."
+  },
+  {
+    "path": "/11/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/11/question/interaction/options/1/text",
+    "before": "Keep progress linked to Lesson identity and use a media adapter to translate the selected content into the video host request.",
+    "after": "Keep progress linked to Lesson identity; isolate video-host translation."
+  },
+  {
+    "path": "/11/question/feedback/reason",
+    "before": "Keep lesson identity and progress separate from the independently changing stream provider mapping. In this case, Keep progress linked to Lesson identity and use a media adapter to translate the selected content into the video host request.",
+    "after": "Keep lesson identity and progress separate from the independently changing stream provider mapping. In this case, Keep progress linked to Lesson identity; isolate video-host translation."
+  },
+  {
+    "path": "/12/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/12/question/interaction/options/0/text",
+    "before": "Have WhiteboardSession provide a stable accepted-stroke snapshot to an archive serializer for the selected file schema.",
+    "after": "Have WhiteboardSession supply accepted strokes; serialize them to the chosen archive format."
+  },
+  {
+    "path": "/12/question/feedback/reason",
+    "before": "Keep stroke acceptance with session behavior and isolate archive serialization. In this case, Have WhiteboardSession provide a stable accepted-stroke snapshot to an archive serializer for the selected file schema.",
+    "after": "Keep stroke acceptance with session behavior and isolate archive serialization. In this case, Have WhiteboardSession supply accepted strokes; serialize them to the chosen archive format."
+  },
+  {
+    "path": "/13/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/13/question/interaction/options/2/text",
+    "before": "Have SupportCase determine its escalation state and let a notifier adapter deliver the assigned team\u2019s message.",
+    "after": "Have SupportCase determine escalation; deliver notices through a notifier adapter."
+  },
+  {
+    "path": "/13/question/feedback/reason",
+    "before": "Keep case escalation policy with case facts and separate the changing delivery channel. In this case, Have SupportCase determine its escalation state and let a notifier adapter deliver the assigned team\u2019s message.",
+    "after": "Keep case escalation policy with case facts and separate the changing delivery channel. In this case, Have SupportCase determine escalation; deliver notices through a notifier adapter."
+  },
+  {
+    "path": "/14/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/14/question/interaction/options/1/text",
+    "before": "Have Listing evaluate publication from price and stock, while an image adapter produces the CDN\u2019s requested thumbnail format.",
+    "after": "Keep publication rules with Listing; isolate thumbnail transformation."
+  },
+  {
+    "path": "/14/question/feedback/reason",
+    "before": "Keep listing publication with its market facts and isolate image transformation. In this case, Have Listing evaluate publication from price and stock, while an image adapter produces the CDN\u2019s requested thumbnail format.",
+    "after": "Keep listing publication with its market facts and isolate image transformation. In this case, Keep publication rules with Listing; isolate thumbnail transformation."
+  },
+  {
+    "path": "/15/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/15/question/interaction/options/0/text",
+    "before": "Have LoanAccount allocate the repayment under its contract and let a settlement adapter encode the resulting transfer.",
+    "after": "Keep allocation with LoanAccount; translate settled transfers separately."
+  },
+  {
+    "path": "/15/question/feedback/reason",
+    "before": "Keep contract allocation attached to loan state and isolate clearing-message mapping. In this case, Have LoanAccount allocate the repayment under its contract and let a settlement adapter encode the resulting transfer.",
+    "after": "Keep contract allocation attached to loan state and isolate clearing-message mapping. In this case, Keep allocation with LoanAccount; translate settled transfers separately."
+  },
+  {
+    "path": "/16/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/16/question/interaction/options/2/text",
+    "before": "Have PlotAssignment apply the soil and eligibility rules; a map adapter renders the plot geometry from the selected map provider.",
+    "after": "Keep eligibility on PlotAssignment; delegate map-provider rendering."
+  },
+  {
+    "path": "/16/question/feedback/reason",
+    "before": "Keep plot eligibility with the allocation facts and separate geographic rendering. In this case, Have PlotAssignment apply the soil and eligibility rules; a map adapter renders the plot geometry from the selected map provider.",
+    "after": "Keep plot eligibility with the allocation facts and separate geographic rendering. In this case, Keep eligibility on PlotAssignment; delegate map-provider rendering."
+  },
+  {
+    "path": "/17/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/17/question/interaction/options/1/text",
+    "before": "Have Bundle calculate its price from selected offers and let a search adapter map the bundle into the vendor document.",
+    "after": "Keep Bundle price from selected offers; map search documents separately."
+  },
+  {
+    "path": "/17/question/feedback/reason",
+    "before": "Keep bundle composition and pricing under domain rules while isolating search-document mapping. In this case, Have Bundle calculate its price from selected offers and let a search adapter map the bundle into the vendor document.",
+    "after": "Keep bundle composition and pricing under domain rules while isolating search-document mapping. In this case, Keep Bundle price from selected offers; map search documents separately."
+  },
+  {
+    "path": "/18/question/sourceRefs/1",
+    "before": "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model",
+    "after": "https://learn.microsoft.com/dotnet/standard/modern-web-apps-azure-architecture/architectural-principles"
+  },
+  {
+    "path": "/18/question/interaction/options/0/text",
+    "before": "Have ChargingReservation apply utility reservation rules and let a billing adapter translate completed usage into the provider request.",
+    "after": "Keep reservation policy with ChargingReservation; translate billing requests separately."
+  },
+  {
+    "path": "/18/question/feedback/reason",
+    "before": "Keep the reservation lifecycle with its operational state and isolate billing translation. In this case, Have ChargingReservation apply utility reservation rules and let a billing adapter translate completed usage into the provider request.",
+    "after": "Keep the reservation lifecycle with its operational state and isolate billing translation. In this case, Keep reservation policy with ChargingReservation; translate billing requests separately."
+  }
+]

@@ -1,0 +1,62 @@
+{
+  "result": "PASS",
+  "builtTrackCount": 9,
+  "preservedOtherArtifactBytes": 8,
+  "artifacts": [
+    {
+      "artifact": "aws-certified-solutions-architect-associate.json",
+      "beforeSha256": "c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9",
+      "currentSha256": "c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9",
+      "unchanged": true
+    },
+    {
+      "artifact": "backend-system-design-interview.json",
+      "beforeSha256": "5a202c133d78b908e2e73870e426c379f529b65ad89add0ebdfec0be72e92942",
+      "currentSha256": "5a202c133d78b908e2e73870e426c379f529b65ad89add0ebdfec0be72e92942",
+      "unchanged": true
+    },
+    {
+      "artifact": "claude-certified-architect-professional-certification.json",
+      "beforeSha256": "7d6d12a49d67642e3144d062a6d237bec4604917ab34124e4ee121263c6beb2d",
+      "currentSha256": "7d6d12a49d67642e3144d062a6d237bec4604917ab34124e4ee121263c6beb2d",
+      "unchanged": true
+    },
+    {
+      "artifact": "coding-interview-dsa-problem-solving.json",
+      "beforeSha256": "4ceb71ebf2edd963dd6f1bdd274dface6da667dd7d3586fa44b52efe45f263f6",
+      "currentSha256": "4ceb71ebf2edd963dd6f1bdd274dface6da667dd7d3586fa44b52efe45f263f6",
+      "unchanged": true
+    },
+    {
+      "artifact": "frontend-system-design-interview.json",
+      "beforeSha256": "7de3a0bd8860eef726c6bb11cbf8e0bbc88ff0282d1a4575cbf94cc5fb9dd9bf",
+      "currentSha256": "7de3a0bd8860eef726c6bb11cbf8e0bbc88ff0282d1a4575cbf94cc5fb9dd9bf",
+      "unchanged": true
+    },
+    {
+      "artifact": "google-cloud-associate-cloud-engineer.json",
+      "beforeSha256": "eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9",
+      "currentSha256": "eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9",
+      "unchanged": true
+    },
+    {
+      "artifact": "microsoft-azure-administrator-associate-az-104.json",
+      "beforeSha256": "80e5b920beade4a9b540dfa505aa67368c07c99497998314935be53da9013975",
+      "currentSha256": "80e5b920beade4a9b540dfa505aa67368c07c99497998314935be53da9013975",
+      "unchanged": true
+    },
+    {
+      "artifact": "microsoft-azure-ai-fundamentals-ai-901.json",
+      "beforeSha256": "ef25741799306c6cfbc7cc90cb7d76492f3df639c056b61b1c2b0492f5fbb9d4",
+      "currentSha256": "ef25741799306c6cfbc7cc90cb7d76492f3df639c056b61b1c2b0492f5fbb9d4",
+      "unchanged": true
+    },
+    {
+      "artifact": "object-oriented-design-interview.json",
+      "beforeSha256": "1f1d26deab562de663e2cc47b0ebd82e5c0313b13d4ff961c815d5416da95087",
+      "currentSha256": "0415eae170f08689d775d77507ace85e2e38212119c7a7ead330a8a91ab2c8be",
+      "unchanged": false
+    }
+  ],
+  "limits": "Source build/preservation only; actual consumer sync/admission/native acceptance remain separate"
+}

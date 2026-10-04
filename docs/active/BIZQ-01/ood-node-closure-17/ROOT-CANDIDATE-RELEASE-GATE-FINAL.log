@@ -1,0 +1,5 @@
+
+> patternly-content@1.0.0 candidate:release-gate-v2
+> node scripts/review/candidate-release-gate-v2.mjs
+
+RELEASE_READY candidateId=dc494c52dcce3bf786d8ea3685e33db425bc94fd6e97f4834f1da44ed8a00e9a

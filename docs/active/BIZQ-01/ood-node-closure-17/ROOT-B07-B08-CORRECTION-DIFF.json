@@ -1,0 +1,25 @@
+[
+  {
+    "unit": "B07",
+    "sha256": "781ed817fdddc5e6533e46136ecbae1aef116ab53ae7b4ed2f3c9cf7d198881e",
+    "changedIDs": [
+      "ood-n02-b07-i023",
+      "ood-n02-b07-i037"
+    ],
+    "unchangedCount": 17
+  },
+  {
+    "unit": "B08",
+    "sha256": "d448e05c6224799ddc25da9c86a4841f7d018fdc8dd4768e5f298e9a1ae75c93",
+    "changedIDs": [
+      "ood-n02-b08-i024",
+      "ood-n02-b08-i025",
+      "ood-n02-b08-i026",
+      "ood-n02-b08-i029",
+      "ood-n02-b08-i031",
+      "ood-n02-b08-i034",
+      "ood-n02-b08-i036"
+    ],
+    "unchangedCount": 12
+  }
+]

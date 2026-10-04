@@ -1,0 +1,26 @@
+{
+  "commit": "3c45f928e7d8deb3a1c94fd13c992bffd6185d6c",
+  "purpose": "Local committed source snapshot required by existing candidate pipeline; not pushed/full-package acceptance",
+  "changedFileCount": 19,
+  "changedFiles": [
+    "content/catalog.json",
+    "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B01.json",
+    "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B02.json",
+    "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B03.json",
+    "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B04.json",
+    "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B05.json",
+    "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B06.json",
+    "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B07.json",
+    "content/object-oriented-design-interview/objects_responsibilities_encapsulation_and_invariants/OOD-N02-B08.json",
+    "evidence/business-quality/bizq-01-ood-node-closure-17.json",
+    "package.json",
+    "scripts/content/verify-migration.mjs",
+    "tests/bizq01-besd-seed-cohort-14.test.mjs",
+    "tests/bizq01-migration-proof.test.mjs",
+    "tests/bizq01-ood-node-closure-16.test.mjs",
+    "tests/bizq01-ood-node-closure-17.test.mjs",
+    "tests/content-builder.test.mjs",
+    "tests/odk097-design-session-matrix.test.mjs",
+    "tests/ood-cohort16-historical-fixture.mjs"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "patternly": {
+    "head": "9c8e8582c74fc2e5b515a86c442d9dbdf220f0b9",
+    "upstream": "9c8e8582c74fc2e5b515a86c442d9dbdf220f0b9",
+    "stashes": "stash@{0}: On main: UI-26-02B awaiting provider runtime matrix 2026-09-27\nstash@{1}: On main: UI-26-11 awaiting runtime matrix and physical VoiceOver 2026-09-27\nstash@{2}: On main: UI-26-09 awaiting runtime and physical VoiceOver 2026-09-27\nstash@{3}: On main: UI-26-08 awaiting physical VoiceOver 2026-09-27\nstash@{4}: On main: UI-26-07 awaiting physical VoiceOver 2026-09-27\nstash@{5}: On main: I18N-01 partial seven-locale runtime 2026-09-26",
+    "staged": "",
+    "status": "M .agent/WORKING_STATE.md\n M docs/PATTERNLY-WORKING-PLAN.md\n M docs/active/BIZQ-01/ood-node-closure-16/REPORT.md\n?? docs/active/BIZQ-01/ood-node-closure-16/POST-PUSH-CI.json\n?? docs/active/BIZQ-01/ood-node-closure-16/POST-PUSH-REMOTE.json\n?? docs/active/BIZQ-01/ood-node-closure-16/ROOT-HOSTED-SUMMARY.json\n?? docs/active/BIZQ-01/ood-node-closure-17/\n?? docs/active/SECURITY-PRIVACY-AUDIT/\n?? src/content/bizq01OodNodeClosure17.test.ts"
+  },
+  "patternly-content": {
+    "head": "c2112775a1a9e8173202b921c027b9b43f754d74",
+    "upstream": "c2112775a1a9e8173202b921c027b9b43f754d74",
+    "stashes": "stash@{0}: On agent/ai901-question-bank: preserve unrelated work before frontend master push\nstash@{1}: On agent/ai901-question-bank: codex-preserve-local-work-before-master-switch",
+    "staged": "",
+    "status": "M package.json\n M tests/bizq01-ood-node-closure-16.test.mjs\n M tests/ood-cohort16-historical-fixture.mjs\n?? evidence/business-quality/full-content-audit-2026-10-02/\n?? tests/bizq01-ood-node-closure-17.test.mjs"
+  },
+  "patternly-backend": {
+    "head": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+    "upstream": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+    "stashes": "stash@{0}: On main: AUD-08-B2 pending producer before accepted OPS-B4 integration\nstash@{1}: On main: AUD-08-B2 pending producer before accepted OPS-B3 integration\nstash@{2}: On main: AUD-08-B2 pending producer before accepted OPS-B2 integration\nstash@{3}: On main: UI-26-02B exchange evidence awaiting provider runtime matrix 2026-09-27",
+    "staged": "",
+    "status": ""
+  },
+  "patternly-web": {
+    "head": "50ee959c653458ba47d2efc512813517cbe6b029",
+    "upstream": "50ee959c653458ba47d2efc512813517cbe6b029",
+    "stashes": "",
+    "staged": "",
+    "status": ""
+  }
+}

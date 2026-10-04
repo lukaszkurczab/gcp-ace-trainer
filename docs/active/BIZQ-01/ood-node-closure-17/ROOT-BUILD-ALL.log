@@ -1,0 +1,5 @@
+
+> patternly-content@1.0.0 content:build-all
+> node scripts/build.mjs build-all --output-root /private/tmp/patternly-bizq01-cohort17-build
+
+Built 9 track artifact(s) and /private/tmp/patternly-bizq01-cohort17-build/content-lock.json

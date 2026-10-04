@@ -1,0 +1,68 @@
+[
+  {
+    "path": [
+      1,
+      "question",
+      "interaction",
+      "options",
+      2,
+      "text"
+    ],
+    "before": "Have Booking propose the new room and time, then replace the confirmed slot only after both acceptances succeed.",
+    "after": "Keep the confirmed slot and reject the move."
+  },
+  {
+    "path": [
+      1,
+      "question",
+      "feedback",
+      "reason"
+    ],
+    "before": "Make a multi-field state transition preserve the old valid state when its preconditions are not all met. In this case, Have Booking propose the new room and time, then replace the confirmed slot only after both acceptances succeed.",
+    "after": "Make a multi-field state transition preserve the old valid state when its preconditions are not all met. In this case, Keep the confirmed slot and reject the move."
+  },
+  {
+    "path": [
+      15,
+      "question",
+      "interaction",
+      "options",
+      0,
+      "text"
+    ],
+    "before": "Mark the booking Cancelled and record a pending refund outcome in the payment workflow.",
+    "after": "Mark the booking Cancelled; track any refund separately."
+  },
+  {
+    "path": [
+      15,
+      "question",
+      "feedback",
+      "reason"
+    ],
+    "before": "Represent the booking cancellation as complete while tracking the financial follow-up separately. In this case, Mark the booking Cancelled and record a pending refund outcome in the payment workflow.",
+    "after": "Represent the booking cancellation as complete while tracking the financial follow-up separately. In this case, Mark the booking Cancelled; track any refund separately."
+  },
+  {
+    "path": [
+      16,
+      "question",
+      "interaction",
+      "options",
+      2,
+      "text"
+    ],
+    "before": "Transition the grant to Denied and retain the decision record; do not expose the role as active.",
+    "after": "Mark it Denied and retain the audit record."
+  },
+  {
+    "path": [
+      16,
+      "question",
+      "feedback",
+      "reason"
+    ],
+    "before": "Use a distinct terminal outcome that records denial without making the authority active. In this case, Transition the grant to Denied and retain the decision record; do not expose the role as active.",
+    "after": "Use a distinct terminal outcome that records denial without making the authority active. In this case, Mark it Denied and retain the audit record."
+  }
+]

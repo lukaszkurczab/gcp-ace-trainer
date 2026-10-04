@@ -1,0 +1,1180 @@
+[
+  {
+    "beforeQuestionId": "ood-n02-b03-i001",
+    "questionId": "ood-n02-b03-i020",
+    "learningObjective": "Choose how the caller should request the reorder.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b03-i020",
+      "prompt": "A playlist caller reads the ordered tracks, checks whether the first track is marked as an intro, then rebuilds the list to move a song. Only the Playlist knows its locked prefix rule. Choose how the caller should request the reorder.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i020_cohesion",
+            "text": "Ask Playlist.moveTrack to perform the reorder; it checks the locked intro prefix and updates its ordered tracks."
+          },
+          {
+            "optionId": "b03_i020_alt_a",
+            "text": "Keep the intro check and list reconstruction in every screen that offers reordering."
+          },
+          {
+            "optionId": "b03_i020_alt_b",
+            "text": "Add a generic ListEditor that accepts raw tracks and makes no reference to the Playlist rule."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i020_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Replace a caller-owned read/branch/rebuild sequence with an operation that owns the playlist-specific rule. In this case, Ask Playlist.moveTrack to perform the reorder; it checks the locked intro prefix and updates its ordered tracks.",
+        "details": {
+          "mechanismOrProperty": "Playlist owns its track order and the locked-prefix rule that constrains changes.",
+          "scenarioApplication": "Every reorder path can request one operation and receive the same rule enforcement.",
+          "errorCorrection": "A new editor can omit the prefix rule or rebuild a different order from the same playlist. The helper lacks the context needed to determine which member positions are protected.",
+          "boundaryOrTradeoff": "A UI helper may collect the requested destination but should not decide playlist validity.",
+          "transfer": "When a caller reads and branches on an object’s rule, move that decision into an operation with the relevant state."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i020_alt_a",
+            "text": "A new editor can omit the prefix rule or rebuild a different order from the same playlist."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i020_alt_b",
+            "text": "The helper lacks the context needed to determine which member positions are protected."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i002",
+    "questionId": "ood-n02-b03-i021",
+    "learningObjective": "Choose where the extension eligibility decision should be made.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "foundational_boundary",
+      "questionId": "ood-n02-b03-i021",
+      "prompt": "A library page reads a loan’s due date, compares it to today, and decides whether an extension is allowed. The loan stores its due date and the number of extensions already used. Choose where the extension eligibility decision should be made.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i021_alt_a",
+            "text": "Keep the comparison and extension counter in the page controller, then set the new due date."
+          },
+          {
+            "optionId": "b03_i021_alt_b",
+            "text": "Create a policy service that receives a copied due date but not the loan’s extension history."
+          },
+          {
+            "optionId": "b03_i021_cohesion",
+            "text": "Ask Loan.requestExtension(today) to evaluate its due date and extension count before changing the loan."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i021_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Let the model decide from the lifecycle facts it owns and return a domain result. In this case, Ask Loan.requestExtension(today) to evaluate its due date and extension count before changing the loan.",
+        "details": {
+          "mechanismOrProperty": "Loan owns the due date and extension history used by this decision.",
+          "scenarioApplication": "The page requests an extension while Loan reports whether its facts permit one.",
+          "errorCorrection": "Another caller can extend a loan after the limit because it repeats or omits the branch. That service cannot decide from the full state the prompt says controls eligibility.",
+          "boundaryOrTradeoff": "A calendar collaborator may supply today’s date, but the loan applies its own extension rule.",
+          "transfer": "Use caller input for context and let the state owner decide against its own lifecycle facts."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i021_alt_a",
+            "text": "Another caller can extend a loan after the limit because it repeats or omits the branch."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i021_alt_b",
+            "text": "That service cannot decide from the full state the prompt says controls eligibility."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i003",
+    "questionId": "ood-n02-b03-i022",
+    "learningObjective": "Choose how a work-order caller should obtain the labor plan.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "intermediate",
+      "questionId": "ood-n02-b03-i022",
+      "prompt": "A repair job stores the machine, observed symptoms, and confirmed diagnosis. The caller currently asks for all three, chooses labor steps, then writes them back. The job’s procedure varies by diagnosis. Choose how a work-order caller should obtain the labor plan.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i022_alt_b",
+            "text": "Store a labor plan copied from the caller without checking whether it matches the job diagnosis."
+          },
+          {
+            "optionId": "b03_i022_cohesion",
+            "text": "Ask RepairJob.planLabor() to use its confirmed diagnosis and symptoms to produce the job’s required steps."
+          },
+          {
+            "optionId": "b03_i022_alt_a",
+            "text": "Let each dispatch screen fetch diagnosis and symptoms and assemble labor steps itself."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i022_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Move state-dependent domain behavior out of a caller that assembles it from the model’s own facts. In this case, Ask RepairJob.planLabor() to use its confirmed diagnosis and symptoms to produce the job’s required steps.",
+        "details": {
+          "mechanismOrProperty": "RepairJob owns the work facts from which the procedure is determined.",
+          "scenarioApplication": "Dispatch screens consume the job’s plan instead of translating its state into domain work.",
+          "errorCorrection": "Two dispatch screens can produce different work for the same confirmed job. The copied plan can contradict the diagnosis that the job itself records.",
+          "boundaryOrTradeoff": "A technician can still choose execution details that the job’s rules do not determine.",
+          "transfer": "If domain work follows an object’s confirmed facts, keep the decision with those facts."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i022_alt_b",
+            "text": "The copied plan can contradict the diagnosis that the job itself records."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i022_alt_a",
+            "text": "Two dispatch screens can produce different work for the same confirmed job."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i004",
+    "questionId": "ood-n02-b03-i023",
+    "learningObjective": "Choose where the joint move eligibility decision belongs.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "intermediate_transfer",
+      "questionId": "ood-n02-b03-i023",
+      "prompt": "A rehearsal rescheduling screen reads attendee count, destination-room capacity, and accessibility flags, then decides whether a move is valid. A Room knows capacity; the Rehearsal knows its attendees and requirements. Choose where the joint move eligibility decision belongs.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i023_cohesion",
+            "text": "Use a named rescheduling operation with both Rehearsal and Room facts to decide and apply the move."
+          },
+          {
+            "optionId": "b03_i023_alt_a",
+            "text": "Put the check only on Room and pass it a count, discarding the rehearsal’s accessibility requirements."
+          },
+          {
+            "optionId": "b03_i023_alt_b",
+            "text": "Repeat the combined comparisons in each screen and let it update the room ID."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i023_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Avoid asking one entity to guess at facts it does not own or leaving a joint decision in each caller. In this case, Use a named rescheduling operation with both Rehearsal and Room facts to decide and apply the move.",
+        "details": {
+          "mechanismOrProperty": "The decision genuinely needs facts from both objects, so one explicit collaboration owns the combined operation.",
+          "scenarioApplication": "Web and mobile flows request the same move decision using the rehearsal and destination room.",
+          "errorCorrection": "The room-capacity check would omit the rehearsal-specific requirement that also governs the move. A caller can miss one condition or update the rehearsal without applying the same move rule.",
+          "boundaryOrTradeoff": "Keep the room’s capacity fact on Room; the joint operation coordinates rather than copying it.",
+          "transfer": "Place behavior where all required facts can be considered once without moving unrelated state ownership."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i023_alt_a",
+            "text": "The room-capacity check would omit the rehearsal-specific requirement that also governs the move."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i023_alt_b",
+            "text": "A caller can miss one condition or update the rehearsal without applying the same move rule."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i005",
+    "questionId": "ood-n02-b03-i024",
+    "learningObjective": "Choose how both panels should submit commands.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "advanced_tradeoff",
+      "questionId": "ood-n02-b03-i024",
+      "prompt": "An exhibit command handler reads the controller’s maintenance flag and command type, then blocks unsafe commands. The rule is part of the exhibit’s accepted operating behavior and is used by both remote and local panels. Choose how both panels should submit commands.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i024_alt_a",
+            "text": "Have each panel read maintenance mode and filter commands before sending them."
+          },
+          {
+            "optionId": "b03_i024_alt_b",
+            "text": "Let the network gateway decide whether a command is safe based only on the request name."
+          },
+          {
+            "optionId": "b03_i024_cohesion",
+            "text": "Ask ExhibitController.execute(command) to evaluate maintenance state and apply the command rule."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i024_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Express behavior as a domain operation rather than repeated caller-side status branching. In this case, Ask ExhibitController.execute(command) to evaluate maintenance state and apply the command rule.",
+        "details": {
+          "mechanismOrProperty": "ExhibitController owns its mode and command behavior.",
+          "scenarioApplication": "Both panels send the requested command through the same state-aware operation.",
+          "errorCorrection": "The local panel can miss a block that the remote panel applies. The gateway lacks the controller’s current maintenance state.",
+          "boundaryOrTradeoff": "Transport authentication can stay at the gateway; it does not replace the controller’s behavior rule.",
+          "transfer": "A behavior used by multiple callers belongs with the state required to decide it."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i024_alt_a",
+            "text": "The local panel can miss a block that the remote panel applies."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i024_alt_b",
+            "text": "The gateway lacks the controller’s current maintenance state."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i006",
+    "questionId": "ood-n02-b03-i025",
+    "learningObjective": "Choose how the caller should initiate retirement.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "advanced_failure",
+      "questionId": "ood-n02-b03-i025",
+      "prompt": "A course administrator retires a lesson. The caller currently reads learner-progress links and manually marks each one preserved before changing the lesson’s status. Lesson identity and retirement rules are owned by the library model. Choose how the caller should initiate retirement.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i025_alt_b",
+            "text": "Move progress records to a new lesson ID so the caller can delete the old lesson."
+          },
+          {
+            "optionId": "b03_i025_cohesion",
+            "text": "Ask Lesson.retire() to change availability while preserving its stable identity for linked progress."
+          },
+          {
+            "optionId": "b03_i025_alt_a",
+            "text": "Let each admin screen query progress links and decide how to adjust lesson fields."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i025_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Replace caller orchestration of a model-owned lifecycle decision with a behavior-focused operation. In this case, Ask Lesson.retire() to change availability while preserving its stable identity for linked progress.",
+        "details": {
+          "mechanismOrProperty": "Lesson owns its availability lifecycle and identity relationship to progress.",
+          "scenarioApplication": "The administrator expresses intent; the model applies the retirement behavior consistently.",
+          "errorCorrection": "A second retirement path can alter the ID or fail to preserve one kind of progress link. That breaks the identity continuity the library model requires.",
+          "boundaryOrTradeoff": "The screen can still show affected learner counts as confirmation information.",
+          "transfer": "Do not make a caller reconstruct lifecycle rules from internal state it must not own."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i025_alt_b",
+            "text": "That breaks the identity continuity the library model requires."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i025_alt_a",
+            "text": "A second retirement path can alter the ID or fail to preserve one kind of progress link."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i007",
+    "questionId": "ood-n02-b03-i026",
+    "learningObjective": "Choose a case operation that prevents callers from applying only part of reassignment.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b03-i026",
+      "prompt": "A customer-support case stores its current assignee, queue, and response deadline. Reassignment must preserve that deadline. The controller checks whether a destination queue is active and then updates assignment fields. Choose a case operation that prevents callers from applying only part of reassignment.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i026_cohesion",
+            "text": "Ask SupportCase.reassign(queue) to check the destination and update its assignment as one behavior."
+          },
+          {
+            "optionId": "b03_i026_alt_a",
+            "text": "Expose assignee and queue setters and let controllers choose which one to call."
+          },
+          {
+            "optionId": "b03_i026_alt_b",
+            "text": "Let the queue service overwrite the case deadline when accepting an assignment."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i026_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Give the model an intent-level operation that coordinates its related assignment fields. In this case, Ask SupportCase.reassign(queue) to check the destination and update its assignment as one behavior.",
+        "details": {
+          "mechanismOrProperty": "SupportCase owns its assignment and deadline; reassignment changes the assignment through one operation.",
+          "scenarioApplication": "Every controller asks the case to reassign without independently assembling its state.",
+          "errorCorrection": "A controller can update the queue while leaving the old assignee in place. The queue does not own the response deadline, which the prompt requires to stay with the case.",
+          "boundaryOrTradeoff": "The queue can report whether it is active; the case still applies its related field change.",
+          "transfer": "Intent-level operations help prevent callers from constructing a partially updated domain state."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i026_alt_a",
+            "text": "A controller can update the queue while leaving the old assignee in place."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i026_alt_b",
+            "text": "The queue does not own the response deadline, which the prompt requires to stay with the case."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i008",
+    "questionId": "ood-n02-b03-i027",
+    "learningObjective": "Choose how publication should be invoked so every entry point enforces the same rule.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "foundational_boundary",
+      "questionId": "ood-n02-b03-i027",
+      "prompt": "A listing stores price and stock. The market’s policy rejects publication when either is invalid; the publish page currently fetches fields and branches before setting Published. Choose how publication should be invoked so every entry point enforces the same rule.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i027_alt_a",
+            "text": "Let the web page validate and let the API handler set Published directly."
+          },
+          {
+            "optionId": "b03_i027_alt_b",
+            "text": "Put publication status on a separate flag object that receives no price or stock values."
+          },
+          {
+            "optionId": "b03_i027_cohesion",
+            "text": "Ask Listing.publish() to validate its price and stock before changing its status."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i027_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Move a state-dependent publication decision into the model that owns its state. In this case, Ask Listing.publish() to validate its price and stock before changing its status.",
+        "details": {
+          "mechanismOrProperty": "Listing owns the fields and publication state used by the rule.",
+          "scenarioApplication": "The caller requests publication while the listing applies the same validation from either entry point.",
+          "errorCorrection": "A different entry point can bypass the page’s check and publish invalid listing state. That object cannot evaluate the stated publication rule.",
+          "boundaryOrTradeoff": "A dedicated price policy can be consulted if the prompt later introduces varying price rules.",
+          "transfer": "Keep the transition decision with the domain state it must inspect."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i027_alt_a",
+            "text": "A different entry point can bypass the page’s check and publish invalid listing state."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i027_alt_b",
+            "text": "That object cannot evaluate the stated publication rule."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i009",
+    "questionId": "ood-n02-b03-i028",
+    "learningObjective": "Choose how a caller should request readiness.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "intermediate",
+      "questionId": "ood-n02-b03-i028",
+      "prompt": "A shipment has packed parcels and an order quantity. The shipping caller reads parcel totals, checks the remaining quantity, and then marks the shipment ready. A shipment can be ready only when every ordered unit is assigned. Choose how a caller should request readiness.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i028_alt_b",
+            "text": "Let each Parcel mark the whole Shipment ready when it is packed."
+          },
+          {
+            "optionId": "b03_i028_cohesion",
+            "text": "Ask Shipment.markReady() to compare assigned parcel quantities with the order quantity before changing status."
+          },
+          {
+            "optionId": "b03_i028_alt_a",
+            "text": "Let each shipping screen total the parcel list and set Ready through a status setter."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i028_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Encapsulate a collection-wide calculation and state change behind one operation. In this case, Ask Shipment.markReady() to compare assigned parcel quantities with the order quantity before changing status.",
+        "details": {
+          "mechanismOrProperty": "Shipment owns the parcel collection and the order quantity needed to decide readiness.",
+          "scenarioApplication": "The readiness rule runs against the complete shipment once before status changes.",
+          "errorCorrection": "One screen can miss a parcel or use a different total before setting the same status. A parcel cannot know whether the other parcels account for every ordered unit.",
+          "boundaryOrTradeoff": "An order service may provide the target quantity, but Shipment coordinates its parcel state.",
+          "transfer": "A collection-level decision belongs where the complete collection and target are available."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i028_alt_b",
+            "text": "A parcel cannot know whether the other parcels account for every ordered unit."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i028_alt_a",
+            "text": "One screen can miss a parcel or use a different total before setting the same status."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i010",
+    "questionId": "ood-n02-b03-i029",
+    "learningObjective": "Choose how to make the merge decision and resulting update consistent.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "intermediate_transfer",
+      "questionId": "ood-n02-b03-i029",
+      "prompt": "An archive record has a selected title and several source descriptions. The merge screen reads every description, chooses a winner, then writes the title and provenance list separately. Choose how to make the merge decision and resulting update consistent.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i029_cohesion",
+            "text": "Ask ArchiveRecord.mergeDescriptions(selection) to set the selected title and retain the other descriptions as provenance."
+          },
+          {
+            "optionId": "b03_i029_alt_a",
+            "text": "Let each merge screen update the title first and save provenance only if its next request succeeds."
+          },
+          {
+            "optionId": "b03_i029_alt_b",
+            "text": "Move title selection to an audit logger that cannot identify the current archive record."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i029_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Move a model-specific merge operation together with the state it combines and preserves. In this case, Ask ArchiveRecord.mergeDescriptions(selection) to set the selected title and retain the other descriptions as provenance.",
+        "details": {
+          "mechanismOrProperty": "ArchiveRecord owns current metadata and its provenance; its merge behavior coordinates the update.",
+          "scenarioApplication": "The caller supplies the curator’s selected source and the record returns one consistent merged state.",
+          "errorCorrection": "A failure between writes can produce a title without the source history the merge must retain. The logger records changes but lacks the record state used to choose and apply the merge.",
+          "boundaryOrTradeoff": "The curator remains the human decision maker about which description is preferred.",
+          "transfer": "Keep domain mutation with the state being combined, while accepting external human choices as inputs."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i029_alt_a",
+            "text": "A failure between writes can produce a title without the source history the merge must retain."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i029_alt_b",
+            "text": "The logger records changes but lacks the record state used to choose and apply the merge."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i011",
+    "questionId": "ood-n02-b03-i030",
+    "learningObjective": "Choose how a permit should answer a usage request.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "advanced_tradeoff",
+      "questionId": "ood-n02-b03-i030",
+      "prompt": "A permit stores granted territories and expiry. A caller checks whether a requested usage fits those fields, then writes an approval. The same permit is evaluated in both review and renewal flows. Choose how a permit should answer a usage request.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i030_alt_a",
+            "text": "Have every caller read territories and expiry and reimplement the comparison."
+          },
+          {
+            "optionId": "b03_i030_alt_b",
+            "text": "Ask the caller to set an authorized flag on the permit before each use."
+          },
+          {
+            "optionId": "b03_i030_cohesion",
+            "text": "Ask Permit.authorizes(territory, instant) to evaluate its granted territory and expiry."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i030_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Replace repeated query-then-branch rules with a behavior on the object that owns the grant. In this case, Ask Permit.authorizes(territory, instant) to evaluate its granted territory and expiry.",
+        "details": {
+          "mechanismOrProperty": "Permit owns the grant fields that define this authorization result.",
+          "scenarioApplication": "The two flows ask the same permit about their specific requested usage.",
+          "errorCorrection": "Review and renewal can disagree about whether the same usage is authorized. That flag can outlive the particular territory and instant being evaluated.",
+          "boundaryOrTradeoff": "A policy service may determine the grant inputs; the permit evaluates its own recorded grant.",
+          "transfer": "An object can answer a question about its own state without exporting that state for callers to branch on."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i030_alt_a",
+            "text": "Review and renewal can disagree about whether the same usage is authorized."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i030_alt_b",
+            "text": "That flag can outlive the particular territory and instant being evaluated."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i012",
+    "questionId": "ood-n02-b03-i031",
+    "learningObjective": "Choose how replacement should be requested.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "advanced_failure",
+      "questionId": "ood-n02-b03-i031",
+      "prompt": "A maintenance job proposes installing a battery. It stores the aircraft compatibility rule and candidate battery; callers currently fetch both IDs and decide whether to release the old battery. Choose how replacement should be requested.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i031_alt_b",
+            "text": "Have the battery decide whether the aircraft can accept it without knowing the maintenance job’s current assignment."
+          },
+          {
+            "optionId": "b03_i031_cohesion",
+            "text": "Ask MaintenanceJob.replaceBattery(candidate) to check compatibility before changing the aircraft assignment."
+          },
+          {
+            "optionId": "b03_i031_alt_a",
+            "text": "Let the aircraft screen compare model strings and clear its battery field before submitting the new ID."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i031_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Use a behavior that applies compatibility and replacement rules from the state involved. In this case, Ask MaintenanceJob.replaceBattery(candidate) to check compatibility before changing the aircraft assignment.",
+        "details": {
+          "mechanismOrProperty": "MaintenanceJob has the candidate, aircraft, and replacement context needed for the operation.",
+          "scenarioApplication": "A failed compatibility check leaves the current assignment intact.",
+          "errorCorrection": "A different caller may omit the compatibility comparison or leave the aircraft unassigned on failure. The battery alone cannot coordinate replacing the aircraft’s existing resource.",
+          "boundaryOrTradeoff": "A hardware adapter can report physical fit; the job applies the domain replacement outcome.",
+          "transfer": "Choose the operation owner by the complete facts needed to perform the behavior safely."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i031_alt_b",
+            "text": "The battery alone cannot coordinate replacing the aircraft’s existing resource."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i031_alt_a",
+            "text": "A different caller may omit the compatibility comparison or leave the aircraft unassigned on failure."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i013",
+    "questionId": "ood-n02-b03-i032",
+    "learningObjective": "Choose how dispatch should be expressed.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b03-i032",
+      "prompt": "A referral has consent status and a selected specialist. The caller reads both, branches, then serializes the referral for dispatch. Dispatch must consult the current consent status. Choose how dispatch should be expressed.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i032_cohesion",
+            "text": "Ask Referral.prepareDispatch() to check current consent and return a dispatchable referral only when permitted."
+          },
+          {
+            "optionId": "b03_i032_alt_a",
+            "text": "Let the caller cache consent at screen open and send later based on that cached value."
+          },
+          {
+            "optionId": "b03_i032_alt_b",
+            "text": "Let a serializer infer consent from whether a specialist is present."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i032_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Make a sensitive state-dependent behavior impossible to invoke through a stale caller-side decision. In this case, Ask Referral.prepareDispatch() to check current consent and return a dispatchable referral only when permitted.",
+        "details": {
+          "mechanismOrProperty": "Referral owns the consent state and recipient context required for this decision.",
+          "scenarioApplication": "The dispatch path evaluates consent at the point where it prepares the outbound data.",
+          "errorCorrection": "Consent can change between screen open and dispatch, so the cached branch may be stale. A selected specialist does not establish the separate consent fact.",
+          "boundaryOrTradeoff": "The transport layer can still encode the permitted payload without deciding whether disclosure is allowed.",
+          "transfer": "Put a state-sensitive decision at the operation boundary where its relevant fact can be checked."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i032_alt_a",
+            "text": "Consent can change between screen open and dispatch, so the cached branch may be stale."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i032_alt_b",
+            "text": "A selected specialist does not establish the separate consent fact."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i014",
+    "questionId": "ood-n02-b03-i033",
+    "learningObjective": "Choose how scoring should be shared across result and export paths.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "foundational_boundary",
+      "questionId": "ood-n02-b03-i033",
+      "prompt": "A learning attempt stores an answer and its pinned scoring policy. A result screen currently reads both and applies scoring; exports use a second copy of the formula. Choose how scoring should be shared across result and export paths.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i033_alt_a",
+            "text": "Keep separate scoring formulas in the result screen and export job."
+          },
+          {
+            "optionId": "b03_i033_alt_b",
+            "text": "Replace the pinned policy with the current global score formula whenever a result is requested."
+          },
+          {
+            "optionId": "b03_i033_cohesion",
+            "text": "Ask LearningAttempt.score() to apply its pinned policy to its stored answer for both result and export consumers."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i033_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Move behavior that interprets model-owned state into one operation on that model. In this case, Ask LearningAttempt.score() to apply its pinned policy to its stored answer for both result and export consumers.",
+        "details": {
+          "mechanismOrProperty": "LearningAttempt owns the answer and pinned policy that define this result.",
+          "scenarioApplication": "Both consumers call the same operation and receive the same score for the attempt.",
+          "errorCorrection": "A later policy correction can make the two consumers report different scores for one attempt. That changes how an existing attempt is interpreted despite its captured policy.",
+          "boundaryOrTradeoff": "A formatter can present the result differently without changing its calculation.",
+          "transfer": "Keep interpretation with the data and policy version that give the result its meaning."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i033_alt_a",
+            "text": "A later policy correction can make the two consumers report different scores for one attempt."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i033_alt_b",
+            "text": "That changes how an existing attempt is interpreted despite its captured policy."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i015",
+    "questionId": "ood-n02-b03-i034",
+    "learningObjective": "Choose how the exception should handle an approval attempt.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "intermediate",
+      "questionId": "ood-n02-b03-i034",
+      "prompt": "A purchasing exception contains requested amount and control category. The caller reads both and decides whether a manager’s approval can be recorded. The category determines the required approval authority. Choose how the exception should handle an approval attempt.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i034_alt_b",
+            "text": "Have the actor’s profile mark the exception approved whenever the actor has a manager role."
+          },
+          {
+            "optionId": "b03_i034_cohesion",
+            "text": "Ask Exception.recordApproval(actor) to verify the actor against its amount and control category before recording approval."
+          },
+          {
+            "optionId": "b03_i034_alt_a",
+            "text": "Let each approval screen choose the required actor from the category label it displays."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i034_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Let the domain object use its own request facts to determine the required approval path. In this case, Ask Exception.recordApproval(actor) to verify the actor against its amount and control category before recording approval.",
+        "details": {
+          "mechanismOrProperty": "Exception owns the facts that determine which approval is valid.",
+          "scenarioApplication": "Callers supply the actor; the exception evaluates whether that actor may approve this request.",
+          "errorCorrection": "A second entry point can apply a different threshold or ignore the amount. The actor profile does not contain this exception’s amount or control category.",
+          "boundaryOrTradeoff": "An authorization provider may resolve identity, but the exception applies its request-specific rule.",
+          "transfer": "Use an operation on the object whose facts determine the required behavior."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i034_alt_b",
+            "text": "The actor profile does not contain this exception’s amount or control category."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i034_alt_a",
+            "text": "A second entry point can apply a different threshold or ignore the amount."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i016",
+    "questionId": "ood-n02-b03-i035",
+    "learningObjective": "Choose how a replacement should be applied.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "intermediate_transfer",
+      "questionId": "ood-n02-b03-i035",
+      "prompt": "An episode stores a recording and annotation offsets. A replacement tool returns a proposed offset mapping; callers currently swap the recording first and then update annotations. Choose how a replacement should be applied.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i035_cohesion",
+            "text": "Ask Episode.replaceRecording(recording, mapping) to validate and apply the recording and mapped annotations together."
+          },
+          {
+            "optionId": "b03_i035_alt_a",
+            "text": "Let the upload page change the recording field and ask annotation screens to repair offsets later."
+          },
+          {
+            "optionId": "b03_i035_alt_b",
+            "text": "Let the mapping tool own the Episode and change its recording without validating the proposed annotation set."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i035_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Move dependent-state application into one domain behavior that has both current and proposed values. In this case, Ask Episode.replaceRecording(recording, mapping) to validate and apply the recording and mapped annotations together.",
+        "details": {
+          "mechanismOrProperty": "Episode owns the active recording and annotations whose offsets depend on it.",
+          "scenarioApplication": "A replacement is applied consistently only after its proposed dependent data is checked.",
+          "errorCorrection": "A consumer can observe new audio with offsets that still refer to the old recording. The tool computes mappings but does not own the episode’s accepted state.",
+          "boundaryOrTradeoff": "The tool can remain a collaborator that supplies the mapping result.",
+          "transfer": "A domain operation should coordinate state that must remain mutually consistent."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i035_alt_a",
+            "text": "A consumer can observe new audio with offsets that still refer to the old recording."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i035_alt_b",
+            "text": "The tool computes mappings but does not own the episode’s accepted state."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i017",
+    "questionId": "ood-n02-b03-i036",
+    "learningObjective": "Choose how permission access should be requested.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "advanced_tradeoff",
+      "questionId": "ood-n02-b03-i036",
+      "prompt": "A role grant stores permissions, expiry, and review status. The caller currently checks that the grant is Active, then returns its permission set. Revoked grants must return no permissions. Choose how permission access should be requested.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i036_alt_a",
+            "text": "Have each API handler read status and expiry before returning the raw permission set."
+          },
+          {
+            "optionId": "b03_i036_alt_b",
+            "text": "Return the raw permission set and ask callers to filter it later."
+          },
+          {
+            "optionId": "b03_i036_cohesion",
+            "text": "Ask RoleGrant.effectivePermissions(now) to return permissions only when its status and expiry permit them."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i036_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Make a state-dependent read behavior part of the object whose state controls the result. In this case, Ask RoleGrant.effectivePermissions(now) to return permissions only when its status and expiry permit them.",
+        "details": {
+          "mechanismOrProperty": "RoleGrant owns permissions, status, and expiry used to derive effective access.",
+          "scenarioApplication": "Every caller receives the same effective set for the same time and grant state.",
+          "errorCorrection": "A handler can forget expiry while another checks it, producing inconsistent access. A caller can accidentally use permissions before applying the required grant state checks.",
+          "boundaryOrTradeoff": "The authorization boundary still decides whether a caller may inspect the grant at all.",
+          "transfer": "Encapsulated behavior can include a safe derived view when the owner’s current state governs it."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i036_alt_a",
+            "text": "A handler can forget expiry while another checks it, producing inconsistent access."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i036_alt_b",
+            "text": "A caller can accidentally use permissions before applying the required grant state checks."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i018",
+    "questionId": "ood-n02-b03-i037",
+    "learningObjective": "Choose the model operation that best expresses the seal action.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "advanced_failure",
+      "questionId": "ood-n02-b03-i037",
+      "prompt": "A document revision stores text and a digest. A sealing flow asks the revision for its digest, compares it to the signer’s confirmation, and then sends a seal command. Choose the model operation that best expresses the seal action.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i037_alt_b",
+            "text": "Let the signer confirmation object set the revision’s sealed state without checking its current digest."
+          },
+          {
+            "optionId": "b03_i037_cohesion",
+            "text": "Ask DocumentRevision.sealIfConfirmed(digest) to compare against its current digest before recording the seal."
+          },
+          {
+            "optionId": "b03_i037_alt_a",
+            "text": "Let each caller compare a copied digest and set a separate sealed flag."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i037_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Keep a decision based on the object’s own current version attached to that object. In this case, Ask DocumentRevision.sealIfConfirmed(digest) to compare against its current digest before recording the seal.",
+        "details": {
+          "mechanismOrProperty": "DocumentRevision owns the text and digest that must match before its state changes.",
+          "scenarioApplication": "A stale confirmation is rejected by the same operation that protects the revision.",
+          "errorCorrection": "The revision can change after the copied comparison, so the flag may describe different text. The confirmation object does not own the document revision being sealed.",
+          "boundaryOrTradeoff": "Signature verification can be delegated while this object checks its own content version.",
+          "transfer": "Perform version-sensitive behavior at the state owner that can verify the current version."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i037_alt_b",
+            "text": "The confirmation object does not own the document revision being sealed."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i037_alt_a",
+            "text": "The revision can change after the copied comparison, so the flag may describe different text."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "beforeQuestionId": "ood-n02-b03-i019",
+    "questionId": "ood-n02-b03-i038",
+    "learningObjective": "Choose how to prevent different callers from deriving different release amounts.",
+    "question": {
+      "trackId": "object-oriented-design-interview",
+      "nodeId": "objects_responsibilities_encapsulation_and_invariants",
+      "mentalUnitId": "OOD-N02-B03",
+      "difficulty": "foundational",
+      "questionId": "ood-n02-b03-i038",
+      "prompt": "A payout holds a requested amount and settlement status. The caller reads status, computes the transferable amount, and updates payout state; retries use the same payout request. Choose how to prevent different callers from deriving different release amounts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/tutorial/java/concepts/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model"
+      ],
+      "interaction": {
+        "type": "choice_single",
+        "scoringMethod": "exact_selected_set",
+        "options": [
+          {
+            "optionId": "b03_i038_cohesion",
+            "text": "Ask Payout.releaseAmount() or release() to derive the permitted amount from its own request and settlement state."
+          },
+          {
+            "optionId": "b03_i038_alt_a",
+            "text": "Have each payment screen compute the amount from displayed totals and set it on the payout."
+          },
+          {
+            "optionId": "b03_i038_alt_b",
+            "text": "Let the settlement feed update the payout’s requested amount whenever it publishes a new total."
+          }
+        ]
+      },
+      "answer": {
+        "type": "choice_single",
+        "optionId": "b03_i038_cohesion"
+      },
+      "feedback": {
+        "type": "choice_single",
+        "reason": "Move a state-dependent amount decision into the payout behavior that owns its request and settlement facts. In this case, Ask Payout.releaseAmount() or release() to derive the permitted amount from its own request and settlement state.",
+        "details": {
+          "mechanismOrProperty": "Payout owns the request and settlement status needed to determine its release behavior.",
+          "scenarioApplication": "Retries use the same payout calculation and cannot silently adopt a different caller formula.",
+          "errorCorrection": "Rounding or omitted adjustments can make callers release different amounts for the same payout. The feed reports settlement facts but does not own the amount the seller requested.",
+          "boundaryOrTradeoff": "A currency conversion policy can be an explicit collaborator if the scenario introduces conversion.",
+          "transfer": "Let the object whose state determines an amount own the operation that derives that amount."
+        },
+        "messages": [
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i038_alt_a",
+            "text": "Rounding or omitted adjustments can make callers release different amounts for the same payout."
+          },
+          {
+            "kind": "wrong_option",
+            "targetId": "b03_i038_alt_b",
+            "text": "The feed reports settlement facts but does not own the amount the seller requested."
+          }
+        ]
+      }
+    }
+  }
+]

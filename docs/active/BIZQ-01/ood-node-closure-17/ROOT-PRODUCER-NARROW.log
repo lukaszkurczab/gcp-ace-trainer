@@ -1,0 +1,208 @@
+TAP version 13
+# Subtest: accepts the fixed 119-item package and reconstructs the immutable v13→12→11 predecessor chain
+ok 1 - accepts the fixed 119-item package and reconstructs the immutable v13→12→11 predecessor chain
+  ---
+  duration_ms: 3806.478708
+  type: 'test'
+  ...
+# Subtest: validates, scores, and binds targeted feedback for every replacement option
+ok 2 - validates, scores, and binds targeted feedback for every replacement option
+  ---
+  duration_ms: 16.72675
+  type: 'test'
+  ...
+# Subtest: requires every fixed OOD generation proof in the v16 predecessor chain
+ok 3 - requires every fixed OOD generation proof in the v16 predecessor chain
+  ---
+  duration_ms: 4484.065541
+  type: 'test'
+  ...
+# Subtest: rejects changed identities, hashes, object bindings, membership, and unsupported fields
+ok 4 - rejects changed identities, hashes, object bindings, membership, and unsupported fields
+  ---
+  duration_ms: 9171.504917
+  type: 'test'
+  ...
+# Subtest: rejects changed canonical source membership and unsupported catalog versions
+ok 5 - rejects changed canonical source membership and unsupported catalog versions
+  ---
+  duration_ms: 1923.093375
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked fixed proof path
+ok 6 - rejects a symlinked fixed proof path
+  ---
+  duration_ms: 571.4985
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked current source path
+ok 7 - rejects a symlinked current source path
+  ---
+  duration_ms: 366.913166
+  type: 'test'
+  ...
+# Subtest: accepts the fixed 152-item package and reconstructs the immutable v16→13→12→11 predecessor chain
+ok 8 - accepts the fixed 152-item package and reconstructs the immutable v16→13→12→11 predecessor chain
+  ---
+  duration_ms: 4075.971625
+  type: 'test'
+  ...
+# Subtest: validates, scores, and binds targeted feedback for every replacement option
+ok 9 - validates, scores, and binds targeted feedback for every replacement option
+  ---
+  duration_ms: 23.677333
+  type: 'test'
+  ...
+# Subtest: requires every fixed OOD generation proof in the v17 predecessor chain
+ok 10 - requires every fixed OOD generation proof in the v17 predecessor chain
+  ---
+  duration_ms: 5750.004958
+  type: 'test'
+  ...
+# Subtest: rejects changed identities, hashes, object bindings, membership, and unsupported fields
+ok 11 - rejects changed identities, hashes, object bindings, membership, and unsupported fields
+  ---
+  duration_ms: 8961.655875
+  type: 'test'
+  ...
+# Subtest: rejects changed canonical source membership and unsupported catalog versions
+ok 12 - rejects changed canonical source membership and unsupported catalog versions
+  ---
+  duration_ms: 1817.60525
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked fixed proof path
+ok 13 - rejects a symlinked fixed proof path
+  ---
+  duration_ms: 527.923208
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked current source path
+ok 14 - rejects a symlinked current source path
+  ---
+  duration_ms: 319.962
+  type: 'test'
+  ...
+# Subtest: accepts the exact OOD source11 replacement and retains historical inventory
+ok 15 - accepts the exact OOD source11 replacement and retains historical inventory
+  ---
+  duration_ms: 3735.873792
+  type: 'test'
+  ...
+# Subtest: replacement uses the authored single-choice scoring and feedback contract
+ok 16 - replacement uses the authored single-choice scoring and feedback contract
+  ---
+  duration_ms: 29.540792
+  type: 'test'
+  ...
+# Subtest: rejects the replacement when its fixed proof is absent
+ok 17 - rejects the replacement when its fixed proof is absent
+  ---
+  duration_ms: 1769.2765
+  type: 'test'
+  ...
+# Subtest: rejects a tampered frozen question and a changed current replacement
+ok 18 - rejects a tampered frozen question and a changed current replacement
+  ---
+  duration_ms: 1939.485208
+  type: 'test'
+  ...
+# Subtest: rejects stale catalog or track hashes, duplicate mappings, and an absent new item
+ok 19 - rejects stale catalog or track hashes, duplicate mappings, and an absent new item
+  ---
+  duration_ms: 4409.996333
+  type: 'test'
+  ...
+# Subtest: rejects changes to an unaffected OOD item and unapproved proof fields
+ok 20 - rejects changes to an unaffected OOD item and unapproved proof fields
+  ---
+  duration_ms: 2614.198708
+  type: 'test'
+  ...
+# Subtest: rejects an unapproved proof source path and a physically relocated source file
+ok 21 - rejects an unapproved proof source path and a physically relocated source file
+  ---
+  duration_ms: 1164.246334
+  type: 'test'
+  ...
+# Subtest: validates the exact source12 fixture and preserves its source11 predecessor
+ok 22 - validates the exact source12 fixture and preserves its source11 predecessor
+  ---
+  duration_ms: 3611.838583
+  type: 'test'
+  ...
+# Subtest: source12 question validates, scores all options, and supplies authored wrong-option feedback
+ok 23 - source12 question validates, scores all options, and supplies authored wrong-option feedback
+  ---
+  duration_ms: 2.338125
+  type: 'test'
+  ...
+# Subtest: source12 cannot fall back when either fixed generation proof is absent
+ok 24 - source12 cannot fall back when either fixed generation proof is absent
+  ---
+  duration_ms: 2006.999917
+  type: 'test'
+  ...
+# Subtest: rejects tampered current content, predecessor proof, and source identity
+ok 25 - rejects tampered current content, predecessor proof, and source identity
+  ---
+  duration_ms: 2921.932667
+  type: 'test'
+  ...
+# Subtest: rejects unreviewed successor proof identity, hashes, paths, and fields
+ok 26 - rejects unreviewed successor proof identity, hashes, paths, and fields
+  ---
+  duration_ms: 4303.690125
+  type: 'test'
+  ...
+# Subtest: rejects a changed unrelated OOD source item instead of reconstructing around it
+ok 27 - rejects a changed unrelated OOD source item instead of reconstructing around it
+  ---
+  duration_ms: 884.048167
+  type: 'test'
+  ...
+# Subtest: rejects a symlinked current source before following it
+ok 28 - rejects a symlinked current source before following it
+  ---
+  duration_ms: 595.319417
+  type: 'test'
+  ...
+# Subtest: validates the fixed source13 cohort and reconstructs immutable source12 and source11 predecessors
+ok 29 - validates the fixed source13 cohort and reconstructs immutable source12 and source11 predecessors
+  ---
+  duration_ms: 3751.861541
+  type: 'test'
+  ...
+# Subtest: all fifteen new questions validate, score each option, and bind authored feedback to every distractor
+ok 30 - all fifteen new questions validate, score each option, and bind authored feedback to every distractor
+  ---
+  duration_ms: 2.2075
+  type: 'test'
+  ...
+# Subtest: requires the source13 proof and rejects modified cohort bindings and historical predecessor evidence
+ok 31 - requires the source13 proof and rejects modified cohort bindings and historical predecessor evidence
+  ---
+  duration_ms: 3994.432083
+  type: 'test'
+  ...
+# Subtest: source13 directly requires both historical proofs and rejects changed, missing, or duplicate cohort membership
+ok 32 - source13 directly requires both historical proofs and rejects changed, missing, or duplicate cohort membership
+  ---
+  duration_ms: 7000.170917
+  type: 'test'
+  ...
+# Subtest: rejects unreviewed cohort fields, unrelated source changes, and symlinked source paths
+ok 33 - rejects unreviewed cohort fields, unrelated source changes, and symlinked source paths
+  ---
+  duration_ms: 1854.121708
+  type: 'test'
+  ...
+1..33
+# tests 33
+# suites 0
+# pass 33
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 21652.546333

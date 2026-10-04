@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "runId": 37159391562,
+  "headSha": "9c8e8582c74fc2e5b515a86c442d9dbdf220f0b9",
+  "bothJobs": "success",
+  "actualLogSha256": "826c57f43904386e4540b5cc8f15974a93bb8aa37d29643e1e59e7e2545bd6a5",
+  "matchingActualSummaries": [
+    "Multi-track content release contract\tRun pinned multi-track release round-trip\t2026-10-03T22:44:06.4080041Z # tests 3",
+    "Multi-track content release contract\tRun pinned multi-track release round-trip\t2026-10-03T22:44:06.4080912Z # pass 3",
+    "Multi-track content release contract\tRun pinned multi-track release round-trip\t2026-10-03T22:44:06.4081204Z # fail 0",
+    "Multi-track content release contract\tRun pinned multi-track release round-trip\t2026-10-03T22:44:06.4081812Z # skipped 0",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T22:47:33.1091694Z # tests 1796",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T22:47:33.1092147Z # pass 1792",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T22:47:33.1092336Z # fail 0",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-03T22:47:33.1099799Z # skipped 4"
+  ],
+  "interpretation": "Actualhosted1796total/1792PASS/0FAIL/4existingSKIP; exactCIbothsuccess. No fullBIZQ/native/release claim"
+}
