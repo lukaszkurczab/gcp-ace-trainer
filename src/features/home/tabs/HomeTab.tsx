@@ -253,7 +253,7 @@ export function HomeTab({
         >
           <View style={styles.trackContextCopy}>
             <View style={styles.trackIconContainer}>
-              <Icon color={palette.accentTeal} name={isCodingInterviewTrack ? "code-brackets" : "cloud"} size={12} />
+              <Icon color={palette.primary} name={isCodingInterviewTrack ? "code-brackets" : "cloud"} size={22} />
             </View>
             <Text maxFontSizeMultiplier={2} style={styles.focusTitle} testID={runtimeSelectors.home.trackCard(activeTrack.id)}>
               {t(activeTrack.shortTitle)}
@@ -601,10 +601,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   trackIconContainer: {
     alignItems: "center",
     backgroundColor: colorWithOpacity(palette.accentTeal, 0.08),
-    borderRadius: 6,
-    height: 22,
+    borderRadius: 8,
+    flexShrink: 0,
+    height: 32,
     justifyContent: "center",
-    width: 22,
+    width: 32,
   },
   changeTrack: {
     color: palette.primary,
