@@ -1,0 +1,1424 @@
+[
+  {
+    "answer": {
+      "optionId": "n04b05_001_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Two payment gateways return different response classes and error enums; either gateway can be selected by deployment, while the renewal rule changes only with subscription policy.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Dependency direction follows the stable consumer: RenewalPolicy names only the charge fact it needs, and each gateway maps into that meaning at its edge.",
+        "scenarioApplication": "The gateways disagree on response types, but both can report the same settled-or-not outcome. RenewalPolicy can test the same acceptance rule with either implementation.",
+        "errorCorrection": "The nearest alternative is a shared response model because both adapters can compile against it; it fails because the stable rule, not the provider pair, owns the accepted renewal meaning.",
+        "boundaryOrTradeoff": "If renewal policy begins to vary by gateway-specific settlement semantics, those distinctions must become explicit policy inputs before choosing a different boundary.",
+        "transfer": "For another RenewalPolicy case, separate a change in a normalized charge outcome meaning from a change in the payment gateway SDK's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_001_provider_decides",
+          "text": "The gateway knows its response, but not the account-active and invoice-settled policy together."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_001_sdk_type_leaks",
+          "text": "The response type remains in RenewalPolicy’s source contract even if translation happens after the call."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_001_neutral_package_owns",
+          "text": "A shared type does not assign one stable meaning to the settled-charge fact."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_001_caller_duplicates",
+          "text": "Different renewal callers could apply the same two conditions differently."
+        }
+      ],
+      "reason": "The choice keeps the rule’s vocabulary stable while gateways own translation of their response shapes. Sharing an adapter model would give the changing mechanism authority over what renewal policy means.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_001_policy_contract",
+          "text": "RenewalPolicy owns the charge outcome; gateways map their responses to it."
+        },
+        {
+          "optionId": "n04b05_001_provider_decides",
+          "text": "Let the gateway return a final renew-or-deny result from its own response."
+        },
+        {
+          "optionId": "n04b05_001_sdk_type_leaks",
+          "text": "Pass the gateway response class into RenewalPolicy and translate only around the network call."
+        },
+        {
+          "optionId": "n04b05_001_neutral_package_owns",
+          "text": "Put ChargeOutcome in a shared package but let gateways and policy assign its meaning independently."
+        },
+        {
+          "optionId": "n04b05_001_caller_duplicates",
+          "text": "Have every renewal caller parse gateway fields and repeat the active-account and settled-invoice checks."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A subscription renewal rule accepts a charge only when the account is active and the invoice is settled. Two payment gateways return different response classes and error enums; either gateway can be selected by deployment, while the renewal rule changes only with subscription policy. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i001",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_002_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "A bureau SDK is being replaced and each bureau names income verification differently; the threshold and denial meaning remain fixed across both providers.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The policy owns the abstraction because it defines what “verified income” means for its decision; adapters own the provider-specific extraction.",
+        "scenarioApplication": "Both bureau responses can be converted to the same amount, verification status, and observation date before CreditEligibility applies its unchanged threshold.",
+        "errorCorrection": "The nearest alternative wraps only the network call but leaves the policy typed to the bureau model, so a provider release still changes the stable decision module.",
+        "boundaryOrTradeoff": "If a provider’s evidence is not semantically comparable, the adapter must report that limitation instead of coercing it into a valid amount.",
+        "transfer": "For another CreditEligibility case, separate a change in verified income evidence meaning from a change in the bureau SDK's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_002_provider_decides",
+          "text": "The bureau supplies income evidence; the product threshold and denial rule stay with CreditEligibility."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_002_sdk_type_leaks",
+          "text": "A wrapper around the call does not remove the bureau class from the policy signature."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_002_neutral_package_owns",
+          "text": "Independent verification meanings would make the same amount eligible in one integration and unverified in another."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_002_caller_duplicates",
+          "text": "Threshold changes would need to be copied into each application caller."
+        }
+      ],
+      "reason": "A translator after the decision cannot remove the policy’s compile-time dependency on the bureau class. Translating into a policy-owned fact puts the boundary before the rule uses it.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_002_provider_decides",
+          "text": "Let the bureau return the final eligible-or-denied answer for each product."
+        },
+        {
+          "optionId": "n04b05_002_sdk_type_leaks",
+          "text": "Keep the bureau’s income response type in CreditEligibility and wrap only the SDK call."
+        },
+        {
+          "optionId": "n04b05_002_neutral_package_owns",
+          "text": "Place an income DTO in a common package but let each provider interpret verification status."
+        },
+        {
+          "optionId": "n04b05_002_caller_duplicates",
+          "text": "Have each application parse bureau verification and apply the threshold at its own entry point."
+        },
+        {
+          "optionId": "n04b05_002_policy_contract",
+          "text": "Map bureau data to verified-income evidence; CreditEligibility applies the threshold."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A credit decision denies an application when its verified income falls below the product threshold. A bureau SDK is being replaced and each bureau names income verification differently; the threshold and denial meaning remain fixed across both providers. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i002",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_003_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Two carrier APIs encode arrival states and timestamps differently; the delivery rule uses the same comparison for both carriers and may not inspect raw payloads.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A narrow input port separates how a fact is acquired from the policy that decides what the fact means.",
+        "scenarioApplication": "The condition is a comparison of promised and observed instants after each provider’s status and time formats have been interpreted.",
+        "errorCorrection": "The shared carrier-event type seems reusable, but it carries provider structure into the consumer and leaves translation responsibility ambiguous.",
+        "boundaryOrTradeoff": "The adapter must preserve timezone and terminal-state meaning; merely renaming fields is not enough if the providers encode different semantics.",
+        "transfer": "For another LateDeliveryPolicy case, separate a change in an arrival instant with a terminal delivery state meaning from a change in carrier payloads's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_003_provider_decides",
+          "text": "carrier payloads supplies evidence but does not own the full LateDeliveryPolicy rule; a boolean hides the policy facts this case explicitly requires."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_003_sdk_type_leaks",
+          "text": "That translator runs too late to remove LateDeliveryPolicy's compile-time dependency on carrier payloads; the source dependency still points toward the changing mechanism."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_003_neutral_package_owns",
+          "text": "A neutral package does not settle who owns the meaning of an arrival instant with a terminal delivery state; independent interpretations could change this one policy decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_003_caller_duplicates",
+          "text": "That duplicates LateDeliveryPolicy across callers, so a later policy change can produce different outcomes from the same evidence."
+        }
+      ],
+      "reason": "A common carrier-shaped package would become the policy’s schema even though the stable rule needs only two normalized facts. The adapter can translate without defining the rule’s input vocabulary.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_003_sdk_type_leaks",
+          "text": "Keep the provider-native response type in LateDeliveryPolicy; add a translator only around the provider call."
+        },
+        {
+          "optionId": "n04b05_003_neutral_package_owns",
+          "text": "Put the shared decision fields in a neutral common package and let both policy and integrations define their own interpretation."
+        },
+        {
+          "optionId": "n04b05_003_caller_duplicates",
+          "text": "Have every application caller read an arrival instant with a terminal delivery state, apply the rule, and translate provider results at its own entry point."
+        },
+        {
+          "optionId": "n04b05_003_policy_contract",
+          "text": "Let LateDeliveryPolicy name its own evidence contract and make each changing adapter satisfy it; the decision stays with the stable rule."
+        },
+        {
+          "optionId": "n04b05_003_provider_decides",
+          "text": "Make carrier payloads return the final LateDeliveryPolicy decision, then let the rule module forward that boolean."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A delivery promise is late when the normalized arrival instant exceeds the customer’s promised instant. Two carrier APIs encode arrival states and timestamps differently; the delivery rule uses the same comparison for both carriers and may not inspect raw payloads. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i003",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_004_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The clinic directory can be local or hosted, and both return a provider-specific specialty code; the rule’s two checks are unchanged.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The policy boundary should express its own facts instead of inheriting a provider’s data model.",
+        "scenarioApplication": "Both deployments can provide the destination capability; neither owns whether the patient consented.",
+        "errorCorrection": "A provider-specific subtype appears to reuse the hosted model, but it makes a deployment implementation dictate the policy’s type hierarchy.",
+        "boundaryOrTradeoff": "A directory that cannot verify a specialty should yield an explicit unavailable result, not be treated as a matching destination.",
+        "transfer": "For another ReferralEligibility case, separate a change in destination capability and consent status meaning from a change in the clinic-directory service's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_004_provider_decides",
+          "text": "the clinic-directory service supplies evidence but does not own the full ReferralEligibility rule; a boolean hides the policy facts this case explicitly requires."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_004_sdk_type_leaks",
+          "text": "That translator runs too late to remove ReferralEligibility's compile-time dependency on the clinic-directory service; the source dependency still points toward the changing mechanism."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_004_neutral_package_owns",
+          "text": "A neutral package does not settle who owns the meaning of destination capability and consent status; independent interpretations could change this one policy decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_004_caller_duplicates",
+          "text": "That duplicates ReferralEligibility across callers, so a later policy change can produce different outcomes from the same evidence."
+        }
+      ],
+      "reason": "The deployment mechanism changes, but the decision still concerns consent and destination capability. A provider subtype couples the policy to transport-specific objects and makes the deployment distinction part of the rule.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_004_neutral_package_owns",
+          "text": "Put the shared decision fields in a neutral common package and let both policy and integrations define their own interpretation."
+        },
+        {
+          "optionId": "n04b05_004_caller_duplicates",
+          "text": "Have every application caller read destination capability and consent status, apply the rule, and translate provider results at its own entry point."
+        },
+        {
+          "optionId": "n04b05_004_policy_contract",
+          "text": "Invert the source dependency at ReferralEligibility: integrations depend on its evidence contract, while the rule has no provider-type import."
+        },
+        {
+          "optionId": "n04b05_004_provider_decides",
+          "text": "Make the clinic-directory service return the final ReferralEligibility decision, then let the rule module forward that boolean."
+        },
+        {
+          "optionId": "n04b05_004_sdk_type_leaks",
+          "text": "Keep the provider-native response type in ReferralEligibility; add a translator only around the provider call."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A clinic referral rule permits a referral only when the patient has consented and the destination accepts the requested specialty. The clinic directory can be local or hosted, and both return a provider-specific specialty code; the rule’s two checks are unchanged. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i004",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_005_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "A new ledger vendor changes its decimal and line-item classes; the approval invariant and rounding policy stay owned by the billing team.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The boundary reverses source dependency without moving policy ownership: storage implements or supplies the policy’s narrow input shape.",
+        "scenarioApplication": "The equality check uses normalized amounts and the billing-owned rounding rule, regardless of which ledger classes supplied them.",
+        "errorCorrection": "A repository-side check is attractive because line items are read there, but it transfers the approval invariant to the persistence mechanism.",
+        "boundaryOrTradeoff": "The contract must state currency and rounding scale; a bare decimal conversion would not prove amounts are comparable.",
+        "transfer": "For another InvoiceApproval case, separate a change in the submitted total and normalized line amounts meaning from a change in the ledger SDK's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_005_provider_decides",
+          "text": "The ledger represents amounts, but billing owns the line-sum rule and its rounding policy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_005_sdk_type_leaks",
+          "text": "InvoiceApproval would still compile against the vendor amount and line-item classes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_005_neutral_package_owns",
+          "text": "If ledgers choose the rounding meaning independently, InvoiceApproval no longer has one comparison contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_005_caller_duplicates",
+          "text": "Each caller could normalize or round the same lines differently before approval."
+        }
+      ],
+      "reason": "The repository owns storage translation, not the billing rule. Moving the invariant there would make its meaning follow a vendor representation that the prompt says is changing independently.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_005_caller_duplicates",
+          "text": "Have every billing caller normalize amounts and repeat the line-sum approval check."
+        },
+        {
+          "optionId": "n04b05_005_policy_contract",
+          "text": "Normalize ledger totals at the edge; InvoiceApproval checks line-sum equality."
+        },
+        {
+          "optionId": "n04b05_005_provider_decides",
+          "text": "Let the ledger approve an invoice when its vendor-side total matches its lines."
+        },
+        {
+          "optionId": "n04b05_005_sdk_type_leaks",
+          "text": "Give InvoiceApproval the ledger’s decimal and line-item classes, then translate around the call."
+        },
+        {
+          "optionId": "n04b05_005_neutral_package_owns",
+          "text": "Define shared total fields in a common package and let each ledger choose their rounding meaning."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "An invoice approval rule accepts only invoices whose total matches the sum of their line amounts. A new ledger vendor changes its decimal and line-item classes; the approval invariant and rounding policy stay owned by the billing team. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i005",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_006_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Notice records arrive from two content platforms with different field names; the required-notice list is release policy and remains identical.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Separate stable rule data from changing access formats by letting each adapter satisfy the consumer’s contract.",
+        "scenarioApplication": "ReleaseEligibility compares the normalized identifiers with the fixed required set; the platform-specific field names disappear at the boundary.",
+        "errorCorrection": "Adapter-side validation reduces work in the rule, but it relocates a stable legal requirement to two changing integrations.",
+        "boundaryOrTradeoff": "A platform response that omits notice data must be distinguished from an empty set, because absence of evidence is not evidence of a complete draft.",
+        "transfer": "For another ReleaseEligibility case, separate a change in a set of notice identifiers present on the draft meaning from a change in the content-platform API's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_006_provider_decides",
+          "text": "The platform provides notice evidence, while the release policy owns the fixed required set."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_006_sdk_type_leaks",
+          "text": "The policy remains coupled to platform field names despite the late translator."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_006_neutral_package_owns",
+          "text": "The shared field shape does not prevent integrations from interpreting missing notices differently."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_006_caller_duplicates",
+          "text": "A legal-notice change could reach one publishing caller but not another."
+        }
+      ],
+      "reason": "The required set is identical across platforms, so making an adapter own it duplicates and can diverge from release policy. The adapter should translate presence, not decide what is required.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_006_policy_contract",
+          "text": "Normalize notice identifiers before ReleaseEligibility checks the required set."
+        },
+        {
+          "optionId": "n04b05_006_provider_decides",
+          "text": "Let each content platform return whether publication is allowed."
+        },
+        {
+          "optionId": "n04b05_006_sdk_type_leaks",
+          "text": "Keep each platform’s notice record type in ReleaseEligibility and translate only the call."
+        },
+        {
+          "optionId": "n04b05_006_neutral_package_owns",
+          "text": "Put notice fields in a common package but let each platform define what counts as present."
+        },
+        {
+          "optionId": "n04b05_006_caller_duplicates",
+          "text": "Have each publishing caller compare provider fields with its own required-notice list."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A content release rule blocks publication when any required legal notice is missing. Notice records arrive from two content platforms with different field names; the required-notice list is release policy and remains identical. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i006",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_007_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The policy limit is reviewed with insurance terms; the carrier’s package and currency types are replaced next quarter, while carrier adapters already normalize currency.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Dependency inversion means mechanism code supplies normalized facts to the stable rule; it does not absorb the stable rule itself.",
+        "scenarioApplication": "The rule compares a normalized declared value with the plan limit; carrier-specific classes do not participate in that comparison.",
+        "errorCorrection": "Carrier-local coverage checks appear close to the parcel data but make identical insurance terms behave differently by carrier.",
+        "boundaryOrTradeoff": "The conversion must use the plan’s stated currency and rounding rule; a number without that context is insufficient.",
+        "transfer": "For another ParcelCoverage case, separate a change in declared value in the policy currency meaning from a change in the carrier SDK's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_007_provider_decides",
+          "text": "the carrier SDK supplies evidence but does not own the full ParcelCoverage rule; a boolean hides the policy facts this case explicitly requires."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_007_sdk_type_leaks",
+          "text": "That translator runs too late to remove ParcelCoverage's compile-time dependency on the carrier SDK; the source dependency still points toward the changing mechanism."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_007_neutral_package_owns",
+          "text": "A neutral package does not settle who owns the meaning of declared value in the policy currency; independent interpretations could change this one policy decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_007_caller_duplicates",
+          "text": "That duplicates ParcelCoverage across callers, so a later policy change can produce different outcomes from the same evidence."
+        }
+      ],
+      "reason": "Adapters can normalize currency, but they do not own the insurance limit. If each adapter decides coverage, a carrier change can change a policy rule that the facts assign to insurance terms.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_007_provider_decides",
+          "text": "Make the carrier SDK return the final ParcelCoverage decision, then let the rule module forward that boolean."
+        },
+        {
+          "optionId": "n04b05_007_sdk_type_leaks",
+          "text": "Keep the provider-native response type in ParcelCoverage; add a translator only around the provider call."
+        },
+        {
+          "optionId": "n04b05_007_neutral_package_owns",
+          "text": "Put the shared decision fields in a neutral common package and let both policy and integrations define their own interpretation."
+        },
+        {
+          "optionId": "n04b05_007_caller_duplicates",
+          "text": "Have every application caller read declared value in the policy currency, apply the rule, and translate provider results at its own entry point."
+        },
+        {
+          "optionId": "n04b05_007_policy_contract",
+          "text": "Let ParcelCoverage name its own evidence contract and make each changing adapter satisfy it; the decision stays with the stable rule."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A shipment insurance rule covers a parcel only when declared value is within the selected plan limit. The policy limit is reviewed with insurance terms; the carrier’s package and currency types are replaced next quarter, while carrier adapters already normalize currency. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i007",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_008_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Two scoring vendors use unrelated response classes and band labels; both adapters can map their documented bands to the same policy vocabulary.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A policy-owned abstraction preserves decision meaning while adapters own mapping between external representations and that meaning.",
+        "scenarioApplication": "The same high-band or minimum-age checks run after either vendor has produced normalized values.",
+        "errorCorrection": "Returning a vendor-computed boolean looks simpler but turns a stable policy into two independent, potentially inconsistent vendor rules.",
+        "boundaryOrTradeoff": "Only documented comparable bands can be mapped; an unknown vendor band must remain unknown rather than silently becoming low risk.",
+        "transfer": "For another TransferRiskPolicy case, separate a change in normalized risk band and account age meaning from a change in the scoring vendor's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_008_provider_decides",
+          "text": "the scoring vendor supplies evidence but does not own the full TransferRiskPolicy rule; a boolean hides the policy facts this case explicitly requires."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_008_sdk_type_leaks",
+          "text": "That translator runs too late to remove TransferRiskPolicy's compile-time dependency on the scoring vendor; the source dependency still points toward the changing mechanism."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_008_neutral_package_owns",
+          "text": "A neutral package does not settle who owns the meaning of normalized risk band and account age; independent interpretations could change this one policy decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_008_caller_duplicates",
+          "text": "That duplicates TransferRiskPolicy across callers, so a later policy change can produce different outcomes from the same evidence."
+        }
+      ],
+      "reason": "A boolean hides which stated condition caused the hold and lets provider-specific thresholds redefine policy. The policy owns the two inputs and the combined decision.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_008_sdk_type_leaks",
+          "text": "Keep the provider-native response type in TransferRiskPolicy; add a translator only around the provider call."
+        },
+        {
+          "optionId": "n04b05_008_neutral_package_owns",
+          "text": "Put the shared decision fields in a neutral common package and let both policy and integrations define their own interpretation."
+        },
+        {
+          "optionId": "n04b05_008_caller_duplicates",
+          "text": "Have every application caller read normalized risk band and account age, apply the rule, and translate provider results at its own entry point."
+        },
+        {
+          "optionId": "n04b05_008_policy_contract",
+          "text": "Invert the source dependency at TransferRiskPolicy: integrations depend on its evidence contract, while the rule has no provider-type import."
+        },
+        {
+          "optionId": "n04b05_008_provider_decides",
+          "text": "Make the scoring vendor return the final TransferRiskPolicy decision, then let the rule module forward that boolean."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A risk rule places a transfer on hold when its normalized risk band is high or its account age is below the stated minimum. Two scoring vendors use unrelated response classes and band labels; both adapters can map their documented bands to the same policy vocabulary. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i008",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_009_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "One deployment reads retention dates from a local file and another from a settings service; the policy calendar and deletion rule do not vary by deployment.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The consumer-owned abstraction names the semantic value needed by policy, rather than exposing a configuration provider.",
+        "scenarioApplication": "Both sources produce the same validated date; RetentionPolicy applies the same calendar boundary before allowing deletion.",
+        "errorCorrection": "Letting the settings service decide is close to where the value lives, but it makes a deployment mechanism the authority for retention semantics.",
+        "boundaryOrTradeoff": "Invalid or missing configuration must fail preparation explicitly; it cannot be treated as an already-expired record.",
+        "transfer": "For another RetentionPolicy case, separate a change in a validated retention date meaning from a change in deployment configuration's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_009_provider_decides",
+          "text": "Deployment storage supplies the date; the retention calendar and deletion rule are policy-owned."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_009_sdk_type_leaks",
+          "text": "Late conversion still leaves RetentionPolicy typed to a deployment-specific response."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_009_neutral_package_owns",
+          "text": "A neutral field does not establish one calendar boundary across deployments."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_009_caller_duplicates",
+          "text": "Separate deletion callers could disagree about whether the retention date has passed."
+        }
+      ],
+      "reason": "The storage location of a date does not own the rule that decides when deletion is allowed. The two deployment sources should satisfy the same policy input contract.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_009_neutral_package_owns",
+          "text": "Place a retention-date field in a shared package but let each deployment define its expiry meaning."
+        },
+        {
+          "optionId": "n04b05_009_caller_duplicates",
+          "text": "Have each deletion caller parse configuration and apply its own retention-date check."
+        },
+        {
+          "optionId": "n04b05_009_policy_contract",
+          "text": "Map both configuration sources to a validated retention date for RetentionPolicy."
+        },
+        {
+          "optionId": "n04b05_009_provider_decides",
+          "text": "Let each settings source decide when its application record may be deleted."
+        },
+        {
+          "optionId": "n04b05_009_sdk_type_leaks",
+          "text": "Pass the local-file or settings-service response into RetentionPolicy and translate afterward."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A records rule retains an application until its policy-defined retention date, then permits deletion. One deployment reads retention dates from a local file and another from a settings service; the policy calendar and deletion rule do not vary by deployment. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i009",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_010_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Availability comes from either a venue database or a partner inventory API; both can return occupied intervals, while booking owns overlap semantics.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The policy defines the question it asks of volatile storage; implementations depend on that abstraction to return relevant facts.",
+        "scenarioApplication": "The policy compares the requested interval with the supplied occupied intervals using one booking rule.",
+        "errorCorrection": "Trusting a provider’s boolean avoids moving data, but it transfers a stable overlap decision into integrations that change independently.",
+        "boundaryOrTradeoff": "The query contract must define interval endpoints and timezone; the adapter cannot erase those policy-relevant distinctions.",
+        "transfer": "For another SeatBookingPolicy case, separate a change in the occupied intervals for a seat and time window meaning from a change in the inventory provider's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_010_provider_decides",
+          "text": "The inventory service supplies occupied intervals; booking owns the overlap rule across sources."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_010_sdk_type_leaks",
+          "text": "The policy signature would still depend on a provider’s interval representation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_010_neutral_package_owns",
+          "text": "Different endpoint interpretations can disagree about the same requested seat interval."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_010_caller_duplicates",
+          "text": "Web and partner callers could apply different overlap logic to one inventory result."
+        }
+      ],
+      "reason": "The providers supply occupancy facts, but the prompt assigns overlap semantics to booking. If providers decide validity independently, identical availability can produce different booking outcomes.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_010_caller_duplicates",
+          "text": "Have each booking entry point query intervals and implement its own overlap check."
+        },
+        {
+          "optionId": "n04b05_010_policy_contract",
+          "text": "Normalize occupied intervals before SeatBookingPolicy checks the requested window."
+        },
+        {
+          "optionId": "n04b05_010_provider_decides",
+          "text": "Trust the venue or partner API to decide whether the requested seat window is free."
+        },
+        {
+          "optionId": "n04b05_010_sdk_type_leaks",
+          "text": "Use partner-native interval types in SeatBookingPolicy and translate after the query."
+        },
+        {
+          "optionId": "n04b05_010_neutral_package_owns",
+          "text": "Put interval fields in a common model but let every inventory source choose endpoint meaning."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A booking rule rejects a reservation when the requested seat is not available for the selected interval. Availability comes from either a venue database or a partner inventory API; both can return occupied intervals, while booking owns overlap semantics. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i010",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_011_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The moderation SDK is being replaced; SDK labels differ, but the editorial team owns the prohibited labels and both adapters can map reviewed outcomes.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The stable consumer owns the abstraction’s meaning; replaceable mechanism code maps its own output to that meaning.",
+        "scenarioApplication": "Both SDKs feed the same reviewed-label comparison, so provider replacement cannot silently rewrite the prohibited set.",
+        "errorCorrection": "A provider-local boolean blocks direct SDK coupling but hides the label needed to explain and consistently revise the editorial rule.",
+        "boundaryOrTradeoff": "A label with no reviewed mapping must be treated as unrecognized, not as a safe label.",
+        "transfer": "For another PublicationModeration case, separate a change in a normalized reviewed label meaning from a change in the moderation SDK's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_011_provider_decides",
+          "text": "the moderation SDK supplies evidence but does not own the full PublicationModeration rule; a boolean hides the policy facts this case explicitly requires."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_011_sdk_type_leaks",
+          "text": "That translator runs too late to remove PublicationModeration's compile-time dependency on the moderation SDK; the source dependency still points toward the changing mechanism."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_011_neutral_package_owns",
+          "text": "A neutral package does not settle who owns the meaning of a normalized reviewed label; independent interpretations could change this one policy decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_011_caller_duplicates",
+          "text": "That duplicates PublicationModeration across callers, so a later policy change can produce different outcomes from the same evidence."
+        }
+      ],
+      "reason": "The prohibited set belongs to editorial policy and must not fork when the SDK changes. The adapter’s job is to translate labels, not to own publication decisions.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_011_policy_contract",
+          "text": "Let PublicationModeration name its own evidence contract and make each changing adapter satisfy it; the decision stays with the stable rule."
+        },
+        {
+          "optionId": "n04b05_011_provider_decides",
+          "text": "Make the moderation SDK return the final PublicationModeration decision, then let the rule module forward that boolean."
+        },
+        {
+          "optionId": "n04b05_011_sdk_type_leaks",
+          "text": "Keep the provider-native response type in PublicationModeration; add a translator only around the provider call."
+        },
+        {
+          "optionId": "n04b05_011_neutral_package_owns",
+          "text": "Put the shared decision fields in a neutral common package and let both policy and integrations define their own interpretation."
+        },
+        {
+          "optionId": "n04b05_011_caller_duplicates",
+          "text": "Have every application caller read a normalized reviewed label, apply the rule, and translate provider results at its own entry point."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A moderation rule blocks a post when its reviewed label is in the currently prohibited set. The moderation SDK is being replaced; SDK labels differ, but the editorial team owns the prohibited labels and both adapters can map reviewed outcomes. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i011",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_012_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Verification comes from an internal reviewer tool or an external document service; each reports document kinds differently, while grant requirements are fixed by the program.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The application core owns the decision contract while adapters convert outside records into the program’s vocabulary.",
+        "scenarioApplication": "The policy checks each required kind and its timestamp against the program deadline, independent of the tool’s own status flag.",
+        "errorCorrection": "Using a provider’s complete flag is convenient, but the stated program requirement is more specific than the provider’s status.",
+        "boundaryOrTradeoff": "A verification timestamp must retain its zone and precision; otherwise the deadline comparison is not justified.",
+        "transfer": "For another GrantCompleteness case, separate a change in verified document kinds and verification time meaning from a change in document-verification tools's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_012_provider_decides",
+          "text": "document-verification tools supplies evidence but does not own the full GrantCompleteness rule; a boolean hides the policy facts this case explicitly requires."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_012_sdk_type_leaks",
+          "text": "That translator runs too late to remove GrantCompleteness's compile-time dependency on document-verification tools; the source dependency still points toward the changing mechanism."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_012_neutral_package_owns",
+          "text": "A neutral package does not settle who owns the meaning of verified document kinds and verification time; independent interpretations could change this one policy decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_012_caller_duplicates",
+          "text": "That duplicates GrantCompleteness across callers, so a later policy change can produce different outcomes from the same evidence."
+        }
+      ],
+      "reason": "The service’s available document types are not the grant program’s required set. Putting completeness there risks changing eligibility when a verification provider changes.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_012_provider_decides",
+          "text": "Make document-verification tools return the final GrantCompleteness decision, then let the rule module forward that boolean."
+        },
+        {
+          "optionId": "n04b05_012_sdk_type_leaks",
+          "text": "Keep the provider-native response type in GrantCompleteness; add a translator only around the provider call."
+        },
+        {
+          "optionId": "n04b05_012_neutral_package_owns",
+          "text": "Put the shared decision fields in a neutral common package and let both policy and integrations define their own interpretation."
+        },
+        {
+          "optionId": "n04b05_012_caller_duplicates",
+          "text": "Have every application caller read verified document kinds and verification time, apply the rule, and translate provider results at its own entry point."
+        },
+        {
+          "optionId": "n04b05_012_policy_contract",
+          "text": "Invert the source dependency at GrantCompleteness: integrations depend on its evidence contract, while the rule has no provider-type import."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A grant rule accepts an application only when all required documents are verified by the submission deadline. Verification comes from an internal reviewer tool or an external document service; each reports document kinds differently, while grant requirements are fixed by the program. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i012",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_013_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Two policy-administration systems use different date and status enums; the coverage interval semantics are set by the insurer and remain the same.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The abstraction is the minimal policy vocabulary required to decide; integrations implement it without taking over the decision.",
+        "scenarioApplication": "CoverageDecision compares the loss date to normalized endpoints and checks the normalized active state.",
+        "errorCorrection": "Provider-side decision methods avoid mapping, but they hide the exact insurer rule and couple that rule to vendor APIs.",
+        "boundaryOrTradeoff": "The prompt does not specify endpoint inclusivity; state that convention in the policy contract instead of inferring it from either provider date type.",
+        "transfer": "For another CoverageDecision case, separate a change in normalized coverage start, end, and active status meaning from a change in the policy-administration system's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_013_provider_decides",
+          "text": "The policy system supplies dates and status; the insurer owns the claim rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_013_sdk_type_leaks",
+          "text": "A translator around the API call does not remove native enum dependencies from the policy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_013_neutral_package_owns",
+          "text": "The scenario does not select an inclusive or exclusive endpoint; the shared contract must state it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_013_caller_duplicates",
+          "text": "Claim callers could choose different endpoint conventions for the same coverage period."
+        }
+      ],
+      "reason": "The source system can report policy data, but insurer coverage semantics must stay with the decision rule. A provider boolean makes two systems separate authorities for one rule.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_013_sdk_type_leaks",
+          "text": "Keep the policy-system date and status enums in CoverageDecision and translate after the call."
+        },
+        {
+          "optionId": "n04b05_013_neutral_package_owns",
+          "text": "Define coverage dates in a common package but let each system define endpoint meaning."
+        },
+        {
+          "optionId": "n04b05_013_caller_duplicates",
+          "text": "Have each claim caller parse dates and decide coverage independently."
+        },
+        {
+          "optionId": "n04b05_013_policy_contract",
+          "text": "Map coverage dates and status; CoverageDecision applies the insurer’s rule."
+        },
+        {
+          "optionId": "n04b05_013_provider_decides",
+          "text": "Let each policy system decide whether this loss date qualifies for payment."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A claim rule pays only when the submitted loss date falls inside the insured coverage period. Two policy-administration systems use different date and status enums; the coverage interval semantics are set by the insurer and remain the same. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i013",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_014_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Retail systems use different product-category codes; warranty terms are fixed by the manufacturer, and each retailer can map its codes to the manufacturer’s family list.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A stable rule consumes a narrow abstraction named for its own decision; volatile catalog formats implement the mapping.",
+        "scenarioApplication": "After mapping, the same purchase-date and family tests run for either retail system.",
+        "errorCorrection": "A shared catalog package seems to centralize mappings, but it would make a retail integration package own manufacturer warranty meaning.",
+        "boundaryOrTradeoff": "An unmapped category is not automatically an excluded product; it needs an explicit unknown result for review.",
+        "transfer": "For another WarrantyEligibility case, separate a change in purchase date and manufacturer product family meaning from a change in retailer catalog APIs's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_014_provider_decides",
+          "text": "Retailers map catalog codes; the manufacturer owns the term and covered-family rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_014_sdk_type_leaks",
+          "text": "The policy would still depend on the retailer code type it is meant to outlive."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_014_neutral_package_owns",
+          "text": "A common code field does not settle which manufacturer family a retailer category represents."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_014_caller_duplicates",
+          "text": "Separate callers can apply different mappings to one warranty family."
+        }
+      ],
+      "reason": "The catalog package can normalize category codes, but warranty terms and covered families are manufacturer policy. A common retailer package would blend those meanings.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_014_neutral_package_owns",
+          "text": "Store category codes in a common model but let each retailer decide their manufacturer-family meaning."
+        },
+        {
+          "optionId": "n04b05_014_caller_duplicates",
+          "text": "Have every warranty caller map purchase dates and product families before applying eligibility."
+        },
+        {
+          "optionId": "n04b05_014_policy_contract",
+          "text": "Map retailer codes to manufacturer families; WarrantyEligibility applies the fixed term."
+        },
+        {
+          "optionId": "n04b05_014_provider_decides",
+          "text": "Let each retailer decide whether the purchase is still under manufacturer warranty."
+        },
+        {
+          "optionId": "n04b05_014_sdk_type_leaks",
+          "text": "Pass retailer product-category codes into WarrantyEligibility and translate after the catalog call."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A repair warranty approves a claim only when the purchase date falls within the term and the product is in the covered family. Retail systems use different product-category codes; warranty terms are fixed by the manufacturer, and each retailer can map its codes to the manufacturer’s family list. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i014",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_015_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Income and debt values come from two finance connectors with distinct DTOs; the loan product defines the ratio and both connectors expose the same dated amounts after conversion.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The consumer-facing contract fixes the semantic inputs; adapters translate connector structures into those inputs.",
+        "scenarioApplication": "LoanEligibility computes its ratio from comparable dated amounts instead of relying on connector-specific property names.",
+        "errorCorrection": "Sharing DTOs reduces mapping code but leaves the stable product rule dependent on a changing financial provider schema.",
+        "boundaryOrTradeoff": "Amounts from different currencies or periods are not comparable until an explicit conversion/period rule is applied.",
+        "transfer": "For another LoanEligibility case, separate a change in dated normalized income and debt amounts meaning from a change in finance connector DTOs's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_015_provider_decides",
+          "text": "finance connector DTOs supplies evidence but does not own the full LoanEligibility rule; a boolean hides the policy facts this case explicitly requires."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_015_sdk_type_leaks",
+          "text": "That translator runs too late to remove LoanEligibility's compile-time dependency on finance connector DTOs; the source dependency still points toward the changing mechanism."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_015_neutral_package_owns",
+          "text": "A neutral package does not settle who owns the meaning of dated normalized income and debt amounts; independent interpretations could change this one policy decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_015_caller_duplicates",
+          "text": "That duplicates LoanEligibility across callers, so a later policy change can produce different outcomes from the same evidence."
+        }
+      ],
+      "reason": "A common DTO preserves connector terminology rather than the product’s evidence contract. The rule should state which normalized amounts it uses and their dates.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_015_caller_duplicates",
+          "text": "Have every application caller read dated normalized income and debt amounts, apply the rule, and translate provider results at its own entry point."
+        },
+        {
+          "optionId": "n04b05_015_policy_contract",
+          "text": "Let LoanEligibility name its own evidence contract and make each changing adapter satisfy it; the decision stays with the stable rule."
+        },
+        {
+          "optionId": "n04b05_015_provider_decides",
+          "text": "Make finance connector DTOs return the final LoanEligibility decision, then let the rule module forward that boolean."
+        },
+        {
+          "optionId": "n04b05_015_sdk_type_leaks",
+          "text": "Keep the provider-native response type in LoanEligibility; add a translator only around the provider call."
+        },
+        {
+          "optionId": "n04b05_015_neutral_package_owns",
+          "text": "Put the shared decision fields in a neutral common package and let both policy and integrations define their own interpretation."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A loan rule requires a minimum debt-service ratio before offering the fixed product. Income and debt values come from two finance connectors with distinct DTOs; the loan product defines the ratio and both connectors expose the same dated amounts after conversion. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i015",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_016_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Credential timestamps arrive from two badge vendors; the security policy defines expiry as a timestamp comparison and vendor adapters can normalize timestamps to UTC.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The stable decision stays inside security policy; adapters translate representation into the exact facts the rule consumes.",
+        "scenarioApplication": "Both vendor forms become instants, then the policy compares expiry with requested entry time.",
+        "errorCorrection": "The SDK boolean is easy to consume, but it hides the expiry evidence and transfers policy authority to vendor code.",
+        "boundaryOrTradeoff": "Normalization must preserve timezone and precision; a local date without zone cannot establish the same ordering.",
+        "transfer": "For another BadgeAccessPolicy case, separate a change in credential expiry and requested entry instants meaning from a change in badge vendor SDKs's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_016_provider_decides",
+          "text": "badge vendor SDKs supplies evidence but does not own the full BadgeAccessPolicy rule; a boolean hides the policy facts this case explicitly requires."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_016_sdk_type_leaks",
+          "text": "That translator runs too late to remove BadgeAccessPolicy's compile-time dependency on badge vendor SDKs; the source dependency still points toward the changing mechanism."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_016_neutral_package_owns",
+          "text": "A neutral package does not settle who owns the meaning of credential expiry and requested entry instants; independent interpretations could change this one policy decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_016_caller_duplicates",
+          "text": "That duplicates BadgeAccessPolicy across callers, so a later policy change can produce different outcomes from the same evidence."
+        }
+      ],
+      "reason": "An access boolean conceals the policy-relevant comparison and makes each vendor an independent interpreter of the security rule.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_016_policy_contract",
+          "text": "Invert the source dependency at BadgeAccessPolicy: integrations depend on its evidence contract, while the rule has no provider-type import."
+        },
+        {
+          "optionId": "n04b05_016_provider_decides",
+          "text": "Make badge vendor SDKs return the final BadgeAccessPolicy decision, then let the rule module forward that boolean."
+        },
+        {
+          "optionId": "n04b05_016_sdk_type_leaks",
+          "text": "Keep the provider-native response type in BadgeAccessPolicy; add a translator only around the provider call."
+        },
+        {
+          "optionId": "n04b05_016_neutral_package_owns",
+          "text": "Put the shared decision fields in a neutral common package and let both policy and integrations define their own interpretation."
+        },
+        {
+          "optionId": "n04b05_016_caller_duplicates",
+          "text": "Have every application caller read credential expiry and requested entry instants, apply the rule, and translate provider results at its own entry point."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "An access rule denies a badge when its credential has expired at the requested entry time. Credential timestamps arrive from two badge vendors; the security policy defines expiry as a timestamp comparison and vendor adapters can normalize timestamps to UTC. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i016",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_017_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "One settlement service reports a status enum and another reports event records; both adapters can produce the two facts, and payout policy owns the release rule.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A policy-owned input contract prevents a provider from becoming the authority for a broader decision.",
+        "scenarioApplication": "The release check combines settlement with seller identity after the service-specific status/event data has been normalized.",
+        "errorCorrection": "A settlement-issued command simplifies callers but moves a two-condition payout rule into a component that supplies only one condition.",
+        "boundaryOrTradeoff": "If a settlement event is delayed or ambiguous, the adapter must represent that uncertainty instead of claiming settled.",
+        "transfer": "For another PayoutRelease case, separate a change in settled status and verified seller identity meaning from a change in settlement services's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_017_provider_decides",
+          "text": "The settlement service cannot own the combined settled-order and verified-seller rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_017_sdk_type_leaks",
+          "text": "PayoutRelease still depends on the changing provider types at compile time."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_017_neutral_package_owns",
+          "text": "Independent status and identity interpretations can change the same payout decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_017_caller_duplicates",
+          "text": "Each payout entry point could differ on one of the two release conditions."
+        }
+      ],
+      "reason": "Settlement reports one input, not the combined payout authorization. The prompt assigns seller verification and release policy to PayoutRelease.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_017_provider_decides",
+          "text": "Let the settlement service return the final payout-release decision."
+        },
+        {
+          "optionId": "n04b05_017_sdk_type_leaks",
+          "text": "Keep status enums and event record classes in PayoutRelease, then translate at the API edge."
+        },
+        {
+          "optionId": "n04b05_017_neutral_package_owns",
+          "text": "Put settlement and identity fields in a shared package but let providers interpret them independently."
+        },
+        {
+          "optionId": "n04b05_017_caller_duplicates",
+          "text": "Have each payout caller parse events and repeat settlement and seller-identity checks."
+        },
+        {
+          "optionId": "n04b05_017_policy_contract",
+          "text": "Normalize settlement and identity evidence; PayoutRelease owns the two-fact rule."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A payout policy releases funds only after the order is settled and the seller identity has been verified. One settlement service reports a status enum and another reports event records; both adapters can produce the two facts, and payout policy owns the release rule. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i017",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n04b05_018_policy_contract",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Consent records are stored in either a regional database or a hosted consent service; both are translated to the same purpose and decision time, while the privacy rule owns purpose matching.",
+      "The rule meaning remains fixed while the named provider mechanism changes.",
+      "The rule must produce the same stated outcome when either provider supplies equivalent evidence."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The policy’s stable meaning defines the contract; adapters expose just enough normalized evidence for that meaning.",
+        "scenarioApplication": "The policy compares the requested purpose and decision time to the normalized consent record, not to a database row or remote DTO.",
+        "errorCorrection": "Provider-side `isAllowed` queries avoid passing records but duplicate privacy semantics across storage implementations.",
+        "boundaryOrTradeoff": "No record and unavailable storage must remain distinguishable if the product contract distinguishes absent consent from a lookup failure.",
+        "transfer": "For another ExportConsentPolicy case, separate a change in consented purpose and recorded time meaning from a change in consent storage adapters's representation before moving the policy boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_018_provider_decides",
+          "text": "Storage supplies consent evidence; the privacy rule owns purpose matching."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_018_sdk_type_leaks",
+          "text": "Late translation leaves the policy dependent on each storage representation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_018_neutral_package_owns",
+          "text": "A shared record shape does not establish one purpose-matching rule across stores."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b05_018_caller_duplicates",
+          "text": "Different export paths could interpret the same recorded purpose differently."
+        }
+      ],
+      "reason": "The stores represent consent differently, but the decision is one privacy rule. Store-specific allow booleans would create multiple authorities for the same purpose matching.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n04b05_018_sdk_type_leaks",
+          "text": "Pass a database row or hosted-service DTO into ExportConsentPolicy and translate afterward."
+        },
+        {
+          "optionId": "n04b05_018_neutral_package_owns",
+          "text": "Share purpose and time fields but let each consent store define how they authorize export."
+        },
+        {
+          "optionId": "n04b05_018_caller_duplicates",
+          "text": "Have each export caller parse records and match the requested purpose independently."
+        },
+        {
+          "optionId": "n04b05_018_policy_contract",
+          "text": "Map consent records to purpose and time; ExportConsentPolicy decides disclosure."
+        },
+        {
+          "optionId": "n04b05_018_provider_decides",
+          "text": "Let the database or hosted consent service decide whether this export is allowed."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N04-B05",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "prompt": "A privacy rule permits export only when the user’s recorded consent covers the requested data purpose. Consent records are stored in either a regional database or a hosted consent service; both are translated to the same purpose and decision time, while the privacy rule owns purpose matching. Which dependency boundary keeps that decision aligned with its owner?",
+    "questionId": "ood-n04-b05-i018",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/standard/modern-web-apps-azure/architectural-principles"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

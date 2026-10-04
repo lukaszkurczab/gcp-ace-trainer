@@ -1,0 +1,1190 @@
+[
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i019",
+    "prompt": "In an invoice service, Billing creates a replacement invoice and invokes a ChargeSink port; PaymentGateway implements that port and receives the charge request. Audit reads issue history but cannot issue or charge. A different payment provider may replace PaymentGateway without changing Billing. How should the contracts be divided?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_01_roles",
+          "text": "Give Billing issue operations and a ChargeSink dependency, give Audit a history query, and let PaymentGateway implement only ChargeSink."
+        },
+        {
+          "optionId": "n04b04_01_broad",
+          "text": "Give every client one InvoiceService interface with issue, readHistory, and charge methods."
+        },
+        {
+          "optionId": "n04b04_01_leak",
+          "text": "Require PaymentGateway to implement invoice issuance and audit-history methods as well as ChargeSink, although it only processes charges."
+        },
+        {
+          "optionId": "n04b04_01_couple",
+          "text": "Keep one broad interface and let each implementation throw for methods its client does not use."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_01_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Billing issues invoices and depends on a replaceable charge port, while Audit only reads history. Separate contracts keep each client and provider tied to the capability it actually supplies.",
+      "details": {
+        "mechanismOrProperty": "Interface segregation limits each client dependency to a coherent capability set.",
+        "scenarioApplication": "Billing calls invoice operations and ChargeSink; Audit queries history; PaymentGateway implements the charge port without becoming an invoice or audit client.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. Each client receives operations it must not perform, so the interface communicates broader authority than its role. That does not reduce the unrelated methods; it merely routes the broad contract through one implementation. Unsupported methods remain part of every client contract and fail only at runtime.",
+        "boundaryOrTradeoff": "A provider-specific dependency may be acceptable for a fixed integration, but this case explicitly requires another provider to replace it without changing Billing.",
+        "transfer": "Partition interfaces by client capability and authority, not by putting every operation on one service type."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_01_broad",
+          "text": "Each client receives operations it must not perform, so the interface communicates broader authority than its role."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_01_leak",
+          "text": "It couples Billing to the concrete PaymentGateway, so replacing the provider would require changing the client despite the stated replaceable port."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_01_couple",
+          "text": "The gateway must provide invoice issuance and history reads that are unrelated to its charge-processing role; the contract is broader than the implementation needs."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i020",
+    "prompt": "An access controller has an administrator that revokes a badge and a door policy that only asks whether the badge is active. Door devices cannot edit badge grants. Which interface arrangement expresses these roles?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_02_roles",
+          "text": "Give administrators a revoke capability and doors a read-only active-status query."
+        },
+        {
+          "optionId": "n04b04_02_broad",
+          "text": "Expose create, approve, edit, revoke, and status methods to every door device."
+        },
+        {
+          "optionId": "n04b04_02_leak",
+          "text": "Let each door read revocation history and calculate active status itself."
+        },
+        {
+          "optionId": "n04b04_02_couple",
+          "text": "Keep one Badge interface but mark mutation methods deprecated for door clients."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_02_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The administrator changes grants; the door only asks for an active-status answer. Separate contracts make the door’s dependency read-only.",
+      "details": {
+        "mechanismOrProperty": "A role-specific interface can expose one query capability without granting the administrator’s mutation surface.",
+        "scenarioApplication": "Doors call the status query; administrators invoke revocation through a separate role contract.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. Door devices gain grant-management powers they do not need and must depend on unrelated methods. This gives each device policy-data access instead of the read-only result it needs. Deprecation does not remove the dependency or prevent a door implementation from being required to support those methods.",
+        "boundaryOrTradeoff": "If a door also managed badges, a broader contract might fit that client; this prompt expressly forbids door edits.",
+        "transfer": "Model read and write capabilities separately when clients have different authority."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_02_broad",
+          "text": "Door devices gain grant-management powers they do not need and must depend on unrelated methods."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_02_leak",
+          "text": "This gives each device policy-data access instead of the read-only result it needs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_02_couple",
+          "text": "Deprecation does not remove the dependency or prevent a door implementation from being required to support those methods."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i021",
+    "prompt": "A package-label service has one client that requests a label from approved shipment data and another that tracks an existing label by ID. The tracking client must not regenerate or alter labels. What should each client receive?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_03_roles",
+          "text": "A label-creation operation for the shipping operator and a read-only tracking query for the tracking client."
+        },
+        {
+          "optionId": "n04b04_03_broad",
+          "text": "Give both clients create, replace, cancel, and track methods."
+        },
+        {
+          "optionId": "n04b04_03_leak",
+          "text": "Have the tracking client retrieve shipment fields and reconstruct the label itself."
+        },
+        {
+          "optionId": "n04b04_03_couple",
+          "text": "Expose only a label repository query and require the shipping operator to write records directly."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_03_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Creation and tracking have different permitted operations. Separate the creation command from the read-only tracking query so tracking cannot change the record.",
+      "details": {
+        "mechanismOrProperty": "A client-specific contract avoids coupling a reader to write methods while preserving the producer’s creation boundary.",
+        "scenarioApplication": "The operator requests a label; tracking reads the recorded label by its stable ID.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. Tracking acquires label mutation methods despite its read-only role. It no longer reads the existing label by ID and may display a representation different from the approved label. The operator loses the label-generation capability and must bypass the service that creates the approved label.",
+        "boundaryOrTradeoff": "A single interface is reasonable if clients share the same lifecycle permissions, which they do not here.",
+        "transfer": "Separate capabilities around the actions clients are allowed to take."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_03_broad",
+          "text": "Tracking acquires label mutation methods despite its read-only role."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_03_leak",
+          "text": "It no longer reads the existing label by ID and may display a representation different from the approved label."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_03_couple",
+          "text": "The operator loses the label-generation capability and must bypass the service that creates the approved label."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i022",
+    "prompt": "A rehearsal scheduler checks room capacity and commits a move. A notification worker sends the resulting confirmation but cannot move bookings. The scheduler does not need notification-provider configuration. Which interface split is best?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_04_roles",
+          "text": "Keep move/availability operations on the scheduler contract and delivery on a notification contract."
+        },
+        {
+          "optionId": "n04b04_04_broad",
+          "text": "Put room checks, move, and provider-specific send methods on one Booking interface."
+        },
+        {
+          "optionId": "n04b04_04_leak",
+          "text": "Make the scheduler implement EmailSender and send confirmations directly."
+        },
+        {
+          "optionId": "n04b04_04_couple",
+          "text": "Let the notification worker update the booking after sending."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_04_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The scheduler decides and commits a move; the worker sends a confirmation afterward. Separate operation contracts keep scheduling independent of provider details.",
+      "details": {
+        "mechanismOrProperty": "Interface segregation removes unrelated delivery methods from a domain client’s dependency.",
+        "scenarioApplication": "The scheduler returns a committed result; a worker consumes it and sends the notice through its own contract.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. The scheduler now depends on notification configuration, and the notifier receives booking mutations it cannot perform. That couples booking policy to the delivery mechanism and prevents a separate worker from owning notification delivery. It grants the notifier a booking mutation the prompt explicitly excludes and can report a move that was never capacity-checked.",
+        "boundaryOrTradeoff": "A small application service may orchestrate both, but the interfaces should still keep their capabilities distinct.",
+        "transfer": "Keep business operations and secondary delivery roles on contracts suited to their clients."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_04_broad",
+          "text": "The scheduler now depends on notification configuration, and the notifier receives booking mutations it cannot perform."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_04_leak",
+          "text": "That couples booking policy to the delivery mechanism and prevents a separate worker from owning notification delivery."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_04_couple",
+          "text": "It grants the notifier a booking mutation the prompt explicitly excludes and can report a move that was never capacity-checked."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i023",
+    "prompt": "An exhibit operator can send commands to a controller; a monitoring screen only reads telemetry. The controller rejects unsafe commands while maintenance mode is active. The monitor must never issue commands. What contract design fits?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_05_roles",
+          "text": "Expose a command capability to the operator and a telemetry query capability to the monitor."
+        },
+        {
+          "optionId": "n04b04_05_broad",
+          "text": "Give the monitor and operator the same interface with sendCommand and readTelemetry."
+        },
+        {
+          "optionId": "n04b04_05_leak",
+          "text": "Let the monitor inspect maintenance state and decide which commands are safe."
+        },
+        {
+          "optionId": "n04b04_05_couple",
+          "text": "Replace both roles with a generic exchange(payload) operation."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_05_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The operator needs command authority, while the monitor only observes. Distinct interfaces preserve the controller’s safety check and make monitoring read-only.",
+      "details": {
+        "mechanismOrProperty": "Segregating command and query capabilities prevents an observer from acquiring write methods.",
+        "scenarioApplication": "Commands go through the controller’s safety boundary; telemetry reads do not expose that command path.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. The monitor receives a command capability despite being explicitly read-only. The monitor is not an authorized command client and would duplicate the controller’s safety rule. The operation erases the distinction between a command and a query, so clients cannot rely on their separate permissions.",
+        "boundaryOrTradeoff": "A command-capable service can also read telemetry internally, but its interface need not be imposed on every monitor.",
+        "transfer": "Separate write authority from observation when the client roles differ."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_05_broad",
+          "text": "The monitor receives a command capability despite being explicitly read-only."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_05_leak",
+          "text": "The monitor is not an authorized command client and would duplicate the controller’s safety rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_05_couple",
+          "text": "The operation erases the distinction between a command and a query, so clients cannot rely on their separate permissions."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i024",
+    "prompt": "A lesson editor revises lesson content and publishes a new revision. Learners can open the active revision and submit progress; they cannot publish or retire lessons. Which interface structure best fits?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_06_roles",
+          "text": "Give editors revision/publish operations and learners active-read/progress operations."
+        },
+        {
+          "optionId": "n04b04_06_broad",
+          "text": "Expose edit, publish, retire, open, and progress methods on one Lesson interface for all clients."
+        },
+        {
+          "optionId": "n04b04_06_leak",
+          "text": "Let learners receive the editor interface but hide its buttons in the UI."
+        },
+        {
+          "optionId": "n04b04_06_couple",
+          "text": "Require the editor to implement learner progress methods as well as content operations."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_06_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Editors change published content; learners read the active revision and record progress. Separate client-facing interfaces avoid giving either role unrelated methods.",
+      "details": {
+        "mechanismOrProperty": "A shared domain identity can support several small contracts without making every client depend on all capabilities.",
+        "scenarioApplication": "Editors use authoring operations; learners use reading and progress operations against the same lesson identity.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. Learners receive authoring and retirement capabilities that the prompt excludes. A hidden UI control does not remove the learner’s dependency on or potential access to mutation methods. This forces the editor role to support an unrelated learner capability, even if it never consumes progress.",
+        "boundaryOrTradeoff": "A shared implementation is compatible with segregated interfaces; the question concerns client contracts, not object count.",
+        "transfer": "Do not confuse one underlying entity with a requirement for one broad interface."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_06_broad",
+          "text": "Learners receive authoring and retirement capabilities that the prompt excludes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_06_leak",
+          "text": "A hidden UI control does not remove the learner’s dependency on or potential access to mutation methods."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_06_couple",
+          "text": "This forces the editor role to support an unrelated learner capability, even if it never consumes progress."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i025",
+    "prompt": "A whiteboard editor appends strokes and requests close. A compliance exporter reads the accepted stroke snapshot after close but must not add strokes or reopen the board. Which contracts should the two clients use?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_07_roles",
+          "text": "Provide editing/close operations to the editor and a read-only closed-snapshot query to the exporter."
+        },
+        {
+          "optionId": "n04b04_07_broad",
+          "text": "Give the exporter the same appendStroke and reopen operations so it can repair incomplete snapshots."
+        },
+        {
+          "optionId": "n04b04_07_leak",
+          "text": "Make the editor depend on archive-format encoding and file-upload methods."
+        },
+        {
+          "optionId": "n04b04_07_couple",
+          "text": "Expose the mutable stroke collection to both clients and rely on convention to prevent exporter writes."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_07_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Editing and export have separate permissions and responsibilities. The exporter reads a stable snapshot while the editor controls changes and close.",
+      "details": {
+        "mechanismOrProperty": "Small contracts keep snapshot consumers independent from editing and persistence details.",
+        "scenarioApplication": "The editor closes the board; the exporter reads the accepted snapshot through a non-mutating operation.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. The exporter gains mutation powers that the scenario explicitly excludes. Export format and storage details are unrelated to the editor’s stroke/close operations. The exporter’s read-only requirement is not enforced by the interface and can be violated by any caller.",
+        "boundaryOrTradeoff": "If the exporter were authorized to repair a board, a separate repair capability could be designed; the prompt denies that need.",
+        "transfer": "Give snapshot consumers only the observation contract they require."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_07_broad",
+          "text": "The exporter gains mutation powers that the scenario explicitly excludes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_07_leak",
+          "text": "Export format and storage details are unrelated to the editor’s stroke/close operations."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_07_couple",
+          "text": "The exporter’s read-only requirement is not enforced by the interface and can be violated by any caller."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i026",
+    "prompt": "Support agents can reassign a case and escalate it while preserving its response deadline. Customers can read status and the current public response estimate, but cannot see internal assignee notes or change the case. Which interface division is appropriate?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_08_roles",
+          "text": "Use an agent command interface for reassignment/escalation and a customer read model exposing only public status and estimate."
+        },
+        {
+          "optionId": "n04b04_08_broad",
+          "text": "Give customers the complete SupportCase interface, including assignee and escalation methods."
+        },
+        {
+          "optionId": "n04b04_08_leak",
+          "text": "Let customers read the raw deadline and calculate the response estimate themselves."
+        },
+        {
+          "optionId": "n04b04_08_couple",
+          "text": "Make the agent interface return customer status and send public messages directly."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_08_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Agents need internal commands; customers need a limited public view. Separate those contracts so private notes and management operations do not leak to readers.",
+      "details": {
+        "mechanismOrProperty": "Interface segregation can also be an information-access boundary when clients receive different projections.",
+        "scenarioApplication": "Agents manage assignment and escalation; customers see only the public status and estimate.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. It exposes internal notes and state-changing methods beyond the customer’s stated access. The customer receives internal scheduling data rather than the explicitly public estimate. It combines case-management authority with presentation/delivery duties, coupling agents to public response delivery.",
+        "boundaryOrTradeoff": "A shared backing case object is fine, but exposing its entire internal interface to both roles is not.",
+        "transfer": "Shape read interfaces to the caller’s allowed information as well as its allowed actions."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_08_broad",
+          "text": "It exposes internal notes and state-changing methods beyond the customer’s stated access."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_08_leak",
+          "text": "The customer receives internal scheduling data rather than the explicitly public estimate."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_08_couple",
+          "text": "It combines case-management authority with presentation/delivery duties, coupling agents to public response delivery."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i027",
+    "prompt": "A seller client edits price and stock on a draft listing, then publishes it. A storefront reads only published listing data and must not see draft controls. Which interface boundary fits?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_09_roles",
+          "text": "Give sellers draft/edit/publish operations and storefronts a published-listing read contract."
+        },
+        {
+          "optionId": "n04b04_09_broad",
+          "text": "Expose the full mutable Listing interface to the storefront so it can refresh data."
+        },
+        {
+          "optionId": "n04b04_09_leak",
+          "text": "Give sellers only the published read view and let them update storage through a separate raw API."
+        },
+        {
+          "optionId": "n04b04_09_couple",
+          "text": "Expose a generic setStatus method to both roles and require callers to use valid status strings."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_09_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The seller owns draft changes and publication; the storefront only reads published results. Distinct interfaces make that capability boundary explicit.",
+      "details": {
+        "mechanismOrProperty": "Segregated APIs can separate editing a draft from consuming the public projection.",
+        "scenarioApplication": "Seller changes remain behind draft operations, while storefront queries return only published data.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. The storefront gains draft mutation and publication powers that are reserved to sellers. The seller loses the operations needed to change and publish its draft through the domain contract. This lets the storefront request publication state changes and replaces role-specific operations with unbounded status writes.",
+        "boundaryOrTradeoff": "A single interface could serve an internal administrator with both roles, but it would be inappropriate for the storefront client.",
+        "transfer": "Separate authoring commands from public consumption contracts."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_09_broad",
+          "text": "The storefront gains draft mutation and publication powers that are reserved to sellers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_09_leak",
+          "text": "The seller loses the operations needed to change and publish its draft through the domain contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_09_couple",
+          "text": "This lets the storefront request publication state changes and replaces role-specific operations with unbounded status writes."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i028",
+    "prompt": "A repair-parts operator can split one backordered request across vendors while keeping the original request ID and promise. A customer portal only reads the promise and shipment progress. The portal must not alter vendor allocations. Which split is best?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_10_roles",
+          "text": "Expose splitAllocation to fulfillment and a read-only promise/progress view to the customer portal."
+        },
+        {
+          "optionId": "n04b04_10_broad",
+          "text": "Give the customer portal vendor-allocation methods so customers can select how the order is divided."
+        },
+        {
+          "optionId": "n04b04_10_leak",
+          "text": "Expose every internal request field, vendor record, split, and status transition to the portal."
+        },
+        {
+          "optionId": "n04b04_10_couple",
+          "text": "Give fulfillment only a read-only request view and let it change vendor rows through storage tools."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_10_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Fulfillment needs a state-changing split operation; the customer only needs a public projection. The interfaces should reflect that difference without exposing vendor allocation to the portal.",
+      "details": {
+        "mechanismOrProperty": "Role-specific contracts preserve internal invariants while offering clients only the relevant capability.",
+        "scenarioApplication": "Fulfillment updates allocations through its command; customers observe the stable request promise and progress.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. The prompt reserves vendor allocation changes to the fulfillment operator. That makes a customer reader depend on internal fulfillment representation instead of its two needed values. The operator loses the domain split operation and must bypass the contract that preserves the original request identity and promise.",
+        "boundaryOrTradeoff": "Customers may be allowed to choose a delivery preference under another requirement, but this prompt assigns allocation exclusively to fulfillment.",
+        "transfer": "Keep internal coordination commands separate from public status views."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_10_broad",
+          "text": "The prompt reserves vendor allocation changes to the fulfillment operator."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_10_leak",
+          "text": "That makes a customer reader depend on internal fulfillment representation instead of its two needed values."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_10_couple",
+          "text": "The operator loses the domain split operation and must bypass the contract that preserves the original request identity and promise."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i029",
+    "prompt": "A plot steward starts a reservation transfer and the incoming gardener must accept it before it commits. The steward can cancel a pending transfer; the incoming gardener can accept or decline but cannot edit soil approvals. Which interface design expresses the roles?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_11_roles",
+          "text": "Use separate steward transfer-management and recipient accept/decline capabilities over the pending transfer."
+        },
+        {
+          "optionId": "n04b04_11_broad",
+          "text": "Give both gardeners transfer creation, cancellation, acceptance, and soil-approval editing."
+        },
+        {
+          "optionId": "n04b04_11_leak",
+          "text": "Let the steward mark the transfer accepted after notifying the incoming gardener."
+        },
+        {
+          "optionId": "n04b04_11_couple",
+          "text": "Expose the entire Plot object to the incoming gardener and let them replace its reservation owner."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_11_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The transfer has distinct initiator and recipient actions with different authority. Separate capabilities let the recipient make only its decision without editing plot state.",
+      "details": {
+        "mechanismOrProperty": "A role-specific interface models different operations on one pending workflow object.",
+        "scenarioApplication": "The steward proposes or cancels; the recipient accepts or declines; the plot’s approval history stays behind the owner boundary.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. The recipient acquires steward powers and soil-approval edits that the prompt does not grant. It removes the recipient’s explicit accept/decline action from the workflow. The recipient bypasses the transfer and approval history that the steward’s operation must preserve.",
+        "boundaryOrTradeoff": "A shared transfer implementation can serve both roles, but one broad interface would give each the other’s powers.",
+        "transfer": "Assign each participant only its permitted actions in a multi-party workflow."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_11_broad",
+          "text": "The recipient acquires steward powers and soil-approval edits that the prompt does not grant."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_11_leak",
+          "text": "It removes the recipient’s explicit accept/decline action from the workflow."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_11_couple",
+          "text": "The recipient bypasses the transfer and approval history that the steward’s operation must preserve."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i030",
+    "prompt": "A catalog editor changes a draft bundle’s components and discount. Checkout reads the published bundle price and components, but cannot revise the draft. Publishing recomputes the total. What contract split should be used?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_12_roles",
+          "text": "Give editors draft mutation/publish operations and checkout a read-only published bundle query."
+        },
+        {
+          "optionId": "n04b04_12_broad",
+          "text": "Expose publish and component-edit methods to checkout so it can refresh stale prices."
+        },
+        {
+          "optionId": "n04b04_12_leak",
+          "text": "Require catalog editors to implement checkout availability and cart mutation methods."
+        },
+        {
+          "optionId": "n04b04_12_couple",
+          "text": "Pass one mutable Bundle object to all clients and rely on UI permissions."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_12_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Catalog editing and checkout consumption are distinct roles. Publishing is the boundary that exposes a computed read-only version to checkout.",
+      "details": {
+        "mechanismOrProperty": "Separating authoring from read-only consumption prevents a client from depending on irrelevant mutation methods.",
+        "scenarioApplication": "The editor changes a draft and publishes it; checkout reads the resulting price and components.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. Checkout receives catalog-authoring capabilities instead of its read-only purchase input. Those operations serve another client role and are not part of editing or publishing the bundle. The interface itself does not preserve checkout’s read-only contract, so any consumer may alter draft state.",
+        "boundaryOrTradeoff": "A checkout service may request a new published version, but the scenario does not authorize it to edit catalog data.",
+        "transfer": "Use a publication boundary to separate mutable authoring from read-only consumers."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_12_broad",
+          "text": "Checkout receives catalog-authoring capabilities instead of its read-only purchase input."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_12_leak",
+          "text": "Those operations serve another client role and are not part of editing or publishing the bundle."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_12_couple",
+          "text": "The interface itself does not preserve checkout’s read-only contract, so any consumer may alter draft state."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i031",
+  "prompt": "A station operator creates and cancels charger reservations. An analytics job reads reservation counts by interval and must not allocate or cancel reservations. Analytics may receive aggregate interval counts only; it must not receive individual reservation records. The operator does not need report-formatting methods. Which interfaces fit?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_13_roles",
+          "text": "Provide reservation commands to the operator and a read-only interval-count query to analytics."
+        },
+        {
+          "optionId": "n04b04_13_broad",
+          "text": "Give both clients reserve, cancel, count, and export methods on StationService."
+        },
+        {
+          "optionId": "n04b04_13_leak",
+          "text": "Let analytics iterate the live reservation collection and compute counts itself."
+        },
+        {
+          "optionId": "n04b04_13_couple",
+          "text": "Make the operator call a report-export interface to create each reservation receipt."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_13_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The operator mutates reservations; analytics only queries aggregate counts. Separate contracts prevent both clients from depending on unrelated operations.",
+      "details": {
+        "mechanismOrProperty": "A query interface can expose a stable aggregate without leaking the mutable collection.",
+        "scenarioApplication": "The operator reserves or cancels through commands; analytics calls the count query and cannot change capacity.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. Analytics receives mutation methods it must not use, and the operator depends on report formatting it does not need. Iterating the collection gives analytics individual reservation records even though its allowed input is aggregate counts only. That makes routine reservation commands depend on analytics/report formatting unrelated to allocating capacity.",
+        "boundaryOrTradeoff": "A report exporter can be composed downstream of the query, but should not be mandatory for reservation mutation.",
+        "transfer": "Keep command and analytical-query capabilities independent when their clients differ."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_13_broad",
+          "text": "Analytics receives mutation methods it must not use, and the operator depends on report formatting it does not need."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_13_leak",
+        "text": "Analytics would receive individual reservation records, although the prompt permits it to receive aggregate counts only."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_13_couple",
+          "text": "That makes routine reservation commands depend on analytics/report formatting unrelated to allocating capacity."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i032",
+    "prompt": "A curator merges duplicate archive records and approves tag changes. Search clients query approved tags and asset identity; they must not merge records or edit provenance. Which public interfaces should be used?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_14_roles",
+          "text": "Give curators merge/tag-approval operations and search clients an approved-metadata query."
+        },
+        {
+          "optionId": "n04b04_14_broad",
+          "text": "Expose merge and provenance-edit operations to every search client."
+        },
+        {
+          "optionId": "n04b04_14_leak",
+          "text": "Require curators to implement the search index query interface as well as merge records."
+        },
+        {
+          "optionId": "n04b04_14_couple",
+          "text": "Let search clients read and filter the full mutable catalog records directly."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_14_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Curators change metadata and provenance; search clients consume only approved identity and tags. Separate contracts preserve the editing boundary and limit what search depends on.",
+      "details": {
+        "mechanismOrProperty": "Client-specific interfaces make approved projections distinct from administrative mutation methods.",
+        "scenarioApplication": "Curators approve a merge; search queries the resulting approved fields without access to provenance editing.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. Search clients receive archival mutation authority they do not need. Searching is a consumer capability unrelated to approving a metadata merge. This exposes unapproved provenance and storage structure instead of the approved identity/tag view required by the prompt.",
+        "boundaryOrTradeoff": "An audit client may require provenance, but that is a separate role and does not justify exposing it to every search consumer.",
+        "transfer": "Define read interfaces around the approved projection each client needs."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_14_broad",
+          "text": "Search clients receive archival mutation authority they do not need."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_14_leak",
+          "text": "Searching is a consumer capability unrelated to approving a metadata merge."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_14_couple",
+          "text": "This exposes unapproved provenance and storage structure instead of the approved identity/tag view required by the prompt."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i033",
+    "prompt": "A licensing analyst approves territory and expiry for a usage. A download service only asks whether a specific use is currently authorized; it cannot create or amend approvals. Which split best fits?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_15_roles",
+          "text": "Expose approval/edit operations to analysts and an authorization query to the download service."
+        },
+        {
+          "optionId": "n04b04_15_broad",
+          "text": "Give the download service create, approve, change-expiry, and check methods."
+        },
+        {
+          "optionId": "n04b04_15_leak",
+          "text": "Let downloads read territory and expiry and reimplement the authorization rule."
+        },
+        {
+          "optionId": "n04b04_15_couple",
+          "text": "Give analysts only an authorization query and make them edit approval storage directly."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_15_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Analysts make approvals; downloads consume the authorization result. Separate mutation and query interfaces stop download code from becoming an approval client.",
+      "details": {
+        "mechanismOrProperty": "ISP separates clients by their actual permitted role rather than exposing an entire approval aggregate.",
+        "scenarioApplication": "Analysts create or revise approvals through commands; the download service asks whether the requested use is allowed now.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. The service gains approval powers even though it only needs a yes/no authorization decision. This duplicates policy interpretation in a consumer and can diverge from the approval service’s rule. The analyst loses the contract needed to perform the approval action and must bypass it via storage.",
+        "boundaryOrTradeoff": "The query may need to return a reason for denied use, but it still need not expose approval mutations.",
+        "transfer": "Let consumers ask for a policy result without inheriting the policy editor’s entire interface."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_15_broad",
+          "text": "The service gains approval powers even though it only needs a yes/no authorization decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_15_leak",
+          "text": "This duplicates policy interpretation in a consumer and can diverge from the approval service’s rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_15_couple",
+          "text": "The analyst loses the contract needed to perform the approval action and must bypass it via storage."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i034",
+    "prompt": "Maintenance technicians replace a battery and record the check. Flight planners only query whether an assigned battery is compatible with an aircraft; they cannot alter assignments. Which interface arrangement is appropriate?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_16_roles",
+          "text": "Give technicians a replacement command and planners a read-only compatibility query."
+        },
+        {
+          "optionId": "n04b04_16_broad",
+          "text": "Expose replacement and maintenance-record methods to flight planners."
+        },
+        {
+          "optionId": "n04b04_16_leak",
+          "text": "Give technicians only the compatibility query and let them change aircraft records directly."
+        },
+        {
+          "optionId": "n04b04_16_couple",
+          "text": "Require both clients to depend on the concrete battery-storage class with all fields public."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_16_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Technicians perform replacement; planners only need a compatibility decision. Separate interfaces reflect those roles while the maintenance owner controls assignment changes.",
+      "details": {
+        "mechanismOrProperty": "A shared entity can expose a write capability to one client and a read capability to another.",
+        "scenarioApplication": "Technicians invoke replacement; planners ask compatibility without obtaining mutation access.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. The planner receives assignment-changing methods despite its query-only role. The technician cannot perform the authorized replacement through the domain contract. This couples both roles to storage representation and grants them the same broad mutation surface.",
+        "boundaryOrTradeoff": "A planner may later be granted a separate operational command, but that authority is absent from this scenario.",
+        "transfer": "Separate an entity’s authorized state transitions from clients that only need its derived facts."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_16_broad",
+          "text": "The planner receives assignment-changing methods despite its query-only role."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_16_leak",
+          "text": "The technician cannot perform the authorized replacement through the domain contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_16_couple",
+          "text": "This couples both roles to storage representation and grants them the same broad mutation surface."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i035",
+    "prompt": "A referral navigator submits a consent-checked referral summary. A specialist endpoint can acknowledge receipt but must not read the consent ledger, change routing, or inspect internal notes. Which contracts keep the boundary clear?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_17_roles",
+          "text": "Give the navigator a consent-checked dispatch command and the specialist a limited summary/acknowledgement contract."
+        },
+        {
+          "optionId": "n04b04_17_broad",
+          "text": "Give the specialist the complete Referral interface with consent history and routing controls."
+        },
+        {
+          "optionId": "n04b04_17_leak",
+          "text": "Make the navigator implement the specialist’s transport acknowledgement methods."
+        },
+        {
+          "optionId": "n04b04_17_couple",
+          "text": "Pass one mutable Referral object to both parties and rely on access rules outside the interface."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_17_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The navigator owns consent-checked dispatch, while the specialist needs only the transmitted summary and an acknowledgement. Separate contracts prevent the recipient from gaining internal referral access.",
+      "details": {
+        "mechanismOrProperty": "Role-specific interfaces can enforce information boundaries as well as action boundaries.",
+        "scenarioApplication": "The navigator submits a limited summary; the endpoint acknowledges it without receiving consent history or routing controls.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. The endpoint receives internal records and mutation methods outside its stated summary/acknowledgement role. This mixes referral orchestration with endpoint transport and couples the navigator to the specialist protocol. The broad object exposes fields and operations the specialist is explicitly not permitted to access.",
+        "boundaryOrTradeoff": "The transport may carry an opaque correlation ID for receipt, but that does not require exposing the full referral object.",
+        "transfer": "Give external participants a contract limited to the information and action needed at that boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_17_broad",
+          "text": "The endpoint receives internal records and mutation methods outside its stated summary/acknowledgement role."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_17_leak",
+          "text": "This mixes referral orchestration with endpoint transport and couples the navigator to the specialist protocol."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_17_couple",
+          "text": "The broad object exposes fields and operations the specialist is explicitly not permitted to access."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B04",
+    "questionId": "ood-n04-b04-i036",
+    "prompt": "A practice editor revises exercise and scoring-policy versions. Learners start attempts, submit answers, and read their scores; they cannot edit the exercise or policy. Which interface division best fits?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b04_18_roles",
+          "text": "Use editor authoring operations for revisions and learner attempt/score operations for submissions and results."
+        },
+        {
+          "optionId": "n04b04_18_broad",
+          "text": "Expose revision and policy-edit methods to learners so they can correct scoring before submission."
+        },
+        {
+          "optionId": "n04b04_18_leak",
+          "text": "Require editors to implement learner submission and attempt-history methods."
+        },
+        {
+          "optionId": "n04b04_18_couple",
+          "text": "Give all clients a mutable PracticeSession with all methods and hide unauthorized controls in the UI."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b04_18_roles"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Editors version content and policy; learners create attempts and consume results. Separate contracts keep learner actions from changing the rules they are scored under.",
+      "details": {
+        "mechanismOrProperty": "ISP allows several clients to use the same domain without sharing one overbroad method set.",
+        "scenarioApplication": "The editor publishes a revision; learners submit against it and read scores through their own workflow interface.",
+        "errorCorrection": "The alternatives either give a client unrelated authority, expose internal representation, or couple distinct responsibilities. It gives learners authoring powers that the prompt reserves to the editor. Those are learner workflow capabilities unrelated to editing exercise content. The broad runtime object still makes every client depend on and potentially invoke methods outside its role.",
+        "boundaryOrTradeoff": "A test administrator could have both roles, but the interfaces can still remain distinct and be composed where needed.",
+        "transfer": "Keep authoring and use contracts separate when one role controls the rules another role consumes."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_18_broad",
+          "text": "It gives learners authoring powers that the prompt reserves to the editor."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_18_leak",
+          "text": "Those are learner workflow capabilities unrelated to editing exercise content."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b04_18_couple",
+          "text": "The broad runtime object still makes every client depend on and potentially invoke methods outside its role."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/interfaces",
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-9.html"
+    ]
+  }
+]

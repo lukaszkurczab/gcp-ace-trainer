@@ -1,0 +1,1190 @@
+[
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i019",
+    "prompt": "Garden transfers now follow two policies: an ordinary move keeps the original approval record, while a conservation plot also requires a soil review. The caller receives a Reservation and invokes transfer; new policies must be addable without editing the caller or Reservation’s source code. Which dispatch design meets that contract?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_01_dispatch",
+          "text": "Have Reservation delegate to its selected TransferPolicy through one transfer operation."
+        },
+        {
+          "optionId": "n04b02_01_branch",
+          "text": "Put an if/else on plot category in the caller and add a branch for each new transfer policy."
+        },
+        {
+          "optionId": "n04b02_01_representation",
+          "text": "Store a policy name and have Reservation switch on that string inside transfer."
+        },
+        {
+          "optionId": "n04b02_01_split",
+          "text": "Create separate transferOrdinary and transferConservation methods and require callers to choose."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_01_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The policy varies per reservation while the caller’s operation stays constant. Delegating through the selected policy lets the corresponding implementation determine the transfer behavior.",
+      "details": {
+        "mechanismOrProperty": "Runtime dispatch selects behavior through the object’s contract rather than a caller’s category branch.",
+        "scenarioApplication": "The caller invokes transfer once; the selected policy preserves the applicable approval rule and adds soil review only for conservation plots.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. The caller must change for each policy, contrary to the stated extension constraint. The string switch still centralizes concrete policy knowledge instead of dispatching through the selected behavior. The caller must know policy-specific operations even though it is meant to invoke one operation on a Reservation.",
+        "boundaryOrTradeoff": "A branch is fine for a genuinely closed set of policies, but the prompt requires adding new policies without editing this caller.",
+        "transfer": "When behavior varies by selected policy, keep the call stable and dispatch through the object that represents that variation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_01_branch",
+          "text": "The caller must change for each policy, contrary to the stated extension constraint."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_01_representation",
+          "text": "The string switch still centralizes concrete policy knowledge instead of dispatching through the selected behavior."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_01_split",
+          "text": "The caller must know policy-specific operations even though it is meant to invoke one operation on a Reservation."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i020",
+    "prompt": "A regional bundle can use either the standard discount rule or a member-only rule. Both receive the same component prices; the catalog manager selects the rule when preparing the bundle, and the publishing screen calls one price operation. How should price calculation vary?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_02_dispatch",
+          "text": "Dispatch calculatePrice on the selected BundlePricingPolicy implementation."
+        },
+        {
+          "optionId": "n04b02_02_branch",
+          "text": "Branch in the publishing screen on region and membership, then calculate the discount there."
+        },
+        {
+          "optionId": "n04b02_02_representation",
+          "text": "Add a policyCode field to Bundle and use a switch in getPrice."
+        },
+        {
+          "optionId": "n04b02_02_split",
+          "text": "Expose getStandardPrice and getMemberPrice and make every caller choose one."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_02_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The catalog has already selected a pricing policy, and both policies share the same input and output contract. Dispatching that operation on the selected policy keeps callers uniform.",
+      "details": {
+        "mechanismOrProperty": "A common operation with behavior supplied by the selected policy is the relevant polymorphic seam.",
+        "scenarioApplication": "The screen asks for price; the standard or member policy computes from the same component-price inputs.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. This duplicates commercial-rule selection in a UI caller and makes the screen change when a policy is added. The new behavior remains a type-code branch rather than dispatch through the selected pricing behavior. Callers now choose a rule even though the catalog has already selected the policy and the screen should make one call.",
+        "boundaryOrTradeoff": "Separate methods are appropriate if callers themselves own rule selection. Here policy selection belongs to bundle preparation.",
+        "transfer": "Use runtime dispatch where an already-selected behavior implements one stable operation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_02_branch",
+          "text": "This duplicates commercial-rule selection in a UI caller and makes the screen change when a policy is added."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_02_representation",
+          "text": "The new behavior remains a type-code branch rather than dispatch through the selected pricing behavior."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_02_split",
+          "text": "Callers now choose a rule even though the catalog has already selected the policy and the screen should make one call."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i021",
+    "prompt": "A charging station has connector objects with different reservation rules: one connector expires an unconfirmed hold after five minutes; another holds it until an explicit cancellation. The caller receives a Connector and asks whether a hold is still valid. Which design avoids leaking connector kind into the caller?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_03_dispatch",
+          "text": "Define isHoldValid(at) on Connector and let each connector implementation apply its own expiry rule."
+        },
+        {
+          "optionId": "n04b02_03_branch",
+          "text": "Let the caller inspect connector type and apply either the five-minute or cancellation rule."
+        },
+        {
+          "optionId": "n04b02_03_representation",
+          "text": "Implement one five-minute rule in the base Connector and let the second connector override the hold timestamp field."
+        },
+        {
+          "optionId": "n04b02_03_split",
+          "text": "Use isTimedHoldValid and isManualHoldValid; have callers choose from connector metadata."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_03_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Both connector kinds answer the same question but use different rules. A polymorphic query lets the actual connector supply the validity behavior.",
+      "details": {
+        "mechanismOrProperty": "Dynamic dispatch is useful when subtype behavior differs behind a shared operation and shared caller expectation.",
+        "scenarioApplication": "The caller asks isHoldValid at the current instant and receives the result for that connector’s declared hold policy.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. The caller must understand concrete connector policy, so a new expiry variant requires changing it. Changing a data field does not implement the second connector’s stated cancellation-only policy. This moves the variant choice back to callers instead of dispatching the common validity query on the Connector.",
+        "boundaryOrTradeoff": "If the caller is responsible for choosing a reservation policy, it may select one explicitly; this caller only receives a Connector.",
+        "transfer": "Keep variant-specific policy behind a shared operation when callers need one uniform query."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_03_branch",
+          "text": "The caller must understand concrete connector policy, so a new expiry variant requires changing it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_03_representation",
+          "text": "Changing a data field does not implement the second connector’s stated cancellation-only policy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_03_split",
+          "text": "This moves the variant choice back to callers instead of dispatching the common validity query on the Connector."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i022",
+    "prompt": "An archive imports metadata from either a camera file or a scanned catalog card. Both sources provide a title, but camera files include capture time and catalog cards include a shelf mark. The archive’s import pipeline calls normalize() on a SourceRecord. How should the pipeline handle the distinct source fields?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_04_dispatch",
+          "text": "Dispatch normalize() to each SourceRecord implementation, which maps its own source fields into the shared archive record."
+        },
+        {
+          "optionId": "n04b02_04_branch",
+          "text": "Have the import pipeline branch on camera versus catalog-card classes and map each field itself."
+        },
+        {
+          "optionId": "n04b02_04_representation",
+          "text": "Put captureTime and shelfMark on one record and make every caller interpret whichever is non-null."
+        },
+        {
+          "optionId": "n04b02_04_split",
+          "text": "Maintain separate full import pipelines for camera and card records."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_04_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The sources have a common import operation but different source representations. Letting each implementation normalize its own fields keeps the pipeline stable and the archive record uniform.",
+      "details": {
+        "mechanismOrProperty": "Polymorphism can isolate representation-specific translation behind a common operation.",
+        "scenarioApplication": "The pipeline invokes normalize() without knowing which source fields are present; each source implementation produces the archive form.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. Adding another source makes the common pipeline own every source-specific mapping. That exposes source-specific representation and forces the archive record to carry fields irrelevant to each source. The scenario shares a normalization step and only the source mapping varies; duplicating the whole pipeline forks common behavior unnecessarily.",
+        "boundaryOrTradeoff": "Separate pipelines are justified if the workflows differ end to end; here only the source mapping differs.",
+        "transfer": "Place variation at the smallest operation whose implementation actually differs."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_04_branch",
+          "text": "Adding another source makes the common pipeline own every source-specific mapping."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_04_representation",
+          "text": "That exposes source-specific representation and forces the archive record to carry fields irrelevant to each source."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_04_split",
+          "text": "The scenario shares a normalization step and only the source mapping varies; duplicating the whole pipeline forks common behavior unnecessarily."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i023",
+    "prompt": "A rights-clearance request can be evaluated under one of several territory policies selected for that request. Every policy accepts the same usage facts and returns Approved or a list of unmet conditions; none may alter the request. Where should the variation live?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_05_dispatch",
+          "text": "On a ClearancePolicy contract implemented by each territory policy and invoked through evaluate(usage)."
+        },
+        {
+          "optionId": "n04b02_05_branch",
+          "text": "Let the licensing analyst’s screen contain a territory switch and calculate the result."
+        },
+        {
+          "optionId": "n04b02_05_representation",
+          "text": "Create a distinct request subtype for every territory even though the request data and lifecycle are the same."
+        },
+        {
+          "optionId": "n04b02_05_split",
+          "text": "Have each policy rewrite request fields to mark its result as approved."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_05_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The same usage facts are evaluated under a selected rule set, and the result has a shared shape. Dispatching evaluate on ClearancePolicy represents exactly that variation.",
+      "details": {
+        "mechanismOrProperty": "Behavioral variation belongs on the policy object when request identity and lifecycle do not vary.",
+        "scenarioApplication": "The request remains unchanged; the chosen policy returns approval or its unmet conditions.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. The screen becomes the policy implementation and must change whenever a territory rule changes. Territory changes the evaluation rule, not the request’s identity or lifecycle; the subtype multiplies request types for a policy variation. The stated result is an evaluation outcome, not a request mutation; altering the request conflates input facts with policy output.",
+        "boundaryOrTradeoff": "A request subtype would make sense if territories changed request state or invariants, but the prompt says only the rule differs.",
+        "transfer": "Separate a stable subject from interchangeable policies that evaluate it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_05_branch",
+          "text": "The screen becomes the policy implementation and must change whenever a territory rule changes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_05_representation",
+          "text": "Territory changes the evaluation rule, not the request’s identity or lifecycle; the subtype multiplies request types for a policy variation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_05_split",
+          "text": "The stated result is an evaluation outcome, not a request mutation; altering the request conflates input facts with policy output."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i024",
+    "prompt": "Battery candidates implement a common InstallationCheck contract. A standard battery supports one mount; a dual-mount battery supports either of two mounts. The maintenance job calls supports(mount) before assignment, and must not branch on battery model. Which implementation is appropriate?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_06_dispatch",
+          "text": "Each Battery subtype overrides supports(mount) according to its compatible mounts."
+        },
+        {
+          "optionId": "n04b02_06_branch",
+          "text": "Add a model-name switch in MaintenanceJob to list compatible mounts."
+        },
+        {
+          "optionId": "n04b02_06_representation",
+          "text": "Give each model a different method name and let the job choose by runtime class."
+        },
+        {
+          "optionId": "n04b02_06_split",
+          "text": "Add a dualMount boolean and let the job interpret it for all candidates."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_06_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The job already calls one compatibility operation and the battery implementations differ only in the accepted mounts. Overriding that operation supplies behavior without a model branch.",
+      "details": {
+        "mechanismOrProperty": "Subtype dispatch is appropriate when implementations honor the same method contract while specializing its result.",
+        "scenarioApplication": "The job calls supports with the requested mount and receives the candidate-specific compatibility answer.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. The job acquires model-specific knowledge and must be edited when a new battery implementation appears. Different method names prevent the shared InstallationCheck call the job already expects. The flag makes the caller own the compatibility rule and cannot express future mount combinations cleanly through the existing behavior contract.",
+        "boundaryOrTradeoff": "A data-driven table could also work if compatibility is purely declarative, but the stated contract asks each Battery implementation to answer the call.",
+        "transfer": "Keep the caller on a shared operation and vary the implementation at the subtype boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_06_branch",
+          "text": "The job acquires model-specific knowledge and must be edited when a new battery implementation appears."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_06_representation",
+          "text": "Different method names prevent the shared InstallationCheck call the job already expects."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_06_split",
+          "text": "The flag makes the caller own the compatibility rule and cannot express future mount combinations cleanly through the existing behavior contract."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i025",
+    "prompt": "Referral destinations can be an in-house clinic or a partner clinic. Both accept a ReferralSummary and return an acknowledgement or a retryable unavailable result; partner destinations additionally include a correlation token. The care navigator submits through a Destination reference. Which design is best?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_07_dispatch",
+          "text": "Implement submit(summary) on Destination; each destination handles its transport detail and returns the shared outcome."
+        },
+        {
+          "optionId": "n04b02_07_branch",
+          "text": "Branch in the navigator to call the in-house client or partner client and parse each response."
+        },
+        {
+          "optionId": "n04b02_07_representation",
+          "text": "Expose a partner-token field on every destination and make in-house destinations return an empty token."
+        },
+        {
+          "optionId": "n04b02_07_split",
+          "text": "Use submitInternal() and submitPartner(token) and let the caller choose."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_07_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Both destinations accept the same summary and share an outcome contract. The destination object can handle its own transport while keeping the navigator’s call stable.",
+      "details": {
+        "mechanismOrProperty": "Subtype implementations can encapsulate differing transport behavior behind a common command and result.",
+        "scenarioApplication": "The care navigator calls submit once; the destination handles its internal or partner-specific correlation detail.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. The navigator becomes coupled to transport details and must change when a destination is added. This leaks one implementation’s representation into all callers and gives the shared result a field that has no meaning for one variant. The caller must know destination kind even though it already receives a Destination reference and both share the submit outcome.",
+        "boundaryOrTradeoff": "A shared interface should not pretend all transport details are identical; it can hide them and expose only the common caller outcome.",
+        "transfer": "Preserve one call contract while allowing implementations to translate their own integration details."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_07_branch",
+          "text": "The navigator becomes coupled to transport details and must change when a destination is added."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_07_representation",
+          "text": "This leaks one implementation’s representation into all callers and gives the shared result a field that has no meaning for one variant."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_07_split",
+          "text": "The caller must know destination kind even though it already receives a Destination reference and both share the submit outcome."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i026",
+    "prompt": "An exercise attempt stores the exact exercise revision selected at start. It can be scored by either the practice policy or a certification policy; both accept the captured answers and revision but apply different score rules. The result screen calls score(attempt). How should scoring vary?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_08_dispatch",
+          "text": "Dispatch score(attempt) through the selected ScoringPolicy implementation."
+        },
+        {
+          "optionId": "n04b02_08_branch",
+          "text": "Have the result screen branch on policy name and compute points itself."
+        },
+        {
+          "optionId": "n04b02_08_representation",
+          "text": "Create PracticeAttempt and CertificationAttempt classes that each store their own copy of answers and revision."
+        },
+        {
+          "optionId": "n04b02_08_split",
+          "text": "Expose the policy name and let the screen translate it into a numeric multiplier."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_08_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The attempt provides the same captured inputs while the selected policy changes only the scoring behavior. A common score operation on the policy keeps the result screen uniform.",
+      "details": {
+        "mechanismOrProperty": "Dispatch the varying rule on a policy object rather than branching in the view or changing the attempt’s data type.",
+        "scenarioApplication": "The result screen requests score for the attempt and receives the selected policy’s result against the pinned revision.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. This duplicates scoring rules in a presentation caller and makes rule changes ripple into the screen. The attempt’s stored facts are common; the policy changes scoring, not the attempt identity or captured input model. A label does not encapsulate the selected policy behavior; the screen still needs policy-specific logic.",
+        "boundaryOrTradeoff": "Attempt subtypes would be appropriate if attempts had different state or lifecycle, which the prompt does not claim.",
+        "transfer": "When data is stable and the algorithm varies, represent the algorithm as a selected behavior."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_08_branch",
+          "text": "This duplicates scoring rules in a presentation caller and makes rule changes ripple into the screen."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_08_representation",
+          "text": "The attempt’s stored facts are common; the policy changes scoring, not the attempt identity or captured input model."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_08_split",
+          "text": "A label does not encapsulate the selected policy behavior; the screen still needs policy-specific logic."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i027",
+    "prompt": "Procurement approvals use different control rules for routine and regulated purchases. Both rules receive the same exception facts and an approver identity; both return allowed or a missing-control list. The queue invokes canApprove(exception, actor). Which design fits?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_09_dispatch",
+          "text": "Select an ApprovalRule and dispatch canApprove(exception, actor) through its shared contract."
+        },
+        {
+          "optionId": "n04b02_09_branch",
+          "text": "Put routine and regulated threshold branches into the approval queue."
+        },
+        {
+          "optionId": "n04b02_09_representation",
+          "text": "Create a separate Manager subtype for each purchasing category."
+        },
+        {
+          "optionId": "n04b02_09_split",
+          "text": "Expose a list of boolean control flags and have each caller decide which combination is sufficient."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_09_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Both rules share the same input and output but evaluate it differently. Dispatch on a selected ApprovalRule keeps the queue from implementing policy branches.",
+      "details": {
+        "mechanismOrProperty": "A stable policy interface expresses the shared operation while each implementation supplies its rule.",
+        "scenarioApplication": "The queue invokes one method; the selected rule returns whether approval is allowed and which control is missing.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. The queue then owns policy that may change independently of its task of presenting approval requests. The changing element is the control rule applied to the exception, not the identity or lifecycle of the approver. Callers can apply different combinations, so the same exception may receive different results depending on who invokes the queue.",
+        "boundaryOrTradeoff": "A single rule implementation is simpler while the rules truly match; this prompt explicitly gives two differing control regimes.",
+        "transfer": "Use behavior selection when the policy varies but the operation contract is stable."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_09_branch",
+          "text": "The queue then owns policy that may change independently of its task of presenting approval requests."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_09_representation",
+          "text": "The changing element is the control rule applied to the exception, not the identity or lifecycle of the approver."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_09_split",
+          "text": "Callers can apply different combinations, so the same exception may receive different results depending on who invokes the queue."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i028",
+    "prompt": "A podcast editor can import a WAV recording or an MP3 recording. Both yield audio samples and a duration, but their decoders differ. The annotation mapper consumes the same DecodedRecording shape after import. Where should format-specific decoding occur?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_10_dispatch",
+          "text": "Dispatch decode() through a RecordingDecoder implementation selected for the file format."
+        },
+        {
+          "optionId": "n04b02_10_branch",
+          "text": "Make the annotation mapper branch on WAV/MP3 and decode there."
+        },
+        {
+          "optionId": "n04b02_10_representation",
+          "text": "Create WAV and MP3 subclasses of the domain Episode and put byte decoding in their constructors."
+        },
+        {
+          "optionId": "n04b02_10_split",
+          "text": "Have every caller check the filename extension and decode inline."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_10_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The source format is the only varying behavior and the mapper already depends on a common decoded result. A selected decoder isolates format handling before the shared workflow.",
+      "details": {
+        "mechanismOrProperty": "Dynamic dispatch on a decoder localizes a varying algorithm without turning a file format into domain subtype identity.",
+        "scenarioApplication": "The import step calls decode and passes its uniform output to annotation mapping.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. The mapper is supposed to consume the common decoded shape; format handling would contaminate its responsibility. File representation is an import concern; encoding the input format into the persistent Episode subtype couples domain identity to an ingestion detail. That duplicates dispatch at each call site and risks different callers producing different decoded forms.",
+        "boundaryOrTradeoff": "A format-specific episode subtype is warranted only if the format changes the episode’s lasting behavior or lifecycle; here it does not.",
+        "transfer": "Dispatch at the boundary where an external representation becomes a stable domain input."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_10_branch",
+          "text": "The mapper is supposed to consume the common decoded shape; format handling would contaminate its responsibility."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_10_representation",
+          "text": "File representation is an import concern; encoding the input format into the persistent Episode subtype couples domain identity to an ingestion detail."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_10_split",
+          "text": "That duplicates dispatch at each call site and risks different callers producing different decoded forms."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i029",
+    "prompt": "Grant policy is selected from a grant’s approval record. Both temporary and standing grants answer isEffective(at); a temporary grant also becomes ineffective at its expiry, while a standing grant has no expiry. The access checker calls that method through Grant. Which model avoids duplicated policy checks?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_11_dispatch",
+          "text": "Override isEffective(at) in each Grant implementation while preserving the shared boolean contract."
+        },
+        {
+          "optionId": "n04b02_11_branch",
+          "text": "Have the access checker inspect grant kind and expiry before deciding."
+        },
+        {
+          "optionId": "n04b02_11_representation",
+          "text": "Encode a standing grant with a far-future expiry and use one shared date comparison."
+        },
+        {
+          "optionId": "n04b02_11_split",
+          "text": "Expose isTemporaryEffective and isStandingEffective and make the checker choose."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_11_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The grants share a query but define effectiveness differently. Implementing that query per grant keeps the access checker independent of grant kind and representation.",
+      "details": {
+        "mechanismOrProperty": "A common polymorphic query gives callers one meaningfully stable result while variants implement their rule.",
+        "scenarioApplication": "The checker invokes isEffective at the access instant and uses the returned answer for either grant form.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. Every access checker must know each grant variant and can diverge as grant policies evolve. That invents a sentinel value and hides the difference between no expiry and a real expiration instant. This gives the checker policy-specific methods despite its existing Grant contract and common query need.",
+        "boundaryOrTradeoff": "One implementation is sufficient only if both grant forms have identical expiry semantics; they do not here.",
+        "transfer": "Move rule selection into the object whose variant defines the rule."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_11_branch",
+          "text": "Every access checker must know each grant variant and can diverge as grant policies evolve."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_11_representation",
+          "text": "That invents a sentinel value and hides the difference between no expiry and a real expiration instant."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_11_split",
+          "text": "This gives the checker policy-specific methods despite its existing Grant contract and common query need."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i030",
+    "prompt": "A signing request may use either the in-house signer or a partner signer. Each accepts an immutable revision digest and returns Sealed, Rejected, or Unknown under the same request ID. The notary workflow must reconcile Unknown without knowing transport details. What should it invoke?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_12_dispatch",
+          "text": "A seal(revisionDigest, requestId) operation on the Signer contract, with common outcome variants."
+        },
+        {
+          "optionId": "n04b02_12_branch",
+          "text": "Let the notary workflow call each provider SDK and map its response itself."
+        },
+        {
+          "optionId": "n04b02_12_representation",
+          "text": "Expose each provider’s internal response code and ask the notary to interpret it."
+        },
+        {
+          "optionId": "n04b02_12_split",
+          "text": "Use sealInternal and sealExternal as distinct workflow operations."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_12_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The signing request and reconciliation outcomes have a common contract even though transports differ. A Signer operation lets the workflow reconcile Unknown without parsing provider internals.",
+      "details": {
+        "mechanismOrProperty": "Runtime dispatch supports different implementations behind one input and result contract.",
+        "scenarioApplication": "The selected signer processes the same revision digest/request ID, and the workflow handles the returned shared outcome.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. The workflow becomes coupled to provider transport and must be updated whenever a signer is added. Provider-specific codes are not the shared outcome contract and would leak implementation details to the workflow. The request is the same signing action; caller selection by provider defeats the stated uniform reconciliation path.",
+        "boundaryOrTradeoff": "A provider adapter may translate each SDK result internally; the common workflow should not carry that translation.",
+        "transfer": "Normalize implementation-specific outcomes at the implementation boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_12_branch",
+          "text": "The workflow becomes coupled to provider transport and must be updated whenever a signer is added."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_12_representation",
+          "text": "Provider-specific codes are not the shared outcome contract and would leak implementation details to the workflow."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_12_split",
+          "text": "The request is the same signing action; caller selection by provider defeats the stated uniform reconciliation path."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i031",
+    "prompt": "Seller payouts can go through either a bank processor or a wallet processor. Both accept one settled payout ID and return a transfer reference or a retryable failure; each exposes different provider fields. The finance workflow calls release(id). How should it remain independent of provider kind?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_13_dispatch",
+          "text": "Dispatch release(id) on a PayoutProcessor selected for that payout."
+        },
+        {
+          "optionId": "n04b02_13_branch",
+          "text": "Put a bank-versus-wallet switch in the finance workflow and build the provider request there."
+        },
+        {
+          "optionId": "n04b02_13_representation",
+          "text": "Add bankAccount and walletAddress to every Payout and let callers fill the relevant field."
+        },
+        {
+          "optionId": "n04b02_13_split",
+          "text": "Keep two complete payout workflows, one per processor."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_13_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Both processors accept the same stable payout identity and produce a common outcome. A selected processor can encapsulate the provider-specific request details.",
+      "details": {
+        "mechanismOrProperty": "Use polymorphic dispatch for implementation substitution while the finance workflow keeps one operation.",
+        "scenarioApplication": "The workflow calls release with the payout ID; the bank or wallet implementation translates it to its provider format.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. Provider fields and retry behavior then become dependencies of the finance workflow. This mixes mutually exclusive provider representation into the payout contract and requires callers to interpret provider kind. The scenario shares settlement checks and result handling; only the transfer implementation varies.",
+        "boundaryOrTradeoff": "Separate workflows are justified if the whole business process differs, but the prompt says its shared checks and outcomes are the same.",
+        "transfer": "Keep stable orchestration in the caller and isolate only the varying external operation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_13_branch",
+          "text": "Provider fields and retry behavior then become dependencies of the finance workflow."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_13_representation",
+          "text": "This mixes mutually exclusive provider representation into the payout contract and requires callers to interpret provider kind."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_13_split",
+          "text": "The scenario shares settlement checks and result handling; only the transfer implementation varies."
+        }
+      ]
+    },
+    "difficulty": "foundational",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i032",
+    "prompt": "Transit notices share an effective-time ordering contract. A routine platform change updates one stop; an emergency notice blocks boarding at several stops until a replacement notice is issued. Passenger clients call applyTo(board) on a Notice. Which design is appropriate?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_14_dispatch",
+          "text": "Give each Notice subtype its own applyTo(board) behavior and preserve the shared effective-time contract."
+        },
+        {
+          "optionId": "n04b02_14_branch",
+          "text": "Have each passenger client inspect notice kind and decide which stops to update."
+        },
+        {
+          "optionId": "n04b02_14_representation",
+          "text": "Implement only a single-stop update in the Notice base class and have callers separately block emergency stops."
+        },
+        {
+          "optionId": "n04b02_14_split",
+          "text": "Expose mutable blocked flags on each stop and let callers toggle them when notices arrive."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_14_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The notice variants share an application operation but have different effects on the board. Dispatching that operation by notice subtype keeps passenger callers uniform.",
+      "details": {
+        "mechanismOrProperty": "A common operation can preserve a shared contract while implementations specialize effects for each notice kind.",
+        "scenarioApplication": "The board receives notices in effective order; routine notices update one stop and emergency notices apply their multi-stop block behavior.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. That duplicates the same notice interpretation across passenger clients and makes each know concrete variants. Emergency semantics then depend on caller-side extra logic rather than the same notice operation. The client must reproduce notice ordering and can apply a stale update directly to stop state.",
+        "boundaryOrTradeoff": "If all notices had the same one-stop effect, a single implementation would suffice. The prompt defines a real behavior difference.",
+        "transfer": "Place variant-specific effects behind a shared operation when callers should not branch on kind."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_14_branch",
+          "text": "That duplicates the same notice interpretation across passenger clients and makes each know concrete variants."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_14_representation",
+          "text": "Emergency semantics then depend on caller-side extra logic rather than the same notice operation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_14_split",
+          "text": "The client must reproduce notice ordering and can apply a stale update directly to stop state."
+        }
+      ]
+    },
+    "difficulty": "foundational_boundary",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i033",
+    "prompt": "Two meter implementations report discharge availability: a smart meter can reserve by instant interval, while a legacy meter accepts only fixed half-hour slots. The service caller requests an interval and must receive Available or UnsupportedSlot before creating a commitment. Which contract should it call?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_15_dispatch",
+          "text": "Call canReserve(interval) on Meter; each implementation evaluates its supported interval form and returns the shared result."
+        },
+        {
+          "optionId": "n04b02_15_branch",
+          "text": "Cast to SmartMeter for interval requests and special-case the legacy meter."
+        },
+        {
+          "optionId": "n04b02_15_representation",
+          "text": "Round every requested interval into half-hour slots before calling all meters."
+        },
+        {
+          "optionId": "n04b02_15_split",
+          "text": "Expose reserveInterval and reserveHalfHour and make the service choose from a model field."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_15_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Both meters answer the same capability question but support different interval forms. A common query can return the required available/unsupported outcome through runtime dispatch.",
+      "details": {
+        "mechanismOrProperty": "Subtype implementations can specialize capability behavior while callers rely on one result contract.",
+        "scenarioApplication": "The service asks the selected Meter about the requested interval; the legacy implementation reports unsupported slots without silently rounding.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. The service owns concrete hardware knowledge and needs another branch for every meter variant. Rounding changes the requested interval, and the prompt requires unsupported requests to be reported rather than silently altered. The service still decides based on concrete model type, instead of asking the Meter implementation whether it supports the requested interval.",
+        "boundaryOrTradeoff": "A normalization layer is useful only if changing the requested interval is allowed. The prompt specifically requires an unsupported result.",
+        "transfer": "When variants support different inputs, expose that difference through a shared capability result rather than caller casts."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_15_branch",
+          "text": "The service owns concrete hardware knowledge and needs another branch for every meter variant."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_15_representation",
+          "text": "Rounding changes the requested interval, and the prompt requires unsupported requests to be reported rather than silently altered."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_15_split",
+          "text": "The service still decides based on concrete model type, instead of asking the Meter implementation whether it supports the requested interval."
+        }
+      ]
+    },
+    "difficulty": "intermediate",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i034",
+    "prompt": "A caption provider may return a complete timestamped chunk or an unavailable result. The studio must keep the stream’s timing contract, and two provider implementations have different request formats. Which object should translate those formats?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_16_dispatch",
+          "text": "The selected CaptionProvider implementation should translate its request format behind the common transcribe(chunk) operation."
+        },
+        {
+          "optionId": "n04b02_16_branch",
+          "text": "Put both request formats in the studio and branch before every transcription call."
+        },
+        {
+          "optionId": "n04b02_16_representation",
+          "text": "Pass an untyped map of provider fields through the stream to whichever provider is active."
+        },
+        {
+          "optionId": "n04b02_16_split",
+          "text": "Create a different CaptionStudio subtype for every provider and duplicate stream timing behavior."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_16_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The provider’s request format varies, while the stream caller’s chunk/result expectation stays fixed. Translation belongs inside the selected provider implementation.",
+      "details": {
+        "mechanismOrProperty": "Dispatch through a shared provider operation keeps transport variation behind a stable type contract.",
+        "scenarioApplication": "The studio submits one chunk; the provider converts it to its own request format and returns the timestamped common result.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. The studio becomes coupled to provider-specific requests, even though its input chunk and output contract are stable. The common stream contract loses typed inputs and exposes implementation details to unrelated callers. The provider’s transport differs, but the studio’s stream contract is unchanged; duplicating the studio would couple unrelated timing behavior to provider choice.",
+        "boundaryOrTradeoff": "A generic map is suitable at an untyped integration boundary, but the studio-to-provider contract can remain typed and explicit.",
+        "transfer": "Keep adapter translation inside the implementation that owns the external format."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_16_branch",
+          "text": "The studio becomes coupled to provider-specific requests, even though its input chunk and output contract are stable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_16_representation",
+          "text": "The common stream contract loses typed inputs and exposes implementation details to unrelated callers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_16_split",
+          "text": "The provider’s transport differs, but the studio’s stream contract is unchanged; duplicating the studio would couple unrelated timing behavior to provider choice."
+        }
+      ]
+    },
+    "difficulty": "intermediate_transfer",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i035",
+    "prompt": "A roster has multiple volunteer categories. All assignments use the same swap command; a specialist assignment additionally requires a certification match. The manager should not branch on category; it asks both assignments whether the pair is eligible, and rejected swaps return the blocking assignment. How should the eligibility check vary?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_17_dispatch",
+          "text": "Dispatch isEligibleWith(other) through the assignment’s shared contract, with specialized assignments adding the certification condition."
+        },
+        {
+          "optionId": "n04b02_17_branch",
+          "text": "Have the manager inspect assignment categories and apply the extra certification rule."
+        },
+        {
+          "optionId": "n04b02_17_representation",
+          "text": "Expose swapSpecialist only and let the manager choose based on category."
+        },
+        {
+          "optionId": "n04b02_17_split",
+          "text": "Store a hasCertification boolean on every assignment and ask callers to combine flags."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_17_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The swap operation is common but eligibility has one subtype-specific condition. Dispatching the check on the assignment preserves the manager’s single call and the specialized rule.",
+      "details": {
+        "mechanismOrProperty": "Polymorphism places varying eligibility behavior behind the shared assignment contract.",
+        "scenarioApplication": "The manager submits the same swap request; the ordinary or specialist assignment evaluates the applicable requirements and reports the blocker.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. This embeds category-specific policy in the manager and duplicates it for any other swap client. The caller must know the subtype and select a separate action even though all assignments share one swap operation. The caller now interprets qualification representation and may forget the extra condition in one workflow.",
+        "boundaryOrTradeoff": "A central rule engine is an alternative when policies are independently composed or configured; this case defines the qualification as assignment behavior.",
+        "transfer": "Vary a focused operation at the subtype when a subtype adds a real condition to the shared behavior."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_17_branch",
+          "text": "This embeds category-specific policy in the manager and duplicates it for any other swap client."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_17_representation",
+          "text": "The caller must know the subtype and select a separate action even though all assignments share one swap operation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_17_split",
+          "text": "The caller now interprets qualification representation and may forget the extra condition in one workflow."
+        }
+      ]
+    },
+    "difficulty": "advanced_tradeoff",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  },
+  {
+    "trackId": "object-oriented-design-interview",
+    "nodeId": "interfaces_polymorphism_substitution_and_extensibility",
+    "mentalUnitId": "OOD-N04-B02",
+    "questionId": "ood-n04-b02-i036",
+    "prompt": "A route edit may target either a simple path or a constrained route with protected segments. Both accept a proposed geometry and return Accepted or a conflict set; protected routes reject any proposal that changes a protected segment. The map client invokes apply(edit). Which design preserves one caller contract?",
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "n04b02_18_dispatch",
+          "text": "Implement apply(edit) on Route so constrained routes add their protected-segment check before accepting."
+        },
+        {
+          "optionId": "n04b02_18_branch",
+          "text": "Make the map client compare route kinds and protected segments before calling a generic writer."
+        },
+        {
+          "optionId": "n04b02_18_representation",
+          "text": "Expose protected segment IDs and let all callers decide whether to block edits."
+        },
+        {
+          "optionId": "n04b02_18_split",
+          "text": "Use applySimple and applyConstrained and require the caller to select one by route class."
+        }
+      ]
+    },
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n04b02_18_dispatch"
+    },
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Both routes share the same edit/result contract; the constrained subtype adds a specific acceptance condition. Implementing that condition in apply keeps the map client uniform.",
+      "details": {
+        "mechanismOrProperty": "A subtype can specialize the implementation while honoring the common operation’s outcome shape.",
+        "scenarioApplication": "The map client submits an edit once; the route implementation accepts or returns conflicts according to its constraints.",
+        "errorCorrection": "The alternatives place variant knowledge in callers, leak concrete representation, or split a shared call. The client becomes responsible for route-specific conflict policy and can be bypassed by another writer. That exports the route’s internal policy data and distributes the acceptance rule across callers. The route kind leaks into the client even though the prompt asks for one apply operation and common result.",
+        "boundaryOrTradeoff": "If protected segments are administered independently of Route, a separate policy may be justified; the case assigns this constraint to the route.",
+        "transfer": "Keep variant-specific acceptance checks with the subtype that owns them."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_18_branch",
+          "text": "The client becomes responsible for route-specific conflict policy and can be bypassed by another writer."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_18_representation",
+          "text": "That exports the route’s internal policy data and distributes the acceptance rule across callers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n04b02_18_split",
+          "text": "The route kind leaks into the client even though the prompt asks for one apply operation and common result."
+        }
+      ]
+    },
+    "difficulty": "advanced_failure",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.12",
+      "https://docs.oracle.com/javase/tutorial/java/IandI/polymorphism.html"
+    ]
+  }
+]
