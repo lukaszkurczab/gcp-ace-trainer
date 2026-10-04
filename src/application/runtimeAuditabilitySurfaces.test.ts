@@ -34,7 +34,7 @@ test("active-session resume uses the single recommendation card and a separate c
 test("Home uses the approved compact presentation without changing recommendation ownership", () => {
   const home = source("src/features/home/tabs/HomeTab.tsx");
 
-  assert.match(home, /trackIconContainer:[\s\S]*?height:\s*22/);
+  assert.match(home, /trackIconContainer:[\s\S]*?height:\s*32/);
   assert.match(home, /decisionCard:[\s\S]*?borderColor:\s*palette\.navigation\.active[\s\S]*?borderRadius:\s*22/);
   assert.match(home, /decisionHeading:\s*\{[\s\S]*?alignItems:\s*"center"/);
   assert.match(home, /decisionIconTile:[\s\S]*?backgroundColor:\s*palette\.surfaceInput[\s\S]*?height:\s*44[\s\S]*?width:\s*44/);

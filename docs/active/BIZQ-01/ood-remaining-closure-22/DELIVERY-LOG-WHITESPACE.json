@@ -1,0 +1,21 @@
+{
+  "scope": "Actual failed framework log whitespace retained with raw immutable evidence; no code/contract/state whitespace defect",
+  "warnings": [
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5166: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5362: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5371: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5392: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5393: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5416: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5420: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5428: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5484: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5586: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5595: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5608: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5634: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:5811: trailing whitespace.",
+    "docs/active/BIZQ-01/ood-remaining-closure-22/ROOT-APP-STATIC.log:6245: trailing whitespace."
+  ],
+  "logSha256": "5d1278ff1912413887c4549052dc928a08e0c64a12c8deef9349253e89f40008"
+}

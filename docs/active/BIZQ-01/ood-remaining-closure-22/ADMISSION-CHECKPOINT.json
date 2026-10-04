@@ -1,0 +1,17 @@
+{
+  "commit": "5a8e895379bb0abcbb5d7a1dc89fcf02167a823e",
+  "sourceCommit": "7648782e57ef6927b90c687f7ae67c62b8ae5ed2",
+  "consumerCommit": "9dae1f713a39f9d8d0c71b113d7298a08e31adfe",
+  "candidateId": "ba35f8ad99a562858b76d0222f62dcc0c67178f1bc5ee996c76d316b0c701ffd",
+  "scope": "Local delegated admission checkpoint for exact app runtime and artifacts; no deployment/publication or whole package push",
+  "bindings": [
+    {
+      "path": "evidence/admissions/candidate-admission-v3.json",
+      "sha256": "efae5b2294eec41f0a35592c35e207bff3b36334bc44a9a88227f1302d1a4a4a"
+    },
+    {
+      "path": "evidence/admissions/runtime/ba35f8ad99a562858b76d0222f62dcc0c67178f1bc5ee996c76d316b0c701ffd-9dae1f713a39f9d8d0c71b113d7298a08e31adfe.json",
+      "sha256": "f213386bc84f5061b18d2363cef43f64a7f165a906e42e8fe135f2805d6f2dc7"
+    }
+  ]
+}

@@ -1,0 +1,209 @@
+{
+  "result": "ROOT_VERIFICATION_PASS",
+  "scope": "N06/22 exact source/consumer/admission/provenance and required static verification; independent final package QA and ordinary push pending; no native/Premium/full01/externalrelease acceptance",
+  "sourceCommit": "7648782e57ef6927b90c687f7ae67c62b8ae5ed2",
+  "consumerCommit": "9dae1f713a39f9d8d0c71b113d7298a08e31adfe",
+  "contentHead": "5a8e895379bb0abcbb5d7a1dc89fcf02167a823e",
+  "appHead": "9dae1f713a39f9d8d0c71b113d7298a08e31adfe",
+  "webHead": "0d83819473bdb48b3e36307055e7cf900b6ce856",
+  "candidateId": "ba35f8ad99a562858b76d0222f62dcc0c67178f1bc5ee996c76d316b0c701ffd",
+  "runtime": "Node v22.22.3",
+  "checks": {
+    "producerCanonical": "176 matching initial PASS plus targeted3/3 after clean checkpoint resolves2 failures; not fresh178/178run",
+    "consumer": {
+      "tests": 9,
+      "pass": 9,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "postAdmission": {
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "appStatic": {
+      "tests": 1871,
+      "pass": 1867,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 4
+    },
+    "surfaceAssertionResolution": {
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "boundaries": "content/runtime privacy passed",
+    "releaseGate": "local verified artifacts PASS",
+    "exportCheck": "PASS",
+    "webVerifyLocal": "PASS"
+  },
+  "preservation": {
+    "verdict": "PASS",
+    "scope": "N06/22 consumer and demo preservation; no native/full BIZQ acceptance",
+    "contentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-22",
+    "reviewedN06": 180,
+    "preservedOtherOOD": 1233,
+    "unchangedArtifacts": 8,
+    "historicalLockSha256": "d5058e8678ceab38fbdb3fc6ea423b80e21571885549df9b42dd6e3916312195",
+    "oodArtifactSha256": "d6a8ed4f946eb7e90690c0d6e2efe1cb9a3a8ecfa9217a487b612054acc4129d",
+    "demoPayloadsUnchanged": true,
+    "changes": [
+      {
+        "questionId": "alg-complexity-time-005",
+        "changedFields": [
+          "admissionSha256",
+          "appContentLockSha256",
+          "candidateId",
+          "producerCommit",
+          "releaseId",
+          "releaseLockSha256",
+          "runtimeEvidenceSha256",
+          "sourceReleaseSha256"
+        ]
+      },
+      {
+        "questionId": "aws-saa-c03-architecture-001-odk096",
+        "changedFields": [
+          "admissionSha256",
+          "appContentLockSha256",
+          "candidateId",
+          "producerCommit",
+          "releaseId",
+          "releaseLockSha256",
+          "runtimeEvidenceSha256",
+          "sourceReleaseSha256"
+        ]
+      }
+    ]
+  },
+  "files": [
+    {
+      "repository": "app",
+      "path": "src/content/bizq01OodNodeClosure22.test.ts",
+      "sha256": "0bf638a4680822c6d08bc3e88f1a65248ce9822bd4355fcfd6eb921f86dd5e20"
+    },
+    {
+      "repository": "app",
+      "path": "src/content/bizq01OodNodeClosure21.test.ts",
+      "sha256": "413265be4e868fdf1cb8f86a5d683d2c551baa8bbd9ec462aa48795ae2faf91d"
+    },
+    {
+      "repository": "app",
+      "path": "src/application/runtimeAuditabilitySurfaces.test.ts",
+      "sha256": "22dde32e0b046575bc411c8cd363167de5d4c3a645bf0b2b5530e06dbe2d3ff8"
+    },
+    {
+      "repository": "app",
+      "path": "src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts",
+      "sha256": "3baf05de415cc9a54454b534ad6a1d33ad8f93597cbbec3a16aa6b5f34e9f61e"
+    },
+    {
+      "repository": "app",
+      "path": "src/content/generated/canonical-content/object-oriented-design-interview.json",
+      "sha256": "d6a8ed4f946eb7e90690c0d6e2efe1cb9a3a8ecfa9217a487b612054acc4129d"
+    },
+    {
+      "repository": "app",
+      "path": "src/content/generated/canonical-content/content-lock.json",
+      "sha256": "e693efb6dd4a59a3105fe45ce1fdb9031913c2f235c0cc9a0215d6643b25060c"
+    },
+    {
+      "repository": "app",
+      "path": "integration/contracts/content-release/release.lock.json",
+      "sha256": "8620d09ea044d4ac37bad664adc59194c5bd7083c41e52702abc1dd6c46d92a7"
+    },
+    {
+      "repository": "app",
+      "path": "integration/contracts/content-release/release.lock.historical-0024.json",
+      "sha256": "d5058e8678ceab38fbdb3fc6ea423b80e21571885549df9b42dd6e3916312195"
+    },
+    {
+      "repository": "content",
+      "path": "scripts/content/verify-migration.mjs",
+      "sha256": "a40af4fab77754dab1690375081ce55be35f7d20200546c8c9c20e1b013af3e6"
+    },
+    {
+      "repository": "content",
+      "path": "evidence/business-quality/bizq-01-ood-node-closure-22.json",
+      "sha256": "5987128d427d0362b2fe83f6ab62bf2483169374c51941bf23fc3b192f0e089c"
+    },
+    {
+      "repository": "content",
+      "path": "evidence/admissions/candidate-admission-v3.json",
+      "sha256": "efae5b2294eec41f0a35592c35e207bff3b36334bc44a9a88227f1302d1a4a4a"
+    },
+    {
+      "repository": "content",
+      "path": "evidence/admissions/runtime/ba35f8ad99a562858b76d0222f62dcc0c67178f1bc5ee996c76d316b0c701ffd-9dae1f713a39f9d8d0c71b113d7298a08e31adfe.json",
+      "sha256": "f213386bc84f5061b18d2363cef43f64a7f165a906e42e8fe135f2805d6f2dc7"
+    },
+    {
+      "repository": "web",
+      "path": "src/generated/demoQuestions.json",
+      "sha256": "3c1be96c7d43c4d78218dd21a5a8470eb7cbf726d5694e04c370030003c7591f"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "ROOT-PRODUCER-CANONICAL.json",
+      "sha256": "684daabbc5cba5a2b1f5c0758aa9434b214d6ec0e01835c5c74a169cfca41d62"
+    },
+    {
+      "path": "ROOT-CANONICAL-SNAPSHOT-RESOLUTION.log",
+      "sha256": "00704756ffa90a4f06883c3b0f37d8f95627516829c46fd87a53f029f9615b9b"
+    },
+    {
+      "path": "ROOT-APP-STATIC-RESOLVED.log",
+      "sha256": "5f60b7e3e2a809645d2746e7dc98ef3472e56daae91eaf5cc34a6b12e587891b"
+    },
+    {
+      "path": "ROOT-POST-ADMISSION.log",
+      "sha256": "c6b26237c5cc82feb66ab4908b984987c69c3548b37408dc83245cdefda17898"
+    },
+    {
+      "path": "ROOT-CONSUMER-GREEN.log",
+      "sha256": "2f86bbbca692c7cc6c6bbabe3a8bc110815e39c6b19d96e72303f4fdf7542a34"
+    },
+    {
+      "path": "ROOT-CONSUMER-DEMO-PRESERVATION.json",
+      "sha256": "d86b92ec84a98470a565759f5b03d2f464434bb899551da896758aa187d819e1"
+    },
+    {
+      "path": "ROOT-WEB-VERIFY.log",
+      "sha256": "71aa232cd9e8925172624a3cb6f7d0fd79e6743f5c1cf9f47fd7e77988c050ed"
+    },
+    {
+      "path": "ROOT-DEMO-EXPORT-CHECK.log",
+      "sha256": "5358d2794deb8fade7c72540ed24d17449391af08f474e244b0055dbb22f26ab"
+    },
+    {
+      "path": "ROOT-LOCAL-RELEASE-GATE.log",
+      "sha256": "e9f9b0dff2a6c6e13abb552dd232a0ccdb1f9c0e49bd153ca651d279af627a5f"
+    },
+    {
+      "path": "ROOT-ADMISSION.log",
+      "sha256": "2efd0aa8d267f1c7e1b19dc5527416ba74e9f0a13094e32db175833d4ec0d439"
+    },
+    {
+      "path": "ROOT-SURFACE-ASSERTION-RESOLUTION.json",
+      "sha256": "cdc3696086c8b0fa97fe75a327548f67e2234ca0756b8a5ca26e3b809e06f7ee"
+    },
+    {
+      "path": "ROOT-REVIEW18-CURRENT-ACCEPTANCE.json",
+      "sha256": "05a9d0f3e93099dd3d005294b765f8ed24a92eac554ac6062cd55be2cfbca72d"
+    }
+  ],
+  "limits": [
+    "No mobile/device/native/Premium proof from static checks",
+    "Whole BIZQ01 partial; remaining OOD N07\u201309 468 after this package accepted, other banks/runner/PO dependencies remain",
+    "Foreign completed icon change preserved; only obsolete testheight expectation22\u219232 aligned, original static failure retained",
+    "Immutable historical report/log whitespace preserved without code changes",
+    "Admission binds accepted consumer9dae; later test/doc commit does not mutate admitted runtime/lock bytes"
+  ]
+}
