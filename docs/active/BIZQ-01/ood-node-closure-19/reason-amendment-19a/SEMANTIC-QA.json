@@ -1,0 +1,254 @@
+{
+  "schemaVersion": "bizq01-reason-amendment-19a-semantic-qa-v1",
+  "verdict": "PASS",
+  "manifestSha256": "725750aa6c8ebdba357f2e892e7c6aa94c45202a97c677d41284b8d063e199bf",
+  "proposalSha256": "76fd88c540bd1b6ffe83eb2034cbf565b2ac030454e80511e56a341555edfa15",
+  "scope": {
+    "itemsReviewed": 25,
+    "sourceFiles": 3,
+    "sourceArrays": [
+      "OOD-N03-B02.json",
+      "OOD-N03-B03.json",
+      "OOD-N03-B08.json"
+    ]
+  },
+  "criterion": {
+    "file": "docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "section": "BIZQ-01 §4.4",
+    "interpretation": "Reason must identify the decisive condition and decision; it must not paraphrase the correct option or consist of praise. Prompt vocabulary may recur when it is needed to explain the scenario."
+  },
+  "method": "Independently read each complete current question object, including prompt, constraints, options and stable IDs, answer, old Reason, Details, wrong-option feedback, and relevant scenario facts. Compared each proposed Reason with the visible decisive facts and unchanged keyed decision. Verified current source file hashes, baseline whole-object hashes, beforeReason values, and manifest intended decisions against the actual content checkout.",
+  "summary": {
+    "pass": 25,
+    "revise": 0,
+    "changedField": "feedback.reason only; no question/option/decision changes assessed"
+  },
+  "items": [
+    {
+      "questionId": "ood-n03-b02-i019",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "a3d8bf23f75cc8504788d2191a61e5fb7b2be21b1b6b3feb54e40e30ea47eb5b",
+      "proposedReason": "Callbacks require Session→Provider, while the operations screen starts at Provider and cannot use an index. The reassignment transaction is the stated consistency boundary for that reverse path.",
+      "verdict": "PASS",
+      "finding": "Names the two required client directions and the transaction boundary the prompt explicitly supplies; it explains why both traversals are needed."
+    },
+    {
+      "questionId": "ood-n03-b02-i020",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "3686e6deaccc46c7d9d502d98a36f5b8cbd26aed7fd958f867e4c5596bba4810",
+      "proposedReason": "Assignment detail follows its stored volunteer reference, but shift listings begin at Shift and the profile lookup is repository-backed. No named client starts at Volunteer to enumerate assignments.",
+      "verdict": "PASS",
+      "finding": "Connects assignment detail to its stored reference and distinguishes shift listing/profile lookup paths, matching the prompt’s client routes."
+    },
+    {
+      "questionId": "ood-n03-b02-i021",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "c10adc9f35055814d1a1e26b5e9b0e2cdc87227431f0b20b462908d64d762c8b",
+      "proposedReason": "Edit detail and evaluation start from the captured Edit and need its exact revision; the reverse lookup is already a query by parent ID. No model client traverses from a revision to its edits.",
+      "verdict": "PASS",
+      "finding": "Uses the captured exact revision and existing parent-ID query to explain why only the Edit-rooted model path is needed."
+    },
+    {
+      "questionId": "ood-n03-b02-i022",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "e66f38c86ec7174d3aa7b768f89dcbc0d342abc575d47d807e79ddb84c8ac338",
+      "proposedReason": "Eligibility evaluation begins at Character and reads its current revision, while claim lookup and rule-version screens use separate routes. No client needs a campaign-side character collection.",
+      "verdict": "PASS",
+      "finding": "Ties character-rooted eligibility to its revision and separates claims/rule screens, supporting the one-way association without invented clients."
+    },
+    {
+      "questionId": "ood-n03-b02-i023",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "117a79a861de9bd0b76c2651af69e7eca4c3862ccd944622917a6742270cf152",
+      "proposedReason": "Shipment detail and dispatch begin at opposite ends, and dispatch cannot scan the fleet. The reassignment transaction is the explicit mechanism for keeping the required reverse membership coherent.",
+      "verdict": "PASS",
+      "finding": "Identifies clients starting from both ends and the stated reassignment transaction as the consistency boundary."
+    },
+    {
+      "questionId": "ood-n03-b02-i024",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "9b8c40b7825b91d952587bf3ab0236132dce7f05d0eaee60e92d3ac492eadde7",
+      "proposedReason": "Posting follows each Allocation to its exact Account, while the history page already has a durable account-keyed index. That query serves the reverse lookup without duplicating the collection on Account.",
+      "verdict": "PASS",
+      "finding": "Explains why posting needs Allocation→Account while the durable account-keyed index supplies history lookup."
+    },
+    {
+      "questionId": "ood-n03-b02-i025",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "56d5d470744c1212468bb0858a5f4701187a58afd97fc4c93590bcb4ff6a7433",
+      "proposedReason": "Forfeit handling starts from Match and follows its Bracket reference; bracket rendering already obtains matches through the slot index. Neither path requires a reverse object list.",
+      "verdict": "PASS",
+      "finding": "Relates the forfeit traversal to Match→Bracket and the slot-indexed repository to reverse listing."
+    },
+    {
+      "questionId": "ood-n03-b02-i026",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "7c7b84b9bf6b6387c0189200e10ede3eae771a24a91146bea493350d65fc2703",
+      "proposedReason": "The inspector starts at Item and report detail starts at InspectionReport, so each screen needs a path from a different endpoint. The atomic writer is the stated mechanism for keeping both links aligned.",
+      "verdict": "PASS",
+      "finding": "Uses the two named screen starting points and atomic writer to justify paired navigation and consistency."
+    },
+    {
+      "questionId": "ood-n03-b02-i027",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "047ba37331537f86b9f400b0790471f21e91c3588f7157712900bdc2693ef252",
+      "proposedReason": "The provenance viewer starts from Snapshot and needs the exact Dataset and CodeVersion it used, whereas those artifact screens never enumerate snapshots. Version references provide that provenance without reverse collections.",
+      "verdict": "PASS",
+      "finding": "Connects exact input provenance to Snapshot-rooted references and absence of artifact-rooted clients."
+    },
+    {
+      "questionId": "ood-n03-b02-i028",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "b808435e9ee6ecea69e4b8837a59d1acacf59d18d7ef4fd5d9d28aed85e39ee5",
+      "proposedReason": "The review panel starts at DocumentRevision to list annotations; detail starts at Annotation to reach its revision and author. Indexed author search handles the author-rooted lookup, so no author-side list is needed.",
+      "verdict": "PASS",
+      "finding": "Separates revision/annotation detail traversals from author search already served by the index."
+    },
+    {
+      "questionId": "ood-n03-b02-i029",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "af3ba0c169cb631cd77cbab7c8851e216a19736c648090a91124f871a9f2472f",
+      "proposedReason": "Inspection comparison begins at Submission and follows its recorded RouteRevision; compliance search uses submission ID and the route editor has no submission list. Only the submission provenance path needs object navigation.",
+      "verdict": "PASS",
+      "finding": "Explains submission-rooted comparison to the exact baseline and why the other lookups do not require reverse navigation."
+    },
+    {
+      "questionId": "ood-n03-b02-i030",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "a1a0c88fb4dcb3d421e82577b46ac89d316f081a4542a3e2384971c76092e79c",
+      "proposedReason": "Order audit traverses to its issues, and issue correction follows back to Order, giving both ends a named direct consumer. One writer maintains those links when recording a new issue.",
+      "verdict": "PASS",
+      "finding": "Names both direct client traversals and the single writer that maintains the paired relationship."
+    },
+    {
+      "questionId": "ood-n03-b02-i031",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "77d68195bc37ce9982a80cd246bc3e546648446ef76bd84636e878f3782760d2",
+      "proposedReason": "Door access checks start from Door, while badge detail starts from BadgeAssignment; both need a direct path across the association. Holder searches are directory-backed and add no third model traversal.",
+      "verdict": "PASS",
+      "finding": "Identifies Door and BadgeAssignment as required traversal roots and correctly keeps holder lookup with the directory."
+    },
+    {
+      "questionId": "ood-n03-b02-i033",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "30acd0f5c98a105735e28b28686746d0e75c4e4571bde115fbd1b52282bfbdfb",
+      "proposedReason": "The calendar starts at Room while booking detail starts at Booking, so each needs direct access to the other end. The move operation updates both memberships atomically, while canceled records remain historical.",
+      "verdict": "PASS",
+      "finding": "Connects calendar/detail traversal needs to the atomic move operation; retained canceled history is consistent with the prompt."
+    },
+    {
+      "questionId": "ood-n03-b02-i034",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "79e3fa3469399ebd2acd71cc76dd535d86876c2844d1357d981dcae8d9d51b57",
+      "proposedReason": "The command guard begins at Exhibit and needs its policy version; policy lookup is registry-backed, and policy screens do not enumerate exhibits. No stated client traverses from policy to consumers.",
+      "verdict": "PASS",
+      "finding": "Explains the exhibit-rooted guard and shared policy registry without adding a policy-to-exhibits client."
+    },
+    {
+      "questionId": "ood-n03-b02-i036",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "beforeWholeObjectSha256": "940ff1c078b393e60abd18048e361efb834b93f0662c0ca37285e19fa44d7444",
+      "proposedReason": "The timeline starts at Conversation and event detail starts at EscalationEvent, so both paths have named consumers. The writer maintains them transactionally; staff lookup remains directory-backed.",
+      "verdict": "PASS",
+      "finding": "Names timeline and event-detail traversal directions, their transaction owner, and separate directory lookup."
+    },
+    {
+      "questionId": "ood-n03-b03-i019",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "beforeWholeObjectSha256": "265e7d5729ec654b38ed87265e22ffb8ca1f400de927217cdbbf72aad49def5e",
+      "proposedReason": "The grant must stop authorizing at expiry, but its retained ID and approval timestamps remain audit evidence. Expiring authority therefore does not mean deleting the grant record.",
+      "verdict": "PASS",
+      "finding": "Distinguishes expiry of authorization from retention of the specifically required audit record."
+    },
+    {
+      "questionId": "ood-n03-b03-i020",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "beforeWholeObjectSha256": "12c3bccc6e615df385e031d996f717ddcded07ddb80e6a0c1f3352a3a23c2178",
+      "proposedReason": "Withdrawal ends the opportunity to add decisions, while signed entries remain compliance evidence. Closing the request and retaining its committed decision records are separate lifecycle effects.",
+      "verdict": "PASS",
+      "finding": "Separates closing future decisions from retaining already signed compliance evidence, exactly as the prompt requires."
+    },
+    {
+      "questionId": "ood-n03-b03-i021",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "beforeWholeObjectSha256": "b6ee760c0061092fad6dd6e6830f70c8ddace3e7d0beb17e1a70aa018fda3e9e",
+      "proposedReason": "Cancel removes session-local drafts, whereas submit copies their values into a permanent Inspection that must outlive the editor. That copy creates a lifecycle boundary the editor cleanup cannot cross.",
+      "verdict": "PASS",
+      "finding": "Identifies cancel versus submit as the lifetime boundary and explains why session cleanup cannot affect the copied permanent record."
+    },
+    {
+      "questionId": "ood-n03-b03-i023",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "beforeWholeObjectSha256": "3503994352c78c10c19b6bb2a6fc70c1a4ebf146d3b756dcc8b9a10a5bab9077",
+      "proposedReason": "Confirmation consumes the one-time secret, but its marker remains to reject replay until the original expiry. The account and recovery audit have separate lifetimes from that challenge state.",
+      "verdict": "PASS",
+      "finding": "Separates immediate secret invalidation from replay-marker expiry and the explicitly retained account/audit."
+    },
+    {
+      "questionId": "ood-n03-b03-i028",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "beforeWholeObjectSha256": "fb94850d2e444a45925ab0f0056aca03fa8271c2fe4d2fe9e76263579ab0154c",
+      "proposedReason": "Confirmation creates the durable Booking; expiry removes only the ten-minute Hold. Treating the Hold as the Booking would leave a booking after the prompt says none exists.",
+      "verdict": "PASS",
+      "finding": "Distinguishes the temporary hold from a durable confirmed Booking and applies the prompt’s two outcomes."
+    },
+    {
+      "questionId": "ood-n03-b03-i030",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "beforeWholeObjectSha256": "6b797bc03002f2025f932939320a6f69a8ae85e482ff75a463cc63840086576e",
+      "proposedReason": "Completion history still points to the exact retired revision, so replacing or deleting that identity would break the retained record. Retirement only removes it from future enrollment.",
+      "verdict": "PASS",
+      "finding": "Uses the exact revision retained by completions to explain why retirement affects enrollment but not historical identity."
+    },
+    {
+      "questionId": "ood-n03-b03-i032",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "beforeWholeObjectSha256": "b2925ccd2aafb0d09f72d352277c35ce68bac7b584415dd38c50a4c492f7e0a4",
+      "proposedReason": "Each event captures the team and deadline at its own time, so rewriting an earlier event would erase historical values. Current assignment belongs on the conversation, with a new event recording the transition.",
+      "verdict": "PASS",
+      "finding": "Relates immutable per-event values to preserving history while current assignment changes on the conversation."
+    },
+    {
+      "questionId": "ood-n03-b03-i033",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "beforeWholeObjectSha256": "b5cd3527945a9c847435fb5a16f354304a735d64a4d646d7cd76d74053f1d90a",
+      "proposedReason": "Existing orders pin prior published revisions, so publishing a successor cannot replace those objects in place. Cancel discards only the unpublished draft; publication has a separate retained-revision outcome.",
+      "verdict": "PASS",
+      "finding": "Uses pinned prior revisions to explain why publishing creates a retained successor and cancellation affects only the draft."
+    },
+    {
+      "questionId": "ood-n03-b08-i021",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B08.json",
+      "sourceSha256": "fc5e6d5a64bc34054bedfd0a6d6ba9b6689a5d99f43d7b640bc14832970853e8",
+      "beforeWholeObjectSha256": "3a0b7ef06b51a41940118e2122b92ebea0492ab3ddec7bbfb5c47be5201d3165",
+      "proposedReason": "The caller must continue reading after the library returns, so library disposal would invalidate that remaining use. Reading a borrowed stream does not transfer disposal responsibility.",
+      "verdict": "PASS",
+      "finding": "Connects continued caller use to the consequence of library disposal and states the borrowed-resource ownership boundary."
+    }
+  ],
+  "limitations": "This accepts only the semantic adequacy of the 25 proposed Reason strings for the frozen payload. It does not accept source integration, proof/verifier behavior, app rendering, admission, native behavior, Premium access, or full BIZQ-01 closure."
+}

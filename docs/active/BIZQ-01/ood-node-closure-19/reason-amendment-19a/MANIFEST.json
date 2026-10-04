@@ -1,0 +1,734 @@
+{
+  "beforeProducerCommit": "1d024bb62328bdb81490d713dc41a6f7d155e9b6",
+  "beforeContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-19",
+  "scope": "Exactly25 feedback.reason-only corrections; all other object fields and identities unchanged",
+  "independentScopeReviewSha256": "9758b8a1159511004b82c6c17d50d2ab02aee7be8cfd38d9e34af58c2be06bcc",
+  "items": [
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i019",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose both traversals only where the session and provider operations each require a direct object path.",
+      "defect": {
+        "questionId": "ood-n03-b02-i019",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Make the Session\u2013Provider association navigable in both directions so each stated client can traverse its required path.",
+        "reason": "Make the Session\u2013Provider association navigable in both directions so each stated client can traverse its required path.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Make the Session\u2013Provider association navigable in both directions so each stated client can traverse its required path.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "a3d8bf23f75cc8504788d2191a61e5fb7b2be21b1b6b3feb54e40e30ea47eb5b",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i020",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose the stored volunteer reference because assignment detail follows it, while keeping profile listing repository-backed.",
+      "defect": {
+        "questionId": "ood-n03-b02-i020",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Expose Assignment\u2192Volunteer; do not add Volunteer\u2192Assignments solely for the shift screen.",
+        "reason": "Expose Assignment\u2192Volunteer; do not add Volunteer\u2192Assignments solely for the shift screen.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Expose Assignment\u2192Volunteer; do not add Volunteer\u2192Assignments solely for the shift screen.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "3686e6deaccc46c7d9d502d98a36f5b8cbd26aed7fd958f867e4c5596bba4810",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i021",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Keep edit-to-parent traversal and use the existing query for reverse edit lookup.",
+      "defect": {
+        "questionId": "ood-n03-b02-i021",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Keep Edit\u2192RouteRevision navigable and omit RouteRevision\u2192Edits from the object association.",
+        "reason": "Keep Edit\u2192RouteRevision navigable and omit RouteRevision\u2192Edits from the object association.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Keep Edit\u2192RouteRevision navigable and omit RouteRevision\u2192Edits from the object association.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "c10adc9f35055814d1a1e26b5e9b0e2cdc87227431f0b20b462908d64d762c8b",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i022",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Let a character read its pinned campaign revision without storing a claims collection on the revision.",
+      "defect": {
+        "questionId": "ood-n03-b02-i022",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Make Character\u2192CampaignRevision navigable; keep the claims lookup outside a reverse association field.",
+        "reason": "Make Character\u2192CampaignRevision navigable; keep the claims lookup outside a reverse association field.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Make Character\u2192CampaignRevision navigable; keep the claims lookup outside a reverse association field.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "e66f38c86ec7174d3aa7b768f89dcbc0d342abc575d47d807e79ddb84c8ac338",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i023",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Support both shipment-to-carrier and carrier-to-shipment clients with one coordinated membership update.",
+      "defect": {
+        "questionId": "ood-n03-b02-i023",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Make Shipment\u2013Carrier navigable in both directions and update the inverse membership as part of the reassignment transaction.",
+        "reason": "Make Shipment\u2013Carrier navigable in both directions and update the inverse membership as part of the reassignment transaction.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Make Shipment\u2013Carrier navigable in both directions and update the inverse membership as part of the reassignment transaction.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "117a79a861de9bd0b76c2651af69e7eca4c3862ccd944622917a6742270cf152",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i024",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Use a durable account-keyed query for history instead of storing a redundant inverse object collection.",
+      "defect": {
+        "questionId": "ood-n03-b02-i024",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Keep Allocation\u2192Account navigable and use the existing account-keyed query for history; omit the inverse object reference.",
+        "reason": "Keep Allocation\u2192Account navigable and use the existing account-keyed query for history; omit the inverse object reference.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Keep Allocation\u2192Account navigable and use the existing account-keyed query for history; omit the inverse object reference.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "9b8c40b7825b91d952587bf3ab0236132dce7f05d0eaee60e92d3ac492eadde7",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i025",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose match-to-bracket for the forfeit handler and leave match listing to its indexed repository.",
+      "defect": {
+        "questionId": "ood-n03-b02-i025",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Expose Match\u2192Bracket for the forfeit handler and leave Bracket\u2192Matches to the slot-indexed repository.",
+        "reason": "Expose Match\u2192Bracket for the forfeit handler and leave Bracket\u2192Matches to the slot-indexed repository.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Expose Match\u2192Bracket for the forfeit handler and leave Bracket\u2192Matches to the slot-indexed repository.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "56d5d470744c1212468bb0858a5f4701187a58afd97fc4c93590bcb4ff6a7433",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i026",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Provide both required report/item paths and update them atomically because both screens traverse the link.",
+      "defect": {
+        "questionId": "ood-n03-b02-i026",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Make Item\u2013InspectionReport navigable in both directions and maintain the paired links in the write operation.",
+        "reason": "Make Item\u2013InspectionReport navigable in both directions and maintain the paired links in the write operation.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Make Item\u2013InspectionReport navigable in both directions and maintain the paired links in the write operation.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "7c7b84b9bf6b6387c0189200e10ede3eae771a24a91146bea493350d65fc2703",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i027",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose snapshot-to-input provenance while leaving shared-artifact reverse search to its indexed query.",
+      "defect": {
+        "questionId": "ood-n03-b02-i027",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Expose Snapshot\u2192Dataset and Snapshot\u2192CodeVersion; do not add reverse snapshot collections to either shared artifact.",
+        "reason": "Expose Snapshot\u2192Dataset and Snapshot\u2192CodeVersion; do not add reverse snapshot collections to either shared artifact.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Expose Snapshot\u2192Dataset and Snapshot\u2192CodeVersion; do not add reverse snapshot collections to either shared artifact.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "047ba37331537f86b9f400b0790471f21e91c3588f7157712900bdc2693ef252",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i028",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Support revision-to-annotations and annotation-to-revision/author while avoiding an unneeded author collection.",
+      "defect": {
+        "questionId": "ood-n03-b02-i028",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Expose DocumentRevision\u2192Annotations and Annotation\u2192DocumentRevision/Author; omit Author\u2192Annotations.",
+        "reason": "Expose DocumentRevision\u2192Annotations and Annotation\u2192DocumentRevision/Author; omit Author\u2192Annotations.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Expose DocumentRevision\u2192Annotations and Annotation\u2192DocumentRevision/Author; omit Author\u2192Annotations.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "b808435e9ee6ecea69e4b8837a59d1acacf59d18d7ef4fd5d9d28aed85e39ee5",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i029",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose only submission-to-route-revision because revision clients do not enumerate submissions.",
+      "defect": {
+        "questionId": "ood-n03-b02-i029",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Expose InspectionSubmission\u2192RouteRevision only.",
+        "reason": "Expose InspectionSubmission\u2192RouteRevision only.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Expose InspectionSubmission\u2192RouteRevision only.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "af3ba0c169cb631cd77cbab7c8851e216a19736c648090a91124f871a9f2472f",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i030",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Keep order and issue traversals because each named client starts at the opposite endpoint.",
+      "defect": {
+        "questionId": "ood-n03-b02-i030",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Support both Order\u2192InvoiceIssues and InvoiceIssue\u2192Order, with one writer maintaining the inverse collection.",
+        "reason": "Support both Order\u2192InvoiceIssues and InvoiceIssue\u2192Order, with one writer maintaining the inverse collection.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Support both Order\u2192InvoiceIssues and InvoiceIssue\u2192Order, with one writer maintaining the inverse collection.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "a1a0c88fb4dcb3d421e82577b46ac89d316f081a4542a3e2384971c76092e79c",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i031",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose door assignment collection and assignment-to-door while keeping holder lookup directory-backed.",
+      "defect": {
+        "questionId": "ood-n03-b02-i031",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Expose Door\u2192BadgeAssignments and BadgeAssignment\u2192Door; keep holder-to-badge lookup in the directory.",
+        "reason": "Expose Door\u2192BadgeAssignments and BadgeAssignment\u2192Door; keep holder-to-badge lookup in the directory.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Expose Door\u2192BadgeAssignments and BadgeAssignment\u2192Door; keep holder-to-badge lookup in the directory.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "77d68195bc37ce9982a80cd246bc3e546648446ef76bd84636e878f3782760d2",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i033",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Support room calendar and booking detail traversals with one coordinated move operation.",
+      "defect": {
+        "questionId": "ood-n03-b02-i033",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Make Room\u2013Booking navigable in both directions and update both links in the move operation.",
+        "reason": "Make Room\u2013Booking navigable in both directions and update both links in the move operation.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Make Room\u2013Booking navigable in both directions and update both links in the move operation.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "30acd0f5c98a105735e28b28686746d0e75c4e4571bde115fbd1b52282bfbdfb",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i034",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Expose exhibit-to-policy only because policy consumers do not traverse back to exhibits.",
+      "defect": {
+        "questionId": "ood-n03-b02-i034",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Expose Exhibit\u2192MaintenancePolicy only.",
+        "reason": "Expose Exhibit\u2192MaintenancePolicy only.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Expose Exhibit\u2192MaintenancePolicy only.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "79e3fa3469399ebd2acd71cc76dd535d86876c2844d1357d981dcae8d9d51b57",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+      "itemId": "ood-n03-b02-i036",
+      "primaryMentalUnitId": "OOD-N03-B02",
+      "learningObjective": "Support timeline and event detail paths while keeping author search in the staff directory.",
+      "defect": {
+        "questionId": "ood-n03-b02-i036",
+        "mentalUnitId": "OOD-N03-B02",
+        "sourceFile": "OOD-N03-B02.json",
+        "sourceSha256": "c578f0d66d3bbbf0c3f76da302ad27c3f6339573bca6fdff3e3a1f00041859f3",
+        "category": "exact_key_paraphrase",
+        "correctOptionText": "Expose Conversation\u2192EscalationEvents and EscalationEvent\u2192Conversation; keep author search directory-backed.",
+        "reason": "Expose Conversation\u2192EscalationEvents and EscalationEvent\u2192Conversation; keep author search directory-backed.",
+        "issue": "Reason is byte-for-byte the correct option text. It adds no decisive premise or explanation.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Expose Conversation\u2192EscalationEvents and EscalationEvent\u2192Conversation; keep author search directory-backed.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "940ff1c078b393e60abd18048e361efb834b93f0662c0ca37285e19fa44d7444",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "itemId": "ood-n03-b03-i019",
+      "primaryMentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Separate a grant\u2019s authorization expiry from retention of its approval evidence.",
+      "defect": {
+        "questionId": "ood-n03-b03-i019",
+        "mentalUnitId": "OOD-N03-B03",
+        "sourceFile": "OOD-N03-B03.json",
+        "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+        "category": "decision_paraphrase",
+        "correctOptionText": "Expire the Grant\u2019s authority but retain its audit record.",
+        "reason": "Authorization ends at expiry, but the approval evidence remains auditable.",
+        "issue": "Reason restates the keyed lifecycle transition in different words and supplies no separate decisive premise.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Expire the Grant\u2019s authority but retain its audit record.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "265e7d5729ec654b38ed87265e22ffb8ca1f400de927217cdbbf72aad49def5e",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "itemId": "ood-n03-b03-i020",
+      "primaryMentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Close a withdrawn request to new decisions while retaining already signed decision records.",
+      "defect": {
+        "questionId": "ood-n03-b03-i020",
+        "mentalUnitId": "OOD-N03-B03",
+        "sourceFile": "OOD-N03-B03.json",
+        "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+        "category": "decision_paraphrase",
+        "correctOptionText": "Close the request to new decisions; retain signed decision records.",
+        "reason": "Withdrawal ends the review opportunity, not the signed evidence already stored.",
+        "issue": "Reason restates the keyed lifecycle transition in different words and supplies no separate decisive premise.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Close the request to new decisions; retain signed decision records.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "12c3bccc6e615df385e031d996f717ddcded07ddb80e6a0c1f3352a3a23c2178",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "itemId": "ood-n03-b03-i021",
+      "primaryMentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Keep cancellable editor drafts session-owned and create the durable inspection as a distinct committed object.",
+      "defect": {
+        "questionId": "ood-n03-b03-i021",
+        "mentalUnitId": "OOD-N03-B03",
+        "sourceFile": "OOD-N03-B03.json",
+        "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+        "category": "decision_paraphrase",
+        "correctOptionText": "The editor owns its drafts; submit creates a separate Inspection.",
+        "reason": "Cancellation applies only to unsent drafts; the submitted object is independent.",
+        "issue": "Reason restates the keyed lifecycle transition in different words and supplies no separate decisive premise.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "The editor owns its drafts; submit creates a separate Inspection.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "b6ee760c0061092fad6dd6e6830f70c8ddace3e7d0beb17e1a70aa018fda3e9e",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "itemId": "ood-n03-b03-i023",
+      "primaryMentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Consume a one-time recovery secret on success while retaining only a replay marker through the fixed expiry.",
+      "defect": {
+        "questionId": "ood-n03-b03-i023",
+        "mentalUnitId": "OOD-N03-B03",
+        "sourceFile": "OOD-N03-B03.json",
+        "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+        "category": "decision_paraphrase",
+        "correctOptionText": "Consume the secret on success; retain its replay marker until expiry.",
+        "reason": "Success consumes this one-time secret before its time limit; replay evidence has a longer lifetime.",
+        "issue": "Reason restates the keyed lifecycle transition in different words and supplies no separate decisive premise.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Consume the secret on success; retain its replay marker until expiry.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "3503994352c78c10c19b6bb2a6fc70c1a4ebf146d3b756dcc8b9a10a5bab9077",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "itemId": "ood-n03-b03-i028",
+      "primaryMentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Expire an unconfirmed temporary hold without creating a booking; confirmation creates the durable booking.",
+      "defect": {
+        "questionId": "ood-n03-b03-i028",
+        "mentalUnitId": "OOD-N03-B03",
+        "sourceFile": "OOD-N03-B03.json",
+        "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+        "category": "decision_paraphrase",
+        "correctOptionText": "Expire the Hold; create a Booking only after confirmation.",
+        "reason": "An unconfirmed hold expires without ever becoming a booking.",
+        "issue": "Reason restates the keyed lifecycle transition in different words and supplies no separate decisive premise.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Expire the Hold; create a Booking only after confirmation.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "fb94850d2e444a45925ab0f0056aca03fa8271c2fe4d2fe9e76263579ab0154c",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "itemId": "ood-n03-b03-i030",
+      "primaryMentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Retire a lesson revision from new enrollment without severing existing completion history.",
+      "defect": {
+        "questionId": "ood-n03-b03-i030",
+        "mentalUnitId": "OOD-N03-B03",
+        "sourceFile": "OOD-N03-B03.json",
+        "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+        "category": "decision_paraphrase",
+        "correctOptionText": "Retire the revision from enrollment; retain its linked completions.",
+        "reason": "Retirement blocks new enrollment but does not sever historical completions.",
+        "issue": "Reason restates the keyed lifecycle transition in different words and supplies no separate decisive premise.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Retire the revision from enrollment; retain its linked completions.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "6b797bc03002f2025f932939320a6f69a8ae85e482ff75a463cc63840086576e",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "itemId": "ood-n03-b03-i032",
+      "primaryMentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Update current assignment and append an immutable event without rewriting prior escalation history.",
+      "defect": {
+        "questionId": "ood-n03-b03-i032",
+        "mentalUnitId": "OOD-N03-B03",
+        "sourceFile": "OOD-N03-B03.json",
+        "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+        "category": "decision_paraphrase",
+        "correctOptionText": "Change current assignment and append an immutable EscalationEvent.",
+        "reason": "Reassignment changes current fields and appends, rather than rewrites, history.",
+        "issue": "Reason restates the keyed lifecycle transition in different words and supplies no separate decisive premise.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Change current assignment and append an immutable EscalationEvent.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "b2925ccd2aafb0d09f72d352277c35ce68bac7b584415dd38c50a4c492f7e0a4",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+      "itemId": "ood-n03-b03-i033",
+      "primaryMentalUnitId": "OOD-N03-B03",
+      "learningObjective": "Discard only an unpublished draft; publish a new retained revision and preserve prior revisions for orders.",
+      "defect": {
+        "questionId": "ood-n03-b03-i033",
+        "mentalUnitId": "OOD-N03-B03",
+        "sourceFile": "OOD-N03-B03.json",
+        "sourceSha256": "ba18ba56cfbacee3a5f27bde8261e7398074b1ff506b1b6100a1e1f9f1ac6ed5",
+        "category": "decision_paraphrase",
+        "correctOptionText": "Discard the draft on cancel; publish a retained successor revision.",
+        "reason": "Cancellation affects only unpublished work; publication creates another retained revision.",
+        "issue": "Reason restates the keyed lifecycle transition in different words and supplies no separate decisive premise.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "Discard the draft on cancel; publish a retained successor revision.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "b5cd3527945a9c847435fb5a16f354304a735d64a4d646d7cd76d74053f1d90a",
+        "sourceRefs": [
+          "https://www.omg.org/spec/UML/2.5.1/PDF"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    },
+    {
+      "trackId": "object-oriented-design-interview",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B08.json",
+      "sourceSha256": "fc5e6d5a64bc34054bedfd0a6d6ba9b6689a5d99f43d7b640bc14832970853e8",
+      "itemId": "ood-n03-b08-i021",
+      "primaryMentalUnitId": "OOD-N03-B08",
+      "learningObjective": "Distinguish borrowed resources from resources the component owns.",
+      "defect": {
+        "questionId": "ood-n03-b08-i021",
+        "mentalUnitId": "OOD-N03-B08",
+        "sourceFile": "OOD-N03-B08.json",
+        "sourceSha256": "fc5e6d5a64bc34054bedfd0a6d6ba9b6689a5d99f43d7b640bc14832970853e8",
+        "category": "prompt_echo",
+        "correctOptionText": "The caller owns the stream; leave it open.",
+        "reason": "The prompt explicitly states that the caller retains the stream after this operation.",
+        "issue": "Reason repeats the caller-retention premise from the prompt without connecting it to the disposal decision.",
+        "recommendation": "Rewrite Reason only: name a decisive prompt condition/property and explain why it supports the unchanged keyed decision; retain questionId, option IDs, prompt, answer, and Details."
+      },
+      "intendedDecision": "The caller owns the stream; leave it open.",
+      "answerChange": false,
+      "idAction": "preserve_question_and_option_ids",
+      "sourceEvidence": {
+        "oldWholeObjectSha256": "3a0b7ef06b51a41940118e2122b92ebea0492ab3ddec7bbfb5c47be5201d3165",
+        "sourceRefs": [
+          "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose",
+          "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines"
+        ]
+      },
+      "authority": "BIZQ-01 delegated candidate/readiness/admission; proposed wording still requires independent semantic acceptance"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+
+> patternly-content@1.0.0 candidate:readiness-v2
+> node scripts/review/candidate-readiness-v2.mjs
+
+Readiness v2 verified for 8ff2f5f537c38fa85f8496eecad4f743f3bbd1fc2d5040ce6ce71dc063d6051b; candidateApproval=approved; publishing/runtime=not_granted

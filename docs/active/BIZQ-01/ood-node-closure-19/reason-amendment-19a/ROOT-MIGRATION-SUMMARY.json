@@ -1,0 +1,37 @@
+{
+  "result": "PASS",
+  "semanticMappings": 450,
+  "sameIdReasonAmendments": 25,
+  "reasonAmendmentProof": {
+    "trackId": "object-oriented-design-interview",
+    "questionIds": [
+      "ood-n03-b02-i019",
+      "ood-n03-b02-i020",
+      "ood-n03-b02-i021",
+      "ood-n03-b02-i022",
+      "ood-n03-b02-i023",
+      "ood-n03-b02-i024",
+      "ood-n03-b02-i025",
+      "ood-n03-b02-i026",
+      "ood-n03-b02-i027",
+      "ood-n03-b02-i028",
+      "ood-n03-b02-i029",
+      "ood-n03-b02-i030",
+      "ood-n03-b02-i031",
+      "ood-n03-b02-i033",
+      "ood-n03-b02-i034",
+      "ood-n03-b02-i036",
+      "ood-n03-b03-i019",
+      "ood-n03-b03-i020",
+      "ood-n03-b03-i021",
+      "ood-n03-b03-i023",
+      "ood-n03-b03-i028",
+      "ood-n03-b03-i030",
+      "ood-n03-b03-i032",
+      "ood-n03-b03-i033",
+      "ood-n03-b08-i021"
+    ]
+  },
+  "rawLogSha256": "dafb57d58df6633289ca1893549edaeffed0482f9d218d856e15faba87eafcf6",
+  "limits": "Actual root migration proof; consumer/admission and full-area acceptance remain separate"
+}

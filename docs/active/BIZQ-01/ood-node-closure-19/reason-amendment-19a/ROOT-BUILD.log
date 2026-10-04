@@ -1,0 +1,5 @@
+
+> patternly-content@1.0.0 content:build-all
+> node scripts/build.mjs build-all
+
+Built 9 track artifact(s) and /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/dist/content-lock.json

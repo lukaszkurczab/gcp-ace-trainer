@@ -1,0 +1,29 @@
+{
+  "scope": "Trailing whitespace and blank EOF only in three console logs; source/proposals/proofs/QA and bound gate logs untouched",
+  "files": [
+    {
+      "file": "ROOT-AMENDMENT-NEGATIVES.log",
+      "beforeSha256": "25edeb96eab82282fe858f254b174673ad0ca677853c767e2b274ad7682decf0",
+      "afterSha256": "a5255b0453b48b83ee8ed02d22d4ed27f9b80d3265883175482cc3fccd18fa77",
+      "nonWhitespaceTokensUnchanged": true,
+      "tokenSha256": "f079f5b4b920fb179be11ee2e406686387d6daeb51aa95f041de18d8f97c7b87",
+      "rawPrivateCopy": "/private/tmp/patternly-bizq01-19a-raw-evidence/ROOT-AMENDMENT-NEGATIVES.log"
+    },
+    {
+      "file": "ROOT-CONSUMER-RED.log",
+      "beforeSha256": "3c0a52e06586f94d3c6da91bd47ddf6a7779c97b82df24a257abd5a2f469d262",
+      "afterSha256": "cb5bbc9831fded93c01eb6f1be3bb3a6e72d554eaac4fdf150917e0eb0796cfa",
+      "nonWhitespaceTokensUnchanged": true,
+      "tokenSha256": "8366d97e922adbbcad8d3e207ff1d62f49f110134e3642a72131657b3331a4fc",
+      "rawPrivateCopy": "/private/tmp/patternly-bizq01-19a-raw-evidence/ROOT-CONSUMER-RED.log"
+    },
+    {
+      "file": "ROOT-TYPECHECK.log",
+      "beforeSha256": "22c83f1ac25b854ee6b451e80ec133d2e6b804f4f4a61055e5624328bff86ab3",
+      "afterSha256": "35bcf25cc4f04a4a9d0dbce3a28e166befebdebb85bbf87095b907f5500349e3",
+      "nonWhitespaceTokensUnchanged": true,
+      "tokenSha256": "bacb11cdd1c74d68c8f2c7220dee64816650c0a9968a68ac3981b62cbcafd4bd",
+      "rawPrivateCopy": "/private/tmp/patternly-bizq01-19a-raw-evidence/ROOT-TYPECHECK.log"
+    }
+  ]
+}

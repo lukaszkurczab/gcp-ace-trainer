@@ -1,0 +1,50 @@
+✔ accepts the real BIZQ-01 replacement proof while preserving current and historical counts (3286.531292ms)
+✔ keeps the original migration verifier behavior when no BIZQ proof is present (600.114167ms)
+✔ rejects changes to a current replacement and its frozen old object (1098.132416ms)
+✔ requires and binds the fixed 19a reason-only amendment proof (1160.190083ms)
+✔ binds 19a to exact IDs, before/current Reasons, hashes, and closed membership (6221.166542ms)
+✖ rejects every non-Reason edit in an amended source object (3627.346ms)
+✔ binds the catalog version and rejects symlink substitution for the 19a proof and source (1516.37625ms)
+✔ rejects stale batch identity, duplicate mappings, and a missing replacement (2011.845ms)
+✔ rejects changes to an unrelated item in the proven current track (566.865333ms)
+✔ accepts only the real same-ID Coding wording correction alongside the unchanged BESD proof (1936.560708ms)
+✔ rejects the same-ID correction without its proof and rejects tampered frozen old objects (2553.580958ms)
+✔ rejects unapproved wording, answer, options, feedback and taxonomy changes in the corrected source (8631.375292ms)
+✔ rejects stale Coding version, proof identity/hashes/source location and unexpected proof fields (8539.984125ms)
+✔ rejects a corrected source moved away from its canonical mental-unit filename (116.658333ms)
+✔ rejects unreviewed primary-source pages even under the same publisher domain (1852.429916ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 14
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 43921.803667
+
+✖ failing tests:
+
+test at tests/bizq01-migration-proof.test.mjs:146:1
+✖ rejects every non-Reason edit in an amended source object (3627.346ms)
+  AssertionError [ERR_ASSERTION]: taxonomy
+  + actual - expected
+
+  + 'CANONICAL_MEMBERSHIP'
+  - 'CANONICAL_INVALID'
+               ^
+
+      at Object.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:166:14)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async withJsonMutation (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:34:5)
+      at async TestContext.<anonymous> (file:///Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/tests/bizq01-migration-proof.test.mjs:161:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'CANONICAL_MEMBERSHIP',
+    expected: 'CANONICAL_INVALID',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

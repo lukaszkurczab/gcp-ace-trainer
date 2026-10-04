@@ -1,0 +1,76 @@
+{
+  "verdict": "PASS",
+  "scope": "bounded producer implementation for 25 same-ID feedback.reason corrections",
+  "bindings": {
+    "manifestSha256": "725750aa6c8ebdba357f2e892e7c6aa94c45202a97c677d41284b8d063e199bf",
+    "proposalSha256": "76fd88c540bd1b6ffe83eb2034cbf565b2ac030454e80511e56a341555edfa15",
+    "semanticReviewSha256": "641483a282017e2f55a876073e8f11d67b4f9fa57c9b7d28116c0a99c3e7c348",
+    "verifierSha256": "4239f4c1557dadfcf24481e1b780d72a34129cab337457f7099ce6fe5d7a5a61",
+    "migrationTestSha256": "f2cc7e7cdef38de24bb96942e58596e432a2da3d043b59e474dd2502d39a8006",
+    "proofPath": "evidence/business-quality/bizq-01-ood-reason-amendment-19a.json",
+    "proofSha256": "4d964e0a09690ba4b12382b11e9d9a5917069bbb6bbfe953f157aab5c1b7debb",
+    "baselineProducerCommit": "1d024bb62328bdb81490d713dc41a6f7d155e9b6",
+    "contentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-19a"
+  },
+  "sourceChanges": {
+    "changedReasonOnlyObjects": 25,
+    "unchangedObjectsInTouchedFiles": 29,
+    "unchangedOtherOodObjects": 1388,
+    "unchangedOtherGlobalObjects": 16052,
+    "preservedTrackedContentFiles": 950,
+    "canonicalQuestionCount": 16077,
+    "oodQuestionCount": 1413,
+    "semanticMappingsPreserved": 450,
+    "immutableProofsPreserved": 10
+  },
+  "verification": [
+    {
+      "command": "node --test tests/bizq01-migration-proof.test.mjs",
+      "result": "PASS",
+      "passed": 15,
+      "failed": 0
+    },
+    {
+      "command": "node --test tests/bizq01-ood-node-closure-19.test.mjs",
+      "result": "PASS",
+      "passed": 7,
+      "failed": 0
+    },
+    {
+      "command": "npm run verify:migration",
+      "result": "PASS",
+      "tracks": 9,
+      "nodes": 117,
+      "units": 943,
+      "canonicalQuestions": 16077,
+      "semanticMappings": 450
+    },
+    {
+      "command": "root final focused amendment mutation suite",
+      "result": "PASS",
+      "passed": 15,
+      "failed": 0
+    },
+    {
+      "command": "root nine-track content build",
+      "result": "PASS",
+      "builtTracks": 9,
+      "unchangedOtherArtifacts": 8
+    }
+  ],
+  "downstream": {
+    "status": "pending separate pipeline stages",
+    "stages": [
+      "clean-snapshot canonical checks",
+      "candidate and readiness",
+      "consumer synchronization",
+      "admission and release checks"
+    ]
+  },
+  "notClaimed": [
+    "consumer acceptance",
+    "native acceptance",
+    "Premium acceptance",
+    "full BIZQ-01 acceptance"
+  ]
+}

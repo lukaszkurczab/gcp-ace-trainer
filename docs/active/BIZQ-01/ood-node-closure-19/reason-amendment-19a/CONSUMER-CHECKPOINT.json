@@ -1,0 +1,14 @@
+{
+  "commit": "2d0fec61fcc38dcf4682d5767f1913cc62365420",
+  "before": "c4dd44c546dbeffe77c58bea181286cc44fb09fe",
+  "files": [
+    "docs/active/BIZQ-01/ood-node-closure-19/reason-amendment-19a/PROPOSED-REASONS.json",
+    "integration/contracts/content-release/release.lock.json",
+    "src/content/bizq01OodNodeClosure19.test.ts",
+    "src/content/bizq01OodReasonAmendment19a.test.ts",
+    "src/content/generated/canonical-content/content-lock.json",
+    "src/content/generated/canonical-content/object-oriented-design-interview.json",
+    "src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts"
+  ],
+  "scope": "local independently accepted consumer checkpoint; new exactadmission and finalpackage push pending"
+}

@@ -1,0 +1,10 @@
+{
+  "result": "PASS",
+  "unchangedArtifacts": 8,
+  "unchangedOodObjects": 1388,
+  "changedReasonOnlyObjects": 25,
+  "allQuestionAndOptionIds": "unchanged",
+  "historicalLock": "byte-exact",
+  "artifactSha256": "17908a35f15572bbac6465997765663d810f1c2bc90ddbb79bfe811cbc0aac73",
+  "scope": "Actual consumer artifact preservation; focused runtime behavior and exact admission are separate gates."
+}

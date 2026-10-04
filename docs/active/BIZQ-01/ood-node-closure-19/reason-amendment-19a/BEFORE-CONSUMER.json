@@ -1,0 +1,54 @@
+{
+  "applicationBefore": "c4dd44c546dbeffe77c58bea181286cc44fb09fe",
+  "files": [
+    {
+      "path": "src/content/generated/canonical-content/aws-certified-solutions-architect-associate.json",
+      "sha256": "c86dd81635ebc51771e493729d487432519465f50c55ddcfc5ff71dd546560f9"
+    },
+    {
+      "path": "src/content/generated/canonical-content/backend-system-design-interview.json",
+      "sha256": "5a202c133d78b908e2e73870e426c379f529b65ad89add0ebdfec0be72e92942"
+    },
+    {
+      "path": "src/content/generated/canonical-content/claude-certified-architect-professional-certification.json",
+      "sha256": "7d6d12a49d67642e3144d062a6d237bec4604917ab34124e4ee121263c6beb2d"
+    },
+    {
+      "path": "src/content/generated/canonical-content/coding-interview-dsa-problem-solving.json",
+      "sha256": "4ceb71ebf2edd963dd6f1bdd274dface6da667dd7d3586fa44b52efe45f263f6"
+    },
+    {
+      "path": "src/content/generated/canonical-content/content-lock.json",
+      "sha256": "56340a2a403bf0d853225ffd0a4d7ed407f130bad536b1050944aa708a30c8fc"
+    },
+    {
+      "path": "src/content/generated/canonical-content/frontend-system-design-interview.json",
+      "sha256": "7de3a0bd8860eef726c6bb11cbf8e0bbc88ff0282d1a4575cbf94cc5fb9dd9bf"
+    },
+    {
+      "path": "src/content/generated/canonical-content/google-cloud-associate-cloud-engineer.json",
+      "sha256": "eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9"
+    },
+    {
+      "path": "src/content/generated/canonical-content/microsoft-azure-administrator-associate-az-104.json",
+      "sha256": "80e5b920beade4a9b540dfa505aa67368c07c99497998314935be53da9013975"
+    },
+    {
+      "path": "src/content/generated/canonical-content/microsoft-azure-ai-fundamentals-ai-901.json",
+      "sha256": "ef25741799306c6cfbc7cc90cb7d76492f3df639c056b61b1c2b0492f5fbb9d4"
+    },
+    {
+      "path": "src/content/generated/canonical-content/object-oriented-design-interview.json",
+      "sha256": "9632bd529f51a9ad29e5dd54a7e22684c668db22d3f5a6c49764c405689a95fb"
+    },
+    {
+      "path": "integration/contracts/content-release/release.lock.json",
+      "sha256": "987d414a3ff8a6ba3613d50d301136adc1c79933dbe77fd8c910a03b5aba7ea9"
+    },
+    {
+      "path": "integration/contracts/content-release/release.lock.historical-0024.json",
+      "sha256": "d5058e8678ceab38fbdb3fc6ea423b80e21571885549df9b42dd6e3916312195"
+    }
+  ],
+  "scope": "Actual admitted19 bytes before reason-only amendment; consumer test/admission remain separate"
+}

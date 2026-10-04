@@ -1,6 +1,6 @@
 # BIZQ-01 — OOD N03: pakiet19
 
-Naprawiono162 pytań w dziewięciu pełnych jednostkach OOD-N03-B01–B09: old001–018→new019–036. Obejmują cardinality/ownership, navigability, lifecycle, inheritance/composition, dependency direction, graph cohesion, injection/resource scope, cleanup i public API boundaries. Każde ma jawny cel uczenia i rozstrzygające fakty; całe BIZQ-01 pozostaje partial. **Pakiet lokalnie odebrany: semantic/producer/consumer/final PASS. Normalpush/remoteCI w toku; cały BIZQ-01 partial.**
+Naprawiono162 pytań w dziewięciu pełnych jednostkach OOD-N03-B01–B09: old001–018→new019–036. Obejmują cardinality/ownership, navigability, lifecycle, inheritance/composition, dependency direction, graph cohesion, injection/resource scope, cleanup i public API boundaries. Każde ma jawny cel uczenia i rozstrzygające fakty; całe BIZQ-01 pozostaje partial. **Pakiet zintegrowany i normalpushed; odbiór edukacyjny ponownie otwarty przez istniejące§4.4. Historyczne semantic/final PASS nie dowodzą spełnienia tego wymagania.**
 
 ## Plan i semantyka
 
@@ -21,3 +21,9 @@ Nowy currentrelease.lock i runtimecandidatepin wiążą19; stary admission prawi
 ## Pełny obszar i ograniczenia
 
 Kontynuować główny BIZQ-01 po pakiecie: pozostałe confirmedcritical/template repairs, wymagany Q01–Q14/runtime/iOS/theme/large-text. GCP07 ARCH03/F18 attribution, BESDreachability ARCH02, existingPremiumprofile i validpartialdenominator PO pozostają zapisane. Native15 nie dowodzi nowego bundle/answers/Details/SDK. Tylko istniejący iPhone17; VoiceOver poza testami, accessibility semantics obowiązują. Atomicgoal+acceptedplan/localreminders/realPremium/contentadmission/one runtime zachowane. Foreignaudit/appendix4433lines/stashes nietknięte; stagedonlyowned. Bez deploy/publikacji/produkcyjnych zakupów/serviceconfig/stash/reset/force. Push nie zamyka całego BIZQ ani nie uzasadnia przełączenia.
+
+## Ponowne otwarcie Reason po pushu
+
+Root odczyt BIZQ-01§4.4 potwierdził istniejący zakaz parafrazy poprawnej opcji w Reason. W16 obiektach B02 Reason jest literalnie tekstem poprawnej opcji. To wada wyjaśnienia, odrębna od poprawnie rozwiązanej false-positive próby disclosure. Historyczny odbiór semantyczny i finalny nie wykrył tego konfliktu; pozostają zachowane, lecz nie zamykają aktualnego odbioru edukacyjnego. Root skierował ponowny niezależny whole162 Reason/key/facts/Details review, a bounded immutable follow-up ma poprawić wyłącznie potwierdzone Reason przy stabilnych IDs i odtworzyć accepted19 privately przed niezmienioną historią. N04 preflight może trwać read-only, implementacja czeka na tę korektę. Pusheappc4dd44c5/content1d024bb/web911832b i exactremote są zapisane w POST-PUSH-REMOTE.json; brak deploy/publikacji.
+
+Korekta19a: [25 Reason-only zmian odebranych niezależnie](reason-amendment-19a/REPORT.md), producer/consumer/finalQA PASS; aktualne bindings w podpakiecie19a. Historyczne proof19/bindings/raporty pozostają dowodami poprzedniego stanu. Cały BIZQ-01 partial.

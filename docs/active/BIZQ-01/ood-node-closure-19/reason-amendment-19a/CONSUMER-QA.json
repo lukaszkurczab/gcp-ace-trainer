@@ -1,0 +1,51 @@
+{
+  "verdict": "PASS",
+  "scope": "bounded app consumer synchronization and focused behavior for reason amendment 19a",
+  "bindings": {
+    "contentHead": "c0d6ba819df1507eec21e0799dc2efa3ca2293eb",
+    "candidateId": "8ff2f5f537c38fa85f8496eecad4f743f3bbd1fc2d5040ce6ce71dc063d6051b",
+    "contentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-19a",
+    "trackArtifactPath": "src/content/generated/canonical-content/object-oriented-design-interview.json",
+    "trackArtifactSha256": "17908a35f15572bbac6465997765663d810f1c2bc90ddbb79bfe811cbc0aac73",
+    "contentLockSha256": "e0c5baeb7e1f9d5244891c87c69218c71ad3b1519291d8f181d753108e00565e",
+    "releaseLockSha256": "36b0fee6a8335aec857399e9e34e1398acde33e612c1bdc1433a0b934b2407fc",
+    "producerProofSha256": "4d964e0a09690ba4b12382b11e9d9a5917069bbb6bbfe953f157aab5c1b7debb"
+  },
+  "verification": [
+    {
+      "command": "node --import tsx --test src/content/bizq01OodReasonAmendment19a.test.ts src/content/bizq01OodNodeClosure19.test.ts src/content/bizq01OodNodeClosure17.test.ts",
+      "result": "PASS",
+      "passed": 41,
+      "failed": 0,
+      "coverage": [
+        "25 fixed reason overlays on immutable v19 objects",
+        "stable question, option and answer identities",
+        "unchanged Details and per-option diagnostic feedback",
+        "unchanged pre-answer projection and choice presentation",
+        "same scoring for every option and correct submitted feedback",
+        "accepted N01/N02 preservation and ordinary-pool boundaries"
+      ]
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "PASS"
+    },
+    {
+      "command": "npm run check:content-release",
+      "result": "PASS",
+      "canonicalContentCheck": "passed",
+      "inventory": "9/117/943/16077"
+    },
+    {
+      "command": "npm run validate:content-boundary",
+      "result": "PASS"
+    }
+  ],
+  "notClaimed": [
+    "candidate admission",
+    "release-gate completion",
+    "native behavior",
+    "Premium behavior",
+    "full BIZQ-01 acceptance"
+  ]
+}

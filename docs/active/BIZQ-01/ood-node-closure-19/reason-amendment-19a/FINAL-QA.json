@@ -1,0 +1,67 @@
+{
+  "verdict": "PASS",
+  "scope": "bounded local producer-consumer-admission-provenance package for OOD N03 reason amendment 19a",
+  "source": {
+    "producerCommit": "8454ddb34077385a869a92b907d8ae943ac0c42a",
+    "proofSha256": "4d964e0a09690ba4b12382b11e9d9a5917069bbb6bbfe953f157aab5c1b7debb",
+    "trackArtifactSha256": "17908a35f15572bbac6465997765663d810f1c2bc90ddbb79bfe811cbc0aac73",
+    "contentCommit": "98a7d0519005290cd2c0380d04b08a7b1bdebcde",
+    "candidateId": "8ff2f5f537c38fa85f8496eecad4f743f3bbd1fc2d5040ce6ce71dc063d6051b"
+  },
+  "application": {
+    "commit": "2d0fec61fcc38dcf4682d5767f1913cc62365420",
+    "trackArtifactSha256": "17908a35f15572bbac6465997765663d810f1c2bc90ddbb79bfe811cbc0aac73",
+    "bundledContentLockSha256": "e0c5baeb7e1f9d5244891c87c69218c71ad3b1519291d8f181d753108e00565e",
+    "releaseLockSha256": "36b0fee6a8335aec857399e9e34e1398acde33e612c1bdc1433a0b934b2407fc"
+  },
+  "admission": {
+    "candidateAdmissionPath": "evidence/admissions/candidate-admission-v3.json",
+    "candidateAdmissionSha256": "5ad637d6cd48e24b0ec87bca4d59123961851f503b6ca3c33eb0f8fc2624db8c",
+    "runtimeEvidencePath": "evidence/admissions/runtime/8ff2f5f537c38fa85f8496eecad4f743f3bbd1fc2d5040ce6ce71dc063d6051b-2d0fec61fcc38dcf4682d5767f1913cc62365420.json",
+    "runtimeEvidenceSha256": "527968376033c4bd23faf7bd8033f8f4143df565b7e327dd26f0e01d38021a9b",
+    "bindingPath": "docs/active/BIZQ-01/ood-node-closure-19/reason-amendment-19a/ROOT-ADMISSION-BINDINGS.json",
+    "bindingSha256": "5132cb480ea3a28e3b86bb42af0b194c893b295e7dccb01c17271b2886e3ac6a",
+    "releaseBoundary": "local_verified_artifacts_no_deployment",
+    "runtimeAdmission": "granted under existing BIZQ-01 delegation",
+    "publishingAdmission": "granted under existing BIZQ-01 delegation; no external publication performed or newly authorized",
+    "releaseGate": "PASS",
+    "stalePriorReceipt": "rejected"
+  },
+  "webProvenance": {
+    "webCommit": "911832bdedefa7907e1e609f809273ac82cf384d",
+    "generatedFile": "src/generated/demoQuestions.json",
+    "currentSha256": "b4882d3e24b6340384f37644827ab76a797386258fb00f399d11fd3707ac3ff5",
+    "preservation": "PASS; two existing Coding/AWS demos preserved exactly except provenance",
+    "exportTests": "3/3 PASS",
+    "exportCheck": "PASS",
+    "localVerification": "PASS"
+  },
+  "gates": {
+    "producerCanonical": "153/153 PASS",
+    "consumerFocused": "42/42 PASS",
+    "admissionTests": "7/7 PASS",
+    "appStatic": {
+      "total": 1837,
+      "passed": 1833,
+      "failed": 0,
+      "existingSkipped": 4,
+      "exitCode": 0,
+      "contentCommit": "98a7d0519005290cd2c0380d04b08a7b1bdebcde",
+      "historicalCommit": "cc3efca88be7e01137f10ac69a0643f06b61a350"
+    },
+    "recovery": "PASS",
+    "typecheck": "PASS",
+    "contentBoundary": "PASS",
+    "runtimePrivacyBoundary": "PASS",
+    "contentReleaseCheck": "PASS"
+  },
+  "reportingNote": "The parent-level pre-amendment ROOT-ADMISSION-BINDINGS.json points to candidate 4ab655... and app 189160...; preserved as historical. Current 19a evidence is bound to the packet-level binding, v3 admission record and runtime evidence above.",
+  "notClaimed": [
+    "deployment",
+    "public release",
+    "native acceptance",
+    "Premium acceptance",
+    "full OOD-N03 acceptance",
+    "full BIZQ-01 completion"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "result": "PASS",
+  "repos": [
+    {
+      "repo": "patternly",
+      "head": "c4dd44c546dbeffe77c58bea181286cc44fb09fe",
+      "upstream": "c4dd44c546dbeffe77c58bea181286cc44fb09fe",
+      "remoteHead": "c4dd44c546dbeffe77c58bea181286cc44fb09fe",
+      "stashes": 6
+    },
+    {
+      "repo": "patternly-content",
+      "head": "1d024bb62328bdb81490d713dc41a6f7d155e9b6",
+      "upstream": "1d024bb62328bdb81490d713dc41a6f7d155e9b6",
+      "remoteHead": "1d024bb62328bdb81490d713dc41a6f7d155e9b6",
+      "stashes": 2
+    },
+    {
+      "repo": "patternly-web",
+      "head": "911832bdedefa7907e1e609f809273ac82cf384d",
+      "upstream": "911832bdedefa7907e1e609f809273ac82cf384d",
+      "remoteHead": "911832bdedefa7907e1e609f809273ac82cf384d",
+      "stashes": 0
+    },
+    {
+      "repo": "patternly-backend",
+      "head": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "upstream": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "remoteHead": "019e48e7d8e074c2e45d7f5ebb639a4ad394ae8f",
+      "stashes": 4
+    }
+  ],
+  "scope": "Ordinary accepted package pushes; no deploy/publication/service changes; unchangedbackend"
+}

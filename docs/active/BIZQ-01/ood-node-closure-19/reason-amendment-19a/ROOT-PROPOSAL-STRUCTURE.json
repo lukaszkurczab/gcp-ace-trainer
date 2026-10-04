@@ -1,0 +1,161 @@
+{
+  "result": "PASS structural only; independent semantic acceptance pending",
+  "proposalSha256": "76fd88c540bd1b6ffe83eb2034cbf565b2ac030454e80511e56a341555edfa15",
+  "manifestSha256": "725750aa6c8ebdba357f2e892e7c6aa94c45202a97c677d41284b8d063e199bf",
+  "items": 25,
+  "sourceFiles": 3,
+  "scoringAndReversalCases": 200,
+  "identity": "all question/option IDs and all non-Reason fields unchanged by construction",
+  "reviewed": [
+    {
+      "questionId": "ood-n03-b02-i019",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Make the Session–Provider association navigable in both directions so each stated client can traverse its required path.",
+      "reason": "Callbacks require Session→Provider, while the operations screen starts at Provider and cannot use an index. The reassignment transaction is the stated consistency boundary for that reverse path."
+    },
+    {
+      "questionId": "ood-n03-b02-i020",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Expose Assignment→Volunteer; do not add Volunteer→Assignments solely for the shift screen.",
+      "reason": "Assignment detail follows its stored volunteer reference, but shift listings begin at Shift and the profile lookup is repository-backed. No named client starts at Volunteer to enumerate assignments."
+    },
+    {
+      "questionId": "ood-n03-b02-i021",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Keep Edit→RouteRevision navigable and omit RouteRevision→Edits from the object association.",
+      "reason": "Edit detail and evaluation start from the captured Edit and need its exact revision; the reverse lookup is already a query by parent ID. No model client traverses from a revision to its edits."
+    },
+    {
+      "questionId": "ood-n03-b02-i022",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Make Character→CampaignRevision navigable; keep the claims lookup outside a reverse association field.",
+      "reason": "Eligibility evaluation begins at Character and reads its current revision, while claim lookup and rule-version screens use separate routes. No client needs a campaign-side character collection."
+    },
+    {
+      "questionId": "ood-n03-b02-i023",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Make Shipment–Carrier navigable in both directions and update the inverse membership as part of the reassignment transaction.",
+      "reason": "Shipment detail and dispatch begin at opposite ends, and dispatch cannot scan the fleet. The reassignment transaction is the explicit mechanism for keeping the required reverse membership coherent."
+    },
+    {
+      "questionId": "ood-n03-b02-i024",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Keep Allocation→Account navigable and use the existing account-keyed query for history; omit the inverse object reference.",
+      "reason": "Posting follows each Allocation to its exact Account, while the history page already has a durable account-keyed index. That query serves the reverse lookup without duplicating the collection on Account."
+    },
+    {
+      "questionId": "ood-n03-b02-i025",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Expose Match→Bracket for the forfeit handler and leave Bracket→Matches to the slot-indexed repository.",
+      "reason": "Forfeit handling starts from Match and follows its Bracket reference; bracket rendering already obtains matches through the slot index. Neither path requires a reverse object list."
+    },
+    {
+      "questionId": "ood-n03-b02-i026",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Make Item–InspectionReport navigable in both directions and maintain the paired links in the write operation.",
+      "reason": "The inspector starts at Item and report detail starts at InspectionReport, so each screen needs a path from a different endpoint. The atomic writer is the stated mechanism for keeping both links aligned."
+    },
+    {
+      "questionId": "ood-n03-b02-i027",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Expose Snapshot→Dataset and Snapshot→CodeVersion; do not add reverse snapshot collections to either shared artifact.",
+      "reason": "The provenance viewer starts from Snapshot and needs the exact Dataset and CodeVersion it used, whereas those artifact screens never enumerate snapshots. Version references provide that provenance without reverse collections."
+    },
+    {
+      "questionId": "ood-n03-b02-i028",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Expose DocumentRevision→Annotations and Annotation→DocumentRevision/Author; omit Author→Annotations.",
+      "reason": "The review panel starts at DocumentRevision to list annotations; detail starts at Annotation to reach its revision and author. Indexed author search handles the author-rooted lookup, so no author-side list is needed."
+    },
+    {
+      "questionId": "ood-n03-b02-i029",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Expose InspectionSubmission→RouteRevision only.",
+      "reason": "Inspection comparison begins at Submission and follows its recorded RouteRevision; compliance search uses submission ID and the route editor has no submission list. Only the submission provenance path needs object navigation."
+    },
+    {
+      "questionId": "ood-n03-b02-i030",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Support both Order→InvoiceIssues and InvoiceIssue→Order, with one writer maintaining the inverse collection.",
+      "reason": "Order audit traverses to its issues, and issue correction follows back to Order, giving both ends a named direct consumer. One writer maintains those links when recording a new issue."
+    },
+    {
+      "questionId": "ood-n03-b02-i031",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Expose Door→BadgeAssignments and BadgeAssignment→Door; keep holder-to-badge lookup in the directory.",
+      "reason": "Door access checks start from Door, while badge detail starts from BadgeAssignment; both need a direct path across the association. Holder searches are directory-backed and add no third model traversal."
+    },
+    {
+      "questionId": "ood-n03-b02-i033",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Make Room–Booking navigable in both directions and update both links in the move operation.",
+      "reason": "The calendar starts at Room while booking detail starts at Booking, so each needs direct access to the other end. The move operation updates both memberships atomically, while canceled records remain historical."
+    },
+    {
+      "questionId": "ood-n03-b02-i034",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Expose Exhibit→MaintenancePolicy only.",
+      "reason": "The command guard begins at Exhibit and needs its policy version; policy lookup is registry-backed, and policy screens do not enumerate exhibits. No stated client traverses from policy to consumers."
+    },
+    {
+      "questionId": "ood-n03-b02-i036",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B02.json",
+      "beforeReason": "Expose Conversation→EscalationEvents and EscalationEvent→Conversation; keep author search directory-backed.",
+      "reason": "The timeline starts at Conversation and event detail starts at EscalationEvent, so both paths have named consumers. The writer maintains them transactionally; staff lookup remains directory-backed."
+    },
+    {
+      "questionId": "ood-n03-b03-i019",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "beforeReason": "Authorization ends at expiry, but the approval evidence remains auditable.",
+      "reason": "The grant must stop authorizing at expiry, but its retained ID and approval timestamps remain audit evidence. Expiring authority therefore does not mean deleting the grant record."
+    },
+    {
+      "questionId": "ood-n03-b03-i020",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "beforeReason": "Withdrawal ends the review opportunity, not the signed evidence already stored.",
+      "reason": "Withdrawal ends the opportunity to add decisions, while signed entries remain compliance evidence. Closing the request and retaining its committed decision records are separate lifecycle effects."
+    },
+    {
+      "questionId": "ood-n03-b03-i021",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "beforeReason": "Cancellation applies only to unsent drafts; the submitted object is independent.",
+      "reason": "Cancel removes session-local drafts, whereas submit copies their values into a permanent Inspection that must outlive the editor. That copy creates a lifecycle boundary the editor cleanup cannot cross."
+    },
+    {
+      "questionId": "ood-n03-b03-i023",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "beforeReason": "Success consumes this one-time secret before its time limit; replay evidence has a longer lifetime.",
+      "reason": "Confirmation consumes the one-time secret, but its marker remains to reject replay until the original expiry. The account and recovery audit have separate lifetimes from that challenge state."
+    },
+    {
+      "questionId": "ood-n03-b03-i028",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "beforeReason": "An unconfirmed hold expires without ever becoming a booking.",
+      "reason": "Confirmation creates the durable Booking; expiry removes only the ten-minute Hold. Treating the Hold as the Booking would leave a booking after the prompt says none exists."
+    },
+    {
+      "questionId": "ood-n03-b03-i030",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "beforeReason": "Retirement blocks new enrollment but does not sever historical completions.",
+      "reason": "Completion history still points to the exact retired revision, so replacing or deleting that identity would break the retained record. Retirement only removes it from future enrollment."
+    },
+    {
+      "questionId": "ood-n03-b03-i032",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "beforeReason": "Reassignment changes current fields and appends, rather than rewrites, history.",
+      "reason": "Each event captures the team and deadline at its own time, so rewriting an earlier event would erase historical values. Current assignment belongs on the conversation, with a new event recording the transition."
+    },
+    {
+      "questionId": "ood-n03-b03-i033",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B03.json",
+      "beforeReason": "Cancellation affects only unpublished work; publication creates another retained revision.",
+      "reason": "Existing orders pin prior published revisions, so publishing a successor cannot replace those objects in place. Cancel discards only the unpublished draft; publication has a separate retained-revision outcome."
+    },
+    {
+      "questionId": "ood-n03-b08-i021",
+      "sourcePath": "content/object-oriented-design-interview/relationships_composition_ownership_lifecycle_and_dependencies/OOD-N03-B08.json",
+      "beforeReason": "The prompt explicitly states that the caller retains the stream after this operation.",
+      "reason": "The caller must continue reading after the library returns, so library disposal would invalidate that remaining use. Reading a borrowed stream does not transfer disposal responsibility."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+✔ accepts the real BIZQ-01 replacement proof while preserving current and historical counts (2689.217584ms)
+✔ keeps the original migration verifier behavior when no BIZQ proof is present (496.340625ms)
+✔ rejects changes to a current replacement and its frozen old object (889.412084ms)
+✔ requires and binds the fixed 19a reason-only amendment proof (920.453875ms)
+✔ binds 19a to exact IDs, before/current Reasons, hashes, and closed membership (4683.330584ms)
+✔ rejects every non-Reason edit in an amended source object (3637.089834ms)
+✔ binds the catalog version and rejects symlink substitution for the 19a proof and source (1209.515958ms)
+✔ rejects stale batch identity, duplicate mappings, and a missing replacement (1761.689833ms)
+✔ rejects changes to an unrelated item in the proven current track (451.84ms)
+✔ accepts only the real same-ID Coding wording correction alongside the unchanged BESD proof (1891.208ms)
+✔ rejects the same-ID correction without its proof and rejects tampered frozen old objects (2314.358833ms)
+✔ rejects unapproved wording, answer, options, feedback and taxonomy changes in the corrected source (7485.32725ms)
+✔ rejects stale Coding version, proof identity/hashes/source location and unexpected proof fields (8368.068417ms)
+✔ rejects a corrected source moved away from its canonical mental-unit filename (105.875833ms)
+✔ rejects unreviewed primary-source pages even under the same publisher domain (1127.808334ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 38188.9805
