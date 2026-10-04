@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "scope": "Frozen v1 evidence, actual v2 preservation and independent current51 verdict bindings; not final153 cross-unit or source acceptance",
+  "frozenQuestions": 51,
+  "currentUnchangedPassQuestions": 49,
+  "independentlyReviewedCorrections": [
+    "ood-n05-b02-i010",
+    "ood-n05-b03-i017"
+  ],
+  "currentPassQuestions": 51
+}

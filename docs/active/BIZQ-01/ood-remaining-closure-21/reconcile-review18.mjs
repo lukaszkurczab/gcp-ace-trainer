@@ -1,5 +1,5 @@
-// Read-only evidence reuse: unchanged whole objects keep bounded semantic findings.
-// Changed/retired objects require their own accepted reviews; identity is not semantics.
+// Read-only evidence reuse: identity is necessary but does not establish that a
+// historical finding actually describes its object. Contradicted findings are excluded.
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
@@ -35,8 +35,16 @@ for(const s of sample.questions){
  const t=tracks.get(s.trackId);const current=t.byId.get(s.questionId);
  const currentFingerprint=current?sha256(canonicalJson(current)):null;
  const exact=currentFingerprint===s.itemFingerprint;
- rows.push({trackId:s.trackId,questionId:s.questionId,sourceFile:s.sourceFile,priorReport:r.report,priorVerdict:r.priorVerdict,priorSeverity:r.severity,priorItemFingerprint:s.itemFingerprint,currentItemFingerprint:currentFingerprint,currentContentVersion:t.validated.track.contentVersion,disposition:exact?'EXACT_OBJECT_REUSE':current?'CHANGED_OBJECT_REVIEW_REQUIRED':'RETIRED_ID_ACCEPTANCE_LINK_REQUIRED',finding:r.reviewNote||r.reason||r.finding||r.rationale});
+ const finding=r.reviewNote||r.reason||r.finding||r.rationale;
+ const misattached=exact&&s.trackId==='object-oriented-design-interview'&&s.questionId==='ood-n08-b02-i015';
+ if(misattached){
+  assert.equal(currentFingerprint,'2ba13008bd7a3672b83f09244173d6f57aebc926a1a24aa1639d7a195a8205c5');
+  assert(finding.includes('lazy vs eager loading'));
+  assert.equal(current.mentalUnitId,'OOD-N08-B02');
+  assert(current.prompt.includes('Locks, immutability, actors, queues, and ownership transfer'));
+ }
+ rows.push({trackId:s.trackId,questionId:s.questionId,sourceFile:s.sourceFile,priorReport:r.report,priorVerdict:r.priorVerdict,priorSeverity:r.severity,priorItemFingerprint:s.itemFingerprint,currentItemFingerprint:currentFingerprint,currentContentVersion:t.validated.track.contentVersion,disposition:misattached?'EXACT_OBJECT_FINDING_REASSESSMENT_REQUIRED':exact?'EXACT_OBJECT_REUSE':current?'CHANGED_OBJECT_REVIEW_REQUIRED':'RETIRED_ID_ACCEPTANCE_LINK_REQUIRED',finding,...(misattached?{findingReassessmentReason:'Historical lazy/eager query-loading finding does not describe this invoice reissue/synchronization object. Excluded from reusable findings; current source assessment is separate and does not inherit its prior critical grade.'}:{})});
 }
 assert.equal(rows.length,216);
-const byTrack={};for(const r of rows){const c=byTrack[r.trackId]??={reviewed:0,exactPass:0,exactDefect:0,changed:0,retired:0};c.reviewed++;if(r.disposition==='EXACT_OBJECT_REUSE')c[r.priorVerdict==='PASS'?'exactPass':'exactDefect']++;else c[r.disposition==='CHANGED_OBJECT_REVIEW_REQUIRED'?'changed':'retired']++;}
-console.log(JSON.stringify({scope:'216 prior whole-object findings reconciled to current canonical source and all nine bundled artifacts; no new semantic certification, whole-bank rate or full acceptance',contentHead:execFileSync('git',['rev-parse','HEAD'],{cwd:content,encoding:'utf8'}).trim(),appHead:execFileSync('git',['rev-parse','HEAD'],{cwd:app,encoding:'utf8'}).trim(),sampleSha256:sha256(sampleBytes),reportBindings,byTrack,items:rows},null,2));
+const byTrack={};for(const r of rows){const c=byTrack[r.trackId]??={reviewed:0,exactPass:0,exactDefect:0,changed:0,retired:0,findingReassessment:0};c.reviewed++;if(r.disposition==='EXACT_OBJECT_REUSE')c[r.priorVerdict==='PASS'?'exactPass':'exactDefect']++;else c[r.disposition==='EXACT_OBJECT_FINDING_REASSESSMENT_REQUIRED'?'findingReassessment':r.disposition==='CHANGED_OBJECT_REVIEW_REQUIRED'?'changed':'retired']++;}
+console.log(JSON.stringify({scope:'216 prior whole objects reconciled to current source and all nine bundled artifacts; known misattached finding excluded despite exact fingerprint. No new semantic certification, whole-bank rate or full acceptance',contentHead:execFileSync('git',['rev-parse','HEAD'],{cwd:content,encoding:'utf8'}).trim(),appHead:execFileSync('git',['rev-parse','HEAD'],{cwd:app,encoding:'utf8'}).trim(),sampleSha256:sha256(sampleBytes),reportBindings,byTrack,items:rows},null,2));

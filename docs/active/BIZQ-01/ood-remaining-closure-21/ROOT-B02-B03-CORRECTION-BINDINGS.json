@@ -1,0 +1,22 @@
+{
+  "result": "PASS",
+  "scope": "Actual v1-v2 whole-object delta and immutable review-input snapshots; no semantic verdict",
+  "units": [
+    {
+      "unit": "B02",
+      "changedQuestionIds": [
+        "ood-n05-b02-i010"
+      ],
+      "preservedWholeObjects": 16,
+      "proposalSha256": "f55212aa6ea4f2514eed7c413f4e3d7f4c4c2960fd13b7097332c4902d5fca41"
+    },
+    {
+      "unit": "B03",
+      "changedQuestionIds": [
+        "ood-n05-b03-i017"
+      ],
+      "preservedWholeObjects": 16,
+      "proposalSha256": "2b66e8ff0fd2d1bc395896786e1942b38017724c50ea809fef1eb5ef5aa8eaf0"
+    }
+  ]
+}

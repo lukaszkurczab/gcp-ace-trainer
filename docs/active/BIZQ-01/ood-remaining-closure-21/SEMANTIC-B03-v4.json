@@ -1,0 +1,52 @@
+{
+  "verdict": "PASS",
+  "scope": "Independent whole-object semantic review of frozen N05-B03 v4 only; not source or full-bank acceptance",
+  "input": {
+    "path": "review-inputs/N05-B03-v4.json",
+    "sha256": "98d7f3b25566afacac31944f5a7557fc03efacc3ba297aeacbd15789775df7af",
+    "beforeManifest": "N05-MANIFEST.json",
+    "beforeManifestSha256": "bdef2880a62de54f54e3c06cb9ffc9bd5c900be31c6135d7a0b16c7583ab320a",
+    "matchedPriorReviewInput": "review-inputs/N05-B03-v2.json",
+    "matchedPriorReviewInputSha256": "2b66e8ff0fd2d1bc395896786e1942b38017724c50ea809fef1eb5ef5aa8eaf0",
+    "currentRegistrySha256": "f7f50f13bb2f957c6f41442f1e6d79bb843a096fd7911b77103087fde71624ee"
+  },
+  "method": {
+    "wholeObjectFieldsRead": ["prompt", "constraints", "options", "answer", "Reason", "all five Details fields", "all option-targeted feedback", "sourceRefs"],
+    "perOptionChecks": "The key resolves to one option; the three feedback targets equal the wrong-option IDs; feedback and explanation diagnose the visible misconception.",
+    "beforeComparison": "All 17 question IDs and the B03 copy/prototype objective remain aligned with their before objects; keyed answer IDs are fresh.",
+    "structuralReceipt": {
+      "path": "ROOT-STRUCTURE-B03-v4.json",
+      "sha256": "babddccdec0c6327673e746dabcd2ec7a19871551afba6b63b5d5433b10ea08b",
+      "use": "Corroborating 17-question/136-score-case structure only; not used as semantic acceptance."
+    }
+  },
+  "counts": {"wholeObjects": 17, "pass": 17, "revise": 0, "currentQuestionIdsPreserved": 17, "freshKeyOptionIds": 17, "uniqueOptionIds": 68},
+  "items": [
+    {"questionId":"ood-n05-b03-i001","beforeQuestionId":"ood-n05-b03-i001","keyOptionId":"n05b03_i001_copy_policy","decision":"Keep the same registered background and palette objects; allocate a workspace-local annotation collection.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i002","beforeQuestionId":"ood-n05-b03-i002","keyOptionId":"n05b03_i002_copy_policy","decision":"Snapshot edited route values; assign the new escalation its own ID and due date.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i003","beforeQuestionId":"ood-n05-b03-i003","keyOptionId":"n05b03_i003_copy_policy","decision":"Retain the shared immutable carrier table; copy configured dimensions into shipment-owned state.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i004","beforeQuestionId":"ood-n05-b03-i004","keyOptionId":"n05b03_i004_copy_policy","decision":"Retain shared immutable booking policies; seed a booking-owned attendee list.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i005","beforeQuestionId":"ood-n05-b03-i005","keyOptionId":"n05b03_i005_copy_policy","decision":"Retain the shared versioned protocol; copy the calibration offset into installation-owned state.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i006","beforeQuestionId":"ood-n05-b03-i006","keyOptionId":"n05b03_i006_copy_policy","decision":"Create a new order list; retain stable section IDs and immutable section references.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i007","beforeQuestionId":"ood-n05-b03-i007","keyOptionId":"n05b03_i007_copy_policy","decision":"Create new editable shape records; retain references to canonical immutable assets.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i008","beforeQuestionId":"ood-n05-b03-i008","keyOptionId":"n05b03_i008_copy_policy","decision":"Retain plot and approval policy; create a new request identity/date with no inherited result.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i009","beforeQuestionId":"ood-n05-b03-i009","keyOptionId":"n05b03_i009_copy_policy","decision":"Copy the mutable ordered component list; retain the shared currency definition.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i010","beforeQuestionId":"ood-n05-b03-i010","keyOptionId":"n05b03_i010_copy_policy","decision":"Copy depot-specific tuned policy values; retain the common immutable unit dictionary/version.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i011","beforeQuestionId":"ood-n05-b03-i011","keyOptionId":"n05b03_i011_copy_policy","decision":"Copy editable metadata; retain exact source-revision and checksum references.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i012","beforeQuestionId":"ood-n05-b03-i012","keyOptionId":"n05b03_i012_copy_policy","decision":"Copy destination/consent defaults; initialize recipient choice and attempt history for the new referral.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i013","beforeQuestionId":"ood-n05-b03-i013","keyOptionId":"n05b03_i013_copy_policy","decision":"Create one copied chart node and preserve both widget references to it within the duplicate graph.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i014","beforeQuestionId":"ood-n05-b03-i014","keyOptionId":"n05b03_i014_copy_policy","decision":"Copy editable steps and thresholds; retain shared immutable policy-document links.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i015","beforeQuestionId":"ood-n05-b03-i015","keyOptionId":"n05b03_i015_copy_policy","decision":"Retain shared immutable calibration; initialize a fresh empty measurement list.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i016","beforeQuestionId":"ood-n05-b03-i016","keyOptionId":"n05b03_i016_copy_policy","decision":"Copy editable benefits; retain the shared tax definition and assign a new catalog ID.","verdict":"PASS"},
+    {"questionId":"ood-n05-b03-i017","beforeQuestionId":"ood-n05-b03-i017","keyOptionId":"n05b03_i017_copy_policy","decision":"Copy mutable match slots; retain the shared rule-set; initialize a fresh tournament ID and empty results.","verdict":"PASS"}
+  ],
+  "qualityAssessment": {
+    "promptDisclosure": "The v4 stems present requirements instead of prescribing the copy policy. i001 explicitly requires the same registered asset objects, not only equal IDs/values.",
+    "plausibleAlternatives": "Each item presents concrete competing mistakes such as aliasing mutable state, replacing required shared identity, carrying prior identity/history, or discarding configured state; keyed diagnostics are aligned.",
+    "lengthCue": {"method":"whitespace-separated words, descriptive only","keyUniquelyLongest":4,"keyTiedLongest":4,"keyShorterThanAtLeastOneAlternative":9,"finding":"No systematic longest-is-correct cue in the current choices; these counts are not a threshold."},
+    "reasonAndDetails": "Reasons state the deciding copy boundary; all five Details fields apply it, diagnose the nearest error, and describe a boundary. No key-paraphrase defect found.",
+    "sources": "Scenario premises are authored facts. Design Patterns and Fowler Making Stubs provide general design context; no scenario-specific guarantee or external API claim depends on them.",
+    "duplicateAssessment": "The repeated shared-reference/local-state rule is practice within the copy-semantics unit. Items use different object relationships and decisive state boundaries; no same-facts/same-action duplicate found."
+  },
+  "limits": ["Proposal-only semantic review.", "No source activation, producer proof, app consumer, admission, native/Premium eligibility, or full BIZQ-01 closure is claimed."]
+}

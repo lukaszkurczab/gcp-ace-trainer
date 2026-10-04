@@ -1,0 +1,1141 @@
+[
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The correction reference is conditional on invoice type, so validity cannot be decided by a flat list of nullable constructor arguments.",
+      "details": {
+        "mechanismOrProperty": "A replacement builder can expose a correction stage and refuse completion until it has the reference.",
+        "scenarioApplication": "The issue service only receives the completed invoice; it cannot observe the partially assembled replacement.",
+        "errorCorrection": "The caller would have to duplicate the conditional completeness rule before issue. Null slots cannot distinguish a new issue from a replacement that still lacks its required reference. That allows an issued replacement to escape before its required provenance is present.",
+        "boundaryOrTradeoff": "This staging is warranted by the different completeness rule for replacement issues, not by the word “invoice.”",
+        "transfer": "Model construction phases around fields that become required under the selected case."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_01_early",
+          "text": "The caller would have to duplicate the conditional completeness rule before issue."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_01_mutable",
+          "text": "Null slots cannot distinguish a new issue from a replacement that still lacks its required reference."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_01_caller",
+          "text": "That allows an issued replacement to escape before its required provenance is present."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Validate the replacement draft only after its required correction reference is present."
+        },
+        {
+          "optionId": "n05b02_01_early",
+          "text": "Fill a mutable Invoice with setters and let the issue caller inspect every field."
+        },
+        {
+          "optionId": "n05b02_01_mutable",
+          "text": "Use a positional constructor with nullable slots for every field."
+        },
+        {
+          "optionId": "n05b02_01_caller",
+          "text": "Create the invoice first and attach a correction reference after issue."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A billing operator prepares a replacement invoice from a rejected issue. The request needs customer, line items, jurisdiction and a correction reference; the reference is required only for replacements. No invoice may be issued with a missing required field. The conditional correction reference and required field set must be checked before an invoice becomes usable. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i001",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The second step consumes a result produced by the first, and activation is valid only after both finish.",
+      "details": {
+        "mechanismOrProperty": "The builder stages make the returned credential ID available before permission assignment and prevent early activation.",
+        "scenarioApplication": "If credential creation fails, no permissioned or active badge is returned as a completed result.",
+        "errorCorrection": "The identifier is not known until the first operation completes, so a flat input cannot represent the stated dependency. This exposes an active badge before the required permission step. That leaves the dependency and activation rule to callers despite the product’s enrollment flow.",
+        "boundaryOrTradeoff": "The staged API should expose only the operations available at each phase; it need not model unrelated access policy.",
+        "transfer": "Use a construction sequence when later input depends on a prior construction result."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_02_early",
+          "text": "The identifier is not known until the first operation completes, so a flat input cannot represent the stated dependency."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_02_mutable",
+          "text": "This exposes an active badge before the required permission step."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_02_caller",
+          "text": "That leaves the dependency and activation rule to callers despite the product’s enrollment flow."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Create the credential first, assign permissions with its ID, then activate."
+        },
+        {
+          "optionId": "n05b02_02_early",
+          "text": "Accept one flat Badge object with credential ID and permissions supplied together."
+        },
+        {
+          "optionId": "n05b02_02_mutable",
+          "text": "Activate a badge and let a later job fill in its permissions."
+        },
+        {
+          "optionId": "n05b02_02_caller",
+          "text": "Ask the administrator to retry each vendor-specific step manually."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A facilities administrator enrolls a badge. The credential must be created before door permissions can be assigned, and the badge cannot be activated until both stages succeed. Permission assignment depends on the identifier returned by credential creation. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i002",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Hazard status changes the request’s required fields, so construction must validate the conditional requirement before the carrier call.",
+      "details": {
+        "mechanismOrProperty": "A staged request builder can collect parcel facts, then apply the hazard-specific certificate rule before producing the final request.",
+        "scenarioApplication": "No carrier label is emitted until the request is complete under its selected classification.",
+        "errorCorrection": "The constructor accepts an invalid hazardous request with no certificate. The carrier would receive a document produced from incomplete classification. A global lookup does not bind the certificate to this parcel request.",
+        "boundaryOrTradeoff": "The certificate rule is a case-specific input dependency; it does not imply every shipping object needs a builder.",
+        "transfer": "When a choice changes required fields, validate the object after that choice and before use."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_03_early",
+          "text": "The constructor accepts an invalid hazardous request with no certificate."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_03_mutable",
+          "text": "The carrier would receive a document produced from incomplete classification."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_03_caller",
+          "text": "A global lookup does not bind the certificate to this parcel request."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Require a certificate after hazardous status is selected; validate before label generation."
+        },
+        {
+          "optionId": "n05b02_03_early",
+          "text": "Use one constructor with an optional certificate and trust callers to remember when it is needed."
+        },
+        {
+          "optionId": "n05b02_03_mutable",
+          "text": "Generate a label before recording hazard status, then patch the request."
+        },
+        {
+          "optionId": "n05b02_03_caller",
+          "text": "Keep a global list of certificates and select one during rendering."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A shipment label request requires destination and parcel dimensions. If the parcel is hazardous, it also requires a handling certificate before the carrier label can be generated. Hazard classification changes which data is required for a valid label request. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i003",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The scheduler cannot decide capacity from a partial booking; all three inputs must be available before it records one.",
+      "details": {
+        "mechanismOrProperty": "The staged draft gathers the fields, and completion runs the capacity check before exposing a Booking.",
+        "scenarioApplication": "If the attendee count is too large, construction ends without recording a booking.",
+        "errorCorrection": "That can reserve a time before the complete attendee count is known. A live booking can temporarily omit the values needed for the capacity check. Late parsing postpones required validation until after the record is stored.",
+        "boundaryOrTradeoff": "If the product later permits tentative holds, define that separate state instead of treating an incomplete draft as a confirmed Booking.",
+        "transfer": "Place validation at the point where all required construction inputs are present and before the object is published."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_04_early",
+          "text": "That can reserve a time before the complete attendee count is known."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_04_mutable",
+          "text": "A live booking can temporarily omit the values needed for the capacity check."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_04_caller",
+          "text": "Late parsing postpones required validation until after the record is stored."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Collect the complete booking draft, check capacity, then record it."
+        },
+        {
+          "optionId": "n05b02_04_early",
+          "text": "Reserve the room when the first attendee is added and adjust capacity later."
+        },
+        {
+          "optionId": "n05b02_04_mutable",
+          "text": "Let callers set room, time and attendees directly on a live Booking."
+        },
+        {
+          "optionId": "n05b02_04_caller",
+          "text": "Accept a single opaque string and parse the booking fields after persistence."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A room booking may contain several attendees. The scheduler checks room capacity only after room and time are set, then records the booking after the check passes. Capacity validation needs the completed room, time and attendee count together. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i004",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Preset validity depends on the earlier model choice, so construction should not accept the three values as independent inputs.",
+      "details": {
+        "mechanismOrProperty": "The staged API can offer model-specific presets only after a model has been selected and validate before completion.",
+        "scenarioApplication": "A completed installation is ready to use; incomplete configuration remains a draft.",
+        "errorCorrection": "A preset can be incompatible with the model selected later. The stated system treats an installation without a preset as unusable. The caller can supply a preset that is not offered for the selected model.",
+        "boundaryOrTradeoff": "The builder owns configuration completeness, not the projector’s runtime command behavior.",
+        "transfer": "Represent dependencies between configuration choices in the order the user must make them."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_05_early",
+          "text": "A preset can be incompatible with the model selected later."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_05_mutable",
+          "text": "The stated system treats an installation without a preset as unusable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_05_caller",
+          "text": "The caller can supply a preset that is not offered for the selected model."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Select manufacturer and model before offering a model-valid calibration preset."
+        },
+        {
+          "optionId": "n05b02_05_early",
+          "text": "Choose a preset first and let the device correct it after startup."
+        },
+        {
+          "optionId": "n05b02_05_mutable",
+          "text": "Create an active installation with an empty preset and patch it after deployment."
+        },
+        {
+          "optionId": "n05b02_05_caller",
+          "text": "Pass manufacturer, model and preset as unrelated strings in a single call."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A projector installation selects a manufacturer and then a device model. Available calibration presets depend on that model, and an installation is not usable until one preset is chosen. Model selection narrows the available calibration choices. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i005",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The rubric’s references cannot be checked until the content and edition are fixed.",
+      "details": {
+        "mechanismOrProperty": "The staged release builder delays snapshot creation until the cross-part validation can run against the selected inputs.",
+        "scenarioApplication": "If a reference points outside the chosen content, no publishable snapshot is returned.",
+        "errorCorrection": "The published release could lack the rubric whose references determine validity. Callers can expose a combination whose rubric references another content version. The default cannot validate references to content that has not yet been selected.",
+        "boundaryOrTradeoff": "The release snapshot is constructed here; later learner progress remains outside this publication operation.",
+        "transfer": "Delay finalization until dependent parts are known and validated together."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_06_early",
+          "text": "The published release could lack the rubric whose references determine validity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_06_mutable",
+          "text": "Callers can expose a combination whose rubric references another content version."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_06_caller",
+          "text": "The default cannot validate references to content that has not yet been selected."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Choose content and edition, validate rubric references, then create the release snapshot."
+        },
+        {
+          "optionId": "n05b02_06_early",
+          "text": "Publish content first and attach a rubric afterward."
+        },
+        {
+          "optionId": "n05b02_06_mutable",
+          "text": "Store content, rubric and edition in mutable public fields."
+        },
+        {
+          "optionId": "n05b02_06_caller",
+          "text": "Select a rubric from a global default before choosing content."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A lesson release is assembled from content, a rubric and an edition. The rubric must reference sections in the selected content, and the release snapshot is publishable only after those references validate. Rubric validation depends on the chosen content and edition. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i006",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The export’s two inputs are order-dependent: the manifest must reference the captured revision and chosen format.",
+      "details": {
+        "mechanismOrProperty": "The builder keeps the object as a draft through capture and manifest validation, then exposes the completed export.",
+        "scenarioApplication": "A mismatch is detected before bytes leave the export boundary.",
+        "errorCorrection": "The manifest cannot name a revision that has not been captured. Callers can export a manifest that refers to a different or absent revision. That publishes an incomplete export despite the stated requirement.",
+        "boundaryOrTradeoff": "This does not require a builder for ordinary board reads that do not assemble a multi-part artifact.",
+        "transfer": "Construct multi-part outputs only after their references can be checked together."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_07_early",
+          "text": "The manifest cannot name a revision that has not been captured."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_07_mutable",
+          "text": "Callers can export a manifest that refers to a different or absent revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_07_caller",
+          "text": "That publishes an incomplete export despite the stated requirement."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Capture a revision, choose format, validate its manifest, then export."
+        },
+        {
+          "optionId": "n05b02_07_early",
+          "text": "Choose a format and create a manifest before capturing the revision."
+        },
+        {
+          "optionId": "n05b02_07_mutable",
+          "text": "Expose a mutable Export with public revision and manifest fields."
+        },
+        {
+          "optionId": "n05b02_07_caller",
+          "text": "Export first and attach a manifest in a later update."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A board-history export must capture one board revision and a format. Its manifest contains the revision identifier and fields required by that format; an incomplete manifest cannot be exported. The manifest depends on both the captured revision and chosen output format. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i007",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The chosen team determines the deadline, so the order of those construction decisions matters.",
+      "details": {
+        "mechanismOrProperty": "The builder derives the deadline after team selection and exposes the record only when the pair is complete.",
+        "scenarioApplication": "The receiver cannot get an escalation with a missing or mismatched deadline.",
+        "errorCorrection": "The due time would use no team schedule or the wrong one. The record would be sent without a required deadline. Different callers can combine a deadline from one schedule with another team.",
+        "boundaryOrTradeoff": "If team schedules are not relevant to a particular escalation type, the construction rules for that type should say so explicitly.",
+        "transfer": "Keep derived fields close to the selected inputs that determine them."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_08_early",
+          "text": "The due time would use no team schedule or the wrong one."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_08_mutable",
+          "text": "The record would be sent without a required deadline."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_08_caller",
+          "text": "Different callers can combine a deadline from one schedule with another team."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Select the receiving team before deriving its deadline and sending the record."
+        },
+        {
+          "optionId": "n05b02_08_early",
+          "text": "Calculate the deadline before the destination team is chosen."
+        },
+        {
+          "optionId": "n05b02_08_mutable",
+          "text": "Send a partial record and let the receiving team fill the deadline."
+        },
+        {
+          "optionId": "n05b02_08_caller",
+          "text": "Let each escalation caller calculate a deadline and assign the team separately."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "An escalation record requires a case ID and reason. A deadline is then calculated from the selected receiving team’s schedule; the record cannot be sent until its assigned team and deadline are present. Deadline calculation uses the team selected during record construction. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i008",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The promotion is optional, but when present it must satisfy a relation to the base price.",
+      "details": {
+        "mechanismOrProperty": "The builder validates that relation at completion and yields only a publishable listing.",
+        "scenarioApplication": "The marketplace cannot rely on presentation code to repair invalid source data.",
+        "errorCorrection": "A listing can become visible with an invalid promotion. The booleans do not enforce the stated price relationship. A display filter leaves invalid listing data stored as publishable.",
+        "boundaryOrTradeoff": "If promotions become a separate offer object, keep its lifecycle explicit instead of weakening listing validation.",
+        "transfer": "Optional data still needs validation when it changes the validity of the whole object."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_09_early",
+          "text": "A listing can become visible with an invalid promotion."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_09_mutable",
+          "text": "The booleans do not enforce the stated price relationship."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_09_caller",
+          "text": "A display filter leaves invalid listing data stored as publishable."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Validate any promotion against base price before publishing the listing."
+        },
+        {
+          "optionId": "n05b02_09_early",
+          "text": "Publish first and add a promotion later without rechecking price."
+        },
+        {
+          "optionId": "n05b02_09_mutable",
+          "text": "Use a constructor with one boolean per optional field and no final validation."
+        },
+        {
+          "optionId": "n05b02_09_caller",
+          "text": "Let the marketplace screen hide promotions that fail validation."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A listing requires a title, price and stock count. A promotional price is optional, but if supplied it must be below the base price; publication only accepts a validated listing. The optional field adds a cross-field condition that must be checked before publication. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i009",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The split plan is valid as a whole, not line by line; its total is known only when construction is complete.",
+      "details": {
+        "mechanismOrProperty": "The builder accumulates candidate lines and checks the aggregate before it returns the plan for dispatch.",
+        "scenarioApplication": "A partial plan never represents a completed split under the stated contract.",
+        "errorCorrection": "Dispatched lines cannot satisfy a pre-dispatch aggregate check. The total invariant can be broken after validation. Combining the plans without a final total check does not establish that their combined quantity equals the original request.",
+        "boundaryOrTradeoff": "If the business later accepts partial fulfillment, represent that as a separate outcome instead of treating a partial split as complete.",
+        "transfer": "Validate collection-wide invariants after the required members have been assembled."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_10_early",
+          "text": "Dispatched lines cannot satisfy a pre-dispatch aggregate check."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_10_mutable",
+          "text": "The total invariant can be broken after validation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_10_caller",
+          "text": "Combining the plans without a final aggregate check does not establish that their combined quantity equals the original request."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Validate the assembled split quantities before dispatching its plan."
+        },
+        {
+          "optionId": "n05b02_10_early",
+          "text": "Create each shipment as final and reconcile totals after dispatch."
+        },
+        {
+          "optionId": "n05b02_10_mutable",
+          "text": "Allow callers to mutate the split list on a live plan."
+        },
+        {
+          "optionId": "n05b02_10_caller",
+          "text": "Combine independently validated plans at dispatch without checking their combined total."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A backordered request is split into vendor shipments. Split quantities must be positive and sum to the original request; each shipment also carries the original delivery promise. The total can be checked only after every split line is assembled. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i010",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The approval is not a free-standing field: it must correspond to the chosen plot and date before confirmation.",
+      "details": {
+        "mechanismOrProperty": "Staged construction makes the selected reservation context available when the approval is checked.",
+        "scenarioApplication": "Only the validated completed reservation crosses the confirmation boundary.",
+        "errorCorrection": "The reservation is confirmed without a required approval. A code for another reservation would pass construction despite the stated scope. A complete argument list does not ensure the code matches its selected plot and date.",
+        "boundaryOrTradeoff": "A tentative hold would need a different explicit state; it is not the confirmed reservation asked for here.",
+        "transfer": "Validate credentials or references against the context that scopes them before finalizing the object."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_11_early",
+          "text": "The reservation is confirmed without a required approval."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_11_mutable",
+          "text": "A code for another reservation would pass construction despite the stated scope."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_11_caller",
+          "text": "A complete argument list does not ensure the code matches its selected plot and date."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Check the selected plot/date approval before confirming the reservation."
+        },
+        {
+          "optionId": "n05b02_11_early",
+          "text": "Confirm the reservation and collect approval at check-in."
+        },
+        {
+          "optionId": "n05b02_11_mutable",
+          "text": "Accept any approval code and check its plot/date later."
+        },
+        {
+          "optionId": "n05b02_11_caller",
+          "text": "Ask callers to pass plot, date and code with no consistency check."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A garden reservation requires plot, date and steward approval. An approval code is valid only for the selected plot and date, and confirmed reservations cannot omit it. Approval is scoped to a pair of fields chosen earlier. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i011",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The billing cycle defines the allowed schedule, so the quote must validate the relationship before issue.",
+      "details": {
+        "mechanismOrProperty": "The builder gathers package and cycle first, then checks the attached schedule against that cycle.",
+        "scenarioApplication": "A mismatched schedule cannot be emitted as a valid quote.",
+        "errorCorrection": "There is no basis for choosing a cycle-specific schedule yet. The issued quote can represent a package/cycle without its required payment schedule. The two IDs may refer to incompatible quote terms.",
+        "boundaryOrTradeoff": "Changing a quote after issue would be a separate revision operation, not a construction shortcut.",
+        "transfer": "Build derived or dependent selections from the choice that constrains them."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_12_early",
+          "text": "There is no basis for choosing a cycle-specific schedule yet."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_12_mutable",
+          "text": "The issued quote can represent a package/cycle without its required payment schedule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_12_caller",
+          "text": "The two IDs may refer to incompatible quote terms."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Choose the billing cycle before validating its installment schedule."
+        },
+        {
+          "optionId": "n05b02_12_early",
+          "text": "Select an installment schedule before the billing cycle."
+        },
+        {
+          "optionId": "n05b02_12_mutable",
+          "text": "Issue the quote and patch the schedule afterward."
+        },
+        {
+          "optionId": "n05b02_12_caller",
+          "text": "Let clients pass package and schedule IDs independently."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A subscription quote selects a package and billing cycle. The cycle determines which installment schedule can be attached; the quote is issued only when package, cycle and schedule agree. The schedule depends on the selected billing cycle. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i012",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Capacity is a property of the selected station and interval together, so neither can be omitted or replaced after checking.",
+      "details": {
+        "mechanismOrProperty": "The builder holds a draft until the exact pair is available and only returns the reservation after a successful check.",
+        "scenarioApplication": "A failed capacity check produces no confirmed reservation.",
+        "errorCorrection": "Confirmation precedes the check that the prompt requires. The object can temporarily claim confirmation without the tested capacity pair. The check would not apply to the station stored in the result.",
+        "boundaryOrTradeoff": "This does not specify how competing requests are serialized; it only defines which inputs the construction check must use.",
+        "transfer": "Bind a validation result to the exact values it validated."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_13_early",
+          "text": "Confirmation precedes the check that the prompt requires."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_13_mutable",
+          "text": "The object can temporarily claim confirmation without the tested capacity pair."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_13_caller",
+          "text": "The check would not apply to the station stored in the result."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Check capacity for the exact station and interval before confirmation."
+        },
+        {
+          "optionId": "n05b02_13_early",
+          "text": "Confirm the station before selecting a time and check capacity later."
+        },
+        {
+          "optionId": "n05b02_13_mutable",
+          "text": "Let the caller attach station and interval to a live confirmed reservation."
+        },
+        {
+          "optionId": "n05b02_13_caller",
+          "text": "Check capacity on a default station and let the caller replace the station."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A charger reservation requires station and interval. Capacity is checked for that interval, and the reservation is confirmed only after the station and interval are known together. The capacity check consumes the exact station/interval pair. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i013",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The versions identify the snapshot’s inputs; optional commentary is not a substitute for either reference.",
+      "details": {
+        "mechanismOrProperty": "The builder validates both structured version fields regardless of whether notes are supplied.",
+        "scenarioApplication": "The published snapshot cannot lose its provenance through an incomplete construction path.",
+        "errorCorrection": "The published record would not identify the inputs that produced it. Free text cannot provide the required structured references. That reverses which fields the prompt says are necessary.",
+        "boundaryOrTradeoff": "Notes remain optional and should not be made a gate just because the version references are required.",
+        "transfer": "Separate required identity/provenance inputs from optional explanatory metadata."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_14_early",
+          "text": "The published record would not identify the inputs that produced it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_14_mutable",
+          "text": "Free text cannot provide the required structured references."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_14_caller",
+          "text": "That reverses which fields the prompt says are necessary."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Require both version references before publishing; keep notes optional."
+        },
+        {
+          "optionId": "n05b02_14_early",
+          "text": "Publish a snapshot with missing versions and fill them in later."
+        },
+        {
+          "optionId": "n05b02_14_mutable",
+          "text": "Treat a note explaining the versions as a substitute for the version fields."
+        },
+        {
+          "optionId": "n05b02_14_caller",
+          "text": "Require notes before allowing publication but leave versions optional."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A research snapshot records dataset version and analysis code version. Optional notes can be added, but the snapshot cannot be published unless both version references are present. Two required references must be set before publication; notes do not satisfy either one. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i014",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Calibration is part of the meaning of the samples, so it must be fixed before those samples are added to the submitted object.",
+      "details": {
+        "mechanismOrProperty": "The builder carries device and calibration context through sample collection and freezes the complete inspection at submission.",
+        "scenarioApplication": "After submission, the source object is not extended by later sample writes under this scenario’s fixed-snapshot requirement.",
+        "errorCorrection": "The earlier measurements have no established interpretation context. The prompt defines a submitted inspection as a fixed snapshot. A global mutable object can mix one inspection’s samples with another context.",
+        "boundaryOrTradeoff": "The prompt does not require a particular calibration algorithm; it requires that the selected profile be recorded before samples.",
+        "transfer": "Capture interpretation context before collecting values whose meaning depends on it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_15_early",
+          "text": "The earlier measurements have no established interpretation context."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_15_mutable",
+          "text": "The prompt defines a submitted inspection as a fixed snapshot."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_15_caller",
+          "text": "A global mutable object can mix one inspection’s samples with another context."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Select calibration before collecting samples; submit the completed snapshot."
+        },
+        {
+          "optionId": "n05b02_15_early",
+          "text": "Collect samples first and choose calibration at submission."
+        },
+        {
+          "optionId": "n05b02_15_mutable",
+          "text": "Submit an empty inspection and append samples afterward."
+        },
+        {
+          "optionId": "n05b02_15_caller",
+          "text": "Store samples on a mutable global device object."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A field inspection is created from a device ID and calibration profile. Measurement samples are accepted only after that calibration is selected, and the submitted inspection is a fixed snapshot. The measurements are interpreted under a selected calibration and are included only after it is set. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i015",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Redaction depends on two earlier choices, so packet contents are not complete until those choices are known and checked.",
+      "details": {
+        "mechanismOrProperty": "The builder treats the packet as a draft while destination-specific consent rules determine its document set.",
+        "scenarioApplication": "Transmission happens only for a validated final packet, not for intermediate data.",
+        "errorCorrection": "The destination would receive data before the required redaction check. The redaction cannot be checked against the selected destination and consent. The final contents cannot reflect a consent scope not yet selected.",
+        "boundaryOrTradeoff": "This fictional packet rule does not claim a general legal rule; the prompt states the exact scenario contract.",
+        "transfer": "Delay external use of a constructed object until its context-dependent contents are validated."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_16_early",
+          "text": "The destination would receive data before the required redaction check."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_16_mutable",
+          "text": "The redaction cannot be checked against the selected destination and consent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_16_caller",
+          "text": "The final contents cannot reflect a consent scope not yet selected."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Apply destination-and-consent redaction before transmitting the packet."
+        },
+        {
+          "optionId": "n05b02_16_early",
+          "text": "Transmit first and redact the documents in a later callback."
+        },
+        {
+          "optionId": "n05b02_16_mutable",
+          "text": "Let the caller supply a pre-redacted packet with no destination context."
+        },
+        {
+          "optionId": "n05b02_16_caller",
+          "text": "Choose consent after the document set is finalized."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A referral packet includes destination, consent scope and clinical documents. Redaction depends on both consent and destination; the packet cannot be transmitted until the redacted document set is checked. The selected destination and consent jointly determine the packet contents. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i016",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The pass type changes the required construction fields, and issue must wait until that conditional field is checked.",
+      "details": {
+        "mechanismOrProperty": "The staged pass builder can branch after pass type selection and validate the complete role/time combination.",
+        "scenarioApplication": "A gate sees either a complete pass or no issued pass, never an incomplete draft.",
+        "errorCorrection": "The gate receives a pass whose required validity window is missing. Null is accepted even when the selected pass type requires an end time. A pass can be issued with the role from one record and time window from another.",
+        "boundaryOrTradeoff": "An untimed pass can omit the end time only if its distinct type is explicitly selected.",
+        "transfer": "Represent conditional validity in construction instead of relying on every caller to remember it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_17_early",
+          "text": "The gate receives a pass whose required validity window is missing."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_17_mutable",
+          "text": "Null is accepted even when the selected pass type requires an end time."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b02_17_caller",
+          "text": "A pass can be issued with the role from one record and time window from another."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Require an end time for limited passes before issue."
+        },
+        {
+          "optionId": "n05b02_17_early",
+          "text": "Issue a time-limited pass with no end time and rely on gate staff to ask."
+        },
+        {
+          "optionId": "n05b02_17_mutable",
+          "text": "Use one positional constructor with a nullable time and no pass-type check."
+        },
+        {
+          "optionId": "n05b02_17_caller",
+          "text": "Store role and end time in separate mutable records."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B02",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A visitor pass requires site and role. If the visit is time-limited, an end time is required; a pass is issued only after role and time-window checks succeed. The time-window field is conditionally required by the pass type. Which construction API best guarantees the completed object meets this contract?",
+    "questionId": "ood-n05-b02-i017",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/dslCatalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

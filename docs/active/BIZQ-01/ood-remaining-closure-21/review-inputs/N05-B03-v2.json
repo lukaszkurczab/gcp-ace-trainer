@@ -1,0 +1,1141 @@
+[
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Edits must be independent only for annotations; the immutable assets can remain shared.",
+      "details": {
+        "mechanismOrProperty": "Copy editable collections but preserve references to the stipulated immutable assets.",
+        "scenarioApplication": "The new workspace can annotate independently while retaining the same setup.",
+        "errorCorrection": "Clearing for the workspace would also alter the configured starter. The prompt permits immutable assets to be shared; duplication creates no required independence. That discards the configured palette and background being duplicated.",
+        "boundaryOrTradeoff": "If palette settings become mutable, they must be copied too.",
+        "transfer": "Choose copy depth per reference according to mutability and ownership."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_01_shared",
+          "text": "Clearing for the workspace would also alter the configured starter."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_01_rebuild",
+          "text": "The prompt permits immutable assets to be shared; duplication creates no required independence."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_01_reuse",
+          "text": "That discards the configured palette and background being duplicated."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Copy the board; share immutable assets and copy annotations."
+        },
+        {
+          "optionId": "n05b03_01_shared",
+          "text": "Reuse the same board and clear its annotations."
+        },
+        {
+          "optionId": "n05b03_01_rebuild",
+          "text": "Deep-copy every asset and annotation."
+        },
+        {
+          "optionId": "n05b03_01_reuse",
+          "text": "Build an empty board and recreate its setup."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A board operator starts a workspace from a configured starter board. The background and tool palette are immutable shared assets; annotations are editable and must not appear on either board after the other changes. Copy the configured board while sharing immutable assets and separating editable annotations. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i001",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The template provides routing configuration, while identity and timing belong to the new escalation.",
+      "details": {
+        "mechanismOrProperty": "The copy retains configured routing and resets per-instance fields.",
+        "scenarioApplication": "Future cases can still start from the untouched template.",
+        "errorCorrection": "That mutates the saved template and keeps the wrong case identity. The customized routing values would be lost. The result would impersonate the template and inherit another case’s schedule.",
+        "boundaryOrTradeoff": "The prompt does not specify whether old escalations follow future template edits.",
+        "transfer": "Separate reusable defaults from identity and mutable state owned by each instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_02_shared",
+          "text": "That mutates the saved template and keeps the wrong case identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_02_rebuild",
+          "text": "The customized routing values would be lost."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_02_reuse",
+          "text": "The result would impersonate the template and inherit another case’s schedule."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Copy routing defaults; assign a fresh case ID and due date."
+        },
+        {
+          "optionId": "n05b03_02_shared",
+          "text": "Reuse the template case and change its due date."
+        },
+        {
+          "optionId": "n05b03_02_rebuild",
+          "text": "Create an empty case with system defaults."
+        },
+        {
+          "optionId": "n05b03_02_reuse",
+          "text": "Copy the template ID and due date unchanged."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A support lead opens an escalation from a saved case template. Routing defaults are customized; every escalation needs a fresh case ID and its own mutable due date. Preserve configured defaults without inheriting the source identity or schedule. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i002",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The preset mixes immutable integration data with editable parcel measurements.",
+      "details": {
+        "mechanismOrProperty": "A new job owns dimensions but reuses the stable carrier mapping.",
+        "scenarioApplication": "One shipment’s measurements cannot leak into the next.",
+        "errorCorrection": "This changes the saved preset and affects later labels. That throws away the configured mapping the preset exists to preserve. The extra copy gives no independence for a value that cannot change.",
+        "boundaryOrTradeoff": "If carrier codes later become editable, the sharing rule must be revisited.",
+        "transfer": "Share guaranteed immutable values and copy mutable per-instance fields."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_03_shared",
+          "text": "This changes the saved preset and affects later labels."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_03_rebuild",
+          "text": "That throws away the configured mapping the preset exists to preserve."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_03_reuse",
+          "text": "The extra copy gives no independence for a value that cannot change."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Reuse immutable carrier codes; copy the parcel dimensions."
+        },
+        {
+          "optionId": "n05b03_03_shared",
+          "text": "Point the new job at the preset dimensions and overwrite them."
+        },
+        {
+          "optionId": "n05b03_03_rebuild",
+          "text": "Re-enter carrier codes manually."
+        },
+        {
+          "optionId": "n05b03_03_reuse",
+          "text": "Deep-copy the immutable carrier table."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A label job starts from a fragile-goods preset. Carrier codes are immutable; parcel dimensions are mutable and must be set independently for each shipment. Share stable carrier data, isolate shipment-specific measurements. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i003",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The selection rules are the reusable baseline; attendees belong to one booking.",
+      "details": {
+        "mechanismOrProperty": "The copied form keeps its rule but begins with an independently owned list.",
+        "scenarioApplication": "Changes to this booking do not rewrite the source form.",
+        "errorCorrection": "Attendees from one booking would carry into the next. The stated configuration would be lost. It discards the reusable setup while copying data that belongs to an instance.",
+        "boundaryOrTradeoff": "If a rule must change per booking, that field also needs independent ownership.",
+        "transfer": "Keep template setup while separating the mutable collection each instance edits."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_04_shared",
+          "text": "Attendees from one booking would carry into the next."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_04_rebuild",
+          "text": "The stated configuration would be lost."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_04_reuse",
+          "text": "It discards the reusable setup while copying data that belongs to an instance."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Copy the form’s setup and allocate a new attendee list."
+        },
+        {
+          "optionId": "n05b03_04_shared",
+          "text": "Reuse the form’s existing list and append attendees."
+        },
+        {
+          "optionId": "n05b03_04_rebuild",
+          "text": "Start with a blank form and new accessibility rule."
+        },
+        {
+          "optionId": "n05b03_04_reuse",
+          "text": "Copy the attendees but discard the selection configuration."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A room-transfer form is configured with accessibility requirements and a selection rule. The new booking keeps those values, but edits its attendee list independently. Preserve the configured rule and isolate the attendee collection. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i004",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Protocol and calibration have different lifetimes: one is fixed and shared, the other varies per installation.",
+      "details": {
+        "mechanismOrProperty": "The new profile holds the same protocol definition with its own offset.",
+        "scenarioApplication": "Each installation can be tuned without changing another.",
+        "errorCorrection": "Tuning one projector would alter the other. This duplicates the stable value while preserving the mutable alias that matters. The device would lose its configured protocol and required adjustment.",
+        "boundaryOrTradeoff": "A protocol-version change is a separate selection, not a calibration copy.",
+        "transfer": "Base sharing decisions on each member’s mutability, not a blanket deep-copy rule."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_05_shared",
+          "text": "Tuning one projector would alter the other."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_05_rebuild",
+          "text": "This duplicates the stable value while preserving the mutable alias that matters."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_05_reuse",
+          "text": "The device would lose its configured protocol and required adjustment."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Reuse the protocol definition; copy calibration state."
+        },
+        {
+          "optionId": "n05b03_05_shared",
+          "text": "Share the mutable calibration object."
+        },
+        {
+          "optionId": "n05b03_05_rebuild",
+          "text": "Copy the protocol but keep the shared calibration."
+        },
+        {
+          "optionId": "n05b03_05_reuse",
+          "text": "Reset both protocol and calibration to generic defaults."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "An exhibit operator duplicates a device profile. Its protocol definition is immutable and shared; each installation has its own mutable calibration offset. Share protocol definition; copy calibration state. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i005",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The draft is a new arrangement of the same stable lesson material.",
+      "details": {
+        "mechanismOrProperty": "Independent order state lets the editor rearrange without duplicating immutable content.",
+        "scenarioApplication": "The published course remains unchanged.",
+        "errorCorrection": "That changes what existing learners see in the published version. The case explicitly requires stable section identities and shared assets. That loses the curated sequence the editor intends to fork.",
+        "boundaryOrTradeoff": "If section content becomes editable, its copy boundary would need separate treatment.",
+        "transfer": "Fork mutable organization while keeping stable immutable references."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_06_shared",
+          "text": "That changes what existing learners see in the published version."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_06_rebuild",
+          "text": "The case explicitly requires stable section identities and shared assets."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_06_reuse",
+          "text": "That loses the curated sequence the editor intends to fork."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Copy the order list; retain the same immutable sections and assets."
+        },
+        {
+          "optionId": "n05b03_06_shared",
+          "text": "Reorder the published lesson and label it draft."
+        },
+        {
+          "optionId": "n05b03_06_rebuild",
+          "text": "Generate new section IDs and copy all assets."
+        },
+        {
+          "optionId": "n05b03_06_reuse",
+          "text": "Create a default lesson with an empty sequence."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A lesson editor forks a published lesson into a draft. It retains immutable assets and section IDs; the draft’s question order changes without altering the published lesson. Copy the mutable sequence while retaining stable references. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i006",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The shapes are editable, whereas the assets they refer to are fixed.",
+      "details": {
+        "mechanismOrProperty": "The new graph owns shape state and points to the same stable assets.",
+        "scenarioApplication": "Shape edits stay local to the new meeting.",
+        "errorCorrection": "Moving a shape in the new board would move it in the source. The prompt requires the references to remain the same and grants no need for asset copies. That loses the selected board content being duplicated.",
+        "boundaryOrTradeoff": "Replacing an asset is outside this duplicate operation.",
+        "transfer": "Preserve stable referenced values while separating mutable graph nodes."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_07_shared",
+          "text": "Moving a shape in the new board would move it in the source."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_07_rebuild",
+          "text": "The prompt requires the references to remain the same and grants no need for asset copies."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_07_reuse",
+          "text": "That loses the selected board content being duplicated."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Create new shape records and retain their asset references."
+        },
+        {
+          "optionId": "n05b03_07_shared",
+          "text": "Share the original shape records."
+        },
+        {
+          "optionId": "n05b03_07_rebuild",
+          "text": "Clone every asset and rewrite the shape references."
+        },
+        {
+          "optionId": "n05b03_07_reuse",
+          "text": "Copy only the board ID and reload default shapes."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A host duplicates a board for a new meeting. Shape records are mutable in the new meeting, but their immutable asset references remain the same. Copy mutable graph nodes and keep immutable references. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i007",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A template contains reusable setup, not a reservation decision already made for a prior request.",
+      "details": {
+        "mechanismOrProperty": "The new instance retains plot policy but gets a new identity and date.",
+        "scenarioApplication": "The prior reservation and its outcome remain intact.",
+        "errorCorrection": "That mutates the source and preserves its old reservation identity. The new request would inherit another request’s identity and decision. This discards the configured starting point the template supplies.",
+        "boundaryOrTradeoff": "The new request must obtain its own approval; it cannot inherit the old decision.",
+        "transfer": "Copy defaults but recreate identity and results tied to the new request."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_08_shared",
+          "text": "That mutates the source and preserves its old reservation identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_08_rebuild",
+          "text": "The new request would inherit another request’s identity and decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_08_reuse",
+          "text": "This discards the configured starting point the template supplies."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Copy plot policy; assign a new ID and date."
+        },
+        {
+          "optionId": "n05b03_08_shared",
+          "text": "Reuse the template reservation and change its date."
+        },
+        {
+          "optionId": "n05b03_08_rebuild",
+          "text": "Copy the old ID and approval outcome."
+        },
+        {
+          "optionId": "n05b03_08_reuse",
+          "text": "Start empty and reload all plot policy."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A steward duplicates a reservation template. Plot and approval policy are copied, but the new request needs its own ID and date. Copy configuration; reset per-request identity and date. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i008",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The copied bundle should diverge in composition but continue using the same fixed currency rule.",
+      "details": {
+        "mechanismOrProperty": "A fresh list provides independent editing while the immutable currency reference stays shared.",
+        "scenarioApplication": "The original component selection remains unchanged.",
+        "errorCorrection": "The original bundle’s composition would change too. This copies the stable part while preserving the alias that needs separation. The current selected components would not be carried into the new bundle.",
+        "boundaryOrTradeoff": "If currency becomes per-bundle mutable data, it should no longer be shared.",
+        "transfer": "Reason over the mutable edges of the graph separately from immutable references."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_09_shared",
+          "text": "The original bundle’s composition would change too."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_09_rebuild",
+          "text": "This copies the stable part while preserving the alias that needs separation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_09_reuse",
+          "text": "The current selected components would not be carried into the new bundle."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Copy the component list and share the immutable currency definition."
+        },
+        {
+          "optionId": "n05b03_09_shared",
+          "text": "Share the list and edit it for the new bundle."
+        },
+        {
+          "optionId": "n05b03_09_rebuild",
+          "text": "Copy the currency but share the mutable list."
+        },
+        {
+          "optionId": "n05b03_09_reuse",
+          "text": "Rebuild the bundle from global defaults."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A catalog manager duplicates a bundle before editing its component list. Entries are mutable, while the bundle’s currency definition is immutable and shared. Copy the mutable list and share the stipulated stable value. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i009",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The new depot needs independent settings and a shared immutable interpretation table.",
+      "details": {
+        "mechanismOrProperty": "The copied policy owns its fields while referring to the common read-only dictionary.",
+        "scenarioApplication": "Changing one depot’s limits cannot alter the other’s configuration.",
+        "errorCorrection": "That mutates the original configuration rather than creating a second. The mutable policy is the part that must diverge. The second depot is meant to start from the existing tuned settings.",
+        "boundaryOrTradeoff": "No live dictionary reload behavior is specified or implied.",
+        "transfer": "Share stable read-only references and duplicate mutable configuration."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_10_shared",
+          "text": "That mutates the original configuration rather than creating a second."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_10_rebuild",
+          "text": "The mutable policy is the part that must diverge."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_10_reuse",
+          "text": "The second depot is meant to start from the existing tuned settings."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Copy policy fields and share the read-only unit dictionary."
+        },
+        {
+          "optionId": "n05b03_10_shared",
+          "text": "Change the first depot’s policy and relabel it."
+        },
+        {
+          "optionId": "n05b03_10_rebuild",
+          "text": "Copy the dictionary but share one policy object."
+        },
+        {
+          "optionId": "n05b03_10_reuse",
+          "text": "Recreate defaults and discard tuned policy fields."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A charging coordinator duplicates a reservation policy for another depot. Policy fields are adjusted independently; an immutable unit dictionary is common to both depots. Fork editable policy while sharing an immutable dictionary. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i010",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Only cleanup fields vary; the provenance still describes the same source bytes.",
+      "details": {
+        "mechanismOrProperty": "A new map enables independent edits while the immutable revision/checksum remain shared.",
+        "scenarioApplication": "Both drafts retain their actual source lineage.",
+        "errorCorrection": "That changes the source cleanup work the archivist wants to preserve. The duplicate would no longer refer to the same immutable source material. Editing one archive would alter the other draft.",
+        "boundaryOrTradeoff": "Creating a new source revision is a separate ingest operation.",
+        "transfer": "Keep provenance stable while isolating mutable working data."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_11_shared",
+          "text": "That changes the source cleanup work the archivist wants to preserve."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_11_rebuild",
+          "text": "The duplicate would no longer refer to the same immutable source material."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_11_reuse",
+          "text": "Editing one archive would alter the other draft."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Copy metadata fields; retain the source revision and checksum."
+        },
+        {
+          "optionId": "n05b03_11_shared",
+          "text": "Edit the original draft and rename it."
+        },
+        {
+          "optionId": "n05b03_11_rebuild",
+          "text": "Generate a new revision and checksum during copy."
+        },
+        {
+          "optionId": "n05b03_11_reuse",
+          "text": "Share the mutable metadata map."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "An archivist duplicates a metadata-cleanup draft. Editable fields diverge; the immutable source revision reference and checksum must remain exact. Separate mutable work while preserving immutable provenance. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i011",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The template supplies defaults, but the recipient and delivery history are specific to one referral.",
+      "details": {
+        "mechanismOrProperty": "The new object begins from copied consent/destination defaults and owns fresh decision and attempt state.",
+        "scenarioApplication": "The earlier request keeps its original destination and history.",
+        "errorCorrection": "That overwrites the original recipient and transmission history. Those values describe another referral and its completed work. The template’s consent settings are explicitly part of the requested starting state.",
+        "boundaryOrTradeoff": "Consent still needs to be checked against the new referral’s facts.",
+        "transfer": "Recreate outcomes and history while preserving reusable configuration."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_12_shared",
+          "text": "That overwrites the original recipient and transmission history."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_12_rebuild",
+          "text": "Those values describe another referral and its completed work."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_12_reuse",
+          "text": "The template’s consent settings are explicitly part of the requested starting state."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Copy defaults; select a new specialist and initialize new attempt state."
+        },
+        {
+          "optionId": "n05b03_12_shared",
+          "text": "Reuse the old referral and replace its specialist."
+        },
+        {
+          "optionId": "n05b03_12_rebuild",
+          "text": "Copy its specialist and attempt record unchanged."
+        },
+        {
+          "optionId": "n05b03_12_reuse",
+          "text": "Discard the configured consent defaults and start from global settings."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A navigator duplicates a referral template. Destination and consent defaults carry over; specialist choice and transmission attempts belong to the new referral. Copy defaults but reset decisions and event history. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i012",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "A valid copy must preserve both internal aliasing and external independence.",
+      "details": {
+        "mechanismOrProperty": "The copied graph has one corresponding shared chart node of its own.",
+        "scenarioApplication": "Repeated widgets stay coordinated in the new report but not with the source.",
+        "errorCorrection": "That loses the source layout’s intentional shared-chart relationship. Editing the copied report would mutate the original. The analyst needs an editable report, not a static rendering.",
+        "boundaryOrTradeoff": "The prompt defines this relationship; it does not require a particular copy algorithm.",
+        "transfer": "Preserve identity relationships within the new graph while separating its mutable nodes from the source."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_13_shared",
+          "text": "That loses the source layout’s intentional shared-chart relationship."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_13_rebuild",
+          "text": "Editing the copied report would mutate the original."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_13_reuse",
+          "text": "The analyst needs an editable report, not a static rendering."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Copy one chart definition and reuse it across the copied layout."
+        },
+        {
+          "optionId": "n05b03_13_shared",
+          "text": "Clone a new chart definition for each occurrence."
+        },
+        {
+          "optionId": "n05b03_13_rebuild",
+          "text": "Keep references to the source chart."
+        },
+        {
+          "optionId": "n05b03_13_reuse",
+          "text": "Flatten the layout to an image."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A report layout can contain repeated references to one mutable chart definition. The duplicate must preserve that internal sharing but remain editable without changing the source report. Preserve graph identity inside the copy and isolate it from the source. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i013",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The teams need different operating steps, not different immutable policy sources.",
+      "details": {
+        "mechanismOrProperty": "The new playbook owns its procedure and refers to the same fixed documents.",
+        "scenarioApplication": "One team can change its order without changing the other.",
+        "errorCorrection": "That would reorder the original team’s workflow too. It duplicates stable sources but aliases the editable policy state. The chosen steps and thresholds the team intends to reuse would be lost.",
+        "boundaryOrTradeoff": "If policy documents become editable, sharing would no longer satisfy the stated premise.",
+        "transfer": "Copy mutable workflow choices while keeping immutable reference material stable."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_14_shared",
+          "text": "That would reorder the original team’s workflow too."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_14_rebuild",
+          "text": "It duplicates stable sources but aliases the editable policy state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_14_reuse",
+          "text": "The chosen steps and thresholds the team intends to reuse would be lost."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Copy editable steps and thresholds; retain policy-document links."
+        },
+        {
+          "optionId": "n05b03_14_shared",
+          "text": "Share the steps and reorder them for the new team."
+        },
+        {
+          "optionId": "n05b03_14_rebuild",
+          "text": "Copy the documents but share the threshold map."
+        },
+        {
+          "optionId": "n05b03_14_reuse",
+          "text": "Rebuild a blank default workflow."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A support team duplicates a response playbook. Steps and thresholds are editable; linked policy documents are immutable and common to both teams. Copy workflow state and retain stable policy links. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i014",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The copy represents a new inspection, so its observations start empty even though setup is reused.",
+      "details": {
+        "mechanismOrProperty": "A new list gives the inspection its own captured values under the common calibration reference.",
+        "scenarioApplication": "Earlier readings remain attached only to their original inspection.",
+        "errorCorrection": "Those readings belong to another inspection and would be misattributed. New observations would mix across inspections. That violates the stated requirement to retain the same calibration specification.",
+        "boundaryOrTradeoff": "Calibration is shared only because it is stipulated immutable; measurements are per-instance.",
+        "transfer": "Separate reusable setup from results accumulated by one instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_15_shared",
+          "text": "Those readings belong to another inspection and would be misattributed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_15_rebuild",
+          "text": "New observations would mix across inspections."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_15_reuse",
+          "text": "That violates the stated requirement to retain the same calibration specification."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Retain calibration and initialize a fresh measurement list."
+        },
+        {
+          "optionId": "n05b03_15_shared",
+          "text": "Copy the previous measurements into the new inspection."
+        },
+        {
+          "optionId": "n05b03_15_rebuild",
+          "text": "Share the source measurement list."
+        },
+        {
+          "optionId": "n05b03_15_reuse",
+          "text": "Choose a new calibration automatically."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A field team duplicates an inspection package. Settings and immutable calibration specification are reused, but each inspection begins with no measurements. Keep calibration context and start a fresh observation list. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i015",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The new package needs its own benefits and identity but can reuse the fixed tax category.",
+      "details": {
+        "mechanismOrProperty": "The copy separates mutable package contents while keeping the shared immutable definition.",
+        "scenarioApplication": "Editing the new package no longer changes the original benefits.",
+        "errorCorrection": "Existing users of the old package would observe the changed configuration. This shares the mutable state that must diverge and copies the immutable value. The team asked to duplicate the existing configuration, not start from defaults.",
+        "boundaryOrTradeoff": "Tax data would need its own copy boundary only if the definition became mutable.",
+        "transfer": "Treat identity, editable members, and stable references as separate copy decisions."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_16_shared",
+          "text": "Existing users of the old package would observe the changed configuration."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_16_rebuild",
+          "text": "This shares the mutable state that must diverge and copies the immutable value."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_16_reuse",
+          "text": "The team asked to duplicate the existing configuration, not start from defaults."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Copy benefits; share the tax definition and assign a new ID."
+        },
+        {
+          "optionId": "n05b03_16_shared",
+          "text": "Reuse the old ID and edit its benefits."
+        },
+        {
+          "optionId": "n05b03_16_rebuild",
+          "text": "Share benefits but copy the tax definition."
+        },
+        {
+          "optionId": "n05b03_16_reuse",
+          "text": "Recreate all defaults and omit selected benefits."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A subscription team duplicates a package configuration. Benefits are mutable per package; an immutable tax-category definition is shared, and the new package receives a new catalog ID. Copy mutable benefits, share the tax definition, and reset identity. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i016",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "owner_preserves_contract"
+    },
+    "constraints": [],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The new tournament needs its own mutable slots, but the immutable rule-set can remain shared; a fresh ID and empty results keep its identity and history separate.",
+      "details": {
+        "mechanismOrProperty": "Copy mutable match-slot state while retaining the shared immutable rule-set; initialize the new tournament identity and result state separately.",
+        "scenarioApplication": "The original bracket and its results remain intact; the new tournament gets copied mutable slots, the shared rules, a fresh identity, and no results.",
+        "errorCorrection": "That would erase the original tournament’s results. The new tournament would appear already played. It discards the configured slots and rule-set the organizer wants to reuse.",
+        "boundaryOrTradeoff": "If the organizer wants a historical replay, that would be a distinct copy objective.",
+        "transfer": "Separate mutable instance state from immutable reusable definitions, and initialize identity and outcomes for the new instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_17_shared",
+          "text": "That would erase the original tournament’s results."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_17_rebuild",
+          "text": "The new tournament would appear already played."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b03_17_reuse",
+          "text": "It discards the configured slots and rule-set the organizer wants to reuse."
+        }
+      ]
+    },
+    "interaction": {
+      "type": "choice_single",
+      "scoringMethod": "exact_selected_set",
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Copy the mutable match slots, share the immutable rule-set, and assign a fresh ID with empty results."
+        },
+        {
+          "optionId": "n05b03_17_shared",
+          "text": "Reuse the previous tournament and clear its scores."
+        },
+        {
+          "optionId": "n05b03_17_rebuild",
+          "text": "Copy the completed results along with the match slots."
+        },
+        {
+          "optionId": "n05b03_17_reuse",
+          "text": "Rebuild a blank bracket with default rules."
+        }
+      ]
+    },
+    "mentalUnitId": "OOD-N05-B03",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A tournament organizer duplicates a bracket template. Match slots are mutable, but the rule-set document is immutable; the new tournament must have a fresh tournament ID and no results. Reuse the bracket rules while resetting schedule state, identity and results. What copy policy should create the new object?",
+    "questionId": "ood-n05-b03-i017",
+    "sourceRefs": [
+      "https://www.oreilly.com/library/view/design-patterns-elements/0201633612/front.html",
+      "https://martinfowler.com/bliki/MakingStubs.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

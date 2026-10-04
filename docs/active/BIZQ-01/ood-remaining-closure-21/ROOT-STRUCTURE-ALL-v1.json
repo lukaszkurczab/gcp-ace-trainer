@@ -1,0 +1,116 @@
+{
+  "result": "PASS",
+  "scope": "Fixed selected N05 proposal schema/taxonomy/reserved identity/ID scorer and reversed order only; identity semantics and style warnings require independent whole-object review",
+  "questionCount": 153,
+  "scoreCases": 1224,
+  "units": [
+    {
+      "unit": "OOD-N05-B01",
+      "proposalSha256": "ef632970851fd14d8e468c858c32ba9b0a4b96ae35cf3159c0a67b0f4047f174",
+      "questionCount": 17,
+      "retainedIds": 17,
+      "reservedIdsUsed": 0,
+      "advisory": {
+        "soleLongestCorrect": 1,
+        "reasonEqualsKey": 0
+      },
+      "wholeObjectsSha256": "aff8e3b9dff6ca3f3c726b713912c3b72ef1ac1c920e29c211f0a38969459bde"
+    },
+    {
+      "unit": "OOD-N05-B02",
+      "proposalSha256": "38e79dd9a7412b5958cf585c70109236a25be4c1c1709c0d34ea928eda014304",
+      "questionCount": 17,
+      "retainedIds": 17,
+      "reservedIdsUsed": 0,
+      "advisory": {
+        "soleLongestCorrect": 3,
+        "reasonEqualsKey": 0
+      },
+      "wholeObjectsSha256": "b69bf21f3440970ced6e5061531374252123ad33a9360ea6b701e17497df785a"
+    },
+    {
+      "unit": "OOD-N05-B03",
+      "proposalSha256": "d53b62ac41ea1cc5082101e23cc08d45786bba3a9abc49be0f3bdbb4f4dd55d0",
+      "questionCount": 17,
+      "retainedIds": 17,
+      "reservedIdsUsed": 0,
+      "advisory": {
+        "soleLongestCorrect": 11,
+        "reasonEqualsKey": 0
+      },
+      "wholeObjectsSha256": "7724fc74cd599be38ad70d75845fa11ff34b8619d31b5cfb0b35a7c7b8cec60a"
+    },
+    {
+      "unit": "OOD-N05-B04",
+      "proposalSha256": "ce1142d8594b1505b51db0b3fd7e64d920bfeeae276f1bec3da78c10bd65ed48",
+      "questionCount": 17,
+      "retainedIds": 17,
+      "reservedIdsUsed": 0,
+      "advisory": {
+        "soleLongestCorrect": 6,
+        "reasonEqualsKey": 0
+      },
+      "wholeObjectsSha256": "9cce4eb893cf5eaa00a3f3fd7988b34e70789b4ad4ff3effa711efb9dc5b877e"
+    },
+    {
+      "unit": "OOD-N05-B05",
+      "proposalSha256": "b7cfa499a82d56e10a1619c09512f6a304ffb7cda11498175e55262e5928e409",
+      "questionCount": 17,
+      "retainedIds": 17,
+      "reservedIdsUsed": 0,
+      "advisory": {
+        "soleLongestCorrect": 4,
+        "reasonEqualsKey": 0
+      },
+      "wholeObjectsSha256": "95a5b4b07e34adab43b0284279f6a3d557fa85436d5b6b933030511eccc605ae"
+    },
+    {
+      "unit": "OOD-N05-B06",
+      "proposalSha256": "e401e6dc966a7abc0535a9b6bad350b562bb8837008d4fd03a957927a029c89d",
+      "questionCount": 17,
+      "retainedIds": 17,
+      "reservedIdsUsed": 0,
+      "advisory": {
+        "soleLongestCorrect": 0,
+        "reasonEqualsKey": 0
+      },
+      "wholeObjectsSha256": "126c350d9929069c44917689464169a9294b39ede7a2f454d4fda7141bdf126b"
+    },
+    {
+      "unit": "OOD-N05-B07",
+      "proposalSha256": "87d1961108c1a24ceaf45385539badf72877aa87c0c5cd11cb956532c54e77ef",
+      "questionCount": 17,
+      "retainedIds": 17,
+      "reservedIdsUsed": 0,
+      "advisory": {
+        "soleLongestCorrect": 0,
+        "reasonEqualsKey": 0
+      },
+      "wholeObjectsSha256": "709d329aef6161a32497bf4611a5b136158ea8c79c1f7b2b27c25139310d5a56"
+    },
+    {
+      "unit": "OOD-N05-B08",
+      "proposalSha256": "bf6ae3b52c70f02239d5c957af81bfdb28a840e2331e9cfda12f02b9dec61d18",
+      "questionCount": 17,
+      "retainedIds": 17,
+      "reservedIdsUsed": 0,
+      "advisory": {
+        "soleLongestCorrect": 3,
+        "reasonEqualsKey": 0
+      },
+      "wholeObjectsSha256": "6b8d65ebb1294ca2564f89a87acd0bd399befd718c10948e1aeb80b7fd72aaae"
+    },
+    {
+      "unit": "OOD-N05-B09",
+      "proposalSha256": "e8b8b17b1b04a5f27e4ccc180564b12e62cf77dd78c24e0f556cb21ee5be944d",
+      "questionCount": 17,
+      "retainedIds": 17,
+      "reservedIdsUsed": 0,
+      "advisory": {
+        "soleLongestCorrect": 1,
+        "reasonEqualsKey": 0
+      },
+      "wholeObjectsSha256": "97bc5876fdcf0d40649393f3176369cc9b5ec3bf328f8ba3c9521c1caa6ea494"
+    }
+  ]
+}

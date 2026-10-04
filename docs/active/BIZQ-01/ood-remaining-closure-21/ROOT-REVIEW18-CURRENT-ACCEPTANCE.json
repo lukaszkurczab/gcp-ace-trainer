@@ -1,0 +1,26 @@
+{
+  "result": "PASS",
+  "scope": "One changed review18 sample has its own exact current N05 semantic PASS; raw historical reconciliation preserved. Not whole N05 consumer/admission or full BIZQ acceptance.",
+  "reconciliationSha256": "3ed4c1b8f5ae1ac389d4508f0014a502e8f11c766db5c4ea625a25c576155af4",
+  "mapSha256": "0d95dbf77a32f657197fa4789166a24fd68edad81cd367e9ea7b29c8578e6b70",
+  "currentReviewSha256": "17d0d3752efbf4b65bdb5a5f802809b36ba280404e20013991c51d3c01e57d3e",
+  "resolved": [
+    {
+      "trackId": "object-oriented-design-interview",
+      "questionId": "ood-n05-b01-i004",
+      "sourceFile": "content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B01.json",
+      "priorReport": "SEMANTIC-DESIGN-CODING.json",
+      "priorVerdict": "DEFECT",
+      "priorSeverity": "critical",
+      "priorItemFingerprint": "7a5eacb2bce9763bcb4488757b4e57009efa1bf510b5d5cae43c81e122261eac",
+      "currentItemFingerprint": "eacff4febd7049a91d55cb9dbbe5d04c251295d0e1aafa6ffeb97f99d285a4ff",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
+      "disposition": "CHANGED_OBJECT_REVIEW_REQUIRED",
+      "finding": "The booking transfer has a capacity/cancellation invariant, but no variable object-family creation requirement. The case does not establish that a factory is needed or identify a family that must be created coherently.",
+      "currentDisposition": "CURRENT_OBJECT_SEMANTIC_REVIEW_PASS",
+      "currentReviewPath": "SEMANTIC-CURRENT-FINAL-QA.json",
+      "currentReviewSha256": "17d0d3752efbf4b65bdb5a5f802809b36ba280404e20013991c51d3c01e57d3e",
+      "currentWholeObjectSha256CompactInsertionOrder": "81a62992e9ec9e6751c231a16fc370ec0cabb717e61a3b59c72afd31282aa105"
+    }
+  ]
+}

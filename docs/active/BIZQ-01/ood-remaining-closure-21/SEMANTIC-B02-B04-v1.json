@@ -1,0 +1,562 @@
+{
+  "verdict": "REVISE",
+  "scope": "Independent whole-object semantic review of frozen N05 B02-B04 proposals only. This is not final153 cross-unit identity acceptance, source/producer approval, runtime/native acceptance, or full BIZQ-01 acceptance.",
+  "manifestSha256": "bdef2880a62de54f54e3c06cb9ffc9bd5c900be31c6135d7a0b16c7583ab320a",
+  "contractSha256": "f1252079b899164632accbf4168e5c77c46fb004879a6865f218c8f5707a53f2",
+  "briefingSha256": "ff3161a3aa270d30dab34caafbf89c65846b0114dc317ed8d8b67d0fc3cb4894",
+  "frozenProposalHashes": {
+    "review-inputs/N05-B02-v1.json": "38e79dd9a7412b5958cf585c70109236a25be4c1c1709c0d34ea928eda014304",
+    "review-inputs/N05-B03-v1.json": "d53b62ac41ea1cc5082101e23cc08d45786bba3a9abc49be0f3bdbb4f4dd55d0",
+    "review-inputs/N05-B04-v1.json": "ce1142d8594b1505b51db0b3fd7e64d920bfeeae276f1bec3da78c10bd65ed48"
+  },
+  "fingerprintSerialization": "Per-item current/predecessor whole-object fingerprints use SHA-256 of compact JSON.stringify(parsed item) in insertion order. These are review fingerprints, not production canonicalJson hashes.",
+  "reviewedWholeObjectCount": 51,
+  "counts": {
+    "PASS": 49,
+    "REVISE": 2
+  },
+  "unitFindings": [
+    {
+      "unit": "OOD-N05-B02",
+      "objective": "Builder patterns, staged construction, and validation",
+      "verdict": "REVISE",
+      "findingIds": [
+        "ood-n05-b02-i010"
+      ],
+      "identityAction": "PRESERVE_QUESTION_ID for all17: the predecessor unit decision and the replacement remain the decision to use staged construction when required inputs/dependencies must be assembled and validated before use. The prompts make the case-specific trigger visible; this review found no primary-decision change requiring a reserved ID."
+    },
+    {
+      "unit": "OOD-N05-B03",
+      "objective": "Prototype, copy, clone, and deep-versus-shallow semantics",
+      "verdict": "REVISE",
+      "findingIds": [
+        "ood-n05-b03-i017"
+      ],
+      "identityAction": "PRESERVE_QUESTION_ID for all17: each proposal still tests explicit copy depth/identity semantics, the predecessor unit decision. The i017 key needs a wording correction to match the stated shared immutable rule-set."
+    },
+    {
+      "unit": "OOD-N05-B04",
+      "objective": "Adapter and facade boundaries",
+      "verdict": "PASS",
+      "findingIds": [],
+      "identityAction": "PRESERVE_QUESTION_ID for all17: each item still tests the predecessor adapter/facade boundary decision with a now-visible concrete mismatch or repeated workflow. Similar practice pairs are not treated as an automatic uniqueness failure."
+    }
+  ],
+  "nonBlockingSimilarityNotes": [
+    "B04 i004/i010 both practice translating interval conventions, but i004 states the configured-zone whole-day conversion while i010 combines PlotId translation with the inclusive-end contract; the current cases remain distinguishable.",
+    "B04 i006/i014 both practice preserving distinct three-state mappings, but their separate external and internal vocabularies support transfer practice.",
+    "B04 i007/i013 both exercise facade coordination, but their actual work and completion conditions differ (checksum-verified board export versus archive upload returning a location). No universal unique-concept or vignette quota is imposed."
+  ],
+  "items": [
+    {
+      "questionId": "ood-n05-b02-i001",
+      "predecessorQuestionId": "ood-n05-b02-i001",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "70e43fc45c7203e562eee9d500f8e38c99130df8697b6296b4e4df194a81a08d",
+      "currentWholeObjectSha256": "d68bff927d7703eb4a266283624c8a515ce426f060b6fd4024a0aa0034d911ad",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i002",
+      "predecessorQuestionId": "ood-n05-b02-i002",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "0c2803d6e4b5b183176d4bfb4964718f8e1cab1176721b08ef43644045ebc456",
+      "currentWholeObjectSha256": "1298ce72424d919da6849c4d8f88aa999d54ce06f54a52cc8763f00976b99bb0",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i003",
+      "predecessorQuestionId": "ood-n05-b02-i003",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "bae1bc6f792c60b531b3486f39d0f573f3e70cf9b3fa66edfc6ce0ae3a02c1dc",
+      "currentWholeObjectSha256": "f4368c5b7122eca1fadd7d573d6ae1abc2f37e2b36259a26915300b92e223162",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i004",
+      "predecessorQuestionId": "ood-n05-b02-i004",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "4b1e49e54f988aa8cdda1027827048c98bc05a861bd9d0ab7bfb0c43e35a0a86",
+      "currentWholeObjectSha256": "ae814e76fbad358558155f5935dcb1466cedb034c40373af5e2755813eb174b2",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i005",
+      "predecessorQuestionId": "ood-n05-b02-i005",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "25876ccc89832c3c6c370df4756bbac0ac9da6032b2726ac7bac022e455ef7ca",
+      "currentWholeObjectSha256": "b03c70198f1f4cdd5bb23927e0eb43f1c6baebb86067fb49ddae0042515db56e",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i006",
+      "predecessorQuestionId": "ood-n05-b02-i006",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "4a66ebc5f40f44be39531f5700851f77ad64cf54c96334e9b387b773cf2bf5e4",
+      "currentWholeObjectSha256": "725678e1492a6e90145f701002ff1d168722482df96f253f7dc6319ceba761fe",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i007",
+      "predecessorQuestionId": "ood-n05-b02-i007",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "c0481c553a420cff6c4e593109e95fd82cbd849af513b6f137b150aa46f474b7",
+      "currentWholeObjectSha256": "1a4af69bde03f05f79ba292e03577791f643647dc2aca855c0a236b8d79d3901",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i008",
+      "predecessorQuestionId": "ood-n05-b02-i008",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "fa201257d3b3667416e48be8b86b4259554aee290f426d77b9deaf1e3161c919",
+      "currentWholeObjectSha256": "7e69bf2e94bc3591a0c2648126fd8f1c1d9eb446ed7599c3ebcbd5fd43120ae4",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i009",
+      "predecessorQuestionId": "ood-n05-b02-i009",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "f1b4b0289852fabbaaf79b084554c36f11af2656e4c31788b131858df3c558b7",
+      "currentWholeObjectSha256": "cf4715c4e7524020fca6ab3b98cc5398c995f30aabef702206faac876c5c11b2",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i010",
+      "predecessorQuestionId": "ood-n05-b02-i010",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "REVISE",
+      "predecessorWholeObjectSha256": "3b72668cce9b1750dcfb9a6bf87bd58423688a78cdc8c4f496ec9b4312785c27",
+      "currentWholeObjectSha256": "f22d84060c1cff494ebc0b2ba979aa54936da40035d11c04f330e5ea6240df4d",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The distractor “Build each line in an independent plan and combine plans at dispatch” can be implemented by combining and checking the complete aggregate before the dispatch call; the prompt does not rule that out, while its keyed wrong-option message asserts separate plans cannot establish the total. Clarify the alternative or prompt so only one API satisfies the visible pre-dispatch aggregate contract."
+    },
+    {
+      "questionId": "ood-n05-b02-i011",
+      "predecessorQuestionId": "ood-n05-b02-i011",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "e24833c6b87deb27c21b3c7062cfb05a3f904fd19d61b36c46b7805963e65dc2",
+      "currentWholeObjectSha256": "476ef2b546c27b2c697b29520909775c828507b918af2f1dfe353bf32fd26116",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i012",
+      "predecessorQuestionId": "ood-n05-b02-i012",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "8aefb07ae76bdf83e475ab674fb3272f37d3a6e1780d02354b78a30565bca654",
+      "currentWholeObjectSha256": "4ba91d471cbe64eaf02bc370d228ad7e803bba9383c7cd588008563f7241e6b1",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i013",
+      "predecessorQuestionId": "ood-n05-b02-i013",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "57933ffecb77ba27f45901df7715df75b5b73b609de086dd5972d6c8ffdb17b7",
+      "currentWholeObjectSha256": "1d05aa243a75fa566376beb0452e7dad517d2d0efec89399fea303e76df25bff",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i014",
+      "predecessorQuestionId": "ood-n05-b02-i014",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "47d0e023d45eefec459ea05cdf50d13a2d209618e6c427c15d3ae5f6cb43a25f",
+      "currentWholeObjectSha256": "06dc2984ca554f54c4db231808054145a36dba4af4e04aa1be7e0842a691f281",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i015",
+      "predecessorQuestionId": "ood-n05-b02-i015",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "598b2e702ac4ee5fd8721c064ee657d18b91bff82fb6a39c61c65192137002c8",
+      "currentWholeObjectSha256": "c5e2117f3112f6a18e4b7a444e6023018780431d41ba2dd6a523c6d432ffcdd3",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i016",
+      "predecessorQuestionId": "ood-n05-b02-i016",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "ceb4d5ffa44513e1c7a9e476904956288e553532c09ce94c708b34fe40de2b0e",
+      "currentWholeObjectSha256": "565be92482c81fcbe58d74cda220df723da938ecd870dae131e693f18016717a",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b02-i017",
+      "predecessorQuestionId": "ood-n05-b02-i017",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "ae96efa27c83391236f198761b655aeebfe379e16b54abca328e8d7f97420925",
+      "currentWholeObjectSha256": "8c2050bcde9f0e55e29899b55d58c8d6534939b6d1bf49d17a3e6c17a2afb6c4",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i001",
+      "predecessorQuestionId": "ood-n05-b03-i001",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "fdd2c68432a386c031aeabd4a0041c565111d11ce1e6751f86a03a86ecec4fe0",
+      "currentWholeObjectSha256": "ab430eb3c01ec0583c00b741e7c7a99093db32de05dfa8b798ea653200df316c",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i002",
+      "predecessorQuestionId": "ood-n05-b03-i002",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "fb59d938de006a99eacc6cf71859ae837cab3ee92d6e12d35561678da187248c",
+      "currentWholeObjectSha256": "6847f1654078275b9592e4d83e74a9bd2503659645d96acdc81cf74de31c658d",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i003",
+      "predecessorQuestionId": "ood-n05-b03-i003",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "2a11304be124f1bdaccc4ae90b6803262ea1732ae8e2048570fac358f5ff04f9",
+      "currentWholeObjectSha256": "3755f14fcd68bfc0b603b95b27796bc1dff4e87a09663445133be4e4d149634a",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i004",
+      "predecessorQuestionId": "ood-n05-b03-i004",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "37087b8b3bd0a274de2c34cdd2292d5e1852a554adf47c1e5ad3e33166e7285c",
+      "currentWholeObjectSha256": "a8bed1dc8dcc665193e3aa3d270277605ecec50b28a00b71357d49a5e179ce7c",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i005",
+      "predecessorQuestionId": "ood-n05-b03-i005",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "9224a7a698f614dd0241a4ef4cb78f9c5bc3985c8cf4e2804211a15be6cc6aa4",
+      "currentWholeObjectSha256": "6297509adb34a3dcb64a565f66a84546b0aa3c39f77a1580c8e42ef7e8a8395a",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i006",
+      "predecessorQuestionId": "ood-n05-b03-i006",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "a64a554ec1d9510ccef72356a115e388305f32b0f97fb93f397d4229bef60c5f",
+      "currentWholeObjectSha256": "182bd16ac5376123f1cae8aa2e04a862d326fc18044fc7c272c1dbae5cf90d7d",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i007",
+      "predecessorQuestionId": "ood-n05-b03-i007",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "c73a649d5aa5815869bb1a4537c5b9750ea7a2020b19c3f2c06c31443758a653",
+      "currentWholeObjectSha256": "744ce8f684285ded1b1babfd153f4f776a19a9cd2db9f80d440d63561015e77b",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i008",
+      "predecessorQuestionId": "ood-n05-b03-i008",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "c2d80ec6c6eb13e5d02f32672df59da47f5ee0d6756ef603acd938b6a103828c",
+      "currentWholeObjectSha256": "af777bf8f08906dd2b20c28cf665f1337bdca20b5976b6a131072552d05fd1d8",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i009",
+      "predecessorQuestionId": "ood-n05-b03-i009",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "7f1f5497e08d814dbf8b83b09f2bf71452c1c3b028d8db9b15a017875fd94202",
+      "currentWholeObjectSha256": "fbcfc1ab88bef07718c2774fba731fbac45893950bac5663a1696cd48e04f985",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i010",
+      "predecessorQuestionId": "ood-n05-b03-i010",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "06d2c1c0a2194a9ad47d578d7eec881c31c4fdf14d306be83ffc89746d0a7b7a",
+      "currentWholeObjectSha256": "72b36fda90a1c73ec78e88bb45af5f2aac472cdc697d97c3890d4363b1b02468",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i011",
+      "predecessorQuestionId": "ood-n05-b03-i011",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "198932e272ec67a2a60fa142fdaed7c2ef23323fc8586fe47fbba7479c33f404",
+      "currentWholeObjectSha256": "2a47137a05ef260b7dee80ff953dd913af4197b1cc59cf7637b8b549673e60cb",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i012",
+      "predecessorQuestionId": "ood-n05-b03-i012",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "ea45168a0840468e07763dfc53dd8b5aa54b7c0b311ccd4c8efdf44d31804435",
+      "currentWholeObjectSha256": "6b4a80ab78c1eac8224ae26d31a5e6aba81290a8a1e1e7cf0ab066250522f2ef",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i013",
+      "predecessorQuestionId": "ood-n05-b03-i013",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "1d3e09ba3ed575d87335fef80f8b1ecbc8671ccd64b0d29dc688efe36fa9d96b",
+      "currentWholeObjectSha256": "b933dd74f4d2d27ef710337d7e0ccf4ce91edfceb627a7efe2dcff588d2dd5eb",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i014",
+      "predecessorQuestionId": "ood-n05-b03-i014",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "efa8b13ea255053c335272ab5fa76d312c5cdac6946feec1515690b7f7a1cbc3",
+      "currentWholeObjectSha256": "1ba8891f28907aad3eb6e1c77bdb0423dca015c4270bb2938da54bc1fe846ed1",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i015",
+      "predecessorQuestionId": "ood-n05-b03-i015",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "884352051aec72844f8b23ecfbd1b32a3dd7271295c1398a5c8285ae1884dba0",
+      "currentWholeObjectSha256": "9f42e72f2dfb98c7511f9731b74873200c2adc86fd72b8cac749bb9c4c9c8642",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i016",
+      "predecessorQuestionId": "ood-n05-b03-i016",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "859753574c5589a9720cb12c062938ee4c58337c7ace264906bb70b26fe30779",
+      "currentWholeObjectSha256": "c560f18a0a980e1551becb459908a89fef5ecb194a8dcc488182db32d28f8dad",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b03-i017",
+      "predecessorQuestionId": "ood-n05-b03-i017",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "REVISE",
+      "predecessorWholeObjectSha256": "44670c4057853d11639422ee4c8886df0ac1332e880d79a40ce9ff8f7fab32b9",
+      "currentWholeObjectSha256": "2090e62916b7aecb368690e622ddf70471f88449597356cfcf93a7fd6c43759e",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The prompt requires reusing an immutable rule-set; the keyed option says “Copy match slots and rules.” Because copy depth/identity is the decision being tested, this does not specify retaining the stipulated shared rule-set and can be read as a conflicting copy policy. Clarify the key to retain the rule-set while copying match slots."
+    },
+    {
+      "questionId": "ood-n05-b04-i001",
+      "predecessorQuestionId": "ood-n05-b04-i001",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "65b88810fa5fa8955f6b1c327b1bc915326043fec4221440e9aab8ed1608c329",
+      "currentWholeObjectSha256": "f6b57c030044eac4cf3b5c48d300cb1fcc4072b3b5e0b527ff80cbd82909ed65",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i002",
+      "predecessorQuestionId": "ood-n05-b04-i002",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "30d2dd7677eb5684bcae3c95e4c578a37abc50a4defaf79046d9738ee3d1d511",
+      "currentWholeObjectSha256": "993ad005a6458f491bb0fe39ee88c1f84144ffe73dc9d91570d879180920bf5b",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i003",
+      "predecessorQuestionId": "ood-n05-b04-i003",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "6885418cb23d3c8fea2c99d0a20b091bdda880eeb0fb4079022a431046a2f6f1",
+      "currentWholeObjectSha256": "e85c6898d6123985a3e95fb6fa7b9ef75628187313e5f25150a79809bca4561c",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i004",
+      "predecessorQuestionId": "ood-n05-b04-i004",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "c94be67bbd263b51538251107cec8bdf1d616c650ccaa9c519af87736cb49601",
+      "currentWholeObjectSha256": "0df6ba79040b47c360408b1b8328ad3eb42b1a2619c43bee93e47849edf69d88",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i005",
+      "predecessorQuestionId": "ood-n05-b04-i005",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "63ea289522101aaa4f9fdddac73e6769ce733a972000f05205407c1eb860cc7f",
+      "currentWholeObjectSha256": "d1201d47db0f525d27ac526e198a95dcdad966fad498595c5f3a73a271755ed3",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i006",
+      "predecessorQuestionId": "ood-n05-b04-i006",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "5e4fcddfc6f0e8bcfbcda5324ab0316f44a480a55a93f0a51b6962d50d18b806",
+      "currentWholeObjectSha256": "d8e32832f54880201a87cd7bb1259ef64792a0f4a3999f6ac641fffacd761e0a",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i007",
+      "predecessorQuestionId": "ood-n05-b04-i007",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "c87f11401f6f7633505df63099f1b814212fea0795a0f50d16a2bf85524c086c",
+      "currentWholeObjectSha256": "f9d3d70e057705cc563b7153aa7c7389ae378ff34544d890c400bfc652dc0194",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i008",
+      "predecessorQuestionId": "ood-n05-b04-i008",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "7dd6a6b044715c23d9494711524d83b287ad813cbcbcb2204a48dc55809cdc4e",
+      "currentWholeObjectSha256": "b0b8d959e43c1a6b64b767f22ef2b7fd74dc37e8edda36b96bf2af7d88ca54b5",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i009",
+      "predecessorQuestionId": "ood-n05-b04-i009",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "2fc7643b8dbb84c4b4f52e97a4d21a32c124e2eca47e52997b7f677dec52ec55",
+      "currentWholeObjectSha256": "51ddbc291713f9431c9a1e638ecd7081aa5da38a7b39b21403180cfbbbcb643e",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i010",
+      "predecessorQuestionId": "ood-n05-b04-i010",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "74b20e7672dc4e82dc5201661884bcfc7e3634acc2fd3e4d98f3e67a0752577a",
+      "currentWholeObjectSha256": "7a88aa49e8b9eb4dbed8cca270294b67a4b634a05f6c62f1098f90875710927d",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i011",
+      "predecessorQuestionId": "ood-n05-b04-i011",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "9b65d820f0e3451ada284236af5b089c3039a84547e1e90603e4be7a44d49a22",
+      "currentWholeObjectSha256": "1fc2430b16e8ebad0680951765d6e7653e3a0b7385aaa7121c9978a389085ad0",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i012",
+      "predecessorQuestionId": "ood-n05-b04-i012",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "8e30d4bf576b7a65b91858c95e2aaa16c59c2f938ac27f534d3b791878c0b5d3",
+      "currentWholeObjectSha256": "24a5c6722eaf0b55d5490234801d30016fb01449ae9d221f007e39c19d56186f",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i013",
+      "predecessorQuestionId": "ood-n05-b04-i013",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "f86a245a028f4c84e64ea7ca6c9ac7a090f14fddfa3da876fd6a71c9c5ba0897",
+      "currentWholeObjectSha256": "b04a31bf4c240d895ef75f8985df583554353e9e23e0b1c1faf984a0378fa0d4",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i014",
+      "predecessorQuestionId": "ood-n05-b04-i014",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "4d36df4b8962106532b167599e232ed7ab8dd92ffcd52d86b48a93d721b170e4",
+      "currentWholeObjectSha256": "5e7dba2d8e632710cd297fac1d2ae5d56704e14c4a7e2d4fc175f87de7985a97",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i015",
+      "predecessorQuestionId": "ood-n05-b04-i015",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "ee0cd92db8ec4879255e2fb2931309c5c462b976c9eecf3f36700d85cded9774",
+      "currentWholeObjectSha256": "df83ca90709cd8d25eafc49a2acf2ecf29a7fd074e2ec2f4134c35a76288f9ba",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i016",
+      "predecessorQuestionId": "ood-n05-b04-i016",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "5f7466cc00b1e7ca36e40d410e375682ed850052ffa0a9683707eaca5639b98d",
+      "currentWholeObjectSha256": "b3096926ac49a13a020409622c7913f1261a9232a815e3337561322d1dfb8301",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    },
+    {
+      "questionId": "ood-n05-b04-i017",
+      "predecessorQuestionId": "ood-n05-b04-i017",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "verdict": "PASS",
+      "predecessorWholeObjectSha256": "1325876b4515ebde3d878a72926b3ca1bde2af74573e78c2a7e8ed6e089b124b",
+      "currentWholeObjectSha256": "c5220ef4244633d689b2ab114756284a243182742bf265192cdc8464fa1f1c3f",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving JSON property insertion order",
+      "finding": "The visible scenario distinguishes the selected pattern decision; keyed answer, Reason, all five Details fields and wrong-option feedback agree with its stated premises and the unit objective."
+    }
+  ]
+}

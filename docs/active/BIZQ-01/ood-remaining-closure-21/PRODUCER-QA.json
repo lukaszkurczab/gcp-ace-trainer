@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "review": "independent-producer-acceptance",
+  "verdict": "PASS WITH ISSUES",
+  "scope": "N05/21 fixed producer core: exact 153 same-ID proof, current source binding, v20 historical reconstruction, and unchanged predecessor guards. Canonical snapshot-dependent checks remain pending the local source checkpoint.",
+  "designInput": {
+    "path": "PRODUCER-BRIEFING.md",
+    "sha256": "df4e0fbe52a3bc15e2524535a72d46cdbd481c768f84a94a73451d1606122f6b",
+    "designReviewPath": "PRODUCER-DESIGN-QA.json",
+    "designReviewSha256": "75e4e9b33cb871ccb8c000d5b69229535a03642942789af3b580228b0dfd31c1"
+  },
+  "implementationReport": {
+    "path": "PRODUCER-IMPLEMENTATION.md",
+    "sha256": "a3cf6824f1b23f84cc5f6dedd19307ed82e6d03b93bcd897931262ce1d7b1"
+  },
+  "files": [
+    {"path":"scripts/content/verify-migration.mjs","sha256":"85ab544045295f39f4072c37603f0943aa8546db09ef74dfdaa9c15604f04ca0"},
+    {"path":"evidence/business-quality/bizq-01-ood-node-closure-21.json","sha256":"4a216a75e8fbce5bb88e828d8dce420ffd1fbb349cc176af07fd5924492bc56f"},
+    {"path":"tests/bizq01-ood-node-closure-21.test.mjs","sha256":"202534ea1a42e0d3f5d7ca18d1fdd638f35f223f1ccd3198246bd021699fc4de"},
+    {"path":"tests/ood-cohort16-historical-fixture.mjs","sha256":"3d6b3975e3e075bdd8dabd7580b6291f3d2f98abd2fa78093c69f96b597c8df2"},
+    {"path":"package.json","sha256":"6aeb056c414ff8b03fdb7549e96b0bb64add655a5c4077a8db222c1900886191"}
+  ],
+  "proofAndPreservation": {
+    "proofPath":"evidence/business-quality/bizq-01-ood-node-closure-21.json",
+    "proofSha256":"4a216a75e8fbce5bb88e828d8dce420ffd1fbb349cc176af07fd5924492bc56f",
+    "contentVersion":"object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
+    "beforeContentVersion":"object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+    "sourceFiles":9,
+    "sameIdCorrections":153,
+    "replacements":0,
+    "returnedReplacementCount":594,
+    "returnedSameIdCorrectionCount":171,
+    "reasonAmendmentCount":25,
+    "currentQuestionCount":16077,
+    "historicalQuestionCount":16041,
+    "currentOodQuestionCount":1413,
+    "preservedOtherOodQuestionCount":1260,
+    "untouchedSourceFileCount":944,
+    "preservedImmutableProofAndEvidenceCount":12,
+    "sourcePreservationReceipt":{"path":"ROOT-SOURCE-PRESERVATION-POST-IMPLEMENTATION.json","sha256":"8988db80a4b7efd66e67c11b66d29ea9bfe92a408cc8bfab2dbd4304daeaaba3"},
+    "priorGuardReceipt":{"path":"ROOT-PREVIOUS-GUARDS-POST-IMPLEMENTATION.json","sha256":"00334935162ab8b11139ae3faa8c586f8609a7e726852027c9992aee2b360dff"}
+  },
+  "independentChecks": [
+    {"command":"node --test tests/bizq01-ood-node-closure-21.test.mjs","result":"PASS","passed":5,"failed":0},
+    {"command":"node --test tests/bizq01-ood-node-closure-20.test.mjs","result":"PASS","passed":5,"failed":0},
+    {"command":"node --test tests/bizq01-migration-proof.test.mjs tests/bizq01-ood-source-11.test.mjs tests/bizq01-ood-source-12.test.mjs tests/bizq01-ood-unit-cohort-13.test.mjs tests/bizq01-ood-node-closure-16.test.mjs tests/bizq01-ood-node-closure-17.test.mjs tests/bizq01-ood-node-closure-19.test.mjs","result":"PASS","passed":55,"failed":0},
+    {"command":"npm run verify:migration","result":"PASS","currentQuestions":16077,"historicalQuestions":16041},
+    {"command":"npm run content:validate -- --track object-oriented-design-interview","result":"PASS","questions":1413},
+    {"command":"npm run content:test -- --track object-oriented-design-interview","result":"PASS","canonicalAnswers":1413},
+    {"command":"node --check scripts/content/verify-migration.mjs && node --check tests/bizq01-ood-node-closure-21.test.mjs && git diff --check","result":"PASS"}
+  ],
+  "pending": [
+    {
+      "check":"Full test:canonical and candidate source-snapshot tests after the authorized local source checkpoint",
+      "currentEvidence":"/private/tmp/patternly-n05-test-canonical.log reports 171/173 passed. Candidate draft v2 and candidate readiness v2 both fail at assertCanonicalSourceSnapshot because the modified N05 source/catalog working tree differs from the committed source snapshot.",
+      "classification":"Existing clean-snapshot precondition; guard preserved. Rerun after source checkpoint; do not waive or call full canonical passed."
+    }
+  ],
+  "findings": [
+    {"severity":"positive","basis":"The current proof binds the exact 153 before/current objects and per-item accepted option IDs, reconstructs all nine byte-exact v20 N05 arrays and the v20 question-set hash, and passes the unchanged v20 verifier and predecessor chain."},
+    {"severity":"positive","basis":"The new path does not add cohort-wide option uniqueness or retired-option rules; the immutable old descriptors and three closed private validators match their baseline receipt."},
+    {"severity":"pending","basis":"The two canonical candidate snapshot tests have not passed on a clean source checkpoint. This is pending verification, not a waived requirement or a demonstrated v21 validator defect."}
+  ],
+  "limits": [
+    "This accepts only the bounded producer core and matching historical evidence.",
+    "The post-checkpoint canonical test rerun is still required.",
+    "No app consumer, candidate/readiness/admission, provenance, native/Premium, external publication, release, or full BIZQ-01 acceptance is claimed."
+  ]
+}

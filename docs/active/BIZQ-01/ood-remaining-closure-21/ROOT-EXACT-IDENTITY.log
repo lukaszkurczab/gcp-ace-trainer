@@ -1,0 +1,18 @@
+✔ resolves an exact canonical artifact by track, content version, and SHA (366.776916ms)
+✔ resolves only the question identified by a canonical ResolvedContentRef (0.381375ms)
+✔ prepares Certification Exam Simulation from the exact canonical artifact profile (13.330542ms)
+✔ prepares Coding Mock from the exact canonical artifact profile and ordered 40-question pool (4.871208ms)
+✔ session creation preserves requested and actual lengths, immutable item order, option order, and no response (3.571625ms)
+✔ active session advances and persisted current position resumes deterministically (0.496083ms)
+✔ session supports valid direct navigation but rejects an invalid item index (0.74ms)
+✔ completion fixes position at the final item and cannot advance (0.335167ms)
+✔ abandonment preserves committed position and cannot advance (0.339333ms)
+✔ session rejects mismatched track, content version, duplicate references, and invalid completion position (0.407458ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1629.214042

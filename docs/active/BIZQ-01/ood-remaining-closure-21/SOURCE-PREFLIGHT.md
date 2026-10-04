@@ -1,6 +1,6 @@
 # OOD remaining-source preflight — current findings
 
-**Stage: partial read-only review.** This report closes the whole-object review for N05, N06, and N07 (27 arrays / 477 items). N08 and N09 (18 arrays / 324 items) remain unreviewed. This is not an 801-item verdict, authoring approval, source-package decision, or BIZQ-01 acceptance. The per-item ledger and raw-source/whole-question SHA-256 bindings are in [SOURCE-PREFLIGHT.json](./SOURCE-PREFLIGHT.json).
+**Stage: read-only source preflight complete for N05–N09.** All 45 arrays / 801 current whole objects were reviewed. This is not an authoring approval, source-package decision, or BIZQ-01 acceptance; item dispositions are bounded evidence for closure planning, not admission decisions. The per-item ledger and raw-source/whole-question SHA-256 bindings are in [SOURCE-PREFLIGHT.json](./SOURCE-PREFLIGHT.json).
 
 ## Exact inventory
 
@@ -22,7 +22,7 @@ All 153 N05 items were read as whole objects: prompt and constraints, keyed and 
 | N05-B08 | Flyweight/shared state | No repeated population, shared immutable intrinsic data, request-specific extrinsic state, or resource-pressure fact. |
 | N05-B09 | Composition root/dependency assembly | No dependency graph, implementation/environment selection, or assembly boundary at which configuration is validated. |
 
-These findings support item-level correction planning, not automatic replacement of all 153. Each ledger entry records whether the existing objective could be retained by adding decisive facts or whether the primary decision may need to change. Keep the existing ID only if the reviewed correction preserves the primary decision and keyed meaning; assign a new ID if that meaning changes. The 14 current matched OOD review findings were reused only on exact fingerprint match; specifically, `ood-n05-b01-i004` matches the earlier whole-object finding about a booking transfer lacking a factory/object-family trigger. No other sampled finding is substituted for the individual reads.
+These findings support item-level correction planning, not automatic replacement of all 153. Each ledger entry records whether the existing objective could be retained by adding decisive facts or whether the primary decision may need to change. Keep the existing ID only if the reviewed correction preserves the primary decision and keyed meaning; assign a new ID if that meaning changes. The linked ROOT-REVIEW18-CURRENT reconciliation covers 216 sampled objects across tracks: 79 exact PASS, 132 matched historical DEFECT, 4 retired IDs, and 1 finding reassessment. Its 24-item OOD subset has 6 exact PASS, 13 exact historical DEFECT findings (12 critical and 1 noncritical feedback finding), 4 retired IDs, and 1 finding reassessment. Reuse requires both an exact fingerprint and a finding that describes the current object. In the completed N05 read, only `ood-n05-b01-i004` was an exact applicable match; the N06–N09 matches were assessed against their own whole objects below and in the ledger.
 
 ## Remaining scope and limits
 
@@ -45,10 +45,46 @@ All 180 N06 objects were also read individually. Across the node, the source rep
 
 Four exact current OOD review findings were reused only by matching the whole-object fingerprint: N06-B01-i017 (strategy variation absent), N06-B04-i015 (expiry/approval does not establish subscribers), N06-B07-i011 (revocation does not establish template-method subclass variation), and N06-B10-i014 (provider switching does not establish workflow orchestration). They support those items only; they were not generalized to sibling objects.
 
+## N08 disposition
+
+All 162 N08 items were read as whole objects, including every option-ID diagnostic and all five Details fields. The unit-level answer and four broad alternatives recur through each array; the case facts often establish a business outcome but omit the concurrent access, interleaving, lifetime, failure, or replay condition required by the named concurrency mechanism. The ledger classifies 142 as `CONFIRMED`, 19 as `CONTRACT_GAP` (a mechanism is plausible, but the facts do not settle the nearest alternative), and one supported control as `NOT_REPRODUCED`. These are item assessments, not a claim that every object needs a new ID or the same correction.
+
+| Unit | Objective | Review result |
+| --- | --- | --- |
+| N08-B01 | Shared mutable state and confinement | No competing reads/writes or ownership boundary is stated. |
+| N08-B02 | Locks, immutability, actors, queues, and ownership | Most cases omit contending actors or a serialization/transfer constraint. The current prompt says, “In a digital invoice exchange, the billing operator must reissue a rejected invoice. The new issue is traceable and does not double-charge the customer”; its key says, “Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point.” This item is confirmed for the current synchronization/objective mismatch. An older review note attached to the same fingerprint describes lazy/eager query loading, which is absent from this prompt, so that finding was not reused, and its historical critical grade was not transferred to the separate current-source assessment. |
+| N08-B03 | Atomicity, races, visibility, and happens-before | Several cases imply simultaneous updates, but do not state the interleaving or visibility boundary that excludes an ordinary operation. |
+| N08-B04 | Deadlocks, ordering, and starvation | Transfer/temperature facts do not establish nested acquisition, a lock-order cycle, or progress hazard. |
+| N08-B05 | Thread-safe collections and compound operations | No shared collection plus competing multi-step operation is identified. |
+| N08-B06 | Async cancellation and timeouts | Status and retirement outcomes do not establish cancellation, timeout, or late completion behavior. |
+| N08-B07 | Resource ownership and RAII | Offline/retry outcomes do not specify acquired resources and their release lifetime. |
+| N08-B08 | Exception safety and partial effects | Some prompts mention retry or failure pressure, but generally omit the failure point and committed/partial side effects. |
+| N08-B09 | Retry and idempotency | Duplicate-sensitive cases often omit the replay source or stable request identity; `ood-n08-b09-i014` is a supported control because invoice reissue is explicitly traceable and must avoid double charge. |
+
+Three overlapping prior sample findings were independently confirmed on exact whole-object fingerprints: `ood-n08-b04-i018` (no lock graph/progress hazard), `ood-n08-b06-i004` (retirement without async cancellation), and `ood-n08-b07-i003` (submission outcome without resource lifetime). The misbound N08-B02-i015 prior finding is recorded as a mismatch and was not reused.
+
+## N09 disposition
+
+All 162 N09 objects were read as whole objects. The case-level outcomes generally lack the current implementation, test harness, public contract, measurement, or review alternatives needed to decide testability, refactoring, API evolution, observability, performance, YAGNI, or design-review communication. The prompt names its target lens and adds a general change pressure, while the four broad alternatives and much of the explanatory language repeat within each unit. The item ledger records 130 `CONFIRMED`, 31 `CONTRACT_GAP`, and one supported control `NOT_REPRODUCED`.
+
+| Unit | Objective | Review result |
+| --- | --- | --- |
+| N09-B01 | Test seams | Some time-expiry cases support a clock seam, but do not support the option’s full list of seams. `ood-n09-b01-i001` is a supported control for its clock component because the facts require deterministic expiry tests without a live integration. |
+| N09-B02 | Testable constructors | Some timed inputs are relevant, but do not establish how construction acquires dependencies or validation should be isolated. |
+| N09-B03 | Code smells and misplaced behavior | No existing implementation or forwarding path is shown to locate behavior. |
+| N09-B04 | Behavior-preserving refactoring | Snapshot/revision facts can matter, but no baseline implementation, change sequence, or regression evidence is supplied. |
+| N09-B05 | Public API and evolution | A few stream/caller cases imply compatibility pressure but omit the published version/deprecation contract needed to distinguish alternatives. |
+| N09-B06 | Observability | A generic requirement to observe failure does not state which signal or diagnostic is missing. |
+| N09-B07 | Performance and cost | Generic performance pressure lacks measured workload, hot-path, or cost evidence. |
+| N09-B08 | YAGNI | Some stems add a second workflow, but do not specify the independent variability or substitution axis that would make the keyed boundary decisive. |
+| N09-B09 | Design-review communication | The cases generally omit audience, competing alternatives, change pressure, and review feedback needed to assess the communication decision. |
+
+The prior sample finding for `ood-n09-b08-i004` was independently confirmed on an exact fingerprint: privacy/consent is explicit, but the prompt does not establish the keyed YAGNI boundary. The clock-control item above is retained as a counterexample to blanket claims that every N09 key is unsupported.
+
 ## Remaining scope and limits
 
-N05 authoring has now been authorized under its separate fixed contract. N08 and N09 remain outside this report; any later recommendation for them requires the same item-level fact, objective, alternative, explanation, and feedback assessment. N05–N07 share a node artifact, but this does not establish that every question must be rewritten.
+The per-item ledger binds all 45 source arrays and 801 whole objects to raw-source and canonical-question SHA-256 values. It records exact prompts, constraints, keyed option, every alternative and feedback message, Reason, all five Details fields, source references, nearest-alternative analysis, and a per-item action hypothesis. Unit summaries also record the actual repeated answer/alternative/explanation patterns. N05 authoring has been authorized under its separate fixed contract; these N08/N09 findings support future scope decisions but do not themselves authorize content edits. The report does not infer that every question requires a new ID or a single uniform correction.
 
 Current OOD Free experience profiles select N01; this preflight does not establish N05–N09 learner-pool reachability or alter mode eligibility. No Premium claim is made. Any future source implementation would need to preserve accepted N01–N04 objects, existing proof history, and other content bytes; this review authorizes none of those changes.
 
-No source, proof, test, catalog, app, artifact, candidate, admission, web, runtime, or service file was changed. This remains a partial review bound to the current track/question-set hashes and the per-file/per-item hashes in the JSON ledger.
+No source, proof, test, catalog, app, artifact, candidate, admission, web, runtime, or service file was changed. This read-only review is bound to the current track/question-set hashes and the per-file/per-item hashes in the JSON ledger.

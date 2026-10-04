@@ -1,0 +1,1192 @@
+[
+  {
+    "answer": {
+      "optionId": "n05b09_i001_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Policy/store compatibility is deployment configuration; classification does not own refund construction.",
+      "details": {
+        "mechanismOrProperty": "The refund workflow depends on a policy and evidence store selected as one compatible pair.",
+        "scenarioApplication": "Validate the policy/store pair at startup; inject the refund workflow. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "A locator can return an unvalidated or mismatched pair.",
+        "boundaryOrTradeoff": "If policy is a per-request business choice, pass it explicitly rather than rebuilding the graph.",
+        "transfer": "Construct infrastructure at a clear boundary, validate related configuration together, and inject the resulting services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i001_late_service_lookup",
+          "text": "A locator can return an unvalidated or mismatched pair."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Classification should not instantiate dependencies for the separate refund responsibility.",
+          "targetId": "n05b09_i001_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Callers should not choose from a duplicated matrix of workflow graph variants.",
+          "targetId": "n05b09_i001_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i001_late_service_lookup",
+          "text": "Let inspectors resolve a refund policy by name from a global service locator during classification."
+        },
+        {
+          "optionId": "n05b09_i001_validated_graph",
+          "text": "Validate the policy/store pair at startup; inject the refund workflow."
+        },
+        {
+          "optionId": "n05b09_i001_domain_builds_infrastructure",
+          "text": "Have classification construct refund services and evidence stores when it sees a potentially refundable category."
+        },
+        {
+          "optionId": "n05b09_i001_unvalidated_or_mismatched_graph",
+          "text": "Register every policy/store pairing as a separate workflow subclass and leave selection to callers."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "The returns workflow has separate classification and refund services. Startup selects one refund policy and evidence store; each request must use the matching pair, while classification remains independent. What should create this graph?",
+    "questionId": "ood-n05-b09-i001",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i002_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Runner/store compatibility is infrastructure configuration; a snapshot records outputs, not how to construct infrastructure.",
+      "details": {
+        "mechanismOrProperty": "Runner and artifact store compatibility is checked against the snapshot format before execution.",
+        "scenarioApplication": "Validate runner/store compatibility at startup; inject both into the job. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "Ambient lookup can select inconsistent dependencies within one job.",
+        "boundaryOrTradeoff": "A user-selected runner is a business input only if the product explicitly supports it.",
+        "transfer": "Validate dependency compatibility before work begins, and keep infrastructure construction outside persisted domain objects."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i002_late_service_lookup",
+          "text": "Ambient lookup can select inconsistent dependencies within one job."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Selecting a store after computation can leave a partial or unsupported publication.",
+          "targetId": "n05b09_i002_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Snapshot data records results; it should not instantiate infrastructure from saved names.",
+          "targetId": "n05b09_i002_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i002_late_service_lookup",
+          "text": "Let each notebook cell resolve runner and store independently from ambient environment variables."
+        },
+        {
+          "optionId": "n05b09_i002_domain_builds_infrastructure",
+          "text": "Allow the runner to choose storage after computation and silently convert unsupported formats."
+        },
+        {
+          "optionId": "n05b09_i002_unvalidated_or_mismatched_graph",
+          "text": "Have the snapshot object instantiate runner and store names saved in its data."
+        },
+        {
+          "optionId": "n05b09_i002_validated_graph",
+          "text": "Validate runner/store compatibility at startup; inject both into the job."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A notebook publishes immutable snapshots tied to exact dataset and code versions. Deployment selects a runner and artifact store; both must support the snapshot format before a job starts. Where is this graph checked?",
+    "questionId": "ood-n05-b09-i002",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i003_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Infrastructure varies by environment; the ordered use case should not live in the entity or each screen.",
+      "details": {
+        "mechanismOrProperty": "One handler owns the persist-then-notify sequence while repository and notifier vary by environment.",
+        "scenarioApplication": "Inject the environment-selected repository and notifier into one use-case handler. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "An entity should not construct infrastructure or own use-case orchestration.",
+        "boundaryOrTradeoff": "Notification failure still needs an explicit policy after persistence; wiring alone does not make effects atomic.",
+        "transfer": "Assemble environment-specific collaborators at the application edge and keep the use-case sequence explicit."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i003_late_service_lookup",
+          "text": "An entity should not construct infrastructure or own use-case orchestration."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Screen-local wiring can reverse or omit the required persist-before-notify order.",
+          "targetId": "n05b09_i003_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Late lookup can fail after persistence and hides a required dependency until too late.",
+          "targetId": "n05b09_i003_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i003_validated_graph",
+          "text": "Inject the environment-selected repository and notifier into one use-case handler."
+        },
+        {
+          "optionId": "n05b09_i003_late_service_lookup",
+          "text": "Let the comment entity send notifications and open a database connection after construction."
+        },
+        {
+          "optionId": "n05b09_i003_domain_builds_infrastructure",
+          "text": "Have each editor screen choose a repository and notifier, duplicating accept-and-notify order."
+        },
+        {
+          "optionId": "n05b09_i003_unvalidated_or_mismatched_graph",
+          "text": "Resolve a notifier globally after the comment has already been committed."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "Accepting a comment persists author and document revision, then notifies the assigned author. Test and production use different repositories and transports, but use-case order and result stay the same. What wires the handler?",
+    "questionId": "ood-n05-b09-i003",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i004_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Mode is a declared launch configuration and the submission contract distinguishes completed from retryable work.",
+      "details": {
+        "mechanismOrProperty": "The graph binds the selected online endpoint or durable offline retry queue at launch.",
+        "scenarioApplication": "Build one validated graph for the launch mode and inject its submitter. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "Mid-request switching can apply two side-effect contracts to one inspection.",
+        "boundaryOrTradeoff": "A supported online/offline transition needs an explicit transition contract.",
+        "transfer": "Build and validate one coherent graph for a declared mode; do not hide missing dependencies behind success."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i004_late_service_lookup",
+          "text": "Switching modes mid-request can apply two side-effect contracts to one inspection."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Silent fallback bypasses the configured durability requirement while claiming success.",
+          "targetId": "n05b09_i004_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Inspection data should not construct transport based on device connectivity.",
+          "targetId": "n05b09_i004_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i004_late_service_lookup",
+          "text": "Switch between queue and direct submission whenever connectivity changes mid-request."
+        },
+        {
+          "optionId": "n05b09_i004_domain_builds_infrastructure",
+          "text": "If the selected dependency is missing, silently fall back to the other mode and report success."
+        },
+        {
+          "optionId": "n05b09_i004_validated_graph",
+          "text": "Build one validated graph for the launch mode and inject its submitter."
+        },
+        {
+          "optionId": "n05b09_i004_unvalidated_or_mismatched_graph",
+          "text": "Let inspection records inspect connectivity and instantiate the available transport."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "Offline inspections use a durable retry queue; online submissions go directly to an endpoint. Mode is fixed at launch, and accepted work must be complete or explicitly retryable. What is the safe choice?",
+    "questionId": "ood-n05-b09-i004",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i005_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Gateway and ledger are a consistency-sensitive pair; selecting either after a side effect risks duplicate or untraceable issues.",
+      "details": {
+        "mechanismOrProperty": "Gateway account identity and ledger mapping must agree before an invoice side effect.",
+        "scenarioApplication": "Validate gateway and ledger mapping together; inject them into reissue. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "Per-retry choice can route an uncertain issue through another account mapping.",
+        "boundaryOrTradeoff": "Timeout recovery remains a separate unknown-outcome problem; wiring does not prove payment success.",
+        "transfer": "Validate dependencies that jointly determine an external identity or side effect before the use case starts."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i005_late_service_lookup",
+          "text": "Per-retry selection can route one uncertain issue through a different account mapping."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "A gateway should not take over the ledger’s identity and accounting responsibility.",
+          "targetId": "n05b09_i005_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Late selection can fail after the invoice is marked reissued, complicating recovery.",
+          "targetId": "n05b09_i005_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i005_late_service_lookup",
+          "text": "Let the operator choose gateway and ledger independently for each retry."
+        },
+        {
+          "optionId": "n05b09_i005_validated_graph",
+          "text": "Validate gateway and ledger mapping together; inject them into reissue."
+        },
+        {
+          "optionId": "n05b09_i005_domain_builds_infrastructure",
+          "text": "Have the gateway create ledger records using its own account mapping."
+        },
+        {
+          "optionId": "n05b09_i005_unvalidated_or_mismatched_graph",
+          "text": "Resolve whichever gateway is available after the ledger marks the invoice reissued."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "Invoice reissue avoids double charge and preserves issue identity. Deployment configures gateway and ledger, and both must use the same account mapping. How should they be selected?",
+    "questionId": "ood-n05-b09-i005",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i006_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The policy is only useful if its directory sees the same revocation state; validate and inject the coherent pair.",
+      "details": {
+        "mechanismOrProperty": "Directory and evaluator share one revocation source so policy sees the current badge state.",
+        "scenarioApplication": "Configure both from one environment; validate their shared revocation source. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "Late per-door selection may mix sources and produce inconsistent access decisions.",
+        "boundaryOrTradeoff": "The composition boundary validates wiring; the source must still provide the stated revocation timing.",
+        "transfer": "Bind collaborators that must observe one authoritative state to the same explicit configuration."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i006_late_service_lookup",
+          "text": "Per-door lookup can mix environments and produce inconsistent revocation decisions."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "An asynchronous cache update contradicts the stated before-access visibility requirement.",
+          "targetId": "n05b09_i006_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "A hidden default client can read a different source than the configured policy.",
+          "targetId": "n05b09_i006_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i006_late_service_lookup",
+          "text": "Let each door create a directory client and choose a policy evaluator at access time."
+        },
+        {
+          "optionId": "n05b09_i006_domain_builds_infrastructure",
+          "text": "Cache one process-wide badge state and update it asynchronously after revocation."
+        },
+        {
+          "optionId": "n05b09_i006_unvalidated_or_mismatched_graph",
+          "text": "Let the evaluator construct a second directory client using its own default environment."
+        },
+        {
+          "optionId": "n05b09_i006_validated_graph",
+          "text": "Configure both from one environment; validate their shared revocation source."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "Badge revocation must reach the door policy before access. The directory and policy evaluator must read revocation data from the same configured environment. How should access dependencies be wired?",
+    "questionId": "ood-n05-b09-i006",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i007_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Supported formatter availability is infrastructure configuration; the approved carrier is a shipment fact.",
+      "details": {
+        "mechanismOrProperty": "Available formatters are application dependencies; approved carrier is explicit shipment data.",
+        "scenarioApplication": "Assemble formatters at startup; pass the approved carrier choice to printing. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "A domain entity should not discover infrastructure by registration order.",
+        "boundaryOrTradeoff": "Validate the request’s carrier against supported formatters before generating the label.",
+        "transfer": "Assemble available implementations once and pass per-operation decisions explicitly."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i007_late_service_lookup",
+          "text": "A domain entity should not discover implementations by registration order."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "A screen default can disagree with the carrier already approved for the shipment.",
+          "targetId": "n05b09_i007_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "A request-specific carrier choice does not require rebuilding shared application services.",
+          "targetId": "n05b09_i007_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i007_validated_graph",
+          "text": "Assemble formatters at startup; pass the approved carrier choice to printing."
+        },
+        {
+          "optionId": "n05b09_i007_late_service_lookup",
+          "text": "Have the shipment scan registered formatters and choose the first one."
+        },
+        {
+          "optionId": "n05b09_i007_domain_builds_infrastructure",
+          "text": "Let each print screen construct a formatter using a global carrier default."
+        },
+        {
+          "optionId": "n05b09_i007_unvalidated_or_mismatched_graph",
+          "text": "Rebuild the full service graph whenever one shipment selects a carrier."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "Several carrier formatters are supported. The shipment’s approved carrier is selected before printing, and the label must use the current approved address. What belongs in graph assembly versus the request?",
+    "questionId": "ood-n05-b09-i007",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i008_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Policy and room data are tenant-specific request dependencies; a shared mutable policy leaks state across concurrent requests.",
+      "details": {
+        "mechanismOrProperty": "Tenant policy and room repository share a request scope to prevent cross-tenant state leakage.",
+        "scenarioApplication": "Bind matching tenant policy and room data in a request-scoped context. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "Mutating a singleton between overlapping requests is unsafe.",
+        "boundaryOrTradeoff": "Shared immutable policy definitions may be reused only if tenant-specific values stay isolated.",
+        "transfer": "Choose dependency lifetime from the data and isolation boundary, not from convenience."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i008_late_service_lookup",
+          "text": "A mutable singleton can leak one tenant’s policy into another concurrent request."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Ambient thread-local state hides the dependency and can be lost across async work.",
+          "targetId": "n05b09_i008_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Request scope and application startup are different lifetimes; rebuilding everything per move is wasteful.",
+          "targetId": "n05b09_i008_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i008_late_service_lookup",
+          "text": "Register one mutable singleton policy and replace its tenant ID before every booking."
+        },
+        {
+          "optionId": "n05b09_i008_domain_builds_infrastructure",
+          "text": "Let rooms read current tenant policy from thread-local global state."
+        },
+        {
+          "optionId": "n05b09_i008_validated_graph",
+          "text": "Bind matching tenant policy and room data in a request-scoped context."
+        },
+        {
+          "optionId": "n05b09_i008_unvalidated_or_mismatched_graph",
+          "text": "Build and discard a new application-wide scheduler graph for every room move."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "Tenants have different room capacity and cancellation policies. A booking’s room rules and data must use the same tenant context, with no policy leakage between concurrent requests. What lifetime boundary fits?",
+    "questionId": "ood-n05-b09-i008",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i009_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Dispatch mechanics are common, but maintenance state is exhibit-specific.",
+      "details": {
+        "mechanismOrProperty": "The dispatcher is shared code, while mutable maintenance state is selected per exhibit.",
+        "scenarioApplication": "Share the dispatcher, but bind each command to its exhibit’s state. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "A global flag broadens one exhibit’s maintenance state to all others.",
+        "boundaryOrTradeoff": "If handler sets differ, validate the handler/policy combination for each exhibit.",
+        "transfer": "Reuse stateless infrastructure while scoping mutable state to the entity it governs."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i009_late_service_lookup",
+          "text": "One exhibit entering maintenance must not block every exhibit."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Per-exhibit dispatchers duplicate command wiring without isolating the state owner.",
+          "targetId": "n05b09_i009_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Static lookup hides which exhibit state a command will evaluate.",
+          "targetId": "n05b09_i009_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i009_late_service_lookup",
+          "text": "Use one global maintenance flag for all exhibits."
+        },
+        {
+          "optionId": "n05b09_i009_validated_graph",
+          "text": "Share the dispatcher, but bind each command to its exhibit’s state."
+        },
+        {
+          "optionId": "n05b09_i009_domain_builds_infrastructure",
+          "text": "Register a separate dispatcher for every exhibit and duplicate its command table."
+        },
+        {
+          "optionId": "n05b09_i009_unvalidated_or_mismatched_graph",
+          "text": "Let handlers discover exhibit state through a static registry."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "One dispatcher serves many exhibits. Each exhibit independently enters maintenance mode, so unsafe commands are blocked there while other exhibits remain active. What graph is appropriate?",
+    "questionId": "ood-n05-b09-i009",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i010_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Two identity-sensitive dependencies must agree before the job mutates catalog state.",
+      "details": {
+        "mechanismOrProperty": "Catalog and progress repository must agree on lesson identity before retirement begins.",
+        "scenarioApplication": "Validate catalog/repository identity mapping at the job boundary. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "Late hidden resolution conceals a compatibility dependency.",
+        "boundaryOrTradeoff": "A genuine historical identity migration needs its own contract; composition cannot repair it.",
+        "transfer": "Validate cross-dependency assumptions before identity-sensitive work begins."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i010_late_service_lookup",
+          "text": "Late resolution hides the repository dependency and its identity contract."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Inventing a mapping at job execution risks attaching progress to the wrong lesson.",
+          "targetId": "n05b09_i010_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Replacing storage mid-job can split reads and writes across identity rules.",
+          "targetId": "n05b09_i010_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i010_late_service_lookup",
+          "text": "Let the lesson resolve whichever progress repository is currently registered."
+        },
+        {
+          "optionId": "n05b09_i010_domain_builds_infrastructure",
+          "text": "Have each job invent a mapping if catalog and repository IDs disagree."
+        },
+        {
+          "optionId": "n05b09_i010_unvalidated_or_mismatched_graph",
+          "text": "Replace the repository implementation after retirement begins."
+        },
+        {
+          "optionId": "n05b09_i010_validated_graph",
+          "text": "Validate catalog/repository identity mapping at the job boundary."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "Lesson retirement must preserve learner progress under stable lesson identity. Catalog and progress repository must agree on identity mapping before the job starts. Where is compatibility checked?",
+    "questionId": "ood-n05-b09-i010",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i011_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Exporter is a variable implementation, but the close operation owns the stable snapshot boundary.",
+      "details": {
+        "mechanismOrProperty": "Closing yields one snapshot that destination-specific export consumes without rereading live state.",
+        "scenarioApplication": "Inject the exporter and pass it the one closed-session snapshot. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "A reread can observe different state than the snapshot that was closed.",
+        "boundaryOrTradeoff": "Export retry or reopening policy is separate; graph assembly does not make export transactional.",
+        "transfer": "Inject variable infrastructure before a use case and pass stable outputs between ordered steps."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i011_late_service_lookup",
+          "text": "Independent rereading can observe different state than the snapshot that was closed."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "A session entity should not construct destination infrastructure from history.",
+          "targetId": "n05b09_i011_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Reconstructing after close can change the snapshot input and fail after state changed.",
+          "targetId": "n05b09_i011_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i011_validated_graph",
+          "text": "Inject the exporter and pass it the one closed-session snapshot."
+        },
+        {
+          "optionId": "n05b09_i011_late_service_lookup",
+          "text": "Let the exporter close the board and independently reread live state."
+        },
+        {
+          "optionId": "n05b09_i011_domain_builds_infrastructure",
+          "text": "Have the session entity choose an exporter from a destination name in history."
+        },
+        {
+          "optionId": "n05b09_i011_unvalidated_or_mismatched_graph",
+          "text": "Resolve the exporter after closing and ask it to reconstruct the snapshot."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "Closing a board creates one stable session snapshot, then an exporter writes it. Exporter varies by destination; both steps must use the same snapshot, not reopen live state. What is wired?",
+    "questionId": "ood-n05-b09-i011",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i012_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Transport is deployment wiring, but policy selection is a per-conversation recorded decision.",
+      "details": {
+        "mechanismOrProperty": "The conversation’s recorded policy version determines deadline behavior; delivery transport is injected separately.",
+        "scenarioApplication": "Inject policy reader and notifier; request the conversation’s recorded policy version. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "A channel provider does not own business escalation policy.",
+        "boundaryOrTradeoff": "The selected policy version must remain available while open conversations need it.",
+        "transfer": "Inject infrastructure while passing recorded per-entity decisions explicitly."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i012_late_service_lookup",
+          "text": "A notifier has no authority to choose business escalation policy."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "A screen may substitute the latest policy and rewrite the conversation’s recorded decision.",
+          "targetId": "n05b09_i012_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Concurrent requests can observe one another’s mutated policy version.",
+          "targetId": "n05b09_i012_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i012_late_service_lookup",
+          "text": "Let the notifier choose policy based on the channel it supports."
+        },
+        {
+          "optionId": "n05b09_i012_domain_builds_infrastructure",
+          "text": "Have each support screen resolve the latest policy and attach it during escalation."
+        },
+        {
+          "optionId": "n05b09_i012_validated_graph",
+          "text": "Inject policy reader and notifier; request the conversation’s recorded policy version."
+        },
+        {
+          "optionId": "n05b09_i012_unvalidated_or_mismatched_graph",
+          "text": "Use a mutable singleton reader that switches versions between concurrent conversations."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "An escalation preserves its conversation owner and deadline. The deployment selects a policy reader and notifier, but the reader must return the policy version recorded on each conversation. What should the handler receive?",
+    "questionId": "ood-n05-b09-i012",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i013_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The graph must be valid before the use case can expose a listing; per-listing validation still runs before publication.",
+      "details": {
+        "mechanismOrProperty": "Validator and publisher compatibility is startup wiring; market checks still run for each listing.",
+        "scenarioApplication": "Validate validator/publisher compatibility before exposing the listing use case. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "Post-publication validation violates the required ordering.",
+        "boundaryOrTradeoff": "Configuration compatibility does not replace validating each listing before it becomes visible.",
+        "transfer": "Validate graph compatibility before work, then enforce business rules within each operation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i013_late_service_lookup",
+          "text": "Post-publication validation violates the required ordering."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Persisted listing data should not construct deployment infrastructure.",
+          "targetId": "n05b09_i013_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "A publisher must not silently redefine which market rules govern a listing.",
+          "targetId": "n05b09_i013_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i013_late_service_lookup",
+          "text": "Publish first, then validate and hide the listing if it fails."
+        },
+        {
+          "optionId": "n05b09_i013_domain_builds_infrastructure",
+          "text": "Let each listing instantiate the publisher named in market data."
+        },
+        {
+          "optionId": "n05b09_i013_unvalidated_or_mismatched_graph",
+          "text": "Allow each publisher to choose whichever market rules it understands."
+        },
+        {
+          "optionId": "n05b09_i013_validated_graph",
+          "text": "Validate validator/publisher compatibility before exposing the listing use case."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A listing is visible only after market validation. Markets select different rules; deployment chooses API or feed publisher, and each market supports both. Invalid wiring must fail before exposure. What does assembly do?",
+    "questionId": "ood-n05-b09-i013",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i014_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Connectors/repository are infrastructure; identity and promise are durable request data.",
+      "details": {
+        "mechanismOrProperty": "Connectors are assembled infrastructure; retry identity and delivery promise come from persisted request data.",
+        "scenarioApplication": "Assemble connectors and repository once; pass persisted identity and promise per attempt. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "A new identity on retry can duplicate fulfillment.",
+        "boundaryOrTradeoff": "Validate vendor capability against the persisted split before dispatch.",
+        "transfer": "Separate infrastructure wiring from durable per-operation identity and recovery data."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i014_late_service_lookup",
+          "text": "A new retry identity can duplicate fulfillment and break the original promise."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Private repositories can disagree about the same order state.",
+          "targetId": "n05b09_i014_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Transport selection does not own order identity or delivery promise.",
+          "targetId": "n05b09_i014_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i014_late_service_lookup",
+          "text": "Let a request instantiate its connector and generate a new identity on every retry."
+        },
+        {
+          "optionId": "n05b09_i014_validated_graph",
+          "text": "Assemble connectors and repository once; pass persisted identity and promise per attempt."
+        },
+        {
+          "optionId": "n05b09_i014_domain_builds_infrastructure",
+          "text": "Have each connector keep a private copy of the order repository and promise."
+        },
+        {
+          "optionId": "n05b09_i014_unvalidated_or_mismatched_graph",
+          "text": "Resolve a vendor globally during retry and let it define the delivery promise."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "Fulfillment splits one request across vendors but preserves request identity and promise. Deployment configures connectors and repository; retry must reuse the same identity even after restart. How are these separated?",
+    "questionId": "ood-n05-b09-i014",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i015_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Both dependencies must refer to the same tenant before identity-sensitive state changes.",
+      "details": {
+        "mechanismOrProperty": "Map source and approval repository must share the transfer’s tenant identity.",
+        "scenarioApplication": "Build the transfer service from a validated tenant-scoped dependency pair. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "Independent global lookup can attach history from the wrong tenant.",
+        "boundaryOrTradeoff": "The transfer still checks plot invariants after graph compatibility is established.",
+        "transfer": "Validate related dependencies within the identity scope before applying a state change."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i015_late_service_lookup",
+          "text": "Independent lookup can attach approval history from another tenant."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Switching shared mutable tenant state is unsafe for overlapping transfers.",
+          "targetId": "n05b09_i015_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "Discovering a mismatch after mutation risks losing the original boundary or history.",
+          "targetId": "n05b09_i015_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i015_validated_graph",
+          "text": "Build the transfer service from a validated tenant-scoped dependency pair."
+        },
+        {
+          "optionId": "n05b09_i015_late_service_lookup",
+          "text": "Let each plot resolve a map globally and use whichever approval repository is current."
+        },
+        {
+          "optionId": "n05b09_i015_domain_builds_infrastructure",
+          "text": "Switch a shared mutable map/repository tenant ID before every transfer."
+        },
+        {
+          "optionId": "n05b09_i015_unvalidated_or_mismatched_graph",
+          "text": "Transfer the reservation first, then discover whether the repository belongs to that tenant."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "Garden transfer preserves plot boundaries and approval history. Each tenant supplies a map and approval repository; a transfer must use a matching pair. What rejects mismatched wiring before transfer?",
+    "questionId": "ood-n05-b09-i015",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i016_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "Policy and storage vary independently, but the quote must capture its pricing decision explicitly.",
+      "details": {
+        "mechanismOrProperty": "Policy version governs component pricing; storage is an independent deployment implementation.",
+        "scenarioApplication": "Inject policy and store separately; bind each quote to its policy version. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "Persistence representation does not own pricing rules.",
+        "boundaryOrTradeoff": "The quote operation still checks its components against the selected policy.",
+        "transfer": "Inject independent services and persist the decision version wherever results depend on it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i016_late_service_lookup",
+          "text": "Storage representation does not own bundle pricing rules."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "A global policy mutation can make concurrent quotes use different versions.",
+          "targetId": "n05b09_i016_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "A subclass matrix duplicates validation for policy/store combinations.",
+          "targetId": "n05b09_i016_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i016_late_service_lookup",
+          "text": "Let the storage adapter choose pricing policy from its database schema."
+        },
+        {
+          "optionId": "n05b09_i016_domain_builds_infrastructure",
+          "text": "Change a global current policy while a quote is in progress."
+        },
+        {
+          "optionId": "n05b09_i016_validated_graph",
+          "text": "Inject policy and store separately; bind each quote to its policy version."
+        },
+        {
+          "optionId": "n05b09_i016_unvalidated_or_mismatched_graph",
+          "text": "Create one bundle subclass per policy/store pair and duplicate component validation."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "Regional bundles use a selected immutable pricing-policy version and a deployment-selected storage adapter. Every adapter supports every policy; each quote must record the policy actually used. How is the workflow assembled?",
+    "questionId": "ood-n05-b09-i016",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n05b09_i017_validated_graph",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Dependencies and configuration must be valid before the operation begins."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "type": "choice_single",
+      "reason": "The check and commit must use a consistent time source and repository within the reservation owner.",
+      "details": {
+        "mechanismOrProperty": "Clock and repository are assembled into the owner that checks and commits reservations.",
+        "scenarioApplication": "Assemble clock and repository within the reservation owner’s boundary. The case-specific consistency or identity fact remains enforced by its stated owner.",
+        "errorCorrection": "A charger entity should not construct infrastructure.",
+        "boundaryOrTradeoff": "Atomic overlap enforcement still belongs to repository/owner semantics; wiring alone cannot provide it.",
+        "transfer": "Assemble collaborators that share one consistency boundary into the owner performing the check and commit."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n05b09_i017_late_service_lookup",
+          "text": "A charger entity should not construct infrastructure or choose its own time source."
+        },
+        {
+          "kind": "wrong_option",
+          "text": "A screen-side check can drift from the service transaction and cannot arbitrate overlap.",
+          "targetId": "n05b09_i017_domain_builds_infrastructure"
+        },
+        {
+          "kind": "wrong_option",
+          "text": "A hidden fallback can combine a clock with a repository that owns different reservation state.",
+          "targetId": "n05b09_i017_unvalidated_or_mismatched_graph"
+        }
+      ]
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n05b09_i017_late_service_lookup",
+          "text": "Let each charger construct a clock and repository for each request."
+        },
+        {
+          "optionId": "n05b09_i017_validated_graph",
+          "text": "Assemble clock and repository within the reservation owner’s boundary."
+        },
+        {
+          "optionId": "n05b09_i017_domain_builds_infrastructure",
+          "text": "Have the screen check its local clock and write to a globally resolved repository."
+        },
+        {
+          "optionId": "n05b09_i017_unvalidated_or_mismatched_graph",
+          "text": "Use a default clock and silently fall back to another repository when configuration is missing."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N05-B09",
+    "nodeId": "object_creation_configuration_and_structural_patterns",
+    "prompt": "A charger reservation checks capacity and expiry before committing, and overlapping windows cannot both succeed. Repository and clock must share the transaction owner and time source. What is configured?",
+    "questionId": "ood-n05-b09-i017",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines",
+      "https://martinfowler.com/articles/injection.html"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

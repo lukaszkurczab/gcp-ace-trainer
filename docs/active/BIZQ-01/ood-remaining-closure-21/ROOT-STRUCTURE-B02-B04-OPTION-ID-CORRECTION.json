@@ -1,0 +1,32 @@
+{
+  "result": "PASS",
+  "scope": "Fixed selected N05 proposal schema/taxonomy/reserved identity/ID scorer and reversed order only; identity semantics and style warnings require independent whole-object review",
+  "questionCount": 34,
+  "scoreCases": 272,
+  "units": [
+    {
+      "unit": "OOD-N05-B02",
+      "proposalSha256": "c7e250a944861b637e561d1293953bf031b9da1fc15f20a8c12060cab600eadd",
+      "questionCount": 17,
+      "retainedIds": 17,
+      "reservedIdsUsed": 0,
+      "advisory": {
+        "soleLongestCorrect": 3,
+        "reasonEqualsKey": 0
+      },
+      "wholeObjectsSha256": "2b7cc8d59649ce15738f304dbf8190ef9854764255dc1b388ab17e889adb49c5"
+    },
+    {
+      "unit": "OOD-N05-B04",
+      "proposalSha256": "8c12c1c740a1332aa5d3a554acafd81e76c273725d396e8915d8e02b14c48611",
+      "questionCount": 17,
+      "retainedIds": 17,
+      "reservedIdsUsed": 0,
+      "advisory": {
+        "soleLongestCorrect": 6,
+        "reasonEqualsKey": 0
+      },
+      "wholeObjectsSha256": "722327cd006320558556afedb8528b727a31c3e85b38c1c72f1ab3e747c6895f"
+    }
+  ]
+}

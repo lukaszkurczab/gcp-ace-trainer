@@ -1,0 +1,196 @@
+{
+  "result": "PASS",
+  "scope": "Exactly34 optionId and answer-reference changes under existing semantic identity contract; prose/meaning preserved, independent current-ID QA pending",
+  "units": [
+    {
+      "unit": "B02",
+      "questionCount": 17,
+      "priorFrozenInput": "review-inputs/N05-B02-v2.json",
+      "frozenInput": "review-inputs/N05-B02-v3.json",
+      "proposalSha256": "c7e250a944861b637e561d1293953bf031b9da1fc15f20a8c12060cab600eadd",
+      "proseAndMeaningUnchanged": true,
+      "optionMapping": [
+        {
+          "questionId": "ood-n05-b02-i001",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i001_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i002",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i002_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i003",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i003_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i004",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i004_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i005",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i005_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i006",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i006_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i007",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i007_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i008",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i008_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i009",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i009_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i010",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i010_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i011",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i011_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i012",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i012_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i013",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i013_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i014",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i014_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i015",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i015_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i016",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i016_validated_construction"
+        },
+        {
+          "questionId": "ood-n05-b02-i017",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b02_i017_validated_construction"
+        }
+      ]
+    },
+    {
+      "unit": "B04",
+      "questionCount": 17,
+      "priorFrozenInput": "review-inputs/N05-B04-v1.json",
+      "frozenInput": "review-inputs/N05-B04-v2.json",
+      "proposalSha256": "8c12c1c740a1332aa5d3a554acafd81e76c273725d396e8915d8e02b14c48611",
+      "proseAndMeaningUnchanged": true,
+      "optionMapping": [
+        {
+          "questionId": "ood-n05-b04-i001",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i001_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i002",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i002_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i003",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i003_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i004",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i004_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i005",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i005_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i006",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i006_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i007",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i007_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i008",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i008_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i009",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i009_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i010",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i010_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i011",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i011_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i012",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i012_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i013",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i013_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i014",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i014_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i015",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i015_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i016",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i016_boundary_policy"
+        },
+        {
+          "questionId": "ood-n05-b04-i017",
+          "beforeOptionId": "owner_preserves_contract",
+          "optionId": "n05b04_i017_boundary_policy"
+        }
+      ]
+    }
+  ]
+}

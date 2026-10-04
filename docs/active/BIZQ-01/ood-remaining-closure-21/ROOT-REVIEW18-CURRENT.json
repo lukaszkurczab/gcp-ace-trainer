@@ -1,7 +1,7 @@
 {
-  "scope": "216 prior whole-object findings reconciled to current canonical source and all nine bundled artifacts; no new semantic certification, whole-bank rate or full acceptance",
-  "contentHead": "b1d7cc419b475dccd37fba82c948bcd760ab577f",
-  "appHead": "291d56bffbcd6c2fa6e621389ad6c22618893130",
+  "scope": "216 prior whole objects reconciled to current source and all nine bundled artifacts; known misattached finding excluded despite exact fingerprint. No new semantic certification, whole-bank rate or full acceptance",
+  "contentHead": "19364f9a1167946f0b3d299a59b27864893ae01c",
+  "appHead": "f52e94d413a70eeb879115293f171ff19aca6340",
   "sampleSha256": "d2c083f3f3ac02fdaa38de725c717d31c88ad227365c30fb54bd121c16241ad4",
   "reportBindings": [
     {
@@ -19,63 +19,72 @@
       "exactPass": 24,
       "exactDefect": 0,
       "changed": 0,
-      "retired": 0
+      "retired": 0,
+      "findingReassessment": 0
     },
     "claude-certified-architect-professional-certification": {
       "reviewed": 24,
       "exactPass": 23,
       "exactDefect": 1,
       "changed": 0,
-      "retired": 0
+      "retired": 0,
+      "findingReassessment": 0
     },
     "backend-system-design-interview": {
       "reviewed": 24,
       "exactPass": 2,
       "exactDefect": 22,
       "changed": 0,
-      "retired": 0
+      "retired": 0,
+      "findingReassessment": 0
     },
     "object-oriented-design-interview": {
       "reviewed": 24,
       "exactPass": 6,
-      "exactDefect": 14,
-      "changed": 0,
-      "retired": 4
+      "exactDefect": 12,
+      "changed": 1,
+      "retired": 4,
+      "findingReassessment": 1
     },
     "frontend-system-design-interview": {
       "reviewed": 24,
       "exactPass": 0,
       "exactDefect": 24,
       "changed": 0,
-      "retired": 0
+      "retired": 0,
+      "findingReassessment": 0
     },
     "google-cloud-associate-cloud-engineer": {
       "reviewed": 24,
       "exactPass": 0,
       "exactDefect": 24,
       "changed": 0,
-      "retired": 0
+      "retired": 0,
+      "findingReassessment": 0
     },
     "aws-certified-solutions-architect-associate": {
       "reviewed": 24,
       "exactPass": 1,
       "exactDefect": 23,
       "changed": 0,
-      "retired": 0
+      "retired": 0,
+      "findingReassessment": 0
     },
     "microsoft-azure-administrator-associate-az-104": {
       "reviewed": 24,
       "exactPass": 23,
       "exactDefect": 1,
       "changed": 0,
-      "retired": 0
+      "retired": 0,
+      "findingReassessment": 0
     },
     "microsoft-azure-ai-fundamentals-ai-901": {
       "reviewed": 24,
       "exactPass": 0,
       "exactDefect": 24,
       "changed": 0,
-      "retired": 0
+      "retired": 0,
+      "findingReassessment": 0
     }
   },
   "items": [
@@ -1024,7 +1033,7 @@
       "priorSeverity": "none",
       "priorItemFingerprint": "dcb90f63cbd9a192b5e46c6a1485c7950972f982005d7e335fd4a70fbf60b7f5",
       "currentItemFingerprint": "dcb90f63cbd9a192b5e46c6a1485c7950972f982005d7e335fd4a70fbf60b7f5",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "This exact item fingerprint matches a previously reviewed accepted semantic object (../ood-unit-cohort-13/SEMANTIC-QA-v3.md). I verified the current sample fingerprint and reused that bounded review rather than treating the topic label as evidence."
     },
@@ -1037,7 +1046,7 @@
       "priorSeverity": "none",
       "priorItemFingerprint": "898132b2287169b09f0f37be68783452975961597b6f56304aa9501ef1b4a03a",
       "currentItemFingerprint": "898132b2287169b09f0f37be68783452975961597b6f56304aa9501ef1b4a03a",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "This exact item fingerprint matches a previously reviewed accepted semantic object (../ood-node-closure-17/SEMANTIC-CROSS-UNIT-v1.md). I verified the current sample fingerprint and reused that bounded review rather than treating the topic label as evidence."
     },
@@ -1050,7 +1059,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "5842b35de0b9be9e6dc10e7e32261e531a6c2b39f5f8bcb99b8b146cba1a0c49",
       "currentItemFingerprint": null,
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "RETIRED_ID_ACCEPTANCE_LINK_REQUIRED",
       "finding": "The stem supplies a plot transfer and preservation requirement but no ownership/lifetime facts distinguishing association, aggregation, or composition. The keyed general ownership answer therefore is not selected by the case; the generic “new failure path” adds no relationship evidence."
     },
@@ -1063,7 +1072,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "ec323feef1348b356e99c84748aa98df85a44db96fe82946b9c8c5f76486fa23",
       "currentItemFingerprint": "ec323feef1348b356e99c84748aa98df85a44db96fe82946b9c8c5f76486fa23",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "The prompt says revocation must be visible before access, but gives no independent policy variation or stable workflow to decide whether interchangeable Strategy behavior is needed. The added generic failure-path sentence does not distinguish policy injection from an ordinary authorization check."
     },
@@ -1076,7 +1085,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "050931cfb9e7ab0572e7f77c92da55ce42526f39e724c979d5cd22b2660943ed",
       "currentItemFingerprint": "050931cfb9e7ab0572e7f77c92da55ce42526f39e724c979d5cd22b2660943ed",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "The no-overlapping-window rule supports conflict checking, but the prompt gives no stored-data evolution, compatibility, serialization, or defaulting facts that make the keyed versioning decision preferable to enforcing the scheduling invariant directly."
     },
@@ -1089,7 +1098,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "9904c37887e18d30842fb753f44197b7c8353b479d0df468fee2f471b39ac74d",
       "currentItemFingerprint": null,
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "RETIRED_ID_ACCEPTANCE_LINK_REQUIRED",
       "finding": "The payout is tied to a settled order and is idempotent; nothing in the case specifies substitutable subtype variants or a shared contract whose expectations must be preserved. The keyed polymorphism lesson is not evidenced by the scenario."
     },
@@ -1102,7 +1111,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "7765eb57c4a24f18489e92fceb8864caee7180610a4a3b95918342c9aa343a45",
       "currentItemFingerprint": "7765eb57c4a24f18489e92fceb8864caee7180610a4a3b95918342c9aa343a45",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "Temperature restrictions and hand-off ownership are stated, but there is no concurrent nested acquisition or progress hazard to motivate lock ordering. The keyed deadlock lesson is unrelated to the explicit transfer facts."
     },
@@ -1114,9 +1123,9 @@
       "priorVerdict": "DEFECT",
       "priorSeverity": "critical",
       "priorItemFingerprint": "7a5eacb2bce9763bcb4488757b4e57009efa1bf510b5d5cae43c81e122261eac",
-      "currentItemFingerprint": "7a5eacb2bce9763bcb4488757b4e57009efa1bf510b5d5cae43c81e122261eac",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
-      "disposition": "EXACT_OBJECT_REUSE",
+      "currentItemFingerprint": "eacff4febd7049a91d55cb9dbbe5d04c251295d0e1aafa6ffeb97f99d285a4ff",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
+      "disposition": "CHANGED_OBJECT_REVIEW_REQUIRED",
       "finding": "The booking transfer has a capacity/cancellation invariant, but no variable object-family creation requirement. The case does not establish that a factory is needed or identify a family that must be created coherently."
     },
     {
@@ -1128,7 +1137,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "96d49dcbdd8beb671857ffac4218d60a1665c19b03f1bd868b87bf7a567ca553",
       "currentItemFingerprint": "96d49dcbdd8beb671857ffac4218d60a1665c19b03f1bd868b87bf7a567ca553",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "Privacy and consent before external disclosure are clear, but the case gives no unnecessary abstraction, second variability axis, or substitution boundary. The keyed YAGNI choice is a generic slogan rather than a decision forced by the referral facts."
     },
@@ -1141,7 +1150,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "0f2dd99a7a6178984072295e321799f1f9c98293b9945050caa32fc69a3342fe",
       "currentItemFingerprint": "0f2dd99a7a6178984072295e321799f1f9c98293b9945050caa32fc69a3342fe",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "The maintenance-mode rejection rule establishes a state invariant, but no multi-object atomicity or transaction boundary is described. The keyed aggregate/transaction decision lacks facts that separate it from a single authoritative command check."
     },
@@ -1154,7 +1163,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "9d310d40456e4f83874c855ca59bcc0753ce91491c9dcfbe7ff76e85422e5ec7",
       "currentItemFingerprint": "9d310d40456e4f83874c855ca59bcc0753ce91491c9dcfbe7ff76e85422e5ec7",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "The provider switch must preserve timing/error behavior, but there is no multi-step workflow, compensation, or cross-object invariant to place at an orchestration boundary. The keyed workflow lesson is not determined by this vignette."
     },
@@ -1167,7 +1176,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "811dec21540c674182b232601be279cd154dc1c587b189ff7fb295cf4f12fff0",
       "currentItemFingerprint": null,
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "RETIRED_ID_ACCEPTANCE_LINK_REQUIRED",
       "finding": "Consent before disclosure is explicit, but no dependency direction, replaceable mechanism, or policy dependency is shown. The keyed stable-abstraction decision does not follow from the case facts."
     },
@@ -1180,7 +1189,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "f837951777d3eed62dc390883ffba18f42ce6caf2df7044de3ab7ffa269e213b",
       "currentItemFingerprint": "f837951777d3eed62dc390883ffba18f42ce6caf2df7044de3ab7ffa269e213b",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "Stable lesson identity must preserve learner progress, but no cancellation, timeout, or asynchronous-completion behavior is stated. The keyed async ownership principle is not supported by the retirement scenario."
     },
@@ -1193,7 +1202,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "d6a798f40bb07eef01b515ebb968f1acd033e9e1fbd98eca4efce60eac8041e7",
       "currentItemFingerprint": "d6a798f40bb07eef01b515ebb968f1acd033e9e1fbd98eca4efce60eac8041e7",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "Temporary role expiry and approval attribution are stated; independent subscribers, delivery guarantees, or subscription lifecycle are not. The observer/pub-sub answer adds an unstated event architecture decision."
     },
@@ -1206,7 +1215,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "97a73f8fc82e62ca83c80549a2a70282584b09a4c4bc5e0ef7c86c3f8d019c6b",
       "currentItemFingerprint": "97a73f8fc82e62ca83c80549a2a70282584b09a4c4bc5e0ef7c86c3f8d019c6b",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "The pre-access revocation invariant is explicit, but there is no bounded subclass variation or invariant algorithm skeleton in the case. The keyed template-method choice is not distinguished from a direct policy check."
     },
@@ -1219,7 +1228,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "302e67efc1e44fcdf850280071601b2380247230b07516eb2502fa7958529689",
       "currentItemFingerprint": "302e67efc1e44fcdf850280071601b2380247230b07516eb2502fa7958529689",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "The submission must be complete or retryable, but no resource acquisition/release lifecycle is specified. The RAII answer is not established by an offline submission outcome alone."
     },
@@ -1232,7 +1241,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "1189142e06151bedaf58d72b675c26a53c873494e737e50d14f86a6580ab9e4f",
       "currentItemFingerprint": "1189142e06151bedaf58d72b675c26a53c873494e737e50d14f86a6580ab9e4f",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "The transfer facts do not mention data access cost, hidden I/O, or loading behavior. The keyed lazy/eager-loading decision is ungrounded in the shipment reassignment contract."
     },
@@ -1245,7 +1254,7 @@
       "priorSeverity": "none",
       "priorItemFingerprint": "e891f32fb2f0561f85623e91b586a9ea316bb386bea7a310ee12ed53fe9ccfb2",
       "currentItemFingerprint": "e891f32fb2f0561f85623e91b586a9ea316bb386bea7a310ee12ed53fe9ccfb2",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "This exact item fingerprint matches a previously reviewed accepted semantic object (../ood-node-closure-17/SEMANTIC-CROSS-UNIT-v1.md). I verified the current sample fingerprint and reused that bounded review rather than treating the topic label as evidence."
     },
@@ -1258,7 +1267,7 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "9bdae77409edec20033ae22b05d53c9759e57541b062583c0673e29a00b4220b",
       "currentItemFingerprint": null,
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "RETIRED_ID_ACCEPTANCE_LINK_REQUIRED",
       "finding": "A stable session state is stated for export, but the prompt does not describe graph navigation cost, reference direction, or bidirectional relationship maintenance. The keyed navigability decision lacks evidence."
     },
@@ -1271,7 +1280,7 @@
       "priorSeverity": "none",
       "priorItemFingerprint": "a101298d0414358c9f8296c7f84340971f72f2c5a558ac9a4b5a1df0478a0820",
       "currentItemFingerprint": "a101298d0414358c9f8296c7f84340971f72f2c5a558ac9a4b5a1df0478a0820",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "This exact item fingerprint matches a previously reviewed accepted semantic object (../ood-node-closure-16/SEMANTIC-B08-v1.md). I verified the current sample fingerprint and reused that bounded review rather than treating the topic label as evidence."
     },
@@ -1284,7 +1293,7 @@
       "priorSeverity": "none",
       "priorItemFingerprint": "71da86c00f1fa17140a94a77272fdb78eb1f7c8d0852f92a76104675d6ec173a",
       "currentItemFingerprint": "71da86c00f1fa17140a94a77272fdb78eb1f7c8d0852f92a76104675d6ec173a",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "This exact item fingerprint matches a previously reviewed accepted semantic object (../ood-node-closure-17/SEMANTIC-CROSS-UNIT-v1.md). I verified the current sample fingerprint and reused that bounded review rather than treating the topic label as evidence."
     },
@@ -1297,7 +1306,7 @@
       "priorSeverity": "noncritical",
       "priorItemFingerprint": "5f5a4d874e14a88468803b8bdfa27e2ce33fef319c4975106428247c375e9dcb",
       "currentItemFingerprint": "5f5a4d874e14a88468803b8bdfa27e2ce33fef319c4975106428247c375e9dcb",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "The prompt concerns splitting a repair-parts request across vendors while preserving the original request identity and delivery promise. It also explicitly requires a deterministic seam that can be tested without a live marketplace integration and says existing callers retain their contract. Those facts support the keyed repository/domain-access direction. The concrete defect is the feedback for `speculative_indirection`: it says there is no delivery requirement, although the stem explicitly states a delivery promise, and it dismisses a second variation even though the stem adds a second workflow variant. That makes the diagnosis of this wrong option factually misaligned; it does not invalidate the keyed decision."
     },
@@ -1310,7 +1319,7 @@
       "priorSeverity": "none",
       "priorItemFingerprint": "ca3ba0125e00fd0c570d09e4e1839cdff6b120bd4edd09a2cbcba7b3b6f2d05e",
       "currentItemFingerprint": "ca3ba0125e00fd0c570d09e4e1839cdff6b120bd4edd09a2cbcba7b3b6f2d05e",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
       "disposition": "EXACT_OBJECT_REUSE",
       "finding": "This exact item fingerprint matches a previously reviewed accepted semantic object (../ood-node-closure-17/SEMANTIC-CROSS-UNIT-v1.md). I verified the current sample fingerprint and reused that bounded review rather than treating the topic label as evidence."
     },
@@ -1323,9 +1332,10 @@
       "priorSeverity": "critical",
       "priorItemFingerprint": "2ba13008bd7a3672b83f09244173d6f57aebc926a1a24aa1639d7a195a8205c5",
       "currentItemFingerprint": "2ba13008bd7a3672b83f09244173d6f57aebc926a1a24aa1639d7a195a8205c5",
-      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20",
-      "disposition": "EXACT_OBJECT_REUSE",
-      "finding": "The exercise depends on preserving one learner-visible result, but the stem provides no access pattern, query cost, or hidden-I/O consequence to choose lazy vs eager loading. The design lens is a label, not a case-specific decision."
+      "currentContentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
+      "disposition": "EXACT_OBJECT_FINDING_REASSESSMENT_REQUIRED",
+      "finding": "The exercise depends on preserving one learner-visible result, but the stem provides no access pattern, query cost, or hidden-I/O consequence to choose lazy vs eager loading. The design lens is a label, not a case-specific decision.",
+      "findingReassessmentReason": "Historical lazy/eager query-loading finding does not describe this invoice reissue/synchronization object. Excluded from reusable findings; current source assessment is separate and does not inherit its prior critical grade."
     },
     {
       "trackId": "frontend-system-design-interview",

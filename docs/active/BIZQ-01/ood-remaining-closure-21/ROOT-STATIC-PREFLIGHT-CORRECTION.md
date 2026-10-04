@@ -1,0 +1,7 @@
+# Initial static run: execution conditions require correction
+
+Root ran qa:static before the consumer checkpoint/admission and without the required cross-repo environment pins. The preserved ROOT-APP-STATIC-REVISE.log reports1867 tests:1843 passed,20 failed,4 existing skips. It is not acceptance evidence.
+
+Actual categories:2 exporter tests refuse the candidate outside current admission;2 release-gate tests encounter null candidate admission evidence;13 release-manifest tests fail their working-tree fixture preparation because the large uncommitted binary diff exceeds spawnSync's output buffer;3 cross-repo checks require the historical checkout/current full SHA environment. Recovery baseline and typecheck completed before the test stage; downstream boundary scripts did not execute because npm test failed.
+
+Next attempt differs by recording the independently accepted consumer checkpoint (not package completion/push), obtaining existing delegated admission for its exact bindings, and setting PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA plus PATTERNLY_CONTENT_HISTORICAL_ROOT to the existing locked historical checkout. The checkpoint removes this package's large artifact/document diff from fixture preparation. Recheck remaining foreign diff size; preserve foreign work, do not stash it or weaken/skip tests. If ENOBUFS persists, diagnose the exact fixture condition before any tooling change. Full static acceptance remains pending.

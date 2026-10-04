@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "scope": "Neutral i001 object-identity clarification only after root whole-object read; all other16 B03 objects exact v3, independent full current17 review pending",
+  "frozenInput": "review-inputs/N05-B03-v4.json",
+  "proposalSha256": "98d7f3b25566afacac31944f5a7557fc03efacc3ba297aeacbd15789775df7af",
+  "changedQuestionIds": [
+    "ood-n05-b03-i001"
+  ],
+  "preservedWholeObjects": 16,
+  "reason": "Equal asset IDs/version alone could allow separate equal-value asset objects. The intended observable requirement is reference to the same registered objects, without prescribing a copy operation."
+}

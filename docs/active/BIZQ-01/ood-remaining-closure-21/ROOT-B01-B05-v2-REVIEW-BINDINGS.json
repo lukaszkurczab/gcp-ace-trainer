@@ -1,0 +1,17 @@
+{
+  "result": "PASS",
+  "scope": "Current bounded34 verdict/raw-input/fingerprint/preservation bindings only; final153 cross review remains separate",
+  "units": [
+    {
+      "unit": "B01",
+      "currentPass": 17,
+      "reviewedCurrentWholeObjects": 17
+    },
+    {
+      "unit": "B05",
+      "currentPass": 17,
+      "reviewedCurrentCorrections": 2,
+      "exactPriorPassReused": 15
+    }
+  ]
+}

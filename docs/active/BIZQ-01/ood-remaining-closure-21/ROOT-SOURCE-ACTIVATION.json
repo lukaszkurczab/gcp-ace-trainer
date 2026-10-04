@@ -1,0 +1,13 @@
+{
+  "result": "ACTIVATED_FOR_VERIFICATION",
+  "scope": "Fixed153 source/proof activation only; no migration/consumer/admission acceptance",
+  "beforeProducerCommit": "95b7e07f33d7808b9c879db37f11e63e25abcb01",
+  "sourceFiles": 9,
+  "sameIdCorrections": 153,
+  "replacements": 0,
+  "proofPath": "evidence/business-quality/bizq-01-ood-node-closure-21.json",
+  "proofSha256": "4a216a75e8fbce5bb88e828d8dce420ffd1fbb349cc176af07fd5924492bc56f",
+  "contentVersion": "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21",
+  "questionSetSha256": "6d19a75e8eae86869b3ce31b63ad57a6be13fc30532c22e993db6fbc3d0d4d12",
+  "designReviewSha256": "75e4e9b33cb871ccb8c000d5b69229535a03642942789af3b580228b0dfd31c1"
+}

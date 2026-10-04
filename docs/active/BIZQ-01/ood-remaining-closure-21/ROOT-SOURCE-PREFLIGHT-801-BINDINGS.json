@@ -1,0 +1,16 @@
+{
+  "result": "PASS",
+  "scope": "Actual801 canonical whole-object hashes and45 raw-source bindings,477 prior records preserved; findings remain source-preflight judgements, not accepted source repairs",
+  "sourcePreflightSha256": "c72dddc00be6072b6efd06aa308a413f280e050dc889452767713f8cb4ed4d20",
+  "priorLedgerCommit": "32f785940a8e78bf65b507888b1d5f5d38fe2c00",
+  "preservedPriorRecords": 477,
+  "appendedRecords": 324,
+  "questionCount": 801,
+  "sourceFileCount": 45,
+  "dispositionCounts": {
+    "CONFIRMED": 717,
+    "CONTRACT_GAP": 82,
+    "NOT_REPRODUCED": 2
+  },
+  "questionSetSha256": "5b552f935cc3fa8bb142ccd38dc747a19a57823a8c7c8fd243fc786d43f0fe72"
+}

@@ -1,0 +1,509 @@
+{
+  "verdict": "PASS",
+  "scope": "Current semantic acceptance of frozen B02-B04 (51 whole objects), reusing 49 exact unchanged v1 findings and reviewing two full-object corrections. No final N05 cross-unit/identity closure, source/producer/runtime/native or full BIZQ-01 acceptance.",
+  "manifestSha256": "bdef2880a62de54f54e3c06cb9ffc9bd5c900be31c6135d7a0b16c7583ab320a",
+  "proposalHashes": {
+    "review-inputs/N05-B02-v2.json": "f55212aa6ea4f2514eed7c413f4e3d7f4c4c2960fd13b7097332c4902d5fca41",
+    "review-inputs/N05-B03-v2.json": "2b66e8ff0fd2d1bc395896786e1942b38017724c50ea809fef1eb5ef5aa8eaf0",
+    "review-inputs/N05-B04-v1.json": "ce1142d8594b1505b51db0b3fd7e64d920bfeeae276f1bec3da78c10bd65ed48"
+  },
+  "deltaReceipt": "ROOT-B02-B03-CORRECTION-BINDINGS.json",
+  "counts": {
+    "wholeObjects": 51,
+    "reviewedCorrections": 2,
+    "reusedExactUnchangedFindings": 49,
+    "pass": 51,
+    "revise": 0
+  },
+  "identity": {
+    "action": "PRESERVE_QUESTION_ID for all51",
+    "rationale": "Each repaired prompt makes the scenario-specific trigger concrete while preserving the predecessor’s primary decision for staged construction, copy semantics, or adapter/facade boundary. The two v1 content defects were fixed without altering those primary decisions."
+  },
+  "corrections": [
+    {
+      "questionId": "ood-n05-b02-i010",
+      "verdict": "PASS",
+      "findingResolved": "The alternate now explicitly combines plans without checking their combined total; this cannot satisfy the required positive quantities summing to the original request before dispatch.",
+      "reviewedFields": [
+        "prompt",
+        "all four options and key",
+        "Reason",
+        "five Details fields",
+        "all three wrong-option messages"
+      ]
+    },
+    {
+      "questionId": "ood-n05-b03-i017",
+      "verdict": "PASS",
+      "findingResolved": "The key now explicitly shares the immutable rule-set while copying mutable slots and resetting identity/results; causal Reason and Details match.",
+      "reviewedFields": [
+        "prompt",
+        "all four options and key",
+        "Reason",
+        "five Details fields",
+        "all three wrong-option messages"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n05-b02-i001",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "d68bff927d7703eb4a266283624c8a515ce426f060b6fd4024a0aa0034d911ad",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i002",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "1298ce72424d919da6849c4d8f88aa999d54ce06f54a52cc8763f00976b99bb0",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i003",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "f4368c5b7122eca1fadd7d573d6ae1abc2f37e2b36259a26915300b92e223162",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i004",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "ae814e76fbad358558155f5935dcb1466cedb034c40373af5e2755813eb174b2",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i005",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "b03c70198f1f4cdd5bb23927e0eb43f1c6baebb86067fb49ddae0042515db56e",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i006",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "725678e1492a6e90145f701002ff1d168722482df96f253f7dc6319ceba761fe",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i007",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "1a4af69bde03f05f79ba292e03577791f643647dc2aca855c0a236b8d79d3901",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i008",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "7e69bf2e94bc3591a0c2648126fd8f1c1d9eb446ed7599c3ebcbd5fd43120ae4",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i009",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "cf4715c4e7524020fca6ab3b98cc5398c995f30aabef702206faac876c5c11b2",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i010",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "68611202e47c5e1302070c5d716b22e854b721c8f81efef568db95fca42b47f6",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The competing plans option explicitly omits the final aggregate check, so the prompt’s positive/sum/pre-dispatch requirements make only the keyed choice valid. Its diagnostic now states this missing condition."
+    },
+    {
+      "questionId": "ood-n05-b02-i011",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "476ef2b546c27b2c697b29520909775c828507b918af2f1dfe353bf32fd26116",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i012",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "4ba91d471cbe64eaf02bc370d228ad7e803bba9383c7cd588008563f7241e6b1",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i013",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "1d05aa243a75fa566376beb0452e7dad517d2d0efec89399fea303e76df25bff",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i014",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "06dc2984ca554f54c4db231808054145a36dba4af4e04aa1be7e0842a691f281",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i015",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "c5e2117f3112f6a18e4b7a444e6023018780431d41ba2dd6a523c6d432ffcdd3",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i016",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "565be92482c81fcbe58d74cda220df723da938ecd870dae131e693f18016717a",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b02-i017",
+      "unit": "OOD-N05-B02",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "8c2050bcde9f0e55e29899b55d58c8d6534939b6d1bf49d17a3e6c17a2afb6c4",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i001",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "ab430eb3c01ec0583c00b741e7c7a99093db32de05dfa8b798ea653200df316c",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i002",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "6847f1654078275b9592e4d83e74a9bd2503659645d96acdc81cf74de31c658d",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i003",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "3755f14fcd68bfc0b603b95b27796bc1dff4e87a09663445133be4e4d149634a",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i004",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "a8bed1dc8dcc665193e3aa3d270277605ecec50b28a00b71357d49a5e179ce7c",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i005",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "6297509adb34a3dcb64a565f66a84546b0aa3c39f77a1580c8e42ef7e8a8395a",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i006",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "182bd16ac5376123f1cae8aa2e04a862d326fc18044fc7c272c1dbae5cf90d7d",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i007",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "744ce8f684285ded1b1babfd153f4f776a19a9cd2db9f80d440d63561015e77b",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i008",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "af777bf8f08906dd2b20c28cf665f1337bdca20b5976b6a131072552d05fd1d8",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i009",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "fbcfc1ab88bef07718c2774fba731fbac45893950bac5663a1696cd48e04f985",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i010",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "72b36fda90a1c73ec78e88bb45af5f2aac472cdc697d97c3890d4363b1b02468",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i011",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "2a47137a05ef260b7dee80ff953dd913af4197b1cc59cf7637b8b549673e60cb",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i012",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "6b4a80ab78c1eac8224ae26d31a5e6aba81290a8a1e1e7cf0ab066250522f2ef",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i013",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "b933dd74f4d2d27ef710337d7e0ccf4ce91edfceb627a7efe2dcff588d2dd5eb",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i014",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "1ba8891f28907aad3eb6e1c77bdb0423dca015c4270bb2938da54bc1fe846ed1",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i015",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "9f42e72f2dfb98c7511f9731b74873200c2adc86fd72b8cac749bb9c4c9c8642",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i016",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "c560f18a0a980e1551becb459908a89fef5ecb194a8dcc488182db32d28f8dad",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b03-i017",
+      "unit": "OOD-N05-B03",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "c519e5b94e771ff649cfd0a02953254bba24274e98caa53dd52790ed42f9ce72",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The key now expressly copies mutable slots while sharing the immutable rule-set; Reason and Details agree with the prompt."
+    },
+    {
+      "questionId": "ood-n05-b04-i001",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "f6b57c030044eac4cf3b5c48d300cb1fcc4072b3b5e0b527ff80cbd82909ed65",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i002",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "993ad005a6458f491bb0fe39ee88c1f84144ffe73dc9d91570d879180920bf5b",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i003",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "e85c6898d6123985a3e95fb6fa7b9ef75628187313e5f25150a79809bca4561c",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i004",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "0df6ba79040b47c360408b1b8328ad3eb42b1a2619c43bee93e47849edf69d88",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i005",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "d1201d47db0f525d27ac526e198a95dcdad966fad498595c5f3a73a271755ed3",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i006",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "d8e32832f54880201a87cd7bb1259ef64792a0f4a3999f6ac641fffacd761e0a",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i007",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "f9d3d70e057705cc563b7153aa7c7389ae378ff34544d890c400bfc652dc0194",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i008",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "b0b8d959e43c1a6b64b767f22ef2b7fd74dc37e8edda36b96bf2af7d88ca54b5",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i009",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "51ddbc291713f9431c9a1e638ecd7081aa5da38a7b39b21403180cfbbbcb643e",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i010",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "7a88aa49e8b9eb4dbed8cca270294b67a4b634a05f6c62f1098f90875710927d",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i011",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "1fc2430b16e8ebad0680951765d6e7653e3a0b7385aaa7121c9978a389085ad0",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i012",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "24a5c6722eaf0b55d5490234801d30016fb01449ae9d221f007e39c19d56186f",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i013",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "b04a31bf4c240d895ef75f8985df583554353e9e23e0b1c1faf984a0378fa0d4",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i014",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "5e7dba2d8e632710cd297fac1d2ae5d56704e14c4a7e2d4fc175f87de7985a97",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i015",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "df83ca90709cd8d25eafc49a2acf2ecf29a7fd074e2ec2f4134c35a76288f9ba",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i016",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "b3096926ac49a13a020409622c7913f1261a9232a815e3337561322d1dfb8301",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    },
+    {
+      "questionId": "ood-n05-b04-i017",
+      "unit": "OOD-N05-B04",
+      "verdict": "PASS",
+      "identityAction": "PRESERVE_QUESTION_ID",
+      "currentWholeObjectFingerprintSha256": "c5220ef4244633d689b2ab114756284a243182742bf265192cdc8464fa1f1c3f",
+      "fingerprintSerialization": "SHA-256 of compact JSON.stringify(parsed item), preserving property insertion order",
+      "basis": "The whole object is unchanged from the independently reviewed v1 input and retains its previously recorded PASS finding."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "result": "PASS",
+  "scope": "Root real153 source objects, sole catalog version,944 untouched files/12 proofs and exact v20 predecessor; not producer/consumer/admission/native acceptance",
+  "sourceFiles": [
+    {
+      "path": "content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B01.json",
+      "sha256": "f8fc32c69779ba29c77f775aa247fb4d0b4576b3cb198dbad18032b906f692c5",
+      "questionCount": 17
+    },
+    {
+      "path": "content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B02.json",
+      "sha256": "c76c1b8fdb62287cd2b91cbb77e27b5225ed0a8bc09569a2011390caf0662d1e",
+      "questionCount": 17
+    },
+    {
+      "path": "content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B03.json",
+      "sha256": "83a9f24c229ba2101192a098e0c43ef925ff8790b7192dfd857ae6b0c963bcbe",
+      "questionCount": 17
+    },
+    {
+      "path": "content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B04.json",
+      "sha256": "1473daeddbf9a840d1e47be4e3d6fa0332fc236d6173cc376a5c7487339cbf7e",
+      "questionCount": 17
+    },
+    {
+      "path": "content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B05.json",
+      "sha256": "c093cdb37379a70944ee47a8fa3023f10413aef08e66751b128821d645fd73c7",
+      "questionCount": 17
+    },
+    {
+      "path": "content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B06.json",
+      "sha256": "cc9b8ce09703e0e55608928b1ed7b2b166153ba3f161fe86277ea3942e2620d4",
+      "questionCount": 17
+    },
+    {
+      "path": "content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B07.json",
+      "sha256": "fea2b87ad0f74c74aeb9bdc658b155bdb5233d5be58d746a96a1b49e2bcb0c9a",
+      "questionCount": 17
+    },
+    {
+      "path": "content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B08.json",
+      "sha256": "abb091b8de4ab4774437f41b880c68e04246c7502eb3b865a884dae9d0c9887a",
+      "questionCount": 17
+    },
+    {
+      "path": "content/object-oriented-design-interview/object_creation_configuration_and_structural_patterns/OOD-N05-B09.json",
+      "sha256": "8367a6c998d6ef385881a7c3a946b5efe9da82f30c5261a85dc5c07cc4d396a4",
+      "questionCount": 17
+    }
+  ],
+  "sameIdCorrections": 153,
+  "replacements": 0,
+  "untouchedFiles": 944,
+  "immutableProofAndEvidenceFiles": 12,
+  "preservedOtherOodQuestions": 1260,
+  "currentOodQuestions": 1413,
+  "questionSetSha256": "6d19a75e8eae86869b3ce31b63ad57a6be13fc30532c22e993db6fbc3d0d4d12",
+  "beforeQuestionSetSha256": "5b552f935cc3fa8bb142ccd38dc747a19a57823a8c7c8fd243fc786d43f0fe72"
+}
