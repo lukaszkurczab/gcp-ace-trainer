@@ -1,0 +1,342 @@
+TAP version 13
+# 10:47:29 AM [vite] (client) ✨ new dependencies optimized: react/jsx-dev-runtime
+# 10:47:29 AM [vite] (client) ✨ optimized dependencies changed. reloading
+# Subtest: full cycle and callback-before-promise login/logout clear credentials
+ok 1 - full cycle and callback-before-promise login/logout clear credentials
+  ---
+  duration_ms: 1919.219917
+  type: 'test'
+  ...
+# Subtest: privacy queue opens details and runs only the server-owned export executor
+ok 2 - privacy queue opens details and runs only the server-owned export executor
+  ---
+  duration_ms: 622.269292
+  type: 'test'
+  ...
+# Subtest: CH-04 privacy list rejects malformed wire fields without rendering actions
+ok 3 - CH-04 privacy list rejects malformed wire fields without rendering actions
+  ---
+  duration_ms: 1629.06725
+  type: 'test'
+  ...
+# Subtest: CH-04 privacy detail rejects malformed or wrong-identity payloads and clears prior actions
+ok 4 - CH-04 privacy detail rejects malformed or wrong-identity payloads and clears prior actions
+  ---
+  duration_ms: 7490.027584
+  type: 'test'
+  ...
+# Subtest: CH-04 malformed dispatched PATCH confirmation clears stale details and remains latched
+ok 5 - CH-04 malformed dispatched PATCH confirmation clears stale details and remains latched
+  ---
+  duration_ms: 18838.727958
+  type: 'test'
+  ...
+# Subtest: CH-04 accepts producer-shaped minimal lists and canonical nullable/non-null detail states
+ok 6 - CH-04 accepts producer-shaped minimal lists and canonical nullable/non-null detail states
+  ---
+  duration_ms: 2246.598166
+  type: 'test'
+  ...
+# Subtest: legal request queue performs the canonical consumer-case actions with revisions
+ok 7 - legal request queue performs the canonical consumer-case actions with revisions
+  ---
+  duration_ms: 887.019958
+  type: 'test'
+  ...
+# Subtest: security incident list is minimal and details are lazy
+ok 8 - security incident list is minimal and details are lazy
+  ---
+  duration_ms: 3433.735291
+  type: 'test'
+  ...
+# Subtest: security incident creation sends the complete current assessment contract
+ok 9 - security incident creation sends the complete current assessment contract
+  ---
+  duration_ms: 1792.444875
+  type: 'test'
+  ...
+# Subtest: uncertain security incident creation stays blocked after refresh
+ok 10 - uncertain security incident creation stays blocked after refresh
+  ---
+  duration_ms: 1893.791667
+  type: 'test'
+  ...
+# Subtest: security incident writes send expectedRevision and a 409 locks until refresh
+ok 11 - security incident writes send expectedRevision and a 409 locks until refresh
+  ---
+  duration_ms: 754.527583
+  type: 'test'
+  ...
+# Subtest: security incident copy explains manual UODO handling and a 503 write stays uncertain
+ok 12 - security incident copy explains manual UODO handling and a 503 write stays uncertain
+  ---
+  duration_ms: 629.368958
+  type: 'test'
+  ...
+# Subtest: late incident details cannot restore sensitive UI after logout
+ok 13 - late incident details cannot restore sensitive UI after logout
+  ---
+  duration_ms: 345.757375
+  type: 'test'
+  ...
+# Subtest: delayed logout prevents another authentication operation
+ok 14 - delayed logout prevents another authentication operation
+  ---
+  duration_ms: 367.775583
+  type: 'test'
+  ...
+# Subtest: failed logout (failure) is explicit and retryable
+ok 15 - failed logout (failure) is explicit and retryable
+  ---
+  duration_ms: 351.428458
+  type: 'test'
+  ...
+# Subtest: failed logout (cleared-failure) is explicit and retryable
+ok 16 - failed logout (cleared-failure) is explicit and retryable
+  ---
+  duration_ms: 352.23725
+  type: 'test'
+  ...
+# Subtest: GET 401 removes previously visible data
+ok 17 - GET 401 removes previously visible data
+  ---
+  duration_ms: 346.500917
+  type: 'test'
+  ...
+# Subtest: GET 403 removes previously visible data
+ok 18 - GET 403 removes previously visible data
+  ---
+  duration_ms: 372.246
+  type: 'test'
+  ...
+# Subtest: PATCH 404 requires successful refresh before another write
+ok 19 - PATCH 404 requires successful refresh before another write
+  ---
+  duration_ms: 444.075291
+  type: 'test'
+  ...
+# Subtest: PATCH 409 requires successful refresh before another write
+ok 20 - PATCH 409 requires successful refresh before another write
+  ---
+  duration_ms: 418.529792
+  type: 'test'
+  ...
+# Subtest: uncertain PATCH and failed refresh keep writes locked until a successful read
+ok 21 - uncertain PATCH and failed refresh keep writes locked until a successful read
+  ---
+  duration_ms: 700.2355
+  type: 'test'
+  ...
+# Subtest: manual refresh asks Firebase for refreshed claims
+ok 22 - manual refresh asks Firebase for refreshed claims
+  ---
+  duration_ms: 348.743125
+  type: 'test'
+  ...
+# Subtest: token timeout locks writes and a late token cannot issue a stale request
+ok 23 - token timeout locks writes and a late token cannot issue a stale request
+  ---
+  duration_ms: 648.516
+  type: 'test'
+  ...
+# Subtest: duplicate sign-in and duplicate PATCH produce one operation each
+ok 24 - duplicate sign-in and duplicate PATCH produce one operation each
+  ---
+  duration_ms: 343.037458
+  type: 'test'
+  ...
+# Subtest: late GET cannot restore data after logout
+ok 25 - late GET cannot restore data after logout
+  ---
+  duration_ms: 395.810166
+  type: 'test'
+  ...
+# Subtest: late GET cannot restore data after user change
+ok 26 - late GET cannot restore data after user change
+  ---
+  duration_ms: 463.135333
+  type: 'test'
+  ...
+# Subtest: timeout covers a response body that never completes
+ok 27 - timeout covers a response body that never completes
+  ---
+  duration_ms: 402.573166
+  type: 'test'
+  ...
+# Subtest: late GET success ignoring abort cannot alter a different session
+ok 28 - late GET success ignoring abort cannot alter a different session
+  ---
+  duration_ms: 394.94625
+  type: 'test'
+  ...
+# Subtest: late PATCH success ignoring abort cannot alter a different session
+ok 29 - late PATCH success ignoring abort cannot alter a different session
+  ---
+  duration_ms: 1266.295958
+  type: 'test'
+  ...
+# Subtest: late login error cannot overwrite a newer auth session
+ok 30 - late login error cannot overwrite a newer auth session
+  ---
+  duration_ms: 289.676542
+  type: 'test'
+  ...
+# Subtest: late logout error cannot overwrite a newer auth session
+ok 31 - late logout error cannot overwrite a newer auth session
+  ---
+  duration_ms: 365.064708
+  type: 'test'
+  ...
+# Subtest: malformed queue and mismatched PATCH confirmation never unlock stale data
+ok 32 - malformed queue and mismatched PATCH confirmation never unlock stale data
+  ---
+  duration_ms: 430.932041
+  type: 'test'
+  ...
+# Subtest: GET and PATCH are serialized, so an older read cannot roll back a write
+ok 33 - GET and PATCH are serialized, so an older read cannot roll back a write
+  ---
+  duration_ms: 401.375583
+  type: 'test'
+  ...
+# Subtest: auth events after a settled logout failure restore the current session UI
+ok 34 - auth events after a settled logout failure restore the current session UI
+  ---
+  duration_ms: 400.094834
+  type: 'test'
+  ...
+# Subtest: administrator can inspect statistics, question content, search and usage
+ok 35 - administrator can inspect statistics, question content, search and usage
+  ---
+  duration_ms: 521.382541
+  type: 'test'
+  ...
+# Subtest: question inspection renders canonical interaction shapes and authored wrong-answer feedback
+ok 36 - question inspection renders canonical interaction shapes and authored wrong-answer feedback
+  ---
+  duration_ms: 651.124959
+  type: 'test'
+  ...
+# Subtest: overview clears previously loaded statistics when access is revoked
+ok 37 - overview clears previously loaded statistics when access is revoked
+  ---
+  duration_ms: 308.653209
+  type: 'test'
+  ...
+# Subtest: question read failure is explicit and retry restores results
+ok 38 - question read failure is explicit and retry restores results
+  ---
+  duration_ms: 363.200333
+  type: 'test'
+  ...
+# Subtest: CH-05 capability probe: mounted localhost page supports SHA-256 WebCrypto
+ok 39 - CH-05 capability probe: mounted localhost page supports SHA-256 WebCrypto
+  ---
+  duration_ms: 234.343042
+  type: 'test'
+  ...
+# Subtest: CH-05 transport deadline timer is cleared after a successful mounted request
+ok 40 - CH-05 transport deadline timer is cleared after a successful mounted request
+  ---
+  duration_ms: 364.653959
+  type: 'test'
+  ...
+# Subtest: CH-05 regression: a read deadline releases the panel after fetch never settles
+ok 41 - CH-05 regression: a read deadline releases the panel after fetch never settles
+  ---
+  duration_ms: 612.72125
+  type: 'test'
+  ...
+# Subtest: CH-05 regression: body-read deadline aborts and a successful refresh can follow
+ok 42 - CH-05 regression: body-read deadline aborts and a successful refresh can follow
+  ---
+  duration_ms: 595.189584
+  type: 'test'
+  ...
+# Subtest: CH-05 regression: a timed-out late token cannot dispatch fetch
+ok 43 - CH-05 regression: a timed-out late token cannot dispatch fetch
+  ---
+  duration_ms: 313.06125
+  type: 'test'
+  ...
+# Subtest: CH-05 regression: legal answer uncertainty survives a newer in-review read and another admin
+ok 44 - CH-05 regression: legal answer uncertainty survives a newer in-review read and another admin
+  ---
+  duration_ms: 1475.324125
+  type: 'test'
+  ...
+# Subtest: CH-05 legal answer digest pause is fenced across rapid clicks and account A-B-A
+ok 45 - CH-05 legal answer digest pause is fenced across rapid clicks and account A-B-A
+  ---
+  duration_ms: 673.414125
+  type: 'test'
+  ...
+# Subtest: CH-05 legal answer readback clears only for the exact normalized response
+ok 46 - CH-05 legal answer readback clears only for the exact normalized response
+  ---
+  duration_ms: 1768.046667
+  type: 'test'
+  ...
+# Subtest: CH-05 regression: privacy delivery remains uncertain after a revision-only refresh
+ok 47 - CH-05 regression: privacy delivery remains uncertain after a revision-only refresh
+  ---
+  duration_ms: 1472.253958
+  type: 'test'
+  ...
+# Subtest: CH-05 regression: an unconfirmed extension notice marked failed cannot be retried
+ok 48 - CH-05 regression: an unconfirmed extension notice marked failed cannot be retried
+  ---
+  duration_ms: 1480.448
+  type: 'test'
+  ...
+# Subtest: CH-05 regression: a pending security notification disables the matching recipient resend
+ok 49 - CH-05 regression: a pending security notification disables the matching recipient resend
+  ---
+  duration_ms: 433.283875
+  type: 'test'
+  ...
+# Subtest: CH-05 pending notification remains blocked until manual reconciliation and resolution
+ok 50 - CH-05 pending notification remains blocked until manual reconciliation and resolution
+  ---
+  duration_ms: 1017.236833
+  type: 'test'
+  ...
+# Subtest: CH-05 export detail close aborts a late body before Blob or download
+ok 51 - CH-05 export detail close aborts a late body before Blob or download
+  ---
+  duration_ms: 705.073833
+  type: 'test'
+  ...
+# Subtest: CH-05 regression: uncertain incident creation stays domain-latched across admins without hiding reads
+ok 52 - CH-05 regression: uncertain incident creation stays domain-latched across admins without hiding reads
+  ---
+  duration_ms: 2622.8985
+  type: 'test'
+  ...
+# Subtest: CH-05 QA stale privacy list cannot publish after account change when fetch ignores abort
+ok 53 - CH-05 QA stale privacy list cannot publish after account change when fetch ignores abort
+  ---
+  duration_ms: 553.892125
+  type: 'test'
+  ...
+# Subtest: CH-05 QA export body released after incident revision change has no download effect
+ok 54 - CH-05 QA export body released after incident revision change has no download effect
+  ---
+  duration_ms: 796.244417
+  type: 'test'
+  ...
+# Subtest: CH-05 QA timed-out dispatched notification stays uncertain and cannot be resent after pending read
+ok 55 - CH-05 QA timed-out dispatched notification stays uncertain and cannot be resent after pending read
+  ---
+  duration_ms: 755.164375
+  type: 'test'
+  ...
+1..55
+# tests 55
+# suites 0
+# pass 55
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 70323.083417
