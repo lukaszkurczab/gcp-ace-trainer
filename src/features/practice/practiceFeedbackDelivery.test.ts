@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import ts from "typescript";
+import { feedbackTextMeasurementKey } from "./feedbackTextHeight";
 
 const certificationSource = readFileSync(new URL("./CertificationPracticeSessionScreen.tsx", import.meta.url), "utf8");
 const codingSource = readFileSync(new URL("./PracticeSessionScreen.tsx", import.meta.url), "utf8");
@@ -76,10 +77,10 @@ test("Details JSX gates authored messages on expansion and keeps their text scal
   const runtimeSelectors = { session: { details: (id: string) => `details-${id}` } };
   const detailLines = () => [];
   const evaluate = (detailsOpen: boolean) => new Function(
-    "detailsOpen", "jsx", "View", "Text", "Pressable", "styles", "runtimeSelectors", "itemId", "feedback", "detailLines", "sourceError", "t", "openCanonicalSourceLink", "openSource", "showReport", "ContentReportSheet", "item", "reportSurface", "setSourceError",
+    "detailsOpen", "jsx", "View", "Text", "Pressable", "FeedbackText", "feedbackTextMeasurementKey", "windowWidth", "fontScale", "windowScale", "styles", "runtimeSelectors", "itemId", "feedback", "detailLines", "sourceError", "t", "openCanonicalSourceLink", "openSource", "showReport", "ContentReportSheet", "item", "reportSurface", "setSourceError",
     javascript,
   )(
-    detailsOpen, hostJsx, "View", "Text", "Pressable", { details: "details-style", sources: "sources-style", sourceLabel: "label-style", sourceUnavailable: "unavailable-style", detailText: "message-style" },
+    detailsOpen, hostJsx, "View", "Text", "Pressable", "FeedbackText", feedbackTextMeasurementKey, 328, 3.571, 3, { details: "details-style", sources: "sources-style", sourceLabel: "label-style", sourceUnavailable: "unavailable-style", detailText: "message-style" },
     runtimeSelectors, "item-1", { details: "details", messages: [{ kind: "wrong_option", targetId: "wrong", text: "Authored explanation." }], sources: [] },
     detailLines, false, (value: string) => value, () => "opened", async () => "opened", false, "ContentReportSheet", "item", "report", () => undefined,
   );
@@ -91,11 +92,12 @@ test("Details JSX gates authored messages on expansion and keeps their text scal
     if (Array.isArray(value)) return value.map(findMessage).find(Boolean);
     if (!value || typeof value !== "object") return undefined;
     const element = value as { type?: unknown; props?: { children?: unknown } & Record<string, unknown> };
-    if (element.type === "Text" && element.props?.children === "Authored explanation.") return { props: element.props };
+    if (element.type === "FeedbackText" && element.props?.text === "Authored explanation.") return { props: element.props };
     return findMessage(element.props?.children);
   };
   const messageElement = findMessage(expanded.props.children);
   assert.ok(messageElement);
   assert.equal(messageElement.props.key, "wrong_option:wrong");
-  assert.equal(messageElement.props.maxFontSizeMultiplier, 2);
+  assert.equal(messageElement.props.text, "Authored explanation.");
+  assert.equal(typeof messageElement.props.contextKey, "string");
 });

@@ -1,0 +1,47 @@
+diff --git a/src/features/practice/PracticeFeedbackBlock.tsx b/src/features/practice/PracticeFeedbackBlock.tsx
+index ee5f3e42..e4d28bba 100644
+--- a/src/features/practice/PracticeFeedbackBlock.tsx
++++ b/src/features/practice/PracticeFeedbackBlock.tsx
+@@ -16,21 +16,38 @@ import { detailLines } from "./feedbackDetails";
+ 
+ export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface, initiallyExpanded = false, showReport = true, openSource = (url) => Linking.openURL(url) }: Readonly<{ feedback: PracticeFeedback; item: ResolvedContentRef; itemId: string; reportSurface: ContentReportSurfaceContext; initiallyExpanded?: boolean; showReport?: boolean; openSource?: (url: string) => Promise<unknown> }>) {
+   const styles = useThemedStyles(createStyles);
+-  const { fontScale } = useWindowDimensions();
++  const { fontScale, height: windowHeight, scale: windowScale, width: windowWidth } = useWindowDimensions();
+   const { t } = useTranslation("common");
+   const [detailsOpen, setDetailsOpen] = useState(initiallyExpanded);
+   const [sourceError, setSourceError] = useState(false);
++  const layoutProbeEnabled = __DEV__ && itemId === "gcp-ace-gcpace-n01-b03-001";
++  const logLayout = (surface: string, geometry: Readonly<{ x: number; y: number; width: number; height: number }>) => {
++    if (!layoutProbeEnabled) return;
++    console.info("[native28-layout-probe]", JSON.stringify({ surface, itemId, window: { width: windowWidth, height: windowHeight, scale: windowScale, fontScale }, geometry }));
++  };
+   const detailsDisclosure = <DetailsDisclosure expanded={detailsOpen} onPress={() => setDetailsOpen((current) => !current)} testID={runtimeSelectors.session.detailsToggle(itemId)} />;
+   return (
+-    <View style={styles.feedbackCard} testID={runtimeSelectors.session.feedback(itemId)}>
++    <View onLayout={layoutProbeEnabled ? (event) => logLayout("feedback-card", event.nativeEvent.layout) : undefined} style={styles.feedbackCard} testID={runtimeSelectors.session.feedback(itemId)}>
+       <View style={styles.reasonPanel} testID={runtimeSelectors.session.result(itemId, feedback.result)}>
+         <Text key={`reason-label:${fontScale}`} maxFontSizeMultiplier={2} style={styles.reasonLabel}>{t("Reason")}</Text>
+         <Text key={`reason:${fontScale}`} accessibilityLabel={`${t("Answer explanation.")} ${feedback.reason}`} maxFontSizeMultiplier={2} style={styles.reason} testID={runtimeSelectors.session.reason(itemId)}>{feedback.reason}</Text>
+       </View>
+-      <View style={styles.detailsSection}>
++      <View onLayout={layoutProbeEnabled ? (event) => logLayout("details-section", event.nativeEvent.layout) : undefined} style={styles.detailsSection}>
+         <View style={styles.detailsDivider} />
+         {detailsDisclosure}
+-        {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}>{feedback.messages?.map((message) => <Text key={`${message.kind}:${message.targetId}`} maxFontSizeMultiplier={2} style={styles.detailText}>{message.text}</Text>)}{detailLines(feedback.details).filter((line) => !feedback.sources?.some((source) => source.url === line)).map((line, index) => <Text key={`detail:${index}`} maxFontSizeMultiplier={2} style={styles.detailText}>{line}</Text>)}<View style={styles.sources}><Text maxFontSizeMultiplier={2} style={styles.sourceLabel}>{t("Source")}</Text>{feedback.sources?.length ? feedback.sources.map((source, index) => <Pressable accessibilityLabel={`${t("Open source")} ${source.host}`} accessibilityRole="link" key={source.url} onPress={() => { setSourceError(false); void openCanonicalSourceLink(source, openSource).then((result) => setSourceError(result === "failed")); }} testID={`question-source-link-${itemId}-${index}`}><Text maxFontSizeMultiplier={2} style={styles.sourceLink}>{source.host}</Text></Pressable>) : <Text maxFontSizeMultiplier={2} style={styles.sourceUnavailable}>{t("Source unavailable")}</Text>}{sourceError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.sourceError}>{t("The source could not be opened.")}</Text> : null}</View>{showReport ? <ContentReportSheet item={item} surface={reportSurface} /> : null}</View> : null}
++        {detailsOpen ? <View onLayout={layoutProbeEnabled ? (event) => logLayout("details", event.nativeEvent.layout) : undefined} style={styles.details} testID={runtimeSelectors.session.details(itemId)}>{feedback.messages?.map((message) => {
++          const isProbeMessage = layoutProbeEnabled && message.kind === "wrong_option" && message.targetId === "D";
++          return <Text
++            key={`${message.kind}:${message.targetId}`}
++            maxFontSizeMultiplier={2}
++            onLayout={isProbeMessage ? (event) => logLayout("wrong-option-D-text", event.nativeEvent.layout) : undefined}
++            onTextLayout={isProbeMessage ? (event) => {
++              const lines = event.nativeEvent.lines.map(({ ascender, descender, height, text, width, x, y }) => ({ ascender, descender, height, text, width, x, y }));
++              if (layoutProbeEnabled) console.info("[native28-layout-probe]", JSON.stringify({ surface: "wrong-option-D-lines", itemId, window: { width: windowWidth, height: windowHeight, scale: windowScale, fontScale }, lines }));
++            } : undefined}
++            style={[styles.detailText, isProbeMessage ? { minHeight: 221 } : undefined]}
++          >{message.text}</Text>;
++        })}{detailLines(feedback.details).filter((line) => !feedback.sources?.some((source) => source.url === line)).map((line, index) => <Text key={`detail:${index}`} maxFontSizeMultiplier={2} style={styles.detailText}>{line}</Text>)}<View style={styles.sources}><Text maxFontSizeMultiplier={2} style={styles.sourceLabel}>{t("Source")}</Text>{feedback.sources?.length ? feedback.sources.map((source, index) => <Pressable accessibilityLabel={`${t("Open source")} ${source.host}`} accessibilityRole="link" key={source.url} onPress={() => { setSourceError(false); void openCanonicalSourceLink(source, openSource).then((result) => setSourceError(result === "failed")); }} testID={`question-source-link-${itemId}-${index}`}><Text maxFontSizeMultiplier={2} style={styles.sourceLink}>{source.host}</Text></Pressable>) : <Text maxFontSizeMultiplier={2} style={styles.sourceUnavailable}>{t("Source unavailable")}</Text>}{sourceError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.sourceError}>{t("The source could not be opened.")}</Text> : null}</View>{showReport ? <ContentReportSheet item={item} surface={reportSurface} /> : null}</View> : null}
+       </View>
+     </View>
+   );

@@ -1,0 +1,19 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 same mounted message after larger font
+Assert that id: patternly:practice-review:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2:.* is visible... COMPLETED
+Scrolling UP until "This option selects at the billing account, but the decisive requirement is organization-wide attachment scope." is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... FAILED
+
+No visible element found: "This option selects at the billing account, but the decisive requirement is organization-wide attachment scope."
+
+Could not find a visible element matching selector: "This option selects at the billing account, but the decisive requirement is organization-wide attachment scope."
+Tip: Try adjusting the following settings to improve detection:
+- `timeout`: current = 20000ms → Increase if you need more time to find the element
+- `speed`: current = 40 (0-100 scale) → Increase for faster scrolling if element is far away
+- `waitToSettleTimeoutMs`: current = Not defined → Set this value (e.g., 500ms) if your UI updates frequently between scrolls
+- `visibilityPercentage`: current = 100% → Lower this value if you want to detect partially visible elements
+- `centerElement`: current = false → Enable if you want the element to be centered after finding it
+
+
+==== Debug output (logs & screenshots) ====
+
+/private/tmp/bizq28-frame/read-scaled-message/2026-10-05_182555

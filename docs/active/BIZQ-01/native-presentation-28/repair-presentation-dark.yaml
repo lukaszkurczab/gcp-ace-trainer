@@ -1,0 +1,163 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 repair28 dark supported capped large-text existing completed review
+---
+- stopApp
+- launchApp:
+    clearState: false
+- openLink: "com.lkurczab.patternly://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"
+- runFlow:
+    when:
+      visible: "Open|Otwórz"
+    commands:
+      - tapOn: "Open|Otwórz"
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 45000
+- assertVisible:
+    id: patternly:home:track-card:google-cloud-associate-cloud-engineer
+- takeScreenshot: repair28-dark-corrected-cold-same-gcp-home
+- scrollUntilVisible:
+    element:
+      id: patternly:home:activity
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:home:activity
+- extendedWaitUntil:
+    visible:
+      id: patternly:activity:root
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: patternly:activity:row:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:activity:row:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+    timeout: 15000
+- scrollUntilVisible:
+    element: 'Session complete'
+    direction: UP
+    centerElement: false
+- takeScreenshot: repair28-dark-corrected-own-result-before-review
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- assertVisible:
+    id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+- scrollUntilVisible:
+    element: 'Session complete'
+    direction: UP
+    centerElement: false
+- scrollUntilVisible:
+    element:
+      id: patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+- extendedWaitUntil:
+    visible:
+      id: patternly:practice-review:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2:.*
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: patternly:session:question:gcp-ace-gcpace-n01-b03-001
+    direction: UP
+    visibilityPercentage: 20
+    centerElement: false
+- takeScreenshot: repair28-dark-large-question
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:gcp-ace-gcpace-n01-b03-001:a
+    direction: DOWN
+    centerElement: false
+- takeScreenshot: repair28-dark-large-option-a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:gcp-ace-gcpace-n01-b03-001:d
+    direction: DOWN
+    centerElement: false
+- takeScreenshot: repair28-dark-large-selected-wrong-option
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001
+- assertVisible: 'Hide answer details'
+- scrollUntilVisible:
+    element: 'This option selects at the billing account, but the decisive requirement is organization-wide attachment scope.'
+    direction: DOWN
+    centerElement: false
+- takeScreenshot: repair28-dark-large-authored-diagnostic
+- swipe:
+    start: 50%,72%
+    end: 50%,47%
+    duration: 500
+- takeScreenshot: repair28-dark-large-details-body-1
+- swipe:
+    start: 50%,72%
+    end: 50%,47%
+    duration: 500
+- takeScreenshot: repair28-dark-large-details-body-2
+- swipe:
+    start: 50%,72%
+    end: 50%,47%
+    duration: 500
+- takeScreenshot: repair28-dark-large-details-body-3
+- swipe:
+    start: 50%,72%
+    end: 50%,47%
+    duration: 500
+- takeScreenshot: repair28-dark-large-details-body-4
+- scrollUntilVisible:
+    element:
+      id: question-source-link-gcp-ace-gcpace-n01-b03-001-0
+    direction: DOWN
+    centerElement: false
+- assertVisible:
+    id: patternly:practice-review:next
+- takeScreenshot: repair28-dark-large-details-source-actions
+- tapOn:
+    id: patternly:practice-review:next
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:question:gcp-ace-gcpace-n01-b04-001
+    timeout: 15000
+- scrollUntilVisible:
+    element: 'Correct'
+    direction: DOWN
+    centerElement: false
+- takeScreenshot: repair28-dark-correct-outcome
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b04-001
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b04-001
+- assertVisible: 'Hide answer details'
+- assertVisible: 'Hide answer details'
+- takeScreenshot: repair28-dark-large-correct-reason-details
+- scrollUntilVisible:
+    element:
+      id: question-source-link-gcp-ace-gcpace-n01-b04-001-0
+    direction: DOWN
+    centerElement: false
+- takeScreenshot: repair28-dark-large-correct-details-bottom
+- tapOn:
+    id: patternly:practice-review:result
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+    timeout: 15000
+- takeScreenshot: repair28-dark-large-same-completed-result

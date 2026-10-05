@@ -1,0 +1,28 @@
+{
+  "verdict": "PASS controlled diagnostic comparison, not product/fullQ12 acceptance",
+  "rootPersonallyInspected": true,
+  "oneVariable": "dev-only target message minHeight221",
+  "preserved": "width328/fontScale3.571/cap2/authoredstring/selection/session",
+  "before": {
+    "textHeight": 219.9998779296875,
+    "nativeLines": 4,
+    "visibleEnding": "clipped attachment scope."
+  },
+  "after": {
+    "textHeight": 220.9998779296875,
+    "nativeLines": 5,
+    "visibleEnding": "complete attachment scope."
+  },
+  "conclusion": "Height-sensitive final-line fit reproduced; internal native root mechanism not fully proved. A permanent measured physical-pixel margin is a separate proposal requiring native recheck.",
+  "restored": "actualdark/large verified both runs",
+  "bindings": {
+    "NATIVE-LAYOUT-EVENTS.jsonl": "ea37aa084ae2da140672dcade59835b00b776b0d93511e8450296f0501b17218",
+    "NATIVE-LAYOUT-MINHEIGHT-EVENTS.jsonl": "cc69bcea14942a02135c3b287ed6868e40e220efb0c88ad4bd47ede294dc315b",
+    "screens/diagnostic-instrumented-dark-message.png": "6b3868dd8dd47586e43a17e364fe2e5a23e77975e9ce1f397e466f4ff8989c29",
+    "screens/diagnostic-minheight-dark-message.png": "0d74a0aceab262d39521fbbb31655729b3d28ed195cd9ea608e1c601fcd3d813",
+    "DIAGNOSTIC-NATIVE-BASELINE.json": "23b4703b2dcf2723a9d2d7162a7bc2db2a467154530ccdc670f24765099f6839",
+    "DIAGNOSTIC-NATIVE-MINHEIGHT.json": "23b4703b2dcf2723a9d2d7162a7bc2db2a467154530ccdc670f24765099f6839",
+    "DIAGNOSTIC-BASELINE-INSTRUMENTATION.patch": "09342d0d26541f0374abcbe4b76b99cfc213e16c2df381fc5524df1bce7c8b5e",
+    "DIAGNOSTIC-MINHEIGHT-INSTRUMENTATION.patch": "6bae8b4cbce2bd0975c5deb0d1aaa08278db30990cc347150d93f3f93bf0ab50"
+  }
+}

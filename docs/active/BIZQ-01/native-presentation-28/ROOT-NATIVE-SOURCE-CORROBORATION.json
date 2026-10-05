@@ -1,0 +1,8 @@
+{
+  "scope": "Installed source corroboration, not proof of every compiled UIKit mechanism",
+  "observation": "Actual inspected debugger identifies React Native Bridgeless; Fabric RCTParagraphComponentView drawRect uses layoutMetrics.getContentFrame, RCTTextLayoutManager unlimitedText lineBreakMode is NSLineBreakByClipping. DesignQA referenced equivalent legacy path; both support the same bounded height-sensitive hypothesis. Controlled native comparison is decisive behavior evidence.",
+  "bindings": {
+    "node_modules/react-native/ReactCommon/react/renderer/textlayoutmanager/platform/ios/react/renderer/textlayoutmanager/RCTTextLayoutManager.mm": "54afce45131efb07e62032a294dc7adf1efc62148261241c02fc4c9af2a30321",
+    "node_modules/react-native/React/Fabric/Mounting/ComponentViews/Text/RCTParagraphComponentView.mm": "814e3739835b35f713513a3157218ba5fec61cac1994794c876d5e4940288c23"
+  }
+}

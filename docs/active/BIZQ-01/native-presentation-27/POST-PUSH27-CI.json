@@ -1,0 +1,28 @@
+{
+  "result": "SUCCESS",
+  "runId": 37336322084,
+  "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37336322084",
+  "commit": "4dc94d1315d3197651c121b833266cc686e326bb",
+  "jobs": [
+    {
+      "name": "Recovery QA gate",
+      "conclusion": "success"
+    },
+    {
+      "name": "Multi-track content release contract",
+      "conclusion": "success"
+    }
+  ],
+  "actualTestSummaryLines": [
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-05T15:56:52.3153833Z # tests 1894",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-05T15:56:52.3154479Z # pass 1890",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-05T15:56:52.3154780Z # fail 0",
+    "Recovery QA gate\tRun recovery baseline (includes qa:static)\t2026-10-05T15:56:52.3155618Z # skipped 4",
+    "Multi-track content release contract\tRun pinned multi-track release round-trip\t2026-10-05T15:53:31.4580350Z # tests 3",
+    "Multi-track content release contract\tRun pinned multi-track release round-trip\t2026-10-05T15:53:31.4581322Z # pass 3",
+    "Multi-track content release contract\tRun pinned multi-track release round-trip\t2026-10-05T15:53:31.4581682Z # fail 0",
+    "Multi-track content release contract\tRun pinned multi-track release round-trip\t2026-10-05T15:53:31.4582511Z # skipped 0"
+  ],
+  "limits": "AutomaticCI exactcommit, notfullBIZQ/nativepartial/Q12/Premium/release",
+  "logDownload": "Firstsandboxed ghcache write denied; retried with private task XDG_CACHE_HOME; downloaded actualrunlog"
+}

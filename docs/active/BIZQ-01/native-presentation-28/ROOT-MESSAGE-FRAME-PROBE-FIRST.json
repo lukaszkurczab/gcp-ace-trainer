@@ -1,0 +1,18 @@
+{
+  "initial": {
+    "appearance": "dark",
+    "content_size": "large"
+  },
+  "device": "7F315654-3175-4F3C-BB24-B0263F59360C",
+  "method": "Warm existingresult\u2192samewrongreview\u2192expandedDetails; no newanswers/session/track/account/config",
+  "observed": {
+    "appearance": "dark",
+    "content_size": "accessibility-extra-extra-extra-large"
+  },
+  "flowExitCode": 1,
+  "restored": {
+    "appearance": "dark",
+    "content_size": "large"
+  },
+  "restoreVerified": true
+}

@@ -1,0 +1,64 @@
+{
+  "verdict": "PASS WITH ISSUES",
+  "scope": "Read-only layout preflight for the confirmed Q12 large-text diagnostic clipping finding; not a Q12 acceptance verdict.",
+  "finding": {
+    "id": "Q12-AUTHORED-DIAGNOSTIC-CLIPPED",
+    "status": "confirmed_visual_issue",
+    "surface": "Shared PracticeFeedbackBlock in completed Certification Practice review",
+    "itemId": "gcp-ace-gcpace-n01-b03-001",
+    "selectedWrongOptionId": "D",
+    "expectedMessageEnding": "organization-wide attachment scope.",
+    "observedInBothThemes": "Last displayed line visibly ends after organization-wide attachme… at the supported capped accessibility text size.",
+    "rootCause": "unresolved; screenshots establish the rendering defect but not the native layout geometry causing it"
+  },
+  "sourceAssessment": {
+    "messageUsesSameTextStyleAsDetails": true,
+    "explicitMessageLineClamp": false,
+    "explicitMessageEllipsis": false,
+    "horizontalScrollInSharedScreen": false,
+    "fontScaling": "React Native 0.86.3 Text defaults allowFontScaling to true; component sets maxFontSizeMultiplier=2.",
+    "conclusion": "No message-specific source clamp was found. This does not prove message or ancestor frame geometry."
+  },
+  "recommendedProbe": {
+    "method": "Temporary development-only onLayout/onTextLayout instrumentation on the target Text and immediate parent chain, using the already completed item without further answer submission or persistence changes.",
+    "record": ["window width and scale", "fontScale", "session content frame", "feedback card frame", "Details frame", "message Text frame", "native line text/width/position"],
+    "conditions": ["same item and wrong option D", "light theme", "dark theme", "same supported capped large text setting"],
+    "preservation": "No copy/style-policy/session/data changes; remove temporary instrumentation after measurement.",
+    "interpretation": ["Out-of-width parent or Text frame points to a width constraint in Screen/SessionShell.", "A fitting frame with an over-wide or unwrapped native line points to text measurement/rendering and should be isolated before component edits.", "Complete fitting line measurements with visually clipped pixels points to ancestor clipping/rendering."],
+    "isAcceptanceGate": false
+  },
+  "verification": {
+    "performed": ["Inspected supplied light and dark live screenshots.", "Inspected PracticeFeedbackBlock, PracticeSessionSurface, SessionShell, Screen, DetailsDisclosure, current feedback-delivery test and typography tokens.", "Confirmed installed React Native package version and Text scaling/layout callback support from installed source."],
+    "notPerformed": ["No simulator interaction or native geometry measurement by this reviewer.", "No source, test, content, preference, session, or persistence changes."]
+  },
+  "bindings": {
+    "briefing": {"path": "docs/active/BIZQ-01/native-presentation-28/BRIEFING.md", "sha256": "238e0d78779b2974955ff4dda8bafe52ec10de220b924c953a92c7f5d95a8203"},
+    "triage": {"path": "docs/active/BIZQ-01/native-presentation-28/UI-FINDING-TRIAGE.md", "sha256": "0e75a617119189bcdc341a7271f233ca0582c0321c55d0f6817076e54a7f3536"},
+    "screenshotManifest": {"path": "docs/active/BIZQ-01/native-presentation-28/SCREENSHOT-MANIFEST.json", "sha256": "dff4bf4bcd45d4f0c2f200003d45ff7f4b39e577a99c2d24f95a5049f291aa97"},
+    "screenshots": [
+      {"path": "docs/active/BIZQ-01/native-presentation-28/screens/native28-light-large-authored-diagnostic.png", "sha256": "9f08e2e84b27e7283b93c8e61992c00e1119f2b2d725ce73f2fdbd47e7bdc4db", "theme": "light"},
+      {"path": "docs/active/BIZQ-01/native-presentation-28/screens/native28-dark-large-authored-diagnostic.png", "sha256": "974d8fb395e3af79a3ac9b6fb73190ba490201a906e5d839f158c1af93f6706e", "theme": "dark"}
+    ],
+    "implementation": [
+      {"path": "src/features/practice/PracticeFeedbackBlock.tsx", "sha256": "a0cd2b14e08d63260808727ac2fc775588f52b9e7101ce41e78cc604febbede5"},
+      {"path": "src/features/practice/PracticeSessionSurface.tsx", "sha256": "5262a0c2a1e4be5c6d68fc707b90de60b82435f15aef08263800c05674f03a1e"},
+      {"path": "src/features/coding-interview/session/SessionShell.tsx", "sha256": "ab1c76156c71e769a9f59d214561fb265a34db2e10cffc778046c4443a1b53f1"},
+      {"path": "src/components/Screen.tsx", "sha256": "e980d6b61b5717d53b7f4f9dd5a8f1a465fcb892c49a100cbf51d319ed878d7d"},
+      {"path": "src/components/DetailsDisclosure.tsx", "sha256": "421e22ae8600bfa5baece2e577069fb06baed02da532727d9883d76b42664909"},
+      {"path": "src/features/practice/practiceFeedbackDelivery.test.ts", "sha256": "ec27741b8e0a7a2d936244daadf4a6f78cedfb1220c3e6812c31c3f7eb902059"},
+      {"path": "src/theme/tokens.ts", "sha256": "e48475ab083ac5d387f5b7e8b98a33d0a67e1b177ee51b6ca7b24d7d17e50a0d"},
+      {"path": "src/content/generated/canonical-content/google-cloud-associate-cloud-engineer.json", "sha256": "eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9"}
+    ],
+    "runtime": [
+      {"path": "package.json", "sha256": "28c6431dd731cf8fe3e2c5472d1f86c4878436b89c4b1ecc3a547e63d3f04654", "reactNative": "0.86.3", "expo": "57.0.17"},
+      {"path": "package-lock.json", "sha256": "0ababcb26d054bd5ea3f10e800e4049c273eb367baceef3b128a63f33e15f000"},
+      {"path": "node_modules/react-native/Libraries/Text/Text.js", "sha256": "7bd239228e8a92282e976ec7d838416a872c26387f1bdc1ae568597440c2b949"},
+      {"path": "node_modules/react-native/Libraries/Text/TextProps.js", "sha256": "8e090602424424c0eacf61a10b58a2cbbc7a7c9e5e71697e979c559dd7562637"}
+    ],
+    "contracts": [
+      {"path": "../docs/05-design-system.md", "sha256": "45b5f5b259ef1ec5ee2c2ed2070cd9c50964e15c133b81ae8d6b84419da09929", "sections": ["Accessibility baseline", "Feedback"]},
+      {"path": "../docs/17-training-runtime-and-interaction-spec.md", "sha256": "a6d2e12be67d9de9d1e67728506bf29566bf6bbfbb332c4886a5de4d24b8106a", "section": "8. Feedback disclosure"}
+    ]
+  },
+  "limits": ["This does not claim full Q12 or BIZQ-01 acceptance.", "This does not cover VoiceOver, other content variants, repaired long options, native partial scoring, or Premium behavior."]
+}

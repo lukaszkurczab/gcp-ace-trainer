@@ -1,0 +1,41 @@
+{
+  "verdict": "PASS bounded native rendering after finalrepair; independent packageQA pending",
+  "rootPersonallyInspected": true,
+  "device": "7F315654-3175-4F3C-BB24-B0263F59360C",
+  "sourceFreeze": "e9d04f72e9903686289e7069402c699e5b3029a22c4250f1be9d1bc7beff3a10",
+  "variants": [
+    "light maxtext",
+    "dark maxtext",
+    "ordinary dark Large"
+  ],
+  "message": "This option selects at the billing account, but the decisive requirement is organization-wide attachment scope.",
+  "observations": {
+    "authoredDiagnostic": "full 5-line ending visible atmax inbothmotifs; full3lines ordinaryLarge body1",
+    "genericDetails": "mechanism/scenario/transfer full and Source reachable via normal scroll",
+    "actions": "Details/Next/correctneighbor/Backresult available bothmax variants; ordinarysource/Backresult passed",
+    "result": "same GCP2,9correct/0partlycorrect/1incorrect/0unanswered/10answered/21:31"
+  },
+  "restored": {
+    "appearance": "dark",
+    "content_size": "large",
+    "actualReadbackVerified": true
+  },
+  "captureCaveat": "Ordinary authored-diagnostic image startsbelowfooter; complete message is provedby followingnormal-scroll details-body-1, not that imagealone",
+  "bindings": {
+    "REPAIR-NATIVE-RUNS.json": "c1dba90b7c397c9377872efcc4ab3cd76f60be581fecafb2657cbe948a4ed94c",
+    "REPAIR-ORDINARY-NATIVE.json": "fe44a465517851c9f37acae10f1ea8b112004c6186741bef1e04188269bc8c00",
+    "REPAIR-FINAL-RESULT.log": "5d5b4216c143ee4825884e328b7c8b9b4641eac1683e39feb6864059db831b8a",
+    "REPAIR-SCREENSHOT-MANIFEST.json": "7df6f977f0f60a41d7587de76ede57e972af66aec7b7146743c3df1ef23adc8e",
+    "ROOT-FOCUSED.log": "5ffa0e0e46b0cf7766c947d9b54df2347859a952be9c5869cb466290edb632de",
+    "ROOT-RECOVERY.log": "b4b78ceb3f4e7b25b0a5aad28dea24b219938e3a9864b7710da21b0d87efa079"
+  },
+  "rootChecks": {
+    "focused": "8/8 PASS realhelper/productionASTconsumer, modeled not SDK",
+    "recovery": "PASS",
+    "ownDiffCheck": "PASS excludes foreignplanappendix whitespace"
+  },
+  "limits": [
+    "No fullQ12/longrepairedoptions/nativepartial/Premium/Q13update/full01/release/VO/wholeMMKV/reminderdelivery claim",
+    "Source repair does not alter persistence/content/score/service configuration. Native operations submitted no new answers or track/account/goal/plan/reminder changes; readonly same completed review. Lifecycle/cache records were not compared; no whole-store preservation claim."
+  ]
+}

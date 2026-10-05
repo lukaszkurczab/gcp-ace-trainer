@@ -1,0 +1,15 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 final restored result only
+---
+- assertVisible:
+    id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+- scrollUntilVisible:
+    element: 'Session complete'
+    direction: UP
+    centerElement: false
+- takeScreenshot: repair28-final-restored-result-top
+- swipe:
+    start: 50%,72%
+    end: 50%,45%
+    duration: 500
+- takeScreenshot: repair28-final-restored-result-counts

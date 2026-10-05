@@ -1,4 +1,4 @@
-import { Linking, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View, useWindowDimensions, type StyleProp, type TextStyle } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 
@@ -12,11 +12,28 @@ import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import type { ResolvedContentRef } from "../../domain";
 import { ContentReportSheet, type ContentReportSurfaceContext } from "../reports/ContentReportSheet";
 import { detailLines } from "./feedbackDetails";
+import { createOneTimeFeedbackTextMinimumHeight, feedbackTextMeasurementKey } from "./feedbackTextHeight";
 
+function FeedbackText({ contextKey, physicalScale, style, text }: Readonly<{ contextKey: string; physicalScale: number; style: StyleProp<TextStyle>; text: string }>) {
+  return <FeedbackTextLayout key={contextKey} physicalScale={physicalScale} style={style} text={text} />;
+}
+
+function FeedbackTextLayout({ physicalScale, style, text }: Readonly<{ physicalScale: number; style: StyleProp<TextStyle>; text: string }>) {
+  const [minimumHeight, setMinimumHeight] = useState<number>();
+  const [measureOnce] = useState(() => createOneTimeFeedbackTextMinimumHeight(physicalScale));
+  return <Text
+    maxFontSizeMultiplier={2}
+    onLayout={(event) => {
+      const nextMinimumHeight = measureOnce(event.nativeEvent.layout.height);
+      if (nextMinimumHeight !== undefined) setMinimumHeight(nextMinimumHeight);
+    }}
+    style={minimumHeight === undefined ? style : [style, { minHeight: minimumHeight }]}
+  >{text}</Text>;
+}
 
 export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface, initiallyExpanded = false, showReport = true, openSource = (url) => Linking.openURL(url) }: Readonly<{ feedback: PracticeFeedback; item: ResolvedContentRef; itemId: string; reportSurface: ContentReportSurfaceContext; initiallyExpanded?: boolean; showReport?: boolean; openSource?: (url: string) => Promise<unknown> }>) {
   const styles = useThemedStyles(createStyles);
-  const { fontScale } = useWindowDimensions();
+  const { fontScale, scale: windowScale, width: windowWidth } = useWindowDimensions();
   const { t } = useTranslation("common");
   const [detailsOpen, setDetailsOpen] = useState(initiallyExpanded);
   const [sourceError, setSourceError] = useState(false);
@@ -30,7 +47,19 @@ export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface, i
       <View style={styles.detailsSection}>
         <View style={styles.detailsDivider} />
         {detailsDisclosure}
-        {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}>{feedback.messages?.map((message) => <Text key={`${message.kind}:${message.targetId}`} maxFontSizeMultiplier={2} style={styles.detailText}>{message.text}</Text>)}{detailLines(feedback.details).filter((line) => !feedback.sources?.some((source) => source.url === line)).map((line, index) => <Text key={`detail:${index}`} maxFontSizeMultiplier={2} style={styles.detailText}>{line}</Text>)}<View style={styles.sources}><Text maxFontSizeMultiplier={2} style={styles.sourceLabel}>{t("Source")}</Text>{feedback.sources?.length ? feedback.sources.map((source, index) => <Pressable accessibilityLabel={`${t("Open source")} ${source.host}`} accessibilityRole="link" key={source.url} onPress={() => { setSourceError(false); void openCanonicalSourceLink(source, openSource).then((result) => setSourceError(result === "failed")); }} testID={`question-source-link-${itemId}-${index}`}><Text maxFontSizeMultiplier={2} style={styles.sourceLink}>{source.host}</Text></Pressable>) : <Text maxFontSizeMultiplier={2} style={styles.sourceUnavailable}>{t("Source unavailable")}</Text>}{sourceError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.sourceError}>{t("The source could not be opened.")}</Text> : null}</View>{showReport ? <ContentReportSheet item={item} surface={reportSurface} /> : null}</View> : null}
+        {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}>{feedback.messages?.map((message) => <FeedbackText
+          key={`${message.kind}:${message.targetId}`}
+          contextKey={feedbackTextMeasurementKey(message.text, windowWidth, fontScale, windowScale)}
+          physicalScale={windowScale}
+          style={styles.detailText}
+          text={message.text}
+        />)}{detailLines(feedback.details).filter((line) => !feedback.sources?.some((source) => source.url === line)).map((line, index) => <FeedbackText
+          key={`detail:${index}`}
+          contextKey={feedbackTextMeasurementKey(line, windowWidth, fontScale, windowScale)}
+          physicalScale={windowScale}
+          style={styles.detailText}
+          text={line}
+        />)}<View style={styles.sources}><Text maxFontSizeMultiplier={2} style={styles.sourceLabel}>{t("Source")}</Text>{feedback.sources?.length ? feedback.sources.map((source, index) => <Pressable accessibilityLabel={`${t("Open source")} ${source.host}`} accessibilityRole="link" key={source.url} onPress={() => { setSourceError(false); void openCanonicalSourceLink(source, openSource).then((result) => setSourceError(result === "failed")); }} testID={`question-source-link-${itemId}-${index}`}><Text maxFontSizeMultiplier={2} style={styles.sourceLink}>{source.host}</Text></Pressable>) : <Text maxFontSizeMultiplier={2} style={styles.sourceUnavailable}>{t("Source unavailable")}</Text>}{sourceError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.sourceError}>{t("The source could not be opened.")}</Text> : null}</View>{showReport ? <ContentReportSheet item={item} surface={reportSurface} /> : null}</View> : null}
       </View>
     </View>
   );

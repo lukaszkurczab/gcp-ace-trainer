@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: feedback text minimum height rounds above the measured physical-pixel boundary
+ok 1 - feedback text minimum height rounds above the measured physical-pixel boundary
+  ---
+  duration_ms: 4.643333
+  type: 'test'
+  ...
+# Subtest: feedback height measurement ignores invalid initial layouts and then applies only once
+ok 2 - feedback height measurement ignores invalid initial layouts and then applies only once
+  ---
+  duration_ms: 0.277791
+  type: 'test'
+  ...
+# Subtest: measurement context changes when text or layout geometry changes
+ok 3 - measurement context changes when text or layout geometry changes
+  ---
+  duration_ms: 0.243958
+  type: 'test'
+  ...
+# Subtest: actual FeedbackTextLayout applies one measured minimum and its child key resets by context
+ok 4 - actual FeedbackTextLayout applies one measured minimum and its child key resets by context
+  ---
+  duration_ms: 232.355
+  type: 'test'
+  ...
+# Subtest: both feedback text paths preserve outer sibling identity and use the shared measurement wrapper
+ok 5 - both feedback text paths preserve outer sibling identity and use the shared measurement wrapper
+  ---
+  duration_ms: 47.773458
+  type: 'test'
+  ...
+# Subtest: both practice JSX adapters pass authored message arrays through unchanged
+ok 6 - both practice JSX adapters pass authored message arrays through unchanged
+  ---
+  duration_ms: 207.534667
+  type: 'test'
+  ...
+# Subtest: Design practice JSX adapter forwards optional choice and ordering messages only from existing feedback
+ok 7 - Design practice JSX adapter forwards optional choice and ordering messages only from existing feedback
+  ---
+  duration_ms: 29.270791
+  type: 'test'
+  ...
+# Subtest: Details JSX gates authored messages on expansion and keeps their text scalable
+ok 8 - Details JSX gates authored messages on expansion and keeps their text scalable
+  ---
+  duration_ms: 79.501042
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2397.792542

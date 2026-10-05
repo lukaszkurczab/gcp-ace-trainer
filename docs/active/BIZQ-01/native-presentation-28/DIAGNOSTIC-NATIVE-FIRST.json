@@ -1,0 +1,13 @@
+{
+  "initial": {
+    "appearance": "dark",
+    "content_size": "large"
+  },
+  "purpose": "Temporary geometry probe, same GCP completed review; no answers/track/account/reminder/config changes",
+  "exitCode": 1,
+  "restored": {
+    "appearance": "dark",
+    "content_size": "large"
+  },
+  "restoreVerified": true
+}

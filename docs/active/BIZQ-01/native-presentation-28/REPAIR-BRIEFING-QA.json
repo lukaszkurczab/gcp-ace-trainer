@@ -1,0 +1,86 @@
+{
+  "verdict": "PASS",
+  "reviewType": "independent_design_review",
+  "scope": "Proposal for the Q12 measured feedback text height repair; not implementation or full acceptance.",
+  "scores": {
+    "fit": { "score": 0.96, "reason": "Directly addresses reproduced native clipping while preserving authored explanation and accessibility cap." },
+    "simplicity": { "score": 0.85, "reason": "One local measured text implementation shared by the two related Details body paths; no global wrapper or SDK patch." },
+    "risk": { "score": 0.84, "reason": "Small one-pixel adjustment with keyed resets and one-time guard; native confirmation of the smaller margin remains required." },
+    "maintainability": { "score": 0.84, "reason": "Pixel-rounding/lifecycle behavior can be tested locally and remains owned by the existing feedback component." }
+  },
+  "evidenceAssessment": {
+    "heightSensitiveHypothesis": "supported_for_testing_not_internal_mechanism_proven",
+    "baseline": {
+      "frameHeightPt": 219.9998779296875,
+      "reportedLines": 4,
+      "lineHeightPt": 44,
+      "textVisiblyClipped": true
+    },
+    "temporaryMinimumHeightComparison": {
+      "minimumHeightPt": 221,
+      "frameHeightPt": 220.9998779296875,
+      "reportedLines": 5,
+      "lineHeightPt": 44,
+      "authoredEndingVisible": true
+    },
+    "nativeSource": "Installed React Native iOS RCTTextShadowView sets NSLineBreakByClipping when maximumNumberOfLines is unset; this is consistent with, but does not alone prove, the observed failure mechanism."
+  },
+  "designAssessment": {
+    "approach": "Local measured FeedbackText for authored messages and detailLines. On first onLayout, ceil(height * scale) / scale + one physical pixel; ignore later layout callbacks; use a React key with text, width, fontScale and physical scale to reset measurement.",
+    "blockingFindings": [],
+    "implementationNotes": [
+      "Append the measurement signature to each existing sibling identity/index in the React key, so duplicate strings cannot collide.",
+      "Treat onLayout as the initial measured frame, not an intrinsic-content-size API.",
+      "Test pixel rounding, one-time capture/no growth loop, and reset when text or size geometry changes.",
+      "Confirm the exact one-physical-pixel margin natively at supported maximum text in both themes and at ordinary Large; the prior +1pt probe is not proof of the smaller margin."
+    ],
+    "preserve": [
+      "authored text and order",
+      "maxFontSizeMultiplier=2",
+      "Details disclosure and source/report controls",
+      "selection, scoring and saved session"
+    ],
+    "removeDiagnosticInstrumentation": true,
+    "newAcceptanceGate": false
+  },
+  "bindings": {
+    "briefing": {
+      "path": "docs/active/BIZQ-01/native-presentation-28/REPAIR-BRIEFING.md",
+      "sha256": "8ad1f1872172325019bdcc2d2b57ae84c3dea0bb0876f1bd52f3a2bd4085b52f"
+    },
+    "diagnosticReview": {
+      "path": "docs/active/BIZQ-01/native-presentation-28/DIAGNOSTIC-REVIEW.md",
+      "sha256": "1175b77549e729fcf31d7c7e61ed88b10497faa0c51882082fde5514b78d6360"
+    },
+    "baselineEvents": {
+      "path": "docs/active/BIZQ-01/native-presentation-28/NATIVE-LAYOUT-EVENTS.jsonl",
+      "sha256": "ea37aa084ae2da140672dcade59835b00b776b0d93511e8450296f0501b17218"
+    },
+    "expandedFrameEvents": {
+      "path": "docs/active/BIZQ-01/native-presentation-28/NATIVE-LAYOUT-MINHEIGHT-EVENTS.jsonl",
+      "sha256": "cc69bcea14942a02135c3b287ed6868e40e220efb0c88ad4bd47ede294dc315b"
+    },
+    "baselineScreenshot": {
+      "path": "docs/active/BIZQ-01/native-presentation-28/screens/diagnostic-instrumented-dark-message.png",
+      "sha256": "6b3868dd8dd47586e43a17e364fe2e5a23e77975e9ce1f397e466f4ff8989c29"
+    },
+    "expandedFrameScreenshot": {
+      "path": "docs/active/BIZQ-01/native-presentation-28/screens/diagnostic-minheight-dark-message.png",
+      "sha256": "0d74a0aceab262d39521fbbb31655729b3d28ed195cd9ea608e1c601fcd3d813"
+    },
+    "component": {
+      "path": "src/features/practice/PracticeFeedbackBlock.tsx",
+      "sha256": "4a61b24e7a4fd60a4e14b1c189bacb76d996070adffa5bce83d97fe9a404f4e2"
+    },
+    "reactNativeTextLayoutSource": {
+      "path": "node_modules/react-native/Libraries/Text/Text/RCTTextShadowView.mm",
+      "sha256": "040b5376d1ff63f9f5d0bbbe5f322aa7179b68c4129b10897a5ad9558f0414b5",
+      "line": 221
+    }
+  },
+  "limits": [
+    "Design review only; no implementation has been checked.",
+    "The temporary +1pt screenshot supports height sensitivity but does not prove the proposed +1 physical pixel margin until native checks run.",
+    "No Q12, full BIZQ-01, VoiceOver, Premium or release acceptance is claimed."
+  ]
+}

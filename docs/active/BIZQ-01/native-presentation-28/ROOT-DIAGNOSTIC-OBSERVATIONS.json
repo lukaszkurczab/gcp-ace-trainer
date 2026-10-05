@@ -1,0 +1,35 @@
+{
+  "scope": "Diagnostic only; not repair/acceptance",
+  "nativeProbe": "PASS target-only flow, exactdark/large restore; confirmed same visible clipping",
+  "bundleProbe": {
+    "beforeRefresh": false,
+    "afterSingleOwnMetroCacheRefresh": true
+  },
+  "metro": {
+    "oldPid": 25543,
+    "newPid": 36765,
+    "exec": 61055,
+    "profile": "same smoke localhost8081",
+    "backendAuthUntouched": true
+  },
+  "capture": {
+    "method": "Hermes Runtime.enable, consoleAPICalled exact probe-prefix only; noRuntime.evaluate/privateappreads",
+    "firstWebSocketWithoutOrigin": "Rejected by existing Metro origin validation; corrected Originhttp://127.0.0.1:8081",
+    "actualRuntimeEnable": true
+  },
+  "geometry": {
+    "windowWidth": 402,
+    "fontScale": 3.571,
+    "messageWidth": 328,
+    "messageHeight": 219.9998779296875,
+    "reportedLineCount": 4,
+    "reportedLineHeight": 44,
+    "cause": "unresolved; finiteheight rounding hypothesis under review"
+  },
+  "bindings": {
+    "src/features/practice/PracticeFeedbackBlock.tsx": "55dc674cba289014cc9ae71af75b0754abaf20fa36e73a8b122b29e1f34ed586",
+    "docs/active/BIZQ-01/native-presentation-28/NATIVE-LAYOUT-EVENTS.jsonl": "ea37aa084ae2da140672dcade59835b00b776b0d93511e8450296f0501b17218",
+    "docs/active/BIZQ-01/native-presentation-28/screens/diagnostic-instrumented-dark-message.png": "6b3868dd8dd47586e43a17e364fe2e5a23e77975e9ce1f397e466f4ff8989c29",
+    "docs/active/BIZQ-01/native-presentation-28/DIAGNOSTIC-NATIVE.json": "23b4703b2dcf2723a9d2d7162a7bc2db2a467154530ccdc670f24765099f6839"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "status": "instrumented_waiting_for_root_capture_after_narrow_gate_correction",
+  "scope": "Temporary development-only native text-layout probe for the existing Q12 diagnostic clipping; no product fix or layout cause inferred.",
+  "gate": {
+    "developmentOnly": true,
+    "itemId": "gcp-ace-gcpace-n01-b03-001",
+    "fontScaleGate": false,
+    "fontScaleIsRecorded": true,
+    "textTarget": {"kind": "wrong_option", "optionId": "D"}
+  },
+  "records": {
+    "prefix": "[native28-layout-probe]",
+    "layoutSurfaces": ["feedback-card", "details-section", "details", "wrong-option-D-text"],
+    "lineSurface": "wrong-option-D-lines",
+    "lineFields": ["text", "x", "y", "width", "height", "ascender", "descender"],
+    "windowFields": ["width", "height", "scale", "fontScale"],
+    "emitsLearnerOrAccountData": false
+  },
+  "capture": {
+    "owner": "root",
+    "deviceOrMetroActionsByReviewer": false,
+    "method": "Capture marker console records from existing Metro or existing Hermes inspector Runtime.consoleAPICalled; no debugger evaluation or new logging service.",
+    "ifMarkerAbsent": "Treat as capture-path failure; use existing inspector endpoint, do not infer a layout result or add another logger.",
+    "firstCapture": "Root confirmed the running Metro bundle predated the source edit (probeCompiled=false). No-event output was a stale-bundle result and says nothing about font scale or native geometry. The threshold was removed so the refreshed-bundle capture reports actual fontScale."
+  },
+  "baseline": {
+    "originalLargeFramePoints": {"width": 328, "height": 66},
+    "largerTextHierarchyFrame": "No matching frame returned; read marked unsuccessful, so the result does not establish absence of a native frame."
+  },
+  "preservation": ["authored content unchanged", "font cap unchanged", "message key and text behavior unchanged", "selection and details flow unchanged", "no session submission or persisted data changes"],
+  "verification": {"command": "npm run typecheck", "result": "PASS", "deviceProbeRunByReviewer": false},
+  "bindings": {
+    "preflight": {"path": "docs/active/BIZQ-01/native-presentation-28/LAYOUT-PREFLIGHT.md", "sha256": "0e9d6cb19149ab0f27b6d2b3bffd5e3a57c9f4e9f6ed55b021b9d60e810974ff"},
+    "instrumentedSource": {"path": "src/features/practice/PracticeFeedbackBlock.tsx", "sha256": "55dc674cba289014cc9ae71af75b0754abaf20fa36e73a8b122b29e1f34ed586"},
+    "initialInstrumentedSource": {"path": "src/features/practice/PracticeFeedbackBlock.tsx", "sha256": "d7f27314564c647b4e803a53d68e4ad0991f2ca3720136d12cc8537d955d8924", "supersededReason": "FontScale gate could suppress all records before the actual scale was measured."},
+    "priorSource": {"path": "src/features/practice/PracticeFeedbackBlock.tsx", "sha256": "a0cd2b14e08d63260808727ac2fc775588f52b9e7101ce41e78cc604febbede5"},
+    "devConsole": {"path": "node_modules/react-native/Libraries/Core/setUpDeveloperTools.js", "sha256": "9a5c7862b3b073d464ff638ba926f05ba39139767fa79aaf308a76f88eeeb83b"},
+    "expoNativeHmr": {"path": "node_modules/expo/src/async-require/hmr.ts", "sha256": "05fe591a52558d9d3ebfbe61f79af17cdd84bd123c8403d0a162b9c905fe659f"},
+    "textLayoutTypes": {"path": "node_modules/react-native/Libraries/Types/CoreEventTypes.d.ts", "sha256": "cf1e23408bb2e38cb90d109cf8027c829f19424ad7a611c74edf39e1f195fe22"},
+    "hmrClient": {"path": "node_modules/react-native/Libraries/Utilities/HMRClient.js", "sha256": "bd2a69acb30de0f8e6186641d6579f425f5b2f54372f61e82509d8d1731ac348"},
+    "rootExistingFrameProbe": {"path": "docs/active/BIZQ-01/native-presentation-28/ROOT-MESSAGE-FRAME-PROBE.json", "sha256": "74c54b4285b52e71db2e9cfde3d293ad2f38c2b28208af502311967782adc4f7"}
+  }
+}

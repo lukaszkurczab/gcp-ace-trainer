@@ -1,0 +1,32 @@
+{
+  "decision": "ACCEPT bounded repair approach; implementation/native acceptance pending",
+  "goal": "Full documented acceptance BIZQ-01..06, one main area BIZQ-01 partial, same existing restrictions/auth; no new product/release gates",
+  "acceptedPlan": {
+    "file": "REPAIR-BRIEFING.md",
+    "sha256": "8ad1f1872172325019bdcc2d2b57ae84c3dea0bb0876f1bd52f3a2bd4085b52f"
+  },
+  "independentDesign": {
+    "model": "gpt-6-luna",
+    "effort": "high",
+    "verdict": "PASS",
+    "mdSha256": "4f3c12f001a1f88f6a6c5bbbf7fbd0c11a804c4ca67ff95272c67da6823fea4e",
+    "jsonSha256": "46c9ea4c663f8cc1f48a3e3c6c88200ab81fa0c705201253fa0b1b43f21cc2a1"
+  },
+  "clarifications": [
+    "Retain stable outer sibling kind:targetId/detail:index identity; reset internal measured child by text,width,fontScale,physicalScale",
+    "onLayout initial measured frame is not a true intrinsic-size API",
+    "One physical pixel margin requires actual native comparison; +1pt diagnostic alone does not accept finalrepair"
+  ],
+  "rootScores": {
+    "fit": 0.94,
+    "simplicity": 0.84,
+    "risk": 0.85,
+    "maintainability": 0.86,
+    "minimum": 0.84
+  },
+  "stopConditions": [
+    "No diagnosticitemID/logger/min221 in deliveredsource",
+    "No sourcecopy/fontcap/scoring/Premium/content/persistence/reminder/service changes",
+    "Native bothmotifs+ordinary, independent finalQA/rootbeforeordinarypush"
+  ]
+}

@@ -1,0 +1,28 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 open existing message for nativeframe read
+---
+- assertVisible:
+    id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+- scrollUntilVisible:
+    element:
+      id: patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+- extendedWaitUntil:
+    visible:
+      id: patternly:practice-review:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2:.*
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001
+    direction: DOWN
+    centerElement: false
+- swipe:
+    start: 50%,65%
+    end: 50%,45%
+    duration: 500
+- tapOn:
+    id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001
+- assertVisible: 'Hide answer details'

@@ -1,0 +1,32 @@
+{
+  "initial": {
+    "appearance": "dark",
+    "content_size": "large"
+  },
+  "device": "7F315654-3175-4F3C-BB24-B0263F59360C",
+  "method": "Open same current GCP review D Details at original large, readnativeframes; grow same mountedmessage to max, readframes andscreenshot; return existingresult/exactrestore",
+  "baselineFlowExitCode": 0,
+  "baselineFrames": [
+    {
+      "label": "This option selects at the billing account, but the decisive requirement is organization-wide attachment scope.",
+      "bounds": "[37,754][365,820]",
+      "parentBounds": "[0,-66][402,1383]"
+    },
+    {
+      "label": "This option selects at the billing account, but the decisive requirement is organization-wide attachment scope.",
+      "bounds": "[37,754][365,820]",
+      "parentBounds": "[37,754][365,820]"
+    }
+  ],
+  "observed": {
+    "appearance": "dark",
+    "content_size": "accessibility-extra-extra-extra-large"
+  },
+  "flowExitCode": 1,
+  "returnExitCode": 0,
+  "restored": {
+    "appearance": "dark",
+    "content_size": "large"
+  },
+  "restoreVerified": true
+}
