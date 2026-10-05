@@ -163,9 +163,9 @@ test("OOD23 producer proof binds the frozen 144-item mixed identity map and exac
 test("OOD23 loaded runtime matches every fixed reviewed question object", async () => {
   const map = readMap();
   const runtime = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK);
-  assert.equal(runtime.contentVersion, map.contentVersion);
+  assert.equal(runtime.contentVersion, "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24");
   assert.equal(runtime.questions.length, 1413);
-  assert.equal(sha256(Buffer.from(canonicalSerialize([...runtime.questions].sort((a, b) => a.questionId.localeCompare(b.questionId))))), map.questionSetSha256, "whole current v23 runtime QSet matches producer");
+  assert.equal(sha256(Buffer.from(canonicalSerialize([...runtime.questions].sort((a, b) => a.questionId.localeCompare(b.questionId))))), "c92a9f04488efb4ef7a5fa8b3257495c21e6c62125123df8073141c60000b2d8", "whole current v24 runtime QSet; historical23 map stays fixed");
   const questions = runtime.getQuestionsForNode(NODE);
   assert.equal(questions.length, 144);
   assert.deepEqual(

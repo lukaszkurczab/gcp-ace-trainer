@@ -9,16 +9,18 @@ import {
   projectCanonicalChoiceFeedbackControls,
 } from "../application/canonical/canonicalInteractionPresentation";
 import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQuestionViewModel";
+import { canonicalSerialize } from "../infrastructure/identity/canonicalSerialization";
 import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { CanonicalFeedbackMessage, Question } from "./canonical/questionTypes";
 
-const PACKET = "docs/active/BIZQ-01/ood-remaining-closure-21";
-const MAP_PATH = `${PACKET}/ROOT-N05-PRODUCER-MAP.json`;
-const MAP_SHA256 = "0d95dbf77a32f657197fa4789166a24fd68edad81cd367e9ea7b29c8578e6b70";
-const PROOF_PATH = "../patternly-content/evidence/business-quality/bizq-01-ood-node-closure-21.json";
+const PACKET = "docs/active/BIZQ-01/ood-remaining-closure-24";
+const MAP_PATH = `${PACKET}/ROOT-N24-PRODUCER-MAP.json`;
+const MAP_SHA256 = "dd444141610a8057053501ade6997323b833bb4d4e7fbd268cff4b896abf9892";
+const PROOF_PATH = "../patternly-content/evidence/business-quality/bizq-01-ood-node-closure-24.json";
 const TRACK = "object-oriented-design-interview";
-const NODE = "object_creation_configuration_and_structural_patterns";
+const N07_NODE = "persistence_repositories_serialization_and_domain_boundaries";
+const NODES = ["concurrency_thread_safety_resources_and_failure_handling", "testability_refactoring_api_evolution_and_maintainability"];
 const N01_NODE = "requirements_use_cases_domain_vocabulary_and_model_boundaries";
 const N02_NODE = "objects_responsibilities_encapsulation_and_invariants";
 const N03_NODE = "relationships_composition_ownership_lifecycle_and_dependencies";
@@ -36,7 +38,7 @@ type SourceBinding = Readonly<{
   nodeId: string;
   mentalUnitId: string;
 }>;
-type SameIdCorrection = Readonly<{
+type ReviewedCorrection = Readonly<{
   sourceFile: string;
   beforeSourceSha256: string;
   sourceSha256: string;
@@ -56,8 +58,8 @@ type ProducerMap = Readonly<{
   beforeQuestionSetSha256: string;
   questionSetSha256: string;
   sourceFiles: readonly SourceBinding[];
-  replacements: readonly unknown[];
-  sameIdCorrections: readonly SameIdCorrection[];
+  replacements: readonly ReviewedCorrection[];
+  sameIdCorrections: readonly ReviewedCorrection[];
 }>;
 type Proof = Readonly<{
   schemaVersion: string;
@@ -67,8 +69,8 @@ type Proof = Readonly<{
   beforeQuestionSetSha256: string;
   questionSetSha256: string;
   sourceFiles: readonly SourceBinding[];
-  replacements: readonly unknown[];
-  sameIdCorrections: readonly SameIdCorrection[];
+  replacements: readonly ReviewedCorrection[];
+  sameIdCorrections: readonly ReviewedCorrection[];
 }>;
 type SingleChoiceQuestion = Extract<Question, { interaction: { type: "choice_single" } }>;
 
@@ -80,28 +82,32 @@ function isSingleChoice(question: Question): question is SingleChoiceQuestion {
   return question.interaction.type === "choice_single" && question.answer.type === "choice_single";
 }
 
+function reviewedItems(map: Pick<ProducerMap, "replacements" | "sameIdCorrections">): readonly ReviewedCorrection[] {
+  return [...map.replacements, ...map.sameIdCorrections];
+}
+
 function readMap(): ProducerMap {
   const bytes = readFileSync(path.resolve(MAP_PATH));
-  assert.equal(sha256(bytes), MAP_SHA256, "root-frozen N05 producer-map bytes");
+  assert.equal(sha256(bytes), MAP_SHA256, "root-frozen N08/N09 producer-map bytes");
   const map = JSON.parse(bytes.toString("utf8")) as ProducerMap;
   assert.equal(map.result, "PASS");
-  assert.equal(map.registrySha256, "f7f50f13bb2f957c6f41442f1e6d79bb843a096fd7911b77103087fde71624ee");
-  assert.equal(map.beforeContentVersion, "object-oriented-design-interview-authoring-v2026.10.04-bizq01-20");
-  assert.equal(map.contentVersion, "object-oriented-design-interview-authoring-v2026.10.04-bizq01-21");
-  assert.equal(map.beforeQuestionSetSha256, "5b552f935cc3fa8bb142ccd38dc747a19a57823a8c7c8fd243fc786d43f0fe72");
-  assert.equal(map.questionSetSha256, "6d19a75e8eae86869b3ce31b63ad57a6be13fc30532c22e993db6fbc3d0d4d12");
-  assert.deepEqual(map.replacements, [], "the accepted N05 map retains all question IDs");
-  assert.equal(map.sourceFiles.length, 9);
-  assert.equal(map.sameIdCorrections.length, 153);
-  assert.equal(new Set(map.sameIdCorrections.map((entry) => entry.questionId)).size, 153);
-  for (const entry of map.sameIdCorrections) {
-    assert.equal(entry.beforeQuestionId, entry.questionId, `${entry.questionId} retains its question identity`);
-    assert.equal(entry.nodeId, NODE);
-    assert.match(entry.mentalUnitId, /^OOD-N05-B0[1-9]$/u);
+  assert.equal(map.registrySha256, "8f563c542bd7f17449a9688cf5da59e30e6f23388dbe3b37d38f9be8a108a9ea");
+  assert.equal(map.beforeContentVersion, "object-oriented-design-interview-authoring-v2026.10.05-bizq01-23");
+  assert.equal(map.contentVersion, "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24");
+  assert.equal(map.beforeQuestionSetSha256, "cdb6b644d1029b0ffc5d1a09cbaed2aecb3f7785d718bb056c5d6a0cbd5eeefa");
+  assert.equal(map.questionSetSha256, "c92a9f04488efb4ef7a5fa8b3257495c21e6c62125123df8073141c60000b2d8");
+  assert.equal(map.replacements.length, 36);
+  assert.equal(map.sourceFiles.length, 18);
+  assert.equal(map.sameIdCorrections.length, 288);
+  assert.equal(new Set(reviewedItems(map).map((entry) => entry.questionId)).size, 324);
+  for (const entry of reviewedItems(map)) {
+    assert.equal(entry.beforeQuestionId === entry.questionId, map.sameIdCorrections.includes(entry), `${entry.questionId} matches its reviewed identity action`);
+    assert.ok(NODES.includes(entry.nodeId));
+    assert.match(entry.mentalUnitId, /^OOD-N0[89]-B0[1-9]$/u);
     assert.ok(entry.learningObjective.length > 0);
     assert.equal(entry.currentQuestion.questionId, entry.questionId);
     assert.equal(entry.currentQuestion.mentalUnitId, entry.mentalUnitId);
-    assert.equal(entry.currentQuestion.nodeId, NODE);
+    assert.equal(entry.currentQuestion.nodeId, entry.nodeId);
     assert.equal(entry.currentQuestion.trackId, TRACK);
   }
   return map;
@@ -110,6 +116,7 @@ function readMap(): ProducerMap {
 function readProof(): Proof {
   const bytes = readFileSync(path.resolve(PROOF_PATH));
   const proof = JSON.parse(bytes.toString("utf8")) as Proof;
+  assert.equal(sha256(bytes), "3c2636ac2d98c7eb0179281bf3bb30aa89934e5a11846e79f69ba35d36e0c1c9", "exact fixed24 proof bytes");
   assert.equal(proof.schemaVersion, "patternly-bizq-semantic-replacement-v1");
   assert.equal(proof.trackId, TRACK);
   return proof;
@@ -119,7 +126,7 @@ function sourcePath(sourceFile: string): string {
   return path.resolve("../patternly-content", sourceFile);
 }
 
-test("OOD21 producer proof binds the frozen 153-item same-ID map and exact source files", () => {
+test("OOD24 producer proof binds the frozen 324-item mixed identity map and exact source files", () => {
   const map = readMap();
   const proof = readProof();
   assert.equal(proof.beforeContentVersion, map.beforeContentVersion);
@@ -127,18 +134,18 @@ test("OOD21 producer proof binds the frozen 153-item same-ID map and exact sourc
   assert.equal(proof.beforeQuestionSetSha256, map.beforeQuestionSetSha256);
   assert.equal(proof.questionSetSha256, map.questionSetSha256);
   assert.deepEqual(proof.sourceFiles, map.sourceFiles, "the activated proof preserves every fixed source binding");
-  assert.deepEqual(proof.replacements, []);
-  assert.equal(proof.sameIdCorrections.length, 153);
+  assert.deepEqual(proof.replacements, map.replacements);
+  assert.equal(proof.sameIdCorrections.length, 288);
 
-  const proofById = new Map(proof.sameIdCorrections.map((entry) => [entry.questionId, entry]));
+  const proofById = new Map(reviewedItems(proof).map((entry) => [entry.questionId, entry]));
   const fileBindings = new Map(map.sourceFiles.map((binding) => [binding.sourceFile, binding]));
   for (const [file, binding] of fileBindings) {
     const bytes = readFileSync(sourcePath(file));
     assert.equal(sha256(bytes), binding.sourceSha256, `${file} current raw source hash`);
     const questions = JSON.parse(bytes.toString("utf8")) as readonly Question[];
-    assert.equal(questions.length, 17, `${file} item count`);
-    const expectedForFile = map.sameIdCorrections.filter((entry) => entry.sourceFile === file);
-    assert.equal(expectedForFile.length, 17, `${file} fixed map size`);
+    assert.equal(questions.length, 18, `${file} item count`);
+    const expectedForFile = reviewedItems(map).filter((entry) => entry.sourceFile === file);
+    assert.equal(expectedForFile.length, 18, `${file} fixed map size`);
     for (const expected of expectedForFile) {
       const source = questions.find((question) => question.questionId === expected.questionId);
       assert.ok(source, `${file} contains ${expected.questionId}`);
@@ -154,30 +161,35 @@ test("OOD21 producer proof binds the frozen 153-item same-ID map and exact sourc
   }
 });
 
-test("OOD21 loaded runtime matches every fixed same-ID question object", async () => {
+test("OOD24 loaded runtime matches every fixed reviewed question object", async () => {
   const map = readMap();
   const runtime = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK);
-  assert.equal(runtime.contentVersion, "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24");
-  const questions = runtime.getQuestionsForNode(NODE);
-  assert.equal(questions.length, 153);
+  assert.equal(runtime.contentVersion, map.contentVersion);
+  assert.equal(runtime.questions.length, 1413);
+  assert.equal(sha256(Buffer.from(canonicalSerialize([...runtime.questions].sort((a, b) => a.questionId.localeCompare(b.questionId))))), map.questionSetSha256, "whole current v24 runtime QSet matches producer");
+  const questions = NODES.flatMap((node) => runtime.getQuestionsForNode(node));
+  assert.equal(questions.length, 324);
   assert.deepEqual(
     questions.map((question) => question.questionId).sort(),
-    map.sameIdCorrections.map((entry) => entry.questionId).sort(),
-    "runtime has exactly the fixed 153 retained question IDs",
+    reviewedItems(map).map((entry) => entry.questionId).sort(),
+    "runtime has exactly the fixed 324 reviewed question IDs",
   );
-  for (const expected of map.sameIdCorrections) {
+  for (const expected of reviewedItems(map)) {
     assert.deepEqual(runtime.getQuestion(expected.questionId), expected.currentQuestion, `${expected.questionId} runtime matches frozen proposal`);
+    if (expected.beforeQuestionId !== expected.questionId) {
+      assert.equal(runtime.questions.some((q) => q.questionId === expected.beforeQuestionId), false, "retired identity has no runtime duplicate");
+    }
   }
 });
 
-test("OOD21 scoring, option-order reversal, feedback targets and pre-answer view use fixed IDs", () => {
+test("OOD24 scoring, option-order reversal, feedback targets and pre-answer view use fixed IDs", () => {
   const map = readMap();
-  for (const entry of map.sameIdCorrections) {
+  for (const entry of reviewedItems(map)) {
     const expected = entry.currentQuestion;
     assert.ok(isSingleChoice(expected), `${entry.questionId} remains a single-choice item`);
     // Exercise the application scorer/presentation against the exact fixed
     // source object. Runtime equality is independently checked above so this
-    // behavioral check remains useful in the pre-sync source21 window.
+    // behavioral check remains useful in the pre-sync source24 window.
     const question = expected;
     assert.equal(expected.answer.optionId, entry.acceptedOptionId);
 
@@ -228,7 +240,7 @@ test("OOD21 scoring, option-order reversal, feedback targets and pre-answer view
   }
 });
 
-test("OOD21 preserves accepted N01-N04 node counts and the exact ordinary N01 pools", async () => {
+test("OOD24 preserves all 1089 accepted N01-N07 objects and the exact ordinary N01 pools", async () => {
   const map = readMap();
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK);
   const expectedN01 = track.getQuestionsForNode(N01_NODE).map((question) => question.questionId).sort();
@@ -236,12 +248,17 @@ test("OOD21 preserves accepted N01-N04 node counts and the exact ordinary N01 po
   assert.equal(track.getQuestionsForNode(N02_NODE).length, 152);
   assert.equal(track.getQuestionsForNode(N03_NODE).length, 162);
   assert.equal(track.getQuestionsForNode(N04_NODE).length, 162);
-  assert.equal(track.getQuestionsForNode(NODE).length, 153);
+  assert.equal(track.getQuestionsForNode("object_creation_configuration_and_structural_patterns").length, 153);
+  assert.equal(track.getQuestionsForNode("behavior_state_commands_events_and_workflows").length, 180);
+  assert.equal(track.getQuestionsForNode(N07_NODE).length, 144);
+  const preserved = track.questions.filter((q) => !NODES.includes(q.nodeId)).sort((a, b) => a.questionId.localeCompare(b.questionId));
+  assert.equal(preserved.length, 1089);
+  assert.equal(sha256(Buffer.from(canonicalSerialize(preserved))), "5e4e334f5acc89f44925c17926dddde2ebb55b6f11cee792c0dc89803da15377", "all accepted predecessor objects remain byte-equivalent");
   for (const modeId of ORDINARY_N01_MODES) {
     const poolIds = track.getPool(modeId).map((question) => question.questionId).sort();
     assert.deepEqual(poolIds, expectedN01, `${modeId} remains the exact accepted N01 pool`);
-    for (const entry of map.sameIdCorrections) {
-      assert.equal(poolIds.includes(entry.questionId), false, `${modeId} excludes N05 ${entry.questionId}`);
+    for (const entry of reviewedItems(map)) {
+      assert.equal(poolIds.includes(entry.questionId), false, `${modeId} excludes N08/N09 ${entry.questionId}`);
     }
   }
 });
