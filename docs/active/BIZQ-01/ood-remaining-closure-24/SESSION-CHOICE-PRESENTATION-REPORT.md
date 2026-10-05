@@ -1,6 +1,6 @@
 # BIZQ-01 — kolejność odpowiedzi w rzeczywistej praktyce
 
-Status: niezależny odbiór Luna High PASS i root acceptance zakończone; zwykły push w toku. Cały BIZQ-01 pozostaje `partial`, N08/N09 pozostają nieaktywne.
+Status: niezależny odbiór Luna High PASS i root acceptance zakończone; [Zwykły push potwierdzony](SESSION-CHOICE-PRESENTATION-POST-PUSH.json): app `679bef1b`, HEAD/upstream/remote zgodne. Cały BIZQ-01 pozostaje `partial`, N08/N09 pozostają nieaktywne.
 
 Runtime przygotowywał i zapisywał kolejność opcji dla wystąpienia pytania, ale fasady Design Interview i Certification przekazywały surową kolejność źródłową do adaptera UI. [Preflight](ROOT-SESSION-CHOICE-PRESENTATION-PREFLIGHT.json) odtworzył różnicę w 9/10 przygotowanych pytań dla obu ścieżek. Wymaganie istnieje w kanonicznym kontrakcie runtime; [briefing](SESSION-CHOICE-PRESENTATION-BRIEFING.md) i [niezależny design PASS](SESSION-CHOICE-PRESENTATION-DESIGN-QA.md) zatwierdziły jedną wspólną projekcję, minimum ocen 0,87.
 
@@ -20,4 +20,6 @@ Testy fasad korzystają z pamięci i syntetycznego portu admission. Nie dowodzą
 
 [Niezależny odbiór Luna High](SESSION-CHOICE-PRESENTATION-IMPLEMENTATION-QA.md): 24/24 focused i typecheck PASS. [Root acceptance](ROOT-SESSION-CHOICE-ACCEPTANCE.json) sprawdza aktualne powiązania i podaje przenośną komendę z rzeczywistą małą literą `designInterviewChoiceFeedback.test.ts`. Historyczny reproducer otrzymał guard trzech pierwotnych źródeł, aby nie deklarował dawnego błędu na naprawionych fasadach; końcowy typecheck PASS.
 
-Następnie zwykły push tego pakietu, następnie kontynuacja semantic/identity N08–N09, cross324vs1089 i wspólnej migracji/admission z synchronizacją konsumentów. Push nie uzasadnia zmiany głównego obszaru.
+Kontynuacja semantic/identity N08–N09, cross324vs1089 i wspólnej migracji/admission z synchronizacją konsumentów. Push nie uzasadnia zmiany głównego obszaru.
+
+[CI na rzeczywistym functional HEAD679bef1b](SESSION-CHOICE-PRESENTATION-POST-PUSH.json): obie bramki SUCCESS; [raw Recovery log](SESSION-CHOICE-PRESENTATION-CI-RECOVERY.log) potwierdza pełny hosted przebieg 1879 testów/1875 PASS/0 FAIL/4 istniejące SKIP oraz content/privacy boundaries PASS. Nie zmienia to granic odbioru native/Premium/full BIZQ.

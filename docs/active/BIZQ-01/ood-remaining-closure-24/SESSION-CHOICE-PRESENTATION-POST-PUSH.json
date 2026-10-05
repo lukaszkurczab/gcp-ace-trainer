@@ -1,0 +1,41 @@
+{
+  "verdict": "PASS_ORDINARY_RUNTIME_PACKAGE_PUSH",
+  "head": "679bef1b8bbfc2c2ec167103be4ef248dcd60003",
+  "upstream": "679bef1b8bbfc2c2ec167103be4ef248dcd60003",
+  "remote": "679bef1b8bbfc2c2ec167103be4ef248dcd60003",
+  "trackedProducerHead": "9e2d97f5ee28793c14341d031697cd89273fe288",
+  "runtimePackageAccepted": true,
+  "source24Activated": false,
+  "fullBIZQ01Accepted": false,
+  "releaseReady": false,
+  "hostedQA": {
+    "runId": 37282871788,
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37282871788",
+    "jobs": [
+      {
+        "jobId": 111674797866,
+        "name": "Multi-track content release contract",
+        "conclusion": "success"
+      },
+      {
+        "jobId": 111674798066,
+        "name": "Recovery QA gate",
+        "conclusion": "success"
+      }
+    ],
+    "metadataSha256": "7220aadc27350a9613635f79493ea984d1ca318d42609775cdecffe5e9dce917",
+    "recoveryRawLogSha256": "d7ce8b8a9f2357eb22cf4dd99d907a5cf27ef1ead1e354728aabb13bb43a7936",
+    "actualFreshHostedTests": {
+      "total": 1879,
+      "pass": 1875,
+      "fail": 0,
+      "skip": 4
+    },
+    "contentBoundary": "PASS",
+    "runtimePrivacyBoundary": "PASS"
+  },
+  "foreignPlanAppendixUnstaged": true,
+  "next": "Continue same BIZQ-01 source24 semantic/identity correction and independent review before activation"
+}
