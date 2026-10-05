@@ -1,0 +1,184 @@
+TAP version 13
+# Subtest: single choice feedback exposes selected incorrect, omitted correct and remaining neutral
+ok 1 - single choice feedback exposes selected incorrect, omitted correct and remaining neutral
+  ---
+  duration_ms: 26.922667
+  type: 'test'
+  ...
+# Subtest: multi choice feedback preserves every selected and correct combination
+ok 2 - multi choice feedback preserves every selected and correct combination
+  ---
+  duration_ms: 0.660458
+  type: 'test'
+  ...
+# Subtest: choice feedback rejects a mismatched response contract
+ok 3 - choice feedback rejects a mismatched response contract
+  ---
+  duration_ms: 0.707792
+  type: 'test'
+  ...
+# Subtest: authored choice messages follow selected incorrect and omitted correct stable IDs in authored order
+ok 4 - authored choice messages follow selected incorrect and omitted correct stable IDs in authored order
+  ---
+  duration_ms: 0.914333
+  type: 'test'
+  ...
+# Subtest: multiple choice messages include only selected wrong and omitted correct targets regardless of response order
+ok 5 - multiple choice messages include only selected wrong and omitted correct targets regardless of response order
+  ---
+  duration_ms: 0.480333
+  type: 'test'
+  ...
+# Subtest: message projection preserves absent-message and non-choice behavior, and freezes provided empty results
+ok 6 - message projection preserves absent-message and non-choice behavior, and freezes provided empty results
+  ---
+  duration_ms: 0.230125
+  type: 'test'
+  ...
+# Subtest: real GCP and Coding artifacts deliver exact selected-wrong authored messages
+ok 7 - real GCP and Coding artifacts deliver exact selected-wrong authored messages
+  ---
+  duration_ms: 1849.637209
+  type: 'test'
+  ...
+# Subtest: completed exam review projects answered and unanswered items across the complete fixed plan
+ok 8 - completed exam review projects answered and unanswered items across the complete fixed plan
+  ---
+  duration_ms: 2302.382
+  type: 'test'
+  ...
+# Subtest: fully unanswered completed exam projects all 50 items without creating attempts
+ok 9 - fully unanswered completed exam projects all 50 items without creating attempts
+  ---
+  duration_ms: 16.459458
+  type: 'test'
+  ...
+# Subtest: completed exam review projects authored diagnostics only for stored answers
+ok 10 - completed exam review projects authored diagnostics only for stored answers
+  ---
+  duration_ms: 24.5825
+  type: 'test'
+  ...
+# Subtest: exam result rejects tampered partition, attempt scores, and profile evidence
+ok 11 - exam result rejects tampered partition, attempt scores, and profile evidence
+  ---
+  duration_ms: 27.099125
+  type: 'test'
+  ...
+# Subtest: completed practice projector preserves the canonical five-state answer matrix
+ok 12 - completed practice projector preserves the canonical five-state answer matrix
+  ---
+  duration_ms: 1075.036292
+  type: 'test'
+  ...
+# Subtest: completed practice review projects authored wrong and omitted-correct messages from the saved response only
+ok 13 - completed practice review projects authored wrong and omitted-correct messages from the saved response only
+  ---
+  duration_ms: 3.255958
+  type: 'test'
+  ...
+# Subtest: practice review rejects altered identity, coverage, attempts, score, and resolution
+ok 14 - practice review rejects altered identity, coverage, attempts, score, and resolution
+  ---
+  duration_ms: 6.247792
+  type: 'test'
+  ...
+# Subtest: completed Coding practice is readable and review uses the same completed projection
+ok 15 - completed Coding practice is readable and review uses the same completed projection
+  ---
+  duration_ms: 2632.580958
+  type: 'test'
+  ...
+# Subtest: completed conditional-reinsert practice projects the final replaced occurrence order
+ok 16 - completed conditional-reinsert practice projects the final replaced occurrence order
+  ---
+  duration_ms: 351.734583
+  type: 'test'
+  ...
+# Subtest: completed Coding practice carries canonical diagnostics for the committed wrong choice
+ok 17 - completed Coding practice carries canonical diagnostics for the committed wrong choice
+  ---
+  duration_ms: 282.780584
+  type: 'test'
+  ...
+# Subtest: abandoned Coding summary keeps its separate existing projection and performs no read writes
+ok 18 - abandoned Coding summary keeps its separate existing projection and performs no read writes
+  ---
+  duration_ms: 22.188
+  type: 'test'
+  ...
+# Subtest: completed Mock result stays pending until exact saved content validation finishes
+ok 19 - completed Mock result stays pending until exact saved content validation finishes
+  ---
+  duration_ms: 86.344125
+  type: 'test'
+  ...
+# Subtest: completed result rejects a source-session attempt outside the saved occurrence plan
+ok 20 - completed result rejects a source-session attempt outside the saved occurrence plan
+  ---
+  duration_ms: 183.597958
+  type: 'test'
+  ...
+# Subtest: completed result rejects a removed attempt and a scorer/result mismatch
+ok 21 - completed result rejects a removed attempt and a scorer/result mismatch
+  ---
+  duration_ms: 209.077041
+  type: 'test'
+  ...
+# Subtest: completed result rejects a mismatched family, completion time, or answer coverage
+ok 22 - completed result rejects a mismatched family, completion time, or answer coverage
+  ---
+  duration_ms: 158.985958
+  type: 'test'
+  ...
+# Subtest: completed result rejects attempts with a different mode or resolved item
+ok 23 - completed result rejects attempts with a different mode or resolved item
+  ---
+  duration_ms: 155.106791
+  type: 'test'
+  ...
+# Subtest: completed result rejects duplicate attempts, invalid responses, and stale artifact references
+ok 24 - completed result rejects duplicate attempts, invalid responses, and stale artifact references
+  ---
+  duration_ms: 136.80225
+  type: 'test'
+  ...
+# Subtest: completed result rejects persisted counts and points that disagree with committed attempts
+ok 25 - completed result rejects persisted counts and points that disagree with committed attempts
+  ---
+  duration_ms: 137.532542
+  type: 'test'
+  ...
+# Subtest: completed result ignores valid attempts belonging to an unrelated session
+ok 26 - completed result ignores valid attempts belonging to an unrelated session
+  ---
+  duration_ms: 137.076083
+  type: 'test'
+  ...
+# Subtest: Coding Mock flags persist in the active draft and reappear after lifecycle resume
+ok 27 - Coding Mock flags persist in the active draft and reappear after lifecycle resume
+  ---
+  duration_ms: 2409.4335
+  type: 'test'
+  ...
+# Subtest: Coding Mock persists a response, finalizes, and reads all 40 completed review rows
+ok 28 - Coding Mock persists a response, finalizes, and reads all 40 completed review rows
+  ---
+  duration_ms: 149.799584
+  type: 'test'
+  ...
+# Subtest: Coding immediate practice feedback survives durable submit and lifecycle rebind
+ok 29 - Coding immediate practice feedback survives durable submit and lifecycle rebind
+  ---
+  duration_ms: 28.225333
+  type: 'test'
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 29
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6572.203209

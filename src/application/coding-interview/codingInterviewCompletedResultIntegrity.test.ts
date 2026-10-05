@@ -110,6 +110,17 @@ test("completed conditional-reinsert practice projects the final replaced occurr
   assert.equal(result.feedbackItems.filter((item) => item.questionId === initialSession.itemOrder[0]?.item.questionId).length, 2);
 });
 
+test("completed Coding practice carries canonical diagnostics for the committed wrong choice", async () => {
+  const { result } = await completedPractice(true);
+  const item = result.feedbackItems[0]!;
+  assert.equal(item.correctness, "incorrect");
+  const question = await contentPackageRuntimeOwner.resolveItem(item.item);
+  const selectedIncorrectIds = item.controls.filter((control) => control.state === "incorrect").map((control) => control.id);
+  const expected = question.feedback.messages?.filter((message) => message.kind === "wrong_option" && selectedIncorrectIds.includes(message.targetId));
+  assert.ok(expected?.length, "the deterministic Coding fixture should include an authored wrong-option message");
+  assert.deepEqual(item.messages, expected);
+});
+
 test("abandoned Coding summary keeps its separate existing projection and performs no read writes", async () => {
   const storage = installMemoryStorage();
   await contentPackageRuntimeOwner.verifyBundledPackages();

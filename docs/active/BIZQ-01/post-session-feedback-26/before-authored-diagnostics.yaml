@@ -1,0 +1,17 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 native26 before-fix authored diagnostic omission
+---
+- assertVisible:
+    id: patternly:practice-review:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2:.*
+- swipe:
+    start: 50%,72%
+    end: 50%,50%
+    duration: 500
+- assertVisible:
+    id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001
+- tapOn:
+    id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001
+- assertVisible:
+    id: patternly:session:details:gcp-ace-gcpace-n01-b03-001
+- assertNotVisible: 'This option selects at the billing account, but the decisive requirement is organization-wide attachment scope.'
+- takeScreenshot: native26-before-expanded-generic-without-authored-message

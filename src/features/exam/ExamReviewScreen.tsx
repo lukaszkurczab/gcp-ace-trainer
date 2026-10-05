@@ -92,7 +92,7 @@ export function ExamReviewScreen({ navigation, route, readReview, openSource, fi
       <PracticeQuestionCard question={{ constraints: item.constraints, itemId: item.questionId, prompt: item.prompt }} />
       <Text maxFontSizeMultiplier={2} style={[styles.result, styles[resultTone]]}>{t(isUnanswered ? "Unanswered" : item.result === "correct" ? "Correct" : item.result === "partial" ? "Partial" : "Incorrect")}</Text>
       <PracticeResponseControls control={buildCertificationReviewControl(item)} editable={false} itemId={item.questionId} onChoicePress={noop} onComplexityValuePress={noop} onOrderingMove={noop} />
-      <PracticeFeedbackBlock feedback={{ details: item.details, reason: item.reason, result: item.result, sources: item.sources }} initiallyExpanded={isUnanswered} showReport={!isUnanswered} openSource={sourceOpener} item={item.item} itemId={item.questionId} reportSurface={{ modeRoute: "answer_review", trackNode: null }} />
+      <PracticeFeedbackBlock feedback={{ details: item.details, messages: item.messages, reason: item.reason, result: item.result, sources: item.sources }} initiallyExpanded={isUnanswered} showReport={!isUnanswered} openSource={sourceOpener} item={item.item} itemId={item.questionId} reportSurface={{ modeRoute: "answer_review", trackNode: null }} />
     </SessionShell>
   );
 }

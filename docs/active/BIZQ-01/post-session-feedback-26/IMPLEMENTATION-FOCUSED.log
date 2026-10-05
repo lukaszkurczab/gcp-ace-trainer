@@ -1,0 +1,292 @@
+TAP version 13
+# Subtest: single choice feedback exposes selected incorrect, omitted correct and remaining neutral
+ok 1 - single choice feedback exposes selected incorrect, omitted correct and remaining neutral
+  ---
+  duration_ms: 3.446792
+  type: 'test'
+  ...
+# Subtest: multi choice feedback preserves every selected and correct combination
+ok 2 - multi choice feedback preserves every selected and correct combination
+  ---
+  duration_ms: 0.819209
+  type: 'test'
+  ...
+# Subtest: choice feedback rejects a mismatched response contract
+ok 3 - choice feedback rejects a mismatched response contract
+  ---
+  duration_ms: 1.007083
+  type: 'test'
+  ...
+# Subtest: authored choice messages follow selected incorrect and omitted correct stable IDs in authored order
+ok 4 - authored choice messages follow selected incorrect and omitted correct stable IDs in authored order
+  ---
+  duration_ms: 0.817916
+  type: 'test'
+  ...
+# Subtest: multiple choice messages include only selected wrong and omitted correct targets regardless of response order
+ok 5 - multiple choice messages include only selected wrong and omitted correct targets regardless of response order
+  ---
+  duration_ms: 0.416208
+  type: 'test'
+  ...
+# Subtest: message projection preserves absent-message and non-choice behavior, and freezes provided empty results
+ok 6 - message projection preserves absent-message and non-choice behavior, and freezes provided empty results
+  ---
+  duration_ms: 0.193542
+  type: 'test'
+  ...
+# Subtest: real GCP and Coding artifacts deliver exact selected-wrong authored messages
+ok 7 - real GCP and Coding artifacts deliver exact selected-wrong authored messages
+  ---
+  duration_ms: 1899.598542
+  type: 'test'
+  ...
+# Subtest: completed exam review projects answered and unanswered items across the complete fixed plan
+ok 8 - completed exam review projects answered and unanswered items across the complete fixed plan
+  ---
+  duration_ms: 1681.355958
+  type: 'test'
+  ...
+# Subtest: fully unanswered completed exam projects all 50 items without creating attempts
+ok 9 - fully unanswered completed exam projects all 50 items without creating attempts
+  ---
+  duration_ms: 9.190458
+  type: 'test'
+  ...
+# Subtest: completed exam review projects authored diagnostics only for stored answers
+ok 10 - completed exam review projects authored diagnostics only for stored answers
+  ---
+  duration_ms: 18.78775
+  type: 'test'
+  ...
+# Subtest: exam result rejects tampered partition, attempt scores, and profile evidence
+ok 11 - exam result rejects tampered partition, attempt scores, and profile evidence
+  ---
+  duration_ms: 32.167375
+  type: 'test'
+  ...
+# Subtest: active Certification projection strips answers, explanations and feedback structurally
+ok 12 - active Certification projection strips answers, explanations and feedback structurally
+  ---
+  duration_ms: 9.291917
+  type: 'test'
+  ...
+# Subtest: deferred feedback remains absent after durable submit while immediate feedback is unchanged
+ok 13 - deferred feedback remains absent after durable submit while immediate feedback is unchanged
+  ---
+  duration_ms: 0.909125
+  type: 'test'
+  ...
+# Subtest: immediate Certification feedback returns only authored messages for selected incorrect IDs
+ok 14 - immediate Certification feedback returns only authored messages for selected incorrect IDs
+  ---
+  duration_ms: 0.245208
+  type: 'test'
+  ...
+# Subtest: completed review evidence fails closed when durable outcome aggregates are missing or inconsistent
+ok 15 - completed review evidence fails closed when durable outcome aggregates are missing or inconsistent
+  ---
+  duration_ms: 0.384333
+  type: 'test'
+  ...
+# Subtest: completed practice projector preserves the canonical five-state answer matrix
+ok 16 - completed practice projector preserves the canonical five-state answer matrix
+  ---
+  duration_ms: 743.255375
+  type: 'test'
+  ...
+# Subtest: completed practice review projects authored wrong and omitted-correct messages from the saved response only
+ok 17 - completed practice review projects authored wrong and omitted-correct messages from the saved response only
+  ---
+  duration_ms: 2.82925
+  type: 'test'
+  ...
+# Subtest: practice review rejects altered identity, coverage, attempts, score, and resolution
+ok 18 - practice review rejects altered identity, coverage, attempts, score, and resolution
+  ---
+  duration_ms: 4.394417
+  type: 'test'
+  ...
+# Subtest: completed Coding practice is readable and review uses the same completed projection
+ok 19 - completed Coding practice is readable and review uses the same completed projection
+  ---
+  duration_ms: 1858.155666
+  type: 'test'
+  ...
+# Subtest: completed conditional-reinsert practice projects the final replaced occurrence order
+ok 20 - completed conditional-reinsert practice projects the final replaced occurrence order
+  ---
+  duration_ms: 300.472583
+  type: 'test'
+  ...
+# Subtest: completed Coding practice carries canonical diagnostics for the committed wrong choice
+ok 21 - completed Coding practice carries canonical diagnostics for the committed wrong choice
+  ---
+  duration_ms: 279.50325
+  type: 'test'
+  ...
+# Subtest: abandoned Coding summary keeps its separate existing projection and performs no read writes
+ok 22 - abandoned Coding summary keeps its separate existing projection and performs no read writes
+  ---
+  duration_ms: 22.355542
+  type: 'test'
+  ...
+# Subtest: completed Mock result stays pending until exact saved content validation finishes
+ok 23 - completed Mock result stays pending until exact saved content validation finishes
+  ---
+  duration_ms: 79.458375
+  type: 'test'
+  ...
+# Subtest: completed result rejects a source-session attempt outside the saved occurrence plan
+ok 24 - completed result rejects a source-session attempt outside the saved occurrence plan
+  ---
+  duration_ms: 153.283917
+  type: 'test'
+  ...
+# Subtest: completed result rejects a removed attempt and a scorer/result mismatch
+ok 25 - completed result rejects a removed attempt and a scorer/result mismatch
+  ---
+  duration_ms: 158.147458
+  type: 'test'
+  ...
+# Subtest: completed result rejects a mismatched family, completion time, or answer coverage
+ok 26 - completed result rejects a mismatched family, completion time, or answer coverage
+  ---
+  duration_ms: 203.74725
+  type: 'test'
+  ...
+# Subtest: completed result rejects attempts with a different mode or resolved item
+ok 27 - completed result rejects attempts with a different mode or resolved item
+  ---
+  duration_ms: 215.177833
+  type: 'test'
+  ...
+# Subtest: completed result rejects duplicate attempts, invalid responses, and stale artifact references
+ok 28 - completed result rejects duplicate attempts, invalid responses, and stale artifact references
+  ---
+  duration_ms: 249.655417
+  type: 'test'
+  ...
+# Subtest: completed result rejects persisted counts and points that disagree with committed attempts
+ok 29 - completed result rejects persisted counts and points that disagree with committed attempts
+  ---
+  duration_ms: 202.200667
+  type: 'test'
+  ...
+# Subtest: completed result ignores valid attempts belonging to an unrelated session
+ok 30 - completed result ignores valid attempts belonging to an unrelated session
+  ---
+  duration_ms: 185.419916
+  type: 'test'
+  ...
+# Subtest: Coding Mock flags persist in the active draft and reappear after lifecycle resume
+ok 31 - Coding Mock flags persist in the active draft and reappear after lifecycle resume
+  ---
+  duration_ms: 1771.453292
+  type: 'test'
+  ...
+# Subtest: Coding Mock persists a response, finalizes, and reads all 40 completed review rows
+ok 32 - Coding Mock persists a response, finalizes, and reads all 40 completed review rows
+  ---
+  duration_ms: 116.80225
+  type: 'test'
+  ...
+# Subtest: Coding immediate practice feedback survives durable submit and lifecycle rebind
+ok 33 - Coding immediate practice feedback survives durable submit and lifecycle rebind
+  ---
+  duration_ms: 24.676833
+  type: 'test'
+  ...
+# Subtest: Exam Review has one local header owner and returns to the exact result session
+ok 34 - Exam Review has one local header owner and returns to the exact result session
+  ---
+  duration_ms: 2.16675
+  type: 'test'
+  ...
+# Subtest: Previous and Next preserve their question navigation and boundary disabling
+ok 35 - Previous and Next preserve their question navigation and boundary disabling
+  ---
+  duration_ms: 0.602959
+  type: 'test'
+  ...
+# Subtest: Unanswered uses shared feedback with complete details expanded and reporting unchanged
+ok 36 - Unanswered uses shared feedback with complete details expanded and reporting unchanged
+  ---
+  duration_ms: 10.35875
+  type: 'test'
+  ...
+# Subtest: both practice JSX adapters pass authored message arrays through unchanged
+ok 37 - both practice JSX adapters pass authored message arrays through unchanged
+  ---
+  duration_ms: 181.879833
+  type: 'test'
+  ...
+# Subtest: Design practice JSX adapter forwards optional choice and ordering messages only from existing feedback
+ok 38 - Design practice JSX adapter forwards optional choice and ordering messages only from existing feedback
+  ---
+  duration_ms: 74.69825
+  type: 'test'
+  ...
+# Subtest: Details JSX gates authored messages on expansion and keeps their text scalable
+ok 39 - Details JSX gates authored messages on expansion and keeps their text scalable
+  ---
+  duration_ms: 190.433708
+  type: 'test'
+  ...
+# Subtest: simulation result and review are exposed only through the verified result reader
+ok 40 - simulation result and review are exposed only through the verified result reader
+  ---
+  duration_ms: 4.375208
+  type: 'test'
+  ...
+# Subtest: active simulation surface fills the viewport and keeps navigator presentation outside the approved active screen
+ok 41 - active simulation surface fills the viewport and keeps navigator presentation outside the approved active screen
+  ---
+  duration_ms: 0.912209
+  type: 'test'
+  ...
+# Subtest: simulation confirmation reuses the session chrome owner with its Figma frozen-state geometry
+ok 42 - simulation confirmation reuses the session chrome owner with its Figma frozen-state geometry
+  ---
+  duration_ms: 0.865917
+  type: 'test'
+  ...
+# Subtest: simulation preparation owns neutral question and response geometry
+ok 43 - simulation preparation owns neutral question and response geometry
+  ---
+  duration_ms: 0.63725
+  type: 'test'
+  ...
+# Subtest: simulation statuses localize their projection copy and expose pending operation semantics
+ok 44 - simulation statuses localize their projection copy and expose pending operation semantics
+  ---
+  duration_ms: 0.429959
+  type: 'test'
+  ...
+# Subtest: completed Algorithms practice replaces its runner with the session-keyed summary route
+ok 45 - completed Algorithms practice replaces its runner with the session-keyed summary route
+  ---
+  duration_ms: 5.243375
+  type: 'test'
+  ...
+# Subtest: practice summary reloads the immutable result and runner navigation requires verified completion
+ok 46 - practice summary reloads the immutable result and runner navigation requires verified completion
+  ---
+  duration_ms: 2.220166
+  type: 'test'
+  ...
+# Subtest: practice question review is a readonly session surface with bounded navigation and a return to its result
+ok 47 - practice question review is a readonly session surface with bounded navigation and a return to its result
+  ---
+  duration_ms: 0.903125
+  type: 'test'
+  ...
+1..47
+# tests 47
+# suites 0
+# pass 47
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7126.801542

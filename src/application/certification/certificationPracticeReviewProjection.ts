@@ -1,13 +1,15 @@
 import { getTrackRegistration, resolvedContentRefsEqual, type AttemptResultKind, type CompletedTrainingSession, type TrainingAttempt, type TrainingSessionResult } from "../../domain";
-import { isCanonicalResponseComplete, scoreCanonicalQuestion, type JsonValue, type Question } from "../../content/canonical";
+import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalFeedbackMessage, type JsonValue, type Question } from "../../content/canonical";
 import { isCertificationPracticeModeId, type CertificationPracticeModeId } from "../../tracks/certification";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
+import { projectCanonicalChoiceFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
 
 export type CertificationPracticeReviewItem = Readonly<{
   constraints: readonly string[];
   correctOptionIds: readonly string[];
   details: JsonValue;
+  messages?: readonly CanonicalFeedbackMessage[];
   sources?: readonly CanonicalSourceLink[];
   item: CompletedTrainingSession["itemOrder"][number]["item"];
   occurrenceId: string;
@@ -73,10 +75,12 @@ export async function projectCertificationPracticeReview(input: Readonly<{
     const selectedOptionIds = response.type === "choice_single" ? [response.optionId] : response.type === "choice_multiple" ? response.optionIds : [];
     const correctOptionIds = question.answer.type === "choice_single" ? [question.answer.optionId] : question.answer.type === "choice_multiple" ? question.answer.optionIds : [];
     if (selectedOptionIds.length === 0 || correctOptionIds.length === 0) return fail("Certification Practice review evidence is incomplete.");
+    const messages = projectCanonicalChoiceFeedbackMessages(question, response);
     return Object.freeze({
       constraints: Object.freeze([...(question.constraints ?? [])]),
       correctOptionIds: Object.freeze([...correctOptionIds]),
       details: question.feedback.details,
+      ...(messages === undefined ? {} : { messages }),
       sources: projectCanonicalSourceLinks(question),
       item: occurrence.item,
       occurrenceId: occurrence.occurrenceId,

@@ -1,0 +1,19 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 native26 continue after observed dev warning overlay
+---
+- assertVisible:
+    id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+- assertVisible: 'Open debugger to view warnings.'
+- tapOn:
+    point: 92%,93%
+- assertNotVisible: 'Open debugger to view warnings.'
+- tapOn:
+    id: patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+- extendedWaitUntil:
+    visible:
+      id: patternly:practice-review:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2:.*
+    timeout: 15000
+- assertVisible:
+    id: patternly:session:question:gcp-ace-gcpace-n01-b03-001
+- assertVisible: 'Incorrect'
+- takeScreenshot: native26-corrected-review-after-observed-warning-dismissed

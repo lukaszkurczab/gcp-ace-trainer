@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "patternly-bizq01-post-session-feedback-acceptance-qa-v1",
+  "reviewType": "independent_implementation_acceptance",
+  "verdict": "PASS",
+  "scope": "Bounded completed-review authored-choice-feedback projection and consumer wiring across Certification Practice/Exam and Coding Practice/Mock review.",
+  "reviewedInputs": [
+    {
+      "path": "docs/active/BIZQ-01/post-session-feedback-26/BRIEFING.md",
+      "sha256": "aad100892a0bf77e7034e3a7ff124a93db3652e0a15135319aed8b0d370c4163"
+    },
+    {
+      "path": "docs/active/BIZQ-01/post-session-feedback-26/PREFLIGHT.md",
+      "sha256": "d89b8c47091dffe8983f6c0df7b354ee64006ccb26c30f2097f223f1d8fb989e"
+    },
+    {
+      "path": "docs/17-training-runtime-and-interaction-spec.md",
+      "sha256": "f796b365bfbc16d82b5395d509a44a21ec86bd3a2adb2c29dc04ce8c7ace7c44"
+    }
+  ],
+  "implementationFiles": [
+    { "path": "src/application/certification/certificationPracticeReviewProjection.ts", "sha256": "6890856cdcf032b7f0e869121f482d612152bdf2ff910ff4a6b1e13eb61ef91d" },
+    { "path": "src/application/certification/certificationExamReviewProjection.ts", "sha256": "5ce5539457ba5a9938bb8ea70b3257d276889c226e9e0d17e61cd3673ed89992" },
+    { "path": "src/application/coding-interview/codingInterviewSessionFacade.ts", "sha256": "b91ad9e44b58b62ee208f698a7248f793a3bb21988b96c164ff70925d8c15937" },
+    { "path": "src/features/exam/ExamReviewScreen.tsx", "sha256": "c3796b5f69660ff1b2c5bd60ed8bf557bdeb67f08dd0cde55ab2eee58a1b8458" },
+    { "path": "src/features/practice/AlgorithmsPracticeReviewScreen.tsx", "sha256": "584a0f0a17e3dc2cd70c280ff07944ebe8145c582ad06743cdded4c46c1e9e39" },
+    { "path": "src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx", "sha256": "0eb77240ae9b3493cb8f76138ba028d74a3fba789b3421efea15c173820ea9aa" }
+  ],
+  "changedTestFiles": [
+    { "path": "src/application/certification/certificationPracticeReviewProjection.test.ts", "sha256": "98fb20367e40a04e8113796f6b868d52b092e2fa55a1d66d95a350a167d31456" },
+    { "path": "src/application/certification/certificationExamReviewProjection.test.ts", "sha256": "8b437a8b393a0ac5f4942d5e3147ef6353a4e20a2f8cdcf7bb334dfedcacd722" },
+    { "path": "src/application/certification/certificationFeedbackProjection.test.ts", "sha256": "7e72803aee57e0fb58b6d26a6716dfdd3d9a566afdd304ccc362ed98d63e9bfe" },
+    { "path": "src/application/coding-interview/codingInterviewCompletedResultIntegrity.test.ts", "sha256": "ece7f34e03233273c13b886e598dc5ebf70fe625e915827e0d98f45ea81497c1" },
+    { "path": "src/application/coding-interview/codingInterviewSimulationResult.integration.test.ts", "sha256": "bb4be7b7d30c97a2d25b722b77527d95e4f708edbc7d48d2b90e8bb7c5729570" },
+    { "path": "src/features/exam/examReviewPresentation.test.ts", "sha256": "67005993cf41217df091c944bc130558c8fa73d7799631801dd4e92a0d87b4a9" },
+    { "path": "src/features/simulation/simulationSessionSurface.test.ts", "sha256": "06b1d97e28597e5e7bf937af8580eea0ae2e1adb521a079c774a6a9edf936f04" },
+    { "path": "src/tracks/coding-interview/algorithmsPracticeSummaryNavigation.test.ts", "sha256": "7d880bf4428022d64bb55006b5d701ad436003ba8c966069a566da84a11fbc66" }
+  ],
+  "additionalVerificationFiles": [
+    { "path": "src/tracks/coding-interview/algorithmsSessionAccessibility.test.ts", "sha256": "f92264f708ddabd57f5e01df881794d9e7654a2eebc83dfadc83d608f50e2e55", "modifiedByThisPackage": false }
+  ],
+  "verification": [
+    {
+      "command": "/opt/homebrew/opt/node@22/bin/node --import tsx --test src/application/certification/certificationPracticeReviewProjection.test.ts src/application/certification/certificationExamReviewProjection.test.ts src/application/certification/certificationFeedbackProjection.test.ts src/application/coding-interview/codingInterviewCompletedResultIntegrity.test.ts src/application/coding-interview/codingInterviewSimulationResult.integration.test.ts src/features/exam/examReviewPresentation.test.ts src/features/simulation/simulationSessionSurface.test.ts src/tracks/coding-interview/algorithmsSessionAccessibility.test.ts src/tracks/coding-interview/algorithmsPracticeSummaryNavigation.test.ts",
+      "result": "PASS",
+      "tests": 52,
+      "failures": 0,
+      "logPath": "docs/active/BIZQ-01/post-session-feedback-26/ACCEPTANCE-FOCUSED.log",
+      "logSha256": "a03ab8f31383519ffe97a0a1810392c76b31f56e40ffeb14d9872ee9d65942fb"
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "PASS",
+      "evidencePath": "docs/active/BIZQ-01/post-session-feedback-26/IMPLEMENTATION-TYPECHECK.log",
+      "sha256": "22c83f1ac25b854ee6b451e80ec133d2e6b804f4f4a61055e5624328bff86ab3"
+    },
+    {
+      "command": "npm run validate:content-boundary",
+      "result": "PASS",
+      "evidencePath": "docs/active/BIZQ-01/post-session-feedback-26/IMPLEMENTATION-CONTENT-BOUNDARY.log",
+      "sha256": "b53b6b76837ae0f573e69c69856be2930ca32f2381e7602b1f603e30fa43f938"
+    },
+    {
+      "command": "npm run validate:runtime-privacy-boundary",
+      "result": "PASS",
+      "evidencePath": "docs/active/BIZQ-01/post-session-feedback-26/IMPLEMENTATION-PRIVACY-BOUNDARY.log",
+      "sha256": "bcb4b78593b6751177c7facf707db4f73a2da89f45bfd01153c277cea6945197"
+    }
+  ],
+  "nativeEvidence": {
+    "receiptPath": "docs/active/BIZQ-01/post-session-feedback-26/ROOT-NATIVE-AFTER.json",
+    "receiptSha256": "cdba90af223fd955082a01d94936b0bc16bff5e739f8cee0017726bcce98a956",
+    "device": "7F315654-3175-4F3C-BB24-B0263F59360C",
+    "sessionId": "google-cloud-associate-cloud-engineer:certification-focus-practice:2",
+    "questionId": "gcp-ace-gcpace-n01-b03-001",
+    "selectedOptionId": "D",
+    "authoredDiagnosticVisible": true,
+    "unselectedSiblingDiagnosticsHidden": true,
+    "genericDetailsPreserved": true,
+    "resultAfterReview": "9 correct, 1 incorrect, 0 partial, 0 unanswered, 10 answered",
+    "bundleWiringPath": "docs/active/BIZQ-01/post-session-feedback-26/ACTUAL-BUNDLE-WIRING.json",
+    "bundleWiringSha256": "8916c62fce20246dda26c278f8263eca1abf1e6050428e3592f6b572c0e05e37",
+    "payloadsPath": "docs/active/BIZQ-01/post-session-feedback-26/EXACT-BUNDLE-PAYLOADS.json",
+    "payloadsSha256": "27bde282511179065ae24df51eba9eb765bd60c39cf8cfcebf59342bfd94df5c"
+  },
+  "resolvedInitialFailures": [
+    "A screenshot-observed development-warning overlay obscured the Review action; the same session passed after root dismissed the observed overlay.",
+    "A text matcher could not identify that banner; the failure occurred before a review tap or other state change and was retained in the packet."
+  ],
+  "limits": [
+    "Native evidence covers one completed GCP Certification Practice session; no native Coding or Premium behavior is claimed.",
+    "This does not establish full BIZQ-01 acceptance or release readiness."
+  ]
+}

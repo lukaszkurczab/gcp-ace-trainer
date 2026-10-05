@@ -7,7 +7,7 @@ import { certificationReviewEvidenceMatches, projectCertificationPracticeFeedbac
 const question = Object.freeze({
   answer: Object.freeze({ optionId: "correct", type: "choice_single" }),
   constraints: Object.freeze(["Select one answer."]),
-  feedback: Object.freeze({ details: Object.freeze({ blocks: Object.freeze([Object.freeze({ text: "Full explanation", type: "paragraph" })]) }), reason: "Correct because of the durable contract." }),
+  feedback: Object.freeze({ details: Object.freeze({ blocks: Object.freeze([Object.freeze({ text: "Full explanation", type: "paragraph" })]) }), messages: Object.freeze([{ kind: "wrong_option", targetId: "wrong", text: "Authored wrong-option explanation." }]), reason: "Correct because of the durable contract." }),
   interaction: Object.freeze({
     options: Object.freeze([
       Object.freeze({ explanation: "Correct option explanation", optionId: "correct", text: "Correct choice" }),
@@ -55,6 +55,7 @@ test("deferred feedback remains absent after durable submit while immediate feed
       { id: "wrong", state: "incorrect" },
     ],
     details: question.feedback.details,
+    messages: [question.feedback.messages?.[0]],
     reason: question.feedback.reason,
     result: "incorrect",
     sources: [],

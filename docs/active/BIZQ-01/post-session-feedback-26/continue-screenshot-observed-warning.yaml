@@ -1,0 +1,17 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 native26 dismiss screenshot-observed nonaccessible dev warning
+---
+- assertVisible:
+    id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+- tapOn:
+    point: 92%,93%
+- tapOn:
+    id: patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+- extendedWaitUntil:
+    visible:
+      id: patternly:practice-review:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2:.*
+    timeout: 15000
+- assertVisible:
+    id: patternly:session:question:gcp-ace-gcpace-n01-b03-001
+- assertVisible: 'Incorrect'
+- takeScreenshot: native26-corrected-review-after-observed-warning-dismissed

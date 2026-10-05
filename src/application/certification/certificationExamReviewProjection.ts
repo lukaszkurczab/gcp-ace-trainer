@@ -1,7 +1,8 @@
 import { resolvedContentRefsEqual, type AttemptResultKind, type CompletedTrainingSession, type TrainingAttempt, type TrainingSessionResult } from "../../domain";
-import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalSimulationProfile, type Question } from "../../content/canonical";
+import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalFeedbackMessage, type CanonicalSimulationProfile, type Question } from "../../content/canonical";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
+import { projectCanonicalChoiceFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
 
 export type CertificationExamReviewItem = Readonly<{
@@ -9,6 +10,7 @@ export type CertificationExamReviewItem = Readonly<{
   constraints: readonly string[];
   correctOptionIds: readonly string[];
   details: Question["feedback"]["details"];
+  messages?: readonly CanonicalFeedbackMessage[];
   item: CompletedTrainingSession["itemOrder"][number]["item"];
   occurrenceId: string;
   options: readonly Readonly<{ optionId: string; text: string }>[];
@@ -123,6 +125,7 @@ export async function projectCertificationExamReview(input: Readonly<{
     const attempt = attemptByOccurrence.get(occurrence.occurrenceId);
     let selectedOptionIds: readonly string[] = [];
     let resultKind: AttemptResultKind | "unanswered" = "unanswered";
+    let messages: readonly CanonicalFeedbackMessage[] | undefined;
     if (attempt) {
       if (attempt.trackId !== session.trackId || attempt.modeId !== session.modeId || !resolvedContentRefsEqual(attempt.item, occurrence.item) || !isCanonicalResponseComplete(question, attempt.response)) {
         return fail("Certification Exam attempt does not match its immutable occurrence and canonical response.");
@@ -132,6 +135,7 @@ export async function projectCertificationExamReview(input: Readonly<{
       resultKind = attempt.result.kind;
       selectedOptionIds = attempt.response.type === "choice_single" ? [attempt.response.optionId] : attempt.response.type === "choice_multiple" ? [...attempt.response.optionIds] : [];
       if (selectedOptionIds.length === 0) return fail("Certification Exam answered attempt has no canonical selection.");
+      messages = projectCanonicalChoiceFeedbackMessages(question, attempt.response);
       if (resultKind === "correct") correctCount += 1;
       else if (resultKind === "partial") partialCount += 1;
       else incorrectCount += 1;
@@ -143,6 +147,7 @@ export async function projectCertificationExamReview(input: Readonly<{
       constraints: Object.freeze([...(question.constraints ?? [])]),
       correctOptionIds: Object.freeze(correctOptionIds),
       details: question.feedback.details,
+      ...(messages === undefined ? {} : { messages }),
       item: occurrence.item,
       occurrenceId: occurrence.occurrenceId,
       options: Object.freeze(question.interaction.options.map((option) => Object.freeze({ optionId: option.optionId, text: option.text }))),

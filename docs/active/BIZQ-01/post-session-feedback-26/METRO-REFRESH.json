@@ -1,0 +1,12 @@
+{
+  "stoppedOwnMetroPid": 10312,
+  "port": 8081,
+  "exactListenerVerified": true,
+  "reason": "CI Metro has watchman disabled; six production files frozen; actual new bundle required",
+  "apiAuthAndForeignDevicesUntouched": true,
+  "newSoleOwnMetroPid": 16890,
+  "newUnifiedExecSession": 24817,
+  "apiPid8080": 39216,
+  "authPid19099": 38342,
+  "actualListenersVerifiedAfterNative": true
+}

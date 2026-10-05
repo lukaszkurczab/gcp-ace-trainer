@@ -107,7 +107,7 @@ export function AlgorithmsInterviewSimulationReviewScreen({ navigation, route }:
         onComplexityValuePress={noop}
         onOrderingMove={noop}
       />
-      <PracticeFeedbackBlock feedback={{ details: item.details, reason: item.reason, result: outcome, sources: item.sources }} item={item.item} itemId={item.questionId} reportSurface={{ modeRoute: "answer_review", trackNode: null }} />
+      <PracticeFeedbackBlock feedback={{ details: item.details, messages: item.messages, reason: item.reason, result: outcome, sources: item.sources }} item={item.item} itemId={item.questionId} reportSurface={{ modeRoute: "answer_review", trackNode: null }} />
     </SessionShell>
   );
 }

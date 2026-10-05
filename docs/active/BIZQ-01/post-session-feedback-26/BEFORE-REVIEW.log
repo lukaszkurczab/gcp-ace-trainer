@@ -1,0 +1,16 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 native26 read-only own completed GCP review
+Assert that id: patternly:home:activity is visible... COMPLETED
+Tap on id: patternly:home:activity... COMPLETED
+Assert that id: patternly:activity:root is visible... COMPLETED
+Assert that id: patternly:activity:row:google-cloud-associate-cloud-engineer:certification-focus-practice:2 is visible... COMPLETED
+Tap on id: patternly:activity:row:google-cloud-associate-cloud-engineer:certification-focus-practice:2... COMPLETED
+Assert that id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2 is visible... COMPLETED
+Assert that "Session complete" is visible... COMPLETED
+Assert that "10 / 10" is visible... COMPLETED
+Take screenshot native26-own-result-before-review... COMPLETED
+Tap on id: patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-focus-practice:2... COMPLETED
+Assert that id: patternly:practice-review:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2:.* is visible... COMPLETED
+Assert that id: patternly:session:question:gcp-ace-gcpace-n01-b03-001 is visible... COMPLETED
+Assert that "Incorrect" is visible... COMPLETED
+Take screenshot native26-own-wrong-review-before-fix... COMPLETED

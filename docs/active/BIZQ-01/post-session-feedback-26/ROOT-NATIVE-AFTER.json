@@ -1,0 +1,66 @@
+{
+  "verdict": "PASS",
+  "scope": "Bounded native Certification Practice post-session authored-message restoration, same existing completed session; no full01 or Coding/Premium native claim",
+  "device": "7F315654-3175-4F3C-BB24-B0263F59360C",
+  "sessionId": "google-cloud-associate-cloud-engineer:certification-focus-practice:2",
+  "questionId": "gcp-ace-gcpace-n01-b03-001",
+  "selectedSourceOptionId": "D",
+  "authoredDiagnostic": "This option selects at the billing account, but the decisive requirement is organization-wide attachment scope.",
+  "rootPersonallyInspected": "Exact authored diagnostic now visible before unchanged generic Details; selectedD remainsincorrect, sourceorderexisting; same result9correct/1incorrect/0partial/0unanswered/10answered, activeTime21:31",
+  "otherWrongDiagnosticAssertions": "unselectedB/C diagnostics not visible; production selector also independently tested",
+  "actualBundle": "10/10 runtime payloads and actual changedJS checked",
+  "nativeInitialFailures": [
+    {
+      "path": "AFTER-REVIEW-OVERLAY-FAIL.log",
+      "reason": "Observed devwarningoverlay obscured Review button"
+    },
+    {
+      "path": "AFTER-WARNING-MATCHER-FAIL.log",
+      "reason": "Screenshot-visible banner text unavailable to text matcher; no UI/dataeffect executed before failure"
+    }
+  ],
+  "correction": "Root inspected current failed screenshots; tapped existing observedX92%,93% without fabricating productworkaround; same reviewpassed",
+  "rootFocusedTests": {
+    "pass": 29,
+    "fail": 0
+  },
+  "bindings": [
+    {
+      "path": "AFTER-DIAGNOSTICS.log",
+      "sha256": "f9c3e54104f0da622379eb8311e62903690234fe682742ac8e73b1ccd0d48034"
+    },
+    {
+      "path": "AFTER-COLD.log",
+      "sha256": "1120205ddb1a7010df72759b40d64b518a84825f589ac81c6d9b053c25568f7b"
+    },
+    {
+      "path": "AFTER-OBSERVED-WARNING.log",
+      "sha256": "2da3ea56ee2c05dfdf68ab23490f3b8972949aa6a2c6becfaa32333e1dace384"
+    },
+    {
+      "path": "ROOT-FOCUSED.log",
+      "sha256": "69e04ca07802247f13d2a3b2542abeb11e777e217e847a6b9bb62fa9eed033c8"
+    },
+    {
+      "path": "ACTUAL-BUNDLE-WIRING.json",
+      "sha256": "8916c62fce20246dda26c278f8263eca1abf1e6050428e3592f6b572c0e05e37"
+    },
+    {
+      "path": "EXACT-BUNDLE-PAYLOADS.json",
+      "sha256": "27bde282511179065ae24df51eba9eb765bd60c39cf8cfcebf59342bfd94df5c"
+    },
+    {
+      "path": "screens/native26-selected-wrong-authored-diagnostic-restored.png",
+      "sha256": "397d0f2a60137ba5d642cac4ce488e97cb6e053f65eaaaf20c3e202333e657f0"
+    },
+    {
+      "path": "screens/native26-generic-details-alongside-authored-diagnostic.png",
+      "sha256": "1413c2610f65a120325c9ba8a01d859a2c6f94383bd97800adf0bfc13a141666"
+    },
+    {
+      "path": "screens/native26-same-completed-result-after-read-only-review.png",
+      "sha256": "a529df6fdd1cb7f9f1e4c4612e937ad195fc50e97389de9d27aac1bf62a6275d"
+    }
+  ],
+  "constraints": "No new session/account/track/settings/reminder/content/Premium/store changes, datareset/install/devices/serviceconfig/deploy/publication"
+}

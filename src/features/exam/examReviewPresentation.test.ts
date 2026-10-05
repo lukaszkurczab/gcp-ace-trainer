@@ -22,7 +22,7 @@ test("Previous and Next preserve their question navigation and boundary disablin
 });
 
 test("Unanswered uses shared feedback with complete details expanded and reporting unchanged", () => {
-  assert.match(review, /<PracticeFeedbackBlock feedback=\{\{ details: item\.details, reason: item\.reason, result: item\.result, sources: item\.sources \}\}/);
+  assert.match(review, /<PracticeFeedbackBlock feedback=\{\{ details: item\.details, messages: item\.messages, reason: item\.reason, result: item\.result, sources: item\.sources \}\}/);
   assert.match(review, /initiallyExpanded=\{isUnanswered\} showReport=\{!isUnanswered\}/);
   assert.doesNotMatch(review, /unansweredFeedback|detailLines/);
   assert.match(feedback, /initiallyExpanded = false/);

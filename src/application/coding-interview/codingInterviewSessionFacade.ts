@@ -85,6 +85,7 @@ export type AlgorithmsSessionResultProjection = Readonly<{
     constraints: readonly string[];
     correctness: "correct" | "partial" | "incorrect" | "unanswered";
     details: Question["feedback"]["details"];
+    messages?: Question["feedback"]["messages"];
     sources?: readonly CanonicalSourceLink[];
     interaction: ReturnType<typeof buildCanonicalInteractionViewModel>;
     item: ResolvedContentRef;
@@ -765,11 +766,12 @@ function completedFeedbackItems(
     const attempt = attemptsByOccurrenceId.get(occurrence.occurrenceId);
     const question = questions[index]!;
     const response = (attempt?.response ?? question.answer) as CanonicalQuestionResponse;
-    const feedback = composeCanonicalFeedback(question, response);
+    const feedback = attempt ? composeCanonicalFeedback(question, response) : null;
     return Object.freeze({
       constraints: Object.freeze([...(question.constraints ?? [])]),
       correctness: attempt?.result.kind ?? "unanswered",
-      details: feedback.details,
+      details: feedback?.details ?? question.feedback.details,
+      ...(feedback?.messages === undefined ? {} : { messages: feedback.messages }),
       sources: projectCanonicalSourceLinks(question),
       interaction: buildCanonicalInteractionViewModel(
         question,
@@ -781,7 +783,7 @@ function completedFeedbackItems(
       occurrenceId: occurrence.occurrenceId,
       ordinal: index + 1,
       prompt: question.prompt,
-      reason: feedback.reason,
+      reason: feedback?.reason ?? question.feedback.reason,
       controls: projectCanonicalChoiceFeedbackControls(question, response),
     });
   }));

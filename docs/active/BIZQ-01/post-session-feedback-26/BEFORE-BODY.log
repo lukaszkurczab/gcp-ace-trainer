@@ -1,0 +1,7 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 native26 before-fix visible Details body
+Assert that id: patternly:session:details:gcp-ace-gcpace-n01-b03-001 is visible... COMPLETED
+Swipe from (50%,72%) to (50%,48%) in 500 ms... COMPLETED
+Assert that "Organization Policy attaches constraints to hierarchy resources.*" is visible... COMPLETED
+Assert that "This option selects at the billing account, but the decisive requirement is organization-wide attachment scope." is not visible... COMPLETED
+Take screenshot native26-before-visible-details-body-without-authored-message... COMPLETED

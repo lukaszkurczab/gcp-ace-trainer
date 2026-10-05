@@ -104,6 +104,10 @@ test("Coding Mock persists a response, finalizes, and reads all 40 completed rev
   assert.equal(result.unansweredOccurrenceIds.length, 39);
   assert.equal(result.feedbackItems[0]?.correctness, "correct");
   assert.equal(result.feedbackItems.slice(1).every((item) => item.correctness === "unanswered"), true);
+  assert.equal(result.feedbackItems.slice(1).every((item) => !("messages" in item)), true, "unanswered rows must not derive diagnostics from the answer-key control fallback");
+  const answeredQuestion = await contentPackageRuntimeOwner.resolveItem(first.item);
+  if (answeredQuestion.feedback.messages) assert.deepEqual(result.feedbackItems[0]?.messages, []);
+  else assert.equal("messages" in result.feedbackItems[0]!, false);
   assert.deepEqual(result.feedbackItems.map((item) => item.questionId), prepared.session.itemOrder.map((occurrence) => occurrence.item.questionId));
 
   const review = await getAlgorithmsPracticeReviewProjection(prepared.session.id, result.feedbackItems[39]!.occurrenceId);

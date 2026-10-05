@@ -17,6 +17,7 @@ test("simulation result and review are exposed only through the verified result 
   assert.match(result, /result\.feedbackItems\.length !== 40/);
   assert.match(result, /<SessionShell/);
   assert.match(result, /result\.modeId !== "coding-interview-simulation"/);
+  assert.match(result, /feedback=\{\{ details: item\.details, messages: item\.messages, reason: item\.reason, result: outcome, sources: item\.sources \}\}/);
   assert.match(source, /styles\.summaryTitle\}>\{t\(projection\.title\)\}/);
 });
 

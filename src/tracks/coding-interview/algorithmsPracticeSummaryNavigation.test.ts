@@ -61,6 +61,7 @@ test("practice question review is a readonly session surface with bounded naviga
   assert.match(review, /getAlgorithmsPracticeReviewProjection\(sessionId, occurrenceId\)/);
   assert.match(review, /key=\{item\.occurrenceId\}/);
   assert.match(review, /<PracticeQuestionCard/);
+  assert.match(review, /feedback=\{\{ details: item\.details, messages: item\.messages, reason: item\.reason, result: item\.correctness, sources: item\.sources \}\}/);
   assert.match(review, /editable=\{false\}/);
   assert.match(review, /disabled=\{!previous\}/);
   assert.match(review, /disabled=\{!next\}/);

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical";
+import type { Question } from "../../content/canonical";
 import { type CompletedTrainingSession, type TrainingAttempt, type TrainingSessionResult } from "../../domain";
 import { createCertificationPracticeAnswerFixture } from "../../testing/certificationPracticeAnswerFixture";
 import { projectCertificationPracticeReview } from "./certificationPracticeReviewProjection";
@@ -16,6 +17,54 @@ test("completed practice projector preserves the canonical five-state answer mat
   assert.equal(fixture.projection.items[2]?.selectedOptionIds.join(","), "b,d");
   assert.equal(fixture.projection.items[3]?.selectedOptionIds.length, 1);
   assert.deepEqual(fixture.result.evidence.details, { activeForegroundMs: 0, correctCount: 7, partialCount: 1, incorrectCount: 2, pointsEarned: 15, maxPoints: 22 });
+});
+
+test("completed practice review projects authored wrong and omitted-correct messages from the saved response only", async () => {
+  const fixture = await fixturePromise;
+  const catalog = await loadCanonicalRuntimeCatalog();
+  const track = catalog.getTrack(fixture.session.trackId);
+  const authoredMessagesByQuestion = new Map<string, Question>();
+  for (const occurrence of fixture.session.itemOrder) {
+    const question = track.getQuestion(occurrence.item.questionId)!;
+    if (question.interaction.type !== "choice_single" && question.interaction.type !== "choice_multiple") throw new Error("Expected a canonical choice question.");
+    const correctIds = question.answer.type === "choice_single" ? [question.answer.optionId] : question.answer.type === "choice_multiple" ? question.answer.optionIds : [];
+    const messages = [
+      ...question.interaction.options.filter((option) => !correctIds.includes(option.optionId)).map((option) => ({ kind: "wrong_option" as const, targetId: option.optionId, text: `Wrong option ${option.optionId}.` })),
+      ...(question.interaction.type === "choice_multiple" ? correctIds.map((optionId) => ({ kind: "omitted_option" as const, targetId: optionId, text: `Omitted correct option ${optionId}.` })) : []),
+    ];
+    authoredMessagesByQuestion.set(question.questionId, { ...question, feedback: { ...question.feedback, messages } } as Question);
+  }
+  const projection = await projectCertificationPracticeReview({
+    attempts: fixture.attempts,
+    resolveQuestion: async (item) => authoredMessagesByQuestion.get(item.questionId)!,
+    result: fixture.result,
+    session: fixture.session,
+  });
+
+  assert.equal(projection.items[0]?.result, "correct");
+  assert.deepEqual(projection.items[0]?.messages, []);
+  const wrong = projection.items[1]!;
+  assert.equal(wrong.result, "incorrect");
+  const wrongSelected = wrong.selectedOptionIds.filter((id) => !wrong.correctOptionIds.includes(id));
+  const omittedCorrect = wrong.selectionMode === "multiple" ? wrong.correctOptionIds.filter((id) => !wrong.selectedOptionIds.includes(id)) : [];
+  assert.deepEqual(wrong.messages?.filter((message) => message.kind === "wrong_option").map((message) => message.targetId), wrongSelected);
+  assert.deepEqual(wrong.messages?.filter((message) => message.kind === "omitted_option").map((message) => message.targetId), omittedCorrect);
+  const partial = projection.items[3]!;
+  assert.equal(partial.result, "partial");
+  assert.deepEqual(partial.messages?.filter((message) => message.kind === "wrong_option").map((message) => message.targetId), partial.selectedOptionIds.filter((id) => !partial.correctOptionIds.includes(id)));
+  assert.deepEqual(partial.messages?.filter((message) => message.kind === "omitted_option").map((message) => message.targetId), partial.correctOptionIds.filter((id) => !partial.selectedOptionIds.includes(id)));
+
+  const noAuthoredMessagesId = fixture.session.itemOrder[5]!.item.questionId;
+  const noAuthored = track.getQuestion(noAuthoredMessagesId)!;
+  const { messages: _messages, ...feedbackWithoutMessages } = noAuthored.feedback;
+  authoredMessagesByQuestion.set(noAuthoredMessagesId, { ...noAuthored, feedback: feedbackWithoutMessages } as Question);
+  const withoutAuthored = await projectCertificationPracticeReview({
+    attempts: fixture.attempts,
+    resolveQuestion: async (item) => authoredMessagesByQuestion.get(item.questionId)!,
+    result: fixture.result,
+    session: fixture.session,
+  });
+  assert.equal("messages" in withoutAuthored.items[5]!, false);
 });
 
 test("practice review rejects altered identity, coverage, attempts, score, and resolution", async () => {

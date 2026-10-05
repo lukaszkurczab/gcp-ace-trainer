@@ -1,0 +1,9 @@
+{
+  "stage": "literal-transpiled-JS-format-check",
+  "runtimePayloadCheck": "10/10 PASS",
+  "failedLiteralChecks": [
+    "projectCanonicalChoiceFeedbackMessages(question, attempt.response)",
+    "attempt ? composeCanonicalFeedback(question, response) : null"
+  ],
+  "learned": "Metro Babel wraps imported functions in interop call expressions; inspect actual transformed source before retry. Not a runtime behavior failure."
+}

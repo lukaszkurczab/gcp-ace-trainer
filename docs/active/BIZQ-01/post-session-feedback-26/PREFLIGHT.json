@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "patternly-bizq01-post-session-feedback-preflight-v1",
+  "verdict": "CONFIRMED_COMPLETED_CHOICE_FEEDBACK_PROJECTION_GAP",
+  "scope": "Read-only source/test and in-memory projection preflight for post-session authored choice diagnostics. No production, device, queue, state, or storage mutation.",
+  "contract": {
+    "path": "../../../../../docs/17-training-runtime-and-interaction-spec.md",
+    "sha256": "f796b365bfbc16d82b5395d509a44a21ec86bd3a2adb2c29dc04ce8c7ace7c44",
+    "references": [
+      "lines 405-412: submitted choice feedback is authored and selected by stable option ID; absent messages remain absent",
+      "lines 443-456: session-end modes withhold item feedback before finalization; post-session review uses the same authored feedback contract"
+    ]
+  },
+  "currentFlow": {
+    "canonicalChoiceMessageHelper": {
+      "path": "../../../../src/application/canonical/canonicalInteractionPresentation.ts",
+      "sha256": "1608a8fd76eedfacd401d8a781360b47771f8d416d1fb0da94dc4f051077b2ae",
+      "lines": "37-40,44-59,71-79",
+      "behavior": "composeCanonicalFeedback already includes the existing stable-ID-selected messages; projectCanonicalChoiceFeedbackMessages filters to selected incorrect and omitted required-correct targets in authored order."
+    },
+    "practiceFeedbackBlock": {
+      "path": "../../../../src/features/practice/PracticeFeedbackBlock.tsx",
+      "sha256": "a0cd2b14e08d63260808727ac2fc775588f52b9e7101ce41e78cc604febbede5",
+      "lines": "24-35",
+      "behavior": "Already renders feedback.messages within Details, followed by generic detail text and sources."
+    },
+    "certificationPractice": {
+      "projectionPath": "../../../../src/application/certification/certificationPracticeReviewProjection.ts",
+      "projectionSha256": "e8d07938dfdd5d2b0b8e1edc433f71bdb4af25f2fe2aac4687952999b84572c2",
+      "projectionLines": "7-22,31-91",
+      "screenPath": "../../../../src/features/exam/ExamReviewScreen.tsx",
+      "screenSha256": "6e4a2e2c4483d8b706eba1f5fa4f86afdb0c106e5d58a3d3e141238706649a4c",
+      "screenLines": "91-99",
+      "finding": "Verified-completed projection has the exact attempt response but drops the helper output; shared review screen forwards only details/reason/result/sources."
+    },
+    "certificationExam": {
+      "projectionPath": "../../../../src/application/certification/certificationExamReviewProjection.ts",
+      "projectionSha256": "0713b2e0a8ebbe784e7522a4e30ee126e4d2b96c444d6109c9b01a969ccc1c0e",
+      "projectionLines": "7-23,118-157",
+      "screenPath": "../../../../src/features/exam/ExamReviewScreen.tsx",
+      "screenSha256": "6e4a2e2c4483d8b706eba1f5fa4f86afdb0c106e5d58a3d3e141238706649a4c",
+      "screenLines": "91-99",
+      "finding": "Answered exam attempt response is available but messages are omitted. Unanswered rows have no attempt and must keep messages absent; do not score the answer-key fallback as a learner response."
+    },
+    "codingPracticeAndSimulation": {
+      "projectionPath": "../../../../src/application/coding-interview/codingInterviewSessionFacade.ts",
+      "projectionSha256": "2ecce1bd61921aa62a0753f324dd89dc139d44dd7f39864d79fd0b1e43919553",
+      "projectionLines": "84-98,759-788",
+      "practiceReviewScreenPath": "../../../../src/features/practice/AlgorithmsPracticeReviewScreen.tsx",
+      "practiceReviewScreenSha256": "ac98de649a21884ed50f8d3a225a7b9998973a66727425381d928b62b841d830",
+      "practiceReviewScreenLines": "118-135",
+      "simulationReviewScreenPath": "../../../../src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx",
+      "simulationReviewScreenSha256": "f78c203259f689f8e23b7de500e8b54bfcb435325269c6224be9ac63893b9455",
+      "simulationReviewScreenLines": "96-112",
+      "finding": "completedFeedbackItems computes composeCanonicalFeedback but drops messages from its item model. Both review screens omit messages when calling PracticeFeedbackBlock. Return messages only from stored attempts, not the question.answer fallback used to render unanswered controls."
+    },
+    "designInterviewBoundaries": {
+      "activePracticeFacadePath": "../../../../src/application/design-interview/designInterviewSessionFacade.ts",
+      "activePracticeFacadeSha256": "05c50447bf2ac9236e0f10f552baf083c69d064b1b4ed3814f88d5ce60696aeb",
+      "activePracticeFacadeLines": "69-90",
+      "practiceScreenPath": "../../../../src/features/practice/DesignInterviewPracticeScreen.tsx",
+      "practiceScreenSha256": "a18f3881c56b79ee2988c9bd4ee913f733822f715f96b72f4ff2d7d3b4b3feb9",
+      "practiceScreenLines": "253-257",
+      "resultScreenPath": "../../../../src/features/exam/ResultScreen.tsx",
+      "resultScreenSha256": "fb09ec67c2a7f4daae96da51f0ab17bf18abb0641fa2984342dfb4a1503e1268",
+      "resultScreenLines": "124-130",
+      "simulationReviewPath": "../../../../src/features/simulation/DesignInterviewSimulationScreens.tsx",
+      "simulationReviewSha256": "e07627089aa5e09eb627807bebdb3786c56280551e30e8f46ec974bb5fdc7cd8",
+      "simulationReviewLines": "139-165",
+      "simulationProjectionPath": "../../../../src/application/design-interview/designInterviewSimulationFacade.ts",
+      "simulationProjectionSha256": "a8a23c5d6fa11a9cabd995b57cfcf0479b00c568397dd06804a4a7baf11fe9db",
+      "finding": "Design practice uses the shared choice helper during active feedback but the generic result screen exposes no completed answer-review action. Design Simulation review displays open-ended stage responses and rubric criteria, not canonical choice-question diagnostics; this preflight does not expand either workflow."
+    }
+  },
+  "reproduction": {
+    "inMemoryFixtureProbe": {
+      "runtime": "node --import tsx - <<'JS' using createCertificationPracticeAnswerFixture() and createCertificationExamReviewFixture({correctIndices:[0],incorrectIndices:[1]})",
+      "sideEffects": "Fixture constructors use canonical in-memory runtime projections; no native device or persistent store access.",
+      "observed": {
+        "certificationPracticeIncorrect": {"questionId":"CCARP-D01-O01-diagnosis","result":"incorrect","messagesPropertyPresent":false,"selectedOptionIds":["b"],"correctOptionIds":["a"]},
+        "certificationExamIncorrect": {"questionId":"gcp-ace-gcpace-n01-b02-002","result":"incorrect","messagesPropertyPresent":false,"selectedOptionIds":["A"],"correctOptionIds":["B"]},
+        "certificationExamUnanswered": {"questionId":"gcp-ace-gcpace-n01-b02-003","answerState":"unanswered","messagesPropertyPresent":false,"selectedOptionIds":[],"correctOptionIds":["C"]}
+      }
+    },
+    "testCommands": [
+      {
+        "command": "/opt/homebrew/opt/node@22/bin/node --import tsx --test src/application/canonical/canonicalChoiceFeedbackPresentation.test.ts src/application/certification/certificationPracticeReviewProjection.test.ts src/application/certification/certificationExamReviewProjection.test.ts src/application/coding-interview/codingInterviewCompletedResultIntegrity.test.ts src/application/coding-interview/codingInterviewSimulationResult.integration.test.ts src/application/design-interview/designInterviewChoiceFeedback.test.ts",
+        "result": "PASS",
+        "tests": 28,
+        "failures": 0,
+        "interpretation": "Existing tests confirm helper semantics and active/durable behavior, but do not assert authored messages in completed review projections/screens."
+      },
+      {
+        "command": "/opt/homebrew/opt/node@22/bin/node --import tsx --test src/application/certification/certificationFeedbackProjection.test.ts",
+        "result": "PASS",
+        "tests": 4,
+        "failures": 0,
+        "interpretation": "Deferred Certification Practice feedback remains absent before the completed-review boundary; immediate helper output remains unchanged."
+      }
+    ],
+    "existingTestBindings": [
+      {"path":"../../../../src/application/canonical/canonicalChoiceFeedbackPresentation.test.ts","sha256":"4b4fd020fa674daeee2bdb98b0abb24ffeb3b6823b5d891b9108855b42748b0a"},
+      {"path":"../../../../src/application/certification/certificationPracticeReviewProjection.test.ts","sha256":"8c8ed46e0ae655565436b2f2387a4b055d0c128a90c157a0ce26c68a46849725"},
+      {"path":"../../../../src/application/certification/certificationExamReviewProjection.test.ts","sha256":"64c5512d9c454ff6cc2bf77f2bb1a9d68ba20104cca7626f9e08a27fe400323b"},
+      {"path":"../../../../src/application/certification/certificationFeedbackProjection.test.ts","sha256":"264f77333dd7f77ef15a57a4e2977f332b715f22c27a1445d799a7a934a9e41c"},
+      {"path":"../../../../src/application/coding-interview/codingInterviewCompletedResultIntegrity.test.ts","sha256":"0ab525c87b7637801dd75c81e57c92f79a0f2dbc2f13d17c14eb3ea9b815cc0e"},
+      {"path":"../../../../src/application/coding-interview/codingInterviewSimulationResult.integration.test.ts","sha256":"6d0299be53d86bd6ed889417596bb3e3f6343538fd4cb75b69816ca4c1398c51"},
+      {"path":"../../../../src/application/design-interview/designInterviewChoiceFeedback.test.ts","sha256":"c40e8b93344ec43ef61abcf9b825239bac49bfeffb42a8d399a1f6c9f435458d"}
+    ]
+  },
+  "recommendedImplementationBoundary": {
+    "changes": [
+      "Add optional authored-message output to Certification practice/exam completed review item projections and pass it through the existing shared ExamReviewScreen feedback block.",
+      "Expose the already-computed Coding composeCanonicalFeedback messages on completed result items and pass them through both existing Coding review screens.",
+      "Use the exact validated saved attempt response only. Do not project messages for unanswered items or synthesize from the answer key; preserve current deferred-feedback gate and scoring.",
+      "Add projection/render regression assertions for wrong, omitted-correct, correct, unanswered, and atSessionEnd cases while retaining current non-choice paths."
+    ],
+    "outOfScope": [
+      "New Design Interview completed-practice review route or changes to its open-ended simulation rubric review.",
+      "Content edits, scoring/denominator changes, question/option order changes, persistence/schema changes, Premium/admission changes, or native-device changes."
+    ]
+  },
+  "limits": [
+    "The Certification practice/exam omission is reproduced through real in-memory projections; screenshots were reviewed only for the completed GCP Certification Practice example.",
+    "Coding consumer loss is established by exact source flow and existing integration suite; no separate visual device run was performed for Coding.",
+    "Design Interview practice has no current completed-answer review route; this report does not infer that adding one is required.",
+    "Design Interview Simulation uses free-text stage responses and reference rubrics rather than canonical choice questions; no new choice-message semantics are proposed."
+  ]
+}

@@ -1,0 +1,15 @@
+# Independent acceptance QA — post-session authored feedback 26
+
+**Verdict: PASS for the bounded package.** The completed review projections now carry authored choice messages selected from saved responses, all three existing review screens forward the optional field to the shared Details renderer, and unanswered Coding Mock/Exam rows do not derive messages from the answer key. The original result, score, selection, generic Reason/Details, and feedback timing remain intact.
+
+I independently inspected the six frozen production files and reran the focused projection, integration, and consumer checks on the bound source set. The suite passed **52/52**. It includes Cert Practice and Exam wrong-option/omitted-correct behavior, correct answers with no applicable message, items without authored messages, unanswered rows, Coding practice’s stored wrong response, unanswered Coding Mock rows, deferred feedback before completion, and wiring assertions for the Exam, Coding Practice, and Coding Mock review screens. Existing identity/materialization, score, result-integrity, ordering, Details, and accessibility checks also passed.
+
+The implementation uses the exact validated attempt response in Certification projections. Coding calls `composeCanonicalFeedback` only when a stored attempt exists; its existing answer-key fallback still supplies display controls for unanswered rows but cannot generate response diagnostics. `PracticeFeedbackBlock` remains the existing renderer and shows messages in the existing Details disclosure.
+
+The native verification covers the same already-completed Free GCP Certification Practice session, `google-cloud-associate-cloud-engineer:certification-focus-practice:2`. The submitted wrong option D displayed its exact authored diagnostic after opening Details; sibling B/C diagnostics stayed hidden; generic Details remained visible; and the same completed result remained 9 correct, 1 incorrect, 0 partial, 0 unanswered, with 10 answered. The root’s native receipt binds the current six production files to the actual bundle. I personally inspected the bound screenshot showing the restored message and unchanged result.
+
+Two initial native navigation attempts were blocked by an observed development-warning overlay and by a text matcher that could not read its banner. Both failure logs are retained. The successful continuation dismissed the screenshot-observed overlay, then opened the same completed review and completed the checks without a product workaround or new session.
+
+The worker’s focused log reports 47/47 pass. My independent run covered nine focused test files and passed 52/52. TypeScript, content-boundary, and runtime/privacy-boundary checks also passed. The app bundle contained all ten expected canonical payloads, and the six changed JavaScript sources were confirmed in that bundle.
+
+This acceptance is limited to this post-session feedback correction. The native result is one Certification Practice case; this does not claim native Coding/Premium coverage, full BIZQ-01 acceptance, or release readiness.
