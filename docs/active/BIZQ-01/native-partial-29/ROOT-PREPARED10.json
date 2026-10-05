@@ -1,0 +1,33 @@
+{
+  "status": "actual-ordinary-followon-prepared-not-acceptance",
+  "sessionId": "claude-certified-architect-professional-certification:certification-focus-practice:2",
+  "index": 0,
+  "length": 10,
+  "contentVersion": "ccarp-2026.09.03",
+  "artifactSha256": "7d6d12a49d67642e3144d062a6d237bec4604917ab34124e4ee121263c6beb2d",
+  "observedQuestionIds": [
+    "CCARP-D01-O05-selection",
+    "CCARP-D01-O06-selection",
+    "CCARP-D01-O01-transfer",
+    "CCARP-D01-O02-transfer",
+    "CCARP-D01-O03-transfer",
+    "CCARP-D01-O04-transfer",
+    "CCARP-D01-O05-transfer",
+    "CCARP-D01-O06-transfer",
+    "CCARP-D01-O01-boundary",
+    "CCARP-D01-O02-diagnosis"
+  ],
+  "nativeCheckboxProof": "pending",
+  "partialTarget": "CCARP-D01-O01-transfer",
+  "authoredAcceptedOptionIds": [
+    "b",
+    "d"
+  ],
+  "plannedOrdinarySelection": [
+    "b"
+  ],
+  "expectedAuthoredOmittedMessageTarget": "d",
+  "evidence": {
+    "START10.log": "0de4d9d80de1fd5f93c6f924bb5e1d6f786916790af26b58202800ee28caeefc"
+  }
+}

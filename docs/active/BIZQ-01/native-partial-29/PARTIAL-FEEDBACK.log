@@ -1,0 +1,9 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 actual partial feedback reason and details no next
+Swipe from (50%, 70%) to (50%, 30%) in 400 ms... COMPLETED
+Take screenshot partial29-actual-partial-reason... COMPLETED
+Scrolling DOWN until id: patternly:session:details-toggle:CCARP-D01-O01-transfer is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Take screenshot partial29-actual-partial-before-details... COMPLETED
+Tap on id: patternly:session:details-toggle:CCARP-D01-O01-transfer... COMPLETED
+Swipe from (50%, 70%) to (50%, 30%) in 400 ms... COMPLETED
+Take screenshot partial29-actual-partial-details1... COMPLETED

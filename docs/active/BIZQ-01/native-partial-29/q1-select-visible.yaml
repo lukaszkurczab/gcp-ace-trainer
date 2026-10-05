@@ -1,0 +1,8 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 first ordinary answer selected visibly
+---
+- assertVisible:
+    id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:1:length:40
+- tapOn:
+    id: patternly:session:option:CCARP-D01-O01-boundary:c
+- takeScreenshot: partial29-q1-selected-canonical-c

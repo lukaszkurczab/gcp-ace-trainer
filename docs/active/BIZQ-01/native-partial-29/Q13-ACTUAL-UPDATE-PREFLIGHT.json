@@ -1,0 +1,428 @@
+{
+  "title": "Q13 actual active-session content update feasibility",
+  "date": "2026-10-05",
+  "scope": "Read-only repository/source and existing compiled-bundle review. The compiled bundle was inspected read-only; no device, service, private process environment, account, runtime state, source, or configuration was inspected or changed.",
+  "decision": {
+    "canTestCanonicalOodFullTrackUpdateWithinCurrentRuntimeAndExistingAuthorizedArtifacts": false,
+    "reason": "The current compiled v24 runtime cannot update its statically bundled OOD track in place, and no OOD node offer exists. However, local history contains accepted v23 and v24 OOD app/content identities with the same app bundle identifier and existing local build/install path, so a real same-app active-session update test is technically available without a new candidate; it has not been run.",
+    "notAProductOrReleaseVerdict": true,
+    "canTestWithExistingAcceptedHistoricalAndCurrentBuildsUsingAuthorizedLocalInstall": true,
+    "localUpdateTestStatus": "Feasible path identified; no build or install performed in this read-only preflight."
+  },
+  "currentBundledIdentity": {
+    "trackId": "object-oriented-design-interview",
+    "contentVersion": "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24",
+    "questionCount": 1413,
+    "artifactSha256": "9df476e414158da0f33e118c06ed7fbc476b53bc8f0a115a470f61f9c1bf1ea3",
+    "contentLockPath": "patternly/src/content/generated/canonical-content/content-lock.json",
+    "releaseLockPath": "patternly/integration/contracts/content-release/release.lock.json"
+  },
+  "existingMechanisms": {
+    "canonicalTrack": "runtimeCatalog statically imports generated track artifacts and content lock and caches the canonical catalog. contentPackageRuntimeOwner.verifyBundledPackages verifies the bundled catalog. resolveExactArtifact resolves only a matching exact artifact from the current bundle or retained installed node packages; it does not substitute latest content for a session pin.",
+    "activeSession": "Training session item references include trackId, contentVersion, and artifactSha256. Resume resolves the exact identity. Bootstrap verifies the available package, then resolves the active session. A previously recorded unavailable-active-session record exposes the explicit abandon flow; a direct exact-artifact resume failure instead reaches the blocking bootstrap error. Neither path migrates the session.",
+    "premiumNodeInstaller": "installPremiumNodeOffer accepts an available offer, retrieves a node payload through the authenticated API or smoke transport, verifies exact identity, stores immutable package bytes, activates the profile-scoped package pointer, and registers that node runtime. This is node-scoped Premium content, not the bundled full OOD track.",
+    "currentPremiumOffers": "Metro selects premiumNodeOffers.smoke.ts for PATTERNLY_RUNTIME_MODE=smoke and premiumNodeOffers.disabled.ts otherwise. The inspected compiled bundle embeds EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE=smoke and the smoke module. That module exposes one local_smoke_fixture AWS offer (aud04_local_smoke_fixture, aud04-local-fixture-v1) containing one choice_single question. The device-local test key makes that local offer available only in smoke mode. The non-smoke registry is empty and its local transport returns null. No OOD full-track or OOD node offer exists. Reinstalling the fixed same-version AWS fixture is not evidence of a newer-package update.",
+    "updateDelivery": "syncBundledContentRelease validates/writes generated canonical artifacts and content lock as build/release inputs. Release app config disables Expo Updates and automatic checking. No app call to Expo update check/fetch/reload APIs was found."
+  },
+  "feasibility": {
+    "realUpdatePathWithinCurrentRuntime": false,
+    "reason": "The inspected bundle carries the OOD v24 artifact and one fixed AWS local smoke node package. Reinstalling the same aud04-local-fixture-v1 package would not demonstrate a newer identity or update an OOD active session. A JavaScript reload without a newly delivered OOD bundle would still load the same bundled OOD artifact. Editing local source, profile storage, or session references would not demonstrate an actual admitted package update.",
+    "whatWouldBeNeededForFutureTest": "Build/install the accepted v23 app/content revision on the existing simulator, create and preserve a real v23-pinned active OOD session, then build/install the accepted v24 revision over the same app identity and verify app data preservation plus exact-session resume/unavailable behavior. This uses existing accepted versions and the already-authorized local build/install path; it does not require a new candidate. No such sequence was run in this preflight.",
+    "availableEvidenceNow": "Accepted v23 and v24 OOD artifact identities are present in local app Git history and their package QA receipts; both app revisions use the same iOS bundle identifier and npm run ios:smoke command. The current v24 smoke bundle was inspected earlier. This establishes technical availability of a sequential local test, not that app data survived an installation or that active-session behavior passed.",
+    "realUpdatePathUsingExistingAcceptedHistoricalAndCurrentBuilds": true,
+    "requiresNewCandidateForLocalTest": false
+  },
+  "noActionTaken": [
+    "No source, generated artifact, content lock, service configuration, device, profile, account, session, or app state changed.",
+    "No package update, app build/install, publication, candidate creation, service call, seeded session, or JavaScript reload was attempted."
+  ],
+  "sourceBindings": [
+    {
+      "path": "patternly/src/content/canonical/runtimeCatalog.ts",
+      "sha256": "06c1959bab4747dc26c91f497d94b8fda6a7115f1ad6f2df307288e80c545657"
+    },
+    {
+      "path": "patternly/src/application/contentPackageRuntimeOwner.ts",
+      "sha256": "ac544bf23a42c0608396f12b50949926e548a019ccc3101d889947a057e639f1"
+    },
+    {
+      "path": "patternly/src/application/trainingLifecycle/TrainingLifecycleUseCases.ts",
+      "sha256": "f86e3b672928288eaca8c7f696852795b6cd39a24131143fd6bee221dfe92c8f"
+    },
+    {
+      "path": "patternly/src/application/bootstrap/applicationBootstrap.ts",
+      "sha256": "76f604bdaf81e989cec108501c76038e7b544731be5bf2bb750a9fbdede12d38"
+    },
+    {
+      "path": "patternly/src/content/application/ContentPreparationGate.tsx",
+      "sha256": "fc6b53156dfc1a14db9d2bf9a8c64ea00fbd001899b16e85e28d8526976d4762"
+    },
+    {
+      "path": "patternly/src/content/application/nodePackageInstaller.ts",
+      "sha256": "19eb769345ddfeb99947b520e5fa31ab1e334d1810dc6ee6344ee8caf59ced85"
+    },
+    {
+      "path": "patternly/src/content/application/premiumNodeOfferAccess.ts",
+      "sha256": "b58a18e363e3e0e60d446fa405591ef0604d2aa1f523ed51da8becf9dac4cabc"
+    },
+    {
+      "path": "patternly/src/content/runtime/nodeContentPackage.ts",
+      "sha256": "6cd89eeff94a6a60dc8f63ef45aaa64b680f49ac1c40fbbd96b36708030f17d2"
+    },
+    {
+      "path": "patternly/src/content/application/nodePackageStoreComposition.ts",
+      "sha256": "3450ad580d2d1c598c2c25c741ba018e7e71d36481aa685c4d1dc0edf5daec50"
+    },
+    {
+      "path": "patternly/scripts/syncBundledContentRelease.mjs",
+      "sha256": "d0d9699922d53a4b332d44792b991448727a9782bfbd6b687cec0d0889e38056"
+    },
+    {
+      "path": "patternly/src/content/generated/canonical-content/content-lock.json",
+      "sha256": "9a0eba3e26189511d2cc4af96bbc68f5317c25952afd6e780f11c8ea43163aa0"
+    },
+    {
+      "path": "patternly/integration/contracts/content-release/release.lock.json",
+      "sha256": "071ea7906369f7cc16da4c9284b808f27a2c92deb62c61dd8678303e2d3f31de"
+    },
+    {
+      "path": "patternly/app.config.js",
+      "sha256": "9483c9e5124709589205c77aa9bae8207b20f1d08a1e57c44f9c5a2dca35e1a7"
+    },
+    {
+      "path": "patternly/package.json",
+      "sha256": "28c6431dd731cf8fe3e2c5472d1f86c4878436b89c4b1ecc3a547e63d3f04654"
+    },
+    {
+      "path": "patternly/metro.config.js",
+      "sha256": "0321843423d48edcb4b33d9332756b40485d8b767aa127df952113d9354bb102"
+    },
+    {
+      "path": "patternly/scripts/runLocalProfile.mjs",
+      "sha256": "8212070c63b8515ca3c9e773e4cb37ec9ff23261f501f2c4de68f84a66800d15"
+    },
+    {
+      "path": "patternly/src/content/application/premiumNodeOffers.smoke.ts",
+      "sha256": "2bcd7c15b679187b02d144265b71d5bf690470952df73833ddd12e0fb7041c6b"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-01/native-presentation-27/PREMIUM-PROFILE-PREFLIGHT.md",
+      "sha256": "09f4229c21292fb630917e7a966df29cc43edf80e2b4e5012e2b55af9b060e23"
+    },
+    {
+      "path": "patternly/src/content/application/premiumNodeOffers.disabled.ts",
+      "sha256": "1fb901249698264adf73adcd5a91400b1a400329a6fb4a916025b404e7205212"
+    }
+  ],
+  "profileSpecificEvidence": {
+    "profile": "smoke",
+    "profileSelection": "npm run start:smoke sets both PATTERNLY_RUNTIME_MODE and EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE to smoke; Metro aliases the premium offers import to premiumNodeOffers.smoke.ts for that mode. The inspected bundle is compiled with public runtime mode smoke; it is not proof of a currently running device build.",
+    "compiledBundle": {
+      "path": "/private/tmp/bizq28-repair-ios.bundle",
+      "bytes": 66332263,
+      "sha256": "700695b6ebc77734addbca094c3e7bef95339a4cda52d15249a71f8408156e0d",
+      "observed": "Embeds public runtime mode smoke and module src/content/application/premiumNodeOffers.smoke.ts. This is bundle evidence only, not proof of the currently installed/running device build."
+    },
+    "smokeOffer": {
+      "offerId": "aud-04-local-smoke-package-fixture",
+      "trackId": "aws-certified-solutions-architect-associate",
+      "nodeId": "aud04_local_smoke_fixture",
+      "contentVersion": "aud04-local-fixture-v1",
+      "artifactSha256": "cab88ae60938984308e535b5265bcd487a42f375a860df1bbd6b99012ca4c27b",
+      "questionCount": 1,
+      "questionType": "choice_single",
+      "source": "local_smoke_fixture"
+    },
+    "conclusion": "The smoke offer can exercise install/activation of its fixed AWS node fixture when the device-local test key is enabled. It cannot establish a newer package identity or update the OOD full track or an OOD node."
+  },
+  "localHistoricalCurrentUpdatePath": {
+    "v23": {
+      "appConsumerCommit": "ea4f3d61b39bab6b9f12ace73b34721d0d6e717a",
+      "consumerCheckpoint": "50a6811cde15b662e8c45f777fcc9c447a482d3a",
+      "contentSourceCommit": "3be6feef80975ed7f3ca87893b743668227e4a64",
+      "contentVersion": "object-oriented-design-interview-authoring-v2026.10.05-bizq01-23",
+      "artifactSha256": "932b7370d7be44bb5274ad8bc5a31b45f0479b3ff4251160af1ed2b170ca80d7",
+      "questionCount": 1413,
+      "appAcceptanceReport": "patternly/docs/active/BIZQ-01/ood-remaining-closure-23/FINAL-QA.md",
+      "appFinalQaSha256": "88f73990b31b4e7452c4df9086da594081f86b57760d80f9fcf4db294fdf801b",
+      "sourceReleaseLockAtAppCommitSha256": "8dbc9052cda40ae0c1c4b4839f21834df58bb334cbd1fc9b7ef260791fba458d"
+    },
+    "v24": {
+      "appConsumerCommit": "fa95d027076e970d71dacf0d1fd7976fa0ba8f60",
+      "contentSourceCommit": "1487f24db63af0627b8f3b3739c125594a345b80",
+      "contentVersion": "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24",
+      "artifactSha256": "9df476e414158da0f33e118c06ed7fbc476b53bc8f0a115a470f61f9c1bf1ea3",
+      "questionCount": 1413,
+      "appAcceptanceReport": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/FINAL24-QA.md",
+      "appFinalQaSha256": "332e567ddcbe531fb513e5acc703c916081816e7f1f8e0d2df07f81e553fc5a0"
+    },
+    "sameAppInstall": {
+      "iosBundleIdentifier": "com.lkurczab.patternly",
+      "bundleIdentifierAppConfigSha256": "9483c9e5124709589205c77aa9bae8207b20f1d08a1e57c44f9c5a2dca35e1a7",
+      "packageJsonSha256AtBothCommits": "28c6431dd731cf8fe3e2c5472d1f86c4878436b89c4b1ecc3a547e63d3f04654",
+      "runLocalProfileSha256AtBothCommits": "8212070c63b8515ca3c9e773e4cb37ec9ff23261f501f2c4de68f84a66800d15",
+      "command": "npm run ios:smoke",
+      "commandPath": "scripts/runLocalProfile.mjs smoke ios -> npx expo run:ios -> Expo CLI AppleDeviceManager.installAppAsync -> simctl install",
+      "uninstallBeforeInstallInExpoPath": false,
+      "dataPreservationEvidence": "Same-ID iOS app updates preserve app container per Apple Developer Technical Support; this specific v23-to-v24 app-data/session preservation has not been exercised.",
+      "reference": "https://developer.apple.com/forums/thread/744934"
+    },
+    "executionStatus": "Read-only feasibility only; no build, install, simulator operation, session creation, or state inspection was performed."
+  },
+  "codingV03ToCurrentV04": {
+    "scope": "Read-only repository history/source feasibility; no build, app install, device inspection, session creation, or storage mutation.",
+    "historicalV03": {
+      "appConsumerCommit": "afe8f8e0e8c9bd420f142a16c6e1c31513c84789",
+      "appReleaseLockPath": "patternly/integration/contracts/content-release/release.lock.json",
+      "appBundleModulePath": "patternly/src/content/bundled/generatedArtifacts.ts",
+      "appBundleId": "patternly-app-content-0017-0016",
+      "releaseId": "patternly-core-0017",
+      "producerCommit": "4822bca3469f20f77d46572fb2bbb5e898983549",
+      "sourceRepositoryCommit": "51cd24fd4ba781615e2c56acfa770abf419ad78f",
+      "contentVersion": "coding-interview-dsa-problem-solving-0003",
+      "artifactSha256": "e0f9f98b0b7c7f9c60caad971e8eb403b1ac86c5f21ab25a9460cccfe5eb72dc",
+      "questionCount": 2375,
+      "evidence": "The app release lock and bundled generatedArtifacts module carry the same release/checksum. The content producer build-report.json at producer commit records the source commit, contentVersion, checksum, and itemCount."
+    },
+    "currentV04": {
+      "acceptedAppCommit": "fa95d027076e970d71dacf0d1fd7976fa0ba8f60",
+      "currentAppCommit": "8ab5662408ed6dbf1d9637498d8ab7f076c99d63",
+      "contentSourceCommit": "1487f24db63af0627b8f3b3739c125594a345b80",
+      "contentVersion": "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04",
+      "artifactSha256": "4ceb71ebf2edd963dd6f1bdd274dface6da667dd7d3586fa44b52efe45f263f6",
+      "questionCount": 3404,
+      "contentLockPath": "patternly/src/content/generated/canonical-content/content-lock.json",
+      "appReleaseLockPath": "patternly/integration/contracts/content-release/release.lock.json",
+      "currentReleaseBundleId": "patternly-app-candidate-ebd5f2d614ca"
+    },
+    "sameAppIdentityAndInstall": {
+      "bundleIdentifier": "com.lkurczab.patternly",
+      "historicalAppConfigSha256": "b91b3df526353c91e73599cf8268221329c5dfb9133fa7c780b40e750f70e7c7",
+      "acceptedCurrentAppConfigSha256": "9483c9e5124709589205c77aa9bae8207b20f1d08a1e57c44f9c5a2dca35e1a7",
+      "historicalInstallCommand": "npm run ios -> expo run:ios",
+      "currentAvailableInstallCommands": [
+        "npm run ios -> expo run:ios",
+        "npm run ios:smoke -> scripts/runLocalProfile.mjs smoke ios -> expo run:ios"
+      ],
+      "installImplementation": "Expo AppleDeviceManager uses simctl install and does not explicitly uninstall before install.",
+      "dataPreservation": "Same-bundle-ID iOS updates are documented by Apple DTS as the same app; survival of this Patternly session/profile across these specific builds has not been tested.",
+      "appleReference": "https://developer.apple.com/forums/thread/744934",
+      "smokeApiRelevance": "Free N01 is bundled; smoke API and the single AWS Premium fixture are not required for Coding and cannot evidence a Coding package update."
+    },
+    "persistenceCompatibility": {
+      "storageNamespaceAndEnvelope": "Both generations use patternly:canonical:v1 keys and patternly:canonical:v1 record envelopes; metadata schemaVersion remains 1.",
+      "oldTrainingSession": {
+        "topLevelIdentity": [
+          "trackId",
+          "contentVersion"
+        ],
+        "itemRef": [
+          "trackId",
+          "itemId",
+          "contentVersion"
+        ],
+        "artifactSha256": "absent"
+      },
+      "currentTrainingSession": {
+        "topLevelIdentity": [
+          "trackId",
+          "contentVersion",
+          "artifactSha256"
+        ],
+        "itemRef": [
+          "trackId",
+          "questionId",
+          "contentVersion",
+          "artifactSha256"
+        ],
+        "guard": "isTrainingSession uses an exact top-level key set and strict resolved-content-ref shape."
+      },
+      "migration": "openCanonicalRepositories validates metadata and provisions the guest; no v03 session shape conversion is present. The current metadata validator retains schemaVersion 1 and does not migrate an old session payload.",
+      "sourcePredictedOutcome": "A v03 active session record fails the current exact guard during readCanonicalEnvelope/readCanonicalJson with UnsupportedStoredRecordError. It cannot reach exact-artifact resolution or the explicit unavailable-active-session/abandon flow, absent a migration not found in the inspected source.",
+      "observationStatus": "Source-level prediction only; no persisted session was read and no actual launch/update was attempted."
+    },
+    "currentCodeWithHistoricalV03Artifact": {
+      "standardSyncCommand": "npm run sync:content-release (scripts/syncBundledContentRelease.mjs [sync|check] [--content-root <producer checkout>])",
+      "behavior": "The synchronizer builds from the supplied producer checkout current source and validates the current nine-track, 16,077-question inventory. It has no argument selecting a historical per-track artifact or historical release-lock row.",
+      "conclusion": "The v03 artifact is present in the historical app bundle and producer history, but no supported current-code historical-v03 bundle substitution path was found. Manually replacing current generated artifact files would not be an admitted build; no such substitution was attempted."
+    },
+    "smallestUsefulSameInstallProbe": {
+      "steps": [
+        "Build/install the historically bundled v03 app without uninstalling.",
+        "Use ordinary Free N01 UI to start a real Coding session and leave it active; do not seed or edit storage.",
+        "Install the accepted current v04 app over the same app identity.",
+        "Launch and record whether exact session resume succeeds or which existing recovery/blocking path is shown."
+      ],
+      "expectedByCurrentSource": "The current guard is expected to block while reading the old session schema, before content-identity fallback.",
+      "acceptanceGap": "If the intended result is successful resume or the explicit unavailable-content flow, the inspected current code has no migration from the v03 persisted shape. Resolve that concrete compatibility behavior before describing the probe as a passing update/resume test.",
+      "executionStatus": "Not run; this task was read-only preflight."
+    },
+    "sourceBindings": [
+      {
+        "path": "patternly@afe8f8e/integration/contracts/content-release/release.lock.json",
+        "sha256": "e01a892b9de495171b6982f1a5be447e9014dca62784d891389e5b427df21e2a"
+      },
+      {
+        "path": "patternly@afe8f8e/src/content/bundled/generatedArtifacts.ts",
+        "sha256": "6ce5cd723752cbc7a5ef3aeb6337fa6efaf0620b7a5f907bc74e26f936175236"
+      },
+      {
+        "path": "patternly-content@4822/artifacts/tracks/coding-interview-dsa-problem-solving/coding-interview-dsa-problem-solving-0003/build-report.json",
+        "sha256": "6fd0f02b5e7d9985892871ab8a975b313672da036a16e65da4214ad28e5b1dbf"
+      },
+      {
+        "path": "patternly@afe8f8e/src/domain/learning/trainingSession.ts",
+        "sha256": "6cb61b7066beda75348bb82054702454933b400e680ebba512251ec43ae03766"
+      },
+      {
+        "path": "patternly@afe8f8e/src/domain/learning/contentItemRef.ts",
+        "sha256": "1358ef6d80a2c6b41346eb196c7d3025dcf2c2b7eaef6d5b7ba14465b8ef2753"
+      },
+      {
+        "path": "patternly@afe8f8e/src/storage/repositories/trainingModelGuards.ts",
+        "sha256": "5d97f34418255f5ecca6560e9079881eab59617d757d335a1dcc8e45f974249f"
+      },
+      {
+        "path": "patternly@afe8f8e/src/storage/repositories/storageMetadataRepository.ts",
+        "sha256": "1c66d3acf4db7efa09283ea942ed86436e69dce6133e4164886e70394b2eb883"
+      },
+      {
+        "path": "patternly@8ab5662/src/domain/learning/trainingSession.ts",
+        "sha256": "653853b939afbf628128de819b41127c0e80c24fc20fb664a1176250770d47b6"
+      },
+      {
+        "path": "patternly@8ab5662/src/domain/learning/resolvedContentRef.ts",
+        "sha256": "0b6daeddf3f4e5fb9ccafdb0a51cb51bb88ac9e0e1b60fddc1cd085e25f69aaa"
+      },
+      {
+        "path": "patternly@8ab5662/src/storage/repositories/trainingModelGuards.ts",
+        "sha256": "2d6478b1e82cca975b7040424ebf2955185942f14add19811763e5436a541c73"
+      },
+      {
+        "path": "patternly@8ab5662/src/storage/repositories/trainingSessionRepository.ts",
+        "sha256": "940fec17ffca16780803ca8c292ead5540611f814539725262b93fa6b8abce4c"
+      },
+      {
+        "path": "patternly@8ab5662/src/storage/repositories/storageMetadataRepository.ts",
+        "sha256": "32d09f85cbbd6671c5db5c1631a4390f1d78dcc7d7694108061859fbb4ecec0a"
+      },
+      {
+        "path": "patternly@8ab5662/src/storage/repositories/canonicalRepositories.ts",
+        "sha256": "82ec9c79e08f26be95bbdc11edf441e32d50cc5669a4722dd06b166f54682f0f"
+      },
+      {
+        "path": "patternly@8ab5662/scripts/syncBundledContentRelease.mjs",
+        "sha256": "d0d9699922d53a4b332d44792b991448727a9782bfbd6b687cec0d0889e38056"
+      },
+      {
+        "path": "patternly@8ab5662/src/content/generated/canonical-content/content-lock.json",
+        "sha256": "9a0eba3e26189511d2cc4af96bbc68f5317c25952afd6e780f11c8ea43163aa0"
+      },
+      {
+        "path": "patternly@8ab5662/integration/contracts/content-release/release.lock.json",
+        "sha256": "071ea7906369f7cc16da4c9284b808f27a2c92deb62c61dd8678303e2d3f31de"
+      },
+      {
+        "path": "patternly@fa95d02/app.config.js",
+        "sha256": "9483c9e5124709589205c77aa9bae8207b20f1d08a1e57c44f9c5a2dca35e1a7"
+      }
+    ]
+  },
+  "oodN01AdmissionCheck": {
+    "appCommits": [
+      "ea4f3d61b39bab6b9f12ace73b34721d0d6e717a",
+      "fa95d027076e970d71dacf0d1fd7976fa0ba8f60"
+    ],
+    "appSourceComparison": {
+      "result": "identical",
+      "files": [
+        {
+          "path": "src/application/trainingLifecycle/premiumProductModePolicy.ts",
+          "sha256": "03835160163c0a208c417d66749e667d02b2d50c283b2b5ec834a53fdf336ff3"
+        },
+        {
+          "path": "src/tracks/design-interview/designModes.ts",
+          "sha256": "74d703007c93a7ee2d120a03e841f74f7bd2872e8ca50fb820d0680a8d9889f8"
+        },
+        {
+          "path": "src/content/canonical/productModeConfig.ts",
+          "sha256": "a65e60a2ebf6f61813a1277b4058ab9b28c60b82e7b2fa7f592b08f640fe04f3"
+        },
+        {
+          "path": "src/features/practice/PracticeSetupScreen.tsx",
+          "sha256": "86aea6ce51555ae73b2edecccb4068ae219d86b297d28f6fd3be4fe242abed20"
+        },
+        {
+          "path": "src/features/practice/PracticeHubScreen.tsx",
+          "sha256": "aa4a89fb5a5406d369f9f48e2d5f1ba29301e65ed4c40b444b74b57d21added5"
+        },
+        {
+          "path": "src/application/trainingLifecycle/TrainingLifecycleUseCases.ts",
+          "sha256": "f86e3b672928288eaca8c7f696852795b6cd39a24131143fd6bee221dfe92c8f"
+        },
+        {
+          "path": "src/application/trainingLifecycle/premiumProductModeLifecycle.test.ts",
+          "sha256": "e71ad44cb5aa11b0c3a0f9df97c7fe9f85a83ba09ce1fdb82a4cd1931bd5c5ee"
+        }
+      ]
+    },
+    "contentProfileAtBothAcceptedContentCommits": {
+      "commits": [
+        "3be6feef80975ed7f3ca87893b743668227e4a64",
+        "1487f24db63af0627b8f3b3739c125594a345b80"
+      ],
+      "path": "config/free-node-experience-profiles/object-oriented-design-interview.json",
+      "sha256": "53ad0c90cc4e9c23a5d354ba664890c310a051934b9e1b7daaa2c56ad2b2ec31",
+      "profileId": "object-oriented-design-interview-free-node-v1",
+      "profileVersion": "2",
+      "freeNodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+      "primaryEntry": {
+        "modeId": "design-interview-learn-framework",
+        "requestedLength": 10
+      },
+      "modes": [
+        {
+          "modeId": "design-interview-learn-framework",
+          "availability": "immediate",
+          "requestedLengths": [
+            1,
+            10
+          ],
+          "defaultRequestedLength": 10,
+          "pool": "N01 freeNodeId"
+        },
+        {
+          "modeId": "design-interview-tradeoff-practice",
+          "availability": "immediate",
+          "requestedLengths": [
+            10,
+            20,
+            40
+          ],
+          "defaultRequestedLength": 10,
+          "pool": "N01 freeNodeId"
+        },
+        {
+          "modeId": "design-interview-weak-area-review",
+          "availability": "evidence_conditioned",
+          "requestedLengths": [
+            1,
+            10,
+            20
+          ],
+          "defaultRequestedLength": 10,
+          "pool": "N01 freeNodeId; due_queue evidence"
+        }
+      ],
+      "ordinaryN01PoolItems": 136,
+      "releaseArtifactQuestionCount": 1413
+    },
+    "distinction": {
+      "contentCatalog": "N01 is the configured free-node content pool: mode selection is node-scoped to N01 and the pool has 136 items in the accepted v23/v24 pair.",
+      "sessionAdmission": "The content profile does not make ordinary OOD sessions Free. requiresPremiumProductMode returns true for every isDesignInterviewModeId; PracticeHubScreen calls authorizePremiumSessionStart before navigating to setup; TrainingLifecycleUseCases.startSession authorizes before preparation. PracticeSetupScreen also rejects non-Design modes for a Design track.",
+      "coverage": "The unchanged premiumProductModeLifecycle test enumerates all four Design IDs, including simulation, and verifies denial occurs before package resolution, preparation, or session mutation. The three ordinary N01 modes are therefore Premium-gated despite their freeNodeId pool selection.",
+      "result": "An ordinary Free OOD N01 active session cannot be created through the current normal UI/lifecycle path on either accepted app revision without Premium authorization. The same-schema v23-to-v24 bundle pair remains a technically valid update candidate only if a legitimate Design-session entitlement is available. The AWS-only smoke offer is not evidence of Design-mode admission.",
+      "limitations": "This is a source/configuration finding, not a device or entitlement-service observation. No entitlement toggle was exercised, and no service/configuration change is proposed."
+    }
+  }
+}

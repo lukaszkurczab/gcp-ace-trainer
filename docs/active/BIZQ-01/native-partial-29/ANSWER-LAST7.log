@@ -1,0 +1,114 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 actual same10 continue after partial3 through10
+Tap on id: patternly:session:continue:CCARP-D01-O01-transfer... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:2:ordinal:4:length:10 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O02-transfer is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O02-transfer:b is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on "checkbox, unchecked", id: patternly:session:option:CCARP-D01-O02-transfer:b... COMPLETED
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O02-transfer:b is not visible...
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O02-transfer:b is not visible... SKIPPED
+Assert that "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O02-transfer:b is visible... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O02-transfer:d is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on "checkbox, unchecked", id: patternly:session:option:CCARP-D01-O02-transfer:d... COMPLETED
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O02-transfer:d is not visible...
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O02-transfer:d is not visible... SKIPPED
+Assert that "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O02-transfer:d is visible... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O02-transfer, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O02-transfer... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O02-transfer:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O02-transfer... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O03-transfer is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:2:ordinal:5:length:10 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O03-transfer is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O03-transfer:b is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on "checkbox, unchecked", id: patternly:session:option:CCARP-D01-O03-transfer:b... COMPLETED
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O03-transfer:b is not visible...
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O03-transfer:b is not visible... SKIPPED
+Assert that "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O03-transfer:b is visible... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O03-transfer:e is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on "checkbox, unchecked", id: patternly:session:option:CCARP-D01-O03-transfer:e... COMPLETED
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O03-transfer:e is not visible...
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O03-transfer:e is not visible... SKIPPED
+Assert that "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O03-transfer:e is visible... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O03-transfer, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O03-transfer... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O03-transfer:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O03-transfer... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O04-transfer is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:2:ordinal:6:length:10 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O04-transfer is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O04-transfer:b is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on "checkbox, unchecked", id: patternly:session:option:CCARP-D01-O04-transfer:b... COMPLETED
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O04-transfer:b is not visible...
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O04-transfer:b is not visible... SKIPPED
+Assert that "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O04-transfer:b is visible... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O04-transfer:e is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on "checkbox, unchecked", id: patternly:session:option:CCARP-D01-O04-transfer:e... COMPLETED
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O04-transfer:e is not visible...
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O04-transfer:e is not visible... SKIPPED
+Assert that "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O04-transfer:e is visible... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O04-transfer, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O04-transfer... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O04-transfer:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O04-transfer... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O05-transfer is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:2:ordinal:7:length:10 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O05-transfer is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O05-transfer:b is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on "checkbox, unchecked", id: patternly:session:option:CCARP-D01-O05-transfer:b... COMPLETED
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O05-transfer:b is not visible...
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O05-transfer:b is not visible... SKIPPED
+Assert that "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O05-transfer:b is visible... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O05-transfer:e is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on "checkbox, unchecked", id: patternly:session:option:CCARP-D01-O05-transfer:e... COMPLETED
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O05-transfer:e is not visible...
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O05-transfer:e is not visible... SKIPPED
+Assert that "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O05-transfer:e is visible... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O05-transfer, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O05-transfer... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O05-transfer:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O05-transfer... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O06-transfer is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:2:ordinal:8:length:10 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O06-transfer is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O06-transfer:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on "checkbox, unchecked", id: patternly:session:option:CCARP-D01-O06-transfer:a... COMPLETED
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O06-transfer:a is not visible...
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O06-transfer:a is not visible... SKIPPED
+Assert that "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O06-transfer:a is visible... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O06-transfer:e is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on "checkbox, unchecked", id: patternly:session:option:CCARP-D01-O06-transfer:e... COMPLETED
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O06-transfer:e is not visible...
+Run flow when "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O06-transfer:e is not visible... SKIPPED
+Assert that "checkbox, checked, Selected", id: patternly:session:option:CCARP-D01-O06-transfer:e is visible... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O06-transfer, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O06-transfer... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O06-transfer:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O06-transfer... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O01-boundary is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:2:ordinal:9:length:10 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O01-boundary is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O01-boundary:c is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on "radio button, unchecked", id: patternly:session:option:CCARP-D01-O01-boundary:c... COMPLETED
+Run flow when "radio button, checked, Selected", id: patternly:session:option:CCARP-D01-O01-boundary:c is not visible...
+  Swipe from (50%, 70%) to (50%, 45%) in 400 ms... COMPLETED
+  Tap on "radio button, unchecked", id: patternly:session:option:CCARP-D01-O01-boundary:c... COMPLETED
+Run flow when "radio button, checked, Selected", id: patternly:session:option:CCARP-D01-O01-boundary:c is not visible... COMPLETED
+Assert that "radio button, checked, Selected", id: patternly:session:option:CCARP-D01-O01-boundary:c is visible... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O01-boundary, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O01-boundary... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O01-boundary:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O01-boundary... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O02-diagnosis is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:2:ordinal:10:length:10 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O02-diagnosis is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O02-diagnosis:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on "radio button, unchecked", id: patternly:session:option:CCARP-D01-O02-diagnosis:a... COMPLETED
+Run flow when "radio button, checked, Selected", id: patternly:session:option:CCARP-D01-O02-diagnosis:a is not visible...
+Run flow when "radio button, checked, Selected", id: patternly:session:option:CCARP-D01-O02-diagnosis:a is not visible... SKIPPED
+Assert that "radio button, checked, Selected", id: patternly:session:option:CCARP-D01-O02-diagnosis:a is visible... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O02-diagnosis, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O02-diagnosis... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O02-diagnosis:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O02-diagnosis... COMPLETED
+Assert that id: patternly:summary:root:claude-certified-architect-professional-certification:certification-focus-practice:2 is visible... COMPLETED

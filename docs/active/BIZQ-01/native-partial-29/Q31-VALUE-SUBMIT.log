@@ -1,0 +1,9 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 q31 actual native selected value then submit
+Assert that "radio button, checked, Selected", id: patternly:session:option:CCARP-D01-O01-scenario-04:b is visible... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O01-scenario-04, enabled is visible... COMPLETED
+Take screenshot partial29-q31-actual-selected-value... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O01-scenario-04... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O01-scenario-04:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O01-scenario-04... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:32:length:40 is visible... COMPLETED

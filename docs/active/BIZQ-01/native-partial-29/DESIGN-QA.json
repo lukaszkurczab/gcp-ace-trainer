@@ -1,0 +1,97 @@
+{
+  "verdict": "PASS",
+  "scope": "Independent design review of the bounded native ordinary-Claude partial-result round trip; not implementation or native acceptance.",
+  "scores": {
+    "objectiveArchitectureFit": 0.95,
+    "simplicity": 0.88,
+    "risk": 0.86,
+    "maintainability": 0.9,
+    "minimum": 0.86,
+    "rationale": "The proposed route uses existing ordinary selection, session, scoring, and result paths, with the live Guest/no-reminder baseline and category-specific stop/preservation checks. No new product semantics, data seeding, or runtime bridge is introduced."
+  },
+  "criteria": [
+    {
+      "id": "ordinary-partial-reachability",
+      "result": "PASS_PROPOSAL_FEASIBLE",
+      "evidence": "The source-bound Claude feasibility probe shows a fresh ordinary 40-session is all single-choice, then an ordinary follow-on selection from its 40 production-created attempts includes six multiple-choice questions. The plan observes the actual device prepared question and does not replace or seed it.",
+      "limit": "The in-memory probe does not predict the live account's exact selection; the device operator must stop if the prepared question is not partial-capable."
+    },
+    {
+      "id": "actual-partial-and-result-credit",
+      "result": "PASS_PROPOSAL_FEASIBLE",
+      "evidence": "The real choice_multiple scorer returns partial for a complete one-of-two accepted selection. The accepted overallScoreCredit rule awards points only when result.kind is correct, so the partial contributes zero overall credit while its raw result kind/count remain available.",
+      "limit": "This is source and accepted-contract evidence, not observation of native feedback or result display."
+    },
+    {
+      "id": "restore-gcp-progress-and-plan",
+      "result": "PASS_WITH_BOUNDED_LIVE_CHECK",
+      "evidence": "The read-only baseline records GCP goal revision 1 and accepted plan revision 4 linked to goal revision 1, with no active session or draft. Track selection stores the active track separately from track-specific goal/plan records. The plan compares prior GCP learning and plan categories after returning through the normal selector.",
+      "limit": "The route changes the active track and creates intended Claude session/attempt records; only the live post-run category comparison can establish preservation on device."
+    },
+    {
+      "id": "reminders-and-device-permission",
+      "result": "PASS_FOR_OBSERVED_BASELINE",
+      "evidence": "The current baseline has no reminder settings/journal, zero scheduled notifications, and undetermined permission. Claude has no goal/plan. In this source branch, a missing Claude source is cleared without requesting permission; returning to GCP with no settings takes the existing disabled branch. Neither calls for reminder changes or scheduling.",
+      "limit": "This conclusion applies only while the live pre-switch state matches the observed category values; the briefing requires a stop on unexpected source or selector state and post-run readback."
+    },
+    {
+      "id": "guest-and-account-lifecycle-boundary",
+      "result": "PASS_WITH_PRESERVATION_CONDITION",
+      "evidence": "The baseline is Guest with no profile transition. A private follow-up found account-sign-out status pending and account-sync status failed, but no materialization, pending confirmation, reset guard, or sync plan. The brief now explicitly preserves these markers and forbids auth/profile transitions. Source tracing shows the pending mark does not rewrite a failed sync state, and scoped sign-out recovery is not entered by the ordinary no-auth Guest route.",
+      "limit": "The root operator must stop if unexpected recovery UI or lifecycle effects appear; this review does not inspect account identifiers or authorize lifecycle recovery."
+    },
+    {
+      "id": "fail-closed-live-procedure",
+      "result": "PASS",
+      "evidence": "The operator uses existing selectors and session routes, observes actual immutable session/question IDs, completes both sessions, returns to GCP, reads named preservation categories, and does not retry uncertain effects blindly."
+    }
+  ],
+  "bindings": {
+    "briefing": {
+      "path": "docs/active/BIZQ-01/native-partial-29/BRIEFING.md",
+      "sha256": "e8fd16e03f4ed14bdf6973d6ec95f17164810aca4edae32a43762e72fcaa331e"
+    },
+    "actualDevicePreflight": {
+      "path": "docs/active/BIZQ-01/native-partial-29/PREFLIGHT.json",
+      "sha256": "ba485fb4f371b81f029d513cfe5c5c13ce543489ec86ec512389cf4e775af079"
+    },
+    "priorPreservationPreflight": {
+      "path": "docs/active/BIZQ-01/native-presentation-28/CLAUDE-NATIVE-PRESERVATION-PREFLIGHT.md",
+      "sha256": "1c6fa69aea71acd5d5f6b3adc1a1c1bd166ec4d577fa432bacc1b7d19455af02"
+    },
+    "ordinaryPartialFeasibility": {
+      "path": "docs/active/BIZQ-01/native-presentation-28/CLAUDE-NATIVE-PARTIAL-FEASIBILITY.md",
+      "sha256": "fce31a04edad262f3efc1e3aabdd890126a787169275fcbe000cf26b9ada3aa3"
+    },
+    "lifecycleProjection": {
+      "path": "/private/tmp/bizq29-lifecycle-fences.json",
+      "sha256": "a26d2cd706ea0e6013f02eaac0e3c36666cd65bc3acc90aaf486da801ff387d8"
+    },
+    "source": [
+      { "path": "src/features/home/SelectTrackScreen.tsx", "sha256": "f5ca8c6f05f9d6c8684176864f2e08d2ccca9ec03f12a9934da41fd90e4ee1f6" },
+      { "path": "src/application/account/accountDataService.ts", "sha256": "a6aeb3d8d754ba56982eddb943c6aab7032b9bbb9ad51229349a34c62fd4195a" },
+      { "path": "src/application/account/AccountSessionProvider.tsx", "sha256": "5e7618249db9383e367147dabe316c7a98dc7dc2c201b7a6f958be148076a000" },
+      { "path": "src/application/account/profileStartupCoordination.ts", "sha256": "ce65cc2c799dfef5da313bfa1750c8ce8539a2a0c8160a9ea2183b637a77b8ee" },
+      { "path": "src/application/notificationPreferences.ts", "sha256": "76e6e29e58980779437464ae760aaef7be5136863740987a82356ba95e7b0557" },
+      { "path": "src/application/canonical/CanonicalTrainingRuntime.ts", "sha256": "cc980c835227e253c287a1dd841b0892861d5ab8f9491b1c35d5b870253a2e83" },
+      { "path": "src/application/canonical/practiceQuestionSelector.ts", "sha256": "717e2a36185f97c02d4cb0aa7f609f189ebcba9cef0d3b60585ad3c41f56d7bd" },
+      { "path": "src/content/canonical/questionScoring.ts", "sha256": "941e9a283789ddc73d46be50f1009770c72760f0d674847aafdc15110892be17" },
+      { "path": "src/application/canonical/overallScoreCredit.ts", "sha256": "88a09ac20bf1df176c4de187b08d4881f8c339ca77a89afad4e1c27cc8e5a273" },
+      { "path": "src/content/canonical/productModeConfig.ts", "sha256": "a65e60a2ebf6f61813a1277b4058ab9b28c60b82e7b2fa7f592b08f640fe04f3" },
+      { "path": "src/storage/repositories/accountDataRepository.ts", "sha256": "7ef2b04b34f295be6f7ba6ac008f4efe4e22d81fcde1c28248f17f4ab609b99f" },
+      { "path": "src/storage/repositories/accountLifecycleRepository.ts", "sha256": "e64e85cc81394d71331b20cd46812d28bc350265cb8d7088b8c62f0d08c0b7da" }
+    ]
+  },
+  "checks": [
+    "Read the complete proposal and actual device preflight, including the updated lifecycle projection.",
+    "Traced active-track write order, account pending marking, guest/authenticated session branches, and reminder reconciliation branches.",
+    "Traced ordinary Focus Practice selection and canonical multiple-choice score/result-credit paths.",
+    "No device, account, reminder, app, source, or Git state was changed; no implementation test or native flow was run."
+  ],
+  "limitations": [
+    "This review accepts only the proposed procedure, not its live native execution.",
+    "The runtime-selected follow-on question remains an observation; the plan correctly stops if it is not a supported multiple-choice item.",
+    "Post-run GCP plan/progress and lifecycle marker readback remain required for native acceptance.",
+    "No full Q12, full BIZQ-01, notification-delivery, whole-store-preservation, Premium, or release claim is made."
+  ]
+}

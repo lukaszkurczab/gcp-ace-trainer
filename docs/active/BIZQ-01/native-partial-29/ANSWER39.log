@@ -1,0 +1,281 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 actual same40 continue2to40
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:2:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O02-diagnosis is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O02-diagnosis:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O02-diagnosis:a... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O02-diagnosis, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O02-diagnosis... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O02-diagnosis:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O02-diagnosis... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O03-boundary is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:3:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O03-boundary is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O03-boundary:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O03-boundary:a... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O03-boundary, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O03-boundary... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O03-boundary:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O03-boundary... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O04-boundary is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:4:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O04-boundary is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O04-boundary:d is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O04-boundary:d... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O04-boundary, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O04-boundary... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O04-boundary:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O04-boundary... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O05-boundary is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:5:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O05-boundary is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O05-boundary:d is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O05-boundary:d... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O05-boundary, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O05-boundary... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O05-boundary:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O05-boundary... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O06-boundary is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:6:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O06-boundary is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O06-boundary:c is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O06-boundary:c... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O06-boundary, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O06-boundary... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O06-boundary:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O06-boundary... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O01-diagnosis is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:7:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O01-diagnosis is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O01-diagnosis:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O01-diagnosis:a... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O01-diagnosis, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O01-diagnosis... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O01-diagnosis:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O01-diagnosis... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O02-scenario-01 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:8:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O02-scenario-01 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O02-scenario-01:c is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O02-scenario-01:c... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O02-scenario-01, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O02-scenario-01... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O02-scenario-01:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O02-scenario-01... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O03-diagnosis is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:9:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O03-diagnosis is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O03-diagnosis:d is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O03-diagnosis:d... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O03-diagnosis, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O03-diagnosis... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O03-diagnosis:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O03-diagnosis... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O04-diagnosis is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:10:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O04-diagnosis is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O04-diagnosis:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O04-diagnosis:a... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O04-diagnosis, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O04-diagnosis... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O04-diagnosis:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O04-diagnosis... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O05-diagnosis is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:11:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O05-diagnosis is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O05-diagnosis:c is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O05-diagnosis:c... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O05-diagnosis, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O05-diagnosis... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O05-diagnosis:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O05-diagnosis... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O06-diagnosis is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:12:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O06-diagnosis is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O06-diagnosis:b is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O06-diagnosis:b... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O06-diagnosis, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O06-diagnosis... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O06-diagnosis:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O06-diagnosis... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O01-scenario-01 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:13:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O01-scenario-01 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O01-scenario-01:b is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O01-scenario-01:b... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O01-scenario-01, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O01-scenario-01... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O01-scenario-01:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O01-scenario-01... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O02-scenario-02 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:14:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O02-scenario-02 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O02-scenario-02:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O02-scenario-02:a... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O02-scenario-02, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O02-scenario-02... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O02-scenario-02:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O02-scenario-02... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O03-scenario-01 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:15:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O03-scenario-01 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O03-scenario-01:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O03-scenario-01:a... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O03-scenario-01, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O03-scenario-01... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O03-scenario-01:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O03-scenario-01... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O04-scenario-01 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:16:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O04-scenario-01 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O04-scenario-01:c is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O04-scenario-01:c... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O04-scenario-01, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O04-scenario-01... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O04-scenario-01:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O04-scenario-01... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O05-scenario-01 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:17:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O05-scenario-01 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O05-scenario-01:c is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O05-scenario-01:c... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O05-scenario-01, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O05-scenario-01... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O05-scenario-01:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O05-scenario-01... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O06-scenario-01 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:18:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O06-scenario-01 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O06-scenario-01:c is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O06-scenario-01:c... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O06-scenario-01, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O06-scenario-01... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O06-scenario-01:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O06-scenario-01... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O01-scenario-02 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:19:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O01-scenario-02 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O01-scenario-02:b is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O01-scenario-02:b... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O01-scenario-02, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O01-scenario-02... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O01-scenario-02:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O01-scenario-02... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O02-scenario-03 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:20:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O02-scenario-03 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O02-scenario-03:d is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O02-scenario-03:d... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O02-scenario-03, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O02-scenario-03... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O02-scenario-03:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O02-scenario-03... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O03-scenario-02 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:21:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O03-scenario-02 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O03-scenario-02:c is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O03-scenario-02:c... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O03-scenario-02, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O03-scenario-02... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O03-scenario-02:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O03-scenario-02... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O04-scenario-02 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:22:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O04-scenario-02 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O04-scenario-02:b is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O04-scenario-02:b... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O04-scenario-02, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O04-scenario-02... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O04-scenario-02:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O04-scenario-02... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O05-scenario-02 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:23:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O05-scenario-02 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O05-scenario-02:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O05-scenario-02:a... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O05-scenario-02, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O05-scenario-02... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O05-scenario-02:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O05-scenario-02... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O06-scenario-02 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:24:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O06-scenario-02 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O06-scenario-02:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O06-scenario-02:a... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O06-scenario-02, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O06-scenario-02... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O06-scenario-02:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O06-scenario-02... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O01-scenario-03 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:25:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O01-scenario-03 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O01-scenario-03:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O01-scenario-03:a... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O01-scenario-03, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O01-scenario-03... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O01-scenario-03:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O01-scenario-03... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O02-scenario-04 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:26:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O02-scenario-04 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O02-scenario-04:c is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O02-scenario-04:c... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O02-scenario-04, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O02-scenario-04... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O02-scenario-04:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O02-scenario-04... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O03-scenario-03 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:27:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O03-scenario-03 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O03-scenario-03:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O03-scenario-03:a... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O03-scenario-03, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O03-scenario-03... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O03-scenario-03:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O03-scenario-03... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O04-scenario-03 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:28:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O04-scenario-03 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O04-scenario-03:c is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O04-scenario-03:c... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O04-scenario-03, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O04-scenario-03... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O04-scenario-03:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O04-scenario-03... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O05-scenario-03 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:29:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O05-scenario-03 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O05-scenario-03:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O05-scenario-03:a... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O05-scenario-03, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O05-scenario-03... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O05-scenario-03:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O05-scenario-03... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O06-scenario-03 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:30:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O06-scenario-03 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O06-scenario-03:c is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O06-scenario-03:c... COMPLETED
+Assert that id: patternly:session:submit:CCARP-D01-O06-scenario-03, enabled is visible... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O06-scenario-03... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O06-scenario-03:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O06-scenario-03... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O01-scenario-04 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:31:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O01-scenario-04 is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O01-scenario-04:b is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... FAILED
+
+No visible element found: id: patternly:session:option:CCARP-D01-O01-scenario-04:b
+
+Could not find a visible element matching selector: id: patternly:session:option:CCARP-D01-O01-scenario-04:b
+Tip: Try adjusting the following settings to improve detection:
+- `timeout`: current = 20000ms → Increase if you need more time to find the element
+- `speed`: current = 40 (0-100 scale) → Increase for faster scrolling if element is far away
+- `waitToSettleTimeoutMs`: current = Not defined → Set this value (e.g., 500ms) if your UI updates frequently between scrolls
+- `visibilityPercentage`: current = 100% → Lower this value if you want to detect partially visible elements
+- `centerElement`: current = true → Disable if you don't need the element to be centered after finding it
+
+
+==== Debug output (logs & screenshots) ====
+
+/private/tmp/bizq29-answer39/2026-10-05_200602

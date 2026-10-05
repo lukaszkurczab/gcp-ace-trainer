@@ -1,0 +1,49 @@
+{
+  "status": "frozen-root-personally-reviewed-bound-native-pack",
+  "screens": [
+    {
+      "file": "screens/partial29-actual-checkbox-after-one-tap.png",
+      "sha256": "822e767f5446b36c42d5097994752b800083765067e998c503c23ee98889013e"
+    },
+    {
+      "file": "screens/partial29-actual-expanded-details-top.png",
+      "sha256": "d57cd2e64c4ab90c6164feb925b7f878f0206157fcd465fe9991e8bf15a2c91a"
+    },
+    {
+      "file": "screens/partial29-actual-partial-before-details.png",
+      "sha256": "5023dc70d83f690081e763975e02e7a2eefba2c8a0d15ed03fb4bf750d512ef0"
+    },
+    {
+      "file": "screens/partial29-actual-partial-details1.png",
+      "sha256": "b236b4abda00c1c591b2793e0ae662b43113b75cdea69e3c5013388054bfae38"
+    },
+    {
+      "file": "screens/partial29-actual-partial-reason.png",
+      "sha256": "ae1d0244fca8fbe7bcefce969310d4c7fbe8e81a267176f96976bfa608a322d8"
+    },
+    {
+      "file": "screens/partial29-actual-reason-and-expanded-details.png",
+      "sha256": "4653e052c72f3b5c357cfc656137de06d44802fa4137cfefc72ecf7b8068e1c5"
+    },
+    {
+      "file": "screens/partial29-actual10-summary.png",
+      "sha256": "d084a0655fada0aff8fc446ddc67fe6b28ec91a314817a645ff334938865fc9e"
+    },
+    {
+      "file": "screens/partial29-actual40-summary.png",
+      "sha256": "d90b0ef9066858083b958646bd60df4b8f9800583f7a7b5c07922149dcbe2394"
+    },
+    {
+      "file": "screens/partial29-claude-home-before-return.png",
+      "sha256": "84f00e5286323af6168435adfd31d530efd6254c9012a56d3724431ab7c89058"
+    },
+    {
+      "file": "screens/partial29-gcp-home-after-return.png",
+      "sha256": "e5850965535c82859a7b56a6464548905ab7b73a338e805fe8af4c54c6552aec"
+    },
+    {
+      "file": "screens/partial29-gcp-selection-before-return-commit.png",
+      "sha256": "c66f0e901707f7f11958d13f5d452805fcef781c2eaf7add8e70d6098db164e7"
+    }
+  ]
+}

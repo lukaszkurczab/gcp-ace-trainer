@@ -1,0 +1,11 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 actual expanded partial top and omitted authored message
+---
+- swipe:
+    start: 50%, 30%
+    end: 50%, 65%
+- takeScreenshot: partial29-actual-expanded-details-top
+- swipe:
+    start: 50%, 30%
+    end: 50%, 65%
+- takeScreenshot: partial29-actual-reason-and-expanded-details

@@ -1,0 +1,19 @@
+{
+  "scope": "Actual first40 prepared by ordinary Manage settings/Start UI; ongoing same-session native answers",
+  "preparationFlowExit": 0,
+  "actualLength": 40,
+  "interactionCounts": {
+    "choice_single": 40,
+    "choice_multiple": 0
+  },
+  "contentVersion": "ccarp-2026.09.03",
+  "artifactSha256": "7d6d12a49d67642e3144d062a6d237bec4604917ab34124e4ee121263c6beb2d",
+  "q1": "Actual selected canonical c displayed D screenshot personally inspected; durable correct+Next counter2 flow exit0",
+  "immutablePlan": "itemOrder/optionOrderByOccurrence/planFingerprint/contentVersion/artifactSha256 compared identical before/after q1",
+  "failedFirstAutomation": "No selected option/submit disabled/durable0. Corrected centered100% option and enabled-submit assertion before remaining39",
+  "snapshotToolSha256": "8f5b6a70f7f0e81458398b94df6624d9a581c9a6acb08e9dbdf1263f35911fbb",
+  "flowHelperSha256": "a06def7e94b6522f1100f9ae007f3ac3d56c985adaa8ede6de8607c5ff4e4489",
+  "privatePreparationSnapshotSha256": "c0bdad470972fd37d686855b608f77610afde4c9e6e6a315afe53e6282a301d8",
+  "privateAfterQ1SnapshotSha256": "42b0a2f2385670133e25268da65aba85c1342ca89e8beb5c5e78338149a643a6",
+  "status": "in_progress; not final native acceptance"
+}

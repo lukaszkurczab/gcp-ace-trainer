@@ -1,0 +1,18 @@
+{
+  "head": "8ab5662408ed6dbf1d9637498d8ab7f076c99d63",
+  "upstream": "8ab5662408ed6dbf1d9637498d8ab7f076c99d63",
+  "actualRemoteHead": "8ab5662408ed6dbf1d9637498d8ab7f076c99d63",
+  "ordinaryPushConfirmed": true,
+  "acceptance": "ROOT-PACKAGE28-ACCEPTANCE.json",
+  "sourceFreezeStillMatches": true,
+  "foreignPlanAppendixStillUnstaged": true,
+  "stashesAppUnchanged": [
+    "acc4dd4b104d202e81064fabd2c268e28ffbf5cd",
+    "680df78d7014d76ccaaea221cb2022d4f1f50746",
+    "803672fc67aa8cab977030e63a29c3d5f599ca44",
+    "0f1a08fa36b628ffad19dea8e8e94fe4d6a76031",
+    "fa998da9bfc9dd04fa980c3048906d8642c5dfdb",
+    "f21e31454bdf33f0b09a33158f9d3ad1777e2ca7"
+  ],
+  "note": "Postpushreceipt toversionwithnextacceptedcoherentpackage, no receipt-onlypush; fullBIZQ01 remains partial."
+}

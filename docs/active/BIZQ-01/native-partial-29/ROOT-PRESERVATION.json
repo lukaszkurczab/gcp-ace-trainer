@@ -1,0 +1,191 @@
+{
+  "status": "root-category-preservation-PASS",
+  "profilePreserved": true,
+  "goalAndAcceptedPlanAndPreferencesExact": true,
+  "settingsExact": true,
+  "accountLifecycleRedactedRecordsExact": true,
+  "existingStableRecords": [
+    {
+      "key": "patternly:canonical:v1:account-sign-out",
+      "category": "account-lifecycle-redacted",
+      "sha256": null
+    },
+    {
+      "key": "patternly:canonical:v1:account-sync",
+      "category": "account-lifecycle-redacted",
+      "sha256": null
+    },
+    {
+      "key": "patternly:canonical:v1:goal-onboarding-preferences",
+      "category": "goals-and-plans",
+      "sha256": "5371966e4de65bd35c720a693675a8bab843e11e3249a580b05bddb9c86186c8"
+    },
+    {
+      "key": "patternly:canonical:v1:goal:google-cloud-associate-cloud-engineer",
+      "category": "goals-and-plans",
+      "sha256": "6c0f229f66dc70f2e429e032b8d9020db2182ea873c4cc36c4ee180b1fc5ac83"
+    },
+    {
+      "key": "patternly:canonical:v1:learning-plan:google-cloud-associate-cloud-engineer",
+      "category": "goals-and-plans",
+      "sha256": "3d8ad978cb6ef918e85c95b8481794468e4804064424fec27ccc6c98bbeda412"
+    },
+    {
+      "key": "patternly:canonical:v1:settings",
+      "category": "user-settings",
+      "sha256": "07ba4fb6f8c46bc983e4cba2a0378df448e5bc7ed76cf22717838163fbdda178"
+    },
+    {
+      "key": "patternly:canonical:v1:training-attempt:attempt:google-cloud-associate-cloud-engineer:certification-diagnostic-baseline:1:google-cloud-associate-cloud-engineer:certification-diagnostic-baseline:1:occurrence:0:1d4d7d173d9a982d6e9c193d43a0c7e5e5a7679c24a80d21018501e14072aefb",
+      "category": "learning-progress",
+      "sha256": "a88b074bc87443ebd6a832dbdea67b0a834f4cfc68d12a4cf3d4ad0969094ddd"
+    },
+    {
+      "key": "patternly:canonical:v1:training-attempt:attempt:google-cloud-associate-cloud-engineer:certification-focus-practice:2:google-cloud-associate-cloud-engineer:certification-focus-practice:2:occurrence:0:c45a13cf6e72149ea02a025a0b028d3d83e8d56679dcd8d18894c14cfc386ddd",
+      "category": "learning-progress",
+      "sha256": "24af4436b8668e91e8602e9f5e824f77d2e2d40ec2abc3d0f5b4e8cbb507cce0"
+    },
+    {
+      "key": "patternly:canonical:v1:training-attempt:attempt:google-cloud-associate-cloud-engineer:certification-focus-practice:2:google-cloud-associate-cloud-engineer:certification-focus-practice:2:occurrence:1:6c5310767aa04ef13381c279a844bdad10c903baf82bfc5ad581d28b74e1b414",
+      "category": "learning-progress",
+      "sha256": "0d4010634ce2010b78cf37f96c55bd931c12e8d59c22d697e085e28cab352ea5"
+    },
+    {
+      "key": "patternly:canonical:v1:training-attempt:attempt:google-cloud-associate-cloud-engineer:certification-focus-practice:2:google-cloud-associate-cloud-engineer:certification-focus-practice:2:occurrence:2:6c5310767aa04ef13381c279a844bdad10c903baf82bfc5ad581d28b74e1b414",
+      "category": "learning-progress",
+      "sha256": "d863c451d6946938e6ea6168d90771937957b37d4c86cdb1eadc1537f58b0488"
+    },
+    {
+      "key": "patternly:canonical:v1:training-attempt:attempt:google-cloud-associate-cloud-engineer:certification-focus-practice:2:google-cloud-associate-cloud-engineer:certification-focus-practice:2:occurrence:3:6c5310767aa04ef13381c279a844bdad10c903baf82bfc5ad581d28b74e1b414",
+      "category": "learning-progress",
+      "sha256": "c62995abb1a4828716d9dec6ac42859a925c9ed1eac699d9483b65c345487f1d"
+    },
+    {
+      "key": "patternly:canonical:v1:training-attempt:attempt:google-cloud-associate-cloud-engineer:certification-focus-practice:2:google-cloud-associate-cloud-engineer:certification-focus-practice:2:occurrence:4:6c5310767aa04ef13381c279a844bdad10c903baf82bfc5ad581d28b74e1b414",
+      "category": "learning-progress",
+      "sha256": "8f9751362dd1e42fba846c11e223b38b95f43a5383bb537fd648ec5043be68ae"
+    },
+    {
+      "key": "patternly:canonical:v1:training-attempt:attempt:google-cloud-associate-cloud-engineer:certification-focus-practice:2:google-cloud-associate-cloud-engineer:certification-focus-practice:2:occurrence:5:6c5310767aa04ef13381c279a844bdad10c903baf82bfc5ad581d28b74e1b414",
+      "category": "learning-progress",
+      "sha256": "bb02798e435ada7b95424732d53f3875b5ef9edd9606fde2c5588ee8535960a2"
+    },
+    {
+      "key": "patternly:canonical:v1:training-attempt:attempt:google-cloud-associate-cloud-engineer:certification-focus-practice:2:google-cloud-associate-cloud-engineer:certification-focus-practice:2:occurrence:6:1d4d7d173d9a982d6e9c193d43a0c7e5e5a7679c24a80d21018501e14072aefb",
+      "category": "learning-progress",
+      "sha256": "59a21e19c52f6c676268db526c86249a367061a77ae788f2345fbf772eb6f140"
+    },
+    {
+      "key": "patternly:canonical:v1:training-attempt:attempt:google-cloud-associate-cloud-engineer:certification-focus-practice:2:google-cloud-associate-cloud-engineer:certification-focus-practice:2:occurrence:7:1d4d7d173d9a982d6e9c193d43a0c7e5e5a7679c24a80d21018501e14072aefb",
+      "category": "learning-progress",
+      "sha256": "0fa110d112a07d6ce01ce663f60457131318fd0fea838c0ce300c5381dd8dc35"
+    },
+    {
+      "key": "patternly:canonical:v1:training-attempt:attempt:google-cloud-associate-cloud-engineer:certification-focus-practice:2:google-cloud-associate-cloud-engineer:certification-focus-practice:2:occurrence:8:1d4d7d173d9a982d6e9c193d43a0c7e5e5a7679c24a80d21018501e14072aefb",
+      "category": "learning-progress",
+      "sha256": "65266bd9672450a670b1c67be882b1244580ec219a01f121c8bd959bd3bce0b7"
+    },
+    {
+      "key": "patternly:canonical:v1:training-attempt:attempt:google-cloud-associate-cloud-engineer:certification-focus-practice:2:google-cloud-associate-cloud-engineer:certification-focus-practice:2:occurrence:9:1d4d7d173d9a982d6e9c193d43a0c7e5e5a7679c24a80d21018501e14072aefb",
+      "category": "learning-progress",
+      "sha256": "f9ff0ccf55fa39fbad52d29e2ab3f83bd4a73df896317e2733289c06c65123e7"
+    },
+    {
+      "key": "patternly:canonical:v1:training-session-result:google-cloud-associate-cloud-engineer:certification-focus-practice:2",
+      "category": "learning-progress",
+      "sha256": "a54138618ea2578d97de9c210858e8b93391563608a4ab2d486ef36ffca53839"
+    },
+    {
+      "key": "patternly:canonical:v1:training-session:google-cloud-associate-cloud-engineer:certification-diagnostic-baseline:1",
+      "category": "learning-progress",
+      "sha256": "925d929ab2fa54cd2b58c73e660d8603d2236426ff20c5503a3b2bf3ebf9a73a"
+    },
+    {
+      "key": "patternly:canonical:v1:training-session:google-cloud-associate-cloud-engineer:certification-focus-practice:2",
+      "category": "learning-progress",
+      "sha256": "80bcffcde1f165740aca97cb9d947b9455f0cf7956b2459501a2baa55b40ae53"
+    }
+  ],
+  "existingReviewEnvelopeOnlyChanges": [
+    {
+      "key": "patternly:canonical:v1:review-entry:review:attempt:google-cloud-associate-cloud-engineer:certification-diagnostic-baseline:1:google-cloud-associate-cloud-engineer:certification-diagnostic-baseline:1:occurrence:0:1d4d7d173d9a982d6e9c193d43a0c7e5e5a7679c24a80d21018501e14072aefb",
+      "beforeRevision": 2,
+      "afterRevision": 3,
+      "payloadUnchanged": true,
+      "first40Unchanged": true,
+      "producer": "src/storage/repositories/reviewQueueRepository.ts addReviewQueueItems rewrites all existing values via writeCanonicalJson; invoked by Claude partial review mutation"
+    },
+    {
+      "key": "patternly:canonical:v1:review-entry:review:attempt:google-cloud-associate-cloud-engineer:certification-focus-practice:2:google-cloud-associate-cloud-engineer:certification-focus-practice:2:occurrence:0:c45a13cf6e72149ea02a025a0b028d3d83e8d56679dcd8d18894c14cfc386ddd",
+      "beforeRevision": 1,
+      "afterRevision": 2,
+      "payloadUnchanged": true,
+      "first40Unchanged": true,
+      "producer": "src/storage/repositories/reviewQueueRepository.ts addReviewQueueItems rewrites all existing values via writeCanonicalJson; invoked by Claude partial review mutation"
+    }
+  ],
+  "globalIndexes": [
+    {
+      "key": "patternly:canonical:v1:review-index",
+      "oldEntries": 2,
+      "newEntries": 3,
+      "allOldEntriesPreserved": true,
+      "newEntriesOnlyClaude": true
+    },
+    {
+      "key": "patternly:canonical:v1:training-attempt-index",
+      "oldEntries": 11,
+      "newEntries": 61,
+      "allOldEntriesPreserved": true,
+      "newEntriesOnlyClaude": true
+    },
+    {
+      "key": "patternly:canonical:v1:training-session-index",
+      "oldEntries": 2,
+      "newEntries": 4,
+      "allOldEntriesPreserved": true,
+      "newEntriesOnlyClaude": true
+    }
+  ],
+  "newRecords": {
+    "total": 55,
+    "sessions": 2,
+    "results": 2,
+    "attempts": 50,
+    "reviewEntries": 1,
+    "allClaudeOnly": true
+  },
+  "activeTrackPayloadRestoredGCP": "revision changes expected selector writes",
+  "notifications": {
+    "permission": "undetermined",
+    "totalScheduled": 0,
+    "appScheduledCount": 0
+  },
+  "noActiveSessionDraftJournal": true,
+  "unknownKeys": 0,
+  "limits": [
+    "3 profile metadata values deliberately unread; no whole-store equality claim",
+    "no reminder delivery proof at absent/disabled configuration",
+    "no VoiceOver/fullQ12/realPremium/Q13/fullBIZQ/release claim"
+  ],
+  "sourceBindings": {
+    "src/storage/repositories/reviewQueueRepository.ts": "ba26493dd04d50334bcc4b9e756f90bd69ea277298e39f88078d44bf3908bac6",
+    "src/storage/repositories/canonicalRecordCodec.ts": "26dbc7c43728f61ce023e72b7e7f461c0579c9c017d6b4e62f79eabff8b62a2d",
+    "src/application/learningMutations/mutationMaterializer.ts": "41d3fbce58286c43eaa208640725ebc03debe9908c936abfe0d61adfc14a3ed6"
+  },
+  "privateSnapshotFileHashes": {
+    "bizq29-canonical-before.json": "0a7e7bb023724dcd2781e482a8637611fae119b8b82da4c72e34a0c6f0aec380",
+    "bizq29-completed40.json": "c860754c0d319a0f73bce5d54b8a1739c708ca6dcb3a23a84be157fefba809aa",
+    "bizq29-completed10.json": "8c050240297992461dd05816d9a99387e3871d2eba31308df44482933aa5e339",
+    "bizq29-after-gcp.json": "db237604911ffcbe31787af7bb105a86cebaedfcb6a9a97b49346eb10f6b6943"
+  },
+  "GCPProgress16PayloadsPreserved": {
+    "attempts": 11,
+    "sessions": 2,
+    "results": 1,
+    "reviewEntries": 2,
+    "allPayloadsUnchanged": true,
+    "reviewEnvelopeRevisionsOnly": 2
+  },
+  "GCPGoalAndPlan2PayloadsAndRawEnvelopesExact": true
+}

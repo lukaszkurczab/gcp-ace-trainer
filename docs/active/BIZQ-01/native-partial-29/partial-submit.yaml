@@ -1,0 +1,18 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 actual one selected checkbox partial submit stop
+---
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-transfer:b
+    text: 'checkbox, checked, Selected'
+- assertVisible:
+    id: patternly:session:submit:CCARP-D01-O01-transfer
+    enabled: true
+- tapOn:
+    id: patternly:session:submit:CCARP-D01-O01-transfer
+- scrollUntilVisible:
+    element:
+      id: patternly:session:result:CCARP-D01-O01-transfer:partial
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: false
+- takeScreenshot: partial29-actual-partly-correct-header

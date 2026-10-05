@@ -1,0 +1,13 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 actual Claude Manage settings40
+Assert that id: patternly:practice:hub:root is visible... COMPLETED
+Tap on id: patternly:practice:open-setup... COMPLETED
+Assert that id: patternly:practice:setup:root is visible... COMPLETED
+Scrolling DOWN until id: patternly:practice:focus-topic:solution_design_and_architecture is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:practice:focus-topic:solution_design_and_architecture... COMPLETED
+Scrolling DOWN until id: patternly:practice:session-length:40 is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:practice:session-length:40... COMPLETED
+Take screenshot partial29-ordinary-claude40-setup... COMPLETED
+Tap on id: patternly:practice:start-session... COMPLETED
+Assert that id: patternly:session:mode:certification-focus-practice is visible... COMPLETED
+Take screenshot partial29-ordinary-claude40-first-question... COMPLETED

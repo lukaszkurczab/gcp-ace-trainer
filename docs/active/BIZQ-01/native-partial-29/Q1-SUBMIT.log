@@ -1,0 +1,7 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 first ordinary selected answer durable submit
+Tap on id: patternly:session:submit:CCARP-D01-O01-boundary... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O01-boundary:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Take screenshot partial29-q1-actual-correct... COMPLETED
+Tap on id: patternly:session:continue:CCARP-D01-O01-boundary... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:2:length:40 is visible... COMPLETED

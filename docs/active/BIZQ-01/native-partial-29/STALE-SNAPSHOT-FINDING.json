@@ -1,0 +1,8 @@
+{
+  "result": "INVALID evidence second snapshot after selector",
+  "cause": "Runtime.enable replayed earlier console event; fixed marker accepted stale response",
+  "observed": "Second snapshot capturedAt/records match baseline despite selector UI completion",
+  "firstBaseline": "First marker invocation had no earlier matching event; actual independent narrow reads match first baseline. Preserve first baseline for comparison.",
+  "correction": "Unique per-invocation nonce marker in expression and listener; repeat read-only snapshot. No production/data/service correction",
+  "rootAction": "No use of invalid snapshot as after-selector evidence; no answers yet"
+}

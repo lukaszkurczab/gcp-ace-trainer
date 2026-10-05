@@ -1,0 +1,16 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 first ordinary selected answer durable submit
+---
+- tapOn:
+    id: patternly:session:submit:CCARP-D01-O01-boundary
+- scrollUntilVisible:
+    element:
+      id: patternly:session:result:CCARP-D01-O01-boundary:correct
+    direction: DOWN
+    visibilityPercentage: 20
+    centerElement: false
+- takeScreenshot: partial29-q1-actual-correct
+- tapOn:
+    id: patternly:session:continue:CCARP-D01-O01-boundary
+- assertVisible:
+    id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:2:length:40

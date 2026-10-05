@@ -1,0 +1,36 @@
+{
+  "scope": "Read-only preflight, no track switch or native acceptance",
+  "commit": "8ab5662408ed6dbf1d9637498d8ab7f076c99d63",
+  "device": "7F315654-3175-4F3C-BB24-B0263F59360C",
+  "profileKind": "guest",
+  "profileTransition": false,
+  "activeTrack": "google-cloud-associate-cloud-engineer",
+  "activeSessionPresent": false,
+  "activeDraftPresent": false,
+  "claudeGoalPresent": false,
+  "claudePlanPresent": false,
+  "notificationSettingsPresent": false,
+  "notificationJournalPresent": false,
+  "nativeNotificationRead": {
+    "permission": "undetermined",
+    "totalScheduled": 0,
+    "appScheduledCount": 0
+  },
+  "gcpGoalEnvelopeRevision": 1,
+  "gcpAcceptedPlanEnvelopeRevision": 4,
+  "gcpPlanGoalRevision": 1,
+  "goalAndPlanPrivateBaselineSha256": "2ee9e3bc7069f7b46568c1b098f1cf136402c84cb63f700064bf6103ce4466bb",
+  "readMethods": "Existing already initialized Hermes exports: getKeyValueStorage getAllKeys/getString; Expo SDK read-only getAllScheduledNotificationsAsync/getPermission. No bootstrap/migration/getSnapshot/reconcile calls. Private values outside Git. Key enumeration used to establish presence and category inventory; no whole-store preservation claim.",
+  "failedProbe": "Hermes Runtime.evaluate awaitPromise returned Promise object; host JSON.parse failed. Changed method to Runtime console async result, which established actual permission/count.",
+  "lifecycleProjection": {
+    "accountSignOutStatus": "pending",
+    "accountSignOutRevision": 1,
+    "accountSyncStatus": "failed",
+    "accountSyncRevision": 2,
+    "materializationPresent": false,
+    "pendingConfirmationPresent": false,
+    "resetGuardPresent": false,
+    "syncPlanPresent": false,
+    "sourceInterpretation": "commitMutation gates materialization/pendingConfirmation, both absent. markAccountDataPending only changes synced\u2192offlinePending, not failed. Scoped sign-out guard applies authenticated account preparation; no auth/profile transition planned. Preserve markers, stop on unexpected UI/pending effects."
+  }
+}

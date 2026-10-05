@@ -1,0 +1,17 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 actual checkbox selected state probe no submit
+---
+- assertVisible:
+    id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:2:ordinal:3:length:10
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:b
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: false
+- tapOn:
+    id: patternly:session:option:CCARP-D01-O01-transfer:b
+- takeScreenshot: partial29-actual-checkbox-after-one-tap
+- assertVisible:
+    id: patternly:session:option:CCARP-D01-O01-transfer:b
+    text: 'checkbox, checked, Selected'

@@ -1,0 +1,24 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 ordinary Claude 40 correct claude-certified-architect-professional-certification:certification-focus-practice:1
+Assert that id: patternly:session:root:claude-certified-architect-professional-certification:certification-focus-practice:1 is visible... COMPLETED
+Assert that id: patternly:session:counter:claude-certified-architect-professional-certification:certification-focus-practice:1:ordinal:1:length:40 is visible... COMPLETED
+Scrolling UP until id: patternly:session:question:CCARP-D01-O01-boundary is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O01-boundary:c is visible with speed 40, visibility percentage 30%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:session:option:CCARP-D01-O01-boundary:c... COMPLETED
+Tap on id: patternly:session:submit:CCARP-D01-O01-boundary... COMPLETED
+Scrolling DOWN until id: patternly:session:result:CCARP-D01-O01-boundary:correct is visible with speed 40, visibility percentage 20%, timeout 20000 ms, with centering disabled... FAILED
+
+No visible element found: id: patternly:session:result:CCARP-D01-O01-boundary:correct
+
+Could not find a visible element matching selector: id: patternly:session:result:CCARP-D01-O01-boundary:correct
+Tip: Try adjusting the following settings to improve detection:
+- `timeout`: current = 20000ms → Increase if you need more time to find the element
+- `speed`: current = 40 (0-100 scale) → Increase for faster scrolling if element is far away
+- `waitToSettleTimeoutMs`: current = Not defined → Set this value (e.g., 500ms) if your UI updates frequently between scrolls
+- `visibilityPercentage`: current = 20% → Lower this value if you want to detect partially visible elements
+- `centerElement`: current = false → Enable if you want the element to be centered after finding it
+
+
+==== Debug output (logs & screenshots) ====
+
+/private/tmp/bizq29-answer40/2026-10-05_195844

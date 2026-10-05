@@ -1,0 +1,45 @@
+{
+  "status": "actual-claude10-complete-not-package-acceptance",
+  "correct": 9,
+  "partial": 1,
+  "incorrect": 0,
+  "unanswered": 0,
+  "answered": 10,
+  "nativeActiveTime": "10:16",
+  "overallWeightedPoints": {
+    "earned": 29,
+    "max": 34
+  },
+  "retainedRawDiagnosticPoints": {
+    "earned": 33,
+    "max": 34
+  },
+  "partialAttemptRaw": {
+    "earned": 4,
+    "max": 5,
+    "selectedOptionIds": [
+      "b"
+    ]
+  },
+  "partialOverallCredit": 0,
+  "nativeSummaryPersonallyReviewed": true,
+  "noActiveSessionOrDraft": true,
+  "nativeFeedbackPersonallyReviewed": [
+    "fullReason",
+    "omitted_option d ending safely.",
+    "five authored details",
+    "source",
+    "reachableNext"
+  ],
+  "screens": {
+    "partial29-actual-partial-details1.png": "b236b4abda00c1c591b2793e0ae662b43113b75cdea69e3c5013388054bfae38",
+    "partial29-actual-partial-reason.png": "ae1d0244fca8fbe7bcefce969310d4c7fbe8e81a267176f96976bfa608a322d8",
+    "partial29-actual-partial-before-details.png": "5023dc70d83f690081e763975e02e7a2eefba2c8a0d15ed03fb4bf750d512ef0",
+    "partial29-actual-checkbox-after-one-tap.png": "822e767f5446b36c42d5097994752b800083765067e998c503c23ee98889013e",
+    "partial29-actual40-summary.png": "d90b0ef9066858083b958646bd60df4b8f9800583f7a7b5c07922149dcbe2394",
+    "partial29-actual10-summary.png": "d084a0655fada0aff8fc446ddc67fe6b28ec91a314817a645ff334938865fc9e",
+    "partial29-actual-expanded-details-top.png": "d57cd2e64c4ab90c6164feb925b7f878f0206157fcd465fe9991e8bf15a2c91a",
+    "partial29-actual-reason-and-expanded-details.png": "4653e052c72f3b5c357cfc656137de06d44802fa4137cfefc72ecf7b8068e1c5"
+  },
+  "remaining": "GCProundtrip preservation, independentQA, rootacceptance"
+}

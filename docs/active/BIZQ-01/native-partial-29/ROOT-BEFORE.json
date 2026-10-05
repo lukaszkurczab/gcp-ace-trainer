@@ -1,0 +1,28 @@
+{
+  "result": "PASS readonly baseline before first selector write",
+  "toolSha256": "8a92ce32c6418e220c666c9641d5fd3fa74e9191a0b2535b5b52999a06f8487e",
+  "snapshotSha256": "0a7e7bb023724dcd2781e482a8637611fae119b8b82da4c72e34a0c6f0aec380",
+  "profile": {
+    "kind": "guest",
+    "transitionActive": false
+  },
+  "notifications": {
+    "permission": "undetermined",
+    "totalScheduled": 0,
+    "appScheduledCount": 0
+  },
+  "keyCount": 29,
+  "privateRecords": 26,
+  "fences": {
+    "activeTrainingSessionPresent": false,
+    "activeDraftPresent": false,
+    "activeMutationJournalPresent": false,
+    "accountSyncUnsettled": true,
+    "accountSignOutStatePresent": true,
+    "accountDeletionStatePresent": false
+  },
+  "categoryScope": "Prior GCP canonical learning/goals/plans/settings exact private records; lifecycle redacted revision/status; metadata unread, no whole-store proof",
+  "actualSDK": "Read-only Hermes initialized exports; async event received, no fallback zero. Node syntax check + actual read probe PASS",
+  "deviceAppearance": "dark",
+  "deviceContentSize": "large"
+}

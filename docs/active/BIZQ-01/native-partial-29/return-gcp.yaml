@@ -1,0 +1,44 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 ordinary return GCP after completed Claude10
+---
+- assertVisible:
+    id: patternly:summary:root:claude-certified-architect-professional-certification:certification-focus-practice:2
+- scrollUntilVisible:
+    element:
+      id: patternly:summary:back-to-practice:claude-certified-architect-professional-certification:certification-focus-practice:2
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:summary:back-to-practice:claude-certified-architect-professional-certification:certification-focus-practice:2
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 15000
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: patternly:home:track-card:claude-certified-architect-professional-certification
+- takeScreenshot: partial29-claude-home-before-return
+- tapOn:
+    id: patternly:home:change-track
+- extendedWaitUntil:
+    visible:
+      id: patternly:home:select-track:root
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: patternly:home:select-track:google-cloud-associate-cloud-engineer
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:home:select-track:google-cloud-associate-cloud-engineer
+- takeScreenshot: partial29-gcp-selection-before-return-commit
+- tapOn:
+    id: patternly:home:select-track:continue
+- extendedWaitUntil:
+    visible:
+      id: patternly:home:track-card:google-cloud-associate-cloud-engineer
+    timeout: 20000
+- assertNotVisible:
+    id: patternly:home:select-track:save-error
+- takeScreenshot: partial29-gcp-home-after-return
