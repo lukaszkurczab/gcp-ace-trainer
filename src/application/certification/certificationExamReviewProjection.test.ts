@@ -7,7 +7,7 @@ import type { Question } from "../../content/canonical";
 import { projectCertificationExamReview } from "./certificationExamReviewProjection";
 
 test("completed exam review projects answered and unanswered items across the complete fixed plan", async () => {
-  const { projection } = await createCertificationExamReviewFixture({ correctIndices: [0], incorrectIndices: [1] });
+  const { attempts, projection } = await createCertificationExamReviewFixture({ correctIndices: [0], incorrectIndices: [1] });
   assert.equal(projection.items.length, 50);
   assert.equal(projection.answeredCount, 2);
   assert.equal(projection.unansweredCount, 48);
@@ -23,6 +23,8 @@ test("completed exam review projects answered and unanswered items across the co
   assert.ok(projection.items[2]?.correctOptionIds.length);
   assert.ok(projection.items[2]?.reason);
   assert.ok(projection.maxPoints > 0);
+  assert.equal(projection.overallPointsEarned, attempts.filter((attempt) => attempt.result.kind === "correct").reduce((sum, attempt) => sum + attempt.result.earnedPoints, 0));
+  assert.ok(projection.pointsEarned >= projection.overallPointsEarned);
 });
 
 test("fully unanswered completed exam projects all 50 items without creating attempts", async () => {
@@ -30,6 +32,7 @@ test("fully unanswered completed exam projects all 50 items without creating att
   assert.equal(attempts.length, 0);
   assert.equal(projection.answeredCount, 0);
   assert.equal(projection.unansweredCount, 50);
+  assert.equal(projection.overallPointsEarned, 0);
   assert.equal(projection.items.every((item) => item.answerState === "unanswered" && item.result === "unanswered" && item.selectedOptionIds.length === 0 && item.correctOptionIds.length > 0), true);
 });
 

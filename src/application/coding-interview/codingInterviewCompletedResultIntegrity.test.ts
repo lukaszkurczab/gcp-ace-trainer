@@ -96,6 +96,7 @@ test("completed Coding practice is readable and review uses the same completed p
   assert.equal(result.feedbackItems.length, 10);
   assert.deepEqual(result.answeredOccurrenceIds, session.itemOrder.map((item) => item.occurrenceId));
   assert.equal(result.feedbackItems.every((item) => item.correctness === "correct"), true);
+  assert.equal(result.overallPointsEarned, result.score?.pointsEarned);
   const review = await getAlgorithmsPracticeReviewProjection(sessionId, result.feedbackItems[0]!.occurrenceId);
   assert.deepEqual(review, result);
 });
@@ -108,6 +109,7 @@ test("completed conditional-reinsert practice projects the final replaced occurr
   assert.equal(session.itemOrder[4]?.item.questionId, initialSession.itemOrder[0]?.item.questionId);
   assert.notEqual(session.itemOrder[4]?.occurrenceId, initialSession.itemOrder[4]?.occurrenceId);
   assert.equal(result.feedbackItems.filter((item) => item.questionId === initialSession.itemOrder[0]?.item.questionId).length, 2);
+  assert.equal(result.overallPointsEarned, result.score?.pointsEarned);
 });
 
 test("completed Coding practice carries canonical diagnostics for the committed wrong choice", async () => {
@@ -141,6 +143,7 @@ test("abandoned Coding summary keeps its separate existing projection and perfor
   assert.deepEqual(summary.unansweredOccurrenceIds, prepared.session.itemOrder.slice(1).map((item) => item.occurrenceId));
   assert.deepEqual(summary.feedbackItems, []);
   assert.equal(summary.score, null);
+  assert.equal(summary.overallPointsEarned, null);
   assert.deepEqual(storage.snapshot(), stableSnapshot);
 });
 

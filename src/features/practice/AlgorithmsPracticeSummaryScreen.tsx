@@ -98,7 +98,9 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
         configurationTestID={runtimeSelectors.summary.configuration(result.sessionId, result.configuration.actualLength, result.configuration.feedbackTiming)}
         context={{ modeLabel: t(getAlgorithmMode(result.modeId).title), trackLabel: t("Coding Interview") }}
         onBack={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
-        points={normalizedDetails.points ?? undefined}
+        points={result.completionKind === "completed" && result.overallPointsEarned !== null && normalizedDetails.points
+          ? { earned: result.overallPointsEarned, max: normalizedDetails.points.max }
+          : undefined}
         requestedCount={result.configuration.requestedLength}
         review={feedbackAvailable ? { content: reviewContent, expanded: showReview, onPress: () => setShowReview((current) => !current), testID: runtimeSelectors.summary.reviewAnswers(result.sessionId) } : undefined}
         rootTestID={runtimeSelectors.summary.root(result.sessionId)}

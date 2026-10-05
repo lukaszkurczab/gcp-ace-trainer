@@ -3,6 +3,7 @@ import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalFeed
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 import { projectCanonicalChoiceFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
+import { overallScoreCredit } from "../canonical/overallScoreCredit";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
 
 export type CertificationExamReviewItem = Readonly<{
@@ -29,6 +30,7 @@ export type CertificationExamReviewProjection = Readonly<{
   items: readonly CertificationExamReviewItem[];
   maxPoints: number;
   modeId: "certification-exam-simulation";
+  overallPointsEarned: number;
   pointsEarned: number;
   profileId: string;
   profileVersion: string;
@@ -116,6 +118,7 @@ export async function projectCertificationExamReview(input: Readonly<{
   let partialCount = 0;
   let incorrectCount = 0;
   let pointsEarned = 0;
+  let overallPointsEarned = 0;
   let answeredMaxPoints = 0;
   const items = await Promise.all(session.itemOrder.map(async (occurrence, index): Promise<CertificationExamReviewItem> => {
     const question = planQuestions[index]!;
@@ -140,6 +143,7 @@ export async function projectCertificationExamReview(input: Readonly<{
       else if (resultKind === "partial") partialCount += 1;
       else incorrectCount += 1;
       pointsEarned += attempt.result.earnedPoints;
+      overallPointsEarned += overallScoreCredit(attempt.result);
       answeredMaxPoints += attempt.result.maxPoints;
     }
     return Object.freeze({
@@ -181,6 +185,7 @@ export async function projectCertificationExamReview(input: Readonly<{
     items: Object.freeze(items),
     maxPoints,
     modeId: "certification-exam-simulation",
+    overallPointsEarned,
     pointsEarned,
     profileId: profile.profileId,
     profileVersion: profile.profileVersion,

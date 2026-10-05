@@ -1,0 +1,28 @@
+TAP version 13
+# Subtest: actual Certification Practice result presents derived overall points and the existing partial diagnostic
+ok 1 - actual Certification Practice result presents derived overall points and the existing partial diagnostic
+  ---
+  duration_ms: 649.114375
+  type: 'test'
+  ...
+# Subtest: an unavailable optional practice-points projection preserves counts and omits weighted points
+ok 2 - an unavailable optional practice-points projection preserves counts and omits weighted points
+  ---
+  duration_ms: 54.745583
+  type: 'test'
+  ...
+# Subtest: generic history without compatible verified points does not render its raw weighted aggregate
+ok 3 - generic history without compatible verified points does not render its raw weighted aggregate
+  ---
+  duration_ms: 39.2945
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2183.218167

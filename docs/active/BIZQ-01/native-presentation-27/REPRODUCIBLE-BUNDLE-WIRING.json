@@ -1,0 +1,13 @@
+{
+  "checks": {
+    "correctOnlyHelper": true,
+    "examDerivedAccumulation": true,
+    "practiceOptionalDerived": true,
+    "genericDerivedPointsProp": true,
+    "codingPracticeDerived": true,
+    "codingSimulationDerived": true,
+    "progressHelperAtBothNumerators": true
+  },
+  "bundleSha256": "25e6d7caac62439de0e3bb5474d58978e52ef5c8b036e35fe4fba23f88a6ea7d",
+  "interpretation": "Actual Babel transformed helper/caller wiring; not native partial proof"
+}

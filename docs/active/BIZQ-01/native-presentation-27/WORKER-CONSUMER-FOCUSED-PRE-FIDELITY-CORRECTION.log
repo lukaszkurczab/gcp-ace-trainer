@@ -1,0 +1,54 @@
+TAP version 13
+# Subtest: overall score credits correct attempts while preserving zero credit for partial and incorrect outcomes
+ok 1 - overall score credits correct attempts while preserving zero credit for partial and incorrect outcomes
+  ---
+  duration_ms: 4.6735
+  type: 'test'
+  ...
+# Subtest: result screens render validated overall credit rather than raw diagnostic points
+ok 2 - result screens render validated overall credit rather than raw diagnostic points
+  ---
+  duration_ms: 1.632041
+  type: 'test'
+  ...
+# Subtest: both progress point numerators use the shared correct-only credit policy
+ok 3 - both progress point numerators use the shared correct-only credit policy
+  ---
+  duration_ms: 0.249459
+  type: 'test'
+  ...
+# Subtest: actual Certification Practice result presents derived overall points and the existing partial diagnostic
+ok 4 - actual Certification Practice result presents derived overall points and the existing partial diagnostic
+  ---
+  duration_ms: 627.458375
+  type: 'test'
+  ...
+# Subtest: an unavailable optional practice-points projection preserves counts and omits weighted points
+ok 5 - an unavailable optional practice-points projection preserves counts and omits weighted points
+  ---
+  duration_ms: 60.480833
+  type: 'test'
+  ...
+# Subtest: generic history without compatible verified points does not render its raw weighted aggregate
+ok 6 - generic history without compatible verified points does not render its raw weighted aggregate
+  ---
+  duration_ms: 50.511834
+  type: 'test'
+  ...
+# Subtest: progress areas and Coding effectiveness exclude raw partial points from overall credit
+ok 7 - progress areas and Coding effectiveness exclude raw partial points from overall credit
+  ---
+  duration_ms: 573.059
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2549.993417
+
+exit_code=0

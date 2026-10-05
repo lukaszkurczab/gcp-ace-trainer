@@ -3,6 +3,7 @@ import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalFeed
 import { isCertificationPracticeModeId, type CertificationPracticeModeId } from "../../tracks/certification";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 import { projectCanonicalChoiceFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
+import { overallScoreCredit } from "../canonical/overallScoreCredit";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
 
 export type CertificationPracticeReviewItem = Readonly<{
@@ -26,6 +27,7 @@ export type CertificationPracticeReviewProjection = Readonly<{
   feedbackMode: "afterEachAnswer" | "atSessionEnd";
   items: readonly CertificationPracticeReviewItem[];
   modeId: CertificationPracticeModeId;
+  overallPointsEarned: number;
   sessionId: string;
   total: number;
 }>;
@@ -97,7 +99,8 @@ export async function projectCertificationPracticeReview(input: Readonly<{
   if (!certificationReviewEvidenceMatches(result.evidence.details, sessionAttempts)) {
     return fail("Certification Practice result evidence does not match its committed answers.");
   }
-  return Object.freeze({ feedbackMode, items: Object.freeze(items), modeId: session.modeId, sessionId: session.id, total: session.actualLength });
+  const overallPointsEarned = sessionAttempts.reduce((sum, attempt) => sum + overallScoreCredit(attempt.result), 0);
+  return Object.freeze({ feedbackMode, items: Object.freeze(items), modeId: session.modeId, overallPointsEarned, sessionId: session.id, total: session.actualLength });
 }
 
 export function certificationReviewEvidenceMatches(

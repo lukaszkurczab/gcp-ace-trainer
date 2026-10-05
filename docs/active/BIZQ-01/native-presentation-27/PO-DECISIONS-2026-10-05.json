@@ -1,0 +1,19 @@
+{
+  "authority": "Direct human message verified using read_thread, not inferred from other agent summary",
+  "sourceThreadId": "01a10c6a-9012-70b3-bb15-8ca7ea944c7d",
+  "sourceThreadTitle": "Sprawdź oczekujące decyzje",
+  "sourceUserTurnId": "01a10c6c-9f9f-7742-bc63-58ca9d23edf1",
+  "exactHumanText": "profil premium powinie sam utworzyć, lub użyć przełącznika z settings. częściowa odpowiedź liczona jako błędna do ogólnej punktacji, ale w podsumowaniu zaznaczona jako partly correct",
+  "decisions": {
+    "premiumTesting": "Prepare profile autonomously or use existing Settings Premium testing switch; inspect current implementation, no production purchases/serviceconfig",
+    "partial": "No positive overall-score credit, diagnostickindpartial and partlycorrect summary retained"
+  },
+  "priorPendingDecisionsResolved": true,
+  "canonicalContract": "../../../../../docs/17-training-runtime-and-interaction-spec.md",
+  "beforeSha256": "f796b365bfbc16d82b5395d509a44a21ec86bd3a2adb2c29dc04ce8c7ace7c44",
+  "afterSha256": "a6d2e12be67d9de9d1e67728506bf29566bf6bbfbb332c4886a5de4d24b8106a",
+  "patchSha256": "b06c502760eb3f1bcf827d92a4e40ace7e6db992263772c479c663f711c53c14",
+  "implementationStatus": "readonly preflight before material acceptedplan; no production/devicechanges yet",
+  "premiumProfileStatus": "Authorized route selection, not yet activated/tested",
+  "earlier26Acceptance": "Authored-feedback contract unchanged; frozen26 reviews are historical bindings at acceptance, not rewritten for this later PO scoring decision"
+}

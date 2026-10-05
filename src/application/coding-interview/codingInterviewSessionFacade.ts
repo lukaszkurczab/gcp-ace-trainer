@@ -23,6 +23,7 @@ import { createContentSessionPlanFingerprint } from "../../content/application/c
 import { isCanonicalOptionOrder } from "../canonical/canonicalOptionOrder";
 import { getProductSimulationModeConfig, ProductModeUnavailableError } from "../../content/canonical/productModeConfig";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
+import { overallScoreCredit } from "../canonical/overallScoreCredit";
 
 const saveAndContinueInFlight = new Map<string, Promise<AlgorithmsSimulationProjection>>();
 
@@ -97,6 +98,7 @@ export type AlgorithmsSessionResultProjection = Readonly<{
     controls: readonly Readonly<{ id: string; state: "selected" | "correct" | "incorrect" | "omitted_correct" | "neutral" }>[];
   }>[];
   score: Readonly<{ correctCount: number; partialCount: number; incorrectCount: number; pointsEarned: number; maxPoints: number }> | null;
+  overallPointsEarned: number | null;
 }>;
 
 export type AlgorithmsInterviewSimulationEntry = Readonly<{
@@ -573,6 +575,7 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
     }),
     feedbackItems: completedFeedbackItems(session, integrity.questions, integrity.attemptsByOccurrenceId),
     score: resultScore(result.evidence.details),
+    overallPointsEarned: [...integrity.attemptsByOccurrenceId.values()].reduce((sum, attempt) => sum + overallScoreCredit(attempt.result), 0),
   });
 }
 
@@ -616,6 +619,7 @@ export async function getAlgorithmsPracticeSummaryProjection(sessionId: string):
     }),
     feedbackItems: Object.freeze([]),
     score: null,
+    overallPointsEarned: null,
   });
 }
 

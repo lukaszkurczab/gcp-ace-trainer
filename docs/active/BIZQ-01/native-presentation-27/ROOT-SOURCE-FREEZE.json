@@ -1,0 +1,14 @@
+{
+  "workerDeclaredProductionFrozen": true,
+  "productionBindings": {
+    "src/application/certification/certificationExamReviewProjection.ts": "515090d7232bcef7c3152f8097b7943e40490bf874c6c284750ab087b4361ef6",
+    "src/application/certification/certificationPracticeReviewProjection.ts": "dba757cf7a1c4e9eb24298537bf9ba32e855d110b36a6f544bccdcd43400d331",
+    "src/application/coding-interview/codingInterviewSessionFacade.ts": "e72f658f47b49fc927fe7a56b30213b23ebeabbf114e5274d75a64aabe179779",
+    "src/features/exam/ResultScreen.tsx": "5cec9b9eee3cdd8c6c3cfc7ae05c49d70f70b2b83d0921045f455ab8242a5278",
+    "src/features/home/tabs/progressTabModel.ts": "f915166c70749e48610edcdcb1fa8b3e654d5ca1d97c9e124ab2fbd57e9bbed4",
+    "src/features/practice/AlgorithmsPracticeSummaryScreen.tsx": "01d3ba8a68f6f157a3ccb7512cc770e130647484f117d8e05dff217c496b4059",
+    "src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx": "5ca494ab27a4ea6a39192ec1b12eb44d4dd491af9e75f9bd9365b99522c40144",
+    "src/application/canonical/overallScoreCredit.ts": "88a09ac20bf1df176c4de187b08d4881f8c339ca77a89afad4e1c27cc8e5a273"
+  },
+  "scope": "Before actualbundle/native; finalQA notyet"
+}

@@ -16,6 +16,8 @@ test("completed practice projector preserves the canonical five-state answer mat
   assert.equal(fixture.projection.total, 10);
   assert.equal(fixture.projection.items[2]?.selectedOptionIds.join(","), "b,d");
   assert.equal(fixture.projection.items[3]?.selectedOptionIds.length, 1);
+  assert.equal(fixture.projection.overallPointsEarned, fixture.attempts.filter((attempt) => attempt.result.kind === "correct").reduce((sum, attempt) => sum + attempt.result.earnedPoints, 0));
+  assert.ok(fixture.projection.overallPointsEarned < fixture.projection.items.reduce((sum, item) => sum + fixture.attempts.find((attempt) => attempt.occurrenceId === item.occurrenceId)!.result.earnedPoints, 0));
   assert.deepEqual(fixture.result.evidence.details, { activeForegroundMs: 0, correctCount: 7, partialCount: 1, incorrectCount: 2, pointsEarned: 15, maxPoints: 22 });
 });
 

@@ -1,0 +1,35 @@
+{
+  "goal": "BIZQ-01..06 full documented acceptance; main BIZQ-01 partial; package27 derivedoverallcredit preserves history",
+  "head": "2d24ef611839a825be98bc056132211a05662f99",
+  "baselineBehaviorTests": {
+    "passed": 12,
+    "failed": 0,
+    "nativePerformed": false
+  },
+  "bindings": {
+    "docs/active/BIZQ-01/native-presentation-27/BRIEFING.md": "5f737f8ab6235b8c4303d31cc1a87a8ec1f9a50d0b16463926cebb05ff70c796",
+    "docs/active/BIZQ-01/native-presentation-27/PO-DECISIONS-2026-10-05.json": "165880ca9b4b02ffbb55f7bdadc5183537c68ccd9426dc75e19e04f902c50d71",
+    "docs/active/BIZQ-01/native-presentation-27/PO-CANONICAL-CONTRACT-CHANGE.patch": "b06c502760eb3f1bcf827d92a4e40ace7e6db992263772c479c663f711c53c14",
+    "docs/active/BIZQ-01/native-presentation-27/ROOT-PREMIUM-ENVIRONMENT-PROBE.json": "713dc3ba92bf7e7b8c9fc1d6ef90b21c1cdb1401463643efcf84b97463d1c12b",
+    "docs/active/BIZQ-01/native-presentation-27/ROOT-BASELINE-BEHAVIOR.log": "ffce0eec48149d8f1d4264dfcb561557112647f3f414c7b2c2330199e792b352",
+    "docs/active/BIZQ-01/native-presentation-27/PARTIAL-SCORE-PREFLIGHT.md": "6763c53677efe419af734e65ec0a8b7262bfaf42761b2b9921d4b8875d762f09",
+    "docs/active/BIZQ-01/native-presentation-27/PARTIAL-SCORE-PREFLIGHT.json": "03ebf2e94c1e48e4c915ec8711ca7a24d40ac214d42c20dbe0815024c047d15e",
+    "docs/active/BIZQ-01/native-presentation-27/PREMIUM-PROFILE-PREFLIGHT.md": "09f4229c21292fb630917e7a966df29cc43edf80e2b4e5012e2b55af9b060e23",
+    "docs/active/BIZQ-01/native-presentation-27/PREMIUM-PROFILE-PREFLIGHT.json": "7ff0e8a588eca94c96e087045c5c47e43dcb2e97a4e047b8fc7d7c8afa81d411"
+  },
+  "productionSourceBefore": {
+    "src/features/exam/ResultScreen.tsx": "fb09ec67c2a7f4daae96da51f0ab17bf18abb0641fa2984342dfb4a1503e1268",
+    "src/features/practice/AlgorithmsPracticeSummaryScreen.tsx": "917d3391b46dcbd6698ebf5129fe2d35f1d7b5ab3b5b65dad09568f5cc626f48",
+    "src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx": "0eb77240ae9b3493cb8f76138ba028d74a3fba789b3421efea15c173820ea9aa",
+    "src/features/home/tabs/progressTabModel.ts": "162b36764c4480f04759b512405a8b126ad2375e2f607b3be20a66fbfe15d700",
+    "src/application/certification/certificationPracticeReviewProjection.ts": "6890856cdcf032b7f0e869121f482d612152bdf2ff910ff4a6b1e13eb61ef91d",
+    "src/application/certification/certificationExamReviewProjection.ts": "5ce5539457ba5a9938bb8ea70b3257d276889c226e9e0d17e61cd3673ed89992",
+    "src/application/coding-interview/codingInterviewSessionFacade.ts": "b91ad9e44b58b62ee208f698a7248f793a3bb21988b96c164ff70925d8c15937"
+  },
+  "status": "Await independent proposal review; no production change27",
+  "findings": {
+    "existingSummaryLabel": "src/locales/en/common.json key Partial already Partly correct",
+    "overallCreditGaps": "Certification practice/exam +Codingpractice/simulation +installed-package areas +Codingeffectiveness",
+    "historyPolicy": "existing raw evidence validators unchanged; optional credit unavailable does not newly gate generic/practice count summary"
+  }
+}

@@ -1,0 +1,265 @@
+{
+  "schemaVersion": "bizq01-next-native-feasibility-v1",
+  "date": "2026-10-05",
+  "scope": "Read-only feasibility of reaching a partial-capable long-option question through an existing free Coding normal-UI session while preserving current GCP practice state.",
+  "decision": {
+    "normalUiPathExists": "conditional_only_if_coding_is_already_active",
+    "freshHistoryCanNaturallyDemonstratePartial": false,
+    "safeTemporaryGcpToCodingSwitch": false,
+    "candidateCountsAsAcceptedRepairedBizqQuestion": false,
+    "reason": "The actual empty-history selector returned only choice_single items at all three normal free Coding session lengths. Track selection persists the new active track; reminder reconciliation either clears old OS IDs when the selected track has no valid source or replaces the reminder source when a Coding plan is ready. The GCP goal/plan remain separately keyed, but the prior active reminder schedule is not guaranteed to be restored by switching back. Available bindings also do not establish item-specific BIZQ repaired-question acceptance for the candidate."
+  },
+  "candidate": {
+    "trackId": "coding-interview-dsa-problem-solving",
+    "contentVersion": "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04",
+    "nodeId": "complexity_and_constraints",
+    "mentalUnitId": "amortized_complexity",
+    "questionId": "alg-complexity-amortized-013",
+    "interactionType": "choice_multiple",
+    "questionCanonicalSha256": "c0a262cbf4197bf0cce276ca8195f7ae3b4660f38a8aec916e2c65789d3ff1df",
+    "answerOptionIds": [
+      "ignore_spike",
+      "random_average",
+      "unbounded_cleanup"
+    ],
+    "options": [
+      {
+        "optionId": "ignore_spike",
+        "characters": 93
+      },
+      {
+        "optionId": "random_average",
+        "characters": 71
+      },
+      {
+        "optionId": "unbounded_cleanup",
+        "characters": 98
+      },
+      {
+        "optionId": "sequence_total",
+        "characters": 57
+      }
+    ],
+    "partialResponseExample": {
+      "selectedOptionIds": [
+        "ignore_spike"
+      ],
+      "expectedKindFromCurrentScorer": "partial",
+      "nativeResultSelector": "patternly:session:result:alg-complexity-amortized-013:partial",
+      "earnedPoints": 2,
+      "maxPoints": 4
+    },
+    "runtimeSelectors": {
+      "question": "patternly:session:question:alg-complexity-amortized-013",
+      "options": [
+        "patternly:session:option:alg-complexity-amortized-013:ignore_spike",
+        "patternly:session:option:alg-complexity-amortized-013:random_average",
+        "patternly:session:option:alg-complexity-amortized-013:unbounded_cleanup",
+        "patternly:session:option:alg-complexity-amortized-013:sequence_total"
+      ],
+      "submit": "patternly:session:submit:alg-complexity-amortized-013",
+      "detailsToggle": "patternly:session:details-toggle:alg-complexity-amortized-013",
+      "details": "patternly:session:details:alg-complexity-amortized-013"
+    },
+    "acceptanceLineage": {
+      "trackApprovalDisposition": "approved",
+      "approvalDate": "2026-08-17",
+      "approvalCanonicalItemCount": 3404,
+      "reviewPacketSampleCount": 3,
+      "candidateQuestionInReviewSamples": false,
+      "acceptedBIZQRepairedBindingEstablished": false,
+      "note": "The general Coding track approval is not evidence of item-specific BIZQ repaired-question acceptance; current accepted OOD N07 closure does not include this Coding item."
+    }
+  },
+  "actualSelectorProbe": {
+    "implementation": "patternly/src/application/canonical/practiceQuestionSelector.ts:selectPracticeQuestions",
+    "pool": "Current generated Coding artifact questions with nodeId=complexity_and_constraints",
+    "attempts": "empty array",
+    "results": [
+      {
+        "requested": 10,
+        "selected": 10,
+        "interactionTypeCounts": {
+          "choice_single": 10
+        },
+        "partialCapableSelectedQuestionIds": [],
+        "candidateSelected": false
+      },
+      {
+        "requested": 20,
+        "selected": 20,
+        "interactionTypeCounts": {
+          "choice_single": 20
+        },
+        "partialCapableSelectedQuestionIds": [],
+        "candidateSelected": false
+      },
+      {
+        "requested": 40,
+        "selected": 40,
+        "interactionTypeCounts": {
+          "choice_single": 40
+        },
+        "partialCapableSelectedQuestionIds": [],
+        "candidateSelected": false
+      }
+    ],
+    "execution": "Node 22.22.3, from patternly package cwd, importing the actual TypeScript selector through tsx.",
+    "limitation": "This verifies empty-history selection only; no user attempt history was read or changed.",
+    "partialCapabilityCheck": "Each selected question was passed through current scoring-contract inspection; choice_single scoring returns only correct or incorrect. No selected item can score partial."
+  },
+  "normalUi": {
+    "routeIfCodingAlreadyActive": [
+      "Practice",
+      "Custom Practice",
+      "choose 10, 20, or 40",
+      "Start Session"
+    ],
+    "otherFreeModes": [
+      {
+        "modeId": "coding-interview-learn-approach",
+        "requestedLengths": [
+          10
+        ]
+      },
+      {
+        "modeId": "coding-interview-guided-practice",
+        "requestedLengths": [
+          10,
+          20,
+          40
+        ]
+      }
+    ],
+    "scope": "All use the existing free Coding node; none offers a question or mental-unit picker.",
+    "freshHistoryFinding": "No choice_multiple question was in the actual selected set at the lengths exposed by the UI.",
+    "selectedInteractionTypesAtEmptyHistory": {
+      "10": {
+        "choice_single": 10
+      },
+      "20": {
+        "choice_single": 20
+      },
+      "40": {
+        "choice_single": 40
+      }
+    },
+    "partialResultReachableInTheseSelectedSessions": false
+  },
+  "statePreservation": {
+    "trackPickerWrites": "SelectTrackScreen.commitSelection saves the chosen active track and marks account data pending.",
+    "goalAndPlanRecords": "Per-track keys; selecting Coding does not itself overwrite the GCP goal or plan record.",
+    "reminderReconciliation": {
+      "selectedSourceUnavailable": "clearForSource calls cancelAll over saved schedules, legacy IDs and journal IDs, then saves empty schedules and null identity.",
+      "codingSourceReady": "The reminder source identity contains trackId. A Coding identity cannot match the GCP identity, so the existing same-source/same-slots no-op does not apply; the journaled materialization path reconciles the old IDs against Coding slots.",
+      "returnToGcp": "A second reconciliation. Source does not guarantee the original OS notification IDs are restored byte-for-byte."
+    },
+    "userTrackPlanReminderStateInspected": false,
+    "stateChanged": false
+  },
+  "inputs": [
+    {
+      "path": "patternly/docs/active/BIZQ-01/native-presentation-27/BRIEFING.md",
+      "sha256": "5f737f8ab6235b8c4303d31cc1a87a8ec1f9a50d0b16463926cebb05ff70c796"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-01/native-presentation-27/PREMIUM-PROFILE-PREFLIGHT.md",
+      "sha256": "09f4229c21292fb630917e7a966df29cc43edf80e2b4e5012e2b55af9b060e23"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-01/native-presentation-27/PARTIAL-SCORE-PREFLIGHT.md",
+      "sha256": "6763c53677efe419af734e65ec0a8b7262bfaf42761b2b9921d4b8875d762f09"
+    },
+    {
+      "path": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+      "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3"
+    },
+    {
+      "path": "docs/17-training-runtime-and-interaction-spec.md",
+      "sha256": "a6d2e12be67d9de9d1e67728506bf29566bf6bbfbb332c4886a5de4d24b8106a"
+    },
+    {
+      "path": "patternly/src/content/canonical/productModeConfig.ts",
+      "sha256": "a65e60a2ebf6f61813a1277b4058ab9b28c60b82e7b2fa7f592b08f640fe04f3"
+    },
+    {
+      "path": "patternly/src/features/practice/PracticeHubScreen.tsx",
+      "sha256": "aa4a89fb5a5406d369f9f48e2d5f1ba29301e65ed4c40b444b74b57d21added5"
+    },
+    {
+      "path": "patternly/src/features/practice/PracticeSetupScreen.tsx",
+      "sha256": "86aea6ce51555ae73b2edecccb4068ae219d86b297d28f6fd3be4fe242abed20"
+    },
+    {
+      "path": "patternly/src/application/canonical/CanonicalTrainingRuntime.ts",
+      "sha256": "cc980c835227e253c287a1dd841b0892861d5ab8f9491b1c35d5b870253a2e83"
+    },
+    {
+      "path": "patternly/src/application/canonical/practiceQuestionSelector.ts",
+      "sha256": "717e2a36185f97c02d4cb0aa7f609f189ebcba9cef0d3b60585ad3c41f56d7bd"
+    },
+    {
+      "path": "patternly/src/content/canonical/questionScoring.ts",
+      "sha256": "941e9a283789ddc73d46be50f1009770c72760f0d674847aafdc15110892be17"
+    },
+    {
+      "path": "patternly/src/features/practice/PracticeResponseControls.tsx",
+      "sha256": "bd6238fe06ab1481bc2a3a3ca4c766619758f15ff8e3cf4ca867fde51c21576f"
+    },
+    {
+      "path": "patternly/src/features/practice/PracticeSessionSurface.tsx",
+      "sha256": "5262a0c2a1e4be5c6d68fc707b90de60b82435f15aef08263800c05674f03a1e"
+    },
+    {
+      "path": "patternly/src/features/practice/PracticeQuestionCard.tsx",
+      "sha256": "f8bed97ece78c1767820926f832601e998dd765d5d3c5dc0129e7caf2c53b25a"
+    },
+    {
+      "path": "patternly/src/features/practice/PracticeSessionScreen.tsx",
+      "sha256": "4a87680fcd6a258dcd00c40a04a52dec83a9363c7d34771f638a8799a92cf969"
+    },
+    {
+      "path": "patternly/src/testing/runtimeSelectors.ts",
+      "sha256": "fb0a1c71dfd7a4f24b88d42fdd523dcef8f0804826d58c70aea5149806551cd7"
+    },
+    {
+      "path": "patternly/src/features/home/SelectTrackScreen.tsx",
+      "sha256": "f5ca8c6f05f9d6c8684176864f2e08d2ccca9ec03f12a9934da41fd90e4ee1f6"
+    },
+    {
+      "path": "patternly/src/application/account/accountDataService.ts",
+      "sha256": "a6aeb3d8d754ba56982eddb943c6aab7032b9bbb9ad51229349a34c62fd4195a"
+    },
+    {
+      "path": "patternly/src/storage/repositories/activeTrackRepository.ts",
+      "sha256": "7d3af7ab469e8a2d9851aba13e94b0dfde506d693d25cf480035216e7cf95695"
+    },
+    {
+      "path": "patternly/src/application/notificationPreferences.ts",
+      "sha256": "76e6e29e58980779437464ae760aaef7be5136863740987a82356ba95e7b0557"
+    },
+    {
+      "path": "patternly/src/content/generated/canonical-content/coding-interview-dsa-problem-solving.json",
+      "sha256": "4ceb71ebf2edd963dd6f1bdd274dface6da667dd7d3586fa44b52efe45f263f6"
+    },
+    {
+      "path": "patternly-content/evidence/content-approvals/coding-interview-dsa-problem-solving.json",
+      "sha256": "9501ac23e2a9a81be09b4140e5167a72d7406420804612969a9e7dd6a786ebda"
+    },
+    {
+      "path": "patternly-content/evidence/review-packets/coding-interview-dsa-problem-solving.json",
+      "sha256": "4f901c65c5d7d12ad0a6b1c2e47f39bc1d705179a4c1a19597119f1856727f3d"
+    }
+  ],
+  "checks": {
+    "actualSelectorProbe": "PASS for empty-attempt actual selected interaction types and results at normal UI lengths 10, 20, 40; all selected items are choice_single, so none can score partial.",
+    "sourceInspection": "PASS for route, selector, runner controls, track persistence, reminder reconciliation and current item/approval binding.",
+    "nativeDeviceRun": "NOT RUN",
+    "accountOrLearningStateAccess": "NOT USED"
+  },
+  "limits": [
+    "The user’s current active track, attempt history, current goal/plan values, and reminder state were not read.",
+    "No device test, partial submission, active-track change, test-profile creation, or service operation was performed.",
+    "This is a feasibility finding only; it does not establish native Q12 acceptance or full BIZQ-01 acceptance."
+  ]
+}

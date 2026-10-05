@@ -1,0 +1,11 @@
+{
+  "checks": {
+    "function overallScoreCredit(result)": true,
+    "overallPointsEarned": true,
+    "certificationPracticeOverallPoints": true,
+    "The practice count summary remains available": true
+  },
+  "productionFreezeMatch": true,
+  "bundleSha256": "25e6d7caac62439de0e3bb5474d58978e52ef5c8b036e35fe4fba23f88a6ea7d",
+  "scope": "Actualcompiledhelper andfield presence probe; consumer-specificwiring source/rootQA inspected separately, not nativepartialproof"
+}

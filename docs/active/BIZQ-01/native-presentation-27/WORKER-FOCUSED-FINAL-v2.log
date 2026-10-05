@@ -1,0 +1,240 @@
+TAP version 13
+# Subtest: overall score credits correct attempts while preserving zero credit for partial and incorrect outcomes
+ok 1 - overall score credits correct attempts while preserving zero credit for partial and incorrect outcomes
+  ---
+  duration_ms: 1.349875
+  type: 'test'
+  ...
+# Subtest: result screens render validated overall credit rather than raw diagnostic points
+ok 2 - result screens render validated overall credit rather than raw diagnostic points
+  ---
+  duration_ms: 1.749708
+  type: 'test'
+  ...
+# Subtest: both progress point numerators use the shared correct-only credit policy
+ok 3 - both progress point numerators use the shared correct-only credit policy
+  ---
+  duration_ms: 0.22725
+  type: 'test'
+  ...
+# Subtest: completed exam review projects answered and unanswered items across the complete fixed plan
+ok 4 - completed exam review projects answered and unanswered items across the complete fixed plan
+  ---
+  duration_ms: 1407.139125
+  type: 'test'
+  ...
+# Subtest: fully unanswered completed exam projects all 50 items without creating attempts
+ok 5 - fully unanswered completed exam projects all 50 items without creating attempts
+  ---
+  duration_ms: 11.103875
+  type: 'test'
+  ...
+# Subtest: completed exam review projects authored diagnostics only for stored answers
+ok 6 - completed exam review projects authored diagnostics only for stored answers
+  ---
+  duration_ms: 24.321625
+  type: 'test'
+  ...
+# Subtest: exam result rejects tampered partition, attempt scores, and profile evidence
+ok 7 - exam result rejects tampered partition, attempt scores, and profile evidence
+  ---
+  duration_ms: 24.220042
+  type: 'test'
+  ...
+# Subtest: completed practice projector preserves the canonical five-state answer matrix
+ok 8 - completed practice projector preserves the canonical five-state answer matrix
+  ---
+  duration_ms: 623.544833
+  type: 'test'
+  ...
+# Subtest: completed practice review projects authored wrong and omitted-correct messages from the saved response only
+ok 9 - completed practice review projects authored wrong and omitted-correct messages from the saved response only
+  ---
+  duration_ms: 2.742459
+  type: 'test'
+  ...
+# Subtest: practice review rejects altered identity, coverage, attempts, score, and resolution
+ok 10 - practice review rejects altered identity, coverage, attempts, score, and resolution
+  ---
+  duration_ms: 3.692334
+  type: 'test'
+  ...
+# Subtest: completed Coding practice is readable and review uses the same completed projection
+ok 11 - completed Coding practice is readable and review uses the same completed projection
+  ---
+  duration_ms: 1632.652958
+  type: 'test'
+  ...
+# Subtest: completed conditional-reinsert practice projects the final replaced occurrence order
+ok 12 - completed conditional-reinsert practice projects the final replaced occurrence order
+  ---
+  duration_ms: 337.566709
+  type: 'test'
+  ...
+# Subtest: completed Coding practice carries canonical diagnostics for the committed wrong choice
+ok 13 - completed Coding practice carries canonical diagnostics for the committed wrong choice
+  ---
+  duration_ms: 364.078959
+  type: 'test'
+  ...
+# Subtest: abandoned Coding summary keeps its separate existing projection and performs no read writes
+ok 14 - abandoned Coding summary keeps its separate existing projection and performs no read writes
+  ---
+  duration_ms: 47.316667
+  type: 'test'
+  ...
+# Subtest: completed Mock result stays pending until exact saved content validation finishes
+ok 15 - completed Mock result stays pending until exact saved content validation finishes
+  ---
+  duration_ms: 101.0995
+  type: 'test'
+  ...
+# Subtest: completed result rejects a source-session attempt outside the saved occurrence plan
+ok 16 - completed result rejects a source-session attempt outside the saved occurrence plan
+  ---
+  duration_ms: 150.666375
+  type: 'test'
+  ...
+# Subtest: completed result rejects a removed attempt and a scorer/result mismatch
+ok 17 - completed result rejects a removed attempt and a scorer/result mismatch
+  ---
+  duration_ms: 139.86525
+  type: 'test'
+  ...
+# Subtest: completed result rejects a mismatched family, completion time, or answer coverage
+ok 18 - completed result rejects a mismatched family, completion time, or answer coverage
+  ---
+  duration_ms: 136.14525
+  type: 'test'
+  ...
+# Subtest: completed result rejects attempts with a different mode or resolved item
+ok 19 - completed result rejects attempts with a different mode or resolved item
+  ---
+  duration_ms: 135.572709
+  type: 'test'
+  ...
+# Subtest: completed result rejects duplicate attempts, invalid responses, and stale artifact references
+ok 20 - completed result rejects duplicate attempts, invalid responses, and stale artifact references
+  ---
+  duration_ms: 131.08125
+  type: 'test'
+  ...
+# Subtest: completed result rejects persisted counts and points that disagree with committed attempts
+ok 21 - completed result rejects persisted counts and points that disagree with committed attempts
+  ---
+  duration_ms: 131.821
+  type: 'test'
+  ...
+# Subtest: completed result ignores valid attempts belonging to an unrelated session
+ok 22 - completed result ignores valid attempts belonging to an unrelated session
+  ---
+  duration_ms: 133.156
+  type: 'test'
+  ...
+# Subtest: fixture readers are optional screen seams and production readers remain the default
+ok 23 - fixture readers are optional screen seams and production readers remain the default
+  ---
+  duration_ms: 2.543458
+  type: 'test'
+  ...
+# Subtest: fixture creates validator-approved fixed-50 canonical evidence without partial or persistence shortcuts
+ok 24 - fixture creates validator-approved fixed-50 canonical evidence without partial or persistence shortcuts
+  ---
+  duration_ms: 1268.9695
+  type: 'test'
+  ...
+# Subtest: memory readers require the fixture session identity and preserve read-only evidence
+ok 25 - memory readers require the fixture session identity and preserve read-only evidence
+  ---
+  duration_ms: 13.828167
+  type: 'test'
+  ...
+# Subtest: ready fixture calls the supplied opener with each exact projected source URL
+ok 26 - ready fixture calls the supplied opener with each exact projected source URL
+  ---
+  duration_ms: 11.852708
+  type: 'test'
+  ...
+# Subtest: source-failure fixture records exact opener attempt but never calls external URL opening
+ok 27 - source-failure fixture records exact opener attempt but never calls external URL opening
+  ---
+  duration_ms: 10.261209
+  type: 'test'
+  ...
+# Subtest: practice answer matrix exposes actual completed summary, five feedback previews, and full review
+ok 28 - practice answer matrix exposes actual completed summary, five feedback previews, and full review
+  ---
+  duration_ms: 33.690125
+  type: 'test'
+  ...
+# Subtest: Metro disabled runtime is explicitly unavailable outside smoke
+ok 29 - Metro disabled runtime is explicitly unavailable outside smoke
+  ---
+  duration_ms: 0.305041
+  type: 'test'
+  ...
+# Subtest: actual Certification Practice result presents derived overall points and the existing partial diagnostic
+ok 30 - actual Certification Practice result presents derived overall points and the existing partial diagnostic
+  ---
+  duration_ms: 959.8125
+  type: 'test'
+  ...
+# Subtest: an unavailable optional practice-points projection preserves counts and omits weighted points
+ok 31 - an unavailable optional practice-points projection preserves counts and omits weighted points
+  ---
+  duration_ms: 83.02625
+  type: 'test'
+  ...
+# Subtest: generic history without compatible verified points does not render its raw weighted aggregate
+ok 32 - generic history without compatible verified points does not render its raw weighted aggregate
+  ---
+  duration_ms: 65.567625
+  type: 'test'
+  ...
+# Subtest: opaque result evidence preserves all answered outcomes including partial credit
+ok 33 - opaque result evidence preserves all answered outcomes including partial credit
+  ---
+  duration_ms: 3.200958
+  type: 'test'
+  ...
+# Subtest: missing, malformed and inconsistent evidence does not invent zero scores
+ok 34 - missing, malformed and inconsistent evidence does not invent zero scores
+  ---
+  duration_ms: 0.324125
+  type: 'test'
+  ...
+# Subtest: a real zero and an absent abandoned score remain distinct
+ok 35 - a real zero and an absent abandoned score remain distinct
+  ---
+  duration_ms: 0.347416
+  type: 'test'
+  ...
+# Subtest: invalid points stay unavailable without clamping
+ok 36 - invalid points stay unavailable without clamping
+  ---
+  duration_ms: 0.19475
+  type: 'test'
+  ...
+# Subtest: exact historical maximum corrects display without mutating durable evidence
+ok 37 - exact historical maximum corrects display without mutating durable evidence
+  ---
+  duration_ms: 0.303625
+  type: 'test'
+  ...
+# Subtest: progress areas and Coding effectiveness exclude raw partial points from overall credit
+ok 38 - progress areas and Coding effectiveness exclude raw partial points from overall credit
+  ---
+  duration_ms: 1048.133583
+  type: 'test'
+  ...
+1..38
+# tests 38
+# suites 0
+# pass 38
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5659.342792
+
+exit_code=0

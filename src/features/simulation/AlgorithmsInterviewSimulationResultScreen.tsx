@@ -28,7 +28,7 @@ export function AlgorithmsInterviewSimulationSummaryScreen({ navigation, route }
 
   const result = state.result;
   const score = result.score;
-  if (result.modeId !== "coding-interview-simulation" || result.completionKind !== "completed" || result.totalOccurrences !== 40 || result.feedbackItems.length !== 40 || !score) {
+  if (result.modeId !== "coding-interview-simulation" || result.completionKind !== "completed" || result.totalOccurrences !== 40 || result.feedbackItems.length !== 40 || !score || result.overallPointsEarned === null) {
     return <Screen><EmptyState title={t("Session summary unavailable")} description={t("The completed session evidence is incomplete.")} /></Screen>;
   }
   const answeredCount = result.answeredOccurrenceIds.length;
@@ -41,7 +41,7 @@ export function AlgorithmsInterviewSimulationSummaryScreen({ navigation, route }
         completion="completed"
         context={{ modeLabel: t("Coding Mock Interview"), trackLabel: t("Coding Interview") }}
         onBack={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
-        points={{ earned: score.pointsEarned, max: score.maxPoints }}
+        points={{ earned: result.overallPointsEarned, max: score.maxPoints }}
         requestedCount={result.configuration.requestedLength}
         review={{ onPress: () => navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW, { sessionId: result.sessionId }), testID: runtimeSelectors.summary.reviewAnswers(result.sessionId) }}
         rootTestID={runtimeSelectors.summary.root(result.sessionId)}

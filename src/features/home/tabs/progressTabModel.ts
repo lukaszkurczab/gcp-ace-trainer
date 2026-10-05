@@ -15,6 +15,7 @@ import type { CertificationDomain, CertificationExamSummaryViewModel, Certificat
 import { getDomainLabel } from "../../../utils";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import { contentPackageRuntimeOwner } from "../../../application/contentPackageRuntimeOwner";
+import { overallScoreCredit } from "../../../application/canonical/overallScoreCredit";
 import {
   buildPracticeSessionConfig,
   type PracticeSessionMode,
@@ -244,7 +245,7 @@ function buildInstalledPackageProgressTabModel(
     const score = scores.get(nodeId) ?? { correct: 0, earned: 0, max: 0, total: 0 };
     scores.set(nodeId, {
       correct: score.correct + (attempt.result.kind === "correct" ? 1 : 0),
-      earned: score.earned + attempt.result.earnedPoints,
+      earned: score.earned + overallScoreCredit(attempt.result),
       max: score.max + attempt.result.maxPoints,
       total: score.total + 1,
     });
@@ -674,7 +675,7 @@ function getEvidenceState(
 function calculateEffectiveness(attempts: readonly TrainingAttempt[]): number | undefined {
   const maxPoints = attempts.reduce((total, attempt) => total + attempt.result.maxPoints, 0);
   if (maxPoints <= 0) return undefined;
-  const earnedPoints = attempts.reduce((total, attempt) => total + attempt.result.earnedPoints, 0);
+  const earnedPoints = attempts.reduce((total, attempt) => total + overallScoreCredit(attempt.result), 0);
   return Math.round((earnedPoints / maxPoints) * 100);
 }
 

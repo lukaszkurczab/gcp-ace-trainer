@@ -17,12 +17,13 @@ import { contentPackageRuntimeOwner } from "../../application/contentPackageRunt
 import { getDesignModeTitle, isDesignInterviewModeId } from "../../tracks/design-interview";
 import { isCertificationPracticeModeId } from "../../tracks/certification";
 import { scoreCanonicalQuestion } from "../../content/canonical";
-import { getCertificationExamReviewProjection } from "../../application/certification";
+import { getCertificationExamReviewProjection, getCertificationPracticeReviewProjection } from "../../application/certification";
 import type { CertificationExamReviewProjection } from "../../application/certification/certificationExamReviewProjection";
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.RESULT>;
 export type Summary = Readonly<{
   certificationMaxPoints: number | null;
   certificationExam: CertificationExamReviewProjection | null;
+  certificationPracticeOverallPoints?: number | null;
   certificationTopicId: string | null;
   designTopicId: string | null;
   result: Awaited<ReturnType<ReturnType<typeof getTrainingLifecycleUseCases>["loadSummary"]>>;
@@ -52,6 +53,15 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
       const certificationExam = session.modeId === "certification-exam-simulation"
         ? await getCertificationExamReviewProjection(capturedRequestKey)
         : null;
+      let certificationPracticeOverallPoints: number | null = null;
+      if (!certificationExam && isCertificationPracticeModeId(session.modeId)) {
+        try {
+          const practiceReview = await getCertificationPracticeReviewProjection(capturedRequestKey);
+          certificationPracticeOverallPoints = practiceReview.overallPointsEarned;
+        } catch {
+          // The practice count summary remains available when this optional exact-points projection is unavailable.
+        }
+      }
       const exact = !certificationExam && (isDesignInterviewModeId(session.modeId) || session.modeId.startsWith("certification-") || result.evidence.familyId === "certification")
         ? await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 })
         : null;
@@ -67,7 +77,7 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
       const certificationMaxPoints = certificationExam?.maxPoints ?? (certificationQuestions.length === session.actualLength && certificationQuestions.every((question) => question !== undefined)
         ? certificationQuestions.reduce((sum, question) => sum + scoreCanonicalQuestion(question, question.answer).maxPoints, 0)
         : null);
-      return { result, session, designTopicId, certificationTopicId, certificationMaxPoints, certificationExam };
+      return { result, session, designTopicId, certificationTopicId, certificationMaxPoints, certificationExam, certificationPracticeOverallPoints };
     })()
       .then((summary) => { if (live && summary) setReadState({ kind: "ready", requestKey: capturedRequestKey, summary }); })
       .catch((cause) => { if (live) setReadState({ kind: "unavailable", requestKey: capturedRequestKey, reason: describeOperationalFailure(cause, t("We couldn’t load the session result.")) }); });
@@ -97,6 +107,11 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
   if (certificationPractice && (!coverageIsConsistent || !certificationCoverageIsExact || summary.certificationMaxPoints === null || normalizedDetails.points === null || normalizedDetails.score === null)) {
     return <Screen><EmptyState title={t("Session summary unavailable")} description={t("The completed session evidence is incomplete.")} /></Screen>;
   }
+  const displayedPoints = certificationExam && summary.certificationExam
+    ? { earned: summary.certificationExam.overallPointsEarned, max: summary.certificationExam.maxPoints }
+    : certificationPractice && summary.certificationPracticeOverallPoints !== null && summary.certificationPracticeOverallPoints !== undefined && summary.certificationMaxPoints !== null
+      ? { earned: summary.certificationPracticeOverallPoints, max: summary.certificationMaxPoints }
+      : undefined;
   const domainPresentation = design
     ? formatSessionTopic(session.trackId, summary.designTopicId, t)
     : session.modeId === "certification-diagnostic-baseline"
@@ -119,14 +134,14 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
         completion="completed"
         context={{ modeLabel, topicLabel: domainPresentation, trackLabel: t(getTrackDisplay(session.trackId).title) }}
         onBack={() => onFixtureExit ? onFixtureExit() : navigation.navigate(ROUTES.PRACTICE_HUB)}
-        points={normalizedDetails.points ?? undefined}
+        points={displayedPoints}
         requestedCount={session.requestedLength}
         configurationTestID={certificationPractice ? runtimeSelectors.summary.configuration(route.params.sessionId, session.actualLength, session.configurationSnapshot.feedbackMode === "atSessionEnd" ? "atSessionEnd" : "afterEachAnswer") : undefined}
         review={certificationPractice || certificationExam ? { onPress: () => navigation.navigate(ROUTES.EXAM_REVIEW, { sessionId: route.params.sessionId }), testID: runtimeSelectors.summary.reviewAnswers(route.params.sessionId) } : undefined}
         rootTestID={runtimeSelectors.summary.root(route.params.sessionId)}
         score={normalizedDetails.score}
         secondaryNote={certificationExam && summary.certificationExam
-          ? { text: `${t("Points")}: ${summary.certificationExam.pointsEarned} / ${summary.certificationExam.maxPoints}` }
+          ? { text: `${t("Points")}: ${summary.certificationExam.overallPointsEarned} / ${summary.certificationExam.maxPoints}` }
           : certificationPractice ? { text: t(session.configurationSnapshot.feedbackMode === "atSessionEnd" ? "Feedback at session end" : "Feedback after each answer") } : undefined}
         totalOccurrences={actualCount}
         unansweredCount={unansweredCount}
