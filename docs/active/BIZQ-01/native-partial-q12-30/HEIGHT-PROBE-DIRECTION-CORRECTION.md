@@ -1,0 +1,1 @@
+Pierwsza próba UP zakończyła się na pełnym początku promptu q3, przed opcją A. Root obejrzał failure screenshot: A jest poniżej viewportu. To błąd kierunku obserwacji po remount, nie defekt produktu. Następna próba używa DOWN na tym samym q3; bez dodatkowego scenariusza. OS dark/Large przywrócono mimo exit1.

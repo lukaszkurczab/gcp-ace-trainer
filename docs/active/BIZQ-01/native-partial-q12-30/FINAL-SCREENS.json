@@ -1,0 +1,256 @@
+{
+  "screens": [
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-01.png",
+      "sha256": "99da9970ededc1a88f9ef253ff506ad3b206a57d1f5d453512fb0ebeb46ef979",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-02.png",
+      "sha256": "55fb11c629343326787b89bf19a199a4c0e12257fc31dfec4e12e452a3a3df00",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-03.png",
+      "sha256": "530a9987bba968bae0c5607c74850ba4981e9039bbe234389783cc1bf22dc89e",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-04.png",
+      "sha256": "3ef1f278377422e883f13b1fe807aa924177ac993a4118f44d77d9416fcd656c",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-05.png",
+      "sha256": "75a9312dbaf5e765528d4c053bf6b4011dac47c977fb56b99ec647a806a9d7ae",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-06.png",
+      "sha256": "ae4e1b53dfd3eda671f3c3a095a8d9e96d61a02e0ac2574974d04e0998eac497",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-07.png",
+      "sha256": "4a6df20ae0ae7430258f3082c32d5bbcdd794ecd1cc9144367ca399458cd492b",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-08.png",
+      "sha256": "aa5ac0c6afb33a284133477171acee5bc6f054b9d036a71ad553e7a3489b27c1",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-09.png",
+      "sha256": "695c0288254776efd2a46da6c67dd7ee04b0299ca0166db6d3f75e662eb0399a",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-10.png",
+      "sha256": "ce1c1299afcd629b8c9b6917f334609051aca56d5c1cbbac2531e53b409ed0b7",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-11.png",
+      "sha256": "80d579a682b4d637a0a422e67909564da46800bfa8bc427cffc1da9db873444a",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-12.png",
+      "sha256": "ce1c1299afcd629b8c9b6917f334609051aca56d5c1cbbac2531e53b409ed0b7",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-13.png",
+      "sha256": "ce1c1299afcd629b8c9b6917f334609051aca56d5c1cbbac2531e53b409ed0b7",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-14.png",
+      "sha256": "ce1c1299afcd629b8c9b6917f334609051aca56d5c1cbbac2531e53b409ed0b7",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-15.png",
+      "sha256": "53e8c0b202554d2390b2ef7d73767b1b832b15ebebc64a6d39aef3f76c5374f4",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-16.png",
+      "sha256": "53e8c0b202554d2390b2ef7d73767b1b832b15ebebc64a6d39aef3f76c5374f4",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-17.png",
+      "sha256": "53e8c0b202554d2390b2ef7d73767b1b832b15ebebc64a6d39aef3f76c5374f4",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-18.png",
+      "sha256": "53e8c0b202554d2390b2ef7d73767b1b832b15ebebc64a6d39aef3f76c5374f4",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-19.png",
+      "sha256": "53e8c0b202554d2390b2ef7d73767b1b832b15ebebc64a6d39aef3f76c5374f4",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/light/repaired-light-max-body-20.png",
+      "sha256": "53e8c0b202554d2390b2ef7d73767b1b832b15ebebc64a6d39aef3f76c5374f4",
+      "theme": "light",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-01.png",
+      "sha256": "b2f7ce0e939c5a6038ff05baae9c4fed5aee64fdb5e8d9666466259805a97213",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-02.png",
+      "sha256": "b661338bfdcb1499e130ce83bddf13aac92990e581256e945c9e602dc69da00c",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-03.png",
+      "sha256": "423157c44a9558d33d905df613cf9fd5a1f160c9101213ac027c072e6bc8ba51",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-04.png",
+      "sha256": "45a9e9af465c02b31b043ab4fdbb3cf391fbdc6c2a917fb85a2de126ea027ab7",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-05.png",
+      "sha256": "68f767cdda30189a5849ffb072286fed1016579b2ec7df266cba1f0cd7d90498",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-06.png",
+      "sha256": "db1a0d9bc6a75c9982dac42553768439e734c8b491a06d121bda100a8485dc1d",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-07.png",
+      "sha256": "db49c5f3bc4eb8573831afc7e12bfebf05dae1ef16098788237a6aa93a70e396",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-08.png",
+      "sha256": "ba23a54cdf54b9aaf0d79fc17b287ef2a22428607943d0eeab3bdbea60074308",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-09.png",
+      "sha256": "b6043797c8dfed742be6a7bd4d72939025a476e36924418d06406e66b92575c2",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-10.png",
+      "sha256": "f9d155c334994a8712a8505aaee4a3678405ef68bb3266d987dcd88d12ac83e7",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-11.png",
+      "sha256": "f9d155c334994a8712a8505aaee4a3678405ef68bb3266d987dcd88d12ac83e7",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-12.png",
+      "sha256": "f9d155c334994a8712a8505aaee4a3678405ef68bb3266d987dcd88d12ac83e7",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-13.png",
+      "sha256": "f9d155c334994a8712a8505aaee4a3678405ef68bb3266d987dcd88d12ac83e7",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-14.png",
+      "sha256": "f9d155c334994a8712a8505aaee4a3678405ef68bb3266d987dcd88d12ac83e7",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-15.png",
+      "sha256": "f9d155c334994a8712a8505aaee4a3678405ef68bb3266d987dcd88d12ac83e7",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-16.png",
+      "sha256": "f9d155c334994a8712a8505aaee4a3678405ef68bb3266d987dcd88d12ac83e7",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-17.png",
+      "sha256": "f9d155c334994a8712a8505aaee4a3678405ef68bb3266d987dcd88d12ac83e7",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-18.png",
+      "sha256": "f9d155c334994a8712a8505aaee4a3678405ef68bb3266d987dcd88d12ac83e7",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-19.png",
+      "sha256": "f9d155c334994a8712a8505aaee4a3678405ef68bb3266d987dcd88d12ac83e7",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/dark/repaired-dark-max-body-20.png",
+      "sha256": "f9d155c334994a8712a8505aaee4a3678405ef68bb3266d987dcd88d12ac83e7",
+      "theme": "dark",
+      "scope": "Final repaired sameq3 max fullbody"
+    },
+    {
+      "path": "screens/final-repaired/q12-restored-completed-summary.png",
+      "sha256": "3059287bbfbee18c2d5a1cae00c481d302fb233ad58524d44bce9039a148f9f4",
+      "scope": "Restored dark/Large ordinary summary/GCP return"
+    },
+    {
+      "path": "screens/final-repaired/q12-restored-gcp-home.png",
+      "sha256": "994f8ad833ae09bbf29a98b82781010b3f7436ce9133d2f4536392a5f21e436f",
+      "scope": "Restored dark/Large ordinary summary/GCP return"
+    }
+  ],
+  "count": 42,
+  "rootViewed": "Both theme frames01\u201310 and20, targeted A beginning/ending and finalsummary/GCP; frames11\u201319 repeat bottom because closedDetails; initial48 Details reused with exact normalized code-equivalence"
+}

@@ -1,0 +1,21 @@
+{
+  "status": "source-and-syntax-reviewed-not-run",
+  "device": "7F315654-3175-4F3C-BB24-B0263F59360C",
+  "rootPythonSyntax": "PASS",
+  "yamlSyntax": "worker parsed both; native parser remains actualrun",
+  "bindings": [
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/partial-q12-light.yaml",
+      "sha256": "eb559808afbbc47d33c95491db83d43af2ec99085e22d9116461cd1e3e1b448a"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/partial-q12-dark.yaml",
+      "sha256": "334cd3220bf0bf60b455d757b186fa9e969304ff255dfb6617de41c5855b631e"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/run-partial-q12.py",
+      "sha256": "b0292b67d52761ae5a302420acc6c244fc7f1bb567c49364261eb9c1ee98c310"
+    }
+  ],
+  "routineCorrections": "Partial above options vs Reason below; d displayA above b displayE, correct scroll directions; no product change"
+}

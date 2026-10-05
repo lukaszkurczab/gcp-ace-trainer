@@ -1,0 +1,103 @@
+{
+  "schema": "bizq01-runtime-recovery-root-acceptance-v1",
+  "acceptedAt": "2026-10-05T22:09:28.106914+00:00",
+  "decision": "ACCEPTED FOR EXECUTION ONLY",
+  "goal": "Restore one existing local smoke runtime, then exact fresh preservation preflight before bounded saved-partial Q12",
+  "designVerdict": "PASS",
+  "reviewSha256": "dc8c03774cc411faea9fff5197243ddda5d30f16c013ec9ffc20bff177d6df46",
+  "bindingsVerified": [
+    {
+      "path": "patternly/docs/active/BIZQ-01/native-partial-q12-30/RUNTIME-RECOVERY-BRIEF.md",
+      "sha256": "c9920f9cace5fbaa1424afa922eed8a83acab9ece1e532787c41b0ec7e141f57"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-01/native-partial-q12-30/SURVIVING-BASELINE-CHECKSUM.json",
+      "sha256": "c4a16666f2a1be7a5ca68b668e1c6def768afbd1e10c7b25efa35ffb93238571"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-01/native-partial-q12-30/ROOT-READONLY-PREFLIGHT.json",
+      "sha256": "112b0c07a06160f945173efa58e15ba36c2ec60a92d5fa96ec2daea41840f5b6"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-01/native-partial-29/ROOT-PRESERVATION.json",
+      "sha256": "501b568f41ee805c9160a1b0f8ac5113bc46cede874c30ccb50451e89e11c155"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-01/native-partial-29/ROOT-PLAN-ACCEPTANCE.json",
+      "sha256": "bf4c2445d01813476d21ad91e9f829f87ea62aef6e39d4be99cd48950d7add7f"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-01/native-partial-29/ROOT-COMPLETED10.json",
+      "sha256": "dc44c46684d2ff0da432425273c8a0088460620111ffe7e57308dead50fdf621"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-01/native-partial-29/ROOT-COMPLETED40.json",
+      "sha256": "915c097246de8a59ca8b98c574e6877eec0f0ccce50ed9f07f2b1b9d59134ba4"
+    },
+    {
+      "path": "patternly/docs/active/BIZQ-01/native-partial-29/snapshot-canonical-state.mjs",
+      "sha256": "8f5b6a70f7f0e81458398b94df6624d9a581c9a6acb08e9dbdf1263f35911fbb"
+    },
+    {
+      "path": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+      "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3"
+    },
+    {
+      "path": "patternly-backend/firebase.json",
+      "sha256": "b2f3d81c28f1371c271e573d5fd2951b84eb42cd5c734dd119325429502d6a26"
+    },
+    {
+      "path": "patternly-backend/scripts/dev-smoke.ts",
+      "sha256": "24bad00d5f2a5a065fdf8d7c8aa5e33bd8ce8044512ed3540936a139ef79476d"
+    },
+    {
+      "path": "patternly-backend/scripts/localSmoke.ts",
+      "sha256": "e1ac06e10f7c992f97d2ef141ae4d1891bb855869c4fe2e7a739a8626ab4173d"
+    },
+    {
+      "path": "patternly/scripts/runLocalProfile.mjs",
+      "sha256": "8212070c63b8515ca3c9e773e4cb37ec9ff23261f501f2c4de68f84a66800d15"
+    },
+    {
+      "path": "patternly/src/application/account/AccountSessionProvider.tsx",
+      "sha256": "5e7618249db9383e367147dabe316c7a98dc7dc2c201b7a6f958be148076a000"
+    },
+    {
+      "path": "patternly/src/application/account/profileStartupCoordination.ts",
+      "sha256": "ce65cc2c799dfef5da313bfa1750c8ce8539a2a0c8160a9ea2183b637a77b8ee"
+    },
+    {
+      "path": "patternly/src/infrastructure/storage/profileStorageRouter.ts",
+      "sha256": "edd97c6d7cf925fe4f7b6422bc11d4deca9d364160ac1bbec39ea7b5ab9b26ae"
+    }
+  ],
+  "scores": {
+    "fit": 0.94,
+    "simplicity": 0.85,
+    "risk": 0.83,
+    "maintainability": 0.9
+  },
+  "preflight": {
+    "ports": [
+      8081,
+      8080,
+      19099,
+      18081
+    ],
+    "listeners": 0,
+    "device": "7F315654-3175-4F3C-BB24-B0263F59360C",
+    "node": "22.22.3",
+    "existingSecretsFile": true
+  },
+  "stopConditions": [
+    "Use the existing local Auth/Firestore emulator configuration and project; do not import, reset, or mutate emulator data.",
+    "Do not bypass Auth emulator or API readiness checks; the previous start attempt stopped at the Auth readiness probe.",
+    "Use the existing expired local smoke entitlement; SMTP and remote RevenueCat remain disabled.",
+    "Keep Guest identity and existing redacted lifecycle markers; do not sign up, log in, recover, clear markers, or change profiles.",
+    "Stop if ports are occupied or an unexpected account/recovery/profile transition appears.",
+    "Use patternly-backend/firebase.json (or execute from patternly-backend) for the local emulator command."
+  ],
+  "limits": [
+    "No runtime PASS or Q12 acceptance; fresh checksum comparison required before dependent UI."
+  ]
+}

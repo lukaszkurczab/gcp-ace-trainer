@@ -12,7 +12,7 @@ import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import type { ResolvedContentRef } from "../../domain";
 import { ContentReportSheet, type ContentReportSurfaceContext } from "../reports/ContentReportSheet";
 import { detailLines } from "./feedbackDetails";
-import { createOneTimeFeedbackTextMinimumHeight, feedbackTextMeasurementKey } from "./feedbackTextHeight";
+import { createOneTimeTextMinimumHeight, textMeasurementKey } from "../../components/textLayoutHeight";
 
 function FeedbackText({ contextKey, physicalScale, style, text }: Readonly<{ contextKey: string; physicalScale: number; style: StyleProp<TextStyle>; text: string }>) {
   return <FeedbackTextLayout key={contextKey} physicalScale={physicalScale} style={style} text={text} />;
@@ -20,7 +20,7 @@ function FeedbackText({ contextKey, physicalScale, style, text }: Readonly<{ con
 
 function FeedbackTextLayout({ physicalScale, style, text }: Readonly<{ physicalScale: number; style: StyleProp<TextStyle>; text: string }>) {
   const [minimumHeight, setMinimumHeight] = useState<number>();
-  const [measureOnce] = useState(() => createOneTimeFeedbackTextMinimumHeight(physicalScale));
+  const [measureOnce] = useState(() => createOneTimeTextMinimumHeight(physicalScale));
   return <Text
     maxFontSizeMultiplier={2}
     onLayout={(event) => {
@@ -49,13 +49,13 @@ export function PracticeFeedbackBlock({ feedback, item, itemId, reportSurface, i
         {detailsDisclosure}
         {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}>{feedback.messages?.map((message) => <FeedbackText
           key={`${message.kind}:${message.targetId}`}
-          contextKey={feedbackTextMeasurementKey(message.text, windowWidth, fontScale, windowScale)}
+          contextKey={textMeasurementKey(message.text, windowWidth, fontScale, windowScale)}
           physicalScale={windowScale}
           style={styles.detailText}
           text={message.text}
         />)}{detailLines(feedback.details).filter((line) => !feedback.sources?.some((source) => source.url === line)).map((line, index) => <FeedbackText
           key={`detail:${index}`}
-          contextKey={feedbackTextMeasurementKey(line, windowWidth, fontScale, windowScale)}
+          contextKey={textMeasurementKey(line, windowWidth, fontScale, windowScale)}
           physicalScale={windowScale}
           style={styles.detailText}
           text={line}

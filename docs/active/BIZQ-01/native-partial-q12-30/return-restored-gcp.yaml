@@ -1,0 +1,32 @@
+appId: com.lkurczab.patternly
+name: BIZQ30 restored UI ordinary return to GCP
+---
+- assertVisible:
+    id: patternly:practice-review:root:claude-certified-architect-professional-certification:certification-focus-practice:2:.*
+- tapOn:
+    id: patternly:practice-review:result
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:claude-certified-architect-professional-certification:certification-focus-practice:2
+    timeout: 15000
+- scrollUntilVisible:
+    element: "Session complete"
+    direction: UP
+    centerElement: false
+- takeScreenshot: q12-restored-completed-summary
+- scrollUntilVisible:
+    element:
+      id: patternly:summary:back-to-practice:claude-certified-architect-professional-certification:certification-focus-practice:2
+    direction: UP
+    centerElement: false
+- tapOn:
+    id: patternly:summary:back-to-practice:claude-certified-architect-professional-certification:certification-focus-practice:2
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 15000
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: patternly:home:track-card:google-cloud-associate-cloud-engineer
+- takeScreenshot: q12-restored-gcp-home

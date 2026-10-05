@@ -1,0 +1,23 @@
+{
+  "goal": "Actual ordinary source opening and return, same saved partial q3 only",
+  "scope": "After light/dark capture and dark/Large exact restore, click source once, observe correct Safari URL/title/body, return same review then GCP Home, compare exact recovered baseline",
+  "review": {
+    "model": "gpt-6-luna",
+    "effort": "high",
+    "verdict": "PASS with sequencing conditions",
+    "scores": {
+      "fit": 0.96,
+      "simplicity": 0.92,
+      "risk": 0.89,
+      "maintainability": 0.94
+    },
+    "conditions": [
+      "Finish light/dark before link probe",
+      "Verify real Safari documentation or record gap, withhold PASS",
+      "Confirm same review/GCP return and exact snapshot"
+    ]
+  },
+  "authority": "PO current explicit instruction supersedes old source-link exclusion",
+  "source": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview",
+  "rootDecision": "ACCEPTED FOR EXECUTION ONLY"
+}

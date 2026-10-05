@@ -1,0 +1,17 @@
+{
+  "initial": {
+    "appearance": "dark",
+    "content_size": "large"
+  },
+  "scope": "Same saved q3 after public ordinary reload; no clear/reinstall/session/answer/track write",
+  "observed": {
+    "appearance": "dark",
+    "content_size": "accessibility-extra-extra-extra-large"
+  },
+  "exitCode": 0,
+  "restored": {
+    "appearance": "dark",
+    "content_size": "large"
+  },
+  "restoreVerified": true
+}

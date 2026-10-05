@@ -1,0 +1,6 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ30 measured-height option ending probe
+Assert that id: patternly:practice-review:root:claude-certified-architect-professional-certification:certification-focus-practice:2:.* is visible... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O01-transfer:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Swipe from (50%, 68%) to (50%, 48%) in 450 ms... COMPLETED
+Take screenshot measured-height-option-a-ending... COMPLETED

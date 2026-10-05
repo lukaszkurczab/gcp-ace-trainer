@@ -1,0 +1,112 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 Q12 light max existing q3 continuation
+---
+- assertVisible:
+    id: patternly:practice-review:root:claude-certified-architect-professional-certification:certification-focus-practice:2:claude-certified-architect-professional-certification:certification-focus-practice:2:occurrence:2
+- swipe:
+    start: 50%, 68%
+    end: 50%, 35%
+    duration: 450
+- swipe:
+    start: 50%, 68%
+    end: 50%, 35%
+    duration: 450
+- swipe:
+    start: 50%, 68%
+    end: 50%, 35%
+    duration: 450
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:CCARP-D01-O01-transfer
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: false
+    timeout: 60000
+- takeScreenshot: q12-light-max-details-collapsed
+- swipe:
+    start: 50%, 70%
+    end: 50%, 40%
+    duration: 450
+- takeScreenshot: q12-light-max-disclosure-reachable-reason-end
+- tapOn:
+    id: patternly:session:details-toggle:CCARP-D01-O01-transfer
+- assertVisible: "Hide answer details"
+- assertVisible:
+    id: patternly:session:details:CCARP-D01-O01-transfer
+- scrollUntilVisible:
+    element: "Without d, the system role and supervisor boundary remain ambiguous, so the proposed value cannot be delivered safely."
+    direction: DOWN
+    visibilityPercentage: 20
+    centerElement: false
+- takeScreenshot: q12-light-max-omitted-option-d-explanation
+- takeScreenshot: q12-light-max-details-frame-1
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-2
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-3
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-4
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-5
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-6
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-7
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-8
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-9
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-10
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-11
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-12
+- scrollUntilVisible:
+    element:
+      id: question-source-link-CCARP-D01-O01-transfer-0
+    direction: DOWN
+    centerElement: false
+- assertVisible:
+    id: patternly:practice-review:next
+- takeScreenshot: q12-light-max-details-source-next-actions
+- tapOn:
+    id: patternly:practice-review:result
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:claude-certified-architect-professional-certification:certification-focus-practice:2
+    timeout: 15000
+- takeScreenshot: q12-light-max-returned-completed-summary

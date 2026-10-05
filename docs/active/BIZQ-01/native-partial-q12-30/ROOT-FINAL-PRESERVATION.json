@@ -1,0 +1,39 @@
+{
+  "status": "PASS-exact-captured-categories",
+  "equalFields": {
+    "schema": true,
+    "deviceTarget": true,
+    "profile": true,
+    "keyInventory": true,
+    "records": true,
+    "fences": true,
+    "notifications": true
+  },
+  "recordsSha256": "1a65e6a09ecd71e259eb1ca95054a4624b2c12d1ea21ee0b720e9031638f9667",
+  "recordCount": 81,
+  "keyCount": 84,
+  "profile": {
+    "kind": "guest",
+    "transitionActive": false
+  },
+  "fences": {
+    "activeTrainingSessionPresent": false,
+    "activeDraftPresent": false,
+    "activeMutationJournalPresent": false,
+    "accountSyncUnsettled": true,
+    "accountSignOutStatePresent": true,
+    "accountDeletionStatePresent": false
+  },
+  "notifications": {
+    "permission": "undetermined",
+    "totalScheduled": 0,
+    "appScheduledCount": 0
+  },
+  "OS": {
+    "appearance": "dark",
+    "content_size": "large"
+  },
+  "ordinaryReturn": "q3\u2192completedsummary\u2192PracticeHub\u2192HomeGCP, RETURN-RESTORED-GCP.log exit0",
+  "summaryObserved": "9correct/1partlycorrect;29/34 unchanged; rawdiagnostic33/34 and partial4/5 unchanged through records equality",
+  "limits": "79raw+2limitedredacted projections;3profile metadata values unread, no whole-store or notificationdelivery claim"
+}

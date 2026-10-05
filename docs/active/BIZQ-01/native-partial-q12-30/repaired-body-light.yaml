@@ -1,0 +1,141 @@
+appId: com.lkurczab.patternly
+name: BIZQ30 repaired shared option full body light max
+---
+- assertVisible:
+    id: patternly:practice-review:root:claude-certified-architect-professional-certification:certification-focus-practice:2:.*
+- scrollUntilVisible:
+    element:
+      id: patternly:session:question:CCARP-D01-O01-transfer
+    direction: UP
+    visibilityPercentage: 20
+    centerElement: false
+- swipe:
+    start: 50%, 40%
+    end: 50%, 72%
+    duration: 450
+- swipe:
+    start: 50%, 40%
+    end: 50%, 72%
+    duration: 450
+- swipe:
+    start: 50%, 40%
+    end: 50%, 72%
+    duration: 450
+- swipe:
+    start: 50%, 40%
+    end: 50%, 72%
+    duration: 450
+- swipe:
+    start: 50%, 40%
+    end: 50%, 72%
+    duration: 450
+- swipe:
+    start: 50%, 40%
+    end: 50%, 72%
+    duration: 450
+- swipe:
+    start: 50%, 40%
+    end: 50%, 72%
+    duration: 450
+- swipe:
+    start: 50%, 40%
+    end: 50%, 72%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-01
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-02
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-03
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-04
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-05
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-06
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-07
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-08
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-09
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-10
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-11
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-12
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-13
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-14
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-15
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-16
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-17
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-18
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-19
+- swipe:
+    start: 50%, 70%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: repaired-light-max-body-20
+- assertVisible:
+    id: patternly:practice-review:next

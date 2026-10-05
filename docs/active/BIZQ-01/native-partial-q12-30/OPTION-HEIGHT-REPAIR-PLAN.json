@@ -1,0 +1,25 @@
+{
+  "goal": "Restore full option text at confirmed native physical-pixel boundary without item-specific sizing",
+  "findings": "NATIVE-TEXT-LAYOUT-PROBE.json + NATIVE-LAYOUT-DIAGNOSIS.json; actual loaded fulltext/directrow; maxframe307.999877 versus308pt",
+  "approach": "Move existing pure feedbackTextHeight helper to components/textLayoutHeight with neutral names; canonical single algorithm/key. AnswerOption uses local keyed OptionTextLayout first valid onLayout min ceilphysical+onepixel. Feedback imports neutral helper, existing behavior retained. Remove replaced helper path and all diagnostics",
+  "scores": {
+    "fit": 0.96,
+    "simplicity": 0.88,
+    "risk": 0.87,
+    "maintainability": 0.91
+  },
+  "independentReview": {
+    "model": "gpt-6-luna",
+    "effort": "high",
+    "verdict": "PASS; narrow A native confirmation first"
+  },
+  "sourceBefore": {
+    "src/components/AnswerOption.tsx": "d94975792e7c12aa1b62df277fa3a284afd80295866d8649cee13241ce63b254",
+    "src/features/practice/feedbackTextHeight.ts": "bae54a3e3b24338d258ac5a8fb2e1c902d0670a21eefcc44591d8a869f7a9997",
+    "src/features/practice/PracticeFeedbackBlock.tsx": "b958deab92ff5ec8c862d846aa5dbf9f3387539b82f92c1ca55b608947f4b918"
+  },
+  "rootDecision": "ACCEPTED BEFORE IMPLEMENTATION",
+  "verification": "Same savedA ending and seven native lines first; if successful full body light/dark max, exactrestore+freshpreservation, existing helper/presentation/accessibility/delivery tests/typecheck/recovery; no expanded bank/device matrix",
+  "requirements": "Existing fulltext/noessentialclipping requirement; no new product requirement or releasegate",
+  "limits": "Only bounded renderer30; not fullQ12/01/Premium/Q13/release"
+}

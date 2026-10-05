@@ -1,0 +1,11 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ30 saved q3 option A ending probe
+Scrolling DOWN until id: patternly:summary:review-answers:claude-certified-architect-professional-certification:certification-focus-practice:2 is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:summary:review-answers:claude-certified-architect-professional-certification:certification-focus-practice:2... COMPLETED
+Tap on id: patternly:practice-review:next... COMPLETED
+Assert that id: patternly:session:question:CCARP-D01-O06-selection is visible... COMPLETED
+Tap on id: patternly:practice-review:next... COMPLETED
+Assert that id: patternly:session:question:CCARP-D01-O01-transfer is visible... COMPLETED
+Scrolling DOWN until id: patternly:session:option:CCARP-D01-O01-transfer:a is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Swipe from (50%, 68%) to (50%, 48%) in 450 ms... COMPLETED
+Take screenshot q12-dark-max-option-a-ending-probe... COMPLETED

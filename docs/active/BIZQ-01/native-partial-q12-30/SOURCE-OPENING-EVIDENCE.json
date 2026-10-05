@@ -1,0 +1,18 @@
+{
+  "status": "PASS-real-source-open",
+  "ordinaryAction": "Saved q3 Source control, one tap through app Linking.openURL; no manually entered external URL",
+  "actualURL": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview",
+  "observedSafariAddressMatches": [
+    {
+      "value": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview",
+      "text": "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview"
+    }
+  ],
+  "loadedTitle": "Prompt engineering overview",
+  "loadedMaterial": "Claude Platform Docs page with real explanatory body; cookie/suggestions consent controls untouched",
+  "clickCount": 1,
+  "OS": "dark/Large",
+  "return": "Maestro launchApp cold returned GCPHome. Subsequent ordinary Home\u2192Activity\u2192sameClaude session2\u2192Review\u2192q3 observed in body run and direct-row route; no retained-position claim",
+  "preservation": "AFTER-SOURCE-PRESERVATION.json",
+  "limits": "Earlier29 source visibility does not prove opening; this new single tap closes only savedq3 link. No Safari settings/cookie consent changed."
+}

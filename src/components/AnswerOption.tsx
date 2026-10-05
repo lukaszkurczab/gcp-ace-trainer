@@ -1,8 +1,10 @@
-import { Pressable, StyleSheet, Text, View, useWindowDimensions, type AccessibilityState, type AccessibilityValue } from "react-native";
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, View, useWindowDimensions, type AccessibilityState, type AccessibilityValue, type StyleProp, type TextStyle } from "react-native";
 
 import { useThemedStyles } from "../preferences";
 import { radius, spacing, typography } from "../theme";
 import type { AppColors } from "../theme";
+import { createOneTimeTextMinimumHeight, textMeasurementKey } from "./textLayoutHeight";
 
 export type AnswerOptionState = "default" | "selected" | "correct" | "incorrect" | "omitted_correct" | "not_selected";
 
@@ -33,7 +35,7 @@ export function AnswerOption({
   text,
 }: AnswerOptionProps) {
   const styles = useThemedStyles(createStyles);
-  const { fontScale } = useWindowDimensions();
+  const { fontScale, scale: physicalScale, width: windowWidth } = useWindowDimensions();
   const selected = state === "selected" || state === "correct" || state === "incorrect";
   const correctness = state === "correct" || state === "omitted_correct" ? styles.letterCorrect : state === "incorrect" ? styles.letterIncorrect : state === "selected" ? styles.letterSelected : null;
 
@@ -51,11 +53,22 @@ export function AnswerOption({
       <View style={styles.letterBadge}>
         <Text key={`letter:${fontScale}`} maxFontSizeMultiplier={2} style={[styles.letterText, correctness]}>{letter}</Text>
       </View>
-      <View style={styles.answerContent}>
-        <Text key={`answer:${fontScale}`} maxFontSizeMultiplier={2} style={styles.text}>{text}</Text>
-      </View>
+      <OptionTextLayout key={JSON.stringify([textMeasurementKey(text, windowWidth, fontScale, physicalScale), letter, state])} physicalScale={physicalScale} style={styles.text} text={text} />
     </Pressable>
   );
+}
+
+function OptionTextLayout({ physicalScale, style, text }: Readonly<{ physicalScale: number; style: StyleProp<TextStyle>; text: string }>) {
+  const [minimumHeight, setMinimumHeight] = useState<number>();
+  const [measureOnce] = useState(() => createOneTimeTextMinimumHeight(physicalScale));
+  return <Text
+    maxFontSizeMultiplier={2}
+    onLayout={(event) => {
+      const nextMinimumHeight = measureOnce(event.nativeEvent.layout.height);
+      if (nextMinimumHeight !== undefined) setMinimumHeight(nextMinimumHeight);
+    }}
+    style={minimumHeight === undefined ? style : [style, { minHeight: minimumHeight }]}
+  >{text}</Text>;
 }
 
 function stateStyle(state: AnswerOptionState, styles: ReturnType<typeof createStyles>) {
@@ -68,7 +81,6 @@ function stateStyle(state: AnswerOptionState, styles: ReturnType<typeof createSt
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  answerContent: { alignItems: "flex-start", flex: 1, gap: spacing.sm },
   correct: { backgroundColor: palette.successSoft, borderColor: palette.success, borderWidth: 2 },
   default: { backgroundColor: palette.elevatedSurface, borderColor: palette.border },
   incorrect: { backgroundColor: palette.dangerSoft, borderColor: palette.danger, borderWidth: 2 },

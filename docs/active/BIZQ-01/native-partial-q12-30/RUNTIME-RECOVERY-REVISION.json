@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-05T22:11:18.805875+00:00",
+  "observedEffect": "CLI automatically downloaded selected Firestore1.22.0 and removed cached1.21.0; own emulator and API stopped, no Metro/app/Q12",
+  "revision": "Use only already cached CLI-selected jar1.22.0; hard version/hash preflight before start; no further downloads or tool updates; existing readiness/exact snapshot gates unchanged",
+  "cliVersion": "15.30.1",
+  "selectedFirestoreVersion": "1.22.0",
+  "jarSha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+  "review": {
+    "reviewer": "independent gpt-6-luna high NO-TOOLS",
+    "verdict": "PASS",
+    "scores": {
+      "fit": 0.94,
+      "simplicity": 0.86,
+      "risk": 0.83,
+      "maintainability": 0.9
+    },
+    "condition": "Cached version and CLI-selected version equality is a hard startup precondition"
+  },
+  "rootDecision": "ACCEPTED FOR EXECUTION ONLY",
+  "limits": [
+    "Not runtime/preservation/Q12 acceptance"
+  ]
+}

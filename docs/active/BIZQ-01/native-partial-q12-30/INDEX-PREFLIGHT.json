@@ -1,0 +1,12 @@
+{
+  "status": "PASS-ownedindex",
+  "filesBeforeReceipt": 216,
+  "queueScope": "onlyrow19a; foreignappendix preservedunstaged",
+  "foreignCHfooterMatchesHEAD": true,
+  "productionStateQueueWhitespaceCheck": "PASS",
+  "rawEvidenceWhitespaceWarnings": [
+    "SOURCE-PROBE.log blankEOF",
+    "TEMPORARY-NATIVE-LAYOUT-DIAGNOSTIC.patch blankcontextline"
+  ],
+  "disposition": "Originalfrozenrawlog/patch preserved; warnings are not product defects or acceptancegates; no code/evidencebindingmodified"
+}

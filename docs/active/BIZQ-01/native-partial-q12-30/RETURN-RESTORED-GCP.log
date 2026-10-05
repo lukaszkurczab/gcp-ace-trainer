@@ -1,0 +1,13 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ30 restored UI ordinary return to GCP
+Assert that id: patternly:practice-review:root:claude-certified-architect-professional-certification:certification-focus-practice:2:.* is visible... COMPLETED
+Tap on id: patternly:practice-review:result... COMPLETED
+Assert that id: patternly:summary:root:claude-certified-architect-professional-certification:certification-focus-practice:2 is visible... COMPLETED
+Scrolling UP until "Session complete" is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Take screenshot q12-restored-completed-summary... COMPLETED
+Scrolling UP until id: patternly:summary:back-to-practice:claude-certified-architect-professional-certification:certification-focus-practice:2 is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering disabled... COMPLETED
+Tap on id: patternly:summary:back-to-practice:claude-certified-architect-professional-certification:certification-focus-practice:2... COMPLETED
+Assert that id: main-tab-bar-home is visible... COMPLETED
+Tap on id: main-tab-bar-home... COMPLETED
+Assert that id: patternly:home:track-card:google-cloud-associate-cloud-engineer is visible... COMPLETED
+Take screenshot q12-restored-gcp-home... COMPLETED

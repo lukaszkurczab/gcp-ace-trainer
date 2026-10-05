@@ -1,12 +1,12 @@
 /**
- * Creates a one-shot layout measurement for a feedback Text child.
+ * Creates a one-shot layout measurement for a Text child.
  *
  * React Native's first onLayout value is an initial frame measurement, not an
  * intrinsic-content-size API. Callers mount a fresh instance for each text and
  * layout context, then add one physical pixel above the next representable
  * point height to avoid the measured-height rounding boundary observed on iOS.
  */
-export function createOneTimeFeedbackTextMinimumHeight(physicalScale: number): (measuredHeight: number) => number | undefined {
+export function createOneTimeTextMinimumHeight(physicalScale: number): (measuredHeight: number) => number | undefined {
   let measured = false;
   if (!Number.isFinite(physicalScale) || physicalScale <= 0) return () => undefined;
 
@@ -23,6 +23,6 @@ export function createOneTimeFeedbackTextMinimumHeight(physicalScale: number): (
   };
 }
 
-export function feedbackTextMeasurementKey(text: string, width: number, fontScale: number, physicalScale: number): string {
+export function textMeasurementKey(text: string, width: number, fontScale: number, physicalScale: number): string {
   return JSON.stringify([text, width, fontScale, physicalScale]);
 }

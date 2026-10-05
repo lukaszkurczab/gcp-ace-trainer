@@ -1,0 +1,245 @@
+{
+  "scope": "fresh actual light/dark savedq3 capture; pixels require personal review",
+  "screens": [
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-collapsed.png",
+      "sha256": "fe68c7d74c0dd57d8ab6cf51efcd5bc261c1a3e51ae77e0fe3e5bfcf71ee89a9",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-frame-1.png",
+      "sha256": "de48c2cf49a2e09843af9de326c73fb1c47b8ce6b43656d8ea0f403e145c1cd9",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-frame-10.png",
+      "sha256": "9ed0ed43b8de979ddef83211a753ad9eb2562f317c6102d94bac0b8ebf4d86fa",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-frame-11.png",
+      "sha256": "9ed0ed43b8de979ddef83211a753ad9eb2562f317c6102d94bac0b8ebf4d86fa",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-frame-12.png",
+      "sha256": "9ed0ed43b8de979ddef83211a753ad9eb2562f317c6102d94bac0b8ebf4d86fa",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-frame-2.png",
+      "sha256": "d944b8739459c0cc67ed0fd20aa7ff2a93b7da0b7dd3e01429362df8460bca53",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-frame-3.png",
+      "sha256": "55ec2955faf6ef1bc72e733038605a02addebc2659c1bc4d96b26ef9f582982e",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-frame-4.png",
+      "sha256": "ab20bc04759bc0137cd9d16e3b1a6433119a008be6434fa819005357d7de04c9",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-frame-5.png",
+      "sha256": "9ed0ed43b8de979ddef83211a753ad9eb2562f317c6102d94bac0b8ebf4d86fa",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-frame-6.png",
+      "sha256": "9ed0ed43b8de979ddef83211a753ad9eb2562f317c6102d94bac0b8ebf4d86fa",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-frame-7.png",
+      "sha256": "9ed0ed43b8de979ddef83211a753ad9eb2562f317c6102d94bac0b8ebf4d86fa",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-frame-8.png",
+      "sha256": "9ed0ed43b8de979ddef83211a753ad9eb2562f317c6102d94bac0b8ebf4d86fa",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-frame-9.png",
+      "sha256": "9ed0ed43b8de979ddef83211a753ad9eb2562f317c6102d94bac0b8ebf4d86fa",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-details-source-next-actions.png",
+      "sha256": "9ed0ed43b8de979ddef83211a753ad9eb2562f317c6102d94bac0b8ebf4d86fa",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-disclosure-reachable-reason-end.png",
+      "sha256": "fe68c7d74c0dd57d8ab6cf51efcd5bc261c1a3e51ae77e0fe3e5bfcf71ee89a9",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-gcp-home.png",
+      "sha256": "34c3d64a08d0186434d5e8bc2a88b3edf2cc4f24e2281e72ce7c2ab30af5e9ca",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-omitted-correct-option-d.png",
+      "sha256": "da7b90dc767d150a7097dbb1e23d26461ba1b3bad164fc68caa9cd3a9586a584",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-omitted-option-d-explanation.png",
+      "sha256": "de48c2cf49a2e09843af9de326c73fb1c47b8ce6b43656d8ea0f403e145c1cd9",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-option-a-body.png",
+      "sha256": "0202f57c8957960233fef713f4cb54baf36523334fde9f7326dcb38b8a5bd257",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-partial-question.png",
+      "sha256": "154f4c38613dd96ce17083da3559e4e8cbbd58b724cbd322995c6dd089a86a98",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-partial-reason.png",
+      "sha256": "1254dff55f618ff2acab291531e29d2bdbe62801daa3548aa878f2be710dab7f",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-partial-result-label.png",
+      "sha256": "0202f57c8957960233fef713f4cb54baf36523334fde9f7326dcb38b8a5bd257",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-returned-completed-summary.png",
+      "sha256": "e80ce32c4ecebf67a6514c108444b6b6bb57ce3aa5cac8076644d859ee7b99d8",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/light/q12-light-max-selected-option-b.png",
+      "sha256": "f46c51af3c9bfb9af626ad36277858e6b7f1ab69760faa5d2c669c4beec4a65b",
+      "theme": "light"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-collapsed.png",
+      "sha256": "813de3906ca0a857d5dedd2ab90b0a8c5748e6d392a83da89963a527e86c887f",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-frame-1.png",
+      "sha256": "9f1e1e9f6410b63c771375ec86a639eeb4f3a7327051520e7db9220bad9d3b30",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-frame-10.png",
+      "sha256": "f9f7291e2758e5748050aee717a9aa888dea5715a4a1373f2188a94549bd0201",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-frame-11.png",
+      "sha256": "f9f7291e2758e5748050aee717a9aa888dea5715a4a1373f2188a94549bd0201",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-frame-12.png",
+      "sha256": "f9f7291e2758e5748050aee717a9aa888dea5715a4a1373f2188a94549bd0201",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-frame-2.png",
+      "sha256": "fa9556b52332126813e2df47e9fa35e3feaff4f135d72507f5973c3aedeb028b",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-frame-3.png",
+      "sha256": "651e71dfe3d2d934fad694d61f6470f74795910acb49d03756249fe78a95ed77",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-frame-4.png",
+      "sha256": "4f693895353c084e6dc6bf626152413a10f08b5a4dc4c87f9645531587aeeb3c",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-frame-5.png",
+      "sha256": "f9f7291e2758e5748050aee717a9aa888dea5715a4a1373f2188a94549bd0201",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-frame-6.png",
+      "sha256": "f9f7291e2758e5748050aee717a9aa888dea5715a4a1373f2188a94549bd0201",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-frame-7.png",
+      "sha256": "f9f7291e2758e5748050aee717a9aa888dea5715a4a1373f2188a94549bd0201",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-frame-8.png",
+      "sha256": "f9f7291e2758e5748050aee717a9aa888dea5715a4a1373f2188a94549bd0201",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-frame-9.png",
+      "sha256": "f9f7291e2758e5748050aee717a9aa888dea5715a4a1373f2188a94549bd0201",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-details-source-next-actions.png",
+      "sha256": "f9f7291e2758e5748050aee717a9aa888dea5715a4a1373f2188a94549bd0201",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-disclosure-reachable-reason-end.png",
+      "sha256": "813de3906ca0a857d5dedd2ab90b0a8c5748e6d392a83da89963a527e86c887f",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-gcp-home.png",
+      "sha256": "9aaeed7296bfbbd80f1e0c6abee587b019134b715cccc5bdf98cb61b757fea7a",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-omitted-correct-option-d.png",
+      "sha256": "6e73e17e289d34aa3c03e1fec8993d9c296f5a124cbbb042dcf0ab59edb2ca41",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-omitted-option-d-explanation.png",
+      "sha256": "9f1e1e9f6410b63c771375ec86a639eeb4f3a7327051520e7db9220bad9d3b30",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-option-a-body.png",
+      "sha256": "07049e9780ef2c002e4b096c0864abc4410e6b9190f0336a46c9eb60b44235c2",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-partial-question.png",
+      "sha256": "c6618035d4ebefe247e57a7b07dac54baffc07f3eaa5d4f9b4b2e50ede200fdf",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-partial-reason.png",
+      "sha256": "a3772c80844c30cb5010c8740659705128eaa541cd11f2ff3417becc20554d87",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-partial-result-label.png",
+      "sha256": "07049e9780ef2c002e4b096c0864abc4410e6b9190f0336a46c9eb60b44235c2",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-returned-completed-summary.png",
+      "sha256": "5f3b1b1014d0cc67673c0a4277785e79e07462dc1e6e7d9c851a8cb631371723",
+      "theme": "dark"
+    },
+    {
+      "path": "docs/active/BIZQ-01/native-partial-q12-30/screens/recovered-2026-10-06/dark/q12-dark-max-selected-option-b.png",
+      "sha256": "a791fce587460c89ec9f1787db8da04bd8103750fd375befbfc6455b25203833",
+      "theme": "dark"
+    }
+  ]
+}

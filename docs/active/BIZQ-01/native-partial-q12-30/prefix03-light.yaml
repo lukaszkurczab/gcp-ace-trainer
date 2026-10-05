@@ -1,0 +1,157 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 Q12 light max-text existing Claude partial review
+---
+- stopApp
+- launchApp:
+    clearState: false
+- openLink: "com.lkurczab.patternly://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"
+- runFlow:
+    when:
+      visible: "Open|Otwórz"
+    commands:
+      - tapOn: "Open|Otwórz"
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 45000
+- assertVisible:
+    id: patternly:home:track-card:google-cloud-associate-cloud-engineer
+- takeScreenshot: q12-light-max-gcp-home
+- scrollUntilVisible:
+    element:
+      id: patternly:home:activity
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:home:activity
+- extendedWaitUntil:
+    visible:
+      id: patternly:activity:root
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: patternly:activity:row:claude-certified-architect-professional-certification:certification-focus-practice:2
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:activity:row:claude-certified-architect-professional-certification:certification-focus-practice:2
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:claude-certified-architect-professional-certification:certification-focus-practice:2
+    timeout: 15000
+- scrollUntilVisible:
+    element: "Session complete"
+    direction: UP
+    centerElement: false
+- scrollUntilVisible:
+    element:
+      id: patternly:summary:review-answers:claude-certified-architect-professional-certification:certification-focus-practice:2
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:summary:review-answers:claude-certified-architect-professional-certification:certification-focus-practice:2
+- extendedWaitUntil:
+    visible:
+      id: patternly:practice-review:root:claude-certified-architect-professional-certification:certification-focus-practice:2:.*
+    timeout: 15000
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- tapOn:
+    id: patternly:practice-review:next
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:question:CCARP-D01-O06-selection
+    timeout: 15000
+- tapOn:
+    id: patternly:practice-review:next
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:question:CCARP-D01-O01-transfer
+    timeout: 15000
+- takeScreenshot: q12-light-max-partial-question
+- scrollUntilVisible:
+    element: "Partly correct"
+    direction: DOWN
+- assertVisible: "Partly correct"
+- takeScreenshot: q12-light-max-partial-result-label
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:b
+    direction: DOWN
+    centerElement: false
+- takeScreenshot: q12-light-max-selected-option-b
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:d
+    direction: DOWN
+    centerElement: false
+- takeScreenshot: q12-light-max-omitted-correct-option-d
+- scrollUntilVisible:
+    element:
+      id: patternly:session:result:CCARP-D01-O01-transfer:partial
+    direction: DOWN
+    centerElement: false
+- takeScreenshot: q12-light-max-partial-reason
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:CCARP-D01-O01-transfer
+    direction: DOWN
+    visibilityPercentage: 50
+    centerElement: false
+- takeScreenshot: q12-light-max-details-collapsed
+- tapOn:
+    id: patternly:session:details-toggle:CCARP-D01-O01-transfer
+- assertVisible: "Hide answer details"
+- assertVisible:
+    id: patternly:session:details:CCARP-D01-O01-transfer
+- scrollUntilVisible:
+    element: "Without d, the system role and supervisor boundary remain ambiguous, so the proposed value cannot be delivered safely."
+    direction: DOWN
+    visibilityPercentage: 20
+    centerElement: false
+- takeScreenshot: q12-light-max-omitted-option-d-explanation
+- takeScreenshot: q12-light-max-details-frame-1
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-2
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-3
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-4
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-5
+- swipe:
+    start: 50%, 72%
+    end: 50%, 42%
+    duration: 450
+- takeScreenshot: q12-light-max-details-frame-6
+- scrollUntilVisible:
+    element:
+      id: question-source-link-CCARP-D01-O01-transfer-0
+    direction: DOWN
+    centerElement: false
+- assertVisible:
+    id: patternly:practice-review:next
+- takeScreenshot: q12-light-max-details-source-next-actions
+- tapOn:
+    id: patternly:practice-review:result
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:claude-certified-architect-professional-certification:certification-focus-practice:2
+    timeout: 15000
+- takeScreenshot: q12-light-max-returned-completed-summary

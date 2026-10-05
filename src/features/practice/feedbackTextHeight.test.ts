@@ -3,32 +3,32 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import ts from "typescript";
 
-import { createOneTimeFeedbackTextMinimumHeight, feedbackTextMeasurementKey } from "./feedbackTextHeight";
+import { createOneTimeTextMinimumHeight, textMeasurementKey } from "../../components/textLayoutHeight";
 
 const practiceFeedbackSource = readFileSync(new URL("./PracticeFeedbackBlock.tsx", import.meta.url), "utf8");
 
 test("feedback text minimum height rounds above the measured physical-pixel boundary", () => {
-  const measure = createOneTimeFeedbackTextMinimumHeight(3);
+  const measure = createOneTimeTextMinimumHeight(3);
   assert.equal(measure(219.9998779296875), 220 + 1 / 3);
 });
 
 test("feedback height measurement ignores invalid initial layouts and then applies only once", () => {
-  const measure = createOneTimeFeedbackTextMinimumHeight(3);
+  const measure = createOneTimeTextMinimumHeight(3);
   assert.equal(measure(0), undefined);
   assert.equal(measure(Number.NaN), undefined);
   assert.equal(measure(219.9998779296875), 220 + 1 / 3);
   assert.equal(measure(300), undefined, "a later onLayout cannot grow the minimum again");
-  assert.equal(createOneTimeFeedbackTextMinimumHeight(0)(220), undefined);
-  assert.equal(createOneTimeFeedbackTextMinimumHeight(Number.NaN)(220), undefined);
+  assert.equal(createOneTimeTextMinimumHeight(0)(220), undefined);
+  assert.equal(createOneTimeTextMinimumHeight(Number.NaN)(220), undefined);
 });
 
 test("measurement context changes when text or layout geometry changes", () => {
-  const base = feedbackTextMeasurementKey("Authored explanation", 328, 3.571, 3);
-  assert.equal(base, feedbackTextMeasurementKey("Authored explanation", 328, 3.571, 3));
-  assert.notEqual(base, feedbackTextMeasurementKey("Updated explanation", 328, 3.571, 3));
-  assert.notEqual(base, feedbackTextMeasurementKey("Authored explanation", 320, 3.571, 3));
-  assert.notEqual(base, feedbackTextMeasurementKey("Authored explanation", 328, 2, 3));
-  assert.notEqual(base, feedbackTextMeasurementKey("Authored explanation", 328, 3.571, 2));
+  const base = textMeasurementKey("Authored explanation", 328, 3.571, 3);
+  assert.equal(base, textMeasurementKey("Authored explanation", 328, 3.571, 3));
+  assert.notEqual(base, textMeasurementKey("Updated explanation", 328, 3.571, 3));
+  assert.notEqual(base, textMeasurementKey("Authored explanation", 320, 3.571, 3));
+  assert.notEqual(base, textMeasurementKey("Authored explanation", 328, 2, 3));
+  assert.notEqual(base, textMeasurementKey("Authored explanation", 328, 3.571, 2));
 });
 
 test("actual FeedbackTextLayout applies one measured minimum and its child key resets by context", () => {
@@ -61,9 +61,9 @@ test("actual FeedbackTextLayout applies one measured minimum and its child key r
     if (!(index in hookValues)) hookValues[index] = typeof initial === "function" ? (initial as () => T)() : initial;
     return [hookValues[index] as T, (value) => { hookValues[index] = value; setterCalls.push(value); }];
   };
-  const layoutFactory = new Function("useState", "createOneTimeFeedbackTextMinimumHeight", "jsx", "Text", `${transpile(layoutFunction)}; return FeedbackTextLayout;`)(
+  const layoutFactory = new Function("useState", "createOneTimeTextMinimumHeight", "jsx", "Text", `${transpile(layoutFunction)}; return FeedbackTextLayout;`)(
     useState,
-    createOneTimeFeedbackTextMinimumHeight,
+    createOneTimeTextMinimumHeight,
     hostJsx,
     "Text",
   ) as (props: { physicalScale: number; style: unknown; text: string }) => { type: string; props: Record<string, unknown> };
@@ -105,6 +105,6 @@ test("both feedback text paths preserve outer sibling identity and use the share
   const source = feedbackNodes.map((node) => node.getText(file)).join("\n");
   assert.match(source, /key=\{`\$\{message\.kind\}:\$\{message\.targetId\}`\}/);
   assert.match(source, /key=\{`detail:\$\{index\}`\}/);
-  assert.equal((source.match(/feedbackTextMeasurementKey\(/g) ?? []).length, 2);
+  assert.equal((source.match(/textMeasurementKey\(/g) ?? []).length, 2);
   assert.doesNotMatch(practiceFeedbackSource, /native28-layout-probe|gcp-ace-gcpace-n01-b03-001|minHeight:\s*221/);
 });

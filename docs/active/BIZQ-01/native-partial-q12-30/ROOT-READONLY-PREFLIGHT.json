@@ -1,0 +1,21 @@
+{
+  "status": "root-readonly-baseline-confirmed",
+  "baseline29Sha256": "db237604911ffcbe31787af7bb105a86cebaedfcb6a9a97b49346eb10f6b6943",
+  "baseline30Sha256": "01b2e082e1d0c3befe3375d3934656bb834de4d289e105fb297808eb06eac11f",
+  "equalFields": {
+    "schema": true,
+    "deviceTarget": true,
+    "profile": true,
+    "keyInventory": true,
+    "records": true,
+    "fences": true,
+    "notifications": true
+  },
+  "recordCount": 81,
+  "notificationReadback": {
+    "permission": "undetermined",
+    "totalScheduled": 0,
+    "appScheduledCount": 0
+  },
+  "scope": "allowlisted private records and redacted lifecycle, metadata3 values unread; no UI/device state write"
+}

@@ -1,0 +1,75 @@
+appId: com.lkurczab.patternly
+name: BIZQ30 direct-row option ending probe
+---
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-home
+    timeout: 45000
+- assertVisible:
+    id: patternly:home:track-card:google-cloud-associate-cloud-engineer
+- takeScreenshot: direct-row-gcp-home
+- scrollUntilVisible:
+    element:
+      id: patternly:home:activity
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:home:activity
+- extendedWaitUntil:
+    visible:
+      id: patternly:activity:root
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: patternly:activity:row:claude-certified-architect-professional-certification:certification-focus-practice:2
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:activity:row:claude-certified-architect-professional-certification:certification-focus-practice:2
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:claude-certified-architect-professional-certification:certification-focus-practice:2
+    timeout: 15000
+- scrollUntilVisible:
+    element: "Session complete"
+    direction: UP
+    centerElement: false
+- scrollUntilVisible:
+    element:
+      id: patternly:summary:review-answers:claude-certified-architect-professional-certification:certification-focus-practice:2
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:summary:review-answers:claude-certified-architect-professional-certification:certification-focus-practice:2
+- extendedWaitUntil:
+    visible:
+      id: patternly:practice-review:root:claude-certified-architect-professional-certification:certification-focus-practice:2:.*
+    timeout: 15000
+- runFlow:
+    when:
+      visible: ".*Open debugger to view warnings.*"
+    commands:
+      - tapOn:
+          point: "92%,93%"
+- tapOn:
+    id: patternly:practice-review:next
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:question:CCARP-D01-O06-selection
+    timeout: 15000
+- tapOn:
+    id: patternly:practice-review:next
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:question:CCARP-D01-O01-transfer
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:CCARP-D01-O01-transfer:a
+    direction: DOWN
+    centerElement: false
+- swipe:
+    start: 50%, 68%
+    end: 50%, 48%
+    duration: 450
+- takeScreenshot: direct-row-option-a-ending
