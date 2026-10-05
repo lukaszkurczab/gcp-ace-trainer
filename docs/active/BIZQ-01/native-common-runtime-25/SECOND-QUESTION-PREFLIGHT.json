@@ -1,0 +1,87 @@
+{
+  "question": {
+    "answer": {
+      "optionId": "A",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Use the hierarchy, provider state, or evidence stated in the scenario.",
+      "Choose one action or classification.",
+      "Do not substitute an adjacent product, billing, identity, or location boundary."
+    ],
+    "contentDomainId": "gcp-ace-standard-domain-1",
+    "difficulty": null,
+    "feedback": {
+      "details": {
+        "boundaryOrTradeoff": "project ID versus number",
+        "errorCorrection": "Do not replace the stated evidence with a neighboring decision. project ID versus number is the condition that selects the answer.",
+        "mechanismOrProperty": "Projects are the core service-resource boundary, while project identifiers, project lifecycle, and Service Usage state are separate contracts. The decisive boundary here is project ID versus number.",
+        "scenarioApplication": "Project ID is the human-readable identifier in this contract.",
+        "transfer": "When the project or active consumer changes, reassess identifiers, service state, permissions, and workload ownership together.",
+        "url": "https://docs.cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy"
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "B",
+          "text": "This option selects the project number, but the decisive requirement is project ID versus number."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "C",
+          "text": "This option selects the parent folder id, but the decisive requirement is project ID versus number."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "D",
+          "text": "This option selects the billing account id, but the decisive requirement is project ID versus number."
+        }
+      ],
+      "reason": "Project ID is the human-readable identifier in this contract.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "A",
+          "text": "The project ID"
+        },
+        {
+          "optionId": "B",
+          "text": "The project number"
+        },
+        {
+          "optionId": "C",
+          "text": "The parent folder ID"
+        },
+        {
+          "optionId": "D",
+          "text": "The billing account ID"
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "GCPACE-N01-B04",
+    "nodeId": "organization_projects_policies_services_quotas_and_assets",
+    "prompt": "A command asks for a human-readable project identifier. Which value should be supplied?",
+    "questionId": "gcp-ace-gcpace-n01-b04-001",
+    "sourceRefs": [
+      "gcp-resource-hierarchy",
+      "google-ace-standard-exam-guide"
+    ],
+    "trackId": "google-cloud-associate-cloud-engineer"
+  },
+  "observedId": "gcp-ace-gcpace-n01-b04-001",
+  "nativeDisplayOrder": [
+    "D",
+    "B",
+    "A",
+    "C"
+  ],
+  "plannedSourceAnswer": "A",
+  "plannedNativeId": "a",
+  "expectedOutcome": "correct",
+  "meaning": "The project ID",
+  "interpretation": "authored-key runtime check, not semantic bank acceptance"
+}

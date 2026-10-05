@@ -1,0 +1,39 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 native25 observed visible post-review Details without centering
+---
+- assertVisible:
+    id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001
+- tapOn:
+    id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001
+- assertVisible:
+    id: patternly:session:details:gcp-ace-gcpace-n01-b03-001
+- takeScreenshot: native25-first-wrong-post-review-details
+- swipe:
+    start: 50%,72%
+    end: 50%,60%
+    duration: 500
+- takeScreenshot: native25-first-wrong-post-review-details-scroll-1
+- swipe:
+    start: 50%,72%
+    end: 50%,60%
+    duration: 500
+- takeScreenshot: native25-first-wrong-post-review-details-scroll-2
+- swipe:
+    start: 50%,72%
+    end: 50%,60%
+    duration: 500
+- takeScreenshot: native25-first-wrong-post-review-details-scroll-3
+- swipe:
+    start: 50%,72%
+    end: 50%,60%
+    duration: 500
+- takeScreenshot: native25-first-wrong-post-review-details-scroll-4
+- tapOn:
+    id: patternly:practice-review:result
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+    timeout: 15000
+- assertVisible: 'Session complete'
+- assertVisible: '10 / 10'
+- takeScreenshot: native25-same-result-after-read-only-details

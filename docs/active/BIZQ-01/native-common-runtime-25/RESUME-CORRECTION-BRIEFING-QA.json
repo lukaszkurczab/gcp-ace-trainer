@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "patternly-bizq01-native25-resume-briefing-qa-v1",
+  "reviewDate": "2026-10-05",
+  "verdict": "PASS",
+  "scope": "Independent source-backed design review only; no production edit, device, process, Metro, service or state action.",
+  "proposal": {
+    "path": "patternly/docs/active/BIZQ-01/native-common-runtime-25/RESUME-CORRECTION-BRIEFING.md",
+    "sha256": "910897c89b6e6f22ef8a3603952b18e4bc21a628ef74f6b75d5134b70ee10588"
+  },
+  "finding": {
+    "id": "CANONICAL-PRACTICE-RESUME-NAVIGATION-MISMATCH",
+    "classification": "source-confirmed producer-consumer contract mismatch",
+    "producer": "CanonicalTrainingRuntime.prepare emits the ordinary practice snapshot without a navigation field; validateResume expects that same exact snapshot.",
+    "consumers": [
+      "buildCertificationPracticeResumeRoute requires navigation === linear through assertOrdinaryCertificationConfiguration.",
+      "buildDesignInterviewPracticeResumeRoute independently requires navigation === linear.",
+      "Home recommendation construction catches route-builder rejection and returns an unavailable/disabled recommendation."
+    ],
+    "smallestCorrection": "Make both ordinary resume consumers accept only the canonical absent-navigation shape while rejecting any explicit navigation property. Preserve all other guards and exact runtime resume validation."
+  },
+  "scores": {
+    "objectiveArchitectureFit": 0.96,
+    "simplicity": 0.94,
+    "risk": 0.91,
+    "maintainability": 0.94,
+    "minimum": 0.91
+  },
+  "implementationBindings": [
+    {
+      "path": "patternly/src/features/practice/sessionConfig.ts",
+      "sha256": "afc595dfd4ae1c2e51a61157046b2a40dcbee8dd628fa8c2c1261ad3dfdf35e8"
+    },
+    {
+      "path": "patternly/src/application/canonical/CanonicalTrainingRuntime.ts",
+      "sha256": "cc980c835227e253c287a1dd841b0892861d5ab8f9491b1c35d5b870253a2e83"
+    },
+    {
+      "path": "patternly/src/features/home/tabs/homeTabModel.ts",
+      "sha256": "43b84cf4a1bcdbf32e6fc4cc309158023555759062e9a3660da036efb6254ac6"
+    },
+    {
+      "path": "patternly/src/features/home/HomeScreen.tsx",
+      "sha256": "9bf5f476f7795d087e87d3e0802dbf7687afc3ca328601d41610a3067511b1ed"
+    },
+    {
+      "path": "patternly/src/application/trainingLifecycle/TrainingLifecycleUseCases.ts",
+      "sha256": "f86e3b672928288eaca8c7f696852795b6cd39a24131143fd6bee221dfe92c8f"
+    }
+  ],
+  "testBindings": [
+    {
+      "path": "patternly/src/features/practice/practiceSessionConfig.test.ts",
+      "sha256": "ea4483c7f5dd2835f0d8e8e6f8bdedc748c9363f39e2d921469d2ba9108cf96e"
+    },
+    {
+      "path": "patternly/src/features/home/tabs/homeTabModel.test.ts",
+      "sha256": "bdb42fab8761a1d7ae44b0c98c6a3bd26484a53cbce01a9943554b8ba0a32448"
+    }
+  ],
+  "reportedRuntimeEvidence": {
+    "path": "patternly/docs/active/BIZQ-01/native-common-runtime-25/POST-ACK-RESUME-PREFLIGHT.json",
+    "sha256": "0f840ea2d8d64b6739b6f285d9cd9ca34f923516d8f33df26beefba63e410c9b",
+    "treatment": "Context provided by the controller; not independently validated here and not treated as a private-storage dump."
+  },
+  "requirementBinding": {
+    "path": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3"
+  },
+  "verification": {
+    "productionTestsRun": false,
+    "deviceOrRuntimeActions": false,
+    "limits": [
+      "The review establishes a mismatch from source; it does not independently inspect persisted device-session bytes.",
+      "A Design route regression establishes route mechanics only, not Premium entitlement or native Design acceptance."
+    ]
+  }
+}

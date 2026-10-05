@@ -1,0 +1,33 @@
+{
+  "bindings": [
+    {
+      "path": "src/features/practice/sessionConfig.ts",
+      "sha256": "df43c48f82216c88021e0530454efe58929791e7f344a54f44adb5315531391c"
+    },
+    {
+      "path": "src/features/practice/practiceSessionConfig.test.ts",
+      "sha256": "73297ea64492017b5acdcf17ec6af902d29b3202441e4120004fcf3b6c8136bf"
+    },
+    {
+      "path": "src/application/canonical/CanonicalTrainingRuntime.ts",
+      "sha256": "cc980c835227e253c287a1dd841b0892861d5ab8f9491b1c35d5b870253a2e83"
+    },
+    {
+      "path": "src/features/home/tabs/homeTabModel.ts",
+      "sha256": "43b84cf4a1bcdbf32e6fc4cc309158023555759062e9a3660da036efb6254ac6"
+    },
+    {
+      "path": "src/features/home/HomeScreen.tsx",
+      "sha256": "9bf5f476f7795d087e87d3e0802dbf7687afc3ca328601d41610a3067511b1ed"
+    },
+    {
+      "path": "src/application/certification/certificationSessionFacade.ts",
+      "sha256": "8c84783be91689a77a0b7c72d1e84520527828ab66f23b94b8f65184e73eae01"
+    },
+    {
+      "path": "src/application/trainingLifecycle/TrainingLifecycleUseCases.ts",
+      "sha256": "f86e3b672928288eaca8c7f696852795b6cd39a24131143fd6bee221dfe92c8f"
+    }
+  ],
+  "changeScope": "only two navigation consumer predicates and regression test; producer/facade/lifecycle unchanged"
+}

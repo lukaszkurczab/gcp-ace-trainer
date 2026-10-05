@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "patternly-bizq01-native-common-runtime-briefing-qa-v1",
+  "reviewDate": "2026-10-05",
+  "verdict": "PASS_WITH_ISSUES",
+  "scope": "Independent design review of the Q09/Q10 native runner briefing only; no runner/device execution, source modification, or Premium/profile claim.",
+  "proposal": {
+    "path": "patternly/docs/active/BIZQ-01/native-common-runtime-25/BRIEFING.md",
+    "sha256": "3cee632f6be55d728e9b1dcdf09ddb1c9ea8523b2c05f59f089b66749e91dac1"
+  },
+  "scores": {
+    "objectiveArchitectureFit": 0.94,
+    "simplicity": 0.9,
+    "risk": 0.87,
+    "maintainability": 0.9,
+    "minimum": 0.87,
+    "rationale": "A single real free GCP focus-practice flow exercises the existing production option-order and disclosure paths without track switching or Premium admission. Unknown active session state is guarded. Restart sequencing must follow the existing durable-submit boundary."
+  },
+  "finding": {
+    "id": "Q09-RESTART-AFTER-DURABLE-ACK",
+    "severity": "bounded execution clarification",
+    "requirement": "Q09 active-session rerender/restart preserves option and selection meaning.",
+    "source": "Canonical practice stores the session/order and committed attempts; its unsubmitted option selection is screen-local, and canonical practice rejects a simulation draft.",
+    "action": "If performing a cold process restart, do it only after a durable submit/ACK. Verify the resumed active session, committed attempt and option meaning. Do not expect or claim an unsubmitted choice survives process death.",
+    "blocksBriefing": false
+  },
+  "criterionFindings": [
+    {
+      "criterion": "Q09 active session option order and selection meaning",
+      "finding": "Existing session preparation persists occurrence-keyed option order; resume validates package identity, fingerprint and order. Current tests use test storage rebind, not a native process restart. The proposed runner session supplies bounded native evidence."
+    },
+    {
+      "criterion": "Q10 pre-submit disclosure and post-submit feedback",
+      "finding": "GCP focus practice uses fixed after-each-durable-submit feedback. Existing view-model and renderer tests cover source projection; the proposal checks real UI before and after submit. It makes no end-of-simulation feedback claim."
+    },
+    {
+      "criterion": "Free-path access and preservation",
+      "finding": "GCP focus practice is not listed as a Premium product mode and is scoped to the GCP free node. The lifecycle rejects starting while an active session exists. Proposal avoids track/profile changes, clearing and unknown-session mutation."
+    },
+    {
+      "criterion": "Full BIZQ-01 native acceptance",
+      "finding": "Not addressed by this slice: repaired-question correct/wrong/partial coverage, authorized Premium profile, partial denominator, Q13 live package update and full-area acceptance remain separate."
+    }
+  ],
+  "implementationBindings": [
+    {
+      "path": "patternly/src/content/canonical/productModeConfig.ts",
+      "sha256": "a65e60a2ebf6f61813a1277b4058ab9b28c60b82e7b2fa7f592b08f640fe04f3"
+    },
+    {
+      "path": "patternly/src/application/trainingLifecycle/premiumProductModePolicy.ts",
+      "sha256": "03835160163c0a208c417d66749e667d02b2d50c283b2b5ec834a53fdf336ff3"
+    },
+    {
+      "path": "patternly/src/application/trainingLifecycle/TrainingLifecycleUseCases.ts",
+      "sha256": "f86e3b672928288eaca8c7f696852795b6cd39a24131143fd6bee221dfe92c8f"
+    },
+    {
+      "path": "patternly/src/application/canonical/CanonicalTrainingRuntime.ts",
+      "sha256": "cc980c835227e253c287a1dd841b0892861d5ab8f9491b1c35d5b870253a2e83"
+    },
+    {
+      "path": "patternly/src/domain/learning/trainingSessionDraft.ts",
+      "sha256": "7ccdff2a2e4424f270afb9b0395d9068e4e4543fda4ab8c5c3c80a23019ee967"
+    },
+    {
+      "path": "patternly/src/features/practice/CertificationPracticeSessionScreen.tsx",
+      "sha256": "acd4aedb8c25a155fe3ee93d5254e932fb2def0b92b6218355de1193cea7109f"
+    },
+    {
+      "path": "patternly/src/features/practice/PracticeSessionSurface.tsx",
+      "sha256": "5262a0c2a1e4be5c6d68fc707b90de60b82435f15aef08263800c05674f03a1e"
+    },
+    {
+      "path": "patternly/src/features/practice/canonicalQuestionViewModel.ts",
+      "sha256": "dcf17cee634856644f9f077665033f305d98f75b5d16737f4630cddc789ac1e3"
+    }
+  ],
+  "testBindings": [
+    {
+      "path": "patternly/src/application/canonical/canonicalChoiceOrderIntegration.test.ts",
+      "sha256": "61557f08811093416bb32fb0ae60b877c17310fb9372856584ecc6b47164bc3d"
+    },
+    {
+      "path": "patternly/src/application/canonical/canonicalPracticeChoiceOrderProjection.test.ts",
+      "sha256": "e736f5601547ca25588306c39ed30d585d3edfb6d15db352d34dc0e13167e33e"
+    },
+    {
+      "path": "patternly/src/application/learningMutations/trainingSessionDraft.test.ts",
+      "sha256": "15d52593e2553d6e1ccaeeb9a2f82da4ed98881bc4d866729157abc2063e3457"
+    },
+    {
+      "path": "patternly/src/features/practice/practiceSessionPresentation.test.ts",
+      "sha256": "e227bc7d8ceda3471d309c73b0a7447ff3e73957bb11e5d4288551bef9db0d74"
+    }
+  ],
+  "requirementBinding": {
+    "path": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3"
+  },
+  "validation": {
+    "deviceOrRuntimeExecuted": false,
+    "sourceTestsRerun": false,
+    "reason": "This task was an independent briefing/design review. Matching source tests and earlier source-review receipts were read as design evidence; the proposed actual-runner evidence must be produced by the separately authorized runtime execution."
+  }
+}

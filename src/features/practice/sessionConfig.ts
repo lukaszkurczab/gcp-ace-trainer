@@ -274,7 +274,7 @@ export function buildDesignInterviewPracticeResumeRoute(session: TrainingSession
   if (!packageMode.requestedLengths.includes(session.requestedLength) || !Number.isInteger(session.actualLength) || session.actualLength < 1 || session.actualLength > session.requestedLength) {
     throw new Error("Design Interview resume requires its immutable supported session length.");
   }
-  if (session.configurationSnapshot.navigation !== "linear" || session.configurationSnapshot.submission !== "perItem" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none" || session.configurationSnapshot.timer !== "elapsedForeground") {
+  if ("navigation" in session.configurationSnapshot || session.configurationSnapshot.submission !== "perItem" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none" || session.configurationSnapshot.timer !== "elapsedForeground") {
     throw new Error("Design Interview resume requires its canonical immutable interaction configuration.");
   }
   return Object.freeze({
@@ -305,7 +305,7 @@ function assertOrdinaryCertificationConfiguration(
   const supportedFeedbackModes = packageMode.feedbackTiming.kind === "learner_selectable"
     ? ["afterEachAnswer", "atSessionEnd"] as const
     : ["afterEachAnswer"] as const;
-  if (configuration.navigation !== "linear" || configuration.submission !== "perItem" || !supportedFeedbackModes.some((mode) => mode === feedbackMode) || configuration.answerChanges !== "none" || configuration.timer !== "elapsedForeground" || configuration.reinsertEnabled !== (packageMode.reinsertPolicy === "conditional_after_incorrect")) {
+  if ("navigation" in configuration || configuration.submission !== "perItem" || !supportedFeedbackModes.some((mode) => mode === feedbackMode) || configuration.answerChanges !== "none" || configuration.timer !== "elapsedForeground" || configuration.reinsertEnabled !== (packageMode.reinsertPolicy === "conditional_after_incorrect")) {
     throw new Error("Certification Practice resume requires its canonical immutable interaction configuration.");
   }
   if (!packageMode.requestedLengths.includes(session.requestedLength) || !Number.isInteger(session.requestedLength) || session.actualLength < 1 || session.actualLength > session.requestedLength) {

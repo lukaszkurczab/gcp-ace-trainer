@@ -1,0 +1,60 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 native25 verified completed result and wrong answer review
+---
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+    timeout: 20000
+- assertVisible: 'Session complete'
+- assertVisible:
+    id: patternly:summary:configuration:google-cloud-associate-cloud-engineer:certification-focus-practice:2:10:after-each-answer
+- assertVisible: '10 / 10'
+- takeScreenshot: native25-own-session-completed-nine-correct-one-incorrect
+- tapOn:
+    id: patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+- extendedWaitUntil:
+    visible:
+      id: patternly:practice-review:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2:.*
+    timeout: 15000
+- assertVisible:
+    id: patternly:session:question:gcp-ace-gcpace-n01-b03-001
+- takeScreenshot: native25-first-wrong-post-session-review
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001
+- assertVisible:
+    id: patternly:session:details:gcp-ace-gcpace-n01-b03-001
+- takeScreenshot: native25-first-wrong-post-review-details
+- swipe:
+    start: 50%,72%
+    end: 50%,60%
+    duration: 500
+- takeScreenshot: native25-first-wrong-post-review-details-scroll-1
+- swipe:
+    start: 50%,72%
+    end: 50%,60%
+    duration: 500
+- takeScreenshot: native25-first-wrong-post-review-details-scroll-2
+- swipe:
+    start: 50%,72%
+    end: 50%,60%
+    duration: 500
+- takeScreenshot: native25-first-wrong-post-review-details-scroll-3
+- swipe:
+    start: 50%,72%
+    end: 50%,60%
+    duration: 500
+- takeScreenshot: native25-first-wrong-post-review-details-scroll-4
+- tapOn:
+    id: patternly:practice-review:result
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+    timeout: 15000
+- assertVisible: 'Session complete'
+- assertVisible: '10 / 10'
+- takeScreenshot: native25-same-result-after-read-only-details

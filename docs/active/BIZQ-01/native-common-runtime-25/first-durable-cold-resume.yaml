@@ -1,0 +1,43 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 native25 own durable answer cold process resume
+---
+# This interruption is after the observed durable wrong-answer ACK, not before ACK.
+- killApp
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: patternly:resume:card:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+    timeout: 30000
+- takeScreenshot: native25-own-session-resume-after-process-restart
+- tapOn:
+    id: patternly:resume:continue:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+    timeout: 15000
+- assertVisible:
+    id: patternly:session:counter:google-cloud-associate-cloud-engineer:certification-focus-practice:2:ordinal:1:length:10
+- assertVisible:
+    id: patternly:session:question:gcp-ace-gcpace-n01-b03-001
+- assertVisible:
+    id: patternly:session:configuration:google-cloud-associate-cloud-engineer:certification-focus-practice:2:length:10:feedback-timing:after-each-answer
+- takeScreenshot: native25-same-question-order-after-cold-resume
+- scrollUntilVisible:
+    element:
+      id: patternly:session:result:gcp-ace-gcpace-n01-b03-001:incorrect
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:feedback:gcp-ace-gcpace-n01-b03-001
+- takeScreenshot: native25-same-durable-wrong-feedback-after-restart
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001
+- assertVisible:
+    id: patternly:session:details:gcp-ace-gcpace-n01-b03-001
+- takeScreenshot: native25-expanded-details-after-cold-resume

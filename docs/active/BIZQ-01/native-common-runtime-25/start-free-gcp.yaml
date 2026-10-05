@@ -1,0 +1,35 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 native25 real Free GCP session
+---
+- tapOn:
+    id: patternly:practice:open-setup
+- extendedWaitUntil:
+    visible:
+      id: patternly:practice:setup:root
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: patternly:practice:session-length:10
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: patternly:practice:session-length:10
+- takeScreenshot: native25-free-gcp-setup
+- scrollUntilVisible:
+    element:
+      id: patternly:practice:start-session
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: patternly:practice:start-session
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:question:.*
+    timeout: 20000
+- assertNotVisible:
+    id: patternly:session:feedback:.*
+- assertNotVisible:
+    id: patternly:session:reason:.*
+- assertNotVisible:
+    id: patternly:session:details:.*
+- takeScreenshot: native25-first-question-before-submit

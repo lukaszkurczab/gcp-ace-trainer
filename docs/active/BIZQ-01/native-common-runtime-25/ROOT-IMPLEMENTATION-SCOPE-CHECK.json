@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "guardDeltaExactlyTwoReplacements": true,
+  "unchangedProducerFacadeLifecycleHomeBindingsVerifiedAgainstHEAD": true,
+  "currentSourceBindingsMatch": true,
+  "rootChecks": "27/27; finaltypecheck/contentboundary/privacyboundary/recoverybaseline PASS",
+  "newGuardSha256": "df43c48f82216c88021e0530454efe58929791e7f344a54f44adb5315531391c",
+  "scope": "root direct source/diff/hash/log verification; native acceptance separate"
+}

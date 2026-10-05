@@ -1,0 +1,13 @@
+{
+  "bundleSha256": "8ba6e00782a5b2b083d3daf9a06a0d379ecec3fa6cfa5333917bc168b86f1738",
+  "guardsPresent": [
+    "\"navigation\" in configuration",
+    "\"navigation\" in session.configurationSnapshot"
+  ],
+  "sourceSha256": "df43c48f82216c88021e0530454efe58929791e7f344a54f44adb5315531391c",
+  "metroPid": 10312,
+  "metroExecSession": 44163,
+  "soleListener": "[::1]:8081",
+  "oldOwnMetroPid6565Stopped": true,
+  "APIAuthUnchanged": true
+}

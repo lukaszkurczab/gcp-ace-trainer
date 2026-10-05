@@ -1,0 +1,26 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 native25 continue observed setup scroll
+---
+# The failed first scroll reached Number of questions just below the viewport.
+- swipe:
+    direction: UP
+- extendedWaitUntil:
+    visible:
+      id: patternly:practice:session-length:10
+    timeout: 5000
+- takeScreenshot: native25-length-after-observed-scroll
+- tapOn:
+    id: patternly:practice:session-length:10
+- tapOn:
+    id: patternly:practice:start-session
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:question:.*
+    timeout: 20000
+- assertNotVisible:
+    id: patternly:session:feedback:.*
+- assertNotVisible:
+    id: patternly:session:reason:.*
+- assertNotVisible:
+    id: patternly:session:details:.*
+- takeScreenshot: native25-first-question-before-submit

@@ -1,0 +1,21 @@
+{
+  "sessionId": "google-cloud-associate-cloud-engineer:certification-focus-practice:2",
+  "ordinal": 6,
+  "questionId": "gcp-ace-n01-b01-001",
+  "artifactSha256": "eea751e977cbfb468577ff4ea47702b914e1de6ad7fa06519a4e919889f0a6f9",
+  "hierarchySha256": "3bdbc5f2594f59a1ee12cd871d504529acad1d26e90c76f18d35de977ca47dd9",
+  "sourceAnswer": "A",
+  "nativeEncodedAnswer": "a",
+  "nativeOptionIds": [
+    "c",
+    "a",
+    "d",
+    "b"
+  ],
+  "expectedScore": {
+    "kind": "correct",
+    "earnedPoints": 1,
+    "maxPoints": 1
+  },
+  "interpretation": "authored-key runtime probe; not content semantic acceptance"
+}

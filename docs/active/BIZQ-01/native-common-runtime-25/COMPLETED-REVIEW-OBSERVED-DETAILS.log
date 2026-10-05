@@ -1,0 +1,19 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 native25 observed visible post-review Details without centering
+Assert that id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001 is visible... COMPLETED
+Tap on id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001... COMPLETED
+Assert that id: patternly:session:details:gcp-ace-gcpace-n01-b03-001 is visible... COMPLETED
+Take screenshot native25-first-wrong-post-review-details... COMPLETED
+Swipe from (50%,72%) to (50%,60%) in 500 ms... COMPLETED
+Take screenshot native25-first-wrong-post-review-details-scroll-1... COMPLETED
+Swipe from (50%,72%) to (50%,60%) in 500 ms... COMPLETED
+Take screenshot native25-first-wrong-post-review-details-scroll-2... COMPLETED
+Swipe from (50%,72%) to (50%,60%) in 500 ms... COMPLETED
+Take screenshot native25-first-wrong-post-review-details-scroll-3... COMPLETED
+Swipe from (50%,72%) to (50%,60%) in 500 ms... COMPLETED
+Take screenshot native25-first-wrong-post-review-details-scroll-4... COMPLETED
+Tap on id: patternly:practice-review:result... COMPLETED
+Assert that id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2 is visible... COMPLETED
+Assert that "Session complete" is visible... COMPLETED
+Assert that "10 / 10" is visible... COMPLETED
+Take screenshot native25-same-result-after-read-only-details... COMPLETED

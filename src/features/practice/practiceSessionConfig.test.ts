@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
 import test, { before } from "node:test";
 
-import type { TrainingSession } from "../../domain";
-import { buildCertificationPracticeResumeRoute, buildCodingInterviewSimulationResumeRoute, buildPracticeSessionConfig, resolvePracticeSessionLength } from "./sessionConfig";
+import { getTrackDisplay, getTrackRegistration, type TrackId, type TrainingSession } from "../../domain";
+import { buildCertificationPracticeResumeRoute, buildCodingInterviewSimulationResumeRoute, buildDesignInterviewPracticeResumeRoute, buildPracticeSessionConfig, resolvePracticeSessionLength } from "./sessionConfig";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
+import { CanonicalTrainingRuntime } from "../../application/canonical/CanonicalTrainingRuntime";
+import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
+import { buildHomeTabModel } from "../home/tabs/homeTabModel";
+import type { AnalyticsData } from "../analytics/analyticsService";
 
 before(async () => { await contentPackageRuntimeOwner.verifyBundledPackages(); });
 
@@ -11,11 +15,51 @@ const ordinaryConfiguration = {
   answerChanges: "none",
   feedbackMode: "afterEachAnswer",
   kind: "practice",
-  navigation: "linear",
   reinsertEnabled: false,
   submission: "perItem",
   timer: "elapsedForeground",
 } as const;
+
+test("actual canonical practice producer resumes through routes and Home without legacy navigation", async () => {
+  const catalog = await loadCanonicalRuntimeCatalog();
+  let checked = 0;
+  for (const trackId of catalog.tracks) {
+    const family = getTrackRegistration(trackId as TrackId).familyId;
+    if (family !== "certification" && family !== "design_interview") continue;
+    const track = catalog.getTrack(trackId);
+    for (const mode of track.modes.filter((candidate) => candidate.selection.kind === "node")) {
+      const feedbackTimings = mode.feedbackTiming.kind === "learner_selectable"
+        ? mode.feedbackTiming.options
+        : [undefined];
+      for (const feedbackTiming of feedbackTimings) {
+        const runtime = new CanonicalTrainingRuntime(track);
+        const { session } = await runtime.prepare({ trackId, modeId: mode.modeId,
+          request: { sessionId: `resume-regression:${trackId}:${mode.modeId}:${feedbackTiming ?? "fixed"}`, requestedLength: mode.defaultRequestedLength, ...(feedbackTiming ? { feedbackTiming } : {}) },
+          attempts: [], reviews: [], now: "2026-10-05T12:00:00.000Z" });
+        await runtime.validateResume({ session, draft: null });
+        assert.equal("navigation" in session.configurationSnapshot, false);
+        const routeBuilder: typeof buildCertificationPracticeResumeRoute = family === "certification" ? buildCertificationPracticeResumeRoute : buildDesignInterviewPracticeResumeRoute;
+        const route = routeBuilder(session);
+        assert.equal(route.expectedSessionId, session.id);
+        assert.equal(route.mode, session.modeId);
+        assert.equal(route.trackId, trackId);
+        assert.equal(route.sessionLength, session.requestedLength);
+        assert.equal(route.feedbackMode, session.configurationSnapshot.feedbackMode);
+        const recommendation = buildHomeTabModel({ activeTrack: getTrackDisplay(trackId as TrackId), activeSession: session,
+          algorithmsDashboard: null, analytics: {} as AnalyticsData, dashboardError: null, trainingAttempts: [] }).recommendations[0];
+        assert.equal(recommendation?.enabled, true);
+        assert.equal(recommendation?.action.kind, family === "certification" ? "resume_certification_practice" : "resume_design_interview");
+        assert.equal("sessionId" in recommendation.action ? recommendation.action.sessionId : undefined, session.id);
+        for (const navigation of ["linear", "free"]) {
+          const injected = { ...session, configurationSnapshot: { ...session.configurationSnapshot, navigation } };
+          assert.throws(() => routeBuilder(injected), /canonical immutable interaction configuration/);
+        }
+        checked += 1;
+      }
+    }
+  }
+  assert.equal(checked, 12);
+});
 const GCP_FREE_NODE_ID = "organization_projects_policies_services_quotas_and_assets";
 const CLAUDE_FREE_NODE_ID = "solution_design_and_architecture";
 

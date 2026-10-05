@@ -1,0 +1,10 @@
+
+> patternly@0.1.0 typecheck
+> tsc --noEmit
+
+src/features/practice/practiceSessionConfig.test.ts(55,44): error TS2345: Argument of type '{ configurationSnapshot: { navigation: string | undefined; }; id: string; trackId: TrackId; modeId: string; requestedLength: number; actualLength: number; currentItemIndex: number; ... 10 more ...; completedAt?: string; }' is not assignable to parameter of type 'Readonly<{ id: string; trackId: string; modeId: string; configurationSnapshot: Readonly<Record<string, TrainingSessionConfigurationValue>>; ... 13 more ...; completedAt?: string | undefined; }>'.
+  Types of property 'configurationSnapshot' are incompatible.
+    Type '{ navigation: string | undefined; }' is not assignable to type 'Readonly<Record<string, TrainingSessionConfigurationValue>>'.
+      Property 'navigation' is incompatible with index signature.
+        Type 'string | undefined' is not assignable to type 'TrainingSessionConfigurationValue'.
+          Type 'undefined' is not assignable to type 'TrainingSessionConfigurationValue'.

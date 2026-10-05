@@ -1,0 +1,12 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 native25 continue observed setup scroll
+Swiping in UP direction in 400 ms... COMPLETED
+Assert that id: patternly:practice:session-length:10 is visible... COMPLETED
+Take screenshot native25-length-after-observed-scroll... COMPLETED
+Tap on id: patternly:practice:session-length:10... COMPLETED
+Tap on id: patternly:practice:start-session... COMPLETED
+Assert that id: patternly:session:question:.* is visible... COMPLETED
+Assert that id: patternly:session:feedback:.* is not visible... COMPLETED
+Assert that id: patternly:session:reason:.* is not visible... COMPLETED
+Assert that id: patternly:session:details:.* is not visible... COMPLETED
+Take screenshot native25-first-question-before-submit... COMPLETED

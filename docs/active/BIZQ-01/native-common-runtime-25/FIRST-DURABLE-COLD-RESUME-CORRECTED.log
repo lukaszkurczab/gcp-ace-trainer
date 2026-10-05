@@ -1,0 +1,20 @@
+Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
+ > Flow BIZQ01 native25 corrected consumer own durable cold resume
+Kill com.lkurczab.patternly... COMPLETED
+Launch app "com.lkurczab.patternly"... COMPLETED
+Open com.lkurczab.patternly://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081... COMPLETED
+Assert that id: patternly:resume:card:google-cloud-associate-cloud-engineer:certification-focus-practice:2 is visible... COMPLETED
+Take screenshot native25-own-session-resume-after-process-restart... COMPLETED
+Tap on id: patternly:resume:continue:google-cloud-associate-cloud-engineer:certification-focus-practice:2... COMPLETED
+Assert that id: patternly:session:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2 is visible... COMPLETED
+Assert that id: patternly:session:counter:google-cloud-associate-cloud-engineer:certification-focus-practice:2:ordinal:1:length:10 is visible... COMPLETED
+Assert that id: patternly:session:question:gcp-ace-gcpace-n01-b03-001 is visible... COMPLETED
+Assert that id: patternly:session:configuration:google-cloud-associate-cloud-engineer:certification-focus-practice:2:length:10:feedback-timing:after-each-answer is visible... COMPLETED
+Take screenshot native25-same-question-order-after-cold-resume... COMPLETED
+Scrolling DOWN until id: patternly:session:result:gcp-ace-gcpace-n01-b03-001:incorrect is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Assert that id: patternly:session:feedback:gcp-ace-gcpace-n01-b03-001 is visible... COMPLETED
+Take screenshot native25-same-durable-wrong-feedback-after-restart... COMPLETED
+Scrolling DOWN until id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001 is visible with speed 40, visibility percentage 100%, timeout 20000 ms, with centering enabled... COMPLETED
+Tap on id: patternly:session:details-toggle:gcp-ace-gcpace-n01-b03-001... COMPLETED
+Assert that id: patternly:session:details:gcp-ace-gcpace-n01-b03-001 is visible... COMPLETED
+Take screenshot native25-expanded-details-after-cold-resume... COMPLETED

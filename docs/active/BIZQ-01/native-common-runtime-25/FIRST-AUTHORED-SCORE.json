@@ -1,0 +1,17 @@
+{
+  "scope": "Current app scorer on domain-enriched runtime; author key not semantic acceptance of deferred GCP bank",
+  "questionId": "gcp-ace-gcpace-n01-b03-001",
+  "selectedSourceOptionId": "D",
+  "nativeSelectorSuffix": "d",
+  "actualScore": {
+    "kind": "incorrect",
+    "earnedPoints": 0,
+    "maxPoints": 1
+  },
+  "initialProbes": [
+    "Producer ingress scorer rejects builder-added contentDomainId; no contract weakening/removal",
+    "Node22 tsx ESM namedimport on CommonJS module failed before scoring; CommonJS require succeeds",
+    "First app result assertion used producer status field; actual AttemptResult.kind inspected and asserted",
+    "Workspace root lacks tsx; actual command cwd app with installedtsx"
+  ]
+}

@@ -1,0 +1,48 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 native25 preserved values after dismissing observed dev warning
+---
+- tapOn:
+    point: 92%,93%
+- tapOn:
+    id: main-tab-bar-progress
+- extendedWaitUntil:
+    visible:
+      id: patternly:progress:root
+    timeout: 15000
+- takeScreenshot: native25-progress-after-own-completion
+- scrollUntilVisible:
+    element:
+      id: patternly:progress-plan:edit-schedule
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: patternly:progress-plan:edit-schedule
+- extendedWaitUntil:
+    visible:
+      id: patternly:learning-plan:editor:state:ready
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: patternly:learning-plan:editor:time:mon
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:learning-plan:editor:time:mon
+    text: '09:15'
+- assertVisible:
+    id: patternly:learning-plan:editor:time:wed
+    text: '18:00'
+- assertVisible:
+    id: patternly:learning-plan:editor:time:sat
+    text: '18:00'
+- takeScreenshot: native25-preserved-schedule-after
+- tapOn: 'Go back|Wróć'
+- tapOn:
+    id: main-tab-bar-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-identity
+    timeout: 15000
+- takeScreenshot: native25-guest-preferences-after
+- tapOn:
+    id: main-tab-bar-home

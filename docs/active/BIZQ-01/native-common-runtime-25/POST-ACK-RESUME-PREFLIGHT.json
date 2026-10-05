@@ -1,0 +1,17 @@
+{
+  "sessionId": "google-cloud-associate-cloud-engineer:certification-focus-practice:2",
+  "questionId": "gcp-ace-gcpace-n01-b03-001",
+  "durableAnswerCount": 1,
+  "earnedPoints": 0,
+  "boundary": "cold process restart after observed durable submit ACK; not interrupted pre-ACK recovery",
+  "observedHome": {
+    "title": "Session in progress",
+    "detail": "Focus Practice",
+    "selector": "patternly:home:primary-action",
+    "enabled": false,
+    "expectedResumeCardPresent": false
+  },
+  "screenshot": "screens/12-post-ack-cold-resume-disabled.png",
+  "screenshotSha256": "b8e416916b4c89ee25cdacacd9e719be5d311ceb566f42dd89c06606760ed02f",
+  "result": "FAIL under investigation; no resume tap, reset, new session, or bypass attempted"
+}
