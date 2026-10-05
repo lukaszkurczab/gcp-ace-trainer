@@ -1,0 +1,1545 @@
+﻿2026-10-05T00:00:30.6944037Z Current runner version: '2.337.0'
+2026-10-05T00:00:30.6960432Z ##[group]Runner Image Provisioner
+2026-10-05T00:00:30.6960945Z Hosted Compute Agent
+2026-10-05T00:00:30.6961335Z Version: 20260901.588
+2026-10-05T00:00:30.6961753Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+2026-10-05T00:00:30.6962172Z Build Date: 2026-09-01T19:56:44Z
+2026-10-05T00:00:30.6962633Z Worker ID: {bc9e1fe0-97ad-4858-a820-596a0f19f43a}
+2026-10-05T00:00:30.6963046Z Azure Region: centralus
+2026-10-05T00:00:30.6963444Z ##[endgroup]
+2026-10-05T00:00:30.6964234Z ##[group]Operating System
+2026-10-05T00:00:30.6964590Z Ubuntu
+2026-10-05T00:00:30.6965146Z 24.04.5
+2026-10-05T00:00:30.6965448Z LTS
+2026-10-05T00:00:30.6965771Z ##[endgroup]
+2026-10-05T00:00:30.6966135Z ##[group]Runner Image
+2026-10-05T00:00:30.6966489Z Image: ubuntu-24.04
+2026-10-05T00:00:30.6966884Z Version: 20260927.320.1
+2026-10-05T00:00:30.6967579Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260927.320/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-05T00:00:30.6968512Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260927.320
+2026-10-05T00:00:30.6969288Z ##[endgroup]
+2026-10-05T00:00:30.6970037Z ##[group]GITHUB_TOKEN Permissions
+2026-10-05T00:00:30.6971391Z Contents: read
+2026-10-05T00:00:30.6971782Z Metadata: read
+2026-10-05T00:00:30.6972115Z Packages: read
+2026-10-05T00:00:30.6972434Z ##[endgroup]
+2026-10-05T00:00:30.6973726Z Secret source: Actions
+2026-10-05T00:00:30.6974302Z Cache mode: write
+2026-10-05T00:00:30.6974763Z Prepare workflow directory
+2026-10-05T00:00:30.7206715Z Prepare all required actions
+2026-10-05T00:00:30.7242012Z Getting action download info
+2026-10-05T00:00:30.9748318Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-05T00:00:31.0432999Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-05T00:00:31.2174090Z Complete job name: architecture
+2026-10-05T00:00:31.2612039Z ##[group]Run actions/checkout@v4
+2026-10-05T00:00:31.2612443Z with:
+2026-10-05T00:00:31.2612672Z   path: patternly-content
+2026-10-05T00:00:31.2612930Z   fetch-depth: 0
+2026-10-05T00:00:31.2613181Z   repository: lukaszkurczab/patternly-content
+2026-10-05T00:00:31.2615112Z   token: ***
+2026-10-05T00:00:31.2615329Z   ssh-strict: true
+2026-10-05T00:00:31.2615551Z   ssh-user: git
+2026-10-05T00:00:31.2615780Z   persist-credentials: true
+2026-10-05T00:00:31.2616030Z   clean: true
+2026-10-05T00:00:31.2616263Z   sparse-checkout-cone-mode: true
+2026-10-05T00:00:31.2616566Z   fetch-tags: false
+2026-10-05T00:00:31.2616796Z   show-progress: true
+2026-10-05T00:00:31.2617027Z   lfs: false
+2026-10-05T00:00:31.2617239Z   submodules: false
+2026-10-05T00:00:31.2617471Z   set-safe-directory: true
+2026-10-05T00:00:31.2617737Z   allow-unsafe-pr-checkout: false
+2026-10-05T00:00:31.2618315Z ##[endgroup]
+2026-10-05T00:00:31.3231456Z Syncing repository: lukaszkurczab/patternly-content
+2026-10-05T00:00:31.3232872Z ##[group]Getting Git version info
+2026-10-05T00:00:31.3233624Z Working directory is '/home/runner/work/patternly-content/patternly-content/patternly-content'
+2026-10-05T00:00:31.3234629Z [command]/usr/bin/git version
+2026-10-05T00:00:31.3282963Z git version 2.55.0
+2026-10-05T00:00:31.3326831Z ##[endgroup]
+2026-10-05T00:00:31.3339387Z Temporarily overriding HOME='/home/runner/work/_temp/5e84000d-d13c-4479-9221-5a5958a5980f' before making global git config changes
+2026-10-05T00:00:31.3340605Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-05T00:00:31.3343004Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/patternly-content/patternly-content/patternly-content
+2026-10-05T00:00:31.3384266Z ##[group]Initializing the repository
+2026-10-05T00:00:31.3386831Z [command]/usr/bin/git init /home/runner/work/patternly-content/patternly-content/patternly-content
+2026-10-05T00:00:31.3480894Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-05T00:00:31.3481863Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-05T00:00:31.3482901Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-05T00:00:31.3483903Z hint: call:
+2026-10-05T00:00:31.3484225Z hint:
+2026-10-05T00:00:31.3484645Z hint: 	git config --global init.defaultBranch <name>
+2026-10-05T00:00:31.3485138Z hint:
+2026-10-05T00:00:31.3485597Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-05T00:00:31.3486345Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-05T00:00:31.3486935Z hint:
+2026-10-05T00:00:31.3487269Z hint: 	git branch -m <name>
+2026-10-05T00:00:31.3487654Z hint:
+2026-10-05T00:00:31.3488171Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-05T00:00:31.3520009Z Initialized empty Git repository in /home/runner/work/patternly-content/patternly-content/patternly-content/.git/
+2026-10-05T00:00:31.3527452Z [command]/usr/bin/git remote add origin https://github.com/lukaszkurczab/patternly-content
+2026-10-05T00:00:31.3571149Z ##[endgroup]
+2026-10-05T00:00:31.3571803Z ##[group]Disabling automatic garbage collection
+2026-10-05T00:00:31.3573684Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-05T00:00:31.3600169Z ##[endgroup]
+2026-10-05T00:00:31.3600774Z ##[group]Setting up auth
+2026-10-05T00:00:31.3604470Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-05T00:00:31.3639283Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-05T00:00:31.3917226Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-05T00:00:31.3943335Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-05T00:00:31.4103701Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-05T00:00:31.4130050Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-05T00:00:31.4290299Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-05T00:00:31.4320714Z ##[endgroup]
+2026-10-05T00:00:31.4321249Z ##[group]Fetching the repository
+2026-10-05T00:00:31.4326353Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-10-05T00:00:37.8000618Z From https://github.com/lukaszkurczab/patternly-content
+2026-10-05T00:00:37.8001411Z  * [new branch]      agent/ai901-question-bank -> origin/agent/ai901-question-bank
+2026-10-05T00:00:37.8002230Z  * [new branch]      agent/resolve-frontend-telemetry-provenance -> origin/agent/resolve-frontend-telemetry-provenance
+2026-10-05T00:00:37.8003148Z  * [new branch]      codex/cloud-certification-canonical-readiness -> origin/codex/cloud-certification-canonical-readiness
+2026-10-05T00:00:37.8003998Z  * [new branch]      codex/cloud-certification-evidence-closure -> origin/codex/cloud-certification-evidence-closure
+2026-10-05T00:00:37.8004592Z  * [new branch]      master     -> origin/master
+2026-10-05T00:00:37.8008861Z [command]/usr/bin/git branch --list --remote origin/master
+2026-10-05T00:00:37.8031521Z   origin/master
+2026-10-05T00:00:37.8037013Z [command]/usr/bin/git rev-parse refs/remotes/origin/master
+2026-10-05T00:00:37.8056269Z 9e2d97f5ee28793c14341d031697cd89273fe288
+2026-10-05T00:00:37.8059094Z ##[endgroup]
+2026-10-05T00:00:37.8059559Z ##[group]Determining the checkout info
+2026-10-05T00:00:37.8060154Z ##[endgroup]
+2026-10-05T00:00:37.8063323Z [command]/usr/bin/git sparse-checkout disable
+2026-10-05T00:00:37.8104465Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-05T00:00:37.8130202Z ##[group]Checking out the ref
+2026-10-05T00:00:37.8130695Z [command]/usr/bin/git checkout --progress --force -B master refs/remotes/origin/master
+2026-10-05T00:00:38.8192802Z Updating files:  79% (1423/1783)
+2026-10-05T00:00:38.8199333Z Updating files:  80% (1427/1783)
+2026-10-05T00:00:38.8234508Z Updating files:  81% (1445/1783)
+2026-10-05T00:00:38.8331362Z Updating files:  82% (1463/1783)
+2026-10-05T00:00:38.8363478Z Updating files:  83% (1480/1783)
+2026-10-05T00:00:38.8419350Z Updating files:  84% (1498/1783)
+2026-10-05T00:00:38.8485738Z Updating files:  85% (1516/1783)
+2026-10-05T00:00:38.8553715Z Updating files:  86% (1534/1783)
+2026-10-05T00:00:38.8578077Z Updating files:  87% (1552/1783)
+2026-10-05T00:00:38.8599985Z Updating files:  88% (1570/1783)
+2026-10-05T00:00:38.8617585Z Updating files:  89% (1587/1783)
+2026-10-05T00:00:38.8639217Z Updating files:  90% (1605/1783)
+2026-10-05T00:00:38.8680469Z Updating files:  91% (1623/1783)
+2026-10-05T00:00:38.8748495Z Updating files:  92% (1641/1783)
+2026-10-05T00:00:38.9061256Z Updating files:  93% (1659/1783)
+2026-10-05T00:00:38.9668790Z Updating files:  94% (1677/1783)
+2026-10-05T00:00:38.9762041Z Updating files:  95% (1694/1783)
+2026-10-05T00:00:38.9768014Z Updating files:  96% (1712/1783)
+2026-10-05T00:00:38.9799782Z Updating files:  97% (1730/1783)
+2026-10-05T00:00:38.9807114Z Updating files:  98% (1748/1783)
+2026-10-05T00:00:38.9816920Z Updating files:  99% (1766/1783)
+2026-10-05T00:00:38.9817176Z Updating files: 100% (1783/1783)
+2026-10-05T00:00:39.1013057Z Updating files: 100% (1783/1783), done.
+2026-10-05T00:00:39.1013339Z Reset branch 'master'
+2026-10-05T00:00:39.1018459Z branch 'master' set up to track 'origin/master'.
+2026-10-05T00:00:39.1058933Z ##[endgroup]
+2026-10-05T00:00:39.1107981Z [command]/usr/bin/git log -1 --format=%H
+2026-10-05T00:00:39.1120733Z 9e2d97f5ee28793c14341d031697cd89273fe288
+2026-10-05T00:00:39.1349205Z ##[group]Run actions/setup-node@v4
+2026-10-05T00:00:39.1349366Z with:
+2026-10-05T00:00:39.1349500Z   node-version: 22
+2026-10-05T00:00:39.1349615Z   always-auth: false
+2026-10-05T00:00:39.1349732Z   check-latest: false
+2026-10-05T00:00:39.1350940Z   token: ***
+2026-10-05T00:00:39.1351054Z ##[endgroup]
+2026-10-05T00:00:39.2298307Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+2026-10-05T00:00:39.2301534Z (node:2078) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-05T00:00:39.2302051Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-05T00:00:39.2303092Z ##[group]Environment details
+2026-10-05T00:00:39.5391598Z node: v22.23.3
+2026-10-05T00:00:39.5391983Z npm: 10.9.9
+2026-10-05T00:00:39.5392162Z yarn: 1.22.22
+2026-10-05T00:00:39.5393025Z ##[endgroup]
+2026-10-05T00:00:39.5502157Z ##[group]Run node --input-type=module <<'NODE'
+2026-10-05T00:00:39.5502436Z [36;1mnode --input-type=module <<'NODE'[0m
+2026-10-05T00:00:39.5502661Z [36;1mimport { appendFile, readFile } from "node:fs/promises";[0m
+2026-10-05T00:00:39.5502909Z [36;1m[0m
+2026-10-05T00:00:39.5503186Z [36;1mconst admission = JSON.parse(await readFile("evidence/admissions/candidate-admission-v3.json", "utf8"));[0m
+2026-10-05T00:00:39.5503528Z [36;1mconst frontendCommit = admission.application?.frontendCommit;[0m
+2026-10-05T00:00:39.5503827Z [36;1mif (typeof frontendCommit !== "string" || !/^[a-f0-9]{40}$/u.test(frontendCommit)) {[0m
+2026-10-05T00:00:39.5504154Z [36;1m  throw new Error("Candidate admission application commit is missing or malformed.");[0m
+2026-10-05T00:00:39.5504413Z [36;1m}[0m
+2026-10-05T00:00:39.5504670Z [36;1mif (!process.env.GITHUB_OUTPUT) throw new Error("GitHub Actions output file is unavailable.");[0m
+2026-10-05T00:00:39.5505057Z [36;1mawait appendFile(process.env.GITHUB_OUTPUT, `frontend_commit=${frontendCommit}\n`, "utf8");[0m
+2026-10-05T00:00:39.5505309Z [36;1mNODE[0m
+2026-10-05T00:00:39.5954958Z shell: /usr/bin/bash -e {0}
+2026-10-05T00:00:39.5955164Z ##[endgroup]
+2026-10-05T00:00:39.6378452Z ##[group]Run actions/checkout@v4
+2026-10-05T00:00:39.6378771Z with:
+2026-10-05T00:00:39.6378943Z   repository: lukaszkurczab/gcp-ace-trainer
+2026-10-05T00:00:39.6379125Z   ref: 50a6811cde15b662e8c45f777fcc9c447a482d3a
+2026-10-05T00:00:39.6379287Z   path: patternly
+2026-10-05T00:00:39.6379404Z   fetch-depth: 0
+2026-10-05T00:00:39.6380673Z   token: ***
+2026-10-05T00:00:39.6380788Z   ssh-strict: true
+2026-10-05T00:00:39.6380906Z   ssh-user: git
+2026-10-05T00:00:39.6381025Z   persist-credentials: true
+2026-10-05T00:00:39.6381161Z   clean: true
+2026-10-05T00:00:39.6381287Z   sparse-checkout-cone-mode: true
+2026-10-05T00:00:39.6381432Z   fetch-tags: false
+2026-10-05T00:00:39.6381551Z   show-progress: true
+2026-10-05T00:00:39.6381672Z   lfs: false
+2026-10-05T00:00:39.6381780Z   submodules: false
+2026-10-05T00:00:39.6381904Z   set-safe-directory: true
+2026-10-05T00:00:39.6382048Z   allow-unsafe-pr-checkout: false
+2026-10-05T00:00:39.6382192Z ##[endgroup]
+2026-10-05T00:00:39.6911198Z Syncing repository: lukaszkurczab/gcp-ace-trainer
+2026-10-05T00:00:39.6912087Z ##[group]Getting Git version info
+2026-10-05T00:00:39.6912898Z Working directory is '/home/runner/work/patternly-content/patternly-content/patternly'
+2026-10-05T00:00:39.6926127Z [command]/usr/bin/git version
+2026-10-05T00:00:39.6970283Z git version 2.55.0
+2026-10-05T00:00:39.6984099Z ##[endgroup]
+2026-10-05T00:00:39.6985985Z Temporarily overriding HOME='/home/runner/work/_temp/4b8ac85f-f7a6-490b-a951-f16909e39c1a' before making global git config changes
+2026-10-05T00:00:39.6986831Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-05T00:00:39.6987679Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/patternly-content/patternly-content/patternly
+2026-10-05T00:00:39.7562855Z ##[group]Initializing the repository
+2026-10-05T00:00:39.7563509Z [command]/usr/bin/git init /home/runner/work/patternly-content/patternly-content/patternly
+2026-10-05T00:00:39.9976175Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-05T00:00:39.9976951Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-05T00:00:39.9977690Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-05T00:00:39.9978295Z hint: call:
+2026-10-05T00:00:39.9978504Z hint:
+2026-10-05T00:00:39.9979835Z hint: 	git config --global init.defaultBranch <name>
+2026-10-05T00:00:39.9980103Z hint:
+2026-10-05T00:00:39.9980425Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-05T00:00:39.9980932Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-05T00:00:39.9981253Z hint:
+2026-10-05T00:00:39.9981460Z hint: 	git branch -m <name>
+2026-10-05T00:00:39.9981663Z hint:
+2026-10-05T00:00:39.9982040Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-05T00:00:39.9982743Z Initialized empty Git repository in /home/runner/work/patternly-content/patternly-content/patternly/.git/
+2026-10-05T00:00:39.9985877Z [command]/usr/bin/git remote add origin https://github.com/lukaszkurczab/gcp-ace-trainer
+2026-10-05T00:00:40.0141336Z ##[endgroup]
+2026-10-05T00:00:40.0141871Z ##[group]Disabling automatic garbage collection
+2026-10-05T00:00:40.0144648Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-05T00:00:40.0171370Z ##[endgroup]
+2026-10-05T00:00:40.0171672Z ##[group]Setting up auth
+2026-10-05T00:00:40.0176988Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-05T00:00:40.0203158Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-05T00:00:40.0384249Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-05T00:00:40.0410708Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-05T00:00:40.0584072Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-05T00:00:40.0611535Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-05T00:00:40.0790083Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-05T00:00:40.0822773Z ##[endgroup]
+2026-10-05T00:00:40.0823392Z ##[group]Fetching the repository
+2026-10-05T00:00:40.0829082Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-10-05T00:00:46.5208032Z From https://github.com/lukaszkurczab/gcp-ace-trainer
+2026-10-05T00:00:46.5208423Z  * [new branch]        agent/register-ui-icons -> origin/agent/register-ui-icons
+2026-10-05T00:00:46.5209224Z  * [new branch]        codex/algorithms-completion-evidence -> origin/codex/algorithms-completion-evidence
+2026-10-05T00:00:46.5209762Z  * [new branch]        codex/architecture-recovery-v3 -> origin/codex/architecture-recovery-v3
+2026-10-05T00:00:46.5210137Z  * [new branch]        codex/close-canonical-docs-stage -> origin/codex/close-canonical-docs-stage
+2026-10-05T00:00:46.5210617Z  * [new branch]        codex/cloud-certification-canonical-readiness -> origin/codex/cloud-certification-canonical-readiness
+2026-10-05T00:00:46.5211265Z  * [new branch]        codex/cloud-certification-evidence-closure -> origin/codex/cloud-certification-evidence-closure
+2026-10-05T00:00:46.5211929Z  * [new branch]        codex/interview-simulation-evidence -> origin/codex/interview-simulation-evidence
+2026-10-05T00:00:46.5212324Z  * [new branch]        codex/kernel-family-neutral-records -> origin/codex/kernel-family-neutral-records
+2026-10-05T00:00:46.5212730Z  * [new branch]        codex/repository-contract-delta-audit -> origin/codex/repository-contract-delta-audit
+2026-10-05T00:00:46.5213105Z  * [new branch]        codex/reproducible-baseline -> origin/codex/reproducible-baseline
+2026-10-05T00:00:46.5213439Z  * [new branch]        codex/runtime-auditability -> origin/codex/runtime-auditability
+2026-10-05T00:00:46.5213706Z  * [new branch]        main                    -> origin/main
+2026-10-05T00:00:46.5222166Z [command]/usr/bin/git rev-parse --verify --quiet 50a6811cde15b662e8c45f777fcc9c447a482d3a^{object}
+2026-10-05T00:00:46.5248325Z 50a6811cde15b662e8c45f777fcc9c447a482d3a
+2026-10-05T00:00:46.5269363Z ##[endgroup]
+2026-10-05T00:00:46.5269690Z ##[group]Determining the checkout info
+2026-10-05T00:00:46.5270036Z ##[endgroup]
+2026-10-05T00:00:46.5270311Z [command]/usr/bin/git sparse-checkout disable
+2026-10-05T00:00:46.5621003Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-05T00:00:46.5827510Z ##[group]Checking out the ref
+2026-10-05T00:00:46.5830075Z [command]/usr/bin/git checkout --progress --force 50a6811cde15b662e8c45f777fcc9c447a482d3a
+2026-10-05T00:00:47.0620160Z Note: switching to '50a6811cde15b662e8c45f777fcc9c447a482d3a'.
+2026-10-05T00:00:47.0620476Z 
+2026-10-05T00:00:47.0620737Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-05T00:00:47.0621259Z changes and commit them, and you can discard any commits you make in this
+2026-10-05T00:00:47.0621745Z state without impacting any branches by switching back to a branch.
+2026-10-05T00:00:47.0621987Z 
+2026-10-05T00:00:47.0622225Z If you want to create a new branch to retain commits you create, you may
+2026-10-05T00:00:47.0622715Z do so (now or later) by using -c with the switch command. Example:
+2026-10-05T00:00:47.0622940Z 
+2026-10-05T00:00:47.0623060Z   git switch -c <new-branch-name>
+2026-10-05T00:00:47.0623218Z 
+2026-10-05T00:00:47.0623328Z Or undo this operation with:
+2026-10-05T00:00:47.0623469Z 
+2026-10-05T00:00:47.0623553Z   git switch -
+2026-10-05T00:00:47.0623659Z 
+2026-10-05T00:00:47.0624222Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-05T00:00:47.0624643Z 
+2026-10-05T00:00:47.0624968Z HEAD is now at 50a6811c BIZQ-01: synchronize reviewed N07 runtime and candidate bindings
+2026-10-05T00:00:47.0651391Z ##[endgroup]
+2026-10-05T00:00:47.0688361Z [command]/usr/bin/git log -1 --format=%H
+2026-10-05T00:00:47.0747904Z 50a6811cde15b662e8c45f777fcc9c447a482d3a
+2026-10-05T00:00:47.1190285Z ##[group]Run npm ci
+2026-10-05T00:00:47.1190433Z [36;1mnpm ci[0m
+2026-10-05T00:00:47.1245085Z shell: /usr/bin/bash -e {0}
+2026-10-05T00:00:47.1245232Z ##[endgroup]
+2026-10-05T00:00:50.6152098Z npm warn deprecated uuid@7.0.3: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+2026-10-05T00:01:06.0260185Z 
+2026-10-05T00:01:06.0260750Z added 650 packages, and audited 651 packages in 19s
+2026-10-05T00:01:06.0260943Z 
+2026-10-05T00:01:06.0261038Z 78 packages are looking for funding
+2026-10-05T00:01:06.0261250Z   run `npm fund` for details
+2026-10-05T00:01:06.2151698Z 
+2026-10-05T00:01:06.2152196Z 40 vulnerabilities (1 low, 12 moderate, 27 high)
+2026-10-05T00:01:06.2152438Z 
+2026-10-05T00:01:06.2152628Z To address issues that do not require attention, run:
+2026-10-05T00:01:06.2152927Z   npm audit fix
+2026-10-05T00:01:06.2153040Z 
+2026-10-05T00:01:06.2153434Z To address all issues (including breaking changes), run:
+2026-10-05T00:01:06.2153738Z   npm audit fix --force
+2026-10-05T00:01:06.2153860Z 
+2026-10-05T00:01:06.2153962Z Run `npm audit` for details.
+2026-10-05T00:01:06.2881759Z ##[group]Run npm ci
+2026-10-05T00:01:06.2881979Z [36;1mnpm ci[0m
+2026-10-05T00:01:06.2935189Z shell: /usr/bin/bash -e {0}
+2026-10-05T00:01:06.2950941Z ##[endgroup]
+2026-10-05T00:01:06.4581119Z 
+2026-10-05T00:01:06.4581601Z up to date, audited 1 package in 123ms
+2026-10-05T00:01:06.4585278Z 
+2026-10-05T00:01:06.4585575Z found 0 vulnerabilities
+2026-10-05T00:01:06.4691143Z ##[group]Run npm test
+2026-10-05T00:01:06.4691321Z [36;1mnpm test[0m
+2026-10-05T00:01:06.4745326Z shell: /usr/bin/bash -e {0}
+2026-10-05T00:01:06.4745469Z ##[endgroup]
+2026-10-05T00:01:06.5506508Z 
+2026-10-05T00:01:06.5506800Z > patternly-content@1.0.0 test
+2026-10-05T00:01:06.5507007Z > npm run test:canonical
+2026-10-05T00:01:06.5507102Z 
+2026-10-05T00:01:06.6118495Z 
+2026-10-05T00:01:06.6119250Z > patternly-content@1.0.0 test:canonical
+2026-10-05T00:01:06.6124497Z > node --test tests/content-builder.test.mjs tests/packageCompletionTransport.test.mjs tests/contentReviewConsole.test.mjs tests/bizq01-source-slice.test.mjs tests/bizq01-source-copy.test.mjs tests/bizq01-migration-proof.test.mjs tests/bizq01-besd-seed-cohort-14.test.mjs tests/bizq01-ood-source-11.test.mjs tests/bizq01-ood-source-12.test.mjs tests/bizq01-ood-unit-cohort-13.test.mjs tests/bizq01-ood-node-closure-16.test.mjs tests/bizq01-ood-node-closure-17.test.mjs tests/bizq01-ood-node-closure-19.test.mjs tests/bizq01-ood-node-closure-20.test.mjs tests/bizq01-ood-node-closure-21.test.mjs tests/bizq01-ood-node-closure-22.test.mjs tests/bizq01-ood-node-closure-23.test.mjs tests/shared-contract.test.mjs tests/simp03-phase-a.test.mjs tests/simp03-verifier.test.mjs tests/content-boundary.test.mjs tests/odk123-claude-focus-feedback.test.mjs tests/odk096-canonical-approval.test.mjs tests/odk097-design-session-matrix.test.mjs tests/model-evaluation-inventory.test.mjs tests/candidate-draft-v2.test.mjs tests/candidate-readiness-v2.test.mjs tests/candidate-admission-v3.test.mjs tests/candidate-release-gate-v2.test.mjs
+2026-10-05T00:01:06.6128763Z 
+2026-10-05T00:01:06.6494292Z TAP version 13
+2026-10-05T00:01:12.1460018Z # Subtest: accepts the fixed two-unit cohort and source01 predecessor chain
+2026-10-05T00:01:12.1462317Z ok 1 - accepts the fixed two-unit cohort and source01 predecessor chain
+2026-10-05T00:01:12.1463968Z   ---
+2026-10-05T00:01:12.1464388Z   duration_ms: 5440.896976
+2026-10-05T00:01:12.1465092Z   type: 'test'
+2026-10-05T00:01:12.1466808Z   ...
+2026-10-05T00:01:13.9364183Z # Subtest: requires both the new fixed proof and unchanged source01 proof
+2026-10-05T00:01:13.9366707Z ok 2 - requires both the new fixed proof and unchanged source01 proof
+2026-10-05T00:01:13.9367068Z   ---
+2026-10-05T00:01:13.9367750Z   duration_ms: 1792.94781
+2026-10-05T00:01:13.9377438Z   type: 'test'
+2026-10-05T00:01:13.9382579Z   ...
+2026-10-05T00:01:20.3016389Z # Subtest: rejects changed current source items, old/current proof objects, source bytes, and versions
+2026-10-05T00:01:20.3038874Z ok 3 - rejects changed current source items, old/current proof objects, source bytes, and versions
+2026-10-05T00:01:20.3039316Z   ---
+2026-10-05T00:01:20.3039508Z   duration_ms: 6364.471325
+2026-10-05T00:01:20.3039715Z   type: 'test'
+2026-10-05T00:01:20.3039884Z   ...
+2026-10-05T00:01:24.2578770Z # Subtest: rejects missing, duplicate, extra and unrelated replacement/source membership
+2026-10-05T00:01:24.2590885Z ok 4 - rejects missing, duplicate, extra and unrelated replacement/source membership
+2026-10-05T00:01:24.2591289Z   ---
+2026-10-05T00:01:24.2591512Z   duration_ms: 3956.577716
+2026-10-05T00:01:24.2591715Z   type: 'test'
+2026-10-05T00:01:24.2591883Z   ...
+2026-10-05T00:01:24.3268479Z # Subtest: rejects canonical source moved behind a symlink
+2026-10-05T00:01:24.3269367Z ok 5 - rejects canonical source moved behind a symlink
+2026-10-05T00:01:24.3269868Z   ---
+2026-10-05T00:01:24.3270344Z   duration_ms: 68.517111
+2026-10-05T00:01:24.3270802Z   type: 'test'
+2026-10-05T00:01:24.3271090Z   ...
+2026-10-05T00:01:33.3980415Z # Subtest: accepts the real BIZQ-01 replacement proof while preserving current and historical counts
+2026-10-05T00:01:33.3983273Z ok 6 - accepts the real BIZQ-01 replacement proof while preserving current and historical counts
+2026-10-05T00:01:33.3990457Z   ---
+2026-10-05T00:01:33.3997659Z   duration_ms: 6251.751606
+2026-10-05T00:01:33.4007840Z   type: 'test'
+2026-10-05T00:01:33.4009678Z   ...
+2026-10-05T00:01:33.4010809Z # Subtest: keeps the original migration verifier behavior when no BIZQ proof is present
+2026-10-05T00:01:33.4011632Z ok 7 - keeps the original migration verifier behavior when no BIZQ proof is present
+2026-10-05T00:01:33.4019142Z   ---
+2026-10-05T00:01:33.4019505Z   duration_ms: 732.196472
+2026-10-05T00:01:33.4019931Z   type: 'test'
+2026-10-05T00:01:33.4020229Z   ...
+2026-10-05T00:01:33.4020727Z # Subtest: rejects changes to a current replacement and its frozen old object
+2026-10-05T00:01:33.4021401Z ok 8 - rejects changes to a current replacement and its frozen old object
+2026-10-05T00:01:33.4021868Z   ---
+2026-10-05T00:01:33.4022166Z   duration_ms: 1725.05605
+2026-10-05T00:01:33.4022493Z   type: 'test'
+2026-10-05T00:01:33.4026487Z   ...
+2026-10-05T00:01:33.4026840Z # Subtest: requires and binds the fixed 19a reason-only amendment proof
+2026-10-05T00:01:33.4027294Z ok 9 - requires and binds the fixed 19a reason-only amendment proof
+2026-10-05T00:01:33.4027592Z   ---
+2026-10-05T00:01:33.4027767Z   duration_ms: 2939.161672
+2026-10-05T00:01:33.4027991Z   type: 'test'
+2026-10-05T00:01:33.4028169Z   ...
+2026-10-05T00:01:33.4028543Z # Subtest: binds 19a to exact IDs, before/current Reasons, hashes, and closed membership
+2026-10-05T00:01:33.4029296Z ok 10 - binds 19a to exact IDs, before/current Reasons, hashes, and closed membership
+2026-10-05T00:01:33.4029626Z   ---
+2026-10-05T00:01:33.4029795Z   duration_ms: 15055.0996
+2026-10-05T00:01:33.4029991Z   type: 'test'
+2026-10-05T00:01:33.4030154Z   ...
+2026-10-05T00:01:40.3280354Z # Subtest: rejects every non-Reason edit in an amended source object
+2026-10-05T00:01:40.3294534Z ok 11 - rejects every non-Reason edit in an amended source object
+2026-10-05T00:01:40.3295028Z   ---
+2026-10-05T00:01:40.3295443Z   duration_ms: 6931.122379
+2026-10-05T00:01:40.3295827Z   type: 'test'
+2026-10-05T00:01:40.3296119Z   ...
+2026-10-05T00:01:43.2037133Z # Subtest: binds the catalog version and rejects symlink substitution for the 19a proof and source
+2026-10-05T00:01:43.2041357Z ok 12 - binds the catalog version and rejects symlink substitution for the 19a proof and source
+2026-10-05T00:01:43.2042366Z   ---
+2026-10-05T00:01:43.2042498Z   duration_ms: 2875.158994
+2026-10-05T00:01:43.2042641Z   type: 'test'
+2026-10-05T00:01:43.2042754Z   ...
+2026-10-05T00:01:46.5271926Z # Subtest: rejects stale batch identity, duplicate mappings, and a missing replacement
+2026-10-05T00:01:46.5273189Z ok 13 - rejects stale batch identity, duplicate mappings, and a missing replacement
+2026-10-05T00:01:46.5274001Z   ---
+2026-10-05T00:01:46.5274377Z   duration_ms: 3323.35376
+2026-10-05T00:01:46.5274835Z   type: 'test'
+2026-10-05T00:01:46.5275634Z   ...
+2026-10-05T00:01:47.3720408Z # Subtest: rejects changes to an unrelated item in the proven current track
+2026-10-05T00:01:47.3722097Z ok 14 - rejects changes to an unrelated item in the proven current track
+2026-10-05T00:01:47.3722303Z   ---
+2026-10-05T00:01:47.3722624Z   duration_ms: 845.296931
+2026-10-05T00:01:47.3722841Z   type: 'test'
+2026-10-05T00:01:47.3723025Z   ...
+2026-10-05T00:01:50.8454712Z # Subtest: accepts only the real same-ID Coding wording correction alongside the unchanged BESD proof
+2026-10-05T00:01:50.8455866Z ok 15 - accepts only the real same-ID Coding wording correction alongside the unchanged BESD proof
+2026-10-05T00:01:50.8456436Z   ---
+2026-10-05T00:01:50.8456751Z   duration_ms: 3473.101918
+2026-10-05T00:01:50.8457084Z   type: 'test'
+2026-10-05T00:01:50.8457392Z   ...
+2026-10-05T00:01:56.1048693Z # Subtest: rejects the same-ID correction without its proof and rejects tampered frozen old objects
+2026-10-05T00:01:56.1049719Z ok 16 - rejects the same-ID correction without its proof and rejects tampered frozen old objects
+2026-10-05T00:01:56.1050471Z   ---
+2026-10-05T00:01:56.1051241Z   duration_ms: 5259.320804
+2026-10-05T00:01:56.1051856Z   type: 'test'
+2026-10-05T00:01:56.1052247Z   ...
+2026-10-05T00:02:12.8995234Z # Subtest: rejects unapproved wording, answer, options, feedback and taxonomy changes in the corrected source
+2026-10-05T00:02:12.9006653Z ok 17 - rejects unapproved wording, answer, options, feedback and taxonomy changes in the corrected source
+2026-10-05T00:02:12.9007889Z   ---
+2026-10-05T00:02:12.9008210Z   duration_ms: 16793.94639
+2026-10-05T00:02:12.9008493Z   type: 'test'
+2026-10-05T00:02:12.9008999Z   ...
+2026-10-05T00:02:31.4869835Z # Subtest: rejects stale Coding version, proof identity/hashes/source location and unexpected proof fields
+2026-10-05T00:02:31.4874718Z ok 18 - rejects stale Coding version, proof identity/hashes/source location and unexpected proof fields
+2026-10-05T00:02:31.4883627Z   ---
+2026-10-05T00:02:31.4884723Z   duration_ms: 18587.292416
+2026-10-05T00:02:31.4896950Z   type: 'test'
+2026-10-05T00:02:31.4897389Z   ...
+2026-10-05T00:02:31.6633258Z # Subtest: rejects a corrected source moved away from its canonical mental-unit filename
+2026-10-05T00:02:31.6636116Z ok 19 - rejects a corrected source moved away from its canonical mental-unit filename
+2026-10-05T00:02:31.6636490Z   ---
+2026-10-05T00:02:31.6636720Z   duration_ms: 176.655791
+2026-10-05T00:02:31.6637017Z   type: 'test'
+2026-10-05T00:02:31.6637359Z   ...
+2026-10-05T00:02:33.9764820Z # Subtest: rejects unreviewed primary-source pages even under the same publisher domain
+2026-10-05T00:02:33.9765593Z ok 20 - rejects unreviewed primary-source pages even under the same publisher domain
+2026-10-05T00:02:33.9765995Z   ---
+2026-10-05T00:02:33.9768101Z   duration_ms: 2312.637083
+2026-10-05T00:02:33.9769182Z   type: 'test'
+2026-10-05T00:02:33.9777436Z   ...
+2026-10-05T00:02:34.1620032Z # Subtest: accepts the fixed 119-item package and reconstructs the immutable v13→12→11 predecessor chain
+2026-10-05T00:02:34.1621921Z ok 21 - accepts the fixed 119-item package and reconstructs the immutable v13→12→11 predecessor chain
+2026-10-05T00:02:34.1622659Z   ---
+2026-10-05T00:02:34.1623031Z   duration_ms: 4362.818522
+2026-10-05T00:02:34.1625812Z   type: 'test'
+2026-10-05T00:02:34.1626149Z   ...
+2026-10-05T00:02:34.1626739Z # Subtest: validates, scores, and binds targeted feedback for every replacement option
+2026-10-05T00:02:34.1627783Z ok 22 - validates, scores, and binds targeted feedback for every replacement option
+2026-10-05T00:02:34.1628974Z   ---
+2026-10-05T00:02:34.1629322Z   duration_ms: 21.459229
+2026-10-05T00:02:34.1629664Z   type: 'test'
+2026-10-05T00:02:34.1629976Z   ...
+2026-10-05T00:02:34.1630496Z # Subtest: requires every fixed OOD generation proof in the v16 predecessor chain
+2026-10-05T00:02:34.1631214Z ok 23 - requires every fixed OOD generation proof in the v16 predecessor chain
+2026-10-05T00:02:34.1631706Z   ---
+2026-10-05T00:02:34.1632011Z   duration_ms: 4387.009828
+2026-10-05T00:02:34.1632367Z   type: 'test'
+2026-10-05T00:02:34.1632674Z   ...
+2026-10-05T00:02:34.1633222Z # Subtest: rejects changed identities, hashes, object bindings, membership, and unsupported fields
+2026-10-05T00:02:34.1634043Z ok 24 - rejects changed identities, hashes, object bindings, membership, and unsupported fields
+2026-10-05T00:02:34.1634571Z   ---
+2026-10-05T00:02:34.1634894Z   duration_ms: 10597.707086
+2026-10-05T00:02:34.1635260Z   type: 'test'
+2026-10-05T00:02:34.1635584Z   ...
+2026-10-05T00:02:34.1636131Z # Subtest: rejects changed canonical source membership and unsupported catalog versions
+2026-10-05T00:02:34.1636837Z ok 25 - rejects changed canonical source membership and unsupported catalog versions
+2026-10-05T00:02:34.1637320Z   ---
+2026-10-05T00:02:34.1637637Z   duration_ms: 2895.663072
+2026-10-05T00:02:34.1637982Z   type: 'test'
+2026-10-05T00:02:34.1638301Z   ...
+2026-10-05T00:02:34.1638799Z # Subtest: rejects a symlinked fixed proof path
+2026-10-05T00:02:34.1639299Z ok 26 - rejects a symlinked fixed proof path
+2026-10-05T00:02:34.1639713Z   ---
+2026-10-05T00:02:34.1640030Z   duration_ms: 934.047095
+2026-10-05T00:02:34.1640387Z   type: 'test'
+2026-10-05T00:02:34.1640706Z   ...
+2026-10-05T00:02:34.1641101Z # Subtest: rejects a symlinked current source path
+2026-10-05T00:02:34.1641599Z ok 27 - rejects a symlinked current source path
+2026-10-05T00:02:34.1641996Z   ---
+2026-10-05T00:02:34.1642564Z   duration_ms: 648.805389
+2026-10-05T00:02:34.1642923Z   type: 'test'
+2026-10-05T00:02:34.1643260Z   ...
+2026-10-05T00:02:34.1644120Z # Subtest: accepts the fixed 152-item package and reconstructs the immutable v16→13→12→11 predecessor chain
+2026-10-05T00:02:34.1645094Z ok 28 - accepts the fixed 152-item package and reconstructs the immutable v16→13→12→11 predecessor chain
+2026-10-05T00:02:34.1645643Z   ---
+2026-10-05T00:02:34.1645962Z   duration_ms: 4526.342812
+2026-10-05T00:02:34.1646314Z   type: 'test'
+2026-10-05T00:02:34.1646620Z   ...
+2026-10-05T00:02:34.1647168Z # Subtest: validates, scores, and binds targeted feedback for every replacement option
+2026-10-05T00:02:34.1659365Z ok 29 - validates, scores, and binds targeted feedback for every replacement option
+2026-10-05T00:02:34.1659957Z   ---
+2026-10-05T00:02:34.1660299Z   duration_ms: 27.87629
+2026-10-05T00:02:34.1660657Z   type: 'test'
+2026-10-05T00:02:34.1660962Z   ...
+2026-10-05T00:02:34.1661529Z # Subtest: requires every fixed OOD generation proof in the v17 predecessor chain
+2026-10-05T00:02:34.1662249Z ok 30 - requires every fixed OOD generation proof in the v17 predecessor chain
+2026-10-05T00:02:34.1662753Z   ---
+2026-10-05T00:02:34.1663077Z   duration_ms: 5887.225901
+2026-10-05T00:02:34.1663434Z   type: 'test'
+2026-10-05T00:02:34.1663800Z   ...
+2026-10-05T00:02:34.1664568Z # Subtest: rejects changed identities, hashes, object bindings, membership, and unsupported fields
+2026-10-05T00:02:34.1665392Z ok 31 - rejects changed identities, hashes, object bindings, membership, and unsupported fields
+2026-10-05T00:02:34.1665945Z   ---
+2026-10-05T00:02:34.1666265Z   duration_ms: 10649.062004
+2026-10-05T00:02:34.1667066Z   type: 'test'
+2026-10-05T00:02:34.1667392Z   ...
+2026-10-05T00:02:34.1667931Z # Subtest: rejects changed canonical source membership and unsupported catalog versions
+2026-10-05T00:02:34.1668864Z ok 32 - rejects changed canonical source membership and unsupported catalog versions
+2026-10-05T00:02:34.1669431Z   ---
+2026-10-05T00:02:34.1669760Z   duration_ms: 2903.110869
+2026-10-05T00:02:34.1670364Z   type: 'test'
+2026-10-05T00:02:34.1670679Z   ...
+2026-10-05T00:02:34.1671078Z # Subtest: rejects a symlinked fixed proof path
+2026-10-05T00:02:34.1678880Z ok 33 - rejects a symlinked fixed proof path
+2026-10-05T00:02:34.1685585Z   ---
+2026-10-05T00:02:34.1688175Z   duration_ms: 746.930792
+2026-10-05T00:02:34.1688681Z   type: 'test'
+2026-10-05T00:02:34.1689028Z   ...
+2026-10-05T00:02:34.1689457Z # Subtest: rejects a symlinked current source path
+2026-10-05T00:02:34.1691654Z ok 34 - rejects a symlinked current source path
+2026-10-05T00:02:34.1692056Z   ---
+2026-10-05T00:02:34.1692368Z   duration_ms: 668.992028
+2026-10-05T00:02:34.1692718Z   type: 'test'
+2026-10-05T00:02:34.1693030Z   ...
+2026-10-05T00:02:34.1693863Z # Subtest: accepts the fixed 162-item package and reconstructs the immutable v17→16→13→12→11 predecessor chain
+2026-10-05T00:02:34.1694846Z ok 35 - accepts the fixed 162-item package and reconstructs the immutable v17→16→13→12→11 predecessor chain
+2026-10-05T00:02:34.1695401Z   ---
+2026-10-05T00:02:34.1695738Z   duration_ms: 3760.690014
+2026-10-05T00:02:34.1696079Z   type: 'test'
+2026-10-05T00:02:34.1696396Z   ...
+2026-10-05T00:02:34.1696927Z # Subtest: validates, scores, and binds targeted feedback for every replacement option
+2026-10-05T00:02:34.1697612Z ok 36 - validates, scores, and binds targeted feedback for every replacement option
+2026-10-05T00:02:34.1698117Z   ---
+2026-10-05T00:02:34.1698433Z   duration_ms: 30.771429
+2026-10-05T00:02:34.1704527Z   type: 'test'
+2026-10-05T00:02:34.1704893Z   ...
+2026-10-05T00:02:34.1705461Z # Subtest: requires every fixed OOD generation proof in the v19 predecessor chain
+2026-10-05T00:02:34.1706197Z ok 37 - requires every fixed OOD generation proof in the v19 predecessor chain
+2026-10-05T00:02:34.1706694Z   ---
+2026-10-05T00:02:34.1707023Z   duration_ms: 8278.658286
+2026-10-05T00:02:34.1707398Z   type: 'test'
+2026-10-05T00:02:34.1707725Z   ...
+2026-10-05T00:02:34.1708713Z # Subtest: rejects changed identities, hashes, object bindings, membership, and unsupported fields
+2026-10-05T00:02:34.1709584Z ok 38 - rejects changed identities, hashes, object bindings, membership, and unsupported fields
+2026-10-05T00:02:34.1710135Z   ---
+2026-10-05T00:02:34.1710462Z   duration_ms: 15376.010216
+2026-10-05T00:02:34.1710820Z   type: 'test'
+2026-10-05T00:02:34.1711078Z   ...
+2026-10-05T00:02:34.1711436Z # Subtest: rejects changed canonical source membership and unsupported catalog versions
+2026-10-05T00:02:34.1711901Z ok 39 - rejects changed canonical source membership and unsupported catalog versions
+2026-10-05T00:02:34.1712233Z   ---
+2026-10-05T00:02:34.1712472Z   duration_ms: 2549.044468
+2026-10-05T00:02:34.1712715Z   type: 'test'
+2026-10-05T00:02:34.1712935Z   ...
+2026-10-05T00:02:34.1713209Z # Subtest: rejects a symlinked fixed proof path
+2026-10-05T00:02:34.1713529Z ok 40 - rejects a symlinked fixed proof path
+2026-10-05T00:02:34.1713802Z   ---
+2026-10-05T00:02:34.1714032Z   duration_ms: 1029.629373
+2026-10-05T00:02:34.1714285Z   type: 'test'
+2026-10-05T00:02:34.1714508Z   ...
+2026-10-05T00:02:34.1714770Z # Subtest: rejects a symlinked current source path
+2026-10-05T00:02:34.1715111Z ok 41 - rejects a symlinked current source path
+2026-10-05T00:02:34.1715374Z   ---
+2026-10-05T00:02:34.1715604Z   duration_ms: 627.953916
+2026-10-05T00:02:34.1715851Z   type: 'test'
+2026-10-05T00:02:34.1716074Z   ...
+2026-10-05T00:02:34.1716518Z # Subtest: accepts the fixed N04 package and reconstructs 19a→19→17→16→13→12→11
+2026-10-05T00:02:34.1716999Z ok 42 - accepts the fixed N04 package and reconstructs 19a→19→17→16→13→12→11
+2026-10-05T00:02:34.1717317Z   ---
+2026-10-05T00:02:34.1717544Z   duration_ms: 4061.904109
+2026-10-05T00:02:34.1717778Z   type: 'test'
+2026-10-05T00:02:34.1718006Z   ...
+2026-10-05T00:02:34.1718328Z # Subtest: requires every fixed proof in the source20 predecessor chain
+2026-10-05T00:02:34.1718964Z ok 43 - requires every fixed proof in the source20 predecessor chain
+2026-10-05T00:02:34.1719434Z   ---
+2026-10-05T00:02:34.1719611Z   duration_ms: 11545.794143
+2026-10-05T00:02:34.1720006Z   type: 'test'
+2026-10-05T00:02:34.1720163Z   ...
+2026-10-05T00:02:34.1720432Z # Subtest: rejects tampered fixed proof objects, membership, identity and source hashes
+2026-10-05T00:02:34.1720763Z ok 44 - rejects tampered fixed proof objects, membership, identity and source hashes
+2026-10-05T00:02:34.1720968Z   ---
+2026-10-05T00:02:34.1721072Z   duration_ms: 6521.775465
+2026-10-05T00:02:34.1721193Z   type: 'test'
+2026-10-05T00:02:34.1721295Z   ...
+2026-10-05T00:02:34.1721501Z # Subtest: rejects missing or extra source membership and source-content changes
+2026-10-05T00:02:34.1721800Z ok 45 - rejects missing or extra source membership and source-content changes
+2026-10-05T00:02:34.1721992Z   ---
+2026-10-05T00:02:34.1722092Z   duration_ms: 3972.500696
+2026-10-05T00:02:34.1722211Z   type: 'test'
+2026-10-05T00:02:34.1722312Z   ...
+2026-10-05T00:02:34.1722471Z # Subtest: rejects symlinked fixed proof and source paths
+2026-10-05T00:02:34.1722697Z ok 46 - rejects symlinked fixed proof and source paths
+2026-10-05T00:02:34.1722858Z   ---
+2026-10-05T00:02:34.1722960Z   duration_ms: 1517.631259
+2026-10-05T00:02:34.1723080Z   type: 'test'
+2026-10-05T00:02:34.1723180Z   ...
+2026-10-05T00:02:34.1901222Z # Subtest: accepts the fixed N05 same-ID package and reconstructs 20→19a→19→17→16→13→12→11
+2026-10-05T00:02:34.1902240Z ok 47 - accepts the fixed N05 same-ID package and reconstructs 20→19a→19→17→16→13→12→11
+2026-10-05T00:02:34.1902755Z   ---
+2026-10-05T00:02:34.1903050Z   duration_ms: 3825.124196
+2026-10-05T00:02:34.1903369Z   type: 'test'
+2026-10-05T00:02:34.1903650Z   ...
+2026-10-05T00:02:34.1904124Z # Subtest: requires every fixed proof in the source21 predecessor chain
+2026-10-05T00:02:34.1904783Z ok 48 - requires every fixed proof in the source21 predecessor chain
+2026-10-05T00:02:34.1905187Z   ---
+2026-10-05T00:02:34.1905458Z   duration_ms: 13731.085284
+2026-10-05T00:02:34.1905761Z   type: 'test'
+2026-10-05T00:02:34.1906033Z   ...
+2026-10-05T00:02:34.1906996Z # Subtest: rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+2026-10-05T00:02:34.1907743Z ok 49 - rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+2026-10-05T00:02:34.1908217Z   ---
+2026-10-05T00:02:34.1908491Z   duration_ms: 8381.237135
+2026-10-05T00:02:34.1908928Z   type: 'test'
+2026-10-05T00:02:34.1909196Z   ...
+2026-10-05T00:02:34.1909687Z # Subtest: rejects current-source, catalog-version, and missing-v20-predecessor changes
+2026-10-05T00:02:34.1910428Z ok 50 - rejects current-source, catalog-version, and missing-v20-predecessor changes
+2026-10-05T00:02:34.1910901Z   ---
+2026-10-05T00:02:34.1911189Z   duration_ms: 3891.221551
+2026-10-05T00:02:34.1911496Z   type: 'test'
+2026-10-05T00:02:34.1911772Z   ...
+2026-10-05T00:02:34.1912216Z # Subtest: rejects symlink substitution for fixed proof and source paths
+2026-10-05T00:02:34.1912820Z ok 51 - rejects symlink substitution for fixed proof and source paths
+2026-10-05T00:02:34.1913388Z   ---
+2026-10-05T00:02:34.1913702Z   duration_ms: 1610.200686
+2026-10-05T00:02:34.1914025Z   type: 'test'
+2026-10-05T00:02:34.1914289Z   ...
+2026-10-05T00:02:38.0891152Z # Subtest: accepts the fixed N06 same-ID package and reconstructs 22→21→20→19a→19→17→16→13→12→11
+2026-10-05T00:02:38.0893284Z ok 52 - accepts the fixed N06 same-ID package and reconstructs 22→21→20→19a→19→17→16→13→12→11
+2026-10-05T00:02:38.0894031Z   ---
+2026-10-05T00:02:38.0894491Z   duration_ms: 4144.713051
+2026-10-05T00:02:38.0894862Z   type: 'test'
+2026-10-05T00:02:38.0895328Z   ...
+2026-10-05T00:02:38.0896043Z # Subtest: requires every fixed proof in the source22 predecessor chain
+2026-10-05T00:02:38.0896786Z ok 53 - requires every fixed proof in the source22 predecessor chain
+2026-10-05T00:02:38.0897368Z   ---
+2026-10-05T00:02:38.0897743Z   duration_ms: 16016.942741
+2026-10-05T00:02:38.0898099Z   type: 'test'
+2026-10-05T00:02:38.0898412Z   ...
+2026-10-05T00:02:46.6963307Z # Subtest: rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+2026-10-05T00:02:46.6973461Z ok 54 - rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+2026-10-05T00:02:46.6974184Z   ---
+2026-10-05T00:02:46.6974498Z   duration_ms: 8615.215786
+2026-10-05T00:02:46.6980442Z   type: 'test'
+2026-10-05T00:02:46.6986510Z   ...
+2026-10-05T00:02:50.5593866Z # Subtest: rejects current-source, catalog-version, and missing-v21-predecessor changes
+2026-10-05T00:02:50.5599348Z ok 55 - rejects current-source, catalog-version, and missing-v21-predecessor changes
+2026-10-05T00:02:50.5599898Z   ---
+2026-10-05T00:02:50.5600215Z   duration_ms: 3862.230027
+2026-10-05T00:02:50.5600536Z   type: 'test'
+2026-10-05T00:02:50.5600921Z   ...
+2026-10-05T00:02:52.0958470Z # Subtest: rejects symlink substitution for fixed proof and source paths
+2026-10-05T00:02:52.0959930Z ok 56 - rejects symlink substitution for fixed proof and source paths
+2026-10-05T00:02:52.0960782Z   ---
+2026-10-05T00:02:52.0961192Z   duration_ms: 1537.030917
+2026-10-05T00:02:52.0961807Z   type: 'test'
+2026-10-05T00:02:52.0964705Z   ...
+2026-10-05T00:02:56.6460181Z # Subtest: accepts the fixed N07 mixed-identity package and reconstructs 23→22→21→20→19a→19→17→16→13→12→11
+2026-10-05T00:02:56.6470154Z ok 57 - accepts the fixed N07 mixed-identity package and reconstructs 23→22→21→20→19a→19→17→16→13→12→11
+2026-10-05T00:02:56.6471208Z   ---
+2026-10-05T00:02:56.6484771Z   duration_ms: 4644.057576
+2026-10-05T00:02:56.6485282Z   type: 'test'
+2026-10-05T00:02:56.6485676Z   ...
+2026-10-05T00:02:56.6486848Z # Subtest: requires every fixed proof in the source23 predecessor chain
+2026-10-05T00:02:56.6497065Z ok 58 - requires every fixed proof in the source23 predecessor chain
+2026-10-05T00:02:56.6503581Z   ---
+2026-10-05T00:02:56.6508884Z   duration_ms: 17778.716837
+2026-10-05T00:02:56.6509106Z   type: 'test'
+2026-10-05T00:02:56.6509269Z   ...
+2026-10-05T00:03:04.9367531Z # Subtest: rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+2026-10-05T00:03:04.9369407Z ok 59 - rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+2026-10-05T00:03:04.9370138Z   ---
+2026-10-05T00:03:04.9370486Z   duration_ms: 8290.462537
+2026-10-05T00:03:04.9370829Z   type: 'test'
+2026-10-05T00:03:04.9371130Z   ...
+2026-10-05T00:03:08.9143750Z # Subtest: rejects current-source, catalog-version, and missing-v22-predecessor changes
+2026-10-05T00:03:08.9144542Z ok 60 - rejects current-source, catalog-version, and missing-v22-predecessor changes
+2026-10-05T00:03:08.9144911Z   ---
+2026-10-05T00:03:08.9145097Z   duration_ms: 3977.072479
+2026-10-05T00:03:08.9145425Z   type: 'test'
+2026-10-05T00:03:08.9145600Z   ...
+2026-10-05T00:03:10.4852413Z # Subtest: rejects symlink substitution for fixed proof and source paths
+2026-10-05T00:03:10.4853144Z ok 61 - rejects symlink substitution for fixed proof and source paths
+2026-10-05T00:03:10.4853624Z   ---
+2026-10-05T00:03:10.4853809Z   duration_ms: 1570.311221
+2026-10-05T00:03:10.4856988Z   type: 'test'
+2026-10-05T00:03:10.4857216Z   ...
+2026-10-05T00:03:10.6240285Z # Subtest: accepts the exact OOD source11 replacement and retains historical inventory
+2026-10-05T00:03:10.6306071Z ok 62 - accepts the exact OOD source11 replacement and retains historical inventory
+2026-10-05T00:03:10.6306539Z   ---
+2026-10-05T00:03:10.6319419Z   duration_ms: 3281.300835
+2026-10-05T00:03:10.6319753Z   type: 'test'
+2026-10-05T00:03:10.6320916Z   ...
+2026-10-05T00:03:10.6329248Z # Subtest: replacement uses the authored single-choice scoring and feedback contract
+2026-10-05T00:03:10.6330158Z ok 63 - replacement uses the authored single-choice scoring and feedback contract
+2026-10-05T00:03:10.6330726Z   ---
+2026-10-05T00:03:10.6331187Z   duration_ms: 9.028047
+2026-10-05T00:03:10.6331510Z   type: 'test'
+2026-10-05T00:03:10.6331858Z   ...
+2026-10-05T00:03:10.6332358Z # Subtest: rejects the replacement when its fixed proof is absent
+2026-10-05T00:03:10.6333056Z ok 64 - rejects the replacement when its fixed proof is absent
+2026-10-05T00:03:10.6333568Z   ---
+2026-10-05T00:03:10.6333915Z   duration_ms: 1674.5871
+2026-10-05T00:03:10.6334815Z   type: 'test'
+2026-10-05T00:03:10.6335111Z   ...
+2026-10-05T00:03:10.6335717Z # Subtest: rejects a tampered frozen question and a changed current replacement
+2026-10-05T00:03:10.6336553Z ok 65 - rejects a tampered frozen question and a changed current replacement
+2026-10-05T00:03:10.6337130Z   ---
+2026-10-05T00:03:10.6337426Z   duration_ms: 1981.400661
+2026-10-05T00:03:10.6337863Z   type: 'test'
+2026-10-05T00:03:10.6338157Z   ...
+2026-10-05T00:03:10.6338889Z # Subtest: rejects stale catalog or track hashes, duplicate mappings, and an absent new item
+2026-10-05T00:03:10.6339885Z ok 66 - rejects stale catalog or track hashes, duplicate mappings, and an absent new item
+2026-10-05T00:03:10.6340497Z   ---
+2026-10-05T00:03:10.6340892Z   duration_ms: 4546.599125
+2026-10-05T00:03:10.6341217Z   type: 'test'
+2026-10-05T00:03:10.6341611Z   ...
+2026-10-05T00:03:10.6342127Z # Subtest: rejects changes to an unaffected OOD item and unapproved proof fields
+2026-10-05T00:03:10.6342923Z ok 67 - rejects changes to an unaffected OOD item and unapproved proof fields
+2026-10-05T00:03:10.6343497Z   ---
+2026-10-05T00:03:10.6343897Z   duration_ms: 2806.059568
+2026-10-05T00:03:10.6344222Z   type: 'test'
+2026-10-05T00:03:10.6344513Z   ...
+2026-10-05T00:03:10.6345159Z # Subtest: rejects an unapproved proof source path and a physically relocated source file
+2026-10-05T00:03:10.6346015Z ok 68 - rejects an unapproved proof source path and a physically relocated source file
+2026-10-05T00:03:10.6346619Z   ---
+2026-10-05T00:03:10.6347016Z   duration_ms: 1599.861592
+2026-10-05T00:03:10.6347344Z   type: 'test'
+2026-10-05T00:03:10.6347739Z   ...
+2026-10-05T00:03:10.6348258Z # Subtest: validates the exact source12 fixture and preserves its source11 predecessor
+2026-10-05T00:03:10.6349287Z ok 69 - validates the exact source12 fixture and preserves its source11 predecessor
+2026-10-05T00:03:10.6349773Z   ---
+2026-10-05T00:03:10.6350568Z   duration_ms: 2982.903676
+2026-10-05T00:03:10.6351007Z   type: 'test'
+2026-10-05T00:03:10.6351305Z   ...
+2026-10-05T00:03:10.6352008Z # Subtest: source12 question validates, scores all options, and supplies authored wrong-option feedback
+2026-10-05T00:03:10.6352970Z ok 70 - source12 question validates, scores all options, and supplies authored wrong-option feedback
+2026-10-05T00:03:10.6353619Z   ---
+2026-10-05T00:03:10.6354012Z   duration_ms: 2.125283
+2026-10-05T00:03:10.6354332Z   type: 'test'
+2026-10-05T00:03:10.6354674Z   ...
+2026-10-05T00:03:10.6355240Z # Subtest: source12 cannot fall back when either fixed generation proof is absent
+2026-10-05T00:03:10.6356037Z ok 71 - source12 cannot fall back when either fixed generation proof is absent
+2026-10-05T00:03:10.6356610Z   ---
+2026-10-05T00:03:10.6356900Z   duration_ms: 2147.863379
+2026-10-05T00:03:10.6357331Z   type: 'test'
+2026-10-05T00:03:10.6357625Z   ...
+2026-10-05T00:03:10.6358227Z # Subtest: rejects tampered current content, predecessor proof, and source identity
+2026-10-05T00:03:10.6359082Z ok 72 - rejects tampered current content, predecessor proof, and source identity
+2026-10-05T00:03:10.6359679Z   ---
+2026-10-05T00:03:10.6359969Z   duration_ms: 2976.99989
+2026-10-05T00:03:10.6360401Z   type: 'test'
+2026-10-05T00:03:10.6360690Z   ...
+2026-10-05T00:03:10.6361245Z # Subtest: rejects unreviewed successor proof identity, hashes, paths, and fields
+2026-10-05T00:03:10.6361999Z ok 73 - rejects unreviewed successor proof identity, hashes, paths, and fields
+2026-10-05T00:03:10.6362579Z   ---
+2026-10-05T00:03:10.6362873Z   duration_ms: 4541.238684
+2026-10-05T00:03:10.6363298Z   type: 'test'
+2026-10-05T00:03:10.6363589Z   ...
+2026-10-05T00:03:10.6364178Z # Subtest: rejects a changed unrelated OOD source item instead of reconstructing around it
+2026-10-05T00:03:10.6364992Z ok 74 - rejects a changed unrelated OOD source item instead of reconstructing around it
+2026-10-05T00:03:10.6365605Z   ---
+2026-10-05T00:03:10.6365896Z   duration_ms: 1044.826003
+2026-10-05T00:03:10.6366333Z   type: 'test'
+2026-10-05T00:03:10.6366619Z   ...
+2026-10-05T00:03:10.6367427Z # Subtest: rejects a symlinked current source before following it
+2026-10-05T00:03:10.6368117Z ok 75 - rejects a symlinked current source before following it
+2026-10-05T00:03:10.6368664Z   ---
+2026-10-05T00:03:10.6369011Z   duration_ms: 592.498091
+2026-10-05T00:03:10.6369329Z   type: 'test'
+2026-10-05T00:03:10.6369617Z   ...
+2026-10-05T00:03:10.6370413Z # Subtest: validates the fixed source13 cohort and reconstructs immutable source12 and source11 predecessors
+2026-10-05T00:03:10.6371306Z ok 76 - validates the fixed source13 cohort and reconstructs immutable source12 and source11 predecessors
+2026-10-05T00:03:10.6372062Z   ---
+2026-10-05T00:03:10.6372670Z   duration_ms: 3029.354958
+2026-10-05T00:03:10.6373074Z   type: 'test'
+2026-10-05T00:03:10.6373523Z   ...
+2026-10-05T00:03:10.6374241Z # Subtest: all fifteen new questions validate, score each option, and bind authored feedback to every distractor
+2026-10-05T00:03:10.6375359Z ok 77 - all fifteen new questions validate, score each option, and bind authored feedback to every distractor
+2026-10-05T00:03:10.6376023Z   ---
+2026-10-05T00:03:10.6376515Z   duration_ms: 2.403432
+2026-10-05T00:03:10.6376985Z   type: 'test'
+2026-10-05T00:03:10.6377373Z   ...
+2026-10-05T00:03:10.6388784Z # Subtest: requires the source13 proof and rejects modified cohort bindings and historical predecessor evidence
+2026-10-05T00:03:10.6392210Z ok 78 - requires the source13 proof and rejects modified cohort bindings and historical predecessor evidence
+2026-10-05T00:03:10.6392788Z   ---
+2026-10-05T00:03:10.6393105Z   duration_ms: 3900.810409
+2026-10-05T00:03:10.6393522Z   type: 'test'
+2026-10-05T00:03:10.6394022Z   ...
+2026-10-05T00:03:10.6394686Z # Subtest: source13 directly requires both historical proofs and rejects changed, missing, or duplicate cohort membership
+2026-10-05T00:03:10.6395704Z ok 79 - source13 directly requires both historical proofs and rejects changed, missing, or duplicate cohort membership
+2026-10-05T00:03:10.6396664Z   ---
+2026-10-05T00:03:10.6397080Z   duration_ms: 7223.005339
+2026-10-05T00:03:10.6397422Z   type: 'test'
+2026-10-05T00:03:10.6397726Z   ...
+2026-10-05T00:03:10.6398285Z # Subtest: rejects unreviewed cohort fields, unrelated source changes, and symlinked source paths
+2026-10-05T00:03:10.6399156Z ok 80 - rejects unreviewed cohort fields, unrelated source changes, and symlinked source paths
+2026-10-05T00:03:10.6399671Z   ---
+2026-10-05T00:03:10.6399977Z   duration_ms: 2613.532797
+2026-10-05T00:03:10.6400310Z   type: 'test'
+2026-10-05T00:03:10.6400636Z   ...
+2026-10-05T00:03:10.6401344Z # Subtest: same-ID source correction changes only the three reviewed texts and preserves all other mental-unit items
+2026-10-05T00:03:10.6402242Z ok 81 - same-ID source correction changes only the three reviewed texts and preserves all other mental-unit items
+2026-10-05T00:03:10.6402800Z   ---
+2026-10-05T00:03:10.6403104Z   duration_ms: 9.505606
+2026-10-05T00:03:10.6403429Z   type: 'test'
+2026-10-05T00:03:10.6403736Z   ...
+2026-10-05T00:03:10.6404347Z # Subtest: canonical single-track builder carries the exact corrected object and new immutable content identity
+2026-10-05T00:03:10.6405193Z ok 82 - canonical single-track builder carries the exact corrected object and new immutable content identity
+2026-10-05T00:03:10.6405752Z   ---
+2026-10-05T00:03:10.6406090Z   duration_ms: 468.479289
+2026-10-05T00:03:10.6406417Z   type: 'test'
+2026-10-05T00:03:10.6406711Z   ...
+2026-10-05T00:03:10.6407184Z # Subtest: BIZQ-01 cohort14 preserves source01 as the exact accepted predecessor
+2026-10-05T00:03:10.6407827Z ok 83 - BIZQ-01 cohort14 preserves source01 as the exact accepted predecessor
+2026-10-05T00:03:10.6408307Z   ---
+2026-10-05T00:03:10.6408737Z   duration_ms: 10.72613
+2026-10-05T00:03:10.6409080Z   type: 'test'
+2026-10-05T00:03:10.6409395Z   ...
+2026-10-05T00:03:10.6410027Z # Subtest: BIZQ-01 preserves both accepted source01 objects and their scored, built, and projected behavior
+2026-10-05T00:03:10.6410930Z ok 84 - BIZQ-01 preserves both accepted source01 objects and their scored, built, and projected behavior
+2026-10-05T00:03:10.6411738Z   ---
+2026-10-05T00:03:10.6412055Z   duration_ms: 1269.231168
+2026-10-05T00:03:10.6412402Z   type: 'test'
+2026-10-05T00:03:10.6412724Z   ...
+2026-10-05T00:03:10.6413328Z # Subtest: BIZQ-01 changed items keep concrete learner constraints and one scoreable authored answer
+2026-10-05T00:03:10.6414179Z ok 85 - BIZQ-01 changed items keep concrete learner constraints and one scoreable authored answer
+2026-10-05T00:03:10.6414730Z   ---
+2026-10-05T00:03:10.6415039Z   duration_ms: 2.098504
+2026-10-05T00:03:10.6415389Z   type: 'test'
+2026-10-05T00:03:10.6415705Z   ...
+2026-10-05T00:03:10.6416244Z # Subtest: BIZQ-01 canonical builder carries the exact cohort and new content identity
+2026-10-05T00:03:10.6416988Z ok 86 - BIZQ-01 canonical builder carries the exact cohort and new content identity
+2026-10-05T00:03:10.6417498Z   ---
+2026-10-05T00:03:10.6417810Z   duration_ms: 271.274825
+2026-10-05T00:03:10.6418165Z   type: 'test'
+2026-10-05T00:03:10.6418479Z   ...
+2026-10-05T00:03:10.6419113Z # Subtest: BIZQ-01 advisory console distinguishes corrected cohort from remaining warnings
+2026-10-05T00:03:10.6419893Z ok 87 - BIZQ-01 advisory console distinguishes corrected cohort from remaining warnings
+2026-10-05T00:03:10.6420414Z   ---
+2026-10-05T00:03:10.6420728Z   duration_ms: 1059.436402
+2026-10-05T00:03:10.6421078Z   type: 'test'
+2026-10-05T00:03:10.6421394Z   ...
+2026-10-05T00:03:10.6421946Z # Subtest: admission binds verified local publishing bytes, app lock, and runtime test
+2026-10-05T00:03:10.6422704Z ok 88 - admission binds verified local publishing bytes, app lock, and runtime test
+2026-10-05T00:03:10.6423330Z   ---
+2026-10-05T00:03:10.6423647Z   duration_ms: 128.137664
+2026-10-05T00:03:10.6423995Z   type: 'test'
+2026-10-05T00:03:10.6424359Z   ...
+2026-10-05T00:03:10.6424812Z # Subtest: committed admission and runtime evidence remain hash-bound
+2026-10-05T00:03:10.6425601Z ok 89 - committed admission and runtime evidence remain hash-bound
+2026-10-05T00:03:10.6426029Z   ---
+2026-10-05T00:03:10.6426304Z   duration_ms: 4.076577
+2026-10-05T00:03:10.6426612Z   type: 'test'
+2026-10-05T00:03:10.6426893Z   ...
+2026-10-05T00:03:13.6610657Z # Subtest: candidate draft v2 binds all nine canonical artifacts and exact ODK-096 AWS identity deterministically
+2026-10-05T00:03:13.6611310Z ok 90 - candidate draft v2 binds all nine canonical artifacts and exact ODK-096 AWS identity deterministically
+2026-10-05T00:03:13.6611587Z   ---
+2026-10-05T00:03:13.6611715Z   duration_ms: 5354.924023
+2026-10-05T00:03:13.6611854Z   type: 'test'
+2026-10-05T00:03:13.6611967Z   ...
+2026-10-05T00:03:13.8670068Z # Subtest: canonical source snapshot rejects a valid untracked mental-unit JSON in an isolated Git fixture
+2026-10-05T00:03:13.8670709Z ok 91 - canonical source snapshot rejects a valid untracked mental-unit JSON in an isolated Git fixture
+2026-10-05T00:03:13.8670968Z   ---
+2026-10-05T00:03:13.8671098Z   duration_ms: 206.345249
+2026-10-05T00:03:13.8671266Z   type: 'test'
+2026-10-05T00:03:13.8671390Z   ...
+2026-10-05T00:03:13.9362980Z # Subtest: Codex candidate decision v2 binds exact candidate, source snapshot, release and nine artifact hashes
+2026-10-05T00:03:13.9364182Z ok 92 - Codex candidate decision v2 binds exact candidate, source snapshot, release and nine artifact hashes
+2026-10-05T00:03:13.9364715Z   ---
+2026-10-05T00:03:13.9365000Z   duration_ms: 2477.535715
+2026-10-05T00:03:13.9365325Z   type: 'test'
+2026-10-05T00:03:13.9365602Z   ...
+2026-10-05T00:03:14.1999751Z # Subtest: release gate verifies exact decision-bound evidence and requires separate admission
+2026-10-05T00:03:14.2001639Z ok 93 - release gate verifies exact decision-bound evidence and requires separate admission
+2026-10-05T00:03:14.2002554Z   ---
+2026-10-05T00:03:14.2002916Z   duration_ms: 632.01093
+2026-10-05T00:03:14.2003261Z   type: 'test'
+2026-10-05T00:03:14.2003563Z   ...
+2026-10-05T00:03:14.2004094Z # Subtest: release gate accepts the exact v3 admission without mutating readiness v2
+2026-10-05T00:03:14.2005161Z ok 94 - release gate accepts the exact v3 admission without mutating readiness v2
+2026-10-05T00:03:14.2005640Z   ---
+2026-10-05T00:03:14.2005949Z   duration_ms: 337.677878
+2026-10-05T00:03:14.2006291Z   type: 'test'
+2026-10-05T00:03:14.2006599Z   ...
+2026-10-05T00:03:14.2007145Z # Subtest: bundled Free-node control validates pinned source items and bounds decompression
+2026-10-05T00:03:14.2007899Z ok 95 - bundled Free-node control validates pinned source items and bounds decompression
+2026-10-05T00:03:14.2008403Z   ---
+2026-10-05T00:03:14.2008831Z   duration_ms: 2533.182872
+2026-10-05T00:03:14.2009156Z   type: 'test'
+2026-10-05T00:03:14.2009438Z   ...
+2026-10-05T00:03:14.2077977Z # Subtest: Free-node acceptance evidence rejects authority changes and unsupported fields
+2026-10-05T00:03:14.2080186Z ok 96 - Free-node acceptance evidence rejects authority changes and unsupported fields
+2026-10-05T00:03:14.2080910Z   ---
+2026-10-05T00:03:14.2081230Z   duration_ms: 8.967842
+2026-10-05T00:03:14.2081597Z   type: 'test'
+2026-10-05T00:03:14.2081990Z   ...
+2026-10-05T00:03:14.2106892Z # Subtest: workflow contract rebuilds v2 evidence and release gate without legacy publisher or deployment commands
+2026-10-05T00:03:14.2108510Z ok 97 - workflow contract rebuilds v2 evidence and release gate without legacy publisher or deployment commands
+2026-10-05T00:03:14.2109294Z   ---
+2026-10-05T00:03:14.2109553Z   duration_ms: 3.041911
+2026-10-05T00:03:14.2109790Z   type: 'test'
+2026-10-05T00:03:14.2110005Z   ...
+2026-10-05T00:03:14.2526104Z # Subtest: active canonical ingress has no legacy publisher and historical references are verifier-only
+2026-10-05T00:03:14.2527102Z ok 98 - active canonical ingress has no legacy publisher and historical references are verifier-only
+2026-10-05T00:03:14.2527715Z   ---
+2026-10-05T00:03:14.2528126Z   duration_ms: 24.015809
+2026-10-05T00:03:14.2528375Z   type: 'test'
+2026-10-05T00:03:14.2528552Z   ...
+2026-10-05T00:03:14.5074458Z # Subtest: each catalogued track validates, tests and builds independently
+2026-10-05T00:03:14.5096697Z ok 99 - each catalogued track validates, tests and builds independently
+2026-10-05T00:03:14.5097301Z   ---
+2026-10-05T00:03:14.5097610Z   duration_ms: 97.279387
+2026-10-05T00:03:14.5097942Z   type: 'test'
+2026-10-05T00:03:14.5098231Z   ...
+2026-10-05T00:03:14.5098885Z # Subtest: build-all emits exactly nine deterministic artifacts and lock entries
+2026-10-05T00:03:14.5100277Z ok 100 - build-all emits exactly nine deterministic artifacts and lock entries
+2026-10-05T00:03:14.5102082Z   ---
+2026-10-05T00:03:14.5102421Z   duration_ms: 37.544019
+2026-10-05T00:03:14.5102755Z   type: 'test'
+2026-10-05T00:03:14.5103065Z   ...
+2026-10-05T00:03:14.5103719Z # Subtest: GCP simulation profile binds a complete unambiguous node map to the same-version published artifact
+2026-10-05T00:03:14.5104647Z ok 101 - GCP simulation profile binds a complete unambiguous node map to the same-version published artifact
+2026-10-05T00:03:14.5105231Z   ---
+2026-10-05T00:03:14.5105523Z   duration_ms: 543.729971
+2026-10-05T00:03:14.5105854Z   type: 'test'
+2026-10-05T00:03:14.5106136Z   ...
+2026-10-05T00:03:14.5106847Z # Subtest: Coding Interview simulation profile emits the blueprint and exact checksum-verified pool identities
+2026-10-05T00:03:14.5107772Z ok 102 - Coding Interview simulation profile emits the blueprint and exact checksum-verified pool identities
+2026-10-05T00:03:14.5108334Z   ---
+2026-10-05T00:03:14.5108728Z   duration_ms: 460.942227
+2026-10-05T00:03:14.5109073Z   type: 'test'
+2026-10-05T00:03:14.5109399Z   ...
+2026-10-05T00:03:14.5109856Z # Subtest: malformed Coding Interview simulation blueprint fails closed
+2026-10-05T00:03:14.5111352Z ok 103 - malformed Coding Interview simulation blueprint fails closed
+2026-10-05T00:03:14.5111802Z   ---
+2026-10-05T00:03:14.5112085Z   duration_ms: 183.063253
+2026-10-05T00:03:14.5112400Z   type: 'test'
+2026-10-05T00:03:14.5112689Z   ...
+2026-10-05T00:03:14.5113300Z # Subtest: Coding Interview simulation selection policies reject stale pools and invalid identities
+2026-10-05T00:03:14.5114452Z ok 104 - Coding Interview simulation selection policies reject stale pools and invalid identities
+2026-10-05T00:03:14.5114972Z   ---
+2026-10-05T00:03:14.5115255Z   duration_ms: 1331.562346
+2026-10-05T00:03:14.5115573Z   type: 'test'
+2026-10-05T00:03:14.5115857Z   ...
+2026-10-05T00:03:15.8602625Z # Subtest: Design Interview simulation profiles emit one strict text-response case per track
+2026-10-05T00:03:15.8606537Z ok 105 - Design Interview simulation profiles emit one strict text-response case per track
+2026-10-05T00:03:15.8607082Z   ---
+2026-10-05T00:03:15.8607258Z   duration_ms: 1351.930968
+2026-10-05T00:03:15.8607448Z   type: 'test'
+2026-10-05T00:03:15.8607603Z   ...
+2026-10-05T00:03:15.8783206Z # Subtest: Design simulation availability requires the canonical text profile and does not imply question-bank capacity
+2026-10-05T00:03:15.8784387Z ok 106 - Design simulation availability requires the canonical text profile and does not imply question-bank capacity
+2026-10-05T00:03:15.8785067Z   ---
+2026-10-05T00:03:15.8785472Z   duration_ms: 17.38194
+2026-10-05T00:03:15.8785810Z   type: 'test'
+2026-10-05T00:03:15.8786114Z   ...
+2026-10-05T00:03:15.8959986Z # Subtest: malformed Design Interview simulation sources fail closed
+2026-10-05T00:03:15.8961799Z ok 107 - malformed Design Interview simulation sources fail closed
+2026-10-05T00:03:15.8978447Z   ---
+2026-10-05T00:03:15.8980122Z   duration_ms: 17.918176
+2026-10-05T00:03:15.8981120Z   type: 'test'
+2026-10-05T00:03:15.8981368Z   ...
+2026-10-05T00:03:16.0597227Z # Subtest: malformed present GCP simulation profile fails closed on incomplete node coverage
+2026-10-05T00:03:16.0598831Z ok 108 - malformed present GCP simulation profile fails closed on incomplete node coverage
+2026-10-05T00:03:16.0599540Z   ---
+2026-10-05T00:03:16.0600081Z   duration_ms: 164.952717
+2026-10-05T00:03:16.0600276Z   type: 'test'
+2026-10-05T00:03:16.0600445Z   ...
+2026-10-05T00:03:17.2388416Z # Subtest: existing GCP artifact rejects malformed profile even when its lock SHA is recomputed
+2026-10-05T00:03:17.2390621Z ok 109 - existing GCP artifact rejects malformed profile even when its lock SHA is recomputed
+2026-10-05T00:03:17.2390994Z   ---
+2026-10-05T00:03:17.2391170Z   duration_ms: 1178.315039
+2026-10-05T00:03:17.2391370Z   type: 'test'
+2026-10-05T00:03:17.2391537Z   ...
+2026-10-05T00:03:17.8246006Z # Subtest: existing GCP artifact rejects a legal but source-inconsistent node domain when its lock SHA is recomputed
+2026-10-05T00:03:17.8247151Z ok 110 - existing GCP artifact rejects a legal but source-inconsistent node domain when its lock SHA is recomputed
+2026-10-05T00:03:17.8247753Z   ---
+2026-10-05T00:03:17.8248196Z   duration_ms: 585.896232
+2026-10-05T00:03:17.8248447Z   type: 'test'
+2026-10-05T00:03:17.8248757Z   ...
+2026-10-05T00:03:17.8249362Z # Subtest: ACC-02 Candidate Manifest retains its exact nine-track identity against frozen baseline and migration manifest
+2026-10-05T00:03:17.8250426Z ok 111 - ACC-02 Candidate Manifest retains its exact nine-track identity against frozen baseline and migration manifest
+2026-10-05T00:03:17.8250913Z   ---
+2026-10-05T00:03:17.8251091Z   duration_ms: 0.395364
+2026-10-05T00:03:17.8251296Z   type: 'test'
+2026-10-05T00:03:17.8251467Z   ...
+2026-10-05T00:03:17.8252107Z # Subtest: canonical JSON sorts recursive object keys without reordering arrays
+2026-10-05T00:03:17.8252651Z ok 112 - canonical JSON sorts recursive object keys without reordering arrays
+2026-10-05T00:03:17.8252989Z   ---
+2026-10-05T00:03:17.8253165Z   duration_ms: 0.079129
+2026-10-05T00:03:17.8253359Z   type: 'test'
+2026-10-05T00:03:17.8253531Z   ...
+2026-10-05T00:03:17.8653999Z # Subtest: mutating one track does not rewrite another artifact or lock entry
+2026-10-05T00:03:17.8654479Z ok 113 - mutating one track does not rewrite another artifact or lock entry
+2026-10-05T00:03:17.8654680Z   ---
+2026-10-05T00:03:17.8654803Z   duration_ms: 39.987581
+2026-10-05T00:03:17.8654930Z   type: 'test'
+2026-10-05T00:03:17.8655071Z   ...
+2026-10-05T00:03:17.8709134Z # Subtest: builder rejects missing, empty, unknown and malformed inputs
+2026-10-05T00:03:17.8729415Z ok 114 - builder rejects missing, empty, unknown and malformed inputs
+2026-10-05T00:03:17.8753688Z   ---
+2026-10-05T00:03:17.8753990Z   duration_ms: 5.410862
+2026-10-05T00:03:17.8754203Z   type: 'test'
+2026-10-05T00:03:17.8754383Z   ...
+2026-10-05T00:03:17.8754781Z # Subtest: builder requires each mental-unit source file to be a non-empty question array
+2026-10-05T00:03:17.8755347Z ok 115 - builder requires each mental-unit source file to be a non-empty question array
+2026-10-05T00:03:17.8755697Z   ---
+2026-10-05T00:03:17.8755863Z   duration_ms: 4.323116
+2026-10-05T00:03:17.8756062Z   type: 'test'
+2026-10-05T00:03:17.8756225Z   ...
+2026-10-05T00:03:17.8850398Z # Subtest: builder rejects path identity, foreign track, duplicate and invalid questions
+2026-10-05T00:03:17.8851199Z ok 116 - builder rejects path identity, foreign track, duplicate and invalid questions
+2026-10-05T00:03:17.8853183Z   ---
+2026-10-05T00:03:17.8854163Z   duration_ms: 10.856219
+2026-10-05T00:03:17.8855296Z   type: 'test'
+2026-10-05T00:03:17.8855793Z   ...
+2026-10-05T00:03:17.8900129Z # Subtest: existing malformed lock is rejected before a single-track build
+2026-10-05T00:03:17.8900574Z ok 117 - existing malformed lock is rejected before a single-track build
+2026-10-05T00:03:17.8901270Z   ---
+2026-10-05T00:03:17.8901778Z   duration_ms: 5.060299
+2026-10-05T00:03:17.8902187Z   type: 'test'
+2026-10-05T00:03:17.8902625Z   ...
+2026-10-05T00:03:17.8949239Z # Subtest: source discovery rejects a symlinked track, node directory, or question file
+2026-10-05T00:03:17.8950187Z ok 118 - source discovery rejects a symlinked track, node directory, or question file
+2026-10-05T00:03:17.8950728Z   ---
+2026-10-05T00:03:17.8951134Z   duration_ms: 4.894996
+2026-10-05T00:03:17.8951462Z   type: 'test'
+2026-10-05T00:03:17.8951756Z   ...
+2026-10-05T00:03:17.9169720Z # Subtest: a tampered existing artifact blocks another track before any write
+2026-10-05T00:03:17.9170524Z ok 119 - a tampered existing artifact blocks another track before any write
+2026-10-05T00:03:17.9171145Z   ---
+2026-10-05T00:03:17.9171561Z   duration_ms: 20.976222
+2026-10-05T00:03:17.9171799Z   type: 'test'
+2026-10-05T00:03:17.9171974Z   ...
+2026-10-05T00:03:17.9282868Z # Subtest: single-track build rejects orphan artifacts and temporary outputs before writing any target
+2026-10-05T00:03:17.9283850Z ok 120 - single-track build rejects orphan artifacts and temporary outputs before writing any target
+2026-10-05T00:03:17.9284438Z   ---
+2026-10-05T00:03:17.9284868Z   duration_ms: 11.656312
+2026-10-05T00:03:17.9285251Z   type: 'test'
+2026-10-05T00:03:17.9285554Z   ...
+2026-10-05T00:03:17.9350808Z # Subtest: single-track build rejects a symlinked output root without external writes
+2026-10-05T00:03:17.9353300Z ok 121 - single-track build rejects a symlinked output root without external writes
+2026-10-05T00:03:17.9357133Z   ---
+2026-10-05T00:03:17.9357538Z   duration_ms: 7.115073
+2026-10-05T00:03:17.9357865Z   type: 'test'
+2026-10-05T00:03:17.9358179Z   ...
+2026-10-05T00:03:17.9469413Z # Subtest: single-track output commit rolls back both files on an injected second rename failure
+2026-10-05T00:03:17.9470093Z ok 122 - single-track output commit rolls back both files on an injected second rename failure
+2026-10-05T00:03:17.9470454Z   ---
+2026-10-05T00:03:17.9470633Z   duration_ms: 11.789307
+2026-10-05T00:03:17.9470830Z   type: 'test'
+2026-10-05T00:03:17.9470994Z   ...
+2026-10-05T00:03:17.9768867Z # Subtest: build-all stages and rolls back the complete new output set on rename failure
+2026-10-05T00:03:17.9769492Z ok 123 - build-all stages and rolls back the complete new output set on rename failure
+2026-10-05T00:03:17.9769838Z   ---
+2026-10-05T00:03:17.9770019Z   duration_ms: 29.07021
+2026-10-05T00:03:17.9770209Z   type: 'test'
+2026-10-05T00:03:17.9770372Z   ...
+2026-10-05T00:03:17.9772309Z # Subtest: CLI parser requires track for single-track commands and rejects it for build-all
+2026-10-05T00:03:17.9774045Z ok 124 - CLI parser requires track for single-track commands and rejects it for build-all
+2026-10-05T00:03:17.9789425Z   ---
+2026-10-05T00:03:17.9789625Z   duration_ms: 0.537879
+2026-10-05T00:03:17.9789823Z   type: 'test'
+2026-10-05T00:03:17.9789984Z   ...
+2026-10-05T00:03:18.1422623Z # Subtest: CLI executes a hermetic single-track validate/test/build
+2026-10-05T00:03:18.1423265Z ok 125 - CLI executes a hermetic single-track validate/test/build
+2026-10-05T00:03:18.1423564Z   ---
+2026-10-05T00:03:18.1423758Z   duration_ms: 165.300158
+2026-10-05T00:03:18.1423968Z   type: 'test'
+2026-10-05T00:03:18.1424139Z   ...
+2026-10-05T00:03:18.4338049Z # Subtest: review console surfaces a remaining BESD constraint disclosure without recording an outcome
+2026-10-05T00:03:18.4339361Z ok 126 - review console surfaces a remaining BESD constraint disclosure without recording an outcome
+2026-10-05T00:03:18.4340492Z   ---
+2026-10-05T00:03:18.4341148Z   duration_ms: 1204.966099
+2026-10-05T00:03:18.4344978Z   type: 'test'
+2026-10-05T00:03:18.4345296Z   ...
+2026-10-05T00:03:18.4345937Z # Subtest: constraint warning is advisory across interactions and does not flag ordinary worked examples or feedback
+2026-10-05T00:03:18.4346840Z ok 127 - constraint warning is advisory across interactions and does not flag ordinary worked examples or feedback
+2026-10-05T00:03:18.4347407Z   ---
+2026-10-05T00:03:18.4347711Z   duration_ms: 1103.678725
+2026-10-05T00:03:18.4348037Z   type: 'test'
+2026-10-05T00:03:18.4348327Z   ...
+2026-10-05T00:03:18.4349061Z # Subtest: Q14 flags a valid sole-longest correct choice for human review without changing scoring
+2026-10-05T00:03:18.4349823Z ok 128 - Q14 flags a valid sole-longest correct choice for human review without changing scoring
+2026-10-05T00:03:18.4350440Z   ---
+2026-10-05T00:03:18.4350735Z   duration_ms: 989.003493
+2026-10-05T00:03:18.4351062Z   type: 'test'
+2026-10-05T00:03:18.4351347Z   ...
+2026-10-05T00:03:18.4352823Z # Subtest: review console exposes exactly nine launch tracks, navigable coverage, and advisory signals
+2026-10-05T00:03:18.4353678Z ok 129 - review console exposes exactly nine launch tracks, navigable coverage, and advisory signals
+2026-10-05T00:03:18.4354387Z   ---
+2026-10-05T00:03:18.4354697Z   duration_ms: 1144.040366
+2026-10-05T00:03:18.4355015Z   type: 'test'
+2026-10-05T00:03:18.4355310Z   ...
+2026-10-05T00:03:19.2748560Z # Subtest: review console records one current explicit outcome and invalidates it when source identity changes
+2026-10-05T00:03:19.2749491Z ok 130 - review console records one current explicit outcome and invalidates it when source identity changes
+2026-10-05T00:03:19.2749746Z   ---
+2026-10-05T00:03:19.2749876Z   duration_ms: 841.260664
+2026-10-05T00:03:19.2750008Z   type: 'test'
+2026-10-05T00:03:19.2750114Z   ...
+2026-10-05T00:03:20.1887845Z # Subtest: review console serves a local UI and bounded JSON API without fabricating approval
+2026-10-05T00:03:20.1888751Z ok 131 - review console serves a local UI and bounded JSON API without fabricating approval
+2026-10-05T00:03:20.1889177Z   ---
+2026-10-05T00:03:20.1889371Z   duration_ms: 913.970198
+2026-10-05T00:03:20.1889568Z   type: 'test'
+2026-10-05T00:03:20.1889733Z   ...
+2026-10-05T00:03:22.6955789Z # Subtest: review outcomes serialize stale service snapshots and survive a fresh service instance
+2026-10-05T00:03:22.6956246Z ok 132 - review outcomes serialize stale service snapshots and survive a fresh service instance
+2026-10-05T00:03:22.6958278Z   ---
+2026-10-05T00:03:22.6958747Z   duration_ms: 2506.567961
+2026-10-05T00:03:22.6959099Z   type: 'test'
+2026-10-05T00:03:22.6959351Z   ...
+2026-10-05T00:03:24.5290724Z # Subtest: review-store write and rename failures retain prior bytes and memory state
+2026-10-05T00:03:24.5291127Z ok 133 - review-store write and rename failures retain prior bytes and memory state
+2026-10-05T00:03:24.5291342Z   ---
+2026-10-05T00:03:24.5291463Z   duration_ms: 1833.367662
+2026-10-05T00:03:24.5291592Z   type: 'test'
+2026-10-05T00:03:24.5291697Z   ...
+2026-10-05T00:03:26.2500653Z # Subtest: review batch keeps sequential per-item commit semantics against a concurrent single write
+2026-10-05T00:03:26.2502759Z ok 134 - review batch keeps sequential per-item commit semantics against a concurrent single write
+2026-10-05T00:03:26.2503193Z   ---
+2026-10-05T00:03:26.2503380Z   duration_ms: 1720.877804
+2026-10-05T00:03:26.2503595Z   type: 'test'
+2026-10-05T00:03:26.2503766Z   ...
+2026-10-05T00:03:27.5266006Z # Subtest: review-store lock is cross-process, owner-safe, and never reclaims a stale sidecar automatically
+2026-10-05T00:03:27.5266525Z ok 135 - review-store lock is cross-process, owner-safe, and never reclaims a stale sidecar automatically
+2026-10-05T00:03:27.5266787Z   ---
+2026-10-05T00:03:27.5266917Z   duration_ms: 1276.568109
+2026-10-05T00:03:27.5267054Z   type: 'test'
+2026-10-05T00:03:27.5267168Z   ...
+2026-10-05T00:03:30.5606197Z # Subtest: review-store path aliases share a lock key; hard links and dangling file symlinks fail closed
+2026-10-05T00:03:30.5607424Z ok 136 - review-store path aliases share a lock key; hard links and dangling file symlinks fail closed
+2026-10-05T00:03:30.5607991Z   ---
+2026-10-05T00:03:30.5608404Z   duration_ms: 3033.460714
+2026-10-05T00:03:30.5608821Z   type: 'test'
+2026-10-05T00:03:30.5609000Z   ...
+2026-10-05T00:03:32.5054832Z # Subtest: review store preserves a private mode and never removes another owner's temp or lock file
+2026-10-05T00:03:32.5055898Z ok 137 - review store preserves a private mode and never removes another owner's temp or lock file
+2026-10-05T00:03:32.5056463Z   ---
+2026-10-05T00:03:32.5056871Z   duration_ms: 1945.388474
+2026-10-05T00:03:32.5057054Z   type: 'test'
+2026-10-05T00:03:32.5057172Z   ...
+2026-10-05T00:03:33.0888214Z # Subtest: new review stores use a private mode
+2026-10-05T00:03:33.0888823Z ok 138 - new review stores use a private mode
+2026-10-05T00:03:33.0889087Z   ---
+2026-10-05T00:03:33.0889286Z   duration_ms: 583.189138
+2026-10-05T00:03:33.0889500Z   type: 'test'
+2026-10-05T00:03:33.0889678Z   ...
+2026-10-05T00:03:38.9375403Z # Subtest: latest malformed review stores reject read-modify-write without changing disk or memory
+2026-10-05T00:03:38.9376225Z ok 139 - latest malformed review stores reject read-modify-write without changing disk or memory
+2026-10-05T00:03:38.9376810Z   ---
+2026-10-05T00:03:38.9378548Z   duration_ms: 5848.636059
+2026-10-05T00:03:38.9378955Z   type: 'test'
+2026-10-05T00:03:38.9379120Z   ...
+2026-10-05T00:03:39.4816385Z # Subtest: post-commit lock-release warnings stay visible through the HTTP API
+2026-10-05T00:03:39.4817021Z ok 140 - post-commit lock-release warnings stay visible through the HTTP API
+2026-10-05T00:03:39.4817343Z   ---
+2026-10-05T00:03:39.4817525Z   duration_ms: 544.318318
+2026-10-05T00:03:39.4817723Z   type: 'test'
+2026-10-05T00:03:39.4817835Z   ...
+2026-10-05T00:03:39.6407063Z # Subtest: nine canonical banks produce a repeatable inventory with an explicit AWS baseline mismatch
+2026-10-05T00:03:39.6407823Z ok 141 - nine canonical banks produce a repeatable inventory with an explicit AWS baseline mismatch
+2026-10-05T00:03:39.6408176Z   ---
+2026-10-05T00:03:39.6408327Z   duration_ms: 3473.649016
+2026-10-05T00:03:39.6408464Z   type: 'test'
+2026-10-05T00:03:39.6408739Z   ...
+2026-10-05T00:03:39.6409071Z # Subtest: ODK-096 approval binds one AWS Free node to exact canonical hashes and IDs
+2026-10-05T00:03:39.6409539Z ok 142 - ODK-096 approval binds one AWS Free node to exact canonical hashes and IDs
+2026-10-05T00:03:39.6409854Z   ---
+2026-10-05T00:03:39.6409983Z   duration_ms: 255.188347
+2026-10-05T00:03:39.6410110Z   type: 'test'
+2026-10-05T00:03:39.6410212Z   ...
+2026-10-05T00:03:39.6410420Z # Subtest: ODK-097 producer profiles expose the approved Design session matrix
+2026-10-05T00:03:39.6410722Z ok 143 - ODK-097 producer profiles expose the approved Design session matrix
+2026-10-05T00:03:39.6410999Z   ---
+2026-10-05T00:03:39.6411175Z   duration_ms: 17.1018
+2026-10-05T00:03:39.6411347Z   type: 'test'
+2026-10-05T00:03:39.6411510Z   ...
+2026-10-05T00:03:39.6411845Z # Subtest: ODK-097 producer changes preserve canonical Design question counts and hashes
+2026-10-05T00:03:39.6412772Z ok 144 - ODK-097 producer changes preserve canonical Design question counts and hashes
+2026-10-05T00:03:39.6413069Z   ---
+2026-10-05T00:03:39.6413219Z   duration_ms: 621.076019
+2026-10-05T00:03:39.6413389Z   type: 'test'
+2026-10-05T00:03:39.6413493Z   ...
+2026-10-05T00:03:39.6413900Z # Subtest: Claude Focus Practice v2 is the only selectable-feedback mode in its immutable Free-node profile
+2026-10-05T00:03:39.6414550Z ok 145 - Claude Focus Practice v2 is the only selectable-feedback mode in its immutable Free-node profile
+2026-10-05T00:03:39.6414911Z   ---
+2026-10-05T00:03:39.6415043Z   duration_ms: 1.087114
+2026-10-05T00:03:39.6415223Z   type: 'test'
+2026-10-05T00:03:39.6415384Z   ...
+2026-10-05T00:03:39.6415788Z # Subtest: catalog accepts a valid optional package completion rule and rejects malformed or null rules
+2026-10-05T00:03:39.6416373Z ok 146 - catalog accepts a valid optional package completion rule and rejects malformed or null rules
+2026-10-05T00:03:39.6416753Z   ---
+2026-10-05T00:03:39.6416916Z   duration_ms: 1.958353
+2026-10-05T00:03:39.6417056Z   type: 'test'
+2026-10-05T00:03:39.6417224Z   ...
+2026-10-05T00:03:39.6417546Z # Subtest: builder transports the exact source rule, hashes it, and omits it when absent
+2026-10-05T00:03:39.6418100Z ok 147 - builder transports the exact source rule, hashes it, and omits it when absent
+2026-10-05T00:03:39.6418409Z   ---
+2026-10-05T00:03:39.6418670Z   duration_ms: 21.032456
+2026-10-05T00:03:39.6418811Z   type: 'test'
+2026-10-05T00:03:39.6418962Z   ...
+2026-10-05T00:03:39.6419294Z # Subtest: existing artifact rule must agree with catalog even after checksum is recomputed
+2026-10-05T00:03:39.6419676Z ok 148 - existing artifact rule must agree with catalog even after checksum is recomputed
+2026-10-05T00:03:39.6419888Z   ---
+2026-10-05T00:03:39.6419992Z   duration_ms: 31.058269
+2026-10-05T00:03:39.6420110Z   type: 'test'
+2026-10-05T00:03:39.6420212Z   ...
+2026-10-05T00:03:39.6420596Z # Subtest: catalog is the exact nine-track SIMP-01 catalog
+2026-10-05T00:03:39.6420961Z ok 149 - catalog is the exact nine-track SIMP-01 catalog
+2026-10-05T00:03:39.6421214Z   ---
+2026-10-05T00:03:39.6421336Z   duration_ms: 1.76313
+2026-10-05T00:03:39.6421453Z   type: 'test'
+2026-10-05T00:03:39.6421554Z   ...
+2026-10-05T00:03:39.6421722Z # Subtest: fixture validates as one family-neutral contract
+2026-10-05T00:03:39.6421951Z ok 150 - fixture validates as one family-neutral contract
+2026-10-05T00:03:39.6422138Z   ---
+2026-10-05T00:03:39.6422289Z   duration_ms: 1.473625
+2026-10-05T00:03:39.6422463Z   type: 'test'
+2026-10-05T00:03:39.6422614Z   ...
+2026-10-05T00:03:39.6422801Z # Subtest: schema documents five disjoint interaction branches
+2026-10-05T00:03:39.6423043Z ok 151 - schema documents five disjoint interaction branches
+2026-10-05T00:03:39.6423208Z   ---
+2026-10-05T00:03:39.6423308Z   duration_ms: 0.477397
+2026-10-05T00:03:39.6423423Z   type: 'test'
+2026-10-05T00:03:39.6423526Z   ...
+2026-10-05T00:03:39.6423734Z # Subtest: Draft 2020-12 schema rejects feedback type mismatches in every variant
+2026-10-05T00:03:39.6424195Z ok 152 - Draft 2020-12 schema rejects feedback type mismatches in every variant
+2026-10-05T00:03:39.6424491Z   ---
+2026-10-05T00:03:39.6424634Z   duration_ms: 180.003283
+2026-10-05T00:03:39.6424830Z   type: 'test'
+2026-10-05T00:03:39.6424962Z   ...
+2026-10-05T00:03:39.6425194Z # Subtest: Draft 2020-12 schema agrees with runtime on padded and whitespace-only learner text
+2026-10-05T00:03:39.6425708Z ok 153 - Draft 2020-12 schema agrees with runtime on padded and whitespace-only learner text
+2026-10-05T00:03:39.6426025Z   ---
+2026-10-05T00:03:39.6426191Z   duration_ms: 134.191295
+2026-10-05T00:03:39.6426384Z   type: 'test'
+2026-10-05T00:03:39.6426532Z   ...
+2026-10-05T00:03:39.6426862Z # Subtest: Draft 2020-12 schema and runtime agree on explicit learner whitespace code points
+2026-10-05T00:03:39.6427382Z ok 154 - Draft 2020-12 schema and runtime agree on explicit learner whitespace code points
+2026-10-05T00:03:39.6427699Z   ---
+2026-10-05T00:03:39.6427903Z   duration_ms: 178.309187
+2026-10-05T00:03:39.6428069Z   type: 'test'
+2026-10-05T00:03:39.6428244Z   ...
+2026-10-05T00:03:39.6428809Z # Subtest: Draft 2020-12 schema and runtime keep identity metadata trim-clean for explicit whitespace
+2026-10-05T00:03:39.6429378Z ok 155 - Draft 2020-12 schema and runtime keep identity metadata trim-clean for explicit whitespace
+2026-10-05T00:03:39.6429733Z   ---
+2026-10-05T00:03:39.6429887Z   duration_ms: 416.16673
+2026-10-05T00:03:39.6430073Z   type: 'test'
+2026-10-05T00:03:39.6430225Z   ...
+2026-10-05T00:03:39.6430454Z # Subtest: all five correct answers are scoreable
+2026-10-05T00:03:39.6430738Z ok 156 - all five correct answers are scoreable
+2026-10-05T00:03:39.6430998Z   ---
+2026-10-05T00:03:39.6431177Z   duration_ms: 0.96474
+2026-10-05T00:03:39.6431371Z   type: 'test'
+2026-10-05T00:03:39.6431540Z   ...
+2026-10-05T00:03:39.6431755Z # Subtest: choice_single scores correct, wrong and empty responses
+2026-10-05T00:03:39.6432011Z ok 157 - choice_single scores correct, wrong and empty responses
+2026-10-05T00:03:39.6432187Z   ---
+2026-10-05T00:03:39.6432287Z   duration_ms: 0.448264
+2026-10-05T00:03:39.6432404Z   type: 'test'
+2026-10-05T00:03:39.6432505Z   ...
+2026-10-05T00:03:39.6432747Z # Subtest: choice_multiple preserves valid partial points and gives zero for any wrong selection
+2026-10-05T00:03:39.6433115Z ok 158 - choice_multiple preserves valid partial points and gives zero for any wrong selection
+2026-10-05T00:03:39.6433342Z   ---
+2026-10-05T00:03:39.6433443Z   duration_ms: 0.551619
+2026-10-05T00:03:39.6433560Z   type: 'test'
+2026-10-05T00:03:39.6433663Z   ...
+2026-10-05T00:03:39.6433920Z # Subtest: multiple-choice wrong selections and empty response earn zero independently of app parity
+2026-10-05T00:03:39.6434311Z ok 159 - multiple-choice wrong selections and empty response earn zero independently of app parity
+2026-10-05T00:03:39.6434544Z   ---
+2026-10-05T00:03:39.6434739Z   duration_ms: 0.910478
+2026-10-05T00:03:39.6434858Z   type: 'test'
+2026-10-05T00:03:39.6434963Z   ...
+2026-10-05T00:03:39.6435156Z # Subtest: ordering scores exact adjacent relations and incomplete answers
+2026-10-05T00:03:39.6435443Z ok 160 - ordering scores exact adjacent relations and incomplete answers
+2026-10-05T00:03:39.6435631Z   ---
+2026-10-05T00:03:39.6435732Z   duration_ms: 0.421854
+2026-10-05T00:03:39.6435848Z   type: 'test'
+2026-10-05T00:03:39.6435951Z   ...
+2026-10-05T00:03:39.6436152Z # Subtest: complexity scores every dimension and distinguishes missing values
+2026-10-05T00:03:39.6436450Z ok 161 - complexity scores every dimension and distinguishes missing values
+2026-10-05T00:03:39.6436644Z   ---
+2026-10-05T00:03:39.6436744Z   duration_ms: 1.148195
+2026-10-05T00:03:39.6436861Z   type: 'test'
+2026-10-05T00:03:39.6436962Z   ...
+2026-10-05T00:03:39.6437135Z # Subtest: decision_matrix scores every dimension independently
+2026-10-05T00:03:39.6437383Z ok 162 - decision_matrix scores every dimension independently
+2026-10-05T00:03:39.6437552Z   ---
+2026-10-05T00:03:39.6437654Z   duration_ms: 0.271388
+2026-10-05T00:03:39.6437771Z   type: 'test'
+2026-10-05T00:03:39.6437874Z   ...
+2026-10-05T00:03:39.6438056Z # Subtest: validator rejects missing identity and all family aliases
+2026-10-05T00:03:39.6438321Z ok 163 - validator rejects missing identity and all family aliases
+2026-10-05T00:03:39.6438497Z   ---
+2026-10-05T00:03:39.6438752Z   duration_ms: 0.347492
+2026-10-05T00:03:39.6438931Z   type: 'test'
+2026-10-05T00:03:39.6439082Z   ...
+2026-10-05T00:03:39.6439436Z # Subtest: learner text preserves surrounding whitespace while identity stays trim-clean
+2026-10-05T00:03:39.6439951Z ok 164 - learner text preserves surrounding whitespace while identity stays trim-clean
+2026-10-05T00:03:39.6440302Z   ---
+2026-10-05T00:03:39.6440478Z   duration_ms: 0.243786
+2026-10-05T00:03:39.6440658Z   type: 'test'
+2026-10-05T00:03:39.6440837Z   ...
+2026-10-05T00:03:39.6441232Z # Subtest: learner text rejects whitespace-only values in every canonical learner surface
+2026-10-05T00:03:39.6441939Z ok 165 - learner text rejects whitespace-only values in every canonical learner surface
+2026-10-05T00:03:39.6442315Z   ---
+2026-10-05T00:03:39.6442474Z   duration_ms: 0.541785
+2026-10-05T00:03:39.6442674Z   type: 'test'
+2026-10-05T00:03:39.6442856Z   ...
+2026-10-05T00:03:39.6443239Z # Subtest: validator permits internal newlines that the schema pattern explicitly permits
+2026-10-05T00:03:39.6443821Z ok 166 - validator permits internal newlines that the schema pattern explicitly permits
+2026-10-05T00:03:39.6444194Z   ---
+2026-10-05T00:03:39.6444350Z   duration_ms: 0.253351
+2026-10-05T00:03:39.6444549Z   type: 'test'
+2026-10-05T00:03:39.6444722Z   ...
+2026-10-05T00:03:39.6445135Z # Subtest: scoring rejects additional response keys and mismatched response types for every variant
+2026-10-05T00:03:39.6445591Z ok 167 - scoring rejects additional response keys and mismatched response types for every variant
+2026-10-05T00:03:39.6445840Z   ---
+2026-10-05T00:03:39.6445960Z   duration_ms: 0.544569
+2026-10-05T00:03:39.6446083Z   type: 'test'
+2026-10-05T00:03:39.6446200Z   ...
+2026-10-05T00:03:39.6446431Z # Subtest: validator rejects extra fields and duplicate option/element/dimension IDs
+2026-10-05T00:03:39.6446782Z ok 168 - validator rejects extra fields and duplicate option/element/dimension IDs
+2026-10-05T00:03:39.6447000Z   ---
+2026-10-05T00:03:39.6447116Z   duration_ms: 0.383487
+2026-10-05T00:03:39.6447235Z   type: 'test'
+2026-10-05T00:03:39.6447352Z   ...
+2026-10-05T00:03:39.6447572Z # Subtest: validator rejects mismatched variants and foreign references
+2026-10-05T00:03:39.6447890Z ok 169 - validator rejects mismatched variants and foreign references
+2026-10-05T00:03:39.6448086Z   ---
+2026-10-05T00:03:39.6448187Z   duration_ms: 0.357508
+2026-10-05T00:03:39.6448319Z   type: 'test'
+2026-10-05T00:03:39.6448422Z   ...
+2026-10-05T00:03:39.6448875Z # Subtest: feedback messages are optional when no source map exists
+2026-10-05T00:03:39.6449489Z ok 170 - feedback messages are optional when no source map exists
+2026-10-05T00:03:39.6449686Z   ---
+2026-10-05T00:03:39.6449802Z   duration_ms: 0.160812
+2026-10-05T00:03:39.6449920Z   type: 'test'
+2026-10-05T00:03:39.6450039Z   ...
+2026-10-05T00:03:39.6450226Z # Subtest: fixture validator rejects a track outside the exact catalog
+2026-10-05T00:03:39.6450526Z ok 171 - fixture validator rejects a track outside the exact catalog
+2026-10-05T00:03:39.6450706Z   ---
+2026-10-05T00:03:39.6450822Z   duration_ms: 0.606922
+2026-10-05T00:03:39.6450939Z   type: 'test'
+2026-10-05T00:03:39.6451055Z   ...
+2026-10-05T00:03:39.6451205Z # Subtest: oracle covers every single-choice option
+2026-10-05T00:03:39.6451415Z ok 172 - oracle covers every single-choice option
+2026-10-05T00:03:39.6451568Z   ---
+2026-10-05T00:03:39.6451668Z   duration_ms: 1.385903
+2026-10-05T00:03:39.6451784Z   type: 'test'
+2026-10-05T00:03:39.6451887Z   ...
+2026-10-05T00:03:39.6452122Z # Subtest: oracle covers every multiple-choice subset, including empty and all-selected
+2026-10-05T00:03:39.6452460Z ok 173 - oracle covers every multiple-choice subset, including empty and all-selected
+2026-10-05T00:03:39.6452684Z   ---
+2026-10-05T00:03:39.6452785Z   duration_ms: 1.426143
+2026-10-05T00:03:39.6452902Z   type: 'test'
+2026-10-05T00:03:39.6453003Z   ...
+2026-10-05T00:03:39.6453229Z # Subtest: oracle freezes adjacent-relation ordering semantics
+2026-10-05T00:03:39.6454318Z ok 174 - oracle freezes adjacent-relation ordering semantics
+2026-10-05T00:03:39.6454607Z   ---
+2026-10-05T00:03:39.6454732Z   duration_ms: 0.482435
+2026-10-05T00:03:39.6454850Z   type: 'test'
+2026-10-05T00:03:39.6454951Z   ...
+2026-10-05T00:03:39.6455149Z # Subtest: oracle covers accepted, wrong, alias and missing dimension values
+2026-10-05T00:03:39.6455442Z ok 175 - oracle covers accepted, wrong, alias and missing dimension values
+2026-10-05T00:03:39.6455628Z   ---
+2026-10-05T00:03:39.6455729Z   duration_ms: 1.100153
+2026-10-05T00:03:39.6455846Z   type: 'test'
+2026-10-05T00:03:39.6455948Z   ...
+2026-10-05T00:03:39.6456184Z # Subtest: canonical answers retain the complete accepted set for multi-accepted complexity
+2026-10-05T00:03:39.6456640Z ok 176 - canonical answers retain the complete accepted set for multi-accepted complexity
+2026-10-05T00:03:39.6456853Z   ---
+2026-10-05T00:03:39.6456954Z   duration_ms: 0.809246
+2026-10-05T00:03:39.6457071Z   type: 'test'
+2026-10-05T00:03:39.6457174Z   ...
+2026-10-05T00:03:39.6457448Z # Subtest: details remain arbitrary exact JSON, difficulty may be null, and aliases stay complexity-only
+2026-10-05T00:03:39.6457849Z ok 177 - details remain arbitrary exact JSON, difficulty may be null, and aliases stay complexity-only
+2026-10-05T00:03:39.6458086Z   ---
+2026-10-05T00:03:39.6458188Z   duration_ms: 0.220451
+2026-10-05T00:03:39.6458305Z   type: 'test'
+2026-10-05T00:03:39.6458410Z   ...
+2026-10-05T00:03:39.6458814Z # Subtest: verifies the complete canonical tree and durable evidence without external inputs
+2026-10-05T00:03:39.6459334Z ok 178 - verifies the complete canonical tree and durable evidence without external inputs
+2026-10-05T00:03:39.6459558Z   ---
+2026-10-05T00:03:39.6459686Z   duration_ms: 1618.988466
+2026-10-05T00:03:39.6459906Z   type: 'test'
+2026-10-05T00:03:39.6460085Z   ...
+2026-10-05T00:03:39.6460353Z # Subtest: rejects canonical question tampering without changing evidence
+2026-10-05T00:03:39.6468884Z ok 179 - rejects canonical question tampering without changing evidence
+2026-10-05T00:03:39.6469129Z   ---
+2026-10-05T00:03:39.6469244Z   duration_ms: 685.216561
+2026-10-05T00:03:39.6469374Z   type: 'test'
+2026-10-05T00:03:39.6469486Z   ...
+2026-10-05T00:03:39.6469670Z # Subtest: rejects evidence hash tampering and missing membership
+2026-10-05T00:03:39.6469929Z ok 180 - rejects evidence hash tampering and missing membership
+2026-10-05T00:03:39.6470104Z   ---
+2026-10-05T00:03:39.6470212Z   duration_ms: 1089.925267
+2026-10-05T00:03:39.6470339Z   type: 'test'
+2026-10-05T00:03:39.6470444Z   ...
+2026-10-05T00:03:39.6470762Z # Subtest: rejects symlinked canonical paths before following them
+2026-10-05T00:03:39.6471022Z ok 181 - rejects symlinked canonical paths before following them
+2026-10-05T00:03:39.6471198Z   ---
+2026-10-05T00:03:39.6471303Z   duration_ms: 399.443814
+2026-10-05T00:03:39.6471428Z   type: 'test'
+2026-10-05T00:03:39.6471532Z   ...
+2026-10-05T00:03:39.6471723Z # Subtest: rejects a content root reached through a symlinked ancestor
+2026-10-05T00:03:39.6471993Z ok 182 - rejects a content root reached through a symlinked ancestor
+2026-10-05T00:03:39.6472174Z   ---
+2026-10-05T00:03:39.6472278Z   duration_ms: 320.195376
+2026-10-05T00:03:39.6472399Z   type: 'test'
+2026-10-05T00:03:39.6472650Z   ...
+2026-10-05T00:03:39.6472848Z # Subtest: has no dependency on ephemeral output or the migration writer
+2026-10-05T00:03:39.6473120Z ok 183 - has no dependency on ephemeral output or the migration writer
+2026-10-05T00:03:39.6473302Z   ---
+2026-10-05T00:03:39.6473409Z   duration_ms: 0.860894
+2026-10-05T00:03:39.6473531Z   type: 'test'
+2026-10-05T00:03:39.6473634Z   ...
+2026-10-05T00:03:39.6473738Z 1..183
+2026-10-05T00:03:39.6473843Z # tests 183
+2026-10-05T00:03:39.6473950Z # suites 0
+2026-10-05T00:03:39.6474056Z # pass 183
+2026-10-05T00:03:39.6474160Z # fail 0
+2026-10-05T00:03:39.6474263Z # cancelled 0
+2026-10-05T00:03:39.6474374Z # skipped 0
+2026-10-05T00:03:39.6474481Z # todo 0
+2026-10-05T00:03:39.6474594Z # duration_ms 153006.8542
+2026-10-05T00:03:39.6616028Z ##[group]Run npm run content:build-all -- --root . --output-root "$CONTENT_BUILD_OUTPUT"
+2026-10-05T00:03:39.6616358Z [36;1mnpm run content:build-all -- --root . --output-root "$CONTENT_BUILD_OUTPUT"[0m
+2026-10-05T00:03:39.6666623Z shell: /usr/bin/bash -e {0}
+2026-10-05T00:03:39.6666762Z env:
+2026-10-05T00:03:39.6666909Z   CONTENT_BUILD_OUTPUT: /home/runner/work/_temp/content-build
+2026-10-05T00:03:39.6667087Z ##[endgroup]
+2026-10-05T00:03:39.7291862Z 
+2026-10-05T00:03:39.7292325Z > patternly-content@1.0.0 content:build-all
+2026-10-05T00:03:39.7292925Z > node scripts/build.mjs build-all --root . --output-root /home/runner/work/_temp/content-build
+2026-10-05T00:03:39.7293261Z 
+2026-10-05T00:03:40.7160364Z Built 9 track artifact(s) and /home/runner/work/_temp/content-build/content-lock.json
+2026-10-05T00:03:40.7446175Z ##[group]Run node --input-type=module -e 'import { readFileSync } from "node:fs"; import { spawnSync } from "node:child_process"; const { tracks } = JSON.parse(readFileSync("content/catalog.json", "utf8")); for (const { trackId } of tracks) { const result = spawnSync("npm", ["run", "content:test", "--", "--track", trackId, "--root", "."], { stdio: "inherit" }); if (result.error) throw result.error; if (result.status !== 0) process.exit(result.status ?? 1); }'
+2026-10-05T00:03:40.7447578Z [36;1mnode --input-type=module -e 'import { readFileSync } from "node:fs"; import { spawnSync } from "node:child_process"; const { tracks } = JSON.parse(readFileSync("content/catalog.json", "utf8")); for (const { trackId } of tracks) { const result = spawnSync("npm", ["run", "content:test", "--", "--track", trackId, "--root", "."], { stdio: "inherit" }); if (result.error) throw result.error; if (result.status !== 0) process.exit(result.status ?? 1); }'[0m
+2026-10-05T00:03:40.7499011Z shell: /usr/bin/bash -e {0}
+2026-10-05T00:03:40.7499159Z ##[endgroup]
+2026-10-05T00:03:40.8272165Z 
+2026-10-05T00:03:40.8272536Z > patternly-content@1.0.0 content:test
+2026-10-05T00:03:40.8272980Z > node scripts/build.mjs test --track aws-certified-solutions-architect-associate --root .
+2026-10-05T00:03:40.8273189Z 
+2026-10-05T00:03:40.9646264Z Tested 2604 canonical answer(s) for aws-certified-solutions-architect-associate
+2026-10-05T00:03:41.0312747Z 
+2026-10-05T00:03:41.0313266Z > patternly-content@1.0.0 content:test
+2026-10-05T00:03:41.0313662Z > node scripts/build.mjs test --track backend-system-design-interview --root .
+2026-10-05T00:03:41.0313844Z 
+2026-10-05T00:03:41.1505136Z Tested 1569 canonical answer(s) for backend-system-design-interview
+2026-10-05T00:03:41.2164249Z 
+2026-10-05T00:03:41.2164820Z > patternly-content@1.0.0 content:test
+2026-10-05T00:03:41.2165249Z > node scripts/build.mjs test --track claude-certified-architect-professional-certification --root .
+2026-10-05T00:03:41.2165512Z 
+2026-10-05T00:03:41.2654801Z Tested 300 canonical answer(s) for claude-certified-architect-professional-certification
+2026-10-05T00:03:41.3280227Z 
+2026-10-05T00:03:41.3280636Z > patternly-content@1.0.0 content:test
+2026-10-05T00:03:41.3281157Z > node scripts/build.mjs test --track coding-interview-dsa-problem-solving --root .
+2026-10-05T00:03:41.3281447Z 
+2026-10-05T00:03:41.5139466Z Tested 3404 canonical answer(s) for coding-interview-dsa-problem-solving
+2026-10-05T00:03:41.5828377Z 
+2026-10-05T00:03:41.5829060Z > patternly-content@1.0.0 content:test
+2026-10-05T00:03:41.5829572Z > node scripts/build.mjs test --track frontend-system-design-interview --root .
+2026-10-05T00:03:41.5829860Z 
+2026-10-05T00:03:41.7337154Z Tested 1766 canonical answer(s) for frontend-system-design-interview
+2026-10-05T00:03:41.8044034Z 
+2026-10-05T00:03:41.8044530Z > patternly-content@1.0.0 content:test
+2026-10-05T00:03:41.8044917Z > node scripts/build.mjs test --track google-cloud-associate-cloud-engineer --root .
+2026-10-05T00:03:41.8045148Z 
+2026-10-05T00:03:41.9912219Z Tested 2981 canonical answer(s) for google-cloud-associate-cloud-engineer
+2026-10-05T00:03:42.0639296Z 
+2026-10-05T00:03:42.0639628Z > patternly-content@1.0.0 content:test
+2026-10-05T00:03:42.0640022Z > node scripts/build.mjs test --track microsoft-azure-administrator-associate-az-104 --root .
+2026-10-05T00:03:42.0640248Z 
+2026-10-05T00:03:42.1509073Z Tested 1288 canonical answer(s) for microsoft-azure-administrator-associate-az-104
+2026-10-05T00:03:42.2231153Z 
+2026-10-05T00:03:42.2231722Z > patternly-content@1.0.0 content:test
+2026-10-05T00:03:42.2912911Z > node scripts/build.mjs test --track microsoft-azure-ai-fundamentals-ai-901 --root .
+2026-10-05T00:03:42.2913155Z 
+2026-10-05T00:03:42.2913335Z Tested 752 canonical answer(s) for microsoft-azure-ai-fundamentals-ai-901
+2026-10-05T00:03:42.3638456Z 
+2026-10-05T00:03:42.3638967Z > patternly-content@1.0.0 content:test
+2026-10-05T00:03:42.3639708Z > node scripts/build.mjs test --track object-oriented-design-interview --root .
+2026-10-05T00:03:42.3640181Z 
+2026-10-05T00:03:42.4687287Z Tested 1413 canonical answer(s) for object-oriented-design-interview
+2026-10-05T00:03:42.4897419Z ##[group]Run npm run candidate:draft-v2
+2026-10-05T00:03:42.4897626Z [36;1mnpm run candidate:draft-v2[0m
+2026-10-05T00:03:42.4949692Z shell: /usr/bin/bash -e {0}
+2026-10-05T00:03:42.4949837Z ##[endgroup]
+2026-10-05T00:03:42.5557322Z 
+2026-10-05T00:03:42.5557781Z > patternly-content@1.0.0 candidate:draft-v2
+2026-10-05T00:03:42.5558209Z > node scripts/review/candidate-draft-v2.mjs reports/candidate-reconciliation/AWS-02-DRAFT
+2026-10-05T00:03:42.5558410Z 
+2026-10-05T00:03:44.2535919Z Draft 4b8b820120248d8a24883960ed2347d7625af43c5f9ebec9863cab6870752b28 written to /home/runner/work/patternly-content/patternly-content/patternly-content/reports/candidate-reconciliation/AWS-02-DRAFT; status=draft_not_admitted; admission=not_granted
+2026-10-05T00:03:44.2880307Z ##[group]Run npm run candidate:readiness-v2
+2026-10-05T00:03:44.2880516Z [36;1mnpm run candidate:readiness-v2[0m
+2026-10-05T00:03:44.2932750Z shell: /usr/bin/bash -e {0}
+2026-10-05T00:03:44.2932897Z ##[endgroup]
+2026-10-05T00:03:44.3582893Z 
+2026-10-05T00:03:44.3583168Z > patternly-content@1.0.0 candidate:readiness-v2
+2026-10-05T00:03:44.3583426Z > node scripts/review/candidate-readiness-v2.mjs
+2026-10-05T00:03:44.3583554Z 
+2026-10-05T00:03:44.4417473Z Readiness v2 verified for 4b8b820120248d8a24883960ed2347d7625af43c5f9ebec9863cab6870752b28; candidateApproval=approved; publishing/runtime=not_granted
+2026-10-05T00:03:44.4530943Z ##[group]Run git diff --exit-code -- reports/candidate-reconciliation/AWS-02-DRAFT evidence/readiness/candidate-readiness-v2.json
+2026-10-05T00:03:44.4531459Z [36;1mgit diff --exit-code -- reports/candidate-reconciliation/AWS-02-DRAFT evidence/readiness/candidate-readiness-v2.json[0m
+2026-10-05T00:03:44.4531986Z [36;1mif test -n "$(git ls-files --others --exclude-standard -- reports/candidate-reconciliation/AWS-02-DRAFT evidence/readiness/candidate-readiness-v2.json)"; then[0m
+2026-10-05T00:03:44.4532429Z [36;1m  echo "Candidate or readiness evidence contains untracked files."[0m
+2026-10-05T00:03:44.4532630Z [36;1m  exit 1[0m
+2026-10-05T00:03:44.4532742Z [36;1mfi[0m
+2026-10-05T00:03:44.4584828Z shell: /usr/bin/bash -e {0}
+2026-10-05T00:03:44.4584971Z ##[endgroup]
+2026-10-05T00:03:45.5610678Z ##[group]Run npm run validate:bundled-free-nodes
+2026-10-05T00:03:45.5610901Z [36;1mnpm run validate:bundled-free-nodes[0m
+2026-10-05T00:03:45.5661062Z shell: /usr/bin/bash -e {0}
+2026-10-05T00:03:45.5661201Z ##[endgroup]
+2026-10-05T00:03:45.6280825Z 
+2026-10-05T00:03:45.6281489Z > patternly-content@1.0.0 validate:bundled-free-nodes
+2026-10-05T00:03:45.6281969Z > node scripts/product/validate-bundled-free-nodes.mjs
+2026-10-05T00:03:45.6282183Z 
+2026-10-05T00:03:47.0208771Z Validated 9 configured bundled Free-node packages.
+2026-10-05T00:03:47.0566662Z Post job cleanup.
+2026-10-05T00:03:47.1097972Z [command]/usr/bin/git version
+2026-10-05T00:03:47.1127981Z git version 2.55.0
+2026-10-05T00:03:47.1149586Z Temporarily overriding HOME='/home/runner/work/_temp/418503e2-62f9-4ae7-bcfd-a68266f109b8' before making global git config changes
+2026-10-05T00:03:47.1150386Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-05T00:03:47.1152418Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/patternly-content/patternly-content/patternly
+2026-10-05T00:03:47.1180906Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-05T00:03:47.1206753Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-05T00:03:47.1403174Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-05T00:03:47.1425842Z http.https://github.com/.extraheader
+2026-10-05T00:03:47.1434396Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-05T00:03:47.1463968Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-05T00:03:47.1658840Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-05T00:03:47.1691333Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-05T00:03:47.1973612Z Post job cleanup.
+2026-10-05T00:03:47.2777837Z (node:3179) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-05T00:03:47.2778757Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-05T00:03:47.2912042Z Post job cleanup.
+2026-10-05T00:03:47.3485196Z [command]/usr/bin/git version
+2026-10-05T00:03:47.3516342Z git version 2.55.0
+2026-10-05T00:03:47.3540616Z Temporarily overriding HOME='/home/runner/work/_temp/84f51b96-716a-490c-b9dd-cdebe69c953b' before making global git config changes
+2026-10-05T00:03:47.3541340Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-05T00:03:47.3544255Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/patternly-content/patternly-content/patternly-content
+2026-10-05T00:03:47.3573338Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-05T00:03:47.3600318Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-05T00:03:47.3790792Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-05T00:03:47.3813518Z http.https://github.com/.extraheader
+2026-10-05T00:03:47.3821579Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-05T00:03:47.3854862Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-05T00:03:47.4046014Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-05T00:03:47.4075207Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-05T00:03:47.4385866Z Cleaning up orphan processes
+2026-10-05T00:03:47.4584610Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

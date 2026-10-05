@@ -1,0 +1,26 @@
+{
+  "result": "PASS",
+  "stage": "Pre-authoring approach and exact source freeze; no proposal/identity/source/producer acceptance",
+  "mainArea": "BIZQ-01",
+  "mainStatus": "partial",
+  "scope": "N08+N09 final324 in18units",
+  "manifestSha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612",
+  "designQaSha256": "ebeaeb43c6d6a51699166b40355888b59d1507c1ba231b4647c914c5c7da913a",
+  "briefSha256": "89b4549bfbd364ce56f72accb3940fddaeb1072b8e0929e8c08ca921f1d4f12a",
+  "contractSha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27",
+  "freezeToolSha256": "a677acb4e89b1fd1fe07db0af6ebebc6b55cbf58a8a8ec45faead539448ea5cf",
+  "actualCI": "37245779698 SUCCESS at9e2d97f;183/183 and allsteps",
+  "acceptedN01N07Preserved": 1089,
+  "controls": [
+    "ood-n08-b09-i014",
+    "ood-n09-b01-i001"
+  ],
+  "ownership": {
+    "ood_cohort_author": "N08 inactive proposals only",
+    "closure02": "N09 inactive proposals only",
+    "batch_design_review": "independent semantic/cross-unit/design/QA",
+    "root": "canonical contracts/freeze/source/pipeline/queue/push"
+  },
+  "identityActions": "undecided until whole-object independent review",
+  "next": "Inactive proposals and unit semantic review; separate exact producerproof review before activation"
+}

@@ -1,0 +1,21 @@
+{
+  "task": "BIZQ-01",
+  "scope": "CI consumer prerequisites only",
+  "status": "proposed_for_independent_review",
+  "frontendCommit": "50a6811cde15b662e8c45f777fcc9c447a482d3a",
+  "beforeFileSha256": {
+    ".github/workflows/content-publishing.yml": "216d4c7298c7577d3c4be4b1c1b237e1280feb60dbf951c30c0218912eec2089",
+    ".github/workflows/real-content-release.yml": "7ac1f5c90985a2edcceca485ad8844cc81edbe860ba62437a24f31fc493591bd",
+    "tests/candidate-admission-v3.test.mjs": "52113c4f6a9d821a745d562cd79421ccd858545d3dff2e4d767f4968d4995c21",
+    "scripts/review/candidate-admission-v3.mjs": "a0e69631a55619cfdb0a57bd7351266f4e1ef37a178163a5eba3422fe22ba549",
+    "evidence/admissions/candidate-admission-v3.json": "80bb66c3813d1283101fde50d5d563ee8987d26516f16338a68e63803c1653d5"
+  },
+  "briefSha256": "e4b3acaa2f9052101c399ce12f3a3b6cc72a9d58e2b146e14580bd59a393c82f",
+  "scores": {
+    "fit": 0.96,
+    "simplicity": 0.86,
+    "risk": 0.85,
+    "maintainability": 0.84,
+    "minimum": 0.84
+  }
+}

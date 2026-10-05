@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "bizq01-post-push-ci-observation-v1",
+  "observedAt": "2026-10-05",
+  "scope": "Read-only results for the accepted N07/23 pushes; no CI was rerun or dispatched.",
+  "application": {
+    "repository": "lukaszkurczab/gcp-ace-trainer",
+    "headSha": "ea4f3d61b39bab6b9f12ace73b34721d0d6e717a",
+    "runId": 37243929593,
+    "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37243929593",
+    "workflow": "main QA",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "Recovery QA gate",
+        "jobId": 111557957098,
+        "conclusion": "success",
+        "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37243929593/job/111557957098",
+        "result": "Run recovery baseline (includes qa:static) succeeded. The candidate-bound recovery checks and static suite completed for this application HEAD.",
+        "rawLog": {
+          "path": "POST-PUSH-CI-app-recovery.log",
+          "sha256": "398bff6540c66c54ecb001b775840d0e199a67858204e4854a19f3f3636c795f",
+          "bytes": 735164
+        }
+      },
+      {
+        "name": "Multi-track content release contract",
+        "jobId": 111557957233,
+        "conclusion": "success",
+        "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37243929593/job/111557957233",
+        "result": "Pinned multi-track release round-trip succeeded.",
+        "rawLog": {
+          "path": "POST-PUSH-CI-app-multitrack.log",
+          "sha256": "cd4057dea77a5cfb6233484f32ee86d47823f4f46f93856208db32508a94082e",
+          "bytes": 46858
+        }
+      }
+    ]
+  },
+  "content": {
+    "repository": "lukaszkurczab/patternly-content",
+    "headSha": "27b7b7c9ece584e9904b343e63b49cd8a7f087c6",
+    "runId": 37243926952,
+    "url": "https://github.com/lukaszkurczab/patternly-content/actions/runs/37243926952",
+    "workflow": "Content publishing architecture",
+    "status": "completed",
+    "conclusion": "failure",
+    "job": {
+      "name": "architecture",
+      "jobId": 111557950322,
+      "conclusion": "failure",
+      "url": "https://github.com/lukaszkurczab/patternly-content/actions/runs/37243926952/job/111557950322",
+      "failedStep": "Run npm test",
+      "testSummary": {
+        "total": 183,
+        "passed": 182,
+        "failed": 1
+      },
+      "failedTest": {
+        "name": "admission binds verified local publishing bytes, app lock, and runtime test",
+        "file": "tests/candidate-admission-v3.test.mjs:10",
+        "errorCode": "ENOENT",
+        "message": "ENOENT: no such file or directory, open '/home/runner/work/patternly-content/patternly/integration/contracts/content-release/release.lock.json'",
+        "throwSite": "scripts/review/candidate-admission-v3.mjs:38",
+        "effect": "The canonical npm test command stopped at test failure; subsequent build, scoring, candidate, readiness, and Free-node steps were skipped."
+      },
+      "context": "The failing test computes the application root as the sibling ../patternly directory and reads its integration/contracts/content-release/release.lock.json. The workflow log shows checkout of patternly-content; the referenced sibling application lock was absent on the runner.",
+      "rawLog": {
+        "path": "POST-PUSH-CI-content-architecture.log",
+        "sha256": "ca3a08d5233b365b5ddaf59a5af694fbed6876a6b2d65a9df117fc993f5a148f",
+        "bytes": 90606
+      }
+    }
+  },
+  "boundary": "These results bind only the two exact pushed heads listed above. App recovery/static and multi-track contract passed; content publishing architecture did not pass because its npm test job had the recorded missing sibling application fixture. This does not claim that content canonical build/readiness checks ran."
+}

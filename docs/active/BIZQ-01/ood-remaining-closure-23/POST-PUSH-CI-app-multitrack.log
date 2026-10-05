@@ -1,0 +1,601 @@
+﻿2026-10-04T23:29:22.2329629Z Current runner version: '2.337.0'
+2026-10-04T23:29:22.2365875Z ##[group]Runner Image Provisioner
+2026-10-04T23:29:22.2367517Z Hosted Compute Agent
+2026-10-04T23:29:22.2368636Z Version: 20260901.588
+2026-10-04T23:29:22.2369777Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+2026-10-04T23:29:22.2371156Z Build Date: 2026-09-01T19:56:44Z
+2026-10-04T23:29:22.2372620Z Worker ID: {cb3c6310-1c42-4dbe-bb13-5e774c17bb1e}
+2026-10-04T23:29:22.2373983Z Azure Region: westcentralus
+2026-10-04T23:29:22.2375222Z ##[endgroup]
+2026-10-04T23:29:22.2377920Z ##[group]Operating System
+2026-10-04T23:29:22.2379219Z Ubuntu
+2026-10-04T23:29:22.2380201Z 24.04.5
+2026-10-04T23:29:22.2381186Z LTS
+2026-10-04T23:29:22.2382379Z ##[endgroup]
+2026-10-04T23:29:22.2383396Z ##[group]Runner Image
+2026-10-04T23:29:22.2384609Z Image: ubuntu-24.04
+2026-10-04T23:29:22.2385665Z Version: 20260927.320.1
+2026-10-04T23:29:22.2388246Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260927.320/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-04T23:29:22.2391127Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260927.320
+2026-10-04T23:29:22.2393144Z ##[endgroup]
+2026-10-04T23:29:22.2395162Z ##[group]GITHUB_TOKEN Permissions
+2026-10-04T23:29:22.2399031Z Contents: read
+2026-10-04T23:29:22.2400124Z Metadata: read
+2026-10-04T23:29:22.2401192Z ##[endgroup]
+2026-10-04T23:29:22.2404743Z Secret source: Actions
+2026-10-04T23:29:22.2406771Z Cache mode: write
+2026-10-04T23:29:22.2408544Z Prepare workflow directory
+2026-10-04T23:29:22.2751636Z Prepare all required actions
+2026-10-04T23:29:22.2801722Z Getting action download info
+2026-10-04T23:29:22.5721388Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-04T23:29:22.6563365Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-04T23:29:22.8652743Z Complete job name: Multi-track content release contract
+2026-10-04T23:29:22.9457400Z ##[group]Run actions/checkout@v4
+2026-10-04T23:29:22.9458350Z with:
+2026-10-04T23:29:22.9458766Z   path: app
+2026-10-04T23:29:22.9459229Z   repository: lukaszkurczab/gcp-ace-trainer
+2026-10-04T23:29:22.9463010Z   token: ***
+2026-10-04T23:29:22.9463447Z   ssh-strict: true
+2026-10-04T23:29:22.9463882Z   ssh-user: git
+2026-10-04T23:29:22.9464330Z   persist-credentials: true
+2026-10-04T23:29:22.9464823Z   clean: true
+2026-10-04T23:29:22.9465273Z   sparse-checkout-cone-mode: true
+2026-10-04T23:29:22.9465795Z   fetch-depth: 1
+2026-10-04T23:29:22.9466442Z   fetch-tags: false
+2026-10-04T23:29:22.9466896Z   show-progress: true
+2026-10-04T23:29:22.9467350Z   lfs: false
+2026-10-04T23:29:22.9467765Z   submodules: false
+2026-10-04T23:29:22.9468218Z   set-safe-directory: true
+2026-10-04T23:29:22.9468723Z   allow-unsafe-pr-checkout: false
+2026-10-04T23:29:22.9469508Z ##[endgroup]
+2026-10-04T23:29:23.0480705Z Syncing repository: lukaszkurczab/gcp-ace-trainer
+2026-10-04T23:29:23.0483452Z ##[group]Getting Git version info
+2026-10-04T23:29:23.0484772Z Working directory is '/home/runner/work/gcp-ace-trainer/gcp-ace-trainer/app'
+2026-10-04T23:29:23.0486863Z [command]/usr/bin/git version
+2026-10-04T23:29:23.0540616Z git version 2.55.0
+2026-10-04T23:29:23.0561847Z ##[endgroup]
+2026-10-04T23:29:23.0576873Z Temporarily overriding HOME='/home/runner/work/_temp/d240e546-16dc-4048-828e-2a76eba71f4b' before making global git config changes
+2026-10-04T23:29:23.0579317Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-04T23:29:23.0581957Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/app
+2026-10-04T23:29:23.0642266Z ##[group]Initializing the repository
+2026-10-04T23:29:23.0654376Z [command]/usr/bin/git init /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/app
+2026-10-04T23:29:23.0749750Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-04T23:29:23.0751438Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-04T23:29:23.0752702Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-04T23:29:23.0753450Z hint: call:
+2026-10-04T23:29:23.0753920Z hint:
+2026-10-04T23:29:23.0754446Z hint: 	git config --global init.defaultBranch <name>
+2026-10-04T23:29:23.0755060Z hint:
+2026-10-04T23:29:23.0755931Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-04T23:29:23.0757641Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-04T23:29:23.0758498Z hint:
+2026-10-04T23:29:23.0759219Z hint: 	git branch -m <name>
+2026-10-04T23:29:23.0759934Z hint:
+2026-10-04T23:29:23.0760931Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-04T23:29:23.0762369Z Initialized empty Git repository in /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/app/.git/
+2026-10-04T23:29:23.0768123Z [command]/usr/bin/git remote add origin https://github.com/lukaszkurczab/gcp-ace-trainer
+2026-10-04T23:29:23.0818104Z ##[endgroup]
+2026-10-04T23:29:23.0819509Z ##[group]Disabling automatic garbage collection
+2026-10-04T23:29:23.0822459Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-04T23:29:23.0856834Z ##[endgroup]
+2026-10-04T23:29:23.0858258Z ##[group]Setting up auth
+2026-10-04T23:29:23.0864452Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-04T23:29:23.0899896Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-04T23:29:23.1270857Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-04T23:29:23.1319990Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-04T23:29:23.1545899Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-04T23:29:23.1583085Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-04T23:29:23.1810487Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-04T23:29:23.1852164Z ##[endgroup]
+2026-10-04T23:29:23.1853138Z ##[group]Fetching the repository
+2026-10-04T23:29:23.1864364Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +ea4f3d61b39bab6b9f12ace73b34721d0d6e717a:refs/remotes/origin/main
+2026-10-04T23:29:27.7043239Z From https://github.com/lukaszkurczab/gcp-ace-trainer
+2026-10-04T23:29:27.7046600Z  * [new ref]         ea4f3d61b39bab6b9f12ace73b34721d0d6e717a -> origin/main
+2026-10-04T23:29:27.7052862Z ##[endgroup]
+2026-10-04T23:29:27.7055404Z ##[group]Determining the checkout info
+2026-10-04T23:29:27.7058583Z ##[endgroup]
+2026-10-04T23:29:27.7060640Z [command]/usr/bin/git sparse-checkout disable
+2026-10-04T23:29:27.7115762Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-04T23:29:27.7148990Z ##[group]Checking out the ref
+2026-10-04T23:29:27.7153482Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-04T23:29:28.3330239Z Switched to a new branch 'main'
+2026-10-04T23:29:28.3333975Z branch 'main' set up to track 'origin/main'.
+2026-10-04T23:29:28.3364871Z ##[endgroup]
+2026-10-04T23:29:28.3412056Z [command]/usr/bin/git log -1 --format=%H
+2026-10-04T23:29:28.3440223Z ea4f3d61b39bab6b9f12ace73b34721d0d6e717a
+2026-10-04T23:29:28.3727163Z ##[group]Run content_producer_pin="$(node scripts/candidateContentReleaseLock.mjs producer-pin)"
+2026-10-04T23:29:28.3728071Z [36;1mcontent_producer_pin="$(node scripts/candidateContentReleaseLock.mjs producer-pin)"[0m
+2026-10-04T23:29:28.3728858Z [36;1mhistorical_producer_pin="$(node scripts/candidateContentReleaseLock.mjs historical-producer-pin)"[0m
+2026-10-04T23:29:28.3729896Z [36;1mprintf 'commit=%s\nhistorical-commit=%s\n' "$content_producer_pin" "$historical_producer_pin" >> "$GITHUB_OUTPUT"[0m
+2026-10-04T23:29:28.3984883Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-04T23:29:28.3985333Z ##[endgroup]
+2026-10-04T23:29:29.0155316Z ##[group]Run actions/checkout@v4
+2026-10-04T23:29:29.0155650Z with:
+2026-10-04T23:29:29.0155907Z   repository: lukaszkurczab/patternly-content
+2026-10-04T23:29:29.0156592Z   ref: cc3efca88be7e01137f10ac69a0643f06b61a350
+2026-10-04T23:29:29.0156930Z   path: patternly-content-historical
+2026-10-04T23:29:29.0157205Z   fetch-depth: 0
+2026-10-04T23:29:29.0159652Z   token: ***
+2026-10-04T23:29:29.0159868Z   ssh-strict: true
+2026-10-04T23:29:29.0160088Z   ssh-user: git
+2026-10-04T23:29:29.0160329Z   persist-credentials: true
+2026-10-04T23:29:29.0160608Z   clean: true
+2026-10-04T23:29:29.0160825Z   sparse-checkout-cone-mode: true
+2026-10-04T23:29:29.0161088Z   fetch-tags: false
+2026-10-04T23:29:29.0161317Z   show-progress: true
+2026-10-04T23:29:29.0161563Z   lfs: false
+2026-10-04T23:29:29.0161769Z   submodules: false
+2026-10-04T23:29:29.0161984Z   set-safe-directory: true
+2026-10-04T23:29:29.0162238Z   allow-unsafe-pr-checkout: false
+2026-10-04T23:29:29.0162492Z ##[endgroup]
+2026-10-04T23:29:29.1015340Z Syncing repository: lukaszkurczab/patternly-content
+2026-10-04T23:29:29.1017397Z ##[group]Getting Git version info
+2026-10-04T23:29:29.1018786Z Working directory is '/home/runner/work/gcp-ace-trainer/gcp-ace-trainer/patternly-content-historical'
+2026-10-04T23:29:29.1062136Z [command]/usr/bin/git version
+2026-10-04T23:29:29.1103428Z git version 2.55.0
+2026-10-04T23:29:29.1156102Z ##[endgroup]
+2026-10-04T23:29:29.1169940Z Temporarily overriding HOME='/home/runner/work/_temp/84ea19cf-6c61-4071-8ad2-c6fa5b051e81' before making global git config changes
+2026-10-04T23:29:29.1171421Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-04T23:29:29.1174954Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/patternly-content-historical
+2026-10-04T23:29:29.1209195Z ##[group]Initializing the repository
+2026-10-04T23:29:29.1215662Z [command]/usr/bin/git init /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/patternly-content-historical
+2026-10-04T23:29:29.1259541Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-04T23:29:29.1260708Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-04T23:29:29.1261945Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-04T23:29:29.1262841Z hint: call:
+2026-10-04T23:29:29.1263347Z hint:
+2026-10-04T23:29:29.1263954Z hint: 	git config --global init.defaultBranch <name>
+2026-10-04T23:29:29.1264654Z hint:
+2026-10-04T23:29:29.1265328Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-04T23:29:29.1266628Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-04T23:29:29.1267562Z hint:
+2026-10-04T23:29:29.1268152Z hint: 	git branch -m <name>
+2026-10-04T23:29:29.1268735Z hint:
+2026-10-04T23:29:29.1269511Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-04T23:29:29.1270933Z Initialized empty Git repository in /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/patternly-content-historical/.git/
+2026-10-04T23:29:29.1273738Z [command]/usr/bin/git remote add origin https://github.com/lukaszkurczab/patternly-content
+2026-10-04T23:29:29.1306512Z ##[endgroup]
+2026-10-04T23:29:29.1307235Z ##[group]Disabling automatic garbage collection
+2026-10-04T23:29:29.1311650Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-04T23:29:29.1343558Z ##[endgroup]
+2026-10-04T23:29:29.1344254Z ##[group]Setting up auth
+2026-10-04T23:29:29.1351164Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-04T23:29:29.1384941Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-04T23:29:29.1638409Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-04T23:29:29.1682027Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-04T23:29:29.1935818Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-04T23:29:29.1983466Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-04T23:29:29.2249302Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-04T23:29:29.2297953Z ##[endgroup]
+2026-10-04T23:29:29.2299012Z ##[group]Fetching the repository
+2026-10-04T23:29:29.2313385Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-10-04T23:29:37.2275520Z From https://github.com/lukaszkurczab/patternly-content
+2026-10-04T23:29:37.2276651Z  * [new branch]      agent/ai901-question-bank -> origin/agent/ai901-question-bank
+2026-10-04T23:29:37.2277815Z  * [new branch]      agent/resolve-frontend-telemetry-provenance -> origin/agent/resolve-frontend-telemetry-provenance
+2026-10-04T23:29:37.2278728Z  * [new branch]      codex/cloud-certification-canonical-readiness -> origin/codex/cloud-certification-canonical-readiness
+2026-10-04T23:29:37.2279602Z  * [new branch]      codex/cloud-certification-evidence-closure -> origin/codex/cloud-certification-evidence-closure
+2026-10-04T23:29:37.2280190Z  * [new branch]      master     -> origin/master
+2026-10-04T23:29:37.2289721Z [command]/usr/bin/git rev-parse --verify --quiet cc3efca88be7e01137f10ac69a0643f06b61a350^{object}
+2026-10-04T23:29:37.2320451Z cc3efca88be7e01137f10ac69a0643f06b61a350
+2026-10-04T23:29:37.2326514Z ##[endgroup]
+2026-10-04T23:29:37.2327225Z ##[group]Determining the checkout info
+2026-10-04T23:29:37.2328065Z ##[endgroup]
+2026-10-04T23:29:37.2333741Z [command]/usr/bin/git sparse-checkout disable
+2026-10-04T23:29:37.2385672Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-04T23:29:37.2417294Z ##[group]Checking out the ref
+2026-10-04T23:29:37.2420917Z [command]/usr/bin/git checkout --progress --force cc3efca88be7e01137f10ac69a0643f06b61a350
+2026-10-04T23:29:38.2847054Z Updating files:   7% (119/1651)
+2026-10-04T23:29:38.2993568Z Updating files:   8% (133/1651)
+2026-10-04T23:29:38.4192542Z Updating files:   9% (149/1651)
+2026-10-04T23:29:38.4392463Z Updating files:  10% (166/1651)
+2026-10-04T23:29:38.4427335Z Updating files:  11% (182/1651)
+2026-10-04T23:29:38.4999019Z Updating files:  12% (199/1651)
+2026-10-04T23:29:38.5012768Z Updating files:  13% (215/1651)
+2026-10-04T23:29:38.5022375Z Updating files:  14% (232/1651)
+2026-10-04T23:29:38.5031681Z Updating files:  15% (248/1651)
+2026-10-04T23:29:38.5391891Z Updating files:  16% (265/1651)
+2026-10-04T23:29:38.5836391Z Updating files:  17% (281/1651)
+2026-10-04T23:29:38.5943521Z Updating files:  18% (298/1651)
+2026-10-04T23:29:38.6206732Z Updating files:  19% (314/1651)
+2026-10-04T23:29:38.6388642Z Updating files:  20% (331/1651)
+2026-10-04T23:29:38.6582810Z Updating files:  21% (347/1651)
+2026-10-04T23:29:38.6798572Z Updating files:  22% (364/1651)
+2026-10-04T23:29:38.7139253Z Updating files:  23% (380/1651)
+2026-10-04T23:29:38.7277860Z Updating files:  24% (397/1651)
+2026-10-04T23:29:38.7289476Z Updating files:  25% (413/1651)
+2026-10-04T23:29:38.7296476Z Updating files:  26% (430/1651)
+2026-10-04T23:29:38.7438573Z Updating files:  27% (446/1651)
+2026-10-04T23:29:38.7489300Z Updating files:  28% (463/1651)
+2026-10-04T23:29:38.7587843Z Updating files:  29% (479/1651)
+2026-10-04T23:29:38.7631085Z Updating files:  30% (496/1651)
+2026-10-04T23:29:38.7764618Z Updating files:  31% (512/1651)
+2026-10-04T23:29:38.7794689Z Updating files:  32% (529/1651)
+2026-10-04T23:29:38.7826529Z Updating files:  33% (545/1651)
+2026-10-04T23:29:38.7852555Z Updating files:  34% (562/1651)
+2026-10-04T23:29:38.7883167Z Updating files:  35% (578/1651)
+2026-10-04T23:29:38.7907893Z Updating files:  36% (595/1651)
+2026-10-04T23:29:38.7974544Z Updating files:  37% (611/1651)
+2026-10-04T23:29:38.8053118Z Updating files:  38% (628/1651)
+2026-10-04T23:29:38.8902516Z Updating files:  39% (644/1651)
+2026-10-04T23:29:38.8941851Z Updating files:  40% (661/1651)
+2026-10-04T23:29:38.8976540Z Updating files:  41% (677/1651)
+2026-10-04T23:29:38.9012817Z Updating files:  42% (694/1651)
+2026-10-04T23:29:38.9043664Z Updating files:  43% (710/1651)
+2026-10-04T23:29:38.9079552Z Updating files:  44% (727/1651)
+2026-10-04T23:29:38.9117446Z Updating files:  45% (743/1651)
+2026-10-04T23:29:38.9146415Z Updating files:  46% (760/1651)
+2026-10-04T23:29:38.9177250Z Updating files:  47% (776/1651)
+2026-10-04T23:29:38.9228405Z Updating files:  48% (793/1651)
+2026-10-04T23:29:38.9262174Z Updating files:  49% (809/1651)
+2026-10-04T23:29:38.9313840Z Updating files:  50% (826/1651)
+2026-10-04T23:29:38.9338934Z Updating files:  51% (843/1651)
+2026-10-04T23:29:38.9370649Z Updating files:  52% (859/1651)
+2026-10-04T23:29:38.9397180Z Updating files:  53% (876/1651)
+2026-10-04T23:29:38.9424072Z Updating files:  54% (892/1651)
+2026-10-04T23:29:38.9446258Z Updating files:  55% (909/1651)
+2026-10-04T23:29:38.9484918Z Updating files:  56% (925/1651)
+2026-10-04T23:29:38.9521132Z Updating files:  57% (942/1651)
+2026-10-04T23:29:38.9559381Z Updating files:  58% (958/1651)
+2026-10-04T23:29:38.9598083Z Updating files:  59% (975/1651)
+2026-10-04T23:29:38.9631784Z Updating files:  60% (991/1651)
+2026-10-04T23:29:38.9659954Z Updating files:  61% (1008/1651)
+2026-10-04T23:29:38.9690960Z Updating files:  62% (1024/1651)
+2026-10-04T23:29:38.9717911Z Updating files:  63% (1041/1651)
+2026-10-04T23:29:38.9749024Z Updating files:  64% (1057/1651)
+2026-10-04T23:29:38.9779133Z Updating files:  65% (1074/1651)
+2026-10-04T23:29:38.9808849Z Updating files:  66% (1090/1651)
+2026-10-04T23:29:38.9836872Z Updating files:  67% (1107/1651)
+2026-10-04T23:29:38.9876032Z Updating files:  68% (1123/1651)
+2026-10-04T23:29:38.9952096Z Updating files:  69% (1140/1651)
+2026-10-04T23:29:38.9995541Z Updating files:  70% (1156/1651)
+2026-10-04T23:29:39.0031666Z Updating files:  71% (1173/1651)
+2026-10-04T23:29:39.0069915Z Updating files:  72% (1189/1651)
+2026-10-04T23:29:39.0104506Z Updating files:  73% (1206/1651)
+2026-10-04T23:29:39.0159999Z Updating files:  74% (1222/1651)
+2026-10-04T23:29:39.0200372Z Updating files:  75% (1239/1651)
+2026-10-04T23:29:39.0239085Z Updating files:  76% (1255/1651)
+2026-10-04T23:29:39.0271501Z Updating files:  77% (1272/1651)
+2026-10-04T23:29:39.0305333Z Updating files:  78% (1288/1651)
+2026-10-04T23:29:39.0336822Z Updating files:  79% (1305/1651)
+2026-10-04T23:29:39.0363052Z Updating files:  80% (1321/1651)
+2026-10-04T23:29:39.0386806Z Updating files:  81% (1338/1651)
+2026-10-04T23:29:39.0420457Z Updating files:  82% (1354/1651)
+2026-10-04T23:29:39.0453633Z Updating files:  83% (1371/1651)
+2026-10-04T23:29:39.0482908Z Updating files:  84% (1387/1651)
+2026-10-04T23:29:39.0510678Z Updating files:  85% (1404/1651)
+2026-10-04T23:29:39.0542044Z Updating files:  86% (1420/1651)
+2026-10-04T23:29:39.0569912Z Updating files:  87% (1437/1651)
+2026-10-04T23:29:39.0665915Z Updating files:  88% (1453/1651)
+2026-10-04T23:29:39.0698396Z Updating files:  89% (1470/1651)
+2026-10-04T23:29:39.0733980Z Updating files:  90% (1486/1651)
+2026-10-04T23:29:39.0763447Z Updating files:  91% (1503/1651)
+2026-10-04T23:29:39.0786829Z Updating files:  92% (1519/1651)
+2026-10-04T23:29:39.0824881Z Updating files:  93% (1536/1651)
+2026-10-04T23:29:39.0834369Z Updating files:  94% (1552/1651)
+2026-10-04T23:29:39.0847756Z Updating files:  95% (1569/1651)
+2026-10-04T23:29:39.0932248Z Updating files:  96% (1585/1651)
+2026-10-04T23:29:39.0957529Z Updating files:  97% (1602/1651)
+2026-10-04T23:29:39.0976375Z Updating files:  98% (1618/1651)
+2026-10-04T23:29:39.0991991Z Updating files:  99% (1635/1651)
+2026-10-04T23:29:39.0992436Z Updating files: 100% (1651/1651)
+2026-10-04T23:29:39.0992721Z Updating files: 100% (1651/1651), done.
+2026-10-04T23:29:39.1021771Z Note: switching to 'cc3efca88be7e01137f10ac69a0643f06b61a350'.
+2026-10-04T23:29:39.1022353Z 
+2026-10-04T23:29:39.1022785Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-04T23:29:39.1023736Z changes and commit them, and you can discard any commits you make in this
+2026-10-04T23:29:39.1024688Z state without impacting any branches by switching back to a branch.
+2026-10-04T23:29:39.1025260Z 
+2026-10-04T23:29:39.1025743Z If you want to create a new branch to retain commits you create, you may
+2026-10-04T23:29:39.1027095Z do so (now or later) by using -c with the switch command. Example:
+2026-10-04T23:29:39.1027507Z 
+2026-10-04T23:29:39.1027646Z   git switch -c <new-branch-name>
+2026-10-04T23:29:39.1027881Z 
+2026-10-04T23:29:39.1028004Z Or undo this operation with:
+2026-10-04T23:29:39.1028202Z 
+2026-10-04T23:29:39.1028307Z   git switch -
+2026-10-04T23:29:39.1028462Z 
+2026-10-04T23:29:39.1028729Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-04T23:29:39.1029123Z 
+2026-10-04T23:29:39.1029271Z HEAD is now at cc3efca Build Claude Free node package
+2026-10-04T23:29:39.1052593Z ##[endgroup]
+2026-10-04T23:29:39.1094906Z [command]/usr/bin/git log -1 --format=%H
+2026-10-04T23:29:39.1121245Z cc3efca88be7e01137f10ac69a0643f06b61a350
+2026-10-04T23:29:39.1319865Z ##[group]Run actions/checkout@v4
+2026-10-04T23:29:39.1320204Z with:
+2026-10-04T23:29:39.1320506Z   repository: lukaszkurczab/patternly-content
+2026-10-04T23:29:39.1320853Z   ref: master
+2026-10-04T23:29:39.1321099Z   path: patternly-content
+2026-10-04T23:29:39.1321348Z   fetch-depth: 0
+2026-10-04T23:29:39.1323780Z   token: ***
+2026-10-04T23:29:39.1323986Z   ssh-strict: true
+2026-10-04T23:29:39.1324190Z   ssh-user: git
+2026-10-04T23:29:39.1324421Z   persist-credentials: true
+2026-10-04T23:29:39.1324654Z   clean: true
+2026-10-04T23:29:39.1324864Z   sparse-checkout-cone-mode: true
+2026-10-04T23:29:39.1325115Z   fetch-tags: false
+2026-10-04T23:29:39.1325321Z   show-progress: true
+2026-10-04T23:29:39.1325595Z   lfs: false
+2026-10-04T23:29:39.1325816Z   submodules: false
+2026-10-04T23:29:39.1326024Z   set-safe-directory: true
+2026-10-04T23:29:39.1326613Z   allow-unsafe-pr-checkout: false
+2026-10-04T23:29:39.1326892Z ##[endgroup]
+2026-10-04T23:29:39.2169382Z Syncing repository: lukaszkurczab/patternly-content
+2026-10-04T23:29:39.2176073Z ##[group]Getting Git version info
+2026-10-04T23:29:39.2177844Z Working directory is '/home/runner/work/gcp-ace-trainer/gcp-ace-trainer/patternly-content'
+2026-10-04T23:29:39.2221348Z [command]/usr/bin/git version
+2026-10-04T23:29:39.2263898Z git version 2.55.0
+2026-10-04T23:29:39.2295530Z ##[endgroup]
+2026-10-04T23:29:39.2302273Z Temporarily overriding HOME='/home/runner/work/_temp/f763fd57-8197-44cb-9fd0-8ab006bd93f4' before making global git config changes
+2026-10-04T23:29:39.2303669Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-04T23:29:39.2308803Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/patternly-content
+2026-10-04T23:29:39.2341438Z ##[group]Initializing the repository
+2026-10-04T23:29:39.2347424Z [command]/usr/bin/git init /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/patternly-content
+2026-10-04T23:29:39.2389367Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-04T23:29:39.2390471Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-04T23:29:39.2391525Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-04T23:29:39.2392405Z hint: call:
+2026-10-04T23:29:39.2392885Z hint:
+2026-10-04T23:29:39.2393446Z hint: 	git config --global init.defaultBranch <name>
+2026-10-04T23:29:39.2394431Z hint:
+2026-10-04T23:29:39.2395145Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-04T23:29:39.2396379Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-04T23:29:39.2397246Z hint:
+2026-10-04T23:29:39.2397727Z hint: 	git branch -m <name>
+2026-10-04T23:29:39.2398305Z hint:
+2026-10-04T23:29:39.2399028Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-04T23:29:39.2400339Z Initialized empty Git repository in /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/patternly-content/.git/
+2026-10-04T23:29:39.2403665Z [command]/usr/bin/git remote add origin https://github.com/lukaszkurczab/patternly-content
+2026-10-04T23:29:39.2438245Z ##[endgroup]
+2026-10-04T23:29:39.2438849Z ##[group]Disabling automatic garbage collection
+2026-10-04T23:29:39.2441914Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-04T23:29:39.2492296Z ##[endgroup]
+2026-10-04T23:29:39.2493014Z ##[group]Setting up auth
+2026-10-04T23:29:39.2493840Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-04T23:29:39.2523074Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-04T23:29:39.2784113Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-04T23:29:39.2824580Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-04T23:29:39.3093087Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-04T23:29:39.3148435Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-04T23:29:39.3419965Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-04T23:29:39.3827522Z ##[endgroup]
+2026-10-04T23:29:39.3853329Z ##[group]Fetching the repository
+2026-10-04T23:29:39.3854503Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-10-04T23:29:47.3453986Z From https://github.com/lukaszkurczab/patternly-content
+2026-10-04T23:29:47.3454686Z  * [new branch]      agent/ai901-question-bank -> origin/agent/ai901-question-bank
+2026-10-04T23:29:47.3455506Z  * [new branch]      agent/resolve-frontend-telemetry-provenance -> origin/agent/resolve-frontend-telemetry-provenance
+2026-10-04T23:29:47.3456709Z  * [new branch]      codex/cloud-certification-canonical-readiness -> origin/codex/cloud-certification-canonical-readiness
+2026-10-04T23:29:47.3457745Z  * [new branch]      codex/cloud-certification-evidence-closure -> origin/codex/cloud-certification-evidence-closure
+2026-10-04T23:29:47.3458385Z  * [new branch]      master     -> origin/master
+2026-10-04T23:29:47.3461850Z ##[endgroup]
+2026-10-04T23:29:47.3462502Z ##[group]Determining the checkout info
+2026-10-04T23:29:47.3469677Z [command]/usr/bin/git branch --list --remote origin/master
+2026-10-04T23:29:47.3502303Z   origin/master
+2026-10-04T23:29:47.3507482Z ##[endgroup]
+2026-10-04T23:29:47.3514236Z [command]/usr/bin/git sparse-checkout disable
+2026-10-04T23:29:47.3559192Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-04T23:29:47.3595990Z ##[group]Checking out the ref
+2026-10-04T23:29:47.3601864Z [command]/usr/bin/git checkout --progress --force -B master refs/remotes/origin/master
+2026-10-04T23:29:48.3671761Z Updating files:  40% (728/1783)
+2026-10-04T23:29:48.3701035Z Updating files:  41% (732/1783)
+2026-10-04T23:29:48.3729337Z Updating files:  42% (749/1783)
+2026-10-04T23:29:48.3759374Z Updating files:  43% (767/1783)
+2026-10-04T23:29:48.3788827Z Updating files:  44% (785/1783)
+2026-10-04T23:29:48.3813726Z Updating files:  45% (803/1783)
+2026-10-04T23:29:48.3851044Z Updating files:  46% (821/1783)
+2026-10-04T23:29:48.3876804Z Updating files:  47% (839/1783)
+2026-10-04T23:29:48.3902710Z Updating files:  48% (856/1783)
+2026-10-04T23:29:48.3930168Z Updating files:  49% (874/1783)
+2026-10-04T23:29:48.3955113Z Updating files:  50% (892/1783)
+2026-10-04T23:29:48.3974645Z Updating files:  51% (910/1783)
+2026-10-04T23:29:48.3998350Z Updating files:  52% (928/1783)
+2026-10-04T23:29:48.4023038Z Updating files:  53% (945/1783)
+2026-10-04T23:29:48.4048167Z Updating files:  54% (963/1783)
+2026-10-04T23:29:48.4070741Z Updating files:  55% (981/1783)
+2026-10-04T23:29:48.4093543Z Updating files:  56% (999/1783)
+2026-10-04T23:29:48.4119398Z Updating files:  57% (1017/1783)
+2026-10-04T23:29:48.4139165Z Updating files:  58% (1035/1783)
+2026-10-04T23:29:48.4156300Z Updating files:  59% (1052/1783)
+2026-10-04T23:29:48.4244370Z Updating files:  60% (1070/1783)
+2026-10-04T23:29:48.4484700Z Updating files:  61% (1088/1783)
+2026-10-04T23:29:48.4623053Z Updating files:  62% (1106/1783)
+2026-10-04T23:29:48.4651982Z Updating files:  63% (1124/1783)
+2026-10-04T23:29:48.4685482Z Updating files:  64% (1142/1783)
+2026-10-04T23:29:48.4704578Z Updating files:  65% (1159/1783)
+2026-10-04T23:29:48.4716652Z Updating files:  66% (1177/1783)
+2026-10-04T23:29:48.4724404Z Updating files:  67% (1195/1783)
+2026-10-04T23:29:48.4733023Z Updating files:  68% (1213/1783)
+2026-10-04T23:29:48.5090894Z Updating files:  69% (1231/1783)
+2026-10-04T23:29:48.5569726Z Updating files:  70% (1249/1783)
+2026-10-04T23:29:48.5693516Z Updating files:  71% (1266/1783)
+2026-10-04T23:29:48.5935412Z Updating files:  72% (1284/1783)
+2026-10-04T23:29:48.6191559Z Updating files:  73% (1302/1783)
+2026-10-04T23:29:48.6309682Z Updating files:  74% (1320/1783)
+2026-10-04T23:29:48.6348549Z Updating files:  75% (1338/1783)
+2026-10-04T23:29:48.6356930Z Updating files:  76% (1356/1783)
+2026-10-04T23:29:48.6796710Z Updating files:  77% (1373/1783)
+2026-10-04T23:29:48.7059169Z Updating files:  78% (1391/1783)
+2026-10-04T23:29:48.7313306Z Updating files:  79% (1409/1783)
+2026-10-04T23:29:48.7323964Z Updating files:  80% (1427/1783)
+2026-10-04T23:29:48.7371530Z Updating files:  81% (1445/1783)
+2026-10-04T23:29:48.7503796Z Updating files:  82% (1463/1783)
+2026-10-04T23:29:48.7547491Z Updating files:  83% (1480/1783)
+2026-10-04T23:29:48.7626805Z Updating files:  84% (1498/1783)
+2026-10-04T23:29:48.7718411Z Updating files:  85% (1516/1783)
+2026-10-04T23:29:48.7810226Z Updating files:  86% (1534/1783)
+2026-10-04T23:29:48.7845406Z Updating files:  87% (1552/1783)
+2026-10-04T23:29:48.7875578Z Updating files:  88% (1570/1783)
+2026-10-04T23:29:48.7901817Z Updating files:  89% (1587/1783)
+2026-10-04T23:29:48.7934531Z Updating files:  90% (1605/1783)
+2026-10-04T23:29:48.7991366Z Updating files:  91% (1623/1783)
+2026-10-04T23:29:48.8085372Z Updating files:  92% (1641/1783)
+2026-10-04T23:29:48.8507270Z Updating files:  93% (1659/1783)
+2026-10-04T23:29:48.9341850Z Updating files:  94% (1677/1783)
+2026-10-04T23:29:48.9466505Z Updating files:  95% (1694/1783)
+2026-10-04T23:29:48.9476735Z Updating files:  96% (1712/1783)
+2026-10-04T23:29:48.9522716Z Updating files:  97% (1730/1783)
+2026-10-04T23:29:48.9534016Z Updating files:  98% (1748/1783)
+2026-10-04T23:29:48.9548783Z Updating files:  99% (1766/1783)
+2026-10-04T23:29:48.9549249Z Updating files: 100% (1783/1783)
+2026-10-04T23:29:48.9549704Z Updating files: 100% (1783/1783), done.
+2026-10-04T23:29:48.9590763Z Reset branch 'master'
+2026-10-04T23:29:48.9594504Z branch 'master' set up to track 'origin/master'.
+2026-10-04T23:29:48.9641835Z ##[endgroup]
+2026-10-04T23:29:48.9685548Z [command]/usr/bin/git log -1 --format=%H
+2026-10-04T23:29:48.9712231Z 27b7b7c9ece584e9904b343e63b49cd8a7f087c6
+2026-10-04T23:29:48.9850687Z ##[group]Run current_content_sha="$(git -C "$GITHUB_WORKSPACE/patternly-content" rev-parse HEAD)"
+2026-10-04T23:29:48.9851530Z [36;1mcurrent_content_sha="$(git -C "$GITHUB_WORKSPACE/patternly-content" rev-parse HEAD)"[0m
+2026-10-04T23:29:48.9852363Z [36;1mhistorical_content_sha="$(git -C "$GITHUB_WORKSPACE/patternly-content-historical" rev-parse HEAD)"[0m
+2026-10-04T23:29:48.9853175Z [36;1m[[ "$current_content_sha" =~ ^[a-f0-9]{40}$ ]][0m
+2026-10-04T23:29:48.9853675Z [36;1m[[ "$historical_content_sha" == "$EXPECTED_HISTORICAL_CONTENT_SHA" ]][0m
+2026-10-04T23:29:48.9854426Z [36;1mgit -C "$GITHUB_WORKSPACE/patternly-content" cat-file -e "${EXPECTED_CANDIDATE_SOURCE_SHA}^{commit}"[0m
+2026-10-04T23:29:48.9855377Z [36;1mprintf 'Current content input: %s\nHistorical content input: %s\n' "$current_content_sha" "$historical_content_sha"[0m
+2026-10-04T23:29:48.9856723Z [36;1mprintf 'sha=%s\nhistorical-sha=%s\n' "$current_content_sha" "$historical_content_sha" >> "$GITHUB_OUTPUT"[0m
+2026-10-04T23:29:48.9925015Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-04T23:29:48.9925358Z env:
+2026-10-04T23:29:48.9925684Z   EXPECTED_HISTORICAL_CONTENT_SHA: cc3efca88be7e01137f10ac69a0643f06b61a350
+2026-10-04T23:29:48.9926519Z   EXPECTED_CANDIDATE_SOURCE_SHA: 3be6feef80975ed7f3ca87893b743668227e4a64
+2026-10-04T23:29:48.9926944Z ##[endgroup]
+2026-10-04T23:29:49.0055787Z Current content input: 27b7b7c9ece584e9904b343e63b49cd8a7f087c6
+2026-10-04T23:29:49.0056693Z Historical content input: cc3efca88be7e01137f10ac69a0643f06b61a350
+2026-10-04T23:29:49.0084161Z ##[group]Run node scripts/candidateContentReleaseLock.mjs check
+2026-10-04T23:29:49.0084670Z [36;1mnode scripts/candidateContentReleaseLock.mjs check[0m
+2026-10-04T23:29:49.0143427Z shell: /usr/bin/bash -e {0}
+2026-10-04T23:29:49.0143692Z ##[endgroup]
+2026-10-04T23:29:49.0569434Z candidate content release lock check passed
+2026-10-04T23:29:49.0682897Z ##[group]Run actions/setup-node@v4
+2026-10-04T23:29:49.0683189Z with:
+2026-10-04T23:29:49.0683390Z   node-version: 22.13.1
+2026-10-04T23:29:49.0683607Z   cache: npm
+2026-10-04T23:29:49.0683853Z   cache-dependency-path: app/package-lock.json
+
+2026-10-04T23:29:49.0684168Z   always-auth: false
+2026-10-04T23:29:49.0684392Z   check-latest: false
+2026-10-04T23:29:49.0687144Z   token: ***
+2026-10-04T23:29:49.0687351Z ##[endgroup]
+2026-10-04T23:29:49.2060606Z Attempting to download 22.13.1...
+2026-10-04T23:29:49.2172958Z (node:2639) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-04T23:29:49.2174416Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-04T23:29:50.0608267Z Acquiring 22.13.1 - x64 from https://github.com/actions/node-versions/releases/download/22.13.1-12900459766/node-22.13.1-linux-x64.tar.gz
+2026-10-04T23:29:50.7645413Z Extracting ...
+2026-10-04T23:29:50.7772750Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/b2972529-968b-4f8c-a8a4-ebc39ca3202e -f /home/runner/work/_temp/97849118-190b-4aa2-83ff-c0ce08cae7ab
+2026-10-04T23:29:51.9459992Z Adding to the cache ...
+2026-10-04T23:29:53.9323036Z ##[group]Environment details
+2026-10-04T23:29:54.1519345Z node: v22.13.1
+2026-10-04T23:29:54.1519798Z npm: 10.9.2
+2026-10-04T23:29:54.1520176Z yarn: 1.22.22
+2026-10-04T23:29:54.1520922Z ##[endgroup]
+2026-10-04T23:29:54.1539516Z [command]/opt/hostedtoolcache/node/22.13.1/x64/bin/npm config get cache
+2026-10-04T23:29:54.2454749Z /home/runner/.npm
+2026-10-04T23:29:54.4276488Z Cache hit for: node-cache-Linux-x64-npm-2d35ed0bf35423fe49266e5012cf1a1f7e36b4d3772e4b729ade9e704c958966
+2026-10-04T23:29:54.4390930Z (node:2639) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-04T23:29:55.6351484Z Received 41943040 of 168656456 (24.9%), 40.0 MBs/sec
+2026-10-04T23:29:56.4235310Z Received 168656456 of 168656456 (100.0%), 89.9 MBs/sec
+2026-10-04T23:29:56.4236428Z Cache Size: ~161 MB (168656456 B)
+2026-10-04T23:29:56.4346264Z [command]/usr/bin/tar -xf /home/runner/work/_temp/28daf301-5125-4b6c-9be3-3bee7046baa9/cache.tzst -P -C /home/runner/work/gcp-ace-trainer/gcp-ace-trainer --use-compress-program unzstd
+2026-10-04T23:29:56.8353342Z Cache restored successfully
+2026-10-04T23:29:56.8435685Z Cache restored from key: node-cache-Linux-x64-npm-2d35ed0bf35423fe49266e5012cf1a1f7e36b4d3772e4b729ade9e704c958966
+2026-10-04T23:29:56.8596578Z ##[group]Run npm ci
+2026-10-04T23:29:56.8596870Z [36;1mnpm ci[0m
+2026-10-04T23:29:56.8661667Z shell: /usr/bin/bash -e {0}
+2026-10-04T23:29:56.8661942Z ##[endgroup]
+2026-10-04T23:30:01.4706878Z npm warn deprecated uuid@7.0.3: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+2026-10-04T23:30:12.8028387Z 
+2026-10-04T23:30:12.8031462Z added 650 packages, and audited 651 packages in 16s
+2026-10-04T23:30:12.8031980Z 
+2026-10-04T23:30:12.8032309Z 78 packages are looking for funding
+2026-10-04T23:30:12.8032883Z   run `npm fund` for details
+2026-10-04T23:30:13.1582478Z 
+2026-10-04T23:30:13.1583686Z 40 vulnerabilities (1 low, 12 moderate, 27 high)
+2026-10-04T23:30:13.1584280Z 
+2026-10-04T23:30:13.1584779Z To address issues that do not require attention, run:
+2026-10-04T23:30:13.1585487Z   npm audit fix
+2026-10-04T23:30:13.1585761Z 
+2026-10-04T23:30:13.1586590Z To address all issues (including breaking changes), run:
+2026-10-04T23:30:13.1587349Z   npm audit fix --force
+2026-10-04T23:30:13.1587666Z 
+2026-10-04T23:30:13.1587928Z Run `npm audit` for details.
+2026-10-04T23:30:13.2679059Z ##[group]Run npm run test:content-release-cross-repo
+2026-10-04T23:30:13.2679571Z [36;1mnpm run test:content-release-cross-repo[0m
+2026-10-04T23:30:13.2744077Z shell: /usr/bin/bash -e {0}
+2026-10-04T23:30:13.2744343Z env:
+2026-10-04T23:30:13.2744838Z   PATTERNLY_CONTENT_HISTORICAL_ROOT: /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/patternly-content-historical
+2026-10-04T23:30:13.2745620Z   PATTERNLY_CONTENT_CURRENT_ROOT: /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/patternly-content
+2026-10-04T23:30:13.2747194Z   PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA: 27b7b7c9ece584e9904b343e63b49cd8a7f087c6
+2026-10-04T23:30:13.2747635Z ##[endgroup]
+2026-10-04T23:30:13.3749162Z 
+2026-10-04T23:30:13.3750146Z > patternly@0.1.0 test:content-release-cross-repo
+2026-10-04T23:30:13.3750810Z > node --import tsx --test src/content/contentReleaseCrossRepo.test.ts
+2026-10-04T23:30:13.3751141Z 
+2026-10-04T23:30:13.4151158Z TAP version 13
+2026-10-04T23:30:16.2512877Z # Subtest: historical content release lock remains covered by frozen release manifests
+2026-10-04T23:30:16.2520730Z ok 1 - historical content release lock remains covered by frozen release manifests
+2026-10-04T23:30:16.2521666Z   ---
+2026-10-04T23:30:16.2522209Z   duration_ms: 2140.247705
+2026-10-04T23:30:16.2522823Z   ...
+2026-10-04T23:30:18.4980823Z # Subtest: bundled canonical release matches the current producer builder
+2026-10-04T23:30:18.4982160Z ok 2 - bundled canonical release matches the current producer builder
+2026-10-04T23:30:18.4983035Z   ---
+2026-10-04T23:30:18.4983553Z   duration_ms: 2248.921748
+2026-10-04T23:30:18.4984180Z   ...
+2026-10-04T23:30:20.1894402Z # Subtest: current canonical builder preserves the ODK-096 inventory and approved AWS identity without repinning history
+2026-10-04T23:30:20.1896561Z ok 3 - current canonical builder preserves the ODK-096 inventory and approved AWS identity without repinning history
+2026-10-04T23:30:20.1897555Z   ---
+2026-10-04T23:30:20.1922054Z   duration_ms: 1697.485602
+2026-10-04T23:30:20.1922765Z   ...
+2026-10-04T23:30:20.2495663Z 1..3
+2026-10-04T23:30:20.2496111Z # tests 3
+2026-10-04T23:30:20.2496943Z # suites 0
+2026-10-04T23:30:20.2497884Z # pass 3
+2026-10-04T23:30:20.2498595Z # fail 0
+2026-10-04T23:30:20.2499335Z # cancelled 0
+2026-10-04T23:30:20.2499961Z # skipped 0
+2026-10-04T23:30:20.2500641Z # todo 0
+2026-10-04T23:30:20.2501362Z # duration_ms 6845.716296
+2026-10-04T23:30:20.2675722Z Post job cleanup.
+2026-10-04T23:30:20.4026971Z (node:2790) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-04T23:30:20.4028269Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-04T23:30:20.4031381Z Cache hit occurred on the primary key node-cache-Linux-x64-npm-2d35ed0bf35423fe49266e5012cf1a1f7e36b4d3772e4b729ade9e704c958966, not saving cache.
+2026-10-04T23:30:20.4155544Z Post job cleanup.
+2026-10-04T23:30:20.5033795Z [command]/usr/bin/git version
+2026-10-04T23:30:20.5078338Z git version 2.55.0
+2026-10-04T23:30:20.5121989Z Temporarily overriding HOME='/home/runner/work/_temp/aceb5b35-c9f5-4a15-b480-0ba86098a278' before making global git config changes
+2026-10-04T23:30:20.5123828Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-04T23:30:20.5126761Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/patternly-content
+2026-10-04T23:30:20.5167545Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-04T23:30:20.5204650Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-04T23:30:20.5474065Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-04T23:30:20.5502515Z http.https://github.com/.extraheader
+2026-10-04T23:30:20.5529221Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-04T23:30:20.5570753Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-04T23:30:20.5911775Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-04T23:30:20.5964706Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-04T23:30:20.6417448Z Post job cleanup.
+2026-10-04T23:30:20.7293282Z [command]/usr/bin/git version
+2026-10-04T23:30:20.7340048Z git version 2.55.0
+2026-10-04T23:30:20.7388641Z Temporarily overriding HOME='/home/runner/work/_temp/9e7943d2-98c0-414d-8a71-f123cf564411' before making global git config changes
+2026-10-04T23:30:20.7390315Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-04T23:30:20.7408046Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/patternly-content-historical
+2026-10-04T23:30:20.7451831Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-04T23:30:20.7489378Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-04T23:30:20.7860090Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-04T23:30:20.7894771Z http.https://github.com/.extraheader
+2026-10-04T23:30:20.7911700Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-04T23:30:20.7968340Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-04T23:30:20.8305554Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-04T23:30:20.8355206Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-04T23:30:20.8808494Z Post job cleanup.
+2026-10-04T23:30:20.9672095Z [command]/usr/bin/git version
+2026-10-04T23:30:20.9737079Z git version 2.55.0
+2026-10-04T23:30:20.9765636Z Temporarily overriding HOME='/home/runner/work/_temp/6982dc8f-8083-4515-83ed-59364ea3596a' before making global git config changes
+2026-10-04T23:30:20.9768115Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-04T23:30:20.9771996Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/gcp-ace-trainer/gcp-ace-trainer/app
+2026-10-04T23:30:20.9816711Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-04T23:30:20.9852219Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-04T23:30:21.0111022Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-04T23:30:21.0139463Z http.https://github.com/.extraheader
+2026-10-04T23:30:21.0151706Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-04T23:30:21.0193092Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-04T23:30:21.0460812Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-04T23:30:21.0502519Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-04T23:30:21.0902549Z Cleaning up orphan processes
+2026-10-04T23:30:21.1221529Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

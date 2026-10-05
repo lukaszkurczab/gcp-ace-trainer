@@ -1,0 +1,30 @@
+{
+  "result": "PASS",
+  "scope": "Accepted local CI-input correction; ordinary push verified. Hosted automatic CI still pending; BIZQ-01 partial.",
+  "contentCommit": "9e2d97f5ee28793c14341d031697cd89273fe288",
+  "automaticRunId": 37245779698,
+  "admittedFrontendCommit": "50a6811cde15b662e8c45f777fcc9c447a482d3a",
+  "evidenceSha256": {
+    "CI-ADMISSION-INPUT-BRIEFING.md": "e4b3acaa2f9052101c399ce12f3a3b6cc72a9d58e2b146e14580bd59a393c82f",
+    "CI-ADMISSION-INPUT-BRIEFING.json": "a889d1fbd50d900c2807eae5cab595544102ecc978447a8bd768b7d6fe22ffdf",
+    "CI-ADMISSION-DESIGN-QA.md": "9525a0cc27534d4ab58700564d68f5398b9cbdaaa576daa077ed6a6ce859b112",
+    "CI-ADMISSION-DESIGN-QA.json": "f761d04c7dd29f31fb4f022abcb79bb8416f799c0c9619883017fc3e09d69dae",
+    "CI-ADMISSION-IMPLEMENTATION.md": "6d41aa2b6b62d70f3d68b9982fd3502cf1916b2629536d983e3990630655144a",
+    "CI-ADMISSION-IMPLEMENTATION.json": "a7abb0009e7cf9c2bf96c3091fa0d4fc199ff4d51d767d98130e1f883b5b44da",
+    "CI-ADMISSION-FINAL-QA.md": "f459f596209d522fa6e4208597338d9f7d8ea2e6e1df1064863606fe9b3cfb83",
+    "CI-ADMISSION-FINAL-QA.json": "e051289f827325ce194a959eed6857db10613aa53e439902c3d115ccf7b458f0",
+    "CI-ADMISSION-TEST.log": "f256fdd2a76fda4a67b865617b9be558e09b5aaf2c0838a1c48671e452b2fda6",
+    "CI-ADMISSION-WORKFLOW-CHECK.log": "bc240b94438f6c228b06eb4879e371656f07998d2dc196e1126c5a057172ccbf",
+    "CI-ADMISSION-PROBE-HARNESS-FAILURE.log": "d2dd14154b89bc4dfa32f1d3101fd1dda7fafa1a8b1a1a0311a86e1c614881e2",
+    "CI-ADMISSION-FINAL-QA-FOCUSED.log": "266e8df24af33a6829e78708d1b11aec8733621dc5512b1dea405357b0093eb8",
+    "CI-ADMISSION-ROOT-SCOPE.json": "9994ae147942833332b93d5d1f107675000f5d998fcb05f530cb83720531af32"
+  },
+  "actualRootChecks": "Workflow diff/check, exact unchanged runtime/dependency tree vs admitted app, only two tracked content workflow changes, unchanged content source snapshot, exact post-push head/upstream. Independent actual admission2/2 and inline reader valid/malformed probes.",
+  "notClaimed": [
+    "hosted CI completed",
+    "manual release workflow executed",
+    "full BIZQ-01 acceptance",
+    "native/Premium readiness",
+    "deployment/publication"
+  ]
+}

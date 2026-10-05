@@ -1,0 +1,11 @@
+{
+  "scope": "Accepted immutable preflight report and raw logs kept byte-exact; fresh editable docs/tool checked separately. Workflow source diff check passed.",
+  "observed": "git diff --cached --check reports CURRENT-SOURCE-OBSERVATIONS.md line36 blank line at EOF; preserved accepted hash referenced by source manifest.",
+  "preservedReportSha256": "f60a33c9f18d6407dd21d86e69f516932a1f19c22cdeee366e1d32620440c962",
+  "excludedFromCosmeticCheck": [
+    "immutable CURRENT-SOURCE-OBSERVATIONS.md EOF blank",
+    "immutable raw logs",
+    "canonical queue row existing whitespace"
+  ],
+  "implementationSafeguardsChanged": false
+}

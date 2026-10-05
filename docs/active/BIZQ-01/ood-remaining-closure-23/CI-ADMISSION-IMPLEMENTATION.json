@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "patternly-bizq01-ci-admission-implementation-v1",
+  "status": "implementation-ready-awaiting-independent-review-and-hosted-ci",
+  "changedFiles": [
+    {
+      "path": "patternly-content/.github/workflows/content-publishing.yml",
+      "sha256": "18955c8e440c4c4dc6a7c1b708ced9feca60e4426ad5ae63e3a9627dfff0406b"
+    },
+    {
+      "path": "patternly-content/.github/workflows/real-content-release.yml",
+      "sha256": "e3979195d0b824633f43a8338fa8f0d74bf5348742a6dae7376d96d264865d20"
+    }
+  ],
+  "admittedApplicationCommit": "50a6811cde15b662e8c45f777fcc9c447a482d3a",
+  "currentApplicationCheckout": "ea4f3d61b39bab6b9f12ace73b34721d0d6e717a",
+  "pinnedApplicationFileHashes": {
+    "integration/contracts/content-release/release.lock.json": "8dbc9052cda40ae0c1c4b4839f21834df58bb334cbd1fc9b7ef260791fba458d",
+    "src/content/generated/canonical-content/content-lock.json": "0cb1306dc4f75c5278165e35c5e06691671b8c18c7416e4fba9bda36ab0bf32c",
+    "src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts": "0a398abb2ed16913d49ee6d3fa9f11b0f4faa6aed8d65a4dd82cc87e49c63879"
+  },
+  "checks": [
+    {
+      "command": "node --test tests/candidate-admission-v3.test.mjs",
+      "runtime": "Node v22.22.3",
+      "passed": 2,
+      "failed": 0,
+      "log": "CI-ADMISSION-TEST.log"
+    },
+    {
+      "check": "YAML parse, workflow structure, exact inline commit-reader execution, sibling checkout binding",
+      "result": "passed for both workflows",
+      "log": "CI-ADMISSION-WORKFLOW-CHECK.log"
+    }
+  ],
+  "hostedAutomaticCi": "pending-ordinary-push",
+  "limitations": [
+    "No hosted workflow was dispatched.",
+    "The successful local admission test used the existing sibling app checkout after confirming all three consumed app files exactly match the admitted commit."
+  ]
+}

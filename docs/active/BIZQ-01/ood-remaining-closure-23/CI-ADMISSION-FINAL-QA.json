@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "review": "independent-ci-admission-input-implementation-qa",
+  "verdict": "PASS",
+  "scope": "Local implementation acceptance for the two content workflow changes only. Hosted post-push CI remains pending; no release, external publication, deployment, native, or full BIZQ-01 acceptance is claimed.",
+  "implementation": {
+    "files": [
+      {"path":"patternly-content/.github/workflows/content-publishing.yml","sha256":"18955c8e440c4c4dc6a7c1b708ced9feca60e4426ad5ae63e3a9627dfff0406b"},
+      {"path":"patternly-content/.github/workflows/real-content-release.yml","sha256":"e3979195d0b824633f43a8338fa8f0d74bf5348742a6dae7376d96d264865d20"}
+    ],
+    "onlyTwoWorkflowFilesChanged": true,
+    "workflowTriggersAndExistingCommandsPreserved": true,
+    "appCheckout": {"repository":"lukaszkurczab/gcp-ace-trainer","path":"patternly","admittedFrontendCommit":"50a6811cde15b662e8c45f777fcc9c447a482d3a","fetchDepth":0},
+    "contentCheckoutPath":"patternly-content",
+    "contentRunWorkingDirectory":"patternly-content",
+    "manualWorkflowCacheDependencyPath":"patternly-content/package-lock.json",
+    "admissionBoundary":"local_verified_artifacts_no_deployment"
+  },
+  "unchangedAdmissionInputs": [
+    {"path":"patternly-content/tests/candidate-admission-v3.test.mjs","sha256":"52113c4f6a9d821a745d562cd79421ccd858545d3dff2e4d767f4968d4995c21"},
+    {"path":"patternly-content/scripts/review/candidate-admission-v3.mjs","sha256":"a0e69631a55619cfdb0a57bd7351266f4e1ef37a178163a5eba3422fe22ba549"},
+    {"path":"patternly-content/evidence/admissions/candidate-admission-v3.json","sha256":"80bb66c3813d1283101fde50d5d563ee8987d26516f16338a68e63803c1653d5"}
+  ],
+  "applicationRevisionComparison": {
+    "admittedCommit":"50a6811cde15b662e8c45f777fcc9c447a482d3a",
+    "currentCheckout":"ea4f3d61b39bab6b9f12ace73b34721d0d6e717a",
+    "admittedCommitExistsLocally":true,
+    "admittedCommitAncestorOfOriginMain":true,
+    "changedPathsBetweenRevisions":355,
+    "changedPathsOutsideDocsAndAgentState":0,
+    "appPackageLockSha256":"0ababcb26d054bd5ea3f10e800e4049c273eb367baceef3b128a63f33e15f000",
+    "consumedLockAndRuntimeFilesMatchAdmittedCommit":true
+  },
+  "independentChecks": {
+    "runtime":"Node v22.22.3",
+    "admissionTest":{"command":"node --test tests/candidate-admission-v3.test.mjs","passed":2,"failed":0},
+    "workflowYamlAndStructure":"both parsed; sibling checkout paths, app/content install working directories, existing content test, and manual cache path verified",
+    "actualInlineShaReader":"executed each workflow's exact reader command under Bash; both emitted the admitted 40-hex frontendCommit",
+    "malformedSha":"multi-line invalid value rejected in both workflow readers before writing GITHUB_OUTPUT",
+    "probeLog":{"path":"CI-ADMISSION-FINAL-QA-FOCUSED.log","sha256":"266e8df24af33a6829e78708d1b11aec8733621dc5512b1dea405357b0093eb8"},
+    "historicalProbeHarnessFailure":"retained; known failure occurred in the harness before Bash execution and was not used as workflow evidence"
+  },
+  "implementationEvidence": {
+    "path":"CI-ADMISSION-IMPLEMENTATION.md",
+    "sha256":"6d41aa2b6b62d70f3d68b9982fd3502cf1916b2629536d983e3990630655144a",
+    "jsonSha256":"a7abb0009e7cf9c2bf96c3091fa0d4fc199ff4d51d767d98130e1f883b5b44da"
+  },
+  "limitations": [
+    "No hosted automatic CI result is available yet; after ordinary push, verify the content test plus all later build/readiness steps.",
+    "The manually triggered release workflow was not dispatched.",
+    "No admission policy, test, release lock, runtime code, secret, or service configuration was changed."
+  ],
+  "primaryReferences": [
+    "https://github.com/actions/checkout/blob/v4/README.md",
+    "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_iddefaultsrun"
+  ]
+}

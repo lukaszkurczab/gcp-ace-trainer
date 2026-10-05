@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "scope": "Root real diff and preserved-source inspection; hostedCI pending",
+  "admittedFrontend": "50a6811cde15b662e8c45f777fcc9c447a482d3a",
+  "actualAppHead": "ea4f3d61b39bab6b9f12ace73b34721d0d6e717a",
+  "appCommitDeltaFiles": 355,
+  "appCommitDeltaAllDocumentation": true,
+  "runtimeAndDependenciesAndReleaseLocksWorkingDiffEmpty": true,
+  "contentChangesExactlyTwoWorkflows": [
+    ".github/workflows/content-publishing.yml",
+    ".github/workflows/real-content-release.yml"
+  ],
+  "canonicalContentSourceCommit": "3be6feef80975ed7f3ca87893b743668227e4a64",
+  "workflowSha256": {
+    ".github/workflows/content-publishing.yml": "18955c8e440c4c4dc6a7c1b708ced9feca60e4426ad5ae63e3a9627dfff0406b",
+    ".github/workflows/real-content-release.yml": "e3979195d0b824633f43a8338fa8f0d74bf5348742a6dae7376d96d264865d20"
+  },
+  "reusedEvidence": "Unchanged source/producer/consumer/admission accepted N07; no fresh broad gate claim"
+}
