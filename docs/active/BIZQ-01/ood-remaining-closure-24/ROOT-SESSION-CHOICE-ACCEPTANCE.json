@@ -1,0 +1,23 @@
+{
+  "verdict": "PASS_ROOT_INDEPENDENT_RUNTIME_PACKAGE_ACCEPTANCE",
+  "scope": "Application runtime correction: use the stored per-occurrence option order in Design Interview and Certification Practice projections before UI presentation.",
+  "independentJsonSha256": "2313179a2757220e2b5af0abbd74fca0a065b19ed71e4bd91f5acd3e09e01b31",
+  "independentMarkdownSha256": "3aa42d95a021505d87127960d47223715457f36cfd79f0ce976095d9f29cca7b",
+  "actualInputBindings": 20,
+  "independentFocusedPass": 24,
+  "matchingRepositoryPass": 1875,
+  "existingSkip": 4,
+  "freshFullStaticGreen": false,
+  "portableIndependentCommand": "node --import tsx --test src/application/canonical/canonicalPracticeChoiceOrderProjection.test.ts src/application/canonical/canonicalChoiceOrderIntegration.test.ts src/application/canonical/canonicalChoiceFeedbackPresentation.test.ts src/application/design-interview/designInterviewChoiceFeedback.test.ts src/application/certification/certificationFeedbackProjection.test.ts",
+  "commandMetadataNote": "Independent command used capital D on the case-insensitive macOS filesystem; reproducible Linux command uses actual tracked lower-case designInterviewChoiceFeedback.test.ts. No test or verdict changed.",
+  "finalToolingTypecheck": {
+    "path": "docs/active/BIZQ-01/ood-remaining-closure-24/SESSION-CHOICE-PRESENTATION-TOOL-TYPECHECK.log",
+    "sha256": "22c83f1ac25b854ee6b451e80ec133d2e6b804f4f4a61055e5624328bff86ab3",
+    "result": "PASS"
+  },
+  "toolingGuard": "Historical preflight now requires exact three original source bindings before running; repaired path acceptance uses actual facade regression tests. No production behavior changed.",
+  "sourceActivationAccepted": false,
+  "nativeOrPremiumAccepted": false,
+  "fullBIZQ01Accepted": false,
+  "readyForOrdinaryPush": true
+}

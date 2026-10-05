@@ -19,6 +19,7 @@ import { isCertificationPracticeModeId, type CertificationDomain, type Certifica
 import { type CanonicalQuestionResponse, type Question } from "../../content/canonical";
 import { projectCanonicalChoiceFeedbackControls, projectCanonicalChoiceFeedbackMessages, type CanonicalChoiceFeedbackState } from "../canonical/canonicalInteractionPresentation";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
+import { projectCanonicalQuestionInSessionOrder } from "../canonical/canonicalOptionOrder";
 import { projectCertificationExamReview, type CertificationExamReviewProjection } from "./certificationExamReviewProjection";
 import { projectCertificationPracticeReview, type CertificationPracticeReviewProjection } from "./certificationPracticeReviewProjection";
 export { certificationReviewEvidenceMatches } from "./certificationPracticeReviewProjection";
@@ -134,7 +135,10 @@ export async function getCertificationPracticeProjection(): Promise<Certificatio
   const materializedAttempt = attempts.value.find((candidate) => candidate.sessionId === session.id && candidate.occurrenceId === occurrence.occurrenceId) ?? null;
   const committedAttempt = pending?.practiceOutcome?.attempt.sessionId === session.id && pending.practiceOutcome.attempt.occurrenceId === occurrence.occurrenceId ? pending.practiceOutcome.attempt : null;
   const responseAttempt = materializedAttempt ?? committedAttempt;
-  const resolvedQuestion = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
+  const resolvedQuestion = projectCanonicalQuestionInSessionOrder(
+    await contentPackageRuntimeOwner.resolveItem(occurrence.item),
+    session.optionOrderByOccurrence[occurrence.occurrenceId],
+  );
   const feedbackMode = certificationFeedbackModeFromSession(session);
   const feedback = projectCertificationPracticeFeedback(feedbackMode, materializedAttempt, resolvedQuestion);
   const [operation, time] = await Promise.all([

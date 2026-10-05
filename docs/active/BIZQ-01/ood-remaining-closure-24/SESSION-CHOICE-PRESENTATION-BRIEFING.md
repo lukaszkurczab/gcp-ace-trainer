@@ -1,0 +1,27 @@
+# BIZQ-01 — saved choice order at the real practice boundary
+
+## Cel
+
+Connect the already prepared and persisted occurrence option order to the actual Design and Certification practice projections. A learner must see that same order before and after submit, rerender and resume; scoring and feedback remain bound to option IDs. This closes an existing common-runtime requirement in BIZQ-01 while the inactive N08/N09 content revisions continue. It does not accept new content, Premium/native behavior, full BIZQ-01 or release readiness.
+
+## Ustalenia
+
+The existing contract is BIZQ-01 §D/Q08–Q09 and the prepared/persisted-order clause already recorded in canonical `docs/17-training-runtime-and-interaction-spec.md` by slice03. No product requirement or admission/release gate is added. Slice03 proves preparation, persistence and the canonical interaction adapter. Its evidence does not cover the separate practice UI adapter.
+
+`ROOT-SESSION-CHOICE-PRESENTATION-PREFLIGHT.json` reproduces the gap with the actual current OOD and GCP catalogs, `CanonicalTrainingRuntime.prepare`, resume validation and `toCanonicalQuestionViewModel`: nine of ten prepared occurrences in each track have a saved order different from the raw-question view. There is no device, account, durable-session write or Premium authorization in this probe. The first module import failed before preparation/writes; using the modules' actual CommonJS loading resolved that tooling issue.
+
+The complete path is concrete: both practice facades resolve a canonical question and return its source order; DesignInterviewPracticeScreen and CertificationPracticeSessionScreen project that question without using session.optionOrderByOccurrence. The existing runtime already prepares and fingerprints the correct order. Source-key position alone is not a producer defect and rotating authored source arrays would not repair this consumer gap. Qualitative content-choice findings remain separate.
+
+## Podejście
+
+Add one small application projection in `src/application/canonical/canonicalOptionOrder.ts`, reusing `isCanonicalOptionOrder`. Accept a full resolved question and the saved occurrence order; reject missing, duplicate, foreign or incomplete membership before returning a projection. For choice interactions return an immutable copy with only options reordered by stable IDs; preserve answer, feedback and every other field. For ordering/dimension interactions validate the declared control order and return the unchanged question. No new shuffle, seed, schema, persistence owner, API or fallback.
+
+Call this projection immediately after resolving the question in `designInterviewSessionFacade.ts` and `certificationSessionFacade.ts`, before data crosses to their screens. Their existing async error paths expose unavailable/corrupt content when the saved plan is invalid; no render-time fallback to source order. Certification still strips answers, option explanations and feedback before exposing its active question. ID-based scoring and authored feedback continue unchanged. Screen code need not change: its received question now follows the saved session order.
+
+Verification ownership: new `src/application/canonical/canonicalPracticeChoiceOrderProjection.test.ts` exercises real catalog/runtime preparation, memory-backed durable session/rebind and both actual facades followed by the production UI view model. Cover meaningful non-source order, unchanged order across rerender/rebind and correct/wrong submit, ID scoring/feedback and Certification non-disclosure. Add narrow pure-projection cases for single/multiple choice, non-choice preservation and malformed/missing orders. Reuse the existing canonical choice-order integration, Design authored feedback and Certification feedback/review suites for the affected contracts; run typecheck and required repository gates for the actual app delta. Do not equate memory-backed tests with device/Premium evidence.
+
+Root owns briefing/preflight, app implementation and targeted tests unless explicitly delegated, canonical row19a/current-state prefix, final diff/evidence inspection and ordinary push. Independent Luna High owns design/acceptance reports and own checks only. All content proposals, prior proofs/guards, generated content, locks/admission, other agents' work and stashes are preserved. This coherent common-runtime correction may be received and pushed before the longer source24 migration; BIZQ-01 remains partial and N08/N09 is still the main unfinished source scope. A push does not cause an area switch.
+
+Assessment: objective/architecture fit **0.97** (connects existing occurrence plan to real consumer); simplicity **0.92** (one projection, two existing call sites); risk **0.87** (strict membership, no stored data or hidden fallback, actual facade tests); maintainability **0.90** (one canonical membership validator and no competing shuffle). Minimum **0.87**. Redesign below 0.8 or for a concrete correctness/persistence/security conflict.
+
+No deploy/publication/production purchase/service configuration, account creation, Premium bypass, stash/reset/force, simulator/runtime change or foreign owner reassignment. The only permitted mobile device remains existing iPhone17 7F315654-3175-4F3C-BB24-B0263F59360C; this bounded correction uses application tests and does not claim native acceptance. Atomic goal+accepted plan, reminders and existing admission remain in force.

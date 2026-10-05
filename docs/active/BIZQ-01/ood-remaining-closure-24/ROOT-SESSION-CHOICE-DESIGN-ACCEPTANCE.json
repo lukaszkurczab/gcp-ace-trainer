@@ -1,0 +1,10 @@
+{
+  "verdict": "PASS_DESIGN_BINDING",
+  "scope": "Root acceptance of independent material plan before app implementation only",
+  "designJsonSha256": "071dd15b18b51ffb1f3bb3780d987532447974db558497e0718c4d71311304d3",
+  "designMarkdownSha256": "cfd5a837c4deb3b0f8c59bc8dbbb8f5fe1b4d887a22608661b98de32e8954a09",
+  "actualInputBindings": 10,
+  "minimumScore": 0.87,
+  "implementationAccepted": false,
+  "sourceActivation": false
+}

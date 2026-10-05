@@ -1,0 +1,21 @@
+
+> patternly@0.1.0 qa:static
+> npm run recovery:check && npm run typecheck && npm test && npm run validate:content-boundary && npm run validate:runtime-privacy-boundary
+
+
+> patternly@0.1.0 recovery:check
+> node scripts/checkRecoveryBaseline.mjs
+
+RECOVERY_INVENTORY_CHECK=passed
+RECOVERY_ACTIVE_SOURCE_FILES=450
+RECOVERY_ACTIVE_TESTS=313
+RECOVERY_TEST_CASES=1759
+RECOVERY_STAGE_1_BOUNDARIES=passed
+
+> patternly@0.1.0 typecheck
+> tsc --noEmit
+
+docs/active/BIZQ-01/ood-remaining-closure-24/probe-session-choice-presentation.mts(28,50): error TS7006: Parameter 'option' implicitly has an 'any' type.
+docs/active/BIZQ-01/ood-remaining-closure-24/probe-session-choice-presentation.mts(29,152): error TS7006: Parameter 'option' implicitly has an 'any' type.
+src/application/canonical/canonicalPracticeChoiceOrderProjection.test.ts(63,129): error TS2339: Property 'optionId' does not exist on type 'Readonly<{ type: "choice_single"; optionId: string; }> | Readonly<{ type: "choice_multiple"; optionIds: readonly string[]; }> | Readonly<{ type: "ordering"; orderedElementIds: readonly string[]; }> | Readonly<...> | Readonly<...>'.
+  Property 'optionId' does not exist on type 'Readonly<{ type: "choice_multiple"; optionIds: readonly string[]; }>'.

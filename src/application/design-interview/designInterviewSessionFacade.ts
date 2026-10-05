@@ -18,6 +18,7 @@ import { DESIGN_INTERVIEW_MODE_IDS, type DesignInterviewModeId } from "../../tra
 import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
 import { projectCanonicalChoiceFeedbackMessages, projectCanonicalOrderingFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
+import { projectCanonicalQuestionInSessionOrder } from "../canonical/canonicalOptionOrder";
 
 type DesignOpenInput = Readonly<{ modeId: DesignInterviewModeId; requestedLength?: number; source?: string; expectedSessionId?: string; trackId: TrackId }>;
 export type DesignInterviewPracticeProjection = Readonly<{
@@ -74,7 +75,10 @@ export async function getDesignInterviewPracticeProjection(): Promise<DesignInte
   const materializedAttempt = attempts.value.find((candidate) => candidate.sessionId === session.id && candidate.occurrenceId === occurrence.occurrenceId) ?? null;
   const committedAttempt = pending?.practiceOutcome?.attempt.sessionId === session.id && pending.practiceOutcome.attempt.occurrenceId === occurrence.occurrenceId ? pending.practiceOutcome.attempt : null;
   const responseAttempt = materializedAttempt ?? committedAttempt;
-  const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item);
+  const question = projectCanonicalQuestionInSessionOrder(
+    await contentPackageRuntimeOwner.resolveItem(occurrence.item),
+    session.optionOrderByOccurrence[occurrence.occurrenceId],
+  );
   const messages = materializedAttempt
     ? question.interaction.type === "choice_single" || question.interaction.type === "choice_multiple"
       ? projectCanonicalChoiceFeedbackMessages(question, materializedAttempt.response as CanonicalQuestionResponse)

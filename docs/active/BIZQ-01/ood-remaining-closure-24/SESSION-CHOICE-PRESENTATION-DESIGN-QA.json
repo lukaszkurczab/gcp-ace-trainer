@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "bizq01-session-choice-presentation-design-qa-v1",
+  "review": "SESSION-CHOICE-PRESENTATION-DESIGN-QA",
+  "verdict": "PASS",
+  "scope": "Briefing/design acceptance only; implementation, content, producer, consumer, native, Premium, and full BIZQ-01 acceptance remain separate.",
+  "inputs": {
+    "briefing": {
+      "path": "SESSION-CHOICE-PRESENTATION-BRIEFING.md",
+      "sha256": "6e53c8ebf0448c937f73b3de825e49a75d2a07c2cfa0498bb32613cfa7c5f1cd"
+    },
+    "preflight": {
+      "path": "ROOT-SESSION-CHOICE-PRESENTATION-PREFLIGHT.json",
+      "sha256": "a839248fb3c63096d02f563fbd5f5c428a9ba4914afa5ef9d81382205841a9c3"
+    },
+    "runtimeContract": {
+      "path": "docs/17-training-runtime-and-interaction-spec.md",
+      "sha256": "f796b365bfbc16d82b5395d509a44a21ec86bd3a2adb2c29dc04ce8c7ace7c44"
+    },
+    "bizq01Spec": {
+      "path": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+      "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3"
+    }
+  },
+  "repositoryEvidence": [
+    {
+      "path": "patternly/src/application/canonical/canonicalOptionOrder.ts",
+      "sha256": "e91aaf2818ac669f30e47528e2ba08d91eae67a770c806f704ce26bb42ded74e",
+      "observation": "Existing occurrence-specific preparation and membership/order validation are reusable."
+    },
+    {
+      "path": "patternly/src/application/design-interview/designInterviewSessionFacade.ts",
+      "sha256": "4ff9001ce690486e60ecc2c8ebe47d19c7caf1a054bfdc01c57eaf93b271fa1a",
+      "observation": "Projection resolves the occurrence question but does not apply its persisted option order."
+    },
+    {
+      "path": "patternly/src/application/certification/certificationSessionFacade.ts",
+      "sha256": "1727816579ef068265826070a20eb8c4657514c0c1f08077105b5c7f1ed26240",
+      "observation": "Projection resolves the occurrence question but does not apply its persisted option order."
+    },
+    {
+      "path": "patternly/src/features/practice/canonicalQuestionViewModel.ts",
+      "sha256": "dcf17cee634856644f9f077665033f305d98f75b5d16737f4630cddc789ac1e3",
+      "observation": "Maps the supplied option sequence without applying the session occurrence order."
+    },
+    {
+      "path": "patternly/src/features/practice/DesignInterviewPracticeScreen.tsx",
+      "sha256": "a18f3881c56b79ee2988c9bd4ee913f733822f715f96b72f4ff2d7d3b4b3feb9",
+      "observation": "Consumes the facade question through the canonical view model."
+    },
+    {
+      "path": "patternly/src/features/practice/CertificationPracticeSessionScreen.tsx",
+      "sha256": "acd4aedb8c25a155fe3ee93d5254e932fb2def0b92b6218355de1193cea7109f",
+      "observation": "Consumes the facade question through the canonical view model."
+    }
+  ],
+  "scores": {
+    "objectiveArchitectureFit": 0.97,
+    "simplicity": 0.92,
+    "risk": 0.87,
+    "maintainability": 0.9,
+    "minimum": 0.87
+  },
+  "decisiveAssessment": {
+    "finding": "Persisted session order is already prepared and validated; two affected practice projections currently pass raw resolved question order to UI adapters.",
+    "design": "One canonical application projection reuses existing order validation and applies the exact saved occurrence permutation before either facade returns its question.",
+    "requiredBoundaries": [
+      "Choice order changes only; answer, feedback, and IDs remain stable.",
+      "Non-choice controls retain their declared order after validation.",
+      "Certification answer/feedback stripping remains in place.",
+      "Malformed or missing saved order follows existing unavailable/error paths without fallback.",
+      "No new shuffle, persistence owner, source rotation, schema, admission rule, or release gate."
+    ],
+    "implementationAcceptance": false,
+    "contentAcceptance": false,
+    "nativeOrPremiumAcceptance": false,
+    "fullBizq01Acceptance": false
+  }
+}

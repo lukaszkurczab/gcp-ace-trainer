@@ -1,0 +1,340 @@
+{
+  "verdict": "REPRODUCED",
+  "scope": "Actual current catalog/runtime preparation and raw-question UI adapter only; no React/native/Premium claim",
+  "observations": [
+    {
+      "trackId": "object-oriented-design-interview",
+      "modeId": "design-interview-learn-framework",
+      "actualPreparedItems": 10,
+      "validatedResume": true,
+      "mismatches": [
+        {
+          "questionId": "ood-n01-b01-i018",
+          "occurrenceId": "bizq24-ui-order:object-oriented-design-interview:occurrence:0",
+          "saved": [
+            "storage_subject",
+            "overlap_checker_actor",
+            "operator_requests_reservation",
+            "meter_actor",
+            "relay_actor"
+          ],
+          "visible": [
+            "operator_requests_reservation",
+            "overlap_checker_actor",
+            "meter_actor",
+            "relay_actor",
+            "storage_subject"
+          ]
+        },
+        {
+          "questionId": "ood-n01-b02-i018",
+          "occurrenceId": "bizq24-ui-order:object-oriented-design-interview:occurrence:1",
+          "saved": [
+            "b02_i018_c",
+            "b02_i018_b",
+            "b02_i018_a"
+          ],
+          "visible": [
+            "b02_i018_a",
+            "b02_i018_b",
+            "b02_i018_c"
+          ]
+        },
+        {
+          "questionId": "ood-n01-b03-i018",
+          "occurrenceId": "bizq24-ui-order:object-oriented-design-interview:occurrence:2",
+          "saved": [
+            "b03_i018_c",
+            "b03_i018_a",
+            "b03_i018_b"
+          ],
+          "visible": [
+            "b03_i018_a",
+            "b03_i018_b",
+            "b03_i018_c"
+          ]
+        },
+        {
+          "questionId": "ood-n01-b05-i018",
+          "occurrenceId": "bizq24-ui-order:object-oriented-design-interview:occurrence:4",
+          "saved": [
+            "call_both_refund",
+            "use_ledger_adjustment",
+            "rename_refund_globally",
+            "issue_account_credit"
+          ],
+          "visible": [
+            "call_both_refund",
+            "issue_account_credit",
+            "use_ledger_adjustment",
+            "rename_refund_globally"
+          ]
+        },
+        {
+          "questionId": "ood-n01-b06-i018",
+          "occurrenceId": "bizq24-ui-order:object-oriented-design-interview:occurrence:5",
+          "saved": [
+            "app_rule",
+            "screen_rule",
+            "inspection_rule",
+            "repo_rule"
+          ],
+          "visible": [
+            "screen_rule",
+            "inspection_rule",
+            "app_rule",
+            "repo_rule"
+          ]
+        },
+        {
+          "questionId": "ood-n01-b07-i018",
+          "occurrenceId": "bizq24-ui-order:object-oriented-design-interview:occurrence:6",
+          "saved": [
+            "controller_scans_seats",
+            "query_seat_inventory",
+            "repository_reserves",
+            "buyer_supplies_ids"
+          ],
+          "visible": [
+            "controller_scans_seats",
+            "query_seat_inventory",
+            "buyer_supplies_ids",
+            "repository_reserves"
+          ]
+        },
+        {
+          "questionId": "ood-n01-b08-i018",
+          "occurrenceId": "bizq24-ui-order:object-oriented-design-interview:occurrence:7",
+          "saved": [
+            "class_fields",
+            "deployment_nodes",
+            "use_case_scope",
+            "sequence_internal"
+          ],
+          "visible": [
+            "sequence_internal",
+            "class_fields",
+            "use_case_scope",
+            "deployment_nodes"
+          ]
+        },
+        {
+          "questionId": "ood-n01-b01-i019",
+          "occurrenceId": "bizq24-ui-order:object-oriented-design-interview:occurrence:8",
+          "saved": [
+            "provider_ready_is_success",
+            "completed_switch_outcomes",
+            "accepted_request_is_success",
+            "supervisor_runs_protocol"
+          ],
+          "visible": [
+            "completed_switch_outcomes",
+            "supervisor_runs_protocol",
+            "accepted_request_is_success",
+            "provider_ready_is_success"
+          ]
+        },
+        {
+          "questionId": "ood-n01-b02-i019",
+          "occurrenceId": "bizq24-ui-order:object-oriented-design-interview:occurrence:9",
+          "saved": [
+            "b02_i019_c",
+            "b02_i019_b",
+            "b02_i019_a"
+          ],
+          "visible": [
+            "b02_i019_b",
+            "b02_i019_a",
+            "b02_i019_c"
+          ]
+        }
+      ]
+    },
+    {
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "modeId": "certification-focus-practice",
+      "actualPreparedItems": 10,
+      "validatedResume": true,
+      "mismatches": [
+        {
+          "questionId": "gcp-ace-gcpace-n01-b02-001",
+          "occurrenceId": "bizq24-ui-order:google-cloud-associate-cloud-engineer:occurrence:0",
+          "saved": [
+            "C",
+            "B",
+            "A",
+            "D"
+          ],
+          "visible": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        {
+          "questionId": "gcp-ace-gcpace-n01-b03-001",
+          "occurrenceId": "bizq24-ui-order:google-cloud-associate-cloud-engineer:occurrence:1",
+          "saved": [
+            "B",
+            "C",
+            "D",
+            "A"
+          ],
+          "visible": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        {
+          "questionId": "gcp-ace-gcpace-n01-b04-001",
+          "occurrenceId": "bizq24-ui-order:google-cloud-associate-cloud-engineer:occurrence:2",
+          "saved": [
+            "B",
+            "D",
+            "A",
+            "C"
+          ],
+          "visible": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        {
+          "questionId": "gcp-ace-gcpace-n01-b05-001",
+          "occurrenceId": "bizq24-ui-order:google-cloud-associate-cloud-engineer:occurrence:3",
+          "saved": [
+            "C",
+            "D",
+            "A",
+            "B"
+          ],
+          "visible": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        {
+          "questionId": "gcp-ace-gcpace-n01-b06-001",
+          "occurrenceId": "bizq24-ui-order:google-cloud-associate-cloud-engineer:occurrence:4",
+          "saved": [
+            "D",
+            "B",
+            "A",
+            "C"
+          ],
+          "visible": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        {
+          "questionId": "gcp-ace-gcpace-n01-b07-001",
+          "occurrenceId": "bizq24-ui-order:google-cloud-associate-cloud-engineer:occurrence:5",
+          "saved": [
+            "A",
+            "D",
+            "C",
+            "B"
+          ],
+          "visible": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        {
+          "questionId": "gcp-ace-n01-b01-001",
+          "occurrenceId": "bizq24-ui-order:google-cloud-associate-cloud-engineer:occurrence:6",
+          "saved": [
+            "B",
+            "A",
+            "C",
+            "D"
+          ],
+          "visible": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        {
+          "questionId": "gcp-ace-gcpace-n01-b04-002",
+          "occurrenceId": "bizq24-ui-order:google-cloud-associate-cloud-engineer:occurrence:7",
+          "saved": [
+            "D",
+            "B",
+            "C",
+            "A"
+          ],
+          "visible": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        {
+          "questionId": "gcp-ace-gcpace-n01-b03-002",
+          "occurrenceId": "bizq24-ui-order:google-cloud-associate-cloud-engineer:occurrence:8",
+          "saved": [
+            "B",
+            "A",
+            "C",
+            "D"
+          ],
+          "visible": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        }
+      ]
+    }
+  ],
+  "bindings": [
+    {
+      "path": "src/application/canonical/CanonicalTrainingRuntime.ts",
+      "sha256": "cc980c835227e253c287a1dd841b0892861d5ab8f9491b1c35d5b870253a2e83"
+    },
+    {
+      "path": "src/application/canonical/canonicalOptionOrder.ts",
+      "sha256": "e91aaf2818ac669f30e47528e2ba08d91eae67a770c806f704ce26bb42ded74e"
+    },
+    {
+      "path": "src/application/design-interview/designInterviewSessionFacade.ts",
+      "sha256": "4ff9001ce690486e60ecc2c8ebe47d19c7caf1a054bfdc01c57eaf93b271fa1a"
+    },
+    {
+      "path": "src/application/certification/certificationSessionFacade.ts",
+      "sha256": "1727816579ef068265826070a20eb8c4657514c0c1f08077105b5c7f1ed26240"
+    },
+    {
+      "path": "src/features/practice/DesignInterviewPracticeScreen.tsx",
+      "sha256": "a18f3881c56b79ee2988c9bd4ee913f733822f715f96b72f4ff2d7d3b4b3feb9"
+    },
+    {
+      "path": "src/features/practice/CertificationPracticeSessionScreen.tsx",
+      "sha256": "acd4aedb8c25a155fe3ee93d5254e932fb2def0b92b6218355de1193cea7109f"
+    },
+    {
+      "path": "src/features/practice/canonicalQuestionViewModel.ts",
+      "sha256": "dcf17cee634856644f9f077665033f305d98f75b5d16737f4630cddc789ac1e3"
+    }
+  ],
+  "cause": "Runtime saves and validates occurrence order, but both practice facades return raw resolved questions and the corresponding screens project them without that order",
+  "toolingCorrection": "Initial ESM named import failed before preparation/writes because these TS modules load as CommonJS; corrected probe uses createRequire with the same actual modules",
+  "sourceWrites": false,
+  "accountOrSessionWrites": false
+}

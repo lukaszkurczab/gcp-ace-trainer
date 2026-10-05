@@ -1,0 +1,156 @@
+TAP version 13
+# Subtest: single choice feedback exposes selected incorrect, omitted correct and remaining neutral
+ok 1 - single choice feedback exposes selected incorrect, omitted correct and remaining neutral
+  ---
+  duration_ms: 1.3005
+  type: 'test'
+  ...
+# Subtest: multi choice feedback preserves every selected and correct combination
+ok 2 - multi choice feedback preserves every selected and correct combination
+  ---
+  duration_ms: 0.17625
+  type: 'test'
+  ...
+# Subtest: choice feedback rejects a mismatched response contract
+ok 3 - choice feedback rejects a mismatched response contract
+  ---
+  duration_ms: 0.198416
+  type: 'test'
+  ...
+# Subtest: authored choice messages follow selected incorrect and omitted correct stable IDs in authored order
+ok 4 - authored choice messages follow selected incorrect and omitted correct stable IDs in authored order
+  ---
+  duration_ms: 0.258833
+  type: 'test'
+  ...
+# Subtest: multiple choice messages include only selected wrong and omitted correct targets regardless of response order
+ok 5 - multiple choice messages include only selected wrong and omitted correct targets regardless of response order
+  ---
+  duration_ms: 0.138209
+  type: 'test'
+  ...
+# Subtest: message projection preserves absent-message and non-choice behavior, and freezes provided empty results
+ok 6 - message projection preserves absent-message and non-choice behavior, and freezes provided empty results
+  ---
+  duration_ms: 0.072625
+  type: 'test'
+  ...
+# Subtest: real GCP and Coding artifacts deliver exact selected-wrong authored messages
+ok 7 - real GCP and Coding artifacts deliver exact selected-wrong authored messages
+  ---
+  duration_ms: 568.722875
+  type: 'test'
+  ...
+# MC_REACHABLE coding-interview-dsa-problem-solving completedRound=7
+# MC_REACHABLE claude-certified-architect-professional-certification completedRound=5
+# Subtest: actual GCP practice choice orders vary between session identities and survive durable resume unchanged
+ok 8 - actual GCP practice choice orders vary between session identities and survive durable resume unchanged
+  ---
+  duration_ms: 258.005834
+  type: 'test'
+  ...
+# Subtest: resume accepts a fingerprint-bound legal choice permutation without requiring regeneration
+ok 9 - resume accepts a fingerprint-bound legal choice permutation without requiring regeneration
+  ---
+  duration_ms: 1.10375
+  type: 'test'
+  ...
+# Subtest: all 16077 actual items preserve control membership, ID answers and non-choice order without exposing an answer to the ranker
+ok 10 - all 16077 actual items preserve control membership, ID answers and non-choice order without exposing an answer to the ranker
+  ---
+  duration_ms: 1684.732542
+  type: 'test'
+  ...
+# Subtest: all real 29 practice modes and canonical simulation profiles prepare valid frozen orders with unchanged question selection
+ok 11 - all real 29 practice modes and canonical simulation profiles prepare valid frozen orders with unchanged question selection
+  ---
+  duration_ms: 37.422
+  type: 'test'
+  ...
+# Subtest: legacy source orders remain valid; malformed orders, stale pins and unstored permutation changes fail resume
+ok 12 - legacy source orders remain valid; malformed orders, stale pins and unstored permutation changes fail resume
+  ---
+  duration_ms: 1.865625
+  type: 'test'
+  ...
+# Subtest: actual Coding conditional repeat retains the source prepared order after three durable intervening answers and rebind
+ok 13 - actual Coding conditional repeat retains the source prepared order after three durable intervening answers and rebind
+  ---
+  duration_ms: 49.972833
+  type: 'test'
+  ...
+# Subtest: MC becomes reachable through completed canonical sessions and real persisted history without changing selection policy
+ok 14 - MC becomes reachable through completed canonical sessions and real persisted history without changing selection policy
+  ---
+  duration_ms: 775.404
+  type: 'test'
+  ...
+# Subtest: object-oriented-design-interview actual practice facade presents persisted choice order across submit and memory rebind
+ok 15 - object-oriented-design-interview actual practice facade presents persisted choice order across submit and memory rebind
+  ---
+  duration_ms: 784.130834
+  type: 'test'
+  ...
+# Subtest: google-cloud-associate-cloud-engineer actual practice facade presents persisted choice order across submit and memory rebind
+ok 16 - google-cloud-associate-cloud-engineer actual practice facade presents persisted choice order across submit and memory rebind
+  ---
+  duration_ms: 21.153542
+  type: 'test'
+  ...
+# Subtest: saved-order projection preserves ID scoring and feedback for actual single/multiple choices and rejects invalid plans
+ok 17 - saved-order projection preserves ID scoring and feedback for actual single/multiple choices and rejects invalid plans
+  ---
+  duration_ms: 1.926625
+  type: 'test'
+  ...
+# Subtest: non-choice projection retains the exact declared order and source object
+ok 18 - non-choice projection retains the exact declared order and source object
+  ---
+  duration_ms: 1.660542
+  type: 'test'
+  ...
+# Subtest: active Certification projection strips answers, explanations and feedback structurally
+ok 19 - active Certification projection strips answers, explanations and feedback structurally
+  ---
+  duration_ms: 1.421333
+  type: 'test'
+  ...
+# Subtest: deferred feedback remains absent after durable submit while immediate feedback is unchanged
+ok 20 - deferred feedback remains absent after durable submit while immediate feedback is unchanged
+  ---
+  duration_ms: 0.317292
+  type: 'test'
+  ...
+# Subtest: immediate Certification feedback returns only authored messages for selected incorrect IDs
+ok 21 - immediate Certification feedback returns only authored messages for selected incorrect IDs
+  ---
+  duration_ms: 0.112625
+  type: 'test'
+  ...
+# Subtest: completed review evidence fails closed when durable outcome aggregates are missing or inconsistent
+ok 22 - completed review evidence fails closed when durable outcome aggregates are missing or inconsistent
+  ---
+  duration_ms: 0.151
+  type: 'test'
+  ...
+# Subtest: all three actual Design pools deliver exact authored wrong-option feedback after durable submit and rebind
+ok 23 - all three actual Design pools deliver exact authored wrong-option feedback after durable submit and rebind
+  ---
+  duration_ms: 813.745333
+  type: 'test'
+  ...
+# Subtest: Design choice diagnostics stay hidden for a failed journal write and committed-only response
+ok 24 - Design choice diagnostics stay hidden for a failed journal write and committed-only response
+  ---
+  duration_ms: 11.250291
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3740.143542

@@ -25,3 +25,13 @@ export function isCanonicalOptionOrder(question: Question, order: unknown): orde
   if (!Array.isArray(order) || order.length !== ids.length || new Set(order).size !== ids.length || ids.some((_, index) => !Object.hasOwn(order, index))) return false;
   return isChoice(question) ? order.every((id) => typeof id === "string" && ids.includes(id)) : ids.every((id, index) => order[index] === id);
 }
+
+/** Apply the saved occurrence plan before the question crosses to practice UI. */
+export function projectCanonicalQuestionInSessionOrder(question: Question, order: unknown): Question {
+  if (!isCanonicalOptionOrder(question, order)) throw new Error("Saved control order is unavailable for this session occurrence.");
+  const interaction = question.interaction;
+  if (interaction.type !== "choice_single" && interaction.type !== "choice_multiple") return question;
+  const options = Object.freeze(order.map(id => interaction.options.find(option => option.optionId === id)!));
+  // Only order changes; the original matching interaction/answer union is retained.
+  return Object.freeze({ ...question, interaction: Object.freeze({ ...interaction, options }) }) as Question;
+}
