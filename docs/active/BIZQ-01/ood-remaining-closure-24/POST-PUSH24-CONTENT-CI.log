@@ -1,0 +1,1575 @@
+architecture	Set up job	﻿2026-10-05T12:10:40.1780230Z Current runner version: '2.337.0'
+architecture	Set up job	2026-10-05T12:10:40.1798911Z ##[group]Runner Image Provisioner
+architecture	Set up job	2026-10-05T12:10:40.1799874Z Hosted Compute Agent
+architecture	Set up job	2026-10-05T12:10:40.1800281Z Version: 20260901.588
+architecture	Set up job	2026-10-05T12:10:40.1800688Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+architecture	Set up job	2026-10-05T12:10:40.1801167Z Build Date: 2026-09-01T19:56:44Z
+architecture	Set up job	2026-10-05T12:10:40.1801579Z Worker ID: {c522409a-31e0-496e-b151-1bc2265aed21}
+architecture	Set up job	2026-10-05T12:10:40.1802058Z Azure Region: centralus
+architecture	Set up job	2026-10-05T12:10:40.1802421Z ##[endgroup]
+architecture	Set up job	2026-10-05T12:10:40.1803225Z ##[group]Operating System
+architecture	Set up job	2026-10-05T12:10:40.1803634Z Ubuntu
+architecture	Set up job	2026-10-05T12:10:40.1803955Z 24.04.5
+architecture	Set up job	2026-10-05T12:10:40.1804261Z LTS
+architecture	Set up job	2026-10-05T12:10:40.1804654Z ##[endgroup]
+architecture	Set up job	2026-10-05T12:10:40.1805023Z ##[group]Runner Image
+architecture	Set up job	2026-10-05T12:10:40.1805438Z Image: ubuntu-24.04
+architecture	Set up job	2026-10-05T12:10:40.1805788Z Version: 20260927.320.1
+architecture	Set up job	2026-10-05T12:10:40.1806551Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260927.320/images/ubuntu/Ubuntu2404-Readme.md
+architecture	Set up job	2026-10-05T12:10:40.1807626Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260927.320
+architecture	Set up job	2026-10-05T12:10:40.1808235Z ##[endgroup]
+architecture	Set up job	2026-10-05T12:10:40.1808941Z ##[group]GITHUB_TOKEN Permissions
+architecture	Set up job	2026-10-05T12:10:40.1810392Z Contents: read
+architecture	Set up job	2026-10-05T12:10:40.1810755Z Metadata: read
+architecture	Set up job	2026-10-05T12:10:40.1811088Z Packages: read
+architecture	Set up job	2026-10-05T12:10:40.1811474Z ##[endgroup]
+architecture	Set up job	2026-10-05T12:10:40.1812837Z Secret source: Actions
+architecture	Set up job	2026-10-05T12:10:40.1813487Z Cache mode: write
+architecture	Set up job	2026-10-05T12:10:40.1814062Z Prepare workflow directory
+architecture	Set up job	2026-10-05T12:10:40.2065009Z Prepare all required actions
+architecture	Set up job	2026-10-05T12:10:40.2095568Z Getting action download info
+architecture	Set up job	2026-10-05T12:10:40.4463894Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+architecture	Set up job	2026-10-05T12:10:40.5262886Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+architecture	Set up job	2026-10-05T12:10:40.7091691Z Complete job name: architecture
+architecture	Run actions/checkout@v4	﻿2026-10-05T12:10:40.8526774Z ##[group]Run actions/checkout@v4
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8528182Z with:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8528530Z   path: patternly-content
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8528899Z   fetch-depth: 0
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8529271Z   repository: lukaszkurczab/patternly-content
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8532561Z   token: ***
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8532878Z   ssh-strict: true
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8533202Z   ssh-user: git
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8533532Z   persist-credentials: true
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8533895Z   clean: true
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8534228Z   sparse-checkout-cone-mode: true
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8534619Z   fetch-tags: false
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8534949Z   show-progress: true
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8535282Z   lfs: false
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8535595Z   submodules: false
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8536042Z   set-safe-directory: true
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8536427Z   allow-unsafe-pr-checkout: false
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.8536954Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9196666Z Syncing repository: lukaszkurczab/patternly-content
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9198297Z ##[group]Getting Git version info
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9199186Z Working directory is '/home/runner/work/patternly-content/patternly-content/patternly-content'
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9200233Z [command]/usr/bin/git version
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9329664Z git version 2.55.0
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9351175Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9361804Z Temporarily overriding HOME='/home/runner/work/_temp/eb75e7a8-f61f-4908-9529-91bb5f624330' before making global git config changes
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9362876Z Adding repository directory to the temporary git global config as a safe directory
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9363628Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/patternly-content/patternly-content/patternly-content
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9436845Z ##[group]Initializing the repository
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9439361Z [command]/usr/bin/git init /home/runner/work/patternly-content/patternly-content/patternly-content
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9566960Z hint: Using 'master' as the name for the initial branch. This default branch name
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9570105Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9570720Z hint: to use in all of your new repositories, which will suppress this warning,
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9571127Z hint: call:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9571361Z hint:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9571689Z hint: 	git config --global init.defaultBranch <name>
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9572039Z hint:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9572366Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9572880Z hint: 'development'. The just-created branch can be renamed via this command:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9573285Z hint:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9573523Z hint: 	git branch -m <name>
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9573803Z hint:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9574189Z hint: Disable this message with "git config set advice.defaultBranchName false"
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9575434Z Initialized empty Git repository in /home/runner/work/patternly-content/patternly-content/patternly-content/.git/
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9584892Z [command]/usr/bin/git remote add origin https://github.com/lukaszkurczab/patternly-content
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9739121Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9739903Z ##[group]Disabling automatic garbage collection
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9743634Z [command]/usr/bin/git config --local gc.auto 0
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9938603Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9939039Z ##[group]Setting up auth
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9944019Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+architecture	Run actions/checkout@v4	2026-10-05T12:10:40.9973405Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+architecture	Run actions/checkout@v4	2026-10-05T12:10:41.0259523Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+architecture	Run actions/checkout@v4	2026-10-05T12:10:41.0287774Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+architecture	Run actions/checkout@v4	2026-10-05T12:10:41.0459375Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:41.0488153Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+architecture	Run actions/checkout@v4	2026-10-05T12:10:41.0654349Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+architecture	Run actions/checkout@v4	2026-10-05T12:10:41.0934694Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:41.0935419Z ##[group]Fetching the repository
+architecture	Run actions/checkout@v4	2026-10-05T12:10:41.0941771Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2345467Z From https://github.com/lukaszkurczab/patternly-content
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2346858Z  * [new branch]      agent/ai901-question-bank -> origin/agent/ai901-question-bank
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2348101Z  * [new branch]      agent/resolve-frontend-telemetry-provenance -> origin/agent/resolve-frontend-telemetry-provenance
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2349391Z  * [new branch]      codex/cloud-certification-canonical-readiness -> origin/codex/cloud-certification-canonical-readiness
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2350265Z  * [new branch]      codex/cloud-certification-evidence-closure -> origin/codex/cloud-certification-evidence-closure
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2350909Z  * [new branch]      master     -> origin/master
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2382719Z [command]/usr/bin/git branch --list --remote origin/master
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2383514Z   origin/master
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2387939Z [command]/usr/bin/git rev-parse refs/remotes/origin/master
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2410210Z cf119c3f8e8ebfce3e5bdbcd3d5f4e4c7c5dd509
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2418258Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2419137Z ##[group]Determining the checkout info
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2420023Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2429800Z [command]/usr/bin/git sparse-checkout disable
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2473660Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2500604Z ##[group]Checking out the ref
+architecture	Run actions/checkout@v4	2026-10-05T12:10:48.2501960Z [command]/usr/bin/git checkout --progress --force -B master refs/remotes/origin/master
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.2690711Z Updating files:  79% (1414/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.2698716Z Updating files:  80% (1429/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.2732937Z Updating files:  81% (1447/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.2833214Z Updating files:  82% (1465/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.2876374Z Updating files:  83% (1483/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.2919056Z Updating files:  84% (1501/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.2986791Z Updating files:  85% (1519/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.3059064Z Updating files:  86% (1536/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.3083668Z Updating files:  87% (1554/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.3106603Z Updating files:  88% (1572/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.3125169Z Updating files:  89% (1590/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.3147460Z Updating files:  90% (1608/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.3188900Z Updating files:  91% (1626/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.3258529Z Updating files:  92% (1644/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.3577779Z Updating files:  93% (1661/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.4222441Z Updating files:  94% (1679/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.4313626Z Updating files:  95% (1697/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.4319634Z Updating files:  96% (1715/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.4355030Z Updating files:  97% (1733/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.4362091Z Updating files:  98% (1751/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.4372033Z Updating files:  99% (1769/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.4372701Z Updating files: 100% (1786/1786)
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.4373253Z Updating files: 100% (1786/1786), done.
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.5112560Z Reset branch 'master'
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.5123055Z branch 'master' set up to track 'origin/master'.
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.5170131Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.5216381Z [command]/usr/bin/git log -1 --format=%H
+architecture	Run actions/checkout@v4	2026-10-05T12:10:49.5240932Z cf119c3f8e8ebfce3e5bdbcd3d5f4e4c7c5dd509
+architecture	Run actions/setup-node@v4	﻿2026-10-05T12:10:49.5481623Z ##[group]Run actions/setup-node@v4
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.5481798Z with:
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.5481922Z   node-version: 22
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.5482039Z   always-auth: false
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.5482154Z   check-latest: false
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.5483431Z   token: ***
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.5483543Z ##[endgroup]
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.6387994Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.6390506Z (node:2080) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.6390936Z (Use `node --trace-deprecation ...` to show where the warning was created)
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.6392798Z ##[group]Environment details
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.9599789Z node: v22.23.3
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.9600174Z npm: 10.9.9
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.9600357Z yarn: 1.22.22
+architecture	Run actions/setup-node@v4	2026-10-05T12:10:49.9601515Z ##[endgroup]
+architecture	Read admitted application commit	﻿2026-10-05T12:10:49.9712320Z ##[group]Run node --input-type=module <<'NODE'
+architecture	Read admitted application commit	2026-10-05T12:10:49.9712599Z [36;1mnode --input-type=module <<'NODE'[0m
+architecture	Read admitted application commit	2026-10-05T12:10:49.9712803Z [36;1mimport { appendFile, readFile } from "node:fs/promises";[0m
+architecture	Read admitted application commit	2026-10-05T12:10:49.9713019Z [36;1m[0m
+architecture	Read admitted application commit	2026-10-05T12:10:49.9713266Z [36;1mconst admission = JSON.parse(await readFile("evidence/admissions/candidate-admission-v3.json", "utf8"));[0m
+architecture	Read admitted application commit	2026-10-05T12:10:49.9713582Z [36;1mconst frontendCommit = admission.application?.frontendCommit;[0m
+architecture	Read admitted application commit	2026-10-05T12:10:49.9713862Z [36;1mif (typeof frontendCommit !== "string" || !/^[a-f0-9]{40}$/u.test(frontendCommit)) {[0m
+architecture	Read admitted application commit	2026-10-05T12:10:49.9714163Z [36;1m  throw new Error("Candidate admission application commit is missing or malformed.");[0m
+architecture	Read admitted application commit	2026-10-05T12:10:49.9714381Z [36;1m}[0m
+architecture	Read admitted application commit	2026-10-05T12:10:49.9714614Z [36;1mif (!process.env.GITHUB_OUTPUT) throw new Error("GitHub Actions output file is unavailable.");[0m
+architecture	Read admitted application commit	2026-10-05T12:10:49.9714995Z [36;1mawait appendFile(process.env.GITHUB_OUTPUT, `frontend_commit=${frontendCommit}\n`, "utf8");[0m
+architecture	Read admitted application commit	2026-10-05T12:10:49.9715255Z [36;1mNODE[0m
+architecture	Read admitted application commit	2026-10-05T12:10:50.0499161Z shell: /usr/bin/bash -e {0}
+architecture	Read admitted application commit	2026-10-05T12:10:50.0499433Z ##[endgroup]
+architecture	Run actions/checkout@v4	﻿2026-10-05T12:10:50.1523412Z ##[group]Run actions/checkout@v4
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1523584Z with:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1523709Z   repository: lukaszkurczab/gcp-ace-trainer
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1523881Z   ref: fa95d027076e970d71dacf0d1fd7976fa0ba8f60
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1524035Z   path: patternly
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1524147Z   fetch-depth: 0
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1525406Z   token: ***
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1525513Z   ssh-strict: true
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1525620Z   ssh-user: git
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1525752Z   persist-credentials: true
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1526026Z   clean: true
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1526141Z   sparse-checkout-cone-mode: true
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1526278Z   fetch-tags: false
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1526387Z   show-progress: true
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1526497Z   lfs: false
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1526598Z   submodules: false
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1526709Z   set-safe-directory: true
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1526838Z   allow-unsafe-pr-checkout: false
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.1526971Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2062136Z Syncing repository: lukaszkurczab/gcp-ace-trainer
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2063956Z ##[group]Getting Git version info
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2065343Z Working directory is '/home/runner/work/patternly-content/patternly-content/patternly'
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2083347Z [command]/usr/bin/git version
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2112957Z git version 2.55.0
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2123861Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2133186Z Temporarily overriding HOME='/home/runner/work/_temp/7f74e12d-0a65-4a73-83fa-567a271d0517' before making global git config changes
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2133981Z Adding repository directory to the temporary git global config as a safe directory
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2136329Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/patternly-content/patternly-content/patternly
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2165679Z ##[group]Initializing the repository
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2169584Z [command]/usr/bin/git init /home/runner/work/patternly-content/patternly-content/patternly
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2205235Z hint: Using 'master' as the name for the initial branch. This default branch name
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2206137Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2207091Z hint: to use in all of your new repositories, which will suppress this warning,
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2207590Z hint: call:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2207906Z hint:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2208328Z hint: 	git config --global init.defaultBranch <name>
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2208726Z hint:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2209191Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2209837Z hint: 'development'. The just-created branch can be renamed via this command:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2210303Z hint:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2210630Z hint: 	git branch -m <name>
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2210968Z hint:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2211516Z hint: Disable this message with "git config set advice.defaultBranchName false"
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2212353Z Initialized empty Git repository in /home/runner/work/patternly-content/patternly-content/patternly/.git/
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2214056Z [command]/usr/bin/git remote add origin https://github.com/lukaszkurczab/gcp-ace-trainer
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2241785Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2242146Z ##[group]Disabling automatic garbage collection
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2246361Z [command]/usr/bin/git config --local gc.auto 0
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2270511Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2270871Z ##[group]Setting up auth
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2275635Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2301276Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2513171Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2544652Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2731652Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2760581Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2940215Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2965755Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2966697Z ##[group]Fetching the repository
+architecture	Run actions/checkout@v4	2026-10-05T12:10:50.2972291Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5802861Z From https://github.com/lukaszkurczab/gcp-ace-trainer
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5803406Z  * [new branch]        agent/register-ui-icons -> origin/agent/register-ui-icons
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5803943Z  * [new branch]        codex/algorithms-completion-evidence -> origin/codex/algorithms-completion-evidence
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5804572Z  * [new branch]        codex/architecture-recovery-v3 -> origin/codex/architecture-recovery-v3
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5805766Z  * [new branch]        codex/close-canonical-docs-stage -> origin/codex/close-canonical-docs-stage
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5816887Z  * [new branch]        codex/cloud-certification-canonical-readiness -> origin/codex/cloud-certification-canonical-readiness
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5817670Z  * [new branch]        codex/cloud-certification-evidence-closure -> origin/codex/cloud-certification-evidence-closure
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5818199Z  * [new branch]        codex/interview-simulation-evidence -> origin/codex/interview-simulation-evidence
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5818577Z  * [new branch]        codex/kernel-family-neutral-records -> origin/codex/kernel-family-neutral-records
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5819118Z  * [new branch]        codex/repository-contract-delta-audit -> origin/codex/repository-contract-delta-audit
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5819701Z  * [new branch]        codex/reproducible-baseline -> origin/codex/reproducible-baseline
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5820183Z  * [new branch]        codex/runtime-auditability -> origin/codex/runtime-auditability
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5820593Z  * [new branch]        main                    -> origin/main
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5821788Z [command]/usr/bin/git rev-parse --verify --quiet fa95d027076e970d71dacf0d1fd7976fa0ba8f60^{object}
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5841126Z fa95d027076e970d71dacf0d1fd7976fa0ba8f60
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5845365Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5845734Z ##[group]Determining the checkout info
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5846525Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.5850837Z [command]/usr/bin/git sparse-checkout disable
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.6616237Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.6709103Z ##[group]Checking out the ref
+architecture	Run actions/checkout@v4	2026-10-05T12:10:57.6712535Z [command]/usr/bin/git checkout --progress --force fa95d027076e970d71dacf0d1fd7976fa0ba8f60
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2501333Z Note: switching to 'fa95d027076e970d71dacf0d1fd7976fa0ba8f60'.
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2501860Z 
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2502251Z You are in 'detached HEAD' state. You can look around, make experimental
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2503048Z changes and commit them, and you can discard any commits you make in this
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2503503Z state without impacting any branches by switching back to a branch.
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2503712Z 
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2503921Z If you want to create a new branch to retain commits you create, you may
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2504326Z do so (now or later) by using -c with the switch command. Example:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2504526Z 
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2504642Z   git switch -c <new-branch-name>
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2504786Z 
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2504884Z Or undo this operation with:
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2505016Z 
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2505092Z   git switch -
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2505188Z 
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2505412Z Turn off this advice by setting config variable advice.detachedHead to false
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2506258Z 
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2506470Z HEAD is now at fa95d027 fix(content): consume reviewed OOD v24 cohort
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2542771Z ##[endgroup]
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2584033Z [command]/usr/bin/git log -1 --format=%H
+architecture	Run actions/checkout@v4	2026-10-05T12:10:58.2607374Z fa95d027076e970d71dacf0d1fd7976fa0ba8f60
+architecture	Install admitted application dependencies	﻿2026-10-05T12:10:58.3380651Z ##[group]Run npm ci
+architecture	Install admitted application dependencies	2026-10-05T12:10:58.3380786Z [36;1mnpm ci[0m
+architecture	Install admitted application dependencies	2026-10-05T12:10:58.3432228Z shell: /usr/bin/bash -e {0}
+architecture	Install admitted application dependencies	2026-10-05T12:10:58.3432362Z ##[endgroup]
+architecture	Install admitted application dependencies	2026-10-05T12:11:00.4555118Z npm warn deprecated uuid@7.0.3: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.3999634Z 
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.4000201Z added 650 packages, and audited 651 packages in 17s
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.4000393Z 
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.4000486Z 78 packages are looking for funding
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.4000694Z   run `npm fund` for details
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.5821316Z 
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.5822025Z 40 vulnerabilities (1 low, 12 moderate, 27 high)
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.5822282Z 
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.5822462Z To address issues that do not require attention, run:
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.5822744Z   npm audit fix
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.5822851Z 
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.5823028Z To address all issues (including breaking changes), run:
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.5823516Z   npm audit fix --force
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.5823638Z 
+architecture	Install admitted application dependencies	2026-10-05T12:11:15.5823738Z Run `npm audit` for details.
+architecture	Run npm ci	﻿2026-10-05T12:11:15.6499444Z ##[group]Run npm ci
+architecture	Run npm ci	2026-10-05T12:11:15.6499600Z [36;1mnpm ci[0m
+architecture	Run npm ci	2026-10-05T12:11:15.6551537Z shell: /usr/bin/bash -e {0}
+architecture	Run npm ci	2026-10-05T12:11:15.6551683Z ##[endgroup]
+architecture	Run npm ci	2026-10-05T12:11:15.8051021Z 
+architecture	Run npm ci	2026-10-05T12:11:15.8051665Z up to date, audited 1 package in 111ms
+architecture	Run npm ci	2026-10-05T12:11:15.8055082Z 
+architecture	Run npm ci	2026-10-05T12:11:15.8055197Z found 0 vulnerabilities
+architecture	Run npm test	﻿2026-10-05T12:11:15.8138750Z ##[group]Run npm test
+architecture	Run npm test	2026-10-05T12:11:15.8138926Z [36;1mnpm test[0m
+architecture	Run npm test	2026-10-05T12:11:15.8188930Z shell: /usr/bin/bash -e {0}
+architecture	Run npm test	2026-10-05T12:11:15.8189072Z ##[endgroup]
+architecture	Run npm test	2026-10-05T12:11:15.8833772Z 
+architecture	Run npm test	2026-10-05T12:11:15.8834406Z > patternly-content@1.0.0 test
+architecture	Run npm test	2026-10-05T12:11:15.8834737Z > npm run test:canonical
+architecture	Run npm test	2026-10-05T12:11:15.8834876Z 
+architecture	Run npm test	2026-10-05T12:11:15.9408316Z 
+architecture	Run npm test	2026-10-05T12:11:15.9408883Z > patternly-content@1.0.0 test:canonical
+architecture	Run npm test	2026-10-05T12:11:15.9411703Z > node --test tests/content-builder.test.mjs tests/packageCompletionTransport.test.mjs tests/contentReviewConsole.test.mjs tests/bizq01-source-slice.test.mjs tests/bizq01-source-copy.test.mjs tests/bizq01-migration-proof.test.mjs tests/bizq01-besd-seed-cohort-14.test.mjs tests/bizq01-ood-source-11.test.mjs tests/bizq01-ood-source-12.test.mjs tests/bizq01-ood-unit-cohort-13.test.mjs tests/bizq01-ood-node-closure-16.test.mjs tests/bizq01-ood-node-closure-17.test.mjs tests/bizq01-ood-node-closure-19.test.mjs tests/bizq01-ood-node-closure-20.test.mjs tests/bizq01-ood-node-closure-21.test.mjs tests/bizq01-ood-node-closure-22.test.mjs tests/bizq01-ood-node-closure-23.test.mjs tests/bizq01-ood-node-closure-24.test.mjs tests/shared-contract.test.mjs tests/simp03-phase-a.test.mjs tests/simp03-verifier.test.mjs tests/content-boundary.test.mjs tests/odk123-claude-focus-feedback.test.mjs tests/odk096-canonical-approval.test.mjs tests/odk097-design-session-matrix.test.mjs tests/model-evaluation-inventory.test.mjs tests/candidate-draft-v2.test.mjs tests/candidate-readiness-v2.test.mjs tests/candidate-admission-v3.test.mjs tests/candidate-release-gate-v2.test.mjs
+architecture	Run npm test	2026-10-05T12:11:15.9413965Z 
+architecture	Run npm test	2026-10-05T12:11:15.9749284Z TAP version 13
+architecture	Run npm test	2026-10-05T12:11:24.4836742Z # Subtest: accepts the fixed two-unit cohort and source01 predecessor chain
+architecture	Run npm test	2026-10-05T12:11:24.4837978Z ok 1 - accepts the fixed two-unit cohort and source01 predecessor chain
+architecture	Run npm test	2026-10-05T12:11:24.4838543Z   ---
+architecture	Run npm test	2026-10-05T12:11:24.4838956Z   duration_ms: 8465.040392
+architecture	Run npm test	2026-10-05T12:11:24.4839323Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:11:24.4839698Z   ...
+architecture	Run npm test	2026-10-05T12:11:26.1281202Z # Subtest: requires both the new fixed proof and unchanged source01 proof
+architecture	Run npm test	2026-10-05T12:11:26.1282011Z ok 2 - requires both the new fixed proof and unchanged source01 proof
+architecture	Run npm test	2026-10-05T12:11:26.1282342Z   ---
+architecture	Run npm test	2026-10-05T12:11:26.1303656Z   duration_ms: 1645.578074
+architecture	Run npm test	2026-10-05T12:11:26.1303980Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:11:26.1304251Z   ...
+architecture	Run npm test	2026-10-05T12:11:32.8189893Z # Subtest: rejects changed current source items, old/current proof objects, source bytes, and versions
+architecture	Run npm test	2026-10-05T12:11:32.8190651Z ok 3 - rejects changed current source items, old/current proof objects, source bytes, and versions
+architecture	Run npm test	2026-10-05T12:11:32.8190987Z   ---
+architecture	Run npm test	2026-10-05T12:11:32.8191269Z   duration_ms: 6690.271225
+architecture	Run npm test	2026-10-05T12:11:32.8191587Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:11:32.8191697Z   ...
+architecture	Run npm test	2026-10-05T12:11:36.6510067Z # Subtest: rejects missing, duplicate, extra and unrelated replacement/source membership
+architecture	Run npm test	2026-10-05T12:11:36.6511136Z ok 4 - rejects missing, duplicate, extra and unrelated replacement/source membership
+architecture	Run npm test	2026-10-05T12:11:36.6511862Z   ---
+architecture	Run npm test	2026-10-05T12:11:36.6512205Z   duration_ms: 3831.684444
+architecture	Run npm test	2026-10-05T12:11:36.6512571Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:11:36.6512899Z   ...
+architecture	Run npm test	2026-10-05T12:11:36.7541423Z # Subtest: rejects canonical source moved behind a symlink
+architecture	Run npm test	2026-10-05T12:11:36.7544497Z ok 5 - rejects canonical source moved behind a symlink
+architecture	Run npm test	2026-10-05T12:11:36.7545057Z   ---
+architecture	Run npm test	2026-10-05T12:11:36.7545392Z   duration_ms: 103.05193
+architecture	Run npm test	2026-10-05T12:11:36.7545789Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:11:36.7546264Z   ...
+architecture	Run npm test	2026-10-05T12:11:49.9614714Z # Subtest: accepts the real BIZQ-01 replacement proof while preserving current and historical counts
+architecture	Run npm test	2026-10-05T12:11:49.9615446Z ok 6 - accepts the real BIZQ-01 replacement proof while preserving current and historical counts
+architecture	Run npm test	2026-10-05T12:11:49.9615943Z   ---
+architecture	Run npm test	2026-10-05T12:11:49.9616143Z   duration_ms: 10380.766883
+architecture	Run npm test	2026-10-05T12:11:49.9616387Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:11:49.9616557Z   ...
+architecture	Run npm test	2026-10-05T12:11:49.9616870Z # Subtest: keeps the original migration verifier behavior when no BIZQ proof is present
+architecture	Run npm test	2026-10-05T12:11:49.9617695Z ok 7 - keeps the original migration verifier behavior when no BIZQ proof is present
+architecture	Run npm test	2026-10-05T12:11:49.9617970Z   ---
+architecture	Run npm test	2026-10-05T12:11:49.9618134Z   duration_ms: 938.747562
+architecture	Run npm test	2026-10-05T12:11:49.9620259Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:11:49.9620955Z   ...
+architecture	Run npm test	2026-10-05T12:11:49.9624367Z # Subtest: rejects changes to a current replacement and its frozen old object
+architecture	Run npm test	2026-10-05T12:11:49.9624675Z ok 8 - rejects changes to a current replacement and its frozen old object
+architecture	Run npm test	2026-10-05T12:11:49.9624859Z   ---
+architecture	Run npm test	2026-10-05T12:11:49.9624963Z   duration_ms: 1715.981479
+architecture	Run npm test	2026-10-05T12:11:49.9625084Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:11:49.9625186Z   ...
+architecture	Run npm test	2026-10-05T12:11:49.9625370Z # Subtest: requires and binds the fixed 19a reason-only amendment proof
+architecture	Run npm test	2026-10-05T12:11:49.9625640Z ok 9 - requires and binds the fixed 19a reason-only amendment proof
+architecture	Run npm test	2026-10-05T12:11:49.9625939Z   ---
+architecture	Run npm test	2026-10-05T12:11:49.9626180Z   duration_ms: 3417.995477
+architecture	Run npm test	2026-10-05T12:11:49.9626377Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:11:49.9626535Z   ...
+architecture	Run npm test	2026-10-05T12:11:49.9626866Z # Subtest: binds 19a to exact IDs, before/current Reasons, hashes, and closed membership
+architecture	Run npm test	2026-10-05T12:11:49.9627350Z ok 10 - binds 19a to exact IDs, before/current Reasons, hashes, and closed membership
+architecture	Run npm test	2026-10-05T12:11:49.9627550Z   ---
+architecture	Run npm test	2026-10-05T12:11:49.9627651Z   duration_ms: 17471.546973
+architecture	Run npm test	2026-10-05T12:11:49.9627773Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:11:49.9627872Z   ...
+architecture	Run npm test	2026-10-05T12:11:57.1810820Z # Subtest: rejects every non-Reason edit in an amended source object
+architecture	Run npm test	2026-10-05T12:11:57.1811893Z ok 11 - rejects every non-Reason edit in an amended source object
+architecture	Run npm test	2026-10-05T12:11:57.1812482Z   ---
+architecture	Run npm test	2026-10-05T12:11:57.1812830Z   duration_ms: 7219.089739
+architecture	Run npm test	2026-10-05T12:11:57.1813237Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:11:57.1813553Z   ...
+architecture	Run npm test	2026-10-05T12:12:00.6446642Z # Subtest: binds the catalog version and rejects symlink substitution for the 19a proof and source
+architecture	Run npm test	2026-10-05T12:12:00.6447866Z ok 12 - binds the catalog version and rejects symlink substitution for the 19a proof and source
+architecture	Run npm test	2026-10-05T12:12:00.6448777Z   ---
+architecture	Run npm test	2026-10-05T12:12:00.6448970Z   duration_ms: 3464.139677
+architecture	Run npm test	2026-10-05T12:12:00.6449185Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:00.6449365Z   ...
+architecture	Run npm test	2026-10-05T12:12:04.1928359Z # Subtest: rejects stale batch identity, duplicate mappings, and a missing replacement
+architecture	Run npm test	2026-10-05T12:12:04.1935711Z ok 13 - rejects stale batch identity, duplicate mappings, and a missing replacement
+architecture	Run npm test	2026-10-05T12:12:04.1936575Z   ---
+architecture	Run npm test	2026-10-05T12:12:04.1936793Z   duration_ms: 3547.701413
+architecture	Run npm test	2026-10-05T12:12:04.1936998Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:04.1937161Z   ...
+architecture	Run npm test	2026-10-05T12:12:05.1303026Z # Subtest: rejects changes to an unrelated item in the proven current track
+architecture	Run npm test	2026-10-05T12:12:05.1303811Z ok 14 - rejects changes to an unrelated item in the proven current track
+architecture	Run npm test	2026-10-05T12:12:05.1304229Z   ---
+architecture	Run npm test	2026-10-05T12:12:05.1304425Z   duration_ms: 937.551351
+architecture	Run npm test	2026-10-05T12:12:05.1304664Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:05.1304842Z   ...
+architecture	Run npm test	2026-10-05T12:12:08.7675310Z # Subtest: accepts only the real same-ID Coding wording correction alongside the unchanged BESD proof
+architecture	Run npm test	2026-10-05T12:12:08.7676566Z ok 15 - accepts only the real same-ID Coding wording correction alongside the unchanged BESD proof
+architecture	Run npm test	2026-10-05T12:12:08.7677178Z   ---
+architecture	Run npm test	2026-10-05T12:12:08.7677517Z   duration_ms: 3637.172059
+architecture	Run npm test	2026-10-05T12:12:08.7677885Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:08.7678177Z   ...
+architecture	Run npm test	2026-10-05T12:12:14.3744544Z # Subtest: rejects the same-ID correction without its proof and rejects tampered frozen old objects
+architecture	Run npm test	2026-10-05T12:12:14.3748333Z ok 16 - rejects the same-ID correction without its proof and rejects tampered frozen old objects
+architecture	Run npm test	2026-10-05T12:12:14.3749248Z   ---
+architecture	Run npm test	2026-10-05T12:12:14.3749615Z   duration_ms: 5606.873407
+architecture	Run npm test	2026-10-05T12:12:14.3750005Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:14.3750353Z   ...
+architecture	Run npm test	2026-10-05T12:12:32.7607343Z # Subtest: rejects unapproved wording, answer, options, feedback and taxonomy changes in the corrected source
+architecture	Run npm test	2026-10-05T12:12:32.7617083Z ok 17 - rejects unapproved wording, answer, options, feedback and taxonomy changes in the corrected source
+architecture	Run npm test	2026-10-05T12:12:32.7617884Z   ---
+architecture	Run npm test	2026-10-05T12:12:32.7618348Z   duration_ms: 18384.197029
+architecture	Run npm test	2026-10-05T12:12:32.7618728Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:32.7619014Z   ...
+architecture	Run npm test	2026-10-05T12:12:53.3730435Z # Subtest: rejects stale Coding version, proof identity/hashes/source location and unexpected proof fields
+architecture	Run npm test	2026-10-05T12:12:53.3734158Z ok 18 - rejects stale Coding version, proof identity/hashes/source location and unexpected proof fields
+architecture	Run npm test	2026-10-05T12:12:53.3735067Z   ---
+architecture	Run npm test	2026-10-05T12:12:53.3743889Z   duration_ms: 20613.686312
+architecture	Run npm test	2026-10-05T12:12:53.3744428Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:53.3744778Z   ...
+architecture	Run npm test	2026-10-05T12:12:53.5883686Z # Subtest: rejects a corrected source moved away from its canonical mental-unit filename
+architecture	Run npm test	2026-10-05T12:12:53.5893927Z ok 19 - rejects a corrected source moved away from its canonical mental-unit filename
+architecture	Run npm test	2026-10-05T12:12:53.5894551Z   ---
+architecture	Run npm test	2026-10-05T12:12:53.5894886Z   duration_ms: 215.301132
+architecture	Run npm test	2026-10-05T12:12:53.5895299Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:53.5895620Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.1720052Z # Subtest: rejects unreviewed primary-source pages even under the same publisher domain
+architecture	Run npm test	2026-10-05T12:12:56.1723094Z ok 20 - rejects unreviewed primary-source pages even under the same publisher domain
+architecture	Run npm test	2026-10-05T12:12:56.1723484Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.1723676Z   duration_ms: 2583.289573
+architecture	Run npm test	2026-10-05T12:12:56.1723879Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.1724047Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3577131Z # Subtest: accepts the fixed 119-item package and reconstructs the immutable v13→12→11 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3578129Z ok 21 - accepts the fixed 119-item package and reconstructs the immutable v13→12→11 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3578537Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3578733Z   duration_ms: 8522.475766
+architecture	Run npm test	2026-10-05T12:12:56.3578941Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3579119Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3579535Z # Subtest: validates, scores, and binds targeted feedback for every replacement option
+architecture	Run npm test	2026-10-05T12:12:56.3580618Z ok 22 - validates, scores, and binds targeted feedback for every replacement option
+architecture	Run npm test	2026-10-05T12:12:56.3580943Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3581116Z   duration_ms: 26.100131
+architecture	Run npm test	2026-10-05T12:12:56.3581309Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3581479Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3581839Z # Subtest: requires every fixed OOD generation proof in the v16 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3582378Z ok 23 - requires every fixed OOD generation proof in the v16 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3582703Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3582870Z   duration_ms: 4419.556223
+architecture	Run npm test	2026-10-05T12:12:56.3583070Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3583242Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3583667Z # Subtest: rejects changed identities, hashes, object bindings, membership, and unsupported fields
+architecture	Run npm test	2026-10-05T12:12:56.3584313Z ok 24 - rejects changed identities, hashes, object bindings, membership, and unsupported fields
+architecture	Run npm test	2026-10-05T12:12:56.3584695Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3584863Z   duration_ms: 11115.928908
+architecture	Run npm test	2026-10-05T12:12:56.3585093Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3585258Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3585595Z # Subtest: rejects changed canonical source membership and unsupported catalog versions
+architecture	Run npm test	2026-10-05T12:12:56.3586251Z ok 25 - rejects changed canonical source membership and unsupported catalog versions
+architecture	Run npm test	2026-10-05T12:12:56.3586598Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3586765Z   duration_ms: 3166.264413
+architecture	Run npm test	2026-10-05T12:12:56.3586960Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3587121Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3587362Z # Subtest: rejects a symlinked fixed proof path
+architecture	Run npm test	2026-10-05T12:12:56.3587699Z ok 26 - rejects a symlinked fixed proof path
+architecture	Run npm test	2026-10-05T12:12:56.3587938Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3588103Z   duration_ms: 864.463894
+architecture	Run npm test	2026-10-05T12:12:56.3588304Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3588468Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3589418Z # Subtest: rejects a symlinked current source path
+architecture	Run npm test	2026-10-05T12:12:56.3620099Z ok 27 - rejects a symlinked current source path
+architecture	Run npm test	2026-10-05T12:12:56.3620427Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3622510Z   duration_ms: 677.10586
+architecture	Run npm test	2026-10-05T12:12:56.3624263Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3624435Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3625167Z # Subtest: accepts the fixed 152-item package and reconstructs the immutable v16→13→12→11 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3636581Z ok 28 - accepts the fixed 152-item package and reconstructs the immutable v16→13→12→11 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3637068Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3637250Z   duration_ms: 3468.332463
+architecture	Run npm test	2026-10-05T12:12:56.3637453Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3637624Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3637992Z # Subtest: validates, scores, and binds targeted feedback for every replacement option
+architecture	Run npm test	2026-10-05T12:12:56.3638529Z ok 29 - validates, scores, and binds targeted feedback for every replacement option
+architecture	Run npm test	2026-10-05T12:12:56.3638849Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3639019Z   duration_ms: 32.966229
+architecture	Run npm test	2026-10-05T12:12:56.3639212Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3639374Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3639726Z # Subtest: requires every fixed OOD generation proof in the v17 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3640293Z ok 30 - requires every fixed OOD generation proof in the v17 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3640617Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3640788Z   duration_ms: 6041.802469
+architecture	Run npm test	2026-10-05T12:12:56.3640988Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3641154Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3641576Z # Subtest: rejects changed identities, hashes, object bindings, membership, and unsupported fields
+architecture	Run npm test	2026-10-05T12:12:56.3642213Z ok 31 - rejects changed identities, hashes, object bindings, membership, and unsupported fields
+architecture	Run npm test	2026-10-05T12:12:56.3642587Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3642758Z   duration_ms: 10755.431342
+architecture	Run npm test	2026-10-05T12:12:56.3642958Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3643167Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3643703Z # Subtest: rejects changed canonical source membership and unsupported catalog versions
+architecture	Run npm test	2026-10-05T12:12:56.3644271Z ok 32 - rejects changed canonical source membership and unsupported catalog versions
+architecture	Run npm test	2026-10-05T12:12:56.3644606Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3644778Z   duration_ms: 2999.066148
+architecture	Run npm test	2026-10-05T12:12:56.3645319Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3645483Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3645719Z # Subtest: rejects a symlinked fixed proof path
+architecture	Run npm test	2026-10-05T12:12:56.3646159Z ok 33 - rejects a symlinked fixed proof path
+architecture	Run npm test	2026-10-05T12:12:56.3646391Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3646555Z   duration_ms: 877.7415
+architecture	Run npm test	2026-10-05T12:12:56.3646748Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3646913Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3647153Z # Subtest: rejects a symlinked current source path
+architecture	Run npm test	2026-10-05T12:12:56.3655400Z ok 34 - rejects a symlinked current source path
+architecture	Run npm test	2026-10-05T12:12:56.3676289Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3706375Z   duration_ms: 675.650927
+architecture	Run npm test	2026-10-05T12:12:56.3756527Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3757155Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3758211Z # Subtest: accepts the fixed 162-item package and reconstructs the immutable v17→16→13→12→11 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3759017Z ok 35 - accepts the fixed 162-item package and reconstructs the immutable v17→16→13→12→11 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3759466Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3759656Z   duration_ms: 3744.62466
+architecture	Run npm test	2026-10-05T12:12:56.3759854Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3760018Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3760378Z # Subtest: validates, scores, and binds targeted feedback for every replacement option
+architecture	Run npm test	2026-10-05T12:12:56.3760917Z ok 36 - validates, scores, and binds targeted feedback for every replacement option
+architecture	Run npm test	2026-10-05T12:12:56.3761248Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3761421Z   duration_ms: 25.521513
+architecture	Run npm test	2026-10-05T12:12:56.3761618Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3761782Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3762131Z # Subtest: requires every fixed OOD generation proof in the v19 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3762660Z ok 37 - requires every fixed OOD generation proof in the v19 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3762985Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3763157Z   duration_ms: 8654.415815
+architecture	Run npm test	2026-10-05T12:12:56.3763349Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3763513Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3763944Z # Subtest: rejects changed identities, hashes, object bindings, membership, and unsupported fields
+architecture	Run npm test	2026-10-05T12:12:56.3765011Z ok 38 - rejects changed identities, hashes, object bindings, membership, and unsupported fields
+architecture	Run npm test	2026-10-05T12:12:56.3765370Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3765538Z   duration_ms: 15171.59168
+architecture	Run npm test	2026-10-05T12:12:56.3765734Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3766011Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3766390Z # Subtest: rejects changed canonical source membership and unsupported catalog versions
+architecture	Run npm test	2026-10-05T12:12:56.3766966Z ok 39 - rejects changed canonical source membership and unsupported catalog versions
+architecture	Run npm test	2026-10-05T12:12:56.3767328Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3767498Z   duration_ms: 2880.331633
+architecture	Run npm test	2026-10-05T12:12:56.3767695Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3767861Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3768100Z # Subtest: rejects a symlinked fixed proof path
+architecture	Run npm test	2026-10-05T12:12:56.3768416Z ok 40 - rejects a symlinked fixed proof path
+architecture	Run npm test	2026-10-05T12:12:56.3768660Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3768826Z   duration_ms: 1125.842689
+architecture	Run npm test	2026-10-05T12:12:56.3769063Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3769237Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3769481Z # Subtest: rejects a symlinked current source path
+architecture	Run npm test	2026-10-05T12:12:56.3769800Z ok 41 - rejects a symlinked current source path
+architecture	Run npm test	2026-10-05T12:12:56.3770037Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3770195Z   duration_ms: 713.177245
+architecture	Run npm test	2026-10-05T12:12:56.3770381Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3770547Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3770971Z # Subtest: accepts the fixed N04 package and reconstructs 19a→19→17→16→13→12→11
+architecture	Run npm test	2026-10-05T12:12:56.3771513Z ok 42 - accepts the fixed N04 package and reconstructs 19a→19→17→16→13→12→11
+architecture	Run npm test	2026-10-05T12:12:56.3771819Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3771982Z   duration_ms: 4034.313572
+architecture	Run npm test	2026-10-05T12:12:56.3772173Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3772337Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3772644Z # Subtest: requires every fixed proof in the source20 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3773085Z ok 43 - requires every fixed proof in the source20 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3773373Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3773545Z   duration_ms: 11559.715572
+architecture	Run npm test	2026-10-05T12:12:56.3773958Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3774120Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3774487Z # Subtest: rejects tampered fixed proof objects, membership, identity and source hashes
+architecture	Run npm test	2026-10-05T12:12:56.3775026Z ok 44 - rejects tampered fixed proof objects, membership, identity and source hashes
+architecture	Run npm test	2026-10-05T12:12:56.3775363Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3775526Z   duration_ms: 6562.770688
+architecture	Run npm test	2026-10-05T12:12:56.3775714Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3775995Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3776328Z # Subtest: rejects missing or extra source membership and source-content changes
+architecture	Run npm test	2026-10-05T12:12:56.3776806Z ok 45 - rejects missing or extra source membership and source-content changes
+architecture	Run npm test	2026-10-05T12:12:56.3777112Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3777269Z   duration_ms: 3952.092089
+architecture	Run npm test	2026-10-05T12:12:56.3777460Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3777617Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3777904Z # Subtest: rejects symlinked fixed proof and source paths
+architecture	Run npm test	2026-10-05T12:12:56.3778255Z ok 46 - rejects symlinked fixed proof and source paths
+architecture	Run npm test	2026-10-05T12:12:56.3778505Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3778662Z   duration_ms: 1610.936091
+architecture	Run npm test	2026-10-05T12:12:56.3778844Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3779005Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3779501Z # Subtest: accepts the fixed N05 same-ID package and reconstructs 20→19a→19→17→16→13→12→11
+architecture	Run npm test	2026-10-05T12:12:56.3780112Z ok 47 - accepts the fixed N05 same-ID package and reconstructs 20→19a→19→17→16→13→12→11
+architecture	Run npm test	2026-10-05T12:12:56.3780455Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3780621Z   duration_ms: 4064.453486
+architecture	Run npm test	2026-10-05T12:12:56.3780818Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3780977Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3781290Z # Subtest: requires every fixed proof in the source21 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3781729Z ok 48 - requires every fixed proof in the source21 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:56.3782054Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3782220Z   duration_ms: 13753.262032
+architecture	Run npm test	2026-10-05T12:12:56.3782419Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3782581Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3783205Z # Subtest: rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+architecture	Run npm test	2026-10-05T12:12:56.3783823Z ok 49 - rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+architecture	Run npm test	2026-10-05T12:12:56.3784220Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3784378Z   duration_ms: 8608.4201
+architecture	Run npm test	2026-10-05T12:12:56.3784599Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3784757Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3785142Z # Subtest: rejects current-source, catalog-version, and missing-v20-predecessor changes
+architecture	Run npm test	2026-10-05T12:12:56.3785709Z ok 50 - rejects current-source, catalog-version, and missing-v20-predecessor changes
+architecture	Run npm test	2026-10-05T12:12:56.3786193Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3786356Z   duration_ms: 3953.275514
+architecture	Run npm test	2026-10-05T12:12:56.3786552Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3786718Z   ...
+architecture	Run npm test	2026-10-05T12:12:56.3787033Z # Subtest: rejects symlink substitution for fixed proof and source paths
+architecture	Run npm test	2026-10-05T12:12:56.3787492Z ok 51 - rejects symlink substitution for fixed proof and source paths
+architecture	Run npm test	2026-10-05T12:12:56.3787801Z   ---
+architecture	Run npm test	2026-10-05T12:12:56.3787968Z   duration_ms: 1681.478437
+architecture	Run npm test	2026-10-05T12:12:56.3788165Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:56.3788328Z   ...
+architecture	Run npm test	2026-10-05T12:12:58.1080566Z # Subtest: accepts the fixed N06 same-ID package and reconstructs 22→21→20→19a→19→17→16→13→12→11
+architecture	Run npm test	2026-10-05T12:12:58.1082599Z ok 52 - accepts the fixed N06 same-ID package and reconstructs 22→21→20→19a→19→17→16→13→12→11
+architecture	Run npm test	2026-10-05T12:12:58.1082970Z   ---
+architecture	Run npm test	2026-10-05T12:12:58.1083161Z   duration_ms: 4457.984736
+architecture	Run npm test	2026-10-05T12:12:58.1083375Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:58.1083541Z   ...
+architecture	Run npm test	2026-10-05T12:12:58.1083879Z # Subtest: requires every fixed proof in the source22 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:58.1084353Z ok 53 - requires every fixed proof in the source22 predecessor chain
+architecture	Run npm test	2026-10-05T12:12:58.1084655Z   ---
+architecture	Run npm test	2026-10-05T12:12:58.1084827Z   duration_ms: 15621.294787
+architecture	Run npm test	2026-10-05T12:12:58.1085030Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:58.1085202Z   ...
+architecture	Run npm test	2026-10-05T12:12:58.1085753Z # Subtest: rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+architecture	Run npm test	2026-10-05T12:12:58.1087000Z ok 54 - rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+architecture	Run npm test	2026-10-05T12:12:58.1087410Z   ---
+architecture	Run npm test	2026-10-05T12:12:58.1087586Z   duration_ms: 8093.316575
+architecture	Run npm test	2026-10-05T12:12:58.1087785Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:12:58.1087986Z   ...
+architecture	Run npm test	2026-10-05T12:13:01.7467356Z # Subtest: rejects current-source, catalog-version, and missing-v21-predecessor changes
+architecture	Run npm test	2026-10-05T12:13:01.7468199Z ok 55 - rejects current-source, catalog-version, and missing-v21-predecessor changes
+architecture	Run npm test	2026-10-05T12:13:01.7468642Z   ---
+architecture	Run npm test	2026-10-05T12:13:01.7468851Z   duration_ms: 3637.400396
+architecture	Run npm test	2026-10-05T12:13:01.7469057Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:01.7469232Z   ...
+architecture	Run npm test	2026-10-05T12:13:03.2327275Z # Subtest: rejects symlink substitution for fixed proof and source paths
+architecture	Run npm test	2026-10-05T12:13:03.2327917Z ok 56 - rejects symlink substitution for fixed proof and source paths
+architecture	Run npm test	2026-10-05T12:13:03.2328234Z   ---
+architecture	Run npm test	2026-10-05T12:13:03.2328423Z   duration_ms: 1486.40622
+architecture	Run npm test	2026-10-05T12:13:03.2328669Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:03.2328857Z   ...
+architecture	Run npm test	2026-10-05T12:13:12.0918083Z # Subtest: accepts the fixed N07 mixed-identity package and reconstructs 23→22→21→20→19a→19→17→16→13→12→11
+architecture	Run npm test	2026-10-05T12:13:12.0920033Z ok 57 - accepts the fixed N07 mixed-identity package and reconstructs 23→22→21→20→19a→19→17→16→13→12→11
+architecture	Run npm test	2026-10-05T12:13:12.0920424Z   ---
+architecture	Run npm test	2026-10-05T12:13:12.0920611Z   duration_ms: 4120.693468
+architecture	Run npm test	2026-10-05T12:13:12.0920818Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:12.0920988Z   ...
+architecture	Run npm test	2026-10-05T12:13:12.0921312Z # Subtest: requires every fixed proof in the source23 predecessor chain
+architecture	Run npm test	2026-10-05T12:13:12.0921772Z ok 58 - requires every fixed proof in the source23 predecessor chain
+architecture	Run npm test	2026-10-05T12:13:12.0922065Z   ---
+architecture	Run npm test	2026-10-05T12:13:12.0922231Z   duration_ms: 18180.99926
+architecture	Run npm test	2026-10-05T12:13:12.0922425Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:12.0922591Z   ...
+architecture	Run npm test	2026-10-05T12:13:20.0699263Z # Subtest: rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+architecture	Run npm test	2026-10-05T12:13:20.0701538Z ok 59 - rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+architecture	Run npm test	2026-10-05T12:13:20.0704830Z   ---
+architecture	Run npm test	2026-10-05T12:13:20.0705097Z   duration_ms: 7977.392485
+architecture	Run npm test	2026-10-05T12:13:20.0705377Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:20.0705722Z   ...
+architecture	Run npm test	2026-10-05T12:13:24.2040464Z # Subtest: rejects current-source, catalog-version, and missing-v22-predecessor changes
+architecture	Run npm test	2026-10-05T12:13:24.2043238Z ok 60 - rejects current-source, catalog-version, and missing-v22-predecessor changes
+architecture	Run npm test	2026-10-05T12:13:24.2043819Z   ---
+architecture	Run npm test	2026-10-05T12:13:24.2043994Z   duration_ms: 4135.034015
+architecture	Run npm test	2026-10-05T12:13:24.2044174Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:24.2044326Z   ...
+architecture	Run npm test	2026-10-05T12:13:25.7337392Z # Subtest: rejects symlink substitution for fixed proof and source paths
+architecture	Run npm test	2026-10-05T12:13:25.7338819Z ok 61 - rejects symlink substitution for fixed proof and source paths
+architecture	Run npm test	2026-10-05T12:13:25.7352550Z   ---
+architecture	Run npm test	2026-10-05T12:13:25.7353109Z   duration_ms: 1527.807919
+architecture	Run npm test	2026-10-05T12:13:25.7353476Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:25.7353818Z   ...
+architecture	Run npm test	2026-10-05T12:13:30.4419802Z # Subtest: accepts the fixed N08/N09 package and reconstructs 24→23→22→21→20→19a→19→17→16→13→12→11
+architecture	Run npm test	2026-10-05T12:13:30.4420448Z ok 62 - accepts the fixed N08/N09 package and reconstructs 24→23→22→21→20→19a→19→17→16→13→12→11
+architecture	Run npm test	2026-10-05T12:13:30.4420692Z   ---
+architecture	Run npm test	2026-10-05T12:13:30.4422983Z   duration_ms: 4830.130047
+architecture	Run npm test	2026-10-05T12:13:30.4423211Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:30.4427253Z   ...
+architecture	Run npm test	2026-10-05T12:13:30.4437357Z # Subtest: requires every fixed proof in the source24 predecessor chain
+architecture	Run npm test	2026-10-05T12:13:30.4440482Z ok 63 - requires every fixed proof in the source24 predecessor chain
+architecture	Run npm test	2026-10-05T12:13:30.4440994Z   ---
+architecture	Run npm test	2026-10-05T12:13:30.4441157Z   duration_ms: 20905.374015
+architecture	Run npm test	2026-10-05T12:13:30.4441341Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:30.4441507Z   ...
+architecture	Run npm test	2026-10-05T12:13:30.4441882Z # Subtest: rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+architecture	Run npm test	2026-10-05T12:13:30.4442567Z ok 64 - rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+architecture	Run npm test	2026-10-05T12:13:30.4448202Z   ---
+architecture	Run npm test	2026-10-05T12:13:30.4448394Z   duration_ms: 8276.733062
+architecture	Run npm test	2026-10-05T12:13:30.4448600Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:30.4448767Z   ...
+architecture	Run npm test	2026-10-05T12:13:34.4108596Z # Subtest: rejects current-source, catalog-version, and missing-v22-predecessor changes
+architecture	Run npm test	2026-10-05T12:13:34.4137016Z ok 65 - rejects current-source, catalog-version, and missing-v22-predecessor changes
+architecture	Run npm test	2026-10-05T12:13:34.4137860Z   ---
+architecture	Run npm test	2026-10-05T12:13:34.4166718Z   duration_ms: 3966.825772
+architecture	Run npm test	2026-10-05T12:13:34.4196385Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:34.4204743Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.8665409Z # Subtest: rejects symlink substitution for fixed proof and source paths
+architecture	Run npm test	2026-10-05T12:13:35.8676434Z ok 66 - rejects symlink substitution for fixed proof and source paths
+architecture	Run npm test	2026-10-05T12:13:35.8677227Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.8677890Z   duration_ms: 1457.311307
+architecture	Run npm test	2026-10-05T12:13:35.8678375Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.8678753Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9867448Z # Subtest: accepts the exact OOD source11 replacement and retains historical inventory
+architecture	Run npm test	2026-10-05T12:13:35.9886480Z ok 67 - accepts the exact OOD source11 replacement and retains historical inventory
+architecture	Run npm test	2026-10-05T12:13:35.9890606Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9902486Z   duration_ms: 3001.563733
+architecture	Run npm test	2026-10-05T12:13:35.9906532Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9907038Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9907614Z # Subtest: replacement uses the authored single-choice scoring and feedback contract
+architecture	Run npm test	2026-10-05T12:13:35.9908313Z ok 68 - replacement uses the authored single-choice scoring and feedback contract
+architecture	Run npm test	2026-10-05T12:13:35.9908785Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9909097Z   duration_ms: 9.704273
+architecture	Run npm test	2026-10-05T12:13:35.9909436Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9909737Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9910171Z # Subtest: rejects the replacement when its fixed proof is absent
+architecture	Run npm test	2026-10-05T12:13:35.9910734Z ok 69 - rejects the replacement when its fixed proof is absent
+architecture	Run npm test	2026-10-05T12:13:35.9911146Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9911455Z   duration_ms: 1822.928315
+architecture	Run npm test	2026-10-05T12:13:35.9913986Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9914212Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9914731Z # Subtest: rejects a tampered frozen question and a changed current replacement
+architecture	Run npm test	2026-10-05T12:13:35.9915353Z ok 70 - rejects a tampered frozen question and a changed current replacement
+architecture	Run npm test	2026-10-05T12:13:35.9915667Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9916021Z   duration_ms: 1857.05224
+architecture	Run npm test	2026-10-05T12:13:35.9916212Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9916367Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9916853Z # Subtest: rejects stale catalog or track hashes, duplicate mappings, and an absent new item
+architecture	Run npm test	2026-10-05T12:13:35.9917405Z ok 71 - rejects stale catalog or track hashes, duplicate mappings, and an absent new item
+architecture	Run npm test	2026-10-05T12:13:35.9918087Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9918487Z   duration_ms: 4769.7244
+architecture	Run npm test	2026-10-05T12:13:35.9918848Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9919331Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9919904Z # Subtest: rejects changes to an unaffected OOD item and unapproved proof fields
+architecture	Run npm test	2026-10-05T12:13:35.9920784Z ok 72 - rejects changes to an unaffected OOD item and unapproved proof fields
+architecture	Run npm test	2026-10-05T12:13:35.9921204Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9921649Z   duration_ms: 2755.859126
+architecture	Run npm test	2026-10-05T12:13:35.9922027Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9922396Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9923064Z # Subtest: rejects an unapproved proof source path and a physically relocated source file
+architecture	Run npm test	2026-10-05T12:13:35.9973472Z ok 73 - rejects an unapproved proof source path and a physically relocated source file
+architecture	Run npm test	2026-10-05T12:13:35.9973988Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9974195Z   duration_ms: 1557.642167
+architecture	Run npm test	2026-10-05T12:13:35.9974419Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9974607Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9975018Z # Subtest: validates the exact source12 fixture and preserves its source11 predecessor
+architecture	Run npm test	2026-10-05T12:13:35.9975612Z ok 74 - validates the exact source12 fixture and preserves its source11 predecessor
+architecture	Run npm test	2026-10-05T12:13:35.9976154Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9976331Z   duration_ms: 3097.468895
+architecture	Run npm test	2026-10-05T12:13:35.9976543Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9976735Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9977488Z # Subtest: source12 question validates, scores all options, and supplies authored wrong-option feedback
+architecture	Run npm test	2026-10-05T12:13:35.9978196Z ok 75 - source12 question validates, scores all options, and supplies authored wrong-option feedback
+architecture	Run npm test	2026-10-05T12:13:35.9978597Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9978774Z   duration_ms: 3.906844
+architecture	Run npm test	2026-10-05T12:13:35.9978978Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9979160Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9979534Z # Subtest: source12 cannot fall back when either fixed generation proof is absent
+architecture	Run npm test	2026-10-05T12:13:35.9980088Z ok 76 - source12 cannot fall back when either fixed generation proof is absent
+architecture	Run npm test	2026-10-05T12:13:35.9980423Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9980595Z   duration_ms: 2060.739707
+architecture	Run npm test	2026-10-05T12:13:35.9980803Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9980981Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9981358Z # Subtest: rejects tampered current content, predecessor proof, and source identity
+architecture	Run npm test	2026-10-05T12:13:35.9981924Z ok 77 - rejects tampered current content, predecessor proof, and source identity
+architecture	Run npm test	2026-10-05T12:13:35.9982284Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9982465Z   duration_ms: 2953.932994
+architecture	Run npm test	2026-10-05T12:13:35.9982673Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9982849Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9983218Z # Subtest: rejects unreviewed successor proof identity, hashes, paths, and fields
+architecture	Run npm test	2026-10-05T12:13:35.9983768Z ok 78 - rejects unreviewed successor proof identity, hashes, paths, and fields
+architecture	Run npm test	2026-10-05T12:13:35.9984106Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9984279Z   duration_ms: 4553.435722
+architecture	Run npm test	2026-10-05T12:13:35.9984486Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9984661Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9985066Z # Subtest: rejects a changed unrelated OOD source item instead of reconstructing around it
+architecture	Run npm test	2026-10-05T12:13:35.9985669Z ok 79 - rejects a changed unrelated OOD source item instead of reconstructing around it
+architecture	Run npm test	2026-10-05T12:13:35.9986147Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9986319Z   duration_ms: 933.817466
+architecture	Run npm test	2026-10-05T12:13:35.9986524Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9986699Z   ...
+architecture	Run npm test	2026-10-05T12:13:35.9987192Z # Subtest: rejects a symlinked current source before following it
+architecture	Run npm test	2026-10-05T12:13:35.9987644Z ok 80 - rejects a symlinked current source before following it
+architecture	Run npm test	2026-10-05T12:13:35.9987931Z   ---
+architecture	Run npm test	2026-10-05T12:13:35.9988101Z   duration_ms: 609.54137
+architecture	Run npm test	2026-10-05T12:13:35.9988302Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:35.9988479Z   ...
+architecture	Run npm test	2026-10-05T12:13:40.8726644Z # Subtest: validates the fixed source13 cohort and reconstructs immutable source12 and source11 predecessors
+architecture	Run npm test	2026-10-05T12:13:40.8735453Z ok 81 - validates the fixed source13 cohort and reconstructs immutable source12 and source11 predecessors
+architecture	Run npm test	2026-10-05T12:13:40.8736218Z   ---
+architecture	Run npm test	2026-10-05T12:13:40.8736653Z   duration_ms: 3110.92953
+architecture	Run npm test	2026-10-05T12:13:40.8736934Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:40.8737204Z   ...
+architecture	Run npm test	2026-10-05T12:13:40.8737728Z # Subtest: all fifteen new questions validate, score each option, and bind authored feedback to every distractor
+architecture	Run npm test	2026-10-05T12:13:40.8738536Z ok 82 - all fifteen new questions validate, score each option, and bind authored feedback to every distractor
+architecture	Run npm test	2026-10-05T12:13:40.8739044Z   ---
+architecture	Run npm test	2026-10-05T12:13:40.8739309Z   duration_ms: 2.105787
+architecture	Run npm test	2026-10-05T12:13:40.8739558Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:40.8739821Z   ...
+architecture	Run npm test	2026-10-05T12:13:40.8740330Z # Subtest: requires the source13 proof and rejects modified cohort bindings and historical predecessor evidence
+architecture	Run npm test	2026-10-05T12:13:40.8741289Z ok 83 - requires the source13 proof and rejects modified cohort bindings and historical predecessor evidence
+architecture	Run npm test	2026-10-05T12:13:40.8741752Z   ---
+architecture	Run npm test	2026-10-05T12:13:40.8742010Z   duration_ms: 4014.373915
+architecture	Run npm test	2026-10-05T12:13:40.8742276Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:40.8742659Z   ...
+architecture	Run npm test	2026-10-05T12:13:40.8743214Z # Subtest: source13 directly requires both historical proofs and rejects changed, missing, or duplicate cohort membership
+architecture	Run npm test	2026-10-05T12:13:40.8744376Z ok 84 - source13 directly requires both historical proofs and rejects changed, missing, or duplicate cohort membership
+architecture	Run npm test	2026-10-05T12:13:40.8744799Z   ---
+architecture	Run npm test	2026-10-05T12:13:40.8745073Z   duration_ms: 7797.809104
+architecture	Run npm test	2026-10-05T12:13:40.8745749Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:40.8746139Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.4472824Z # Subtest: rejects unreviewed cohort fields, unrelated source changes, and symlinked source paths
+architecture	Run npm test	2026-10-05T12:13:43.4473594Z ok 85 - rejects unreviewed cohort fields, unrelated source changes, and symlinked source paths
+architecture	Run npm test	2026-10-05T12:13:43.4481678Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.4481927Z   duration_ms: 2574.035033
+architecture	Run npm test	2026-10-05T12:13:43.4482161Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.4482330Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.5977467Z # Subtest: same-ID source correction changes only the three reviewed texts and preserves all other mental-unit items
+architecture	Run npm test	2026-10-05T12:13:43.5983610Z ok 86 - same-ID source correction changes only the three reviewed texts and preserves all other mental-unit items
+architecture	Run npm test	2026-10-05T12:13:43.5988108Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.5989424Z   duration_ms: 9.177377
+architecture	Run npm test	2026-10-05T12:13:43.5990439Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.5990759Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.5992047Z # Subtest: canonical single-track builder carries the exact corrected object and new immutable content identity
+architecture	Run npm test	2026-10-05T12:13:43.5992905Z ok 87 - canonical single-track builder carries the exact corrected object and new immutable content identity
+architecture	Run npm test	2026-10-05T12:13:43.5993408Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.5993698Z   duration_ms: 476.266643
+architecture	Run npm test	2026-10-05T12:13:43.5994019Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.5994305Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.5994764Z # Subtest: BIZQ-01 cohort14 preserves source01 as the exact accepted predecessor
+architecture	Run npm test	2026-10-05T12:13:43.5995352Z ok 88 - BIZQ-01 cohort14 preserves source01 as the exact accepted predecessor
+architecture	Run npm test	2026-10-05T12:13:43.5995771Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.5996184Z   duration_ms: 8.656821
+architecture	Run npm test	2026-10-05T12:13:43.5996496Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.5996782Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.5997316Z # Subtest: BIZQ-01 preserves both accepted source01 objects and their scored, built, and projected behavior
+architecture	Run npm test	2026-10-05T12:13:43.5998063Z ok 89 - BIZQ-01 preserves both accepted source01 objects and their scored, built, and projected behavior
+architecture	Run npm test	2026-10-05T12:13:43.5998893Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.5999179Z   duration_ms: 1352.565879
+architecture	Run npm test	2026-10-05T12:13:43.5999489Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.5999771Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6000282Z # Subtest: BIZQ-01 changed items keep concrete learner constraints and one scoreable authored answer
+architecture	Run npm test	2026-10-05T12:13:43.6000995Z ok 90 - BIZQ-01 changed items keep concrete learner constraints and one scoreable authored answer
+architecture	Run npm test	2026-10-05T12:13:43.6001464Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6001740Z   duration_ms: 2.019237
+architecture	Run npm test	2026-10-05T12:13:43.6002041Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6002316Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6002777Z # Subtest: BIZQ-01 canonical builder carries the exact cohort and new content identity
+architecture	Run npm test	2026-10-05T12:13:43.6003394Z ok 91 - BIZQ-01 canonical builder carries the exact cohort and new content identity
+architecture	Run npm test	2026-10-05T12:13:43.6003825Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6004102Z   duration_ms: 300.403424
+architecture	Run npm test	2026-10-05T12:13:43.6004410Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6004701Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6005173Z # Subtest: BIZQ-01 advisory console distinguishes corrected cohort from remaining warnings
+architecture	Run npm test	2026-10-05T12:13:43.6005960Z ok 92 - BIZQ-01 advisory console distinguishes corrected cohort from remaining warnings
+architecture	Run npm test	2026-10-05T12:13:43.6006570Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6006849Z   duration_ms: 1003.294744
+architecture	Run npm test	2026-10-05T12:13:43.6007157Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6007437Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6007905Z # Subtest: admission binds verified local publishing bytes, app lock, and runtime test
+architecture	Run npm test	2026-10-05T12:13:43.6008528Z ok 93 - admission binds verified local publishing bytes, app lock, and runtime test
+architecture	Run npm test	2026-10-05T12:13:43.6008958Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6009235Z   duration_ms: 230.388316
+architecture	Run npm test	2026-10-05T12:13:43.6009536Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6009815Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6010218Z # Subtest: committed admission and runtime evidence remain hash-bound
+architecture	Run npm test	2026-10-05T12:13:43.6010748Z ok 94 - committed admission and runtime evidence remain hash-bound
+architecture	Run npm test	2026-10-05T12:13:43.6011153Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6011680Z   duration_ms: 4.796467
+architecture	Run npm test	2026-10-05T12:13:43.6011988Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6012985Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6017510Z # Subtest: candidate draft v2 binds all nine canonical artifacts and exact ODK-096 AWS identity deterministically
+architecture	Run npm test	2026-10-05T12:13:43.6018544Z ok 95 - candidate draft v2 binds all nine canonical artifacts and exact ODK-096 AWS identity deterministically
+architecture	Run npm test	2026-10-05T12:13:43.6019114Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6019438Z   duration_ms: 4908.779239
+architecture	Run npm test	2026-10-05T12:13:43.6019768Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6020070Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6020617Z # Subtest: canonical source snapshot rejects a valid untracked mental-unit JSON in an isolated Git fixture
+architecture	Run npm test	2026-10-05T12:13:43.6021358Z ok 96 - canonical source snapshot rejects a valid untracked mental-unit JSON in an isolated Git fixture
+architecture	Run npm test	2026-10-05T12:13:43.6021855Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6022133Z   duration_ms: 101.002521
+architecture	Run npm test	2026-10-05T12:13:43.6022441Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6022731Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6023304Z # Subtest: Codex candidate decision v2 binds exact candidate, source snapshot, release and nine artifact hashes
+architecture	Run npm test	2026-10-05T12:13:43.6024064Z ok 97 - Codex candidate decision v2 binds exact candidate, source snapshot, release and nine artifact hashes
+architecture	Run npm test	2026-10-05T12:13:43.6024553Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6024830Z   duration_ms: 2583.549576
+architecture	Run npm test	2026-10-05T12:13:43.6025133Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6025415Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6108755Z # Subtest: release gate verifies exact decision-bound evidence and requires separate admission
+architecture	Run npm test	2026-10-05T12:13:43.6114651Z ok 98 - release gate verifies exact decision-bound evidence and requires separate admission
+architecture	Run npm test	2026-10-05T12:13:43.6114978Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6115153Z   duration_ms: 676.138676
+architecture	Run npm test	2026-10-05T12:13:43.6115394Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6115555Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6116042Z # Subtest: release gate accepts the exact v3 admission without mutating readiness v2
+architecture	Run npm test	2026-10-05T12:13:43.6116863Z ok 99 - release gate accepts the exact v3 admission without mutating readiness v2
+architecture	Run npm test	2026-10-05T12:13:43.6117275Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6117435Z   duration_ms: 348.608665
+architecture	Run npm test	2026-10-05T12:13:43.6117615Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6117769Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6118082Z # Subtest: bundled Free-node control validates pinned source items and bounds decompression
+architecture	Run npm test	2026-10-05T12:13:43.6118431Z ok 100 - bundled Free-node control validates pinned source items and bounds decompression
+architecture	Run npm test	2026-10-05T12:13:43.6118640Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6118740Z   duration_ms: 2776.152976
+architecture	Run npm test	2026-10-05T12:13:43.6118858Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6118954Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6177985Z # Subtest: Free-node acceptance evidence rejects authority changes and unsupported fields
+architecture	Run npm test	2026-10-05T12:13:43.6178786Z ok 101 - Free-node acceptance evidence rejects authority changes and unsupported fields
+architecture	Run npm test	2026-10-05T12:13:43.6179421Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6179849Z   duration_ms: 7.269167
+architecture	Run npm test	2026-10-05T12:13:43.6180174Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6180486Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6189654Z # Subtest: workflow contract rebuilds v2 evidence and release gate without legacy publisher or deployment commands
+architecture	Run npm test	2026-10-05T12:13:43.6192179Z ok 102 - workflow contract rebuilds v2 evidence and release gate without legacy publisher or deployment commands
+architecture	Run npm test	2026-10-05T12:13:43.6192850Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6193166Z   duration_ms: 1.635748
+architecture	Run npm test	2026-10-05T12:13:43.6193498Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6193800Z   ...
+architecture	Run npm test	2026-10-05T12:13:43.6677242Z # Subtest: active canonical ingress has no legacy publisher and historical references are verifier-only
+architecture	Run npm test	2026-10-05T12:13:43.6678559Z ok 103 - active canonical ingress has no legacy publisher and historical references are verifier-only
+architecture	Run npm test	2026-10-05T12:13:43.6689313Z   ---
+architecture	Run npm test	2026-10-05T12:13:43.6689770Z   duration_ms: 20.936628
+architecture	Run npm test	2026-10-05T12:13:43.6690135Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:43.6690442Z   ...
+architecture	Run npm test	2026-10-05T12:13:44.1818384Z # Subtest: each catalogued track validates, tests and builds independently
+architecture	Run npm test	2026-10-05T12:13:44.1821117Z ok 104 - each catalogued track validates, tests and builds independently
+architecture	Run npm test	2026-10-05T12:13:44.1821991Z   ---
+architecture	Run npm test	2026-10-05T12:13:44.1822711Z   duration_ms: 102.865773
+architecture	Run npm test	2026-10-05T12:13:44.1823077Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:44.1823353Z   ...
+architecture	Run npm test	2026-10-05T12:13:44.1823698Z # Subtest: build-all emits exactly nine deterministic artifacts and lock entries
+architecture	Run npm test	2026-10-05T12:13:44.1825666Z ok 105 - build-all emits exactly nine deterministic artifacts and lock entries
+architecture	Run npm test	2026-10-05T12:13:44.1826289Z   ---
+architecture	Run npm test	2026-10-05T12:13:44.1826826Z   duration_ms: 45.693732
+architecture	Run npm test	2026-10-05T12:13:44.1827351Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:44.1831959Z   ...
+architecture	Run npm test	2026-10-05T12:13:44.1832531Z # Subtest: GCP simulation profile binds a complete unambiguous node map to the same-version published artifact
+architecture	Run npm test	2026-10-05T12:13:44.1834035Z ok 106 - GCP simulation profile binds a complete unambiguous node map to the same-version published artifact
+architecture	Run npm test	2026-10-05T12:13:44.1834984Z   ---
+architecture	Run npm test	2026-10-05T12:13:44.1838780Z   duration_ms: 480.560763
+architecture	Run npm test	2026-10-05T12:13:44.1839013Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:44.1839182Z   ...
+architecture	Run npm test	2026-10-05T12:13:44.1839647Z # Subtest: Coding Interview simulation profile emits the blueprint and exact checksum-verified pool identities
+architecture	Run npm test	2026-10-05T12:13:44.1840317Z ok 107 - Coding Interview simulation profile emits the blueprint and exact checksum-verified pool identities
+architecture	Run npm test	2026-10-05T12:13:44.1840695Z   ---
+architecture	Run npm test	2026-10-05T12:13:44.1840852Z   duration_ms: 473.718229
+architecture	Run npm test	2026-10-05T12:13:44.1841037Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:44.1841191Z   ...
+architecture	Run npm test	2026-10-05T12:13:44.1841487Z # Subtest: malformed Coding Interview simulation blueprint fails closed
+architecture	Run npm test	2026-10-05T12:13:44.1841918Z ok 108 - malformed Coding Interview simulation blueprint fails closed
+architecture	Run npm test	2026-10-05T12:13:44.1842191Z   ---
+architecture	Run npm test	2026-10-05T12:13:44.1842344Z   duration_ms: 175.083303
+architecture	Run npm test	2026-10-05T12:13:44.1842524Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:44.1842676Z   ...
+architecture	Run npm test	2026-10-05T12:13:44.1843062Z # Subtest: Coding Interview simulation selection policies reject stale pools and invalid identities
+architecture	Run npm test	2026-10-05T12:13:44.1843693Z ok 109 - Coding Interview simulation selection policies reject stale pools and invalid identities
+architecture	Run npm test	2026-10-05T12:13:44.1843918Z   ---
+architecture	Run npm test	2026-10-05T12:13:44.1844017Z   duration_ms: 1356.342418
+architecture	Run npm test	2026-10-05T12:13:44.1844135Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:44.1844234Z   ...
+architecture	Run npm test	2026-10-05T12:13:45.4806462Z # Subtest: Design Interview simulation profiles emit one strict text-response case per track
+architecture	Run npm test	2026-10-05T12:13:45.4823814Z ok 110 - Design Interview simulation profiles emit one strict text-response case per track
+architecture	Run npm test	2026-10-05T12:13:45.4825763Z   ---
+architecture	Run npm test	2026-10-05T12:13:45.4826364Z   duration_ms: 1299.073101
+architecture	Run npm test	2026-10-05T12:13:45.4826861Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:45.4827237Z   ...
+architecture	Run npm test	2026-10-05T12:13:45.4924127Z # Subtest: Design simulation availability requires the canonical text profile and does not imply question-bank capacity
+architecture	Run npm test	2026-10-05T12:13:45.4925244Z ok 111 - Design simulation availability requires the canonical text profile and does not imply question-bank capacity
+architecture	Run npm test	2026-10-05T12:13:45.4925940Z   ---
+architecture	Run npm test	2026-10-05T12:13:45.4926152Z   duration_ms: 11.719212
+architecture	Run npm test	2026-10-05T12:13:45.4926377Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:45.4926544Z   ...
+architecture	Run npm test	2026-10-05T12:13:45.5046633Z # Subtest: malformed Design Interview simulation sources fail closed
+architecture	Run npm test	2026-10-05T12:13:45.5047418Z ok 112 - malformed Design Interview simulation sources fail closed
+architecture	Run npm test	2026-10-05T12:13:45.5072592Z   ---
+architecture	Run npm test	2026-10-05T12:13:45.5073012Z   duration_ms: 12.340739
+architecture	Run npm test	2026-10-05T12:13:45.5073348Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:45.5073606Z   ...
+architecture	Run npm test	2026-10-05T12:13:45.6963206Z # Subtest: malformed present GCP simulation profile fails closed on incomplete node coverage
+architecture	Run npm test	2026-10-05T12:13:45.6969284Z ok 113 - malformed present GCP simulation profile fails closed on incomplete node coverage
+architecture	Run npm test	2026-10-05T12:13:45.6969642Z   ---
+architecture	Run npm test	2026-10-05T12:13:45.6969761Z   duration_ms: 191.26033
+architecture	Run npm test	2026-10-05T12:13:45.6969886Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:45.6969990Z   ...
+architecture	Run npm test	2026-10-05T12:13:46.8481290Z # Subtest: existing GCP artifact rejects malformed profile even when its lock SHA is recomputed
+architecture	Run npm test	2026-10-05T12:13:46.8483007Z ok 114 - existing GCP artifact rejects malformed profile even when its lock SHA is recomputed
+architecture	Run npm test	2026-10-05T12:13:46.8483663Z   ---
+architecture	Run npm test	2026-10-05T12:13:46.8484037Z   duration_ms: 1151.45711
+architecture	Run npm test	2026-10-05T12:13:46.8484378Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:46.8484685Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.5590507Z # Subtest: existing GCP artifact rejects a legal but source-inconsistent node domain when its lock SHA is recomputed
+architecture	Run npm test	2026-10-05T12:13:47.5592715Z ok 115 - existing GCP artifact rejects a legal but source-inconsistent node domain when its lock SHA is recomputed
+architecture	Run npm test	2026-10-05T12:13:47.5598624Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.5599001Z   duration_ms: 710.653113
+architecture	Run npm test	2026-10-05T12:13:47.5599215Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.5599376Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.5600023Z # Subtest: ACC-02 Candidate Manifest retains its exact nine-track identity against frozen baseline and migration manifest
+architecture	Run npm test	2026-10-05T12:13:47.5600787Z ok 116 - ACC-02 Candidate Manifest retains its exact nine-track identity against frozen baseline and migration manifest
+architecture	Run npm test	2026-10-05T12:13:47.5601226Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.5601335Z   duration_ms: 0.463419
+architecture	Run npm test	2026-10-05T12:13:47.5601457Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.5601562Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.5601777Z # Subtest: canonical JSON sorts recursive object keys without reordering arrays
+architecture	Run npm test	2026-10-05T12:13:47.5602233Z ok 117 - canonical JSON sorts recursive object keys without reordering arrays
+architecture	Run npm test	2026-10-05T12:13:47.5602537Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.5602644Z   duration_ms: 0.143106
+architecture	Run npm test	2026-10-05T12:13:47.5602765Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.5602872Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.6014277Z # Subtest: mutating one track does not rewrite another artifact or lock entry
+architecture	Run npm test	2026-10-05T12:13:47.6015421Z ok 118 - mutating one track does not rewrite another artifact or lock entry
+architecture	Run npm test	2026-10-05T12:13:47.6026572Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.6027560Z   duration_ms: 42.017461
+architecture	Run npm test	2026-10-05T12:13:47.6028616Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.6029226Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.6068770Z # Subtest: builder rejects missing, empty, unknown and malformed inputs
+architecture	Run npm test	2026-10-05T12:13:47.6069726Z ok 119 - builder rejects missing, empty, unknown and malformed inputs
+architecture	Run npm test	2026-10-05T12:13:47.6070566Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.6070870Z   duration_ms: 5.186245
+architecture	Run npm test	2026-10-05T12:13:47.6071191Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.6071735Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.6103867Z # Subtest: builder requires each mental-unit source file to be a non-empty question array
+architecture	Run npm test	2026-10-05T12:13:47.6108602Z ok 120 - builder requires each mental-unit source file to be a non-empty question array
+architecture	Run npm test	2026-10-05T12:13:47.6109086Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.6109667Z   duration_ms: 4.084042
+architecture	Run npm test	2026-10-05T12:13:47.6110130Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.6110467Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.6194806Z # Subtest: builder rejects path identity, foreign track, duplicate and invalid questions
+architecture	Run npm test	2026-10-05T12:13:47.6196241Z ok 121 - builder rejects path identity, foreign track, duplicate and invalid questions
+architecture	Run npm test	2026-10-05T12:13:47.6197118Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.6197697Z   duration_ms: 9.034491
+architecture	Run npm test	2026-10-05T12:13:47.6198117Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.6198406Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.6241657Z # Subtest: existing malformed lock is rejected before a single-track build
+architecture	Run npm test	2026-10-05T12:13:47.6246474Z ok 122 - existing malformed lock is rejected before a single-track build
+architecture	Run npm test	2026-10-05T12:13:47.6246905Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.6247114Z   duration_ms: 4.691719
+architecture	Run npm test	2026-10-05T12:13:47.6247319Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.6247498Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.6298561Z # Subtest: source discovery rejects a symlinked track, node directory, or question file
+architecture	Run npm test	2026-10-05T12:13:47.6299785Z ok 123 - source discovery rejects a symlinked track, node directory, or question file
+architecture	Run npm test	2026-10-05T12:13:47.6300622Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.6301175Z   duration_ms: 5.609453
+architecture	Run npm test	2026-10-05T12:13:47.6301589Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.6301880Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.6523505Z # Subtest: a tampered existing artifact blocks another track before any write
+architecture	Run npm test	2026-10-05T12:13:47.6538792Z ok 124 - a tampered existing artifact blocks another track before any write
+architecture	Run npm test	2026-10-05T12:13:47.6546539Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.6546998Z   duration_ms: 21.085073
+architecture	Run npm test	2026-10-05T12:13:47.6547385Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.6547705Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.6635374Z # Subtest: single-track build rejects orphan artifacts and temporary outputs before writing any target
+architecture	Run npm test	2026-10-05T12:13:47.6636240Z ok 125 - single-track build rejects orphan artifacts and temporary outputs before writing any target
+architecture	Run npm test	2026-10-05T12:13:47.6636838Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.6637157Z   duration_ms: 10.525761
+architecture	Run npm test	2026-10-05T12:13:47.6637487Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.6637782Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.6689983Z # Subtest: single-track build rejects a symlinked output root without external writes
+architecture	Run npm test	2026-10-05T12:13:47.6693779Z ok 126 - single-track build rejects a symlinked output root without external writes
+architecture	Run npm test	2026-10-05T12:13:47.6694255Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.6694511Z   duration_ms: 7.213995
+architecture	Run npm test	2026-10-05T12:13:47.6694781Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.6695060Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.6834706Z # Subtest: single-track output commit rolls back both files on an injected second rename failure
+architecture	Run npm test	2026-10-05T12:13:47.6836372Z ok 127 - single-track output commit rolls back both files on an injected second rename failure
+architecture	Run npm test	2026-10-05T12:13:47.6836886Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.6837344Z   duration_ms: 14.322384
+architecture	Run npm test	2026-10-05T12:13:47.6837753Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.6838101Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.7264158Z # Subtest: build-all stages and rolls back the complete new output set on rename failure
+architecture	Run npm test	2026-10-05T12:13:47.7265655Z ok 128 - build-all stages and rolls back the complete new output set on rename failure
+architecture	Run npm test	2026-10-05T12:13:47.7266295Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.7278794Z   duration_ms: 42.272059
+architecture	Run npm test	2026-10-05T12:13:47.7279179Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.7279447Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.7279937Z # Subtest: CLI parser requires track for single-track commands and rejects it for build-all
+architecture	Run npm test	2026-10-05T12:13:47.7280592Z ok 129 - CLI parser requires track for single-track commands and rejects it for build-all
+architecture	Run npm test	2026-10-05T12:13:47.7281529Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.7281804Z   duration_ms: 0.422207
+architecture	Run npm test	2026-10-05T12:13:47.7282128Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.7282457Z   ...
+architecture	Run npm test	2026-10-05T12:13:47.8890909Z # Subtest: CLI executes a hermetic single-track validate/test/build
+architecture	Run npm test	2026-10-05T12:13:47.8891449Z ok 130 - CLI executes a hermetic single-track validate/test/build
+architecture	Run npm test	2026-10-05T12:13:47.8891718Z   ---
+architecture	Run npm test	2026-10-05T12:13:47.8891892Z   duration_ms: 162.649974
+architecture	Run npm test	2026-10-05T12:13:47.8892025Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:47.8892132Z   ...
+architecture	Run npm test	2026-10-05T12:13:48.1332015Z # Subtest: review console surfaces a remaining BESD constraint disclosure without recording an outcome
+architecture	Run npm test	2026-10-05T12:13:48.1332806Z ok 131 - review console surfaces a remaining BESD constraint disclosure without recording an outcome
+architecture	Run npm test	2026-10-05T12:13:48.1333182Z   ---
+architecture	Run npm test	2026-10-05T12:13:48.1333366Z   duration_ms: 1293.578996
+architecture	Run npm test	2026-10-05T12:13:48.1333564Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:48.1333769Z   ...
+architecture	Run npm test	2026-10-05T12:13:48.1334258Z # Subtest: constraint warning is advisory across interactions and does not flag ordinary worked examples or feedback
+architecture	Run npm test	2026-10-05T12:13:48.1334999Z ok 132 - constraint warning is advisory across interactions and does not flag ordinary worked examples or feedback
+architecture	Run npm test	2026-10-05T12:13:48.1335410Z   ---
+architecture	Run npm test	2026-10-05T12:13:48.1335579Z   duration_ms: 1064.028434
+architecture	Run npm test	2026-10-05T12:13:48.1335773Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:48.1336103Z   ...
+architecture	Run npm test	2026-10-05T12:13:48.1336511Z # Subtest: Q14 flags a valid sole-longest correct choice for human review without changing scoring
+architecture	Run npm test	2026-10-05T12:13:48.1337123Z ok 133 - Q14 flags a valid sole-longest correct choice for human review without changing scoring
+architecture	Run npm test	2026-10-05T12:13:48.1337481Z   ---
+architecture	Run npm test	2026-10-05T12:13:48.1337646Z   duration_ms: 963.022152
+architecture	Run npm test	2026-10-05T12:13:48.1337839Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:48.1338003Z   ...
+architecture	Run npm test	2026-10-05T12:13:48.1338425Z # Subtest: review console exposes exactly nine launch tracks, navigable coverage, and advisory signals
+architecture	Run npm test	2026-10-05T12:13:48.1339067Z ok 134 - review console exposes exactly nine launch tracks, navigable coverage, and advisory signals
+architecture	Run npm test	2026-10-05T12:13:48.1339773Z   ---
+architecture	Run npm test	2026-10-05T12:13:48.1339937Z   duration_ms: 1155.720603
+architecture	Run npm test	2026-10-05T12:13:48.1340134Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:48.1340297Z   ...
+architecture	Run npm test	2026-10-05T12:13:49.0377479Z # Subtest: review console records one current explicit outcome and invalidates it when source identity changes
+architecture	Run npm test	2026-10-05T12:13:49.0378593Z ok 135 - review console records one current explicit outcome and invalidates it when source identity changes
+architecture	Run npm test	2026-10-05T12:13:49.0379151Z   ---
+architecture	Run npm test	2026-10-05T12:13:49.0379452Z   duration_ms: 903.435923
+architecture	Run npm test	2026-10-05T12:13:49.0379782Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:49.0380072Z   ...
+architecture	Run npm test	2026-10-05T12:13:49.9451248Z # Subtest: review console serves a local UI and bounded JSON API without fabricating approval
+architecture	Run npm test	2026-10-05T12:13:49.9452510Z ok 136 - review console serves a local UI and bounded JSON API without fabricating approval
+architecture	Run npm test	2026-10-05T12:13:49.9453004Z   ---
+architecture	Run npm test	2026-10-05T12:13:49.9453338Z   duration_ms: 909.370122
+architecture	Run npm test	2026-10-05T12:13:49.9453688Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:49.9453977Z   ...
+architecture	Run npm test	2026-10-05T12:13:52.3824768Z # Subtest: review outcomes serialize stale service snapshots and survive a fresh service instance
+architecture	Run npm test	2026-10-05T12:13:52.3825456Z ok 137 - review outcomes serialize stale service snapshots and survive a fresh service instance
+architecture	Run npm test	2026-10-05T12:13:52.3828120Z   ---
+architecture	Run npm test	2026-10-05T12:13:52.3828364Z   duration_ms: 2437.229084
+architecture	Run npm test	2026-10-05T12:13:52.3828589Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:52.3828763Z   ...
+architecture	Run npm test	2026-10-05T12:13:54.1411295Z # Subtest: review-store write and rename failures retain prior bytes and memory state
+architecture	Run npm test	2026-10-05T12:13:54.1411770Z ok 138 - review-store write and rename failures retain prior bytes and memory state
+architecture	Run npm test	2026-10-05T12:13:54.1412202Z   ---
+architecture	Run npm test	2026-10-05T12:13:54.1412381Z   duration_ms: 1758.653003
+architecture	Run npm test	2026-10-05T12:13:54.1412615Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:54.1412801Z   ...
+architecture	Run npm test	2026-10-05T12:13:56.0167063Z # Subtest: review batch keeps sequential per-item commit semantics against a concurrent single write
+architecture	Run npm test	2026-10-05T12:13:56.0168277Z ok 139 - review batch keeps sequential per-item commit semantics against a concurrent single write
+architecture	Run npm test	2026-10-05T12:13:56.0168677Z   ---
+architecture	Run npm test	2026-10-05T12:13:56.0168865Z   duration_ms: 1875.326454
+architecture	Run npm test	2026-10-05T12:13:56.0169068Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:56.0169239Z   ...
+architecture	Run npm test	2026-10-05T12:13:57.3388389Z # Subtest: review-store lock is cross-process, owner-safe, and never reclaims a stale sidecar automatically
+architecture	Run npm test	2026-10-05T12:13:57.3389200Z ok 140 - review-store lock is cross-process, owner-safe, and never reclaims a stale sidecar automatically
+architecture	Run npm test	2026-10-05T12:13:57.3389582Z   ---
+architecture	Run npm test	2026-10-05T12:13:57.3389768Z   duration_ms: 1322.232056
+architecture	Run npm test	2026-10-05T12:13:57.3389963Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:13:57.3390076Z   ...
+architecture	Run npm test	2026-10-05T12:14:00.5706427Z # Subtest: review-store path aliases share a lock key; hard links and dangling file symlinks fail closed
+architecture	Run npm test	2026-10-05T12:14:00.5707210Z ok 141 - review-store path aliases share a lock key; hard links and dangling file symlinks fail closed
+architecture	Run npm test	2026-10-05T12:14:00.5707666Z   ---
+architecture	Run npm test	2026-10-05T12:14:00.5707850Z   duration_ms: 3231.550295
+architecture	Run npm test	2026-10-05T12:14:00.5708061Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:00.5708231Z   ...
+architecture	Run npm test	2026-10-05T12:14:02.4677533Z # Subtest: review store preserves a private mode and never removes another owner's temp or lock file
+architecture	Run npm test	2026-10-05T12:14:02.4678342Z ok 142 - review store preserves a private mode and never removes another owner's temp or lock file
+architecture	Run npm test	2026-10-05T12:14:02.4678734Z   ---
+architecture	Run npm test	2026-10-05T12:14:02.4678926Z   duration_ms: 1897.093418
+architecture	Run npm test	2026-10-05T12:14:02.4679137Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:02.4679313Z   ...
+architecture	Run npm test	2026-10-05T12:14:03.1742714Z # Subtest: new review stores use a private mode
+architecture	Run npm test	2026-10-05T12:14:03.1743192Z ok 143 - new review stores use a private mode
+architecture	Run npm test	2026-10-05T12:14:03.1743378Z   ---
+architecture	Run npm test	2026-10-05T12:14:03.1743523Z   duration_ms: 705.678047
+architecture	Run npm test	2026-10-05T12:14:03.1743655Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:03.1743768Z   ...
+architecture	Run npm test	2026-10-05T12:14:09.7976084Z # Subtest: latest malformed review stores reject read-modify-write without changing disk or memory
+architecture	Run npm test	2026-10-05T12:14:09.7976973Z ok 144 - latest malformed review stores reject read-modify-write without changing disk or memory
+architecture	Run npm test	2026-10-05T12:14:09.7977211Z   ---
+architecture	Run npm test	2026-10-05T12:14:09.7977327Z   duration_ms: 6624.149381
+architecture	Run npm test	2026-10-05T12:14:09.7977451Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:09.7977553Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.4844249Z # Subtest: post-commit lock-release warnings stay visible through the HTTP API
+architecture	Run npm test	2026-10-05T12:14:10.4844684Z ok 145 - post-commit lock-release warnings stay visible through the HTTP API
+architecture	Run npm test	2026-10-05T12:14:10.4844895Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.4845019Z   duration_ms: 686.996572
+architecture	Run npm test	2026-10-05T12:14:10.4845155Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.4845263Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6894393Z # Subtest: nine canonical banks produce a repeatable inventory with an explicit AWS baseline mismatch
+architecture	Run npm test	2026-10-05T12:14:10.6895201Z ok 146 - nine canonical banks produce a repeatable inventory with an explicit AWS baseline mismatch
+architecture	Run npm test	2026-10-05T12:14:10.6895694Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6896058Z   duration_ms: 3534.225593
+architecture	Run npm test	2026-10-05T12:14:10.6896270Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6896444Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6896829Z # Subtest: ODK-096 approval binds one AWS Free node to exact canonical hashes and IDs
+architecture	Run npm test	2026-10-05T12:14:10.6897382Z ok 147 - ODK-096 approval binds one AWS Free node to exact canonical hashes and IDs
+architecture	Run npm test	2026-10-05T12:14:10.6897715Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6897882Z   duration_ms: 261.721286
+architecture	Run npm test	2026-10-05T12:14:10.6898077Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6898242Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6898599Z # Subtest: ODK-097 producer profiles expose the approved Design session matrix
+architecture	Run npm test	2026-10-05T12:14:10.6899115Z ok 148 - ODK-097 producer profiles expose the approved Design session matrix
+architecture	Run npm test	2026-10-05T12:14:10.6899443Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6899611Z   duration_ms: 16.351411
+architecture	Run npm test	2026-10-05T12:14:10.6899812Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6899976Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6900349Z # Subtest: ODK-097 producer changes preserve canonical Design question counts and hashes
+architecture	Run npm test	2026-10-05T12:14:10.6901392Z ok 149 - ODK-097 producer changes preserve canonical Design question counts and hashes
+architecture	Run npm test	2026-10-05T12:14:10.6901744Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6901915Z   duration_ms: 569.041006
+architecture	Run npm test	2026-10-05T12:14:10.6902111Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6902275Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6902735Z # Subtest: Claude Focus Practice v2 is the only selectable-feedback mode in its immutable Free-node profile
+architecture	Run npm test	2026-10-05T12:14:10.6903445Z ok 150 - Claude Focus Practice v2 is the only selectable-feedback mode in its immutable Free-node profile
+architecture	Run npm test	2026-10-05T12:14:10.6903849Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6904013Z   duration_ms: 1.212719
+architecture	Run npm test	2026-10-05T12:14:10.6904207Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6904374Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6904848Z # Subtest: catalog accepts a valid optional package completion rule and rejects malformed or null rules
+architecture	Run npm test	2026-10-05T12:14:10.6905534Z ok 151 - catalog accepts a valid optional package completion rule and rejects malformed or null rules
+architecture	Run npm test	2026-10-05T12:14:10.6906035Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6906192Z   duration_ms: 2.676218
+architecture	Run npm test	2026-10-05T12:14:10.6906383Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6906546Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6906886Z # Subtest: builder transports the exact source rule, hashes it, and omits it when absent
+architecture	Run npm test	2026-10-05T12:14:10.6907389Z ok 152 - builder transports the exact source rule, hashes it, and omits it when absent
+architecture	Run npm test	2026-10-05T12:14:10.6907711Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6907859Z   duration_ms: 22.878199
+architecture	Run npm test	2026-10-05T12:14:10.6908030Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6908180Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6908538Z # Subtest: existing artifact rule must agree with catalog even after checksum is recomputed
+architecture	Run npm test	2026-10-05T12:14:10.6909091Z ok 153 - existing artifact rule must agree with catalog even after checksum is recomputed
+architecture	Run npm test	2026-10-05T12:14:10.6909427Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6909580Z   duration_ms: 20.305487
+architecture	Run npm test	2026-10-05T12:14:10.6909755Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6909909Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6910181Z # Subtest: catalog is the exact nine-track SIMP-01 catalog
+architecture	Run npm test	2026-10-05T12:14:10.6910754Z ok 154 - catalog is the exact nine-track SIMP-01 catalog
+architecture	Run npm test	2026-10-05T12:14:10.6910992Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6911148Z   duration_ms: 1.834378
+architecture	Run npm test	2026-10-05T12:14:10.6911327Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6911472Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6911724Z # Subtest: fixture validates as one family-neutral contract
+architecture	Run npm test	2026-10-05T12:14:10.6912092Z ok 155 - fixture validates as one family-neutral contract
+architecture	Run npm test	2026-10-05T12:14:10.6912357Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6912519Z   duration_ms: 1.535637
+architecture	Run npm test	2026-10-05T12:14:10.6912713Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6912878Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6913168Z # Subtest: schema documents five disjoint interaction branches
+architecture	Run npm test	2026-10-05T12:14:10.6913579Z ok 156 - schema documents five disjoint interaction branches
+architecture	Run npm test	2026-10-05T12:14:10.6913852Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6914016Z   duration_ms: 1.286992
+architecture	Run npm test	2026-10-05T12:14:10.6914208Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6914371Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6914727Z # Subtest: Draft 2020-12 schema rejects feedback type mismatches in every variant
+architecture	Run npm test	2026-10-05T12:14:10.6915261Z ok 157 - Draft 2020-12 schema rejects feedback type mismatches in every variant
+architecture	Run npm test	2026-10-05T12:14:10.6915588Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6915755Z   duration_ms: 170.578847
+architecture	Run npm test	2026-10-05T12:14:10.6916487Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6916650Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6917044Z # Subtest: Draft 2020-12 schema agrees with runtime on padded and whitespace-only learner text
+architecture	Run npm test	2026-10-05T12:14:10.6917638Z ok 158 - Draft 2020-12 schema agrees with runtime on padded and whitespace-only learner text
+architecture	Run npm test	2026-10-05T12:14:10.6917992Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6918152Z   duration_ms: 133.832724
+architecture	Run npm test	2026-10-05T12:14:10.6918345Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6918506Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6918885Z # Subtest: Draft 2020-12 schema and runtime agree on explicit learner whitespace code points
+architecture	Run npm test	2026-10-05T12:14:10.6919454Z ok 159 - Draft 2020-12 schema and runtime agree on explicit learner whitespace code points
+architecture	Run npm test	2026-10-05T12:14:10.6919964Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6920118Z   duration_ms: 186.008246
+architecture	Run npm test	2026-10-05T12:14:10.6920297Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6920445Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6920823Z # Subtest: Draft 2020-12 schema and runtime keep identity metadata trim-clean for explicit whitespace
+architecture	Run npm test	2026-10-05T12:14:10.6921398Z ok 160 - Draft 2020-12 schema and runtime keep identity metadata trim-clean for explicit whitespace
+architecture	Run npm test	2026-10-05T12:14:10.6921746Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6921902Z   duration_ms: 438.732001
+architecture	Run npm test	2026-10-05T12:14:10.6922086Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6922240Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6922466Z # Subtest: all five correct answers are scoreable
+architecture	Run npm test	2026-10-05T12:14:10.6922778Z ok 161 - all five correct answers are scoreable
+architecture	Run npm test	2026-10-05T12:14:10.6923007Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6923162Z   duration_ms: 1.194572
+architecture	Run npm test	2026-10-05T12:14:10.6923344Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6923501Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6923791Z # Subtest: choice_single scores correct, wrong and empty responses
+architecture	Run npm test	2026-10-05T12:14:10.6924195Z ok 162 - choice_single scores correct, wrong and empty responses
+architecture	Run npm test	2026-10-05T12:14:10.6924469Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6924625Z   duration_ms: 0.534786
+architecture	Run npm test	2026-10-05T12:14:10.6924789Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6924940Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6925332Z # Subtest: choice_multiple preserves valid partial points and gives zero for any wrong selection
+architecture	Run npm test	2026-10-05T12:14:10.6926692Z ok 163 - choice_multiple preserves valid partial points and gives zero for any wrong selection
+architecture	Run npm test	2026-10-05T12:14:10.6927067Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6927227Z   duration_ms: 0.683161
+architecture	Run npm test	2026-10-05T12:14:10.6927408Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6927563Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6927987Z # Subtest: multiple-choice wrong selections and empty response earn zero independently of app parity
+architecture	Run npm test	2026-10-05T12:14:10.6928628Z ok 164 - multiple-choice wrong selections and empty response earn zero independently of app parity
+architecture	Run npm test	2026-10-05T12:14:10.6929005Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6929155Z   duration_ms: 0.682429
+architecture	Run npm test	2026-10-05T12:14:10.6929328Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6929699Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6929962Z # Subtest: ordering scores exact adjacent relations and incomplete answers
+architecture	Run npm test	2026-10-05T12:14:10.6930251Z ok 165 - ordering scores exact adjacent relations and incomplete answers
+architecture	Run npm test	2026-10-05T12:14:10.6930429Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6930526Z   duration_ms: 0.39772
+architecture	Run npm test	2026-10-05T12:14:10.6930641Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6930739Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6930936Z # Subtest: complexity scores every dimension and distinguishes missing values
+architecture	Run npm test	2026-10-05T12:14:10.6931228Z ok 166 - complexity scores every dimension and distinguishes missing values
+architecture	Run npm test	2026-10-05T12:14:10.6931413Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6931666Z   duration_ms: 1.205479
+architecture	Run npm test	2026-10-05T12:14:10.6931784Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6931883Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6932053Z # Subtest: decision_matrix scores every dimension independently
+architecture	Run npm test	2026-10-05T12:14:10.6932298Z ok 167 - decision_matrix scores every dimension independently
+architecture	Run npm test	2026-10-05T12:14:10.6932459Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6932558Z   duration_ms: 0.206652
+architecture	Run npm test	2026-10-05T12:14:10.6932677Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6932776Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6932954Z # Subtest: validator rejects missing identity and all family aliases
+architecture	Run npm test	2026-10-05T12:14:10.6933214Z ok 168 - validator rejects missing identity and all family aliases
+architecture	Run npm test	2026-10-05T12:14:10.6933418Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6933514Z   duration_ms: 0.22545
+architecture	Run npm test	2026-10-05T12:14:10.6933629Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6933726Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6933947Z # Subtest: learner text preserves surrounding whitespace while identity stays trim-clean
+architecture	Run npm test	2026-10-05T12:14:10.6934283Z ok 169 - learner text preserves surrounding whitespace while identity stays trim-clean
+architecture	Run npm test	2026-10-05T12:14:10.6934488Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6934583Z   duration_ms: 0.140742
+architecture	Run npm test	2026-10-05T12:14:10.6934698Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6934795Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6935015Z # Subtest: learner text rejects whitespace-only values in every canonical learner surface
+architecture	Run npm test	2026-10-05T12:14:10.6935464Z ok 170 - learner text rejects whitespace-only values in every canonical learner surface
+architecture	Run npm test	2026-10-05T12:14:10.6935673Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6935769Z   duration_ms: 0.334184
+architecture	Run npm test	2026-10-05T12:14:10.6936077Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6936176Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6936397Z # Subtest: validator permits internal newlines that the schema pattern explicitly permits
+architecture	Run npm test	2026-10-05T12:14:10.6936729Z ok 171 - validator permits internal newlines that the schema pattern explicitly permits
+architecture	Run npm test	2026-10-05T12:14:10.6936936Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6937033Z   duration_ms: 0.062775
+architecture	Run npm test	2026-10-05T12:14:10.6937146Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6937245Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6937488Z # Subtest: scoring rejects additional response keys and mismatched response types for every variant
+architecture	Run npm test	2026-10-05T12:14:10.6937864Z ok 172 - scoring rejects additional response keys and mismatched response types for every variant
+architecture	Run npm test	2026-10-05T12:14:10.6938087Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6938184Z   duration_ms: 0.43093
+architecture	Run npm test	2026-10-05T12:14:10.6938304Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6938427Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6938642Z # Subtest: validator rejects extra fields and duplicate option/element/dimension IDs
+architecture	Run npm test	2026-10-05T12:14:10.6938959Z ok 173 - validator rejects extra fields and duplicate option/element/dimension IDs
+architecture	Run npm test	2026-10-05T12:14:10.6939159Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6939258Z   duration_ms: 0.339862
+architecture	Run npm test	2026-10-05T12:14:10.6939374Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6939474Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6939658Z # Subtest: validator rejects mismatched variants and foreign references
+architecture	Run npm test	2026-10-05T12:14:10.6939924Z ok 174 - validator rejects mismatched variants and foreign references
+architecture	Run npm test	2026-10-05T12:14:10.6940099Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6949297Z   duration_ms: 0.355867
+architecture	Run npm test	2026-10-05T12:14:10.6949524Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6949672Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6949962Z # Subtest: feedback messages are optional when no source map exists
+architecture	Run npm test	2026-10-05T12:14:10.6950372Z ok 175 - feedback messages are optional when no source map exists
+architecture	Run npm test	2026-10-05T12:14:10.6950642Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6950976Z   duration_ms: 0.168945
+architecture	Run npm test	2026-10-05T12:14:10.6951148Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6951298Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6951578Z # Subtest: fixture validator rejects a track outside the exact catalog
+architecture	Run npm test	2026-10-05T12:14:10.6951985Z ok 176 - fixture validator rejects a track outside the exact catalog
+architecture	Run npm test	2026-10-05T12:14:10.6952245Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6952431Z   duration_ms: 0.558753
+architecture	Run npm test	2026-10-05T12:14:10.6952604Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6952781Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6953010Z # Subtest: oracle covers every single-choice option
+architecture	Run npm test	2026-10-05T12:14:10.6953347Z ok 177 - oracle covers every single-choice option
+architecture	Run npm test	2026-10-05T12:14:10.6953618Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6953775Z   duration_ms: 1.957634
+architecture	Run npm test	2026-10-05T12:14:10.6953983Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6954156Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6954524Z # Subtest: oracle covers every multiple-choice subset, including empty and all-selected
+architecture	Run npm test	2026-10-05T12:14:10.6955069Z ok 178 - oracle covers every multiple-choice subset, including empty and all-selected
+architecture	Run npm test	2026-10-05T12:14:10.6955424Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6955573Z   duration_ms: 1.313842
+architecture	Run npm test	2026-10-05T12:14:10.6955776Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6956057Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6956345Z # Subtest: oracle freezes adjacent-relation ordering semantics
+architecture	Run npm test	2026-10-05T12:14:10.6956763Z ok 179 - oracle freezes adjacent-relation ordering semantics
+architecture	Run npm test	2026-10-05T12:14:10.6957037Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6957196Z   duration_ms: 0.646396
+architecture	Run npm test	2026-10-05T12:14:10.6957389Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6957546Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6957876Z # Subtest: oracle covers accepted, wrong, alias and missing dimension values
+architecture	Run npm test	2026-10-05T12:14:10.6958340Z ok 180 - oracle covers accepted, wrong, alias and missing dimension values
+architecture	Run npm test	2026-10-05T12:14:10.6958651Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6958827Z   duration_ms: 1.299832
+architecture	Run npm test	2026-10-05T12:14:10.6959006Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6959186Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6959564Z # Subtest: canonical answers retain the complete accepted set for multi-accepted complexity
+architecture	Run npm test	2026-10-05T12:14:10.6960277Z ok 181 - canonical answers retain the complete accepted set for multi-accepted complexity
+architecture	Run npm test	2026-10-05T12:14:10.6960644Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6960795Z   duration_ms: 1.164808
+architecture	Run npm test	2026-10-05T12:14:10.6960969Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6961164Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6961574Z # Subtest: details remain arbitrary exact JSON, difficulty may be null, and aliases stay complexity-only
+architecture	Run npm test	2026-10-05T12:14:10.6962278Z ok 182 - details remain arbitrary exact JSON, difficulty may be null, and aliases stay complexity-only
+architecture	Run npm test	2026-10-05T12:14:10.6962685Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6962849Z   duration_ms: 0.353293
+architecture	Run npm test	2026-10-05T12:14:10.6963050Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6963228Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6963633Z # Subtest: verifies the complete canonical tree and durable evidence without external inputs
+architecture	Run npm test	2026-10-05T12:14:10.6964206Z ok 183 - verifies the complete canonical tree and durable evidence without external inputs
+architecture	Run npm test	2026-10-05T12:14:10.6964588Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6964753Z   duration_ms: 1708.120959
+architecture	Run npm test	2026-10-05T12:14:10.6964960Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6965117Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6965436Z # Subtest: rejects canonical question tampering without changing evidence
+architecture	Run npm test	2026-10-05T12:14:10.6966020Z ok 184 - rejects canonical question tampering without changing evidence
+architecture	Run npm test	2026-10-05T12:14:10.6966325Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6966485Z   duration_ms: 703.90535
+architecture	Run npm test	2026-10-05T12:14:10.6966692Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6966845Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6967137Z # Subtest: rejects evidence hash tampering and missing membership
+architecture	Run npm test	2026-10-05T12:14:10.6967553Z ok 185 - rejects evidence hash tampering and missing membership
+architecture	Run npm test	2026-10-05T12:14:10.6967818Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6967977Z   duration_ms: 1133.696074
+architecture	Run npm test	2026-10-05T12:14:10.6968191Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6968348Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6968625Z # Subtest: rejects symlinked canonical paths before following them
+architecture	Run npm test	2026-10-05T12:14:10.6969040Z ok 186 - rejects symlinked canonical paths before following them
+architecture	Run npm test	2026-10-05T12:14:10.6969462Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6969612Z   duration_ms: 296.890379
+architecture	Run npm test	2026-10-05T12:14:10.6969803Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6969983Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6970271Z # Subtest: rejects a content root reached through a symlinked ancestor
+architecture	Run npm test	2026-10-05T12:14:10.6970542Z ok 187 - rejects a content root reached through a symlinked ancestor
+architecture	Run npm test	2026-10-05T12:14:10.6970796Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6970949Z   duration_ms: 302.885114
+architecture	Run npm test	2026-10-05T12:14:10.6971154Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6971387Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6971690Z # Subtest: has no dependency on ephemeral output or the migration writer
+architecture	Run npm test	2026-10-05T12:14:10.6972047Z ok 188 - has no dependency on ephemeral output or the migration writer
+architecture	Run npm test	2026-10-05T12:14:10.6972377Z   ---
+architecture	Run npm test	2026-10-05T12:14:10.6972528Z   duration_ms: 0.891856
+architecture	Run npm test	2026-10-05T12:14:10.6972743Z   type: 'test'
+architecture	Run npm test	2026-10-05T12:14:10.6972900Z   ...
+architecture	Run npm test	2026-10-05T12:14:10.6973041Z 1..188
+architecture	Run npm test	2026-10-05T12:14:10.6973191Z # tests 188
+architecture	Run npm test	2026-10-05T12:14:10.6973346Z # suites 0
+architecture	Run npm test	2026-10-05T12:14:10.6973497Z # pass 188
+architecture	Run npm test	2026-10-05T12:14:10.6973645Z # fail 0
+architecture	Run npm test	2026-10-05T12:14:10.6973797Z # cancelled 0
+architecture	Run npm test	2026-10-05T12:14:10.6973952Z # skipped 0
+architecture	Run npm test	2026-10-05T12:14:10.6974100Z # todo 0
+architecture	Run npm test	2026-10-05T12:14:10.6974267Z # duration_ms 174728.194799
+architecture	Build all canonical content tracks	﻿2026-10-05T12:14:10.7140463Z ##[group]Run npm run content:build-all -- --root . --output-root "$CONTENT_BUILD_OUTPUT"
+architecture	Build all canonical content tracks	2026-10-05T12:14:10.7140811Z [36;1mnpm run content:build-all -- --root . --output-root "$CONTENT_BUILD_OUTPUT"[0m
+architecture	Build all canonical content tracks	2026-10-05T12:14:10.7191375Z shell: /usr/bin/bash -e {0}
+architecture	Build all canonical content tracks	2026-10-05T12:14:10.7191530Z env:
+architecture	Build all canonical content tracks	2026-10-05T12:14:10.7191679Z   CONTENT_BUILD_OUTPUT: /home/runner/work/_temp/content-build
+architecture	Build all canonical content tracks	2026-10-05T12:14:10.7191856Z ##[endgroup]
+architecture	Build all canonical content tracks	2026-10-05T12:14:10.7879895Z 
+architecture	Build all canonical content tracks	2026-10-05T12:14:10.7880584Z > patternly-content@1.0.0 content:build-all
+architecture	Build all canonical content tracks	2026-10-05T12:14:10.7880998Z > node scripts/build.mjs build-all --root . --output-root /home/runner/work/_temp/content-build
+architecture	Build all canonical content tracks	2026-10-05T12:14:10.7881189Z 
+architecture	Build all canonical content tracks	2026-10-05T12:14:11.8257089Z Built 9 track artifact(s) and /home/runner/work/_temp/content-build/content-lock.json
+architecture	Score canonical answers for every catalog track	﻿2026-10-05T12:14:11.8555167Z ##[group]Run node --input-type=module -e 'import { readFileSync } from "node:fs"; import { spawnSync } from "node:child_process"; const { tracks } = JSON.parse(readFileSync("content/catalog.json", "utf8")); for (const { trackId } of tracks) { const result = spawnSync("npm", ["run", "content:test", "--", "--track", trackId, "--root", "."], { stdio: "inherit" }); if (result.error) throw result.error; if (result.status !== 0) process.exit(result.status ?? 1); }'
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:11.8556860Z [36;1mnode --input-type=module -e 'import { readFileSync } from "node:fs"; import { spawnSync } from "node:child_process"; const { tracks } = JSON.parse(readFileSync("content/catalog.json", "utf8")); for (const { trackId } of tracks) { const result = spawnSync("npm", ["run", "content:test", "--", "--track", trackId, "--root", "."], { stdio: "inherit" }); if (result.error) throw result.error; if (result.status !== 0) process.exit(result.status ?? 1); }'[0m
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:11.8608032Z shell: /usr/bin/bash -e {0}
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:11.8608184Z ##[endgroup]
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:11.9396277Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:11.9396858Z > patternly-content@1.0.0 content:test
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:11.9397284Z > node scripts/build.mjs test --track aws-certified-solutions-architect-associate --root .
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:11.9397483Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.0744719Z Tested 2604 canonical answer(s) for aws-certified-solutions-architect-associate
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.1441960Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.1442602Z > patternly-content@1.0.0 content:test
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.1443155Z > node scripts/build.mjs test --track backend-system-design-interview --root .
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.1443444Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.2662682Z Tested 1569 canonical answer(s) for backend-system-design-interview
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.3336985Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.3337285Z > patternly-content@1.0.0 content:test
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.3337806Z > node scripts/build.mjs test --track claude-certified-architect-professional-certification --root .
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.3338275Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.3815172Z Tested 300 canonical answer(s) for claude-certified-architect-professional-certification
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.4445539Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.4446222Z > patternly-content@1.0.0 content:test
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.4446626Z > node scripts/build.mjs test --track coding-interview-dsa-problem-solving --root .
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.4446814Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.6308828Z Tested 3404 canonical answer(s) for coding-interview-dsa-problem-solving
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.6979555Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.6980215Z > patternly-content@1.0.0 content:test
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.6980583Z > node scripts/build.mjs test --track frontend-system-design-interview --root .
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.6980761Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.8651469Z Tested 1766 canonical answer(s) for frontend-system-design-interview
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.9363202Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.9363557Z > patternly-content@1.0.0 content:test
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.9364075Z > node scripts/build.mjs test --track google-cloud-associate-cloud-engineer --root .
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:12.9364403Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.1225928Z Tested 2981 canonical answer(s) for google-cloud-associate-cloud-engineer
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.1946837Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.1947508Z > patternly-content@1.0.0 content:test
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.1948137Z > node scripts/build.mjs test --track microsoft-azure-administrator-associate-az-104 --root .
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.1948484Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.2798764Z Tested 1288 canonical answer(s) for microsoft-azure-administrator-associate-az-104
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.3560408Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.3560880Z > patternly-content@1.0.0 content:test
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.3561262Z > node scripts/build.mjs test --track microsoft-azure-ai-fundamentals-ai-901 --root .
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.3561473Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.4231163Z Tested 752 canonical answer(s) for microsoft-azure-ai-fundamentals-ai-901
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.4980461Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.4981063Z > patternly-content@1.0.0 content:test
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.4981452Z > node scripts/build.mjs test --track object-oriented-design-interview --root .
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.4981677Z 
+architecture	Score canonical answers for every catalog track	2026-10-05T12:14:13.5991378Z Tested 1413 canonical answer(s) for object-oriented-design-interview
+architecture	Rebuild exact candidate draft	﻿2026-10-05T12:14:13.6243456Z ##[group]Run npm run candidate:draft-v2
+architecture	Rebuild exact candidate draft	2026-10-05T12:14:13.6243666Z [36;1mnpm run candidate:draft-v2[0m
+architecture	Rebuild exact candidate draft	2026-10-05T12:14:13.6295976Z shell: /usr/bin/bash -e {0}
+architecture	Rebuild exact candidate draft	2026-10-05T12:14:13.6296143Z ##[endgroup]
+architecture	Rebuild exact candidate draft	2026-10-05T12:14:13.6941818Z 
+architecture	Rebuild exact candidate draft	2026-10-05T12:14:13.6942329Z > patternly-content@1.0.0 candidate:draft-v2
+architecture	Rebuild exact candidate draft	2026-10-05T12:14:13.6942732Z > node scripts/review/candidate-draft-v2.mjs reports/candidate-reconciliation/AWS-02-DRAFT
+architecture	Rebuild exact candidate draft	2026-10-05T12:14:13.6942942Z 
+architecture	Rebuild exact candidate draft	2026-10-05T12:14:15.4927274Z Draft ebd5f2d614ca620323b6abf111d06e84acf30cc1d9a5e819bc8df4ed2c071525 written to /home/runner/work/patternly-content/patternly-content/patternly-content/reports/candidate-reconciliation/AWS-02-DRAFT; status=draft_not_admitted; admission=not_granted
+architecture	Regenerate readiness from the delegated decision	﻿2026-10-05T12:14:15.5280948Z ##[group]Run npm run candidate:readiness-v2
+architecture	Regenerate readiness from the delegated decision	2026-10-05T12:14:15.5281168Z [36;1mnpm run candidate:readiness-v2[0m
+architecture	Regenerate readiness from the delegated decision	2026-10-05T12:14:15.5331876Z shell: /usr/bin/bash -e {0}
+architecture	Regenerate readiness from the delegated decision	2026-10-05T12:14:15.5332017Z ##[endgroup]
+architecture	Regenerate readiness from the delegated decision	2026-10-05T12:14:15.5938285Z 
+architecture	Regenerate readiness from the delegated decision	2026-10-05T12:14:15.5938922Z > patternly-content@1.0.0 candidate:readiness-v2
+architecture	Regenerate readiness from the delegated decision	2026-10-05T12:14:15.5939365Z > node scripts/review/candidate-readiness-v2.mjs
+architecture	Regenerate readiness from the delegated decision	2026-10-05T12:14:15.5939553Z 
+architecture	Regenerate readiness from the delegated decision	2026-10-05T12:14:15.6766605Z Readiness v2 verified for ebd5f2d614ca620323b6abf111d06e84acf30cc1d9a5e819bc8df4ed2c071525; candidateApproval=approved; publishing/runtime=not_granted
+architecture	Require committed candidate and decision-bound readiness evidence	﻿2026-10-05T12:14:15.6881405Z ##[group]Run git diff --exit-code -- reports/candidate-reconciliation/AWS-02-DRAFT evidence/readiness/candidate-readiness-v2.json
+architecture	Require committed candidate and decision-bound readiness evidence	2026-10-05T12:14:15.6881899Z [36;1mgit diff --exit-code -- reports/candidate-reconciliation/AWS-02-DRAFT evidence/readiness/candidate-readiness-v2.json[0m
+architecture	Require committed candidate and decision-bound readiness evidence	2026-10-05T12:14:15.6882398Z [36;1mif test -n "$(git ls-files --others --exclude-standard -- reports/candidate-reconciliation/AWS-02-DRAFT evidence/readiness/candidate-readiness-v2.json)"; then[0m
+architecture	Require committed candidate and decision-bound readiness evidence	2026-10-05T12:14:15.6882932Z [36;1m  echo "Candidate or readiness evidence contains untracked files."[0m
+architecture	Require committed candidate and decision-bound readiness evidence	2026-10-05T12:14:15.6883118Z [36;1m  exit 1[0m
+architecture	Require committed candidate and decision-bound readiness evidence	2026-10-05T12:14:15.6883220Z [36;1mfi[0m
+architecture	Require committed candidate and decision-bound readiness evidence	2026-10-05T12:14:15.6932859Z shell: /usr/bin/bash -e {0}
+architecture	Require committed candidate and decision-bound readiness evidence	2026-10-05T12:14:15.6932998Z ##[endgroup]
+architecture	Validate configured bundled Free-node packages	﻿2026-10-05T12:14:16.2308139Z ##[group]Run npm run validate:bundled-free-nodes
+architecture	Validate configured bundled Free-node packages	2026-10-05T12:14:16.2308379Z [36;1mnpm run validate:bundled-free-nodes[0m
+architecture	Validate configured bundled Free-node packages	2026-10-05T12:14:16.2360503Z shell: /usr/bin/bash -e {0}
+architecture	Validate configured bundled Free-node packages	2026-10-05T12:14:16.2360651Z ##[endgroup]
+architecture	Validate configured bundled Free-node packages	2026-10-05T12:14:16.3004595Z 
+architecture	Validate configured bundled Free-node packages	2026-10-05T12:14:16.3005321Z > patternly-content@1.0.0 validate:bundled-free-nodes
+architecture	Validate configured bundled Free-node packages	2026-10-05T12:14:16.3005942Z > node scripts/product/validate-bundled-free-nodes.mjs
+architecture	Validate configured bundled Free-node packages	2026-10-05T12:14:16.3006156Z 
+architecture	Validate configured bundled Free-node packages	2026-10-05T12:14:17.7200179Z Validated 9 configured bundled Free-node packages.
+architecture	Post Run actions/checkout@v4	﻿2026-10-05T12:14:17.7569819Z Post job cleanup.
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:17.8085316Z [command]/usr/bin/git version
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:17.8116241Z git version 2.55.0
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:17.8137622Z Temporarily overriding HOME='/home/runner/work/_temp/52152c4a-2f6f-4d8d-86f1-14bd02de7f9a' before making global git config changes
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:17.8138329Z Adding repository directory to the temporary git global config as a safe directory
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:17.8140783Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/patternly-content/patternly-content/patternly
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:17.8170116Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:17.8194567Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:17.8388729Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:17.8416276Z http.https://github.com/.extraheader
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:17.8420760Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:17.8457484Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:17.8653226Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:17.8682295Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+architecture	Post Run actions/setup-node@v4	﻿2026-10-05T12:14:17.8970282Z Post job cleanup.
+architecture	Post Run actions/setup-node@v4	2026-10-05T12:14:17.9837144Z (node:3204) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+architecture	Post Run actions/setup-node@v4	2026-10-05T12:14:17.9857035Z (Use `node --trace-deprecation ...` to show where the warning was created)
+architecture	Post Run actions/checkout@v4	﻿2026-10-05T12:14:17.9989081Z Post job cleanup.
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:18.0614341Z [command]/usr/bin/git version
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:18.0642225Z git version 2.55.0
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:18.0664611Z Temporarily overriding HOME='/home/runner/work/_temp/27a096e3-1d41-48b3-9e0f-dc106133d204' before making global git config changes
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:18.0665333Z Adding repository directory to the temporary git global config as a safe directory
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:18.0668365Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/patternly-content/patternly-content/patternly-content
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:18.0696919Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:18.0722516Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:18.0913475Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:18.0931800Z http.https://github.com/.extraheader
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:18.0946341Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:18.0970383Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:18.1162101Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+architecture	Post Run actions/checkout@v4	2026-10-05T12:14:18.1190858Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+architecture	Complete job	﻿2026-10-05T12:14:18.1472369Z Cleaning up orphan processes
+architecture	Complete job	2026-10-05T12:14:18.1674847Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

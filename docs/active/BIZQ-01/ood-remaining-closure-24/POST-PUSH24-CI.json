@@ -1,0 +1,510 @@
+{
+  "result": "PASS_ACTUAL_AUTOMATIC_HOSTED_CI",
+  "runs": [
+    {
+      "conclusion": "success",
+      "databaseId": 37307712305,
+      "headSha": "25c2f5637ab6bae0e4dfb564fb4921379ceb2b90",
+      "jobs": [
+        {
+          "completedAt": "2026-10-05T12:11:37Z",
+          "conclusion": "success",
+          "databaseId": 111755313567,
+          "name": "Multi-track content release contract",
+          "startedAt": "2026-10-05T12:10:36Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-05T12:10:38Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-05T12:10:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:10:44Z",
+              "conclusion": "success",
+              "name": "Checkout application",
+              "number": 2,
+              "startedAt": "2026-10-05T12:10:38Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:10:44Z",
+              "conclusion": "success",
+              "name": "Read immutable content lock",
+              "number": 3,
+              "startedAt": "2026-10-05T12:10:44Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:10:54Z",
+              "conclusion": "success",
+              "name": "Checkout locked content producer",
+              "number": 4,
+              "startedAt": "2026-10-05T12:10:44Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:04Z",
+              "conclusion": "success",
+              "name": "Checkout current content producer",
+              "number": 5,
+              "startedAt": "2026-10-05T12:10:54Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:04Z",
+              "conclusion": "success",
+              "name": "Record exact current and historical content inputs",
+              "number": 6,
+              "startedAt": "2026-10-05T12:11:04Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:04Z",
+              "conclusion": "success",
+              "name": "Verify candidate-bound content release lock",
+              "number": 7,
+              "startedAt": "2026-10-05T12:11:04Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:10Z",
+              "conclusion": "success",
+              "name": "Run actions/setup-node@v4",
+              "number": 8,
+              "startedAt": "2026-10-05T12:11:04Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:27Z",
+              "conclusion": "success",
+              "name": "Install application dependencies",
+              "number": 9,
+              "startedAt": "2026-10-05T12:11:10Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:34Z",
+              "conclusion": "success",
+              "name": "Run pinned multi-track release round-trip",
+              "number": 10,
+              "startedAt": "2026-10-05T12:11:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:35Z",
+              "conclusion": "success",
+              "name": "Post Run actions/setup-node@v4",
+              "number": 17,
+              "startedAt": "2026-10-05T12:11:34Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:35Z",
+              "conclusion": "success",
+              "name": "Post Checkout current content producer",
+              "number": 18,
+              "startedAt": "2026-10-05T12:11:35Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:35Z",
+              "conclusion": "success",
+              "name": "Post Checkout locked content producer",
+              "number": 19,
+              "startedAt": "2026-10-05T12:11:35Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:35Z",
+              "conclusion": "success",
+              "name": "Post Checkout application",
+              "number": 20,
+              "startedAt": "2026-10-05T12:11:35Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:35Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 21,
+              "startedAt": "2026-10-05T12:11:35Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37307712305/job/111755313567"
+        },
+        {
+          "completedAt": "2026-10-05T12:14:23Z",
+          "conclusion": "success",
+          "databaseId": 111755313831,
+          "name": "Recovery QA gate",
+          "startedAt": "2026-10-05T12:10:37Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-05T12:10:38Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-05T12:10:38Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:10:46Z",
+              "conclusion": "success",
+              "name": "Checkout application",
+              "number": 2,
+              "startedAt": "2026-10-05T12:10:38Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:10:47Z",
+              "conclusion": "success",
+              "name": "Read immutable content lock",
+              "number": 3,
+              "startedAt": "2026-10-05T12:10:46Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:10:57Z",
+              "conclusion": "success",
+              "name": "Checkout locked content producer",
+              "number": 4,
+              "startedAt": "2026-10-05T12:10:47Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:07Z",
+              "conclusion": "success",
+              "name": "Checkout current content producer",
+              "number": 5,
+              "startedAt": "2026-10-05T12:10:57Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:07Z",
+              "conclusion": "success",
+              "name": "Record exact current and historical content inputs",
+              "number": 6,
+              "startedAt": "2026-10-05T12:11:07Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:07Z",
+              "conclusion": "success",
+              "name": "Verify candidate-bound content release lock",
+              "number": 7,
+              "startedAt": "2026-10-05T12:11:07Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:09Z",
+              "conclusion": "success",
+              "name": "Checkout current backend QA input",
+              "number": 8,
+              "startedAt": "2026-10-05T12:11:07Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:09Z",
+              "conclusion": "success",
+              "name": "Record exact backend QA input",
+              "number": 9,
+              "startedAt": "2026-10-05T12:11:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:20Z",
+              "conclusion": "success",
+              "name": "Run actions/setup-node@v4",
+              "number": 10,
+              "startedAt": "2026-10-05T12:11:09Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:34Z",
+              "conclusion": "success",
+              "name": "Install application dependencies",
+              "number": 11,
+              "startedAt": "2026-10-05T12:11:20Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:36Z",
+              "conclusion": "success",
+              "name": "Install backend QA dependencies",
+              "number": 12,
+              "startedAt": "2026-10-05T12:11:34Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:40Z",
+              "conclusion": "success",
+              "name": "Verify clean generated native platform contract",
+              "number": 13,
+              "startedAt": "2026-10-05T12:11:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:19Z",
+              "conclusion": "success",
+              "name": "Run recovery baseline (includes qa:static)",
+              "number": 14,
+              "startedAt": "2026-10-05T12:11:40Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:19Z",
+              "conclusion": "success",
+              "name": "Post Run actions/setup-node@v4",
+              "number": 24,
+              "startedAt": "2026-10-05T12:14:19Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:19Z",
+              "conclusion": "success",
+              "name": "Post Checkout current backend QA input",
+              "number": 25,
+              "startedAt": "2026-10-05T12:14:19Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:19Z",
+              "conclusion": "success",
+              "name": "Post Checkout current content producer",
+              "number": 26,
+              "startedAt": "2026-10-05T12:14:19Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:19Z",
+              "conclusion": "success",
+              "name": "Post Checkout locked content producer",
+              "number": 27,
+              "startedAt": "2026-10-05T12:14:19Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:19Z",
+              "conclusion": "success",
+              "name": "Post Checkout application",
+              "number": 28,
+              "startedAt": "2026-10-05T12:14:19Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:19Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-10-05T12:14:19Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37307712305/job/111755313831"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37307712305",
+      "rawLogSha256": "8f759d975f9e06f6c460261d7ea66db21cffc482b70c529cdab5474194e3ffc1",
+      "rawLogPath": "POST-PUSH24-APP-CI.log"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 37307717279,
+      "headSha": "cf119c3f8e8ebfce3e5bdbcd3d5f4e4c7c5dd509",
+      "jobs": [
+        {
+          "completedAt": "2026-10-05T12:14:19Z",
+          "conclusion": "success",
+          "databaseId": 111755329817,
+          "name": "architecture",
+          "startedAt": "2026-10-05T12:10:39Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-10-05T12:10:40Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-10-05T12:10:40Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:10:49Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 2,
+              "startedAt": "2026-10-05T12:10:40Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:10:49Z",
+              "conclusion": "success",
+              "name": "Run actions/setup-node@v4",
+              "number": 3,
+              "startedAt": "2026-10-05T12:10:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:10:50Z",
+              "conclusion": "success",
+              "name": "Read admitted application commit",
+              "number": 4,
+              "startedAt": "2026-10-05T12:10:49Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:10:58Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@v4",
+              "number": 5,
+              "startedAt": "2026-10-05T12:10:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:15Z",
+              "conclusion": "success",
+              "name": "Install admitted application dependencies",
+              "number": 6,
+              "startedAt": "2026-10-05T12:10:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:11:15Z",
+              "conclusion": "success",
+              "name": "Run npm ci",
+              "number": 7,
+              "startedAt": "2026-10-05T12:11:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:10Z",
+              "conclusion": "success",
+              "name": "Run npm test",
+              "number": 8,
+              "startedAt": "2026-10-05T12:11:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:11Z",
+              "conclusion": "success",
+              "name": "Build all canonical content tracks",
+              "number": 9,
+              "startedAt": "2026-10-05T12:14:10Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:13Z",
+              "conclusion": "success",
+              "name": "Score canonical answers for every catalog track",
+              "number": 10,
+              "startedAt": "2026-10-05T12:14:11Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:15Z",
+              "conclusion": "success",
+              "name": "Rebuild exact candidate draft",
+              "number": 11,
+              "startedAt": "2026-10-05T12:14:13Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:15Z",
+              "conclusion": "success",
+              "name": "Regenerate readiness from the delegated decision",
+              "number": 12,
+              "startedAt": "2026-10-05T12:14:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:16Z",
+              "conclusion": "success",
+              "name": "Require committed candidate and decision-bound readiness evidence",
+              "number": 13,
+              "startedAt": "2026-10-05T12:14:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:17Z",
+              "conclusion": "success",
+              "name": "Validate configured bundled Free-node packages",
+              "number": 14,
+              "startedAt": "2026-10-05T12:14:16Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:17Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 26,
+              "startedAt": "2026-10-05T12:14:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:17Z",
+              "conclusion": "success",
+              "name": "Post Run actions/setup-node@v4",
+              "number": 27,
+              "startedAt": "2026-10-05T12:14:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:18Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v4",
+              "number": 28,
+              "startedAt": "2026-10-05T12:14:17Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-10-05T12:14:18Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 29,
+              "startedAt": "2026-10-05T12:14:18Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/lukaszkurczab/patternly-content/actions/runs/37307717279/job/111755329817"
+        }
+      ],
+      "status": "completed",
+      "url": "https://github.com/lukaszkurczab/patternly-content/actions/runs/37307717279",
+      "rawLogSha256": "ee7143815a9250b5bad6260156aff0fde6637bc21e8bf12bf60e65588ac7941f",
+      "rawLogPath": "POST-PUSH24-CONTENT-CI.log"
+    }
+  ],
+  "app": {
+    "tests": 1883,
+    "pass": 1879,
+    "fail": 0,
+    "existingSkip": 4,
+    "crossRepo": {
+      "pass": 3,
+      "fail": 0
+    },
+    "recoveryTypecheckBoundaries": "PASS",
+    "claim": "Fresh hosted fullrun; local earlier evidence remains aggregate"
+  },
+  "content": {
+    "tests": 188,
+    "pass": 188,
+    "fail": 0,
+    "skip": 0,
+    "buildAllTracks": "PASS",
+    "scoreAllTracks": "PASS",
+    "candidateReadinessDiff": "PASS",
+    "bundledFreeNodes": 9,
+    "admittedFrontendCommit": "fa95d027076e970d71dacf0d1fd7976fa0ba8f60"
+  },
+  "web": "No automaticworkflow run listed; matching canonicalexporter and localverify PASS, remote4298267 verified",
+  "logRetrieval": "Initial gh cache write outside workspace denied; retry used XDG_CACHE_HOME=/private/tmp/bizq24-gh-cache, no service configuration change",
+  "limitations": "Not native/Premium/VoiceOver/fullBIZQ01/release/deployment acceptance"
+}
