@@ -1,0 +1,1406 @@
+[
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i019_supported_choice"
+    },
+    "constraints": [
+      "There is one import format and one consuming workflow. The collection has no planned second source or independent note policy; maintainers can revise the import in the same release."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A plugin registry introduces discovery and lifecycle behavior, which is cost without a current extension consumer.",
+        "scenarioApplication": "Here one parser and one workflow make a direct path the smallest design that meets the stated need.",
+        "errorCorrection": "Building for an absent source can be wasteful; the change remains localized and testable if the requirement appears.",
+        "boundaryOrTradeoff": "If another source with independently changing rules arrives, extract the smallest seam that serves both actual sources.",
+        "transfer": "Keep speculative variation out of the design while preserving an easy path to a tested refactor."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i019_future_source",
+          "text": "A registry adds runtime lifecycle and discovery rules for a source the case says is not planned."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i019_config_language",
+          "text": "The case states one fixed format and no independent mapping policy; a second language adds validation and maintenance surface."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i019_global_pipeline",
+          "text": "A pipeline does not address a present variation here and would make the single path depend on unused stage semantics."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i019_duplicate_implementation",
+          "text": "Duplicating the same sole format makes updates diverge without an existing second consumer or policy."
+        }
+      ],
+      "reason": "The stated implementation has one format and one workflow, with no independent variation to justify a plugin or configuration layer. Keep the direct path small and covered by tests so a real second source can drive a later seam.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i019_supported_choice",
+          "text": "Keep the importer direct and tested; do not add a plugin framework for a second source that does not exist."
+        },
+        {
+          "optionId": "n09b08_i019_future_source",
+          "text": "Define an extension registry now so an uncommitted source can register a parser."
+        },
+        {
+          "optionId": "n09b08_i019_config_language",
+          "text": "Build a configurable mapping language so curators can change fields without a release."
+        },
+        {
+          "optionId": "n09b08_i019_global_pipeline",
+          "text": "Move every archive import into a shared pipeline with generic stages."
+        },
+        {
+          "optionId": "n09b08_i019_duplicate_implementation",
+          "text": "Copy the importer into a second module to keep future changes isolated."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A museum archive imports conservation notes for one collection format. Which design is justified by the stated need?",
+    "questionId": "ood-n09-b08-i001",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i020_supported_choice"
+    },
+    "constraints": [
+      "Two territories are live. Each has a different expiry rule, and legal staff update each rule independently. The approval record must retain the selected territory and expiry."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The cost of a small seam is justified by two current, independently maintained rules; dynamic plugin loading is not implied.",
+        "scenarioApplication": "The service selects the territory policy and stores the resulting expiry with the approval.",
+        "errorCorrection": "A single rule or caller-supplied expiry would erase the difference the scenario requires and weaken the record.",
+        "boundaryOrTradeoff": "If the territories later converge and change together, the separate implementations may no longer justify their cost.",
+        "transfer": "Introduce the smallest abstraction that represents existing independent variation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i020_one_if_chain",
+          "text": "Duplicating two independently changing rules across callers makes updates inconsistent with the clearance contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i020_single_rule",
+          "text": "One expiry cannot meet the explicitly different rules and would require manual correction after approval."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i020_future_plugin_system",
+          "text": "A full dynamic policy marketplace exceeds the two known rules and adds registration/version behavior that the case does not require."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i020_caller_selected_expiry",
+          "text": "Caller-selected values can bypass the territory-specific rule and lose a consistent approval record."
+        }
+      ],
+      "reason": "There are already two live policies whose rules change independently, so a small policy seam isolates real variation. A general plugin marketplace adds capabilities beyond those two known implementations.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i020_one_if_chain",
+          "text": "Keep both rules in one growing conditional and duplicate its checks in each caller."
+        },
+        {
+          "optionId": "n09b08_i020_single_rule",
+          "text": "Apply one common expiry to both territories and handle exceptions manually afterward."
+        },
+        {
+          "optionId": "n09b08_i020_future_plugin_system",
+          "text": "Build a general marketplace for runtime-loaded policies with discovery, version negotiation, and arbitrary third-party rules."
+        },
+        {
+          "optionId": "n09b08_i020_caller_selected_expiry",
+          "text": "Let each caller submit an expiry and trust it without applying territory policy."
+        },
+        {
+          "optionId": "n09b08_i020_supported_choice",
+          "text": "Give each territory rule a small policy implementation behind the clearance contract."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A rights-clearance service approves digital clips for territories. How should the two current territory rules be represented?",
+    "questionId": "ood-n09-b08-i002",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i021_supported_choice"
+    },
+    "constraints": [
+      "All supported aircraft use the same assignment check and one maintenance team owns it. There is one battery supplier and no planned supplier-specific rule."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The case gives one shared check, so a direct planner operation avoids unused configuration and dispatch.",
+        "scenarioApplication": "The planner remains the single place that checks and records assignment.",
+        "errorCorrection": "A caller precheck can become stale before assignment and duplicates the owner’s check.",
+        "boundaryOrTradeoff": "If a second supplier introduces an independently changing assignment rule, a small strategy boundary could then serve both.",
+        "transfer": "Do not add extension machinery until a real variation needs it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i021_supplier_strategy",
+          "text": "A supplier seam adds an extension point without a second supplier or independent rule to implement."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i021_generic_rule_engine",
+          "text": "A rule engine adds configuration and execution semantics for hypothetical rules not present in the case."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i021_caller_checks",
+          "text": "Caller-side checks duplicate the shared rule and cannot replace the planner’s final assignment check."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i021_parallel_planners",
+          "text": "A duplicate planner has no distinct behavior and creates two places to maintain the same rule."
+        }
+      ],
+      "reason": "The only current assignment rule is shared by all supported aircraft and owned by one planner. A strategy or rule engine would solve an absent supplier or policy variation.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i021_supplier_strategy",
+          "text": "Add a supplier strategy interface even though only one supplier rule exists."
+        },
+        {
+          "optionId": "n09b08_i021_generic_rule_engine",
+          "text": "Create a configurable rule engine so future assignment checks can be installed."
+        },
+        {
+          "optionId": "n09b08_i021_caller_checks",
+          "text": "Let each aircraft caller check availability before asking the planner to assign the battery."
+        },
+        {
+          "optionId": "n09b08_i021_supported_choice",
+          "text": "Keep the assignment check as one direct operation owned by the planner."
+        },
+        {
+          "optionId": "n09b08_i021_parallel_planners",
+          "text": "Copy the assignment flow into a second planner class for the one existing battery type."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A drone-maintenance planner assigns a replacement battery to an aircraft. Which design fits the current scope?",
+    "questionId": "ood-n09-b08-i003",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i022_supported_choice"
+    },
+    "constraints": [
+      "Two regions have different consent fields and disclosure limits, and both are active. The privacy team changes each regional rule separately; the coordinator must record which rule allowed the referral."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A narrow contract lets the coordinator apply each live rule and retain the rule identity.",
+        "scenarioApplication": "A shared flag loses the distinct fields and limits that determine whether disclosure is allowed.",
+        "errorCorrection": "Copying checks into multiple channels splits the rule’s maintenance responsibility.",
+        "boundaryOrTradeoff": "If the regions later adopt one rule, the separate policy implementations should be simplified.",
+        "transfer": "Separate abstractions are justified by current, independently changing behavior, not by a generic desire for extension."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i022_single_shared_rule",
+          "text": "The case states different regional fields and limits; a single flag cannot show which rule authorized disclosure."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i022_copy_per_caller",
+          "text": "Copied checks drift when the privacy team changes a regional rule, and callers could disagree about authorization."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i022_universal_framework",
+          "text": "The known need is two regional policies; a scripting platform adds authoring, validation, and deployment machinery not required here."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i022_skip_record",
+          "text": "Without the governing rule reference, the required audit record cannot explain why disclosure was allowed."
+        }
+      ],
+      "reason": "Two active rules vary independently and the referral must record which rule applied, so a narrow policy contract represents current variation. The prompt does not justify a user-programmable policy platform.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i022_single_shared_rule",
+          "text": "Use one broad consent flag for both regions and let staff resolve exceptions."
+        },
+        {
+          "optionId": "n09b08_i022_copy_per_caller",
+          "text": "Copy both regional checks into every referral channel."
+        },
+        {
+          "optionId": "n09b08_i022_supported_choice",
+          "text": "Represent each active regional disclosure rule behind one narrow policy contract."
+        },
+        {
+          "optionId": "n09b08_i022_universal_framework",
+          "text": "Build a general policy scripting platform with user-authored expressions and plugin deployment."
+        },
+        {
+          "optionId": "n09b08_i022_skip_record",
+          "text": "Send the referral and save only that it was accepted, not which regional rule applied."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A clinic referral coordinator sends records to regional specialists. What is the smallest design that handles the current disclosure rules?",
+    "questionId": "ood-n09-b08-i004",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i023_supported_choice"
+    },
+    "constraints": [
+      "Two published exercise versions use different scoring rules. Old attempts must remain explainable under the rule used at completion; a new version is scheduled for release."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The rule version is part of the meaning of a completed score, so the attempt stores its policy reference.",
+        "scenarioApplication": "Recalculating with the newest rule would erase the distinction between published versions.",
+        "errorCorrection": "A plugin marketplace would add governance and loading behavior without an external scorer requirement.",
+        "boundaryOrTradeoff": "If all published exercises converge on one rule and historical records no longer need versioned interpretation, simplify the policy selection.",
+        "transfer": "Preserve a real version boundary without expanding it into a general extension platform."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i023_rewrite_old_scores",
+          "text": "That changes the interpretation of completed attempts whose versions used different rules."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i023_one_current_formula",
+          "text": "The prompt requires old attempts to remain explainable under the rule used at completion."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i023_plugin_marketplace",
+          "text": "Versioned in-product rules need a small selection boundary, not third-party discovery and plugin governance."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i023_caller_supplied_score",
+          "text": "A submitted number without its policy version cannot explain how the stored attempt was evaluated."
+        }
+      ],
+      "reason": "There are already two scoring policies and historical attempts must retain the version used. A small versioned policy is warranted, while external plugin management is not part of the stated need.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i023_rewrite_old_scores",
+          "text": "Recalculate every saved attempt under the newest scoring rule."
+        },
+        {
+          "optionId": "n09b08_i023_supported_choice",
+          "text": "Keep a versioned scoring policy and bind each completed attempt to its version."
+        },
+        {
+          "optionId": "n09b08_i023_one_current_formula",
+          "text": "Replace both rules with one formula and discard which version produced each score."
+        },
+        {
+          "optionId": "n09b08_i023_plugin_marketplace",
+          "text": "Add a runtime marketplace for third-party scoring plugins before any external scorer is required."
+        },
+        {
+          "optionId": "n09b08_i023_caller_supplied_score",
+          "text": "Let the client submit its own final score without recording the scoring version."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A music-practice app scores timed exercises. How should scoring be kept compatible with completed attempts?",
+    "questionId": "ood-n09-b08-i005",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i024_supported_choice"
+    },
+    "constraints": [
+      "All departments use the same approval threshold and review sequence. The policy owner expects changes to apply uniformly; there is no second department-specific rule."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "One operation keeps the shared threshold under the existing policy owner.",
+        "scenarioApplication": "Separate plugins are justified only if departments actually acquire independent rules.",
+        "errorCorrection": "A caller-supplied threshold would move authority to the request path.",
+        "boundaryOrTradeoff": "If independent department policies become live, isolate only that variation while keeping common checks shared.",
+        "transfer": "Choose the simplest design that preserves current policy ownership and behavior."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i024_department_plugins",
+          "text": "Department plugins create separate policy paths for behavior the case says is the same."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i024_config_dsl",
+          "text": "Independent thresholds are not a current requirement; the editor introduces validation and authority questions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i024_caller_threshold",
+          "text": "A caller-controlled threshold undermines the single policy owner and could bypass the shared approval rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i024_generic_event_bus",
+          "text": "An event bus adds asynchronous dispatch and delivery semantics without a second handler or event requirement."
+        }
+      ],
+      "reason": "The current departments share one threshold and sequence maintained by one policy owner. A direct approval operation meets the need without speculative department plugins or caller-controlled rules.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i024_supported_choice",
+          "text": "Keep one approval operation that applies the shared threshold and sequence."
+        },
+        {
+          "optionId": "n09b08_i024_department_plugins",
+          "text": "Install a department plugin for each department despite the shared rule."
+        },
+        {
+          "optionId": "n09b08_i024_config_dsl",
+          "text": "Add a rule-expression editor so departments can define thresholds independently."
+        },
+        {
+          "optionId": "n09b08_i024_caller_threshold",
+          "text": "Allow each caller to pass a threshold when requesting approval."
+        },
+        {
+          "optionId": "n09b08_i024_generic_event_bus",
+          "text": "Route every approval through a generic event bus with configurable handlers."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A procurement portal approves exceptions to a single spending policy. Which implementation is proportionate to the current workflow?",
+    "questionId": "ood-n09-b08-i006",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i025_supported_choice"
+    },
+    "constraints": [
+      "The only supported input format contains stable segment IDs, and one import path maps them to the same annotation model. A second format has not been requested."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The current format already supplies the stable segment identity the importer needs.",
+        "scenarioApplication": "A registry or mapping language introduces behavior with no current consumer.",
+        "errorCorrection": "A focused test suite keeps the direct path safe to change when a second format arrives.",
+        "boundaryOrTradeoff": "If an actual second format has different mapping rules, extract a seam that represents those differences.",
+        "transfer": "Avoid building a generalized importer for one concrete format."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i025_format_registry",
+          "text": "The registry adds registration and selection rules for a format that is not in scope."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i025_general_mapping_language",
+          "text": "A mapping language adds parsing and validation complexity beyond the one stable input format."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i025_duplicate_parser",
+          "text": "There is only one format, so a duplicate implementation creates divergence without separating real change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i025_segment_rewriter",
+          "text": "File offsets do not preserve the case’s stable annotation identity across recording replacement."
+        }
+      ],
+      "reason": "The supported format and mapping are singular, and no second source is requested. Tests around the direct importer preserve the current behavior without speculative format machinery.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i025_format_registry",
+          "text": "Add a runtime format registry for a second format that has no owner or delivery date."
+        },
+        {
+          "optionId": "n09b08_i025_general_mapping_language",
+          "text": "Create a configurable mapping language so any producer can define annotation fields."
+        },
+        {
+          "optionId": "n09b08_i025_duplicate_parser",
+          "text": "Copy the parser into a second module to make future changes easier."
+        },
+        {
+          "optionId": "n09b08_i025_segment_rewriter",
+          "text": "Rewrite stable segment IDs into file offsets to make import generic."
+        },
+        {
+          "optionId": "n09b08_i025_supported_choice",
+          "text": "Keep the import path focused on the supported format and cover it with tests."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A podcast editor imports annotations attached to a recording. What should be built for the current release?",
+    "questionId": "ood-n09-b08-i007",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i026_supported_choice"
+    },
+    "constraints": [
+      "Two role classes are live: one expires at a fixed timestamp and one expires after a bounded duration. Auditors need the selected expiry rule recorded; the two policies change independently."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A record of the selected rule makes each expiry explainable after issuance.",
+        "scenarioApplication": "One formula cannot faithfully stand in for both explicitly different rule types.",
+        "errorCorrection": "Duplicating policy in endpoints makes independently changing behavior harder to maintain consistently.",
+        "boundaryOrTradeoff": "If both classes later share a rule, remove the unnecessary split.",
+        "transfer": "Model the real variation while keeping administration and execution simple."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i026_one_expiry_formula",
+          "text": "An approximation does not preserve the distinct active policies or the audit explanation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i026_copy_checks",
+          "text": "The independent rules could then drift across issuing paths and make the audit record inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i026_script_engine",
+          "text": "Two known rules do not require user-authored scripts, deployment, and expression validation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i026_no_policy_record",
+          "text": "The auditors cannot distinguish which of the two active policies was applied."
+        }
+      ],
+      "reason": "Two active expiry policies vary independently and must be identifiable on each grant. A narrow policy boundary meets that need; a general scripting engine exceeds it.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i026_one_expiry_formula",
+          "text": "Force both role classes through the timestamp rule and approximate the duration rule."
+        },
+        {
+          "optionId": "n09b08_i026_copy_checks",
+          "text": "Duplicate expiry calculations in each role-issuing endpoint."
+        },
+        {
+          "optionId": "n09b08_i026_script_engine",
+          "text": "Create an arbitrary rule scripting engine for administrators to define future expiry formulas."
+        },
+        {
+          "optionId": "n09b08_i026_supported_choice",
+          "text": "Use a small expiry-policy boundary and store the applied policy with each grant."
+        },
+        {
+          "optionId": "n09b08_i026_no_policy_record",
+          "text": "Calculate an expiry but omit which rule produced it."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A permissions service issues time-limited roles. How should the two existing expiry policies be applied?",
+    "questionId": "ood-n09-b08-i008",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i027_supported_choice"
+    },
+    "constraints": [
+      "There is one archive provider and one seal format. The seal must identify the exact immutable revision, and no second provider is in the delivery plan."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Revision identity remains explicit in the current seal operation.",
+        "scenarioApplication": "A provider factory or format language creates extension points without a second supported implementation.",
+        "errorCorrection": "Using the latest revision at execution time can break the stated selection-to-seal association.",
+        "boundaryOrTradeoff": "If another real provider arrives with a different integration contract, a small provider seam may be warranted.",
+        "transfer": "Keep the required revision boundary and defer unused extensibility."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i027_provider_factory",
+          "text": "A factory creates selection behavior for a provider that is not implemented or scheduled."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i027_format_dsl",
+          "text": "There is one seal format and no alternate format requirement to justify the language."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i027_mutable_latest",
+          "text": "That can seal a different revision from the selected immutable input."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i027_client_seals",
+          "text": "Caller-provided seals do not establish that the seal covers the selected revision."
+        }
+      ],
+      "reason": "The current system has one provider and one format, while correctness depends on binding the seal to the selected immutable revision. Use the existing operation rather than speculative provider selection.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i027_provider_factory",
+          "text": "Add a provider factory for future archives with no current integration."
+        },
+        {
+          "optionId": "n09b08_i027_format_dsl",
+          "text": "Build a generic sealing language so future formats can be configured."
+        },
+        {
+          "optionId": "n09b08_i027_supported_choice",
+          "text": "Use the existing seal operation for the selected immutable revision."
+        },
+        {
+          "optionId": "n09b08_i027_mutable_latest",
+          "text": "Seal whichever revision is latest when the archive worker runs."
+        },
+        {
+          "optionId": "n09b08_i027_client_seals",
+          "text": "Allow each caller to supply a seal without verifying its revision association."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A document service seals revisions before archival. Which option avoids unsupported generality?",
+    "questionId": "ood-n09-b08-i009",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i028_supported_choice"
+    },
+    "constraints": [
+      "Both processors are live and return different confirmation fields. Finance requires one payout result contract and records which processor confirmed the settlement; processor integrations change independently."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Each adapter contains one existing external response shape and returns the common payout result.",
+        "scenarioApplication": "Parsing in callers multiplies the integration boundary and risks divergent settlement interpretation.",
+        "errorCorrection": "A generic marketplace would be a larger extension model than these two integrations require.",
+        "boundaryOrTradeoff": "If a processor is retired, remove its adapter rather than keeping a generic layer for an absent provider.",
+        "transfer": "Build an abstraction around actual independent variation and required shared output."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i028_single_field_assumption",
+          "text": "The prompt says their confirmation fields differ, so one field cannot reliably normalize both results."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i028_copy_to_callers",
+          "text": "Callers would duplicate two changing external formats and could disagree about settlement confirmation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i028_provider_platform",
+          "text": "Two known processors justify adapters, but not third-party discovery and plugin lifecycle management."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i028_discard_identity",
+          "text": "The finance record explicitly needs the confirming processor identity."
+        }
+      ],
+      "reason": "Two live integrations have distinct response formats and change independently, so small adapters normalize them to the one payout contract. A plugin marketplace adds lifecycle behavior not needed for two known processors.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i028_single_field_assumption",
+          "text": "Read the same confirmation field from both processor responses."
+        },
+        {
+          "optionId": "n09b08_i028_supported_choice",
+          "text": "Use a small processor adapter per integration and map each result to the payout contract."
+        },
+        {
+          "optionId": "n09b08_i028_copy_to_callers",
+          "text": "Let every payout caller parse each processor response directly."
+        },
+        {
+          "optionId": "n09b08_i028_provider_platform",
+          "text": "Build a runtime plugin marketplace for arbitrary payment processors."
+        },
+        {
+          "optionId": "n09b08_i028_discard_identity",
+          "text": "Map the responses but discard which processor confirmed the result."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A seller-payout service settles payments through two current processors. How should their independently changing response rules be contained?",
+    "questionId": "ood-n09-b08-i010",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i029_supported_choice"
+    },
+    "constraints": [
+      "One operator supplies all updates, and the board already orders them by effective time. There is no second source or subscriber-specific delivery policy."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The effective time is the ordering fact the current path already uses.",
+        "scenarioApplication": "A bus would require subscriber, delivery, and lifecycle rules that this case does not need.",
+        "errorCorrection": "Arrival order is not equivalent to the stated passenger-visible order.",
+        "boundaryOrTradeoff": "A second source or independently managed delivery contract could justify a small integration seam later.",
+        "transfer": "Retain the working direct path until an actual variation appears."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i029_event_bus",
+          "text": "The case has one source and no subscriber-specific policy that needs event routing."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i029_per_subscriber_rules",
+          "text": "Different display rules would allow passengers to see inconsistent effective order."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i029_polling_framework",
+          "text": "The operator already supplies updates; new polling modes solve no current integration need."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i029_arrival_order",
+          "text": "Arrival order would violate the explicitly required effective-time sequence."
+        }
+      ],
+      "reason": "A single source and the existing effective-time ordering meet the current requirement. An event bus or general polling framework adds unused variation and delivery behavior.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i029_supported_choice",
+          "text": "Keep the existing ordered update path; do not introduce a general event bus."
+        },
+        {
+          "optionId": "n09b08_i029_event_bus",
+          "text": "Move updates to a configurable event bus with pluggable subscribers."
+        },
+        {
+          "optionId": "n09b08_i029_per_subscriber_rules",
+          "text": "Give each display its own ordering and retry rule."
+        },
+        {
+          "optionId": "n09b08_i029_polling_framework",
+          "text": "Add a generalized polling framework with arbitrary schedules and delivery modes."
+        },
+        {
+          "optionId": "n09b08_i029_arrival_order",
+          "text": "Show updates in arrival order even when their effective times differ."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A transit board publishes platform changes for one rail operator. Which design fits the stated ordering requirement?",
+    "questionId": "ood-n09-b08-i011",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i030_supported_choice"
+    },
+    "constraints": [
+      "Every installed meter uses the same overlap check and one energy team changes that rule for all meters. No meter family currently has a separate limit."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The service keeps the overlap invariant in one place for every meter.",
+        "scenarioApplication": "Per-meter strategies add dispatch without any behavior difference.",
+        "errorCorrection": "Letting the caller select a limit transfers policy authority away from the energy team.",
+        "boundaryOrTradeoff": "A genuinely different meter rule can be introduced as a focused variation if one becomes active.",
+        "transfer": "Do not pay for a policy framework when one policy is used."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i030_meter_strategy",
+          "text": "A strategy would dispatch identical behavior with no current family-specific rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i030_configurable_limits",
+          "text": "A caller-selected limit would split policy ownership and could permit overlapping commitments."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i030_rule_engine",
+          "text": "No second meter family or rule exists to exercise such a system."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i030_duplicate_by_model",
+          "text": "Duplicated checks can diverge even though one team maintains one shared policy."
+        }
+      ],
+      "reason": "All installed meters share one centrally maintained overlap rule. A direct shared operation is simpler than a strategy or rule engine for nonexistent family-specific behavior.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i030_meter_strategy",
+          "text": "Add a per-meter strategy despite all meters using the same limit."
+        },
+        {
+          "optionId": "n09b08_i030_configurable_limits",
+          "text": "Let every caller choose an overlap limit at request time."
+        },
+        {
+          "optionId": "n09b08_i030_rule_engine",
+          "text": "Create an energy-rule engine for hypothetical future meter families."
+        },
+        {
+          "optionId": "n09b08_i030_duplicate_by_model",
+          "text": "Copy the overlap check into every meter model class."
+        },
+        {
+          "optionId": "n09b08_i030_supported_choice",
+          "text": "Keep one shared overlap operation in the energy service."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A neighborhood energy service schedules battery discharge windows. How should the current meter rules be implemented?",
+    "questionId": "ood-n09-b08-i012",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i031_supported_choice"
+    },
+    "constraints": [
+      "The current and incoming providers have different request/response formats. The stream must preserve its existing timing and error contract; both integrations will remain active and can be selected by configuration."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The adapter translates each provider’s format at the edge while the stream contract remains stable.",
+        "scenarioApplication": "A broad plugin host adds deployment and compatibility rules beyond the two controlled integrations.",
+        "errorCorrection": "Consumer-side branching would multiply the number of places coupled to provider details.",
+        "boundaryOrTradeoff": "If the providers later share one format or one is retired, simplify the boundary accordingly.",
+        "transfer": "Abstract the integration seam that is present; do not generalize beyond it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i031_rewrite_stream",
+          "text": "Provider-specific stream contracts expose integration differences to every downstream consumer."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i031_generic_plugin_host",
+          "text": "Two controlled providers need a selection boundary, not an external plugin ecosystem."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i031_force_same_payload",
+          "text": "The prompt says the providers have different formats, so the request would not match the new integration."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i031_branch_each_consumer",
+          "text": "That spreads each changing provider format beyond the integration boundary and risks timing/error drift."
+        }
+      ],
+      "reason": "Two active providers have distinct formats but must present one established stream contract. A narrow adapter captures actual variation without turning the service into a third-party plugin platform.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i031_rewrite_stream",
+          "text": "Replace the stream contract separately for each provider."
+        },
+        {
+          "optionId": "n09b08_i031_generic_plugin_host",
+          "text": "Build a marketplace with third-party plugin loading, version negotiation, and arbitrary extensions."
+        },
+        {
+          "optionId": "n09b08_i031_force_same_payload",
+          "text": "Send the current provider’s request shape to the new provider unchanged."
+        },
+        {
+          "optionId": "n09b08_i031_supported_choice",
+          "text": "Add a narrow provider adapter that maps each integration to the existing stream contract."
+        },
+        {
+          "optionId": "n09b08_i031_branch_each_consumer",
+          "text": "Add provider conditionals to every consumer that reads captions."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A live-caption service is adding a second language provider. What is the right extent of the provider boundary?",
+    "questionId": "ood-n09-b08-i013",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i032_supported_choice"
+    },
+    "constraints": [
+      "Both volunteers must remain qualified and available in their new slots. One scheduling team owns the rule and there is one swap workflow used by two screens."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The shared operation enforces both qualifications and availability for each new slot.",
+        "scenarioApplication": "Screen-specific strategies would implement identical logic and multiply maintenance.",
+        "errorCorrection": "Caller checks are not the authoritative swap validation.",
+        "boundaryOrTradeoff": "An independently changing scheduling policy could justify a seam; a second view alone does not.",
+        "transfer": "Distinguish caller count from actual behavioral variation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i032_screen_strategies",
+          "text": "The two screens are callers of one behavior, not independent policy variations."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i032_caller_validation",
+          "text": "Caller validation duplicates the rule and can be bypassed by another caller."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i032_rule_configuration",
+          "text": "The case states one team-owned rule; configurable policies add authority and validation questions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i032_copy_the_flow",
+          "text": "A second caller does not establish a second business rule or justify duplicated workflow."
+        }
+      ],
+      "reason": "Two screens use one team-owned swap rule, so a shared operation captures the common behavior without per-screen strategies. A second caller is not itself a policy variation.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i032_screen_strategies",
+          "text": "Give each screen its own swap strategy though both follow the same rule."
+        },
+        {
+          "optionId": "n09b08_i032_caller_validation",
+          "text": "Have each screen validate qualifications and availability before submitting."
+        },
+        {
+          "optionId": "n09b08_i032_supported_choice",
+          "text": "Use one shared swap operation; do not add a strategy for identical callers."
+        },
+        {
+          "optionId": "n09b08_i032_rule_configuration",
+          "text": "Add user-configurable qualification rules without any such requirement."
+        },
+        {
+          "optionId": "n09b08_i032_copy_the_flow",
+          "text": "Copy the workflow into a new service for the second screen."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A volunteer tool swaps two assignments under one scheduling rule. Which change is justified by the current scope?",
+    "questionId": "ood-n09-b08-i014",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i033_supported_choice"
+    },
+    "constraints": [
+      "All conflicts currently use the same “show both edits and ask the cartographer” rule. One editing client uses the resolver, and no automatic-merge policy has been approved."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The cartographer’s explicit choice is the only approved resolver behavior in the case.",
+        "scenarioApplication": "A registry needs actual alternate strategies and selection rules, neither of which exists.",
+        "errorCorrection": "Keeping the latest-arriving edit could overwrite accepted geometry contrary to the stated policy.",
+        "boundaryOrTradeoff": "If multiple approved merge rules arrive, extract a small resolver seam based on their real differences.",
+        "transfer": "Avoid implementing policy before the policy exists."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i033_resolver_registry",
+          "text": "The case has one approved resolution rule and no second strategy to register."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i033_automatic_latest",
+          "text": "Arrival time does not express the approved explicit-conflict policy and may silently replace accepted work."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i033_caller_choice",
+          "text": "Caller discretion weakens the one approved rule and makes conflict handling inconsistent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i033_future_language",
+          "text": "The feature is unapproved and the language would add a second system before any rule exists."
+        }
+      ],
+      "reason": "The current conflict policy is singular and explicit; a general strategy registry or rule language would implement unapproved behavior. Preserve the existing reviewed flow.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i033_resolver_registry",
+          "text": "Add a registry for several merge strategies that are not yet defined."
+        },
+        {
+          "optionId": "n09b08_i033_supported_choice",
+          "text": "Keep the explicit conflict workflow; defer a general resolver framework."
+        },
+        {
+          "optionId": "n09b08_i033_automatic_latest",
+          "text": "Always keep the most recently received geometry."
+        },
+        {
+          "optionId": "n09b08_i033_caller_choice",
+          "text": "Allow each caller to choose whether to discard either edit."
+        },
+        {
+          "optionId": "n09b08_i033_future_language",
+          "text": "Create a merge-rule language for a possible future auto-merge feature."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A local map editor resolves offline route conflicts. What should be implemented now?",
+    "questionId": "ood-n09-b08-i015",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i034_supported_choice"
+    },
+    "constraints": [
+      "Three live reward types have separate rules maintained by different game teams. New reward types are being added each release; every reward must still pass the same campaign-state legality check."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The shared campaign-state check stays in one owner while reward amounts vary behind the small contract.",
+        "scenarioApplication": "A common formula contradicts the three distinct live rules.",
+        "errorCorrection": "A script platform adds authoring, execution, and safety machinery for internal rules.",
+        "boundaryOrTradeoff": "If reward types stop varying independently, merge the policy implementations and keep the shared invariant.",
+        "transfer": "Introduce an abstraction where active variation exists, without expanding it into a general rules product."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i034_one_growing_conditional",
+          "text": "Independent teams would change one conditional block, increasing conflict and risking inconsistent policy edits."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i034_copy_all_validation",
+          "text": "That would allow the shared invariant to drift across policies."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i034_script_marketplace",
+          "text": "The current variation is maintained by three internal teams; user-authored scripting and sandboxing are not required."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i034_replace_with_one_rule",
+          "text": "The prompt says the reward types have separate rules, so one formula erases real active variation."
+        }
+      ],
+      "reason": "Three active, independently maintained reward rules and ongoing additions justify a narrow policy contract. The common legality check remains shared, and arbitrary user scripting is outside scope.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i034_supported_choice",
+          "text": "Use a small reward-policy contract for the independently changing reward rules, with the shared legality check kept common."
+        },
+        {
+          "optionId": "n09b08_i034_one_growing_conditional",
+          "text": "Keep adding reward-specific branches to one method and let each team edit it."
+        },
+        {
+          "optionId": "n09b08_i034_copy_all_validation",
+          "text": "Duplicate the campaign-state legality check inside each reward implementation."
+        },
+        {
+          "optionId": "n09b08_i034_script_marketplace",
+          "text": "Build a user-facing scripting platform for arbitrary reward formulas."
+        },
+        {
+          "optionId": "n09b08_i034_replace_with_one_rule",
+          "text": "Collapse all three reward rules into one common amount formula."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A board-game campaign applies rewards to characters. How should the existing reward variation be represented?",
+    "questionId": "ood-n09-b08-i016",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i035_supported_choice"
+    },
+    "constraints": [
+      "Two carriers are active and require different hand-off documents and temperature fields. The shipment service owns restrictions and records which carrier accepted each hand-off; carrier formats change independently."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Each adapter translates the current carrier format, while the shipment service retains restrictions and acceptance identity.",
+        "scenarioApplication": "Provider-specific branches in shipment operations couple domain behavior to changing formats.",
+        "errorCorrection": "A generic marketplace is broader than the two controlled integrations.",
+        "boundaryOrTradeoff": "If only one carrier remains, remove the unused adapter rather than keeping a speculative abstraction.",
+        "transfer": "Separate true integration variation at its boundary and keep shared domain rules common."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i035_shipment_branches",
+          "text": "This spreads independently changing provider details through code that owns shipment rules."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i035_one_document",
+          "text": "The prompt states that the document formats differ, so one document cannot satisfy both integrations."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i035_plugin_marketplace",
+          "text": "Two known carriers justify adapters but not a public extension marketplace."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i035_drop_carrier_record",
+          "text": "The shipment record is required to retain the accepting carrier identity."
+        }
+      ],
+      "reason": "Two active carriers have distinct, independently changing formats but share one shipment hand-off contract. Narrow adapters contain the real variation without adding marketplace machinery.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i035_shipment_branches",
+          "text": "Put both external formats into every shipment operation."
+        },
+        {
+          "optionId": "n09b08_i035_one_document",
+          "text": "Send one carrier’s hand-off document to both providers."
+        },
+        {
+          "optionId": "n09b08_i035_plugin_marketplace",
+          "text": "Add third-party carrier registration and runtime plugin governance."
+        },
+        {
+          "optionId": "n09b08_i035_drop_carrier_record",
+          "text": "Normalize fields but omit which carrier accepted the shipment."
+        },
+        {
+          "optionId": "n09b08_i035_supported_choice",
+          "text": "Keep carrier-specific translation in two narrow adapters behind one hand-off contract."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A cold-chain carrier service hands shipments to transport providers. Which boundary fits the integrations already in use?",
+    "questionId": "ood-n09-b08-i017",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b08_i036_supported_choice"
+    },
+    "constraints": [
+      "One allocation rule is approved, one ledger implementation is used, and one account service requests allocations. A repayment must never make the balance negative; no alternate ledger or rule is scheduled."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The allocation operation checks the current balance before it records a repayment.",
+        "scenarioApplication": "A client formula lacks authority over the current ledger balance.",
+        "errorCorrection": "A general language adds a second mechanism without any second formula to express.",
+        "boundaryOrTradeoff": "A real second ledger or independently changing rule could justify a narrow extension seam later.",
+        "transfer": "Keep the invariant with its owner and defer unrequested policy machinery."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i036_ledger_plugins",
+          "text": "There is one current ledger and one approved allocation rule, so the strategy registry has no current implementation choice."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i036_client_formula",
+          "text": "This moves the balance invariant outside the owner that has the current balance."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i036_general_policy_language",
+          "text": "No alternative product formula is approved; a new language creates validation and migration work now."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b08_i036_copy_for_products",
+          "text": "The case states all requests use the same rule, so duplicated operations can diverge without representing variation."
+        }
+      ],
+      "reason": "One approved rule, one ledger, and one caller make a direct owner operation sufficient. A strategy or policy language would be speculative, while caller-side calculation would move the balance invariant.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b08_i036_ledger_plugins",
+          "text": "Create pluggable allocation strategies for hypothetical future ledgers."
+        },
+        {
+          "optionId": "n09b08_i036_client_formula",
+          "text": "Let the account service calculate the allocation and send the final amount."
+        },
+        {
+          "optionId": "n09b08_i036_general_policy_language",
+          "text": "Build a policy language so future lending products can define formulas."
+        },
+        {
+          "optionId": "n09b08_i036_supported_choice",
+          "text": "Keep one direct allocation operation that checks the balance invariant."
+        },
+        {
+          "optionId": "n09b08_i036_copy_for_products",
+          "text": "Copy the allocation operation for each lending product despite one shared rule."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B08",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A cooperative lender records repayment allocations. What design meets the current repayment contract without speculative machinery?",
+    "questionId": "ood-n09-b08-i018",
+    "sourceRefs": [
+      "https://martinfowler.com/bliki/Yagni.html",
+      "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/designing-for-extensibility"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

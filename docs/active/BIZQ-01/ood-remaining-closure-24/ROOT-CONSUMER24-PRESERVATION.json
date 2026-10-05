@@ -1,0 +1,22 @@
+{
+  "result": "PASS",
+  "scope": "Actual generated source24 consumer preservation; no native/realPremium/admission/fullBIZQ claim",
+  "currentQuestions": 1413,
+  "changedQuestions": 324,
+  "preservedQuestions": 1089,
+  "otherArtifacts": 8,
+  "simulationProfilesUnchanged": true,
+  "historicalLockUnchanged": true,
+  "artifactSha256": "9df476e414158da0f33e118c06ed7fbc476b53bc8f0a115a470f61f9c1bf1ea3",
+  "questionSetSha256": "c92a9f04488efb4ef7a5fa8b3257495c21e6c62125123df8073141c60000b2d8",
+  "premiumPolicyBytes": [
+    {
+      "file": "src/application/trainingLifecycle/premiumProductModePolicy.ts",
+      "sha256": "03835160163c0a208c417d66749e667d02b2d50c283b2b5ec834a53fdf336ff3"
+    },
+    {
+      "file": "src/tracks/design-interview/designModes.ts",
+      "sha256": "74d703007c93a7ee2d120a03e841f74f7bd2872e8ca50fb820d0680a8d9889f8"
+    }
+  ]
+}

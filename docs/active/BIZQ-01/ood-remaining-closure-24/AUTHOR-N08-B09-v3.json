@@ -1,0 +1,333 @@
+{
+  "schemaVersion": "bizq01-n08-b09-author-v3",
+  "previousProposal": "proposals/N08-B09-v2.json",
+  "proposalFile": "proposals/N08-B09-v3.json",
+  "proposalSha256": "960bf89a2f3a3d8fa9a91b587957b7c0e452a2c77b476b116274b7955938a4cf",
+  "scope": "Preserved the operation-ID replay answer and its concise outcome. Rewrote alternatives into complete, case-specific policies for fresh-ID reapplication, overbroad resource dedupe, and treating a missing acknowledgement as rejection; assigned fresh IDs and aligned feedback. i014 remains limited to the stated invoice exchange response. Source option order is unchanged; runtime presentation order belongs to root.",
+  "items": [
+    {
+      "questionId": "ood-n08-b09-i001",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A public-transit disruption board, Each platform change has a stable change ID and effective sequence. If the acknowledgement is lost, the controller retries the same change ID; a distinct later change has a different ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the platform update, risking the same platform change twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i002",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A neighborhood energy-sharing service, Every discharge reservation has a request ID. A timeout may occur after the meter accepted the window; retrying the same ID must return the original reservation result, while a new ID is a new request. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the meter reservation, risking the same discharge window twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i003",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A live captioning studio, A provider-switch command has a switch ID. The callback can finish after the supervisor times out; retrying that same switch must not create a second stream transition, while a later switch uses a different ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the provider switch, risking the same provider transition twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i004",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A volunteer coordination hub, A two-volunteer swap uses one swap ID. The response can be lost after both assignments changed; a retry must return that swap's result instead of swapping them back. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the volunteer swap, risking the same pair swap twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i005",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A local-first map editor, A proposal carries a proposal ID and base route revision. A lost response after acceptance can be retried with the same ID; a different proposal based on an old revision must still receive a conflict. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the route proposal, risking the same geometry proposal twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i006",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A board-game campaign manager, A reward command has a campaign ID and action ID. The host may retry after losing the response; the same action must not award points twice, but a different action in the campaign remains valid. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the reward action, risking the same points twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i007",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A cold-chain logistics console, A hand-off request includes a transfer ID. The carrier may accept before the dispatch screen times out; retrying the same transfer must not create another ownership change. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the carrier hand-off, risking the same ownership transfer twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i008",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A cooperative lending ledger, A repayment carries a receipt ID. The account may be debited before the client receives the receipt; retrying the same receipt ID must not reduce the balance twice, while another receipt remains a new repayment. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the repayment, risking the same debit twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i009",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A tournament bracket service, A terminal result has a match ID and result-event ID. The bracket may advance before the official sees the response; replaying the same event must not advance twice, while a new legal event is evaluated against current match state. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the match result event, risking the same bracket advancement twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i010",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A returns inspection workflow, Each submitted inspection revision has a submission ID. If its acknowledgement is lost, retrying that submission must preserve the same findings; a later corrected inspection gets a new revision and ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the inspection submission, risking the same findings twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i011",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A research-notebook platform, A publication request has a run ID and selected input revisions. If the job finishes but its response is lost, retrying that run ID must return the same publication; a changed input selection uses a new run ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the publication run, risking the same output twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i012",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A collaborative annotation workspace, A comment submission has a comment ID. Notification may be retried after acceptance; the same notification must refer to the accepted comment, while a new comment has a new ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the comment notification, risking the same comment text twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i013",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A mobile field-inspection app, An offline submission has a submission ID and frozen draft revision. The server may finish it before the device receives an acknowledgement; replaying the same ID must return complete/retryable for that revision, not submit later edits. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the offline inspection submission, risking the same frozen draft twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i014",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A digital invoice exchange, Each invoice issue has a stable issue ID. The exchange can accept before the response is lost; retrying the same issue ID must return the same accepted/rejected outcome without charging twice. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the invoice issue, risking the same chargeable invoice issue twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i015",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A smart-building access controller, A badge revocation command has a command ID. A door may apply the revocation before the administrator sees the acknowledgement; retrying the same command must not toggle the badge back to active. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the badge revocation, risking the same badge revocation twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i016",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A package-label generation service, A label request has a print-job ID tied to an approved shipment revision. The printer can finish before its acknowledgement arrives; replay must identify that print job rather than print another label. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the label print job, risking the same physical label twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i017",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A multi-tenant rehearsal scheduler, A room-move request has a move ID. The move may commit before the coordinator receives its response; retrying the same ID must not move the booking again, while a later new move remains allowed. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the room move, risking the same booking move twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i018",
+      "learningObjective": "Resolve the same operation by its stable ID while leaving a genuinely distinct later operation independently eligible.",
+      "decisiveFact": "In A museum exhibit controller, A maintenance command has a command ID and desired mode. The controller may set maintenance before the operator receives the acknowledgement; repeating the same command must not toggle back to running. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a fresh ID after a lost acknowledgement and repeat the maintenance command, risking the same maintenance command twice if the original committed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted retry identity and recorded outcome remain the same. Wrong alternatives now distinguish duplicate application, overbroad deduplication, and treating missing acknowledgement as rejection, with fresh IDs and case-bound diagnostics. No exactly-once guarantee is implied.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The scenario’s operation IDs, retry behavior, and distinct later operation are stated in the prompt."
+      ]
+    }
+  ]
+}

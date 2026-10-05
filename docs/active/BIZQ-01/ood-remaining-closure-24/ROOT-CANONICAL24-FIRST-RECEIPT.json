@@ -1,0 +1,22 @@
+{
+  "result": "INCOMPLETE_COMMITTED_SOURCE_GATE",
+  "tests": 188,
+  "pass": 186,
+  "fail": 2,
+  "skip": 0,
+  "logSha256": "dfdb4cfd1dde17ad5a395485081af434f3b4b02064f5f2300e7ad4ee5213aaa0",
+  "failures": [
+    {
+      "file": "tests/candidate-draft-v2.test.mjs",
+      "test": "candidate draft v2 binds all nine canonical artifacts and exact ODK-096 AWS identity deterministically",
+      "cause": "assertCanonicalSourceSnapshot: source24 is not committed yet"
+    },
+    {
+      "file": "tests/candidate-readiness-v2.test.mjs",
+      "test": "Codex candidate decision v2 binds exact candidate, source snapshot, release and nine artifact hashes",
+      "cause": "assertCanonicalSourceSnapshot: source24 is not committed yet"
+    }
+  ],
+  "resolution": "Independent producer acceptance, local source commit, targeted rerun of affected files; no code/test contract change",
+  "acceptanceClaim": false
+}

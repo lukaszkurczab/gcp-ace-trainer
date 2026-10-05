@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "patternly-bizq01-independent-n08-b09-v5-semantic-qa-v1",
+  "unitId": "OOD-N08-B09",
+  "verdict": "PASS",
+  "scope": "Independent whole-unit semantic review of N08-B09 v5 against all 18 frozen source objects and reserved-ID bindings. This does not accept the full N08/N09 cohort, source activation, producer, consumer, admission/runtime, native/Premium or full BIZQ-01.",
+  "inputs": {
+    "proposalPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/review-inputs/N08-B09-v5.json",
+    "proposalSha256": "7068f9df47d5576317266e3e549574a4145307cfe211c6df2335b4fdb213032a",
+    "manifestPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/N08-N09-MANIFEST.json",
+    "manifestSha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612",
+    "contractPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/N08-N09-CONTRACT.json",
+    "contractSha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27",
+    "sourcePath": "patternly-content/content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B09.json",
+    "sourceSha256": "093bdea05d1a2e9854c474025fea368aac46a1c70f57f4a8371c990f0461e15d",
+    "v4ReviewPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/SEMANTIC-N08-B09-v4-QA.json",
+    "v4ReviewSha256": "0a5f2a3ee5607c3eca5d750b11ad5429e27f3e2faaa89de7ab5977581c2b8152",
+    "identityAdjudicationPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/ROOT-CROSS-N24-v1-ADJUDICATION.json",
+    "identityAdjudicationSha256": "a3bc46b7f073f1165180cde0dc608d62f52309b4a7a13308dfeba158c11d80b7",
+    "independentCheckPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/INDEPENDENT-CHECK-N08-B09-v5.json",
+    "independentCheckSha256": "c8f4697c5f50eb36a7317fdf8e74db971984d15e3f1463e4d61b8050296d2229"
+  },
+  "method": {
+    "wholeObjectReview": "Read all 18 actual source objects, all 18 frozen v5 questions, every stem and option, each accepted key, Reason, all five Details fields and each wrong-option message. Compared the original object decision with the new decision per item; used the root identity receipt only as a cross-check, not as a substitute for that comparison.",
+    "qualitativeCueReview": "Compared each answer's policy form with all competing policies and their feedback. Word-count ranks are recorded as an observation only; no count or length threshold was used.",
+    "technicalBoundary": "The scenarios ask for a design policy. They do not claim that a stable identifier alone provides deduplication, that an external provider guarantees exactly-once effects, or that the fictional systems already implement a status lookup.",
+    "verification": "Independently bound manifest before bytes and current source, validated all 18 objects with the production validator, scored each answer and all 54 distractors with the production scorer, repeated keyed scoring after reversing each option list, and checked all wrong-option feedback target sets."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "resolved",
+      "requirement": "N08-N09-CONTRACT: retain the original question ID when the primary decision and accepted meaning remain; use its corresponding reserved i019-i036 ID for a genuine primary-decision change, with fresh option identities.",
+      "finding": "The source questions ask where a retry/idempotency invariant should live: at an enforcing object boundary versus a coordinator, exposed representation, or other boundary. The v5 questions instead ask which operation identity should recover an uncertain outcome while leaving a later operation on the same resource distinct. That is a real change in the primary decision, not a synonym or a change inferred from the shared unit label. Every source i001-i018 is paired to its corresponding reserved v5 i019-i036, and all four answer/distractor IDs are fresh per replacement question.",
+      "affectedQuestionIds": ["ood-n08-b09-i019", "ood-n08-b09-i020", "ood-n08-b09-i021", "ood-n08-b09-i022", "ood-n08-b09-i023", "ood-n08-b09-i024", "ood-n08-b09-i025", "ood-n08-b09-i026", "ood-n08-b09-i027", "ood-n08-b09-i028", "ood-n08-b09-i029", "ood-n08-b09-i030", "ood-n08-b09-i031", "ood-n08-b09-i032", "ood-n08-b09-i033", "ood-n08-b09-i034", "ood-n08-b09-i035", "ood-n08-b09-i036"]
+    },
+    {
+      "id": "F2",
+      "severity": "resolved",
+      "requirement": "Canonical question guidance sections 4.2-4.4: require a learner decision, credible alternatives, case-grounded reasoning and option-specific diagnostic feedback; avoid a repeated answer-form cue.",
+      "finding": "The v5 stems present a stable operation ID, uncertain acknowledgement and a possible later operation without stating that retries must reuse the ID. The four options present complete competing policies: reuse the operation ID, issue a new ID per retry, deduplicate by the broader resource ID, or treat silence as rejection and compensate/reissue. The last three are plausible failure models whose case-specific consequences appear in Reason, Details and feedback, rather than being appended as a bad consequence to each option. The keyed option is not consistently shortest or longest (1 unique shortest, 4 unique longest, 13 intermediate/tied); that count is descriptive, not a threshold. I found no repeated qualitative cue that independently gives away the key.",
+      "affectedQuestionIds": ["ood-n08-b09-i019", "ood-n08-b09-i020", "ood-n08-b09-i021", "ood-n08-b09-i022", "ood-n08-b09-i023", "ood-n08-b09-i024", "ood-n08-b09-i025", "ood-n08-b09-i026", "ood-n08-b09-i027", "ood-n08-b09-i028", "ood-n08-b09-i029", "ood-n08-b09-i030", "ood-n08-b09-i031", "ood-n08-b09-i032", "ood-n08-b09-i033", "ood-n08-b09-i034", "ood-n08-b09-i035", "ood-n08-b09-i036"]
+    },
+    {
+      "id": "F3",
+      "severity": "supported-control",
+      "requirement": "Preserve the evidenced invoice retry/idempotency decision without claiming an exactly-once external transport guarantee.",
+      "finding": "i032 retains the stable issue ID, requires reconciling the uncertain result before a corrected reissue, and explains the duplicate-charge risk. It distinguishes operation identity from a guarantee about transport delivery.",
+      "affectedQuestionIds": ["ood-n08-b09-i032"]
+    }
+  ],
+  "identityAssessment": {
+    "decision": "The reserved replacement identity is justified for each of the 18 items because the old key selected ownership placement for an invariant, while v5 selects the scope of the operation identity used to resolve retries.",
+    "mapping": "Source i001-i018 map one-to-one in order to reserved v5 i019-i036.",
+    "optionIdentity": "All four option IDs per replacement differ from the corresponding source object's option IDs; feedback targets bind to the three current wrong options."
+  },
+  "caseAssessments": [
+    {"beforeQuestionId":"ood-n08-b09-i001","questionId":"ood-n08-b09-i019","decision":"Recover one platform change and its effective-sequence result by change ID, while keeping a later same-platform change distinct.","keySupport":"The change has a stable ID and effective sequence; acknowledgement can be lost; another platform change may be valid later.","nearestAlternative":"A fresh ID per attempt risks replaying an already-effective sequence; platform-wide dedupe blocks the stated later change; restoring the old sequence treats silence as rejection.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i002","questionId":"ood-n08-b09-i020","decision":"Resolve one meter-window reservation by request ID and give a later interval its own identity.","keySupport":"The meter may accept before the reply; the same meter may later reserve another interval.","nearestAlternative":"A new attempt ID can submit a second reservation; meter-wide dedupe suppresses a distinct interval; releasing on silence assumes rejection.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i003","questionId":"ood-n08-b09-i021","decision":"Look up one provider switch by switch ID and keep a later stream change separate.","keySupport":"The callback may finish after timeout and another provider change on that stream may follow.","nearestAlternative":"A fresh ID can start the switch while its callback remains active; stream-wide dedupe merges switches; restoring the former provider may undo a completed switch.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i004","questionId":"ood-n08-b09-i022","decision":"Resolve one two-assignment swap by swap ID while identifying a later swap separately.","keySupport":"Both assignments may change before the response; coordinators may submit another swap involving the same volunteers.","nearestAlternative":"A fresh retry ID can reapply the pair change; a volunteer-pair key suppresses another swap; restoring the old assignments assumes the swap failed.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i005","questionId":"ood-n08-b09-i023","decision":"Resolve one route proposal by proposal ID and base revision; evaluate a distinct proposal under its own revision check.","keySupport":"Acceptance may precede a lost response; a later proposal may use an older base revision.","nearestAlternative":"A fresh ID can duplicate an accepted proposal; route-wide dedupe hides a distinct conflict; restoring local base geometry can overwrite newer accepted geometry.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i006","questionId":"ood-n08-b09-i024","decision":"Recover one campaign reward result by action ID and allow another reward action to remain distinct.","keySupport":"The host can lose the response after submission; another reward action in the campaign may be valid.","nearestAlternative":"A fresh retry ID can award twice; campaign-wide dedupe merges distinct actions; reversing on timeout assumes rejection.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i007","questionId":"ood-n08-b09-i025","decision":"Resolve one carrier hand-off by transfer ID and treat a later carrier change as a new operation.","keySupport":"The carrier may accept before timeout and the shipment may later move to another carrier.","nearestAlternative":"A new ID can repeat an accepted hand-off; shipment-wide dedupe blocks a later hand-off; restoring the former carrier from timeout can contradict acceptance.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i008","questionId":"ood-n08-b09-i026","decision":"Resolve one repayment allocation by receipt ID, while a later repayment by the same member gets a separate identity.","keySupport":"A debit may occur before its receipt reaches the client; the member may make another repayment later.","nearestAlternative":"A new retry ID can debit twice; member-wide dedupe suppresses another repayment; crediting the balance on silence may contradict an existing debit.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i009","questionId":"ood-n08-b09-i027","decision":"Resolve one match result by event ID and evaluate a later legal correction against current match state.","keySupport":"The bracket may advance before the official sees a response; a later correction event is allowed.","nearestAlternative":"A new retry event can advance twice; match-wide dedupe hides a correction; submitting the opposite result from timeout assumes rejection.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i010","questionId":"ood-n08-b09-i028","decision":"Retrieve findings by submission ID and use a distinct revision for corrected findings.","keySupport":"An acknowledgement may be lost after submission; the same return can later receive a corrected inspection.","nearestAlternative":"A new retry ID can duplicate findings; return-wide dedupe merges revisions; replacing recorded findings with a local draft can erase accepted facts.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i011","questionId":"ood-n08-b09-i029","decision":"Resolve a publication run by run ID and make changed input revisions a distinct run.","keySupport":"The job may finish before its response arrives; a later run may select different input revisions.","nearestAlternative":"A new retry ID can launch the same publication twice; notebook-wide dedupe blocks changed-input runs; deleting output on timeout may discard a completed job.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i012","questionId":"ood-n08-b09-i030","decision":"Retry notification delivery for one accepted comment ID and identify an additional comment separately.","keySupport":"Notification retry follows acceptance; the reviewer may add another comment to the same thread.","nearestAlternative":"A new comment ID can create duplicate text; thread-wide dedupe merges distinct comments; removing an accepted comment on delivery timeout confuses notification with comment acceptance.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i013","questionId":"ood-n08-b09-i031","decision":"Resolve one frozen offline submission by submission ID and treat later edits as a new submission.","keySupport":"The server may finish before the device receives a response; the draft revision is frozen; later edits can be submitted.","nearestAlternative":"A fresh ID can resubmit the same completed revision; device-wide dedupe merges later edited work; local completion on silence may mislead the operator.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i014","questionId":"ood-n08-b09-i032","decision":"Reconcile one invoice issue by stable issue ID before giving a corrected reissue its own identity.","keySupport":"The exchange may accept before response loss; a corrected reissue follows reconciliation; the business requirement is to avoid charging the same issue twice.","nearestAlternative":"A fresh retry ID can create a duplicate charge; customer-wide dedupe hides a traceable corrected issue; another chargeable issue before reconciliation assumes rejection.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i015","questionId":"ood-n08-b09-i033","decision":"Resolve a badge revocation by command ID and keep a later authorized reactivation distinct.","keySupport":"The door may apply revocation before acknowledgement; authorized reactivation may occur later.","nearestAlternative":"A new retry ID can repeat revocation; badge-wide dedupe blocks reactivation; reactivating from silence may undo an applied revocation.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i016","questionId":"ood-n08-b09-i034","decision":"Resolve a print job by job ID and approved shipment revision; a corrected revision is a distinct job.","keySupport":"The printer may finish before acknowledgement; a corrected approved revision may later need a label.","nearestAlternative":"A fresh retry can print twice; shipment-wide dedupe merges revisions; queueing another print from silence can duplicate a completed label.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i017","questionId":"ood-n08-b09-i035","decision":"Resolve one room move by move ID and evaluate a later move against current capacity.","keySupport":"The move may commit before response; another move for the booking may follow.","nearestAlternative":"A new retry ID can repeat a committed move; booking-wide dedupe blocks later moves; reserving the old room from a stale display assumes the first move failed.","verdict":"PASS"},
+    {"beforeQuestionId":"ood-n08-b09-i018","questionId":"ood-n08-b09-i036","decision":"Resolve one desired-mode command by command ID and represent a later authorized mode change separately.","keySupport":"The controller may change modes before acknowledgement; a later authorized mode change is possible.","nearestAlternative":"A fresh retry ID can repeat the command; exhibit-wide dedupe conflates a later authorized change; sending the opposite mode on timeout can undo a completed change.","verdict":"PASS"}
+  ],
+  "verification": {
+    "questions": 18,
+    "valid": 18,
+    "acceptedCorrect": 18,
+    "incorrectDistractors": 54,
+    "reversedCorrect": 18,
+    "feedbackTargetSetsMatch": 18,
+    "reservedIdentityBindings": 18,
+    "freshOptionIdSets": 18,
+    "optionLengthRankObservation": {"uniqueShortest": 1, "uniqueLongest": 4, "middleOrTied": 13},
+    "semanticAcceptance": true
+  },
+  "nonBlockingNotes": [
+    "The five Details slots named mechanismOrProperty and transfer reuse the same unit-level rule across this set; the Reason, scenarioApplication, errorCorrection, boundaryOrTradeoff and option messages supply the case-specific decisions and consequences. The reused general rule did not make the options ambiguous in this review.",
+    "The sourceRefs are carried forward from the prior OOD objects and are not relied on to establish retry protocol guarantees. The scenario premises and proposed designs stand on their own; RFC 9110's HTTP idempotency semantics should not be generalized into a guarantee for these fictional provider workflows."
+  ],
+  "limitations": [
+    "A stable operation ID by itself does not establish that a remote provider deduplicates requests or stores a retrievable result. The proposal is reviewed as a design policy, not as proof of a particular service implementation.",
+    "This review does not claim source activation, producer proof acceptance, consumer parity, runtime/admission, native/Premium or full BIZQ-01 completion."
+  ]
+}

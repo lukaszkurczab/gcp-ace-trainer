@@ -1,0 +1,299 @@
+{
+  "schemaVersion": "patternly-bizq01-n09-v3-authored-feedback-correction-v1",
+  "status": "AUTHOR-CORRECTION-HOLD-FOR-INDEPENDENT-REVIEW",
+  "scope": "Only targeted wrong_option feedback.messages[].text leaves differ from frozen v2; no prompt, constraint, option, key, identity, scoring, Details, Reason, or sourceRef edits.",
+  "sourceQA": {
+    "B05": {
+      "path": "SEMANTIC-N09-B05-v2-QA.json",
+      "proposalSha256": "bc2700a32341370d4bd177fc3d3f940718f21e26e9f112fb146e57ff9e020497",
+      "findings": 16
+    },
+    "B06": {
+      "path": "SEMANTIC-N09-B06-v2-QA.json",
+      "proposalSha256": "8de7e8965b42bc3835282c716a6665617bb20551fc42f5589424c08021596052",
+      "findings": 5
+    },
+    "B07": {
+      "path": "SEMANTIC-N09-B07-v2-QA.json",
+      "proposalSha256": "99d20efb139d9dafb9a57a2947ba1520f6df468991480863764b1330ec0b6f82",
+      "findings": 4
+    }
+  },
+  "units": [
+    {
+      "unit": "B05",
+      "v2ProposalSha256": "bc2700a32341370d4bd177fc3d3f940718f21e26e9f112fb146e57ff9e020497",
+      "v3ProposalSha256": "079132e8a69a8de0b58dce533c132c60032e5b2a9f1a1e522c08327f700259cc",
+      "items": [
+        {
+          "questionId": "ood-n09-b05-i002",
+          "reportTargetOptionId": "n09b05_i002_remove_old_contract",
+          "actualTargetOptionId": "n09b05_i002_remove_old_contract",
+          "targetIdCorrection": null,
+          "optionText": "Remove the standard handoff rule and ask old clients to supply it through an undocumented header.",
+          "finding": "The option withdraws the documented default handoff through an undocumented header; it does not remove the call. Explain the lost/reinterpreted default rather than claiming the call is removed.",
+          "oldMessageText": "Removing the established call discards behavior existing clients rely on: The old request omits custody owner because the service applies a documented standard handoff. New clients need to name a receiving custodian; old requests must keep the standard handoff. They need a compatible path before it is retired.",
+          "newMessageText": "Older requests omit a custodian because the service supplies the documented handoff. Moving that default behind an undocumented header leaves those callers without the behavior they rely on."
+        },
+        {
+          "questionId": "ood-n09-b05-i004",
+          "reportTargetOptionId": "n09b05_i004_breaking_change",
+          "actualTargetOptionId": "n09b05_i004_breaking_change",
+          "targetIdCorrection": null,
+          "optionText": "Send forfeit through the old response and assume older clients will ignore it.",
+          "finding": "The option adds an unknown response value. It does not require a new input; explain that older clients reject the new enum value.",
+          "oldMessageText": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: Those clients accept only win, loss, or draw and reject unknown outcome values. The service must add a forfeit result for new clients. Add the capability without withdrawing that call.",
+          "newMessageText": "Older clients reject values outside win, loss, and draw, so sending forfeit through their existing response breaks the closed value contract."
+        },
+        {
+          "questionId": "ood-n09-b05-i006",
+          "reportTargetOptionId": "n09b05_i006_breaking_change",
+          "actualTargetOptionId": "n09b05_i006_breaking_change",
+          "targetIdCorrection": null,
+          "optionText": "Replace the result value with a provenance object and make old clients parse it.",
+          "finding": "The option replaces a response value with an object. It does not require a new request input; diagnose the breaking response shape.",
+          "oldMessageText": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: Existing clients read the result value and ignore unknown response fields. New clients need the input-data ID and code revision used for each result. Add the capability without withdrawing that call.",
+          "newMessageText": "Existing clients read the result value as before; replacing it with an object changes the response shape they consume."
+        },
+        {
+          "questionId": "ood-n09-b05-i008",
+          "reportTargetOptionId": "n09b05_i008_breaking_change",
+          "actualTargetOptionId": "n09b05_i008_breaking_change",
+          "targetIdCorrection": null,
+          "optionText": "Add retryable to the old response and assume older clients will treat it as nonterminal.",
+          "finding": "The option adds a new response state, not a request input; v1 clients treat unknown states as terminal errors.",
+          "oldMessageText": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: Version 1 responses contain complete or failed, and older clients treat any other value as a terminal error. New clients need to distinguish work that can be retried. Add the capability without withdrawing that call.",
+          "newMessageText": "Version 1 clients treat an unknown state as terminal, so they will not treat this new value as retryable."
+        },
+        {
+          "questionId": "ood-n09-b05-i009",
+          "reportTargetOptionId": "n09b05_i009_breaking_change",
+          "actualTargetOptionId": "n09b05_i009_breaking_change",
+          "targetIdCorrection": null,
+          "optionText": "Change InvoiceId on each reissue and make old clients discover the replacement by searching.",
+          "finding": "The option changes InvoiceId meaning on reissue. Explain loss of stable obligation identity, not a required input.",
+          "oldMessageText": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: InvoiceId identifies the customer obligation and remains stable across reissues. New clients need to inspect each issue attempt separately; older clients use InvoiceId as before. Add the capability without withdrawing that call.",
+          "newMessageText": "InvoiceId names the customer obligation. Changing it for each issue attempt breaks references that older clients use for that same obligation."
+        },
+        {
+          "questionId": "ood-n09-b05-i010",
+          "reportTargetOptionId": "n09b05_i010_remove_old_contract",
+          "actualTargetOptionId": "n09b05_i010_remove_old_contract",
+          "targetIdCorrection": null,
+          "optionText": "Change the meaning of revoked to include pending without informing current clients.",
+          "finding": "The option redefines “revoked” to include pending; it does not remove a call. Explain changed state meaning and old-client incompatibility.",
+          "oldMessageText": "Removing the established call discards behavior existing clients rely on: Older clients interpret active and revoked; they reject any other state. A new workflow needs to expose revocation-pending separately from final revocation. They need a compatible path before it is retired.",
+          "newMessageText": "Pending revocation is not final revocation. Folding it into “revoked” makes older clients interpret an unfinished state as the completed one."
+        },
+        {
+          "questionId": "ood-n09-b05-i010",
+          "reportTargetOptionId": "n09b05_i010_breaking_change",
+          "actualTargetOptionId": "n09b05_i010_breaking_change",
+          "targetIdCorrection": null,
+          "optionText": "Return revocation-pending through the old state field and hope clients fail closed.",
+          "finding": "The option sends a new state through an existing field, not a new input. Explain that old readers reject the value.",
+          "oldMessageText": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: Older clients interpret active and revoked; they reject any other state. A new workflow needs to expose revocation-pending separately from final revocation. Add the capability without withdrawing that call.",
+          "newMessageText": "Older clients reject states beyond active and revoked, so revocation-pending cannot safely travel through their existing state field."
+        },
+        {
+          "questionId": "ood-n09-b05-i013",
+          "reportTargetOptionId": "n09b05_i013_breaking_change",
+          "actualTargetOptionId": "n09b05_i013_breaking_change",
+          "targetIdCorrection": null,
+          "optionText": "Replace accepted/rejected with the reason text and require old clients to parse it.",
+          "finding": "The option replaces accepted/rejected response status with reason text. It does not require a request input.",
+          "oldMessageText": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: Old clients send a command string and receive accepted or rejected. New clients need a structured reason explaining why a command was rejected; old clients only depend on the status. Add the capability without withdrawing that call.",
+          "newMessageText": "Existing clients consume accepted or rejected. Replacing that status with free-form reason text removes the signal their response handling expects."
+        },
+        {
+          "questionId": "ood-n09-b05-i014",
+          "reportTargetOptionId": "n09b05_i014_remove_old_contract",
+          "actualTargetOptionId": "n09b05_i014_remove_old_contract",
+          "targetIdCorrection": null,
+          "optionText": "Create a separate catalog for retired lessons and remove their stable IDs from the current one.",
+          "finding": "The option removes stable IDs from the current catalog, not the call; explain broken progress references.",
+          "oldMessageText": "Removing the established call discards behavior existing clients rely on: Older clients expect the default list to contain active lessons only. New clients need an explicit way to include retired lessons while keeping stable lesson IDs. They need a compatible path before it is retired.",
+          "newMessageText": "Progress records keep the retired lesson IDs. Removing those IDs from the catalog leaves existing progress references unresolved."
+        },
+        {
+          "questionId": "ood-n09-b05-i014",
+          "reportTargetOptionId": "n09b05_i014_breaking_change",
+          "actualTargetOptionId": "n09b05_i014_breaking_change",
+          "targetIdCorrection": null,
+          "optionText": "Change the default list to include retired lessons and ask old clients to filter them.",
+          "finding": "The option changes default response contents and asks old clients to filter; explain the changed active-only contract, not a new input.",
+          "oldMessageText": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: Older clients expect the default list to contain active lessons only. New clients need an explicit way to include retired lessons while keeping stable lesson IDs. Add the capability without withdrawing that call.",
+          "newMessageText": "Older clients expect the default result to contain active lessons only; they are not required to filter retired items out themselves."
+        },
+        {
+          "questionId": "ood-n09-b05-i015",
+          "reportTargetOptionId": "n09b05_i015_remove_old_contract",
+          "actualTargetOptionId": "n09b05_i015_remove_old_contract",
+          "targetIdCorrection": null,
+          "optionText": "Make the revision field mandatory in old requests and reject existing calls.",
+          "finding": "The option makes a new request field mandatory and rejects old calls; the message incorrectly says the call is removed.",
+          "oldMessageText": "Removing the established call discards behavior existing clients rely on: Existing clients read edit history and ignore additional response fields. New clients need a snapshot revision to compare exports; the edit history remains unchanged. They need a compatible path before it is retired.",
+          "newMessageText": "Existing clients do not send this new request field. Requiring it rejects their current calls before the snapshot can be returned."
+        },
+        {
+          "questionId": "ood-n09-b05-i015",
+          "reportTargetOptionId": "n09b05_i015_breaking_change",
+          "actualTargetOptionId": "n09b05_i015_breaking_change",
+          "targetIdCorrection": null,
+          "optionText": "Replace the edit-history field with a revision token and make old clients reconstruct edits.",
+          "finding": "The option replaces a response field with a token; explain loss of edit history, not a required request input.",
+          "oldMessageText": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: Existing clients read edit history and ignore additional response fields. New clients need a snapshot revision to compare exports; the edit history remains unchanged. Add the capability without withdrawing that call.",
+          "newMessageText": "Older clients read the edit history. Replacing it with a revision token removes information those clients still consume."
+        },
+        {
+          "questionId": "ood-n09-b05-i017",
+          "reportTargetOptionId": "n09b05_i017_remove_old_contract",
+          "actualTargetOptionId": "n09b05_i017_remove_old_contract",
+          "targetIdCorrection": null,
+          "optionText": "Change the meaning of false to mean only that a message is available.",
+          "finding": "The option changes the meaning of false; it does not remove the operation.",
+          "oldMessageText": "Removing the established call discards behavior existing clients rely on: The existing response is a boolean indicating publication. New clients need structured validation messages; old clients only read the boolean and ignore extra response fields. They need a compatible path before it is retired.",
+          "newMessageText": "False currently means the publication did not occur. Reusing it to mean only that messages exist makes the established boolean misleading."
+        },
+        {
+          "questionId": "ood-n09-b05-i017",
+          "reportTargetOptionId": "n09b05_i017_breaking_change",
+          "actualTargetOptionId": "n09b05_i017_breaking_change",
+          "targetIdCorrection": null,
+          "optionText": "Replace the boolean with a string message and expect old clients to parse it.",
+          "finding": "The option replaces a response boolean with a string; explain old clients’ boolean contract, not a new request input.",
+          "oldMessageText": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: The existing response is a boolean indicating publication. New clients need structured validation messages; old clients only read the boolean and ignore extra response fields. Add the capability without withdrawing that call.",
+          "newMessageText": "Older clients expect a boolean publication result; a string is a different response type they cannot consume as that signal."
+        },
+        {
+          "questionId": "ood-n09-b05-i018",
+          "reportTargetOptionId": "n09b05_i018_breaking_change",
+          "actualTargetOptionId": "n09b05_i018_breaking_change",
+          "targetIdCorrection": null,
+          "optionText": "Replace the source request ID with each portion ID so old clients can address the latest split.",
+          "finding": "The option replaces the response identity with portion IDs; explain loss of the stable source request reference, not a new input.",
+          "oldMessageText": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: The old response identifies the original request and preserves its delivery promise. New clients need a separate ID for each vendor portion; old clients continue using the original request ID. Add the capability without withdrawing that call.",
+          "newMessageText": "The original request ID carries the existing delivery promise. Replacing it with a vendor-portion ID loses that stable reference for older clients."
+        },
+        {
+          "questionId": "ood-n09-b05-i018",
+          "reportTargetOptionId": "n09b05_i018_remove_old_contract",
+          "actualTargetOptionId": "n09b05_i018_remove_old_contract",
+          "targetIdCorrection": null,
+          "optionText": "Return only vendor portion IDs and remove the original request reference.",
+          "finding": "The option removes the original response reference, not the call; explain lost request identity/delivery promise.",
+          "oldMessageText": "Removing the established call discards behavior existing clients rely on: The old response identifies the original request and preserves its delivery promise. New clients need a separate ID for each vendor portion; old clients continue using the original request ID. They need a compatible path before it is retired.",
+          "newMessageText": "Returning only portion IDs removes the original request reference, so older clients cannot associate the split with the request whose delivery promise they track."
+        }
+      ]
+    },
+    {
+      "unit": "B06",
+      "v2ProposalSha256": "8de7e8965b42bc3835282c716a6665617bb20551fc42f5589424c08021596052",
+      "v3ProposalSha256": "c1b0d362bc233193eed1095190c2d5302a432b5a7578b9b7e6a0bd45abe52310",
+      "items": [
+        {
+          "questionId": "ood-n09-b06-i009",
+          "reportTargetOptionId": "n09b06_i009_boundary",
+          "actualTargetOptionId": "n09b06_i009_wrong_boundary",
+          "targetIdCorrection": "The v2 QA target ID is absent; this correction is bound to the actual question option/message. Paired option: Change the result to “draw” and keep the timeout reason only in a private log.",
+          "optionText": "Change the result to “draw” and keep the timeout reason only in a private log.",
+          "finding": "Mapping forfeit to draw and hiding the reason omits the required public distinction; the message instead says it adds sensitive data.",
+          "oldMessageText": "This adds sensitive or unrelated data without helping explain the change. The case says officials need to distinguish a timeout forfeit from a player withdrawal. the public result should not expose internal server timing traces. The extra fields cross that boundary.",
+          "newMessageText": "The public result still needs to distinguish timeout from withdrawal. Keeping the reason private while reporting draw hides that required distinction from result consumers."
+        },
+        {
+          "questionId": "ood-n09-b06-i011",
+          "reportTargetOptionId": "n09b06_i011_boundary",
+          "actualTargetOptionId": "n09b06_i011_wrong_boundary",
+          "targetIdCorrection": "The v2 QA target ID is absent; this correction is bound to the actual question option/message. Paired option: Store the input and code references only in a private process log that readers cannot access.",
+          "optionText": "Store the input and code references only in a private process log that readers cannot access.",
+          "finding": "Keeping provenance only in an inaccessible private log fails reader access; the message incorrectly claims a data leak.",
+          "oldMessageText": "This adds sensitive or unrelated data without helping explain the change. The case says reviewers need the input-data id and code revision that produced a result. raw input datasets are access-controlled. The extra fields cross that boundary.",
+          "newMessageText": "Reviewers need these references to inspect provenance. A process log they cannot access does not let them identify the data and code used for the published result."
+        },
+        {
+          "questionId": "ood-n09-b06-i011",
+          "reportTargetOptionId": "n09b06_i011_later",
+          "actualTargetOptionId": "n09b06_i011_reconstruct_later",
+          "targetIdCorrection": "The v2 QA target ID is absent; this correction is bound to the actual question option/message. Paired option: Resolve provenance from the latest dataset and code when the result is opened.",
+          "optionText": "Resolve provenance from the latest dataset and code when the result is opened.",
+          "finding": "Resolving provenance from the latest dataset/code can point to the wrong source versions; the generic message misses stale provenance.",
+          "oldMessageText": "This substitutes a related action for the event the reader needs to understand. The case requires reviewers need the input-data id and code revision that produced a result. raw input datasets are access-controlled. Keep the diagnostic bound to that decision.",
+          "newMessageText": "The latest dataset or code may differ from the versions that produced this result. Looking them up later can attach incorrect provenance."
+        },
+        {
+          "questionId": "ood-n09-b06-i016",
+          "reportTargetOptionId": "n09b06_i016_overexpose",
+          "actualTargetOptionId": "n09b06_i016_overexpose",
+          "targetIdCorrection": null,
+          "optionText": "Log the entire address and package record whenever a label is printed.",
+          "finding": "Logging the complete address/package is a privacy failure; the message instead calls it a related action.",
+          "oldMessageText": "This substitutes a related action for the event the reader needs to understand. The case requires support needs to know which approved shipment revision the label represents. the complete address should not be copied into general diagnostics. Keep the diagnostic bound to that decision.",
+          "newMessageText": "The case excludes the complete address from general diagnostics. Logging the address and package exposes private shipment data beyond what explains the printed label."
+        },
+        {
+          "questionId": "ood-n09-b06-i018",
+          "reportTargetOptionId": "n09b06_i018_later",
+          "actualTargetOptionId": "n09b06_i018_reconstruct_later",
+          "targetIdCorrection": "The v2 QA target ID is absent; this correction is bound to the actual question option/message. Paired option: Use the latest sensor revision when displaying a prior calibration.",
+          "optionText": "Use the latest sensor revision when displaying a prior calibration.",
+          "finding": "Using the latest sensor revision for prior calibration mismatches historical context; the message does not identify that mismatch.",
+          "oldMessageText": "This substitutes a related action for the event the reader needs to understand. The case requires technicians need the sensor revision, unit, and resulting offset to explain readings. device credentials are managed separately. Keep the diagnostic bound to that decision.",
+          "newMessageText": "The replacement sensor may have a different revision or unit. Pairing an earlier offset with the latest sensor can make the old calibration readings incorrect."
+        }
+      ]
+    },
+    {
+      "unit": "B07",
+      "v2ProposalSha256": "99d20efb139d9dafb9a57a2947ba1520f6df468991480863764b1330ec0b6f82",
+      "v3ProposalSha256": "428676e548e3da6ef68e3bfa4530c36818b7650e5c5dd2f5ea9e9c577e872a8a",
+      "items": [
+        {
+          "questionId": "ood-n09-b07-i025",
+          "reportTargetOptionId": "n09b07_i025_cache",
+          "actualTargetOptionId": "n09b07_i025_assumed_cache",
+          "targetIdCorrection": "The v2 QA target ID is absent; this correction is bound to the actual question option/message. Paired option: Reuse yesterday’s quotes even though the current request requires fresh prices.",
+          "optionText": "Reuse yesterday’s quotes even though the current request requires fresh prices.",
+          "finding": "Yesterday’s quotes reduce calls but violate the fresh-price deadline; the message says they do not address measured work.",
+          "oldMessageText": "This alternative does not address the case’s measured work. The evidence is The measured request path calls the same carrier quote endpoint once per parcel. The provider exposes a batch operation with the same per-parcel quote fields; the price deadline is unchanged. Choose a change that preserves the stated result while reducing that operation.",
+          "newMessageText": "Yesterday’s quote may reduce calls, but it misses the unchanged fresh-price deadline for this request."
+        },
+        {
+          "questionId": "ood-n09-b07-i028",
+          "reportTargetOptionId": "n09b07_i028_shortcut",
+          "actualTargetOptionId": "n09b07_i028_contract_shortcut",
+          "targetIdCorrection": "The v2 QA target ID is absent; this correction is bound to the actual question option/message. Paired option: Sample failures while keeping all redundant success traces.",
+          "optionText": "Sample failures while keeping all redundant success traces.",
+          "finding": "Sampling failures reduces storage but violates the requirement to retain every failed run; the message says it does not address storage cost.",
+          "oldMessageText": "This alternative does not address the case’s measured work. The evidence is Storage cost has exceeded its budget. The audit contract requires every failed run and one summary per successful batch; individual successful-row traces are not used for decisions. Choose a change that preserves the stated result while reducing that operation.",
+          "newMessageText": "Sampling omits some failed runs even though the audit contract requires every failure; retaining redundant success traces does not repair that gap."
+        },
+        {
+          "questionId": "ood-n09-b07-i028",
+          "reportTargetOptionId": "n09b07_i028_cache",
+          "actualTargetOptionId": "n09b07_i028_assumed_cache",
+          "targetIdCorrection": "The v2 QA target ID is absent; this correction is bound to the actual question option/message. Paired option: Delete failure records first because they are less frequent than successful rows.",
+          "optionText": "Delete failure records first because they are less frequent than successful rows.",
+          "finding": "Deleting failure records reduces storage but violates the retention requirement; the message says it does not address storage cost.",
+          "oldMessageText": "This alternative does not address the case’s measured work. The evidence is Storage cost has exceeded its budget. The audit contract requires every failed run and one summary per successful batch; individual successful-row traces are not used for decisions. Choose a change that preserves the stated result while reducing that operation.",
+          "newMessageText": "The audit requires every failed run, regardless of frequency. Deleting those records breaks that requirement."
+        },
+        {
+          "questionId": "ood-n09-b07-i030",
+          "reportTargetOptionId": "n09b07_i030_cache",
+          "actualTargetOptionId": "n09b07_i030_assumed_cache",
+          "targetIdCorrection": "The v2 QA target ID is absent; this correction is bound to the actual question option/message. Paired option: Persist one checksum globally without binding it to the revision ID.",
+          "optionText": "Persist one checksum globally without binding it to the revision ID.",
+          "finding": "A global unbound checksum can reduce repeated work but can return the wrong revision value; the message says it does not address measured work.",
+          "oldMessageText": "This alternative does not address the case’s measured work. The evidence is A profile shows the same immutable revision bytes are hashed three times during one publish request. The revision ID uniquely identifies those bytes within the request. Choose a change that preserves the stated result while reducing that operation.",
+          "newMessageText": "Without binding the stored checksum to the revision ID, a later revision can reuse a digest for different bytes."
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "path": "AUTHOR-N09-B05-B07-v3-CHECKS.json",
+    "sha256": "f8f5120182425ef589e03da2336107d67ccf1225af2b17b3199f8de9b0aa383d"
+  }
+}

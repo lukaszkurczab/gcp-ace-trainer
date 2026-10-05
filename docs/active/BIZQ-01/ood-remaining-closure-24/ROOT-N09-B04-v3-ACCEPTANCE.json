@@ -1,0 +1,14 @@
+{
+  "verdict": "PASS_ROOT_BOUND_INACTIVE_DIAGNOSTIC_CORRECTION_ONLY",
+  "unit": "N09-B04",
+  "reportSha256": "d6ac66e537c2a886872e12a08e8552d186c33eeaac7968a132e01b6590787d5f",
+  "reportMarkdownSha256": "09938739344e9b00ec4d18d111e6e10257c17208c5d7b5baf4caa33cc6e1f0d5",
+  "actualWholeBeforePriorCurrentBindings": 18,
+  "actualChangedLeaves": 5,
+  "questionIdsAndKeysUnchanged": true,
+  "proposalSha256": "0e20cea69df7dc17306c7180c5a064f2c170fab66a2901a49eaa34f3551e7d8c",
+  "initialIndependentProbeFailure": "Harness omitted required response type; original log preserved, accepted rerun uses actual choice_single response shape",
+  "sourceActivationAccepted": false,
+  "nativeOrPremiumAccepted": false,
+  "fullBIZQ01Accepted": false
+}

@@ -1,0 +1,23 @@
+{
+  "result": "PASS_BOUNDED_LOCAL_PACKAGE",
+  "scope": "N24 source324/18units plus current app consumer, local admission and canonical demo export; no native/Premium/fullBIZQ/deployment/push/remoteCI claim",
+  "independentQa": {
+    "FINAL24-QA.md": "332e567ddcbe531fb513e5acc703c916081816e7f1f8e0d2df07f81e553fc5a0",
+    "FINAL24-QA.json": "7792a510f1834d268faf145fc23699ea3c4fa2d4b8bf5deb3c8edd6d6bb44808"
+  },
+  "actualRawBindingsChecked": 83,
+  "candidateId": "ebd5f2d614ca620323b6abf111d06e84acf30cc1d9a5e819bc8df4ed2c071525",
+  "sourceOodAccepted": 1413,
+  "changedQuestions": 324,
+  "preservedQuestions": 1089,
+  "rootEvidenceSha256": "64c48a5c55c0c39bb16e56b71f8c8c91415041e48f3535cebbd3aa179ee1d509",
+  "aggregateLimits": {
+    "canonical": "188distinct PASS; first186/188 plus affected3/3; not freshfullrun",
+    "static": "1879distinct PASS/4existingSKIP; first1878PASS/1FAIL plus stable1/1 and boundaries; not freshfullrun"
+  },
+  "resolvedMetadataErratum": {
+    "REVIEW18-CURRENT24-ERRATUM.json": "6b70f8ccdda91fc934865496d3576b22aa710228b98da7e2df9dd4d8303a4916"
+  },
+  "remaining": "common runtime/renderer/scoring/feedback Q01\u201313 actualrunner/native/realPremium; whole BIZQ01 partial",
+  "next": "ordinary push accepted package and actual automaticCI, then available commonruntime scope"
+}

@@ -1,0 +1,1424 @@
+[
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i001_compatible_addition"
+    },
+    "constraints": [
+      "Existing clients call ApplyReward and depend on its current immediate effect. A new client needs to preview a reward without applying it.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Preview and application are different externally visible effects. A separate operation adds the capability without changing what existing ApplyReward callers observe.",
+        "scenarioApplication": "The new client calls preview; existing clients retain the current apply operation and result.",
+        "errorCorrection": "Changing the old operation’s effect breaks callers that rely on it applying a reward immediately.",
+        "boundaryOrTradeoff": "A new API version can be suitable for broader contract changes; this single additional operation does not require replacing the old one.",
+        "transfer": "When the new capability has different effects from an established operation, expose it separately and retain the old contract."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i001_breaking_change",
+          "text": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: Existing clients call ApplyReward and depend on its current immediate effect. A new client needs to preview a reward without applying it. Add the capability without withdrawing that call."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i001_silent_reinterpretation",
+          "text": "Keeping the same call while changing its meaning makes existing clients lose their stated behavior without an explicit migration: Existing clients call ApplyReward and depend on its current immediate effect. A new client needs to preview a reward without applying it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i001_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: Existing clients call ApplyReward and depend on its current immediate effect. A new client needs to preview a reward without applying it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i001_remove_old_contract",
+          "text": "Removing the established call discards behavior existing clients rely on: Existing clients call ApplyReward and depend on its current immediate effect. A new client needs to preview a reward without applying it. They need a compatible path before it is retired."
+        }
+      ],
+      "reason": "Preview and application are different externally visible effects. A separate operation adds the capability without changing what existing ApplyReward callers observe. The new client calls preview; existing clients retain the current apply operation and result.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i001_compatible_addition",
+          "text": "Add a preview operation; leave ApplyReward’s existing effect unchanged."
+        },
+        {
+          "optionId": "n09b05_i001_breaking_change",
+          "text": "Change ApplyReward so it previews for new clients and applies only when a new flag is supplied."
+        },
+        {
+          "optionId": "n09b05_i001_silent_reinterpretation",
+          "text": "Keep the method name but silently stop applying rewards, asking old callers to infer the new behavior."
+        },
+        {
+          "optionId": "n09b05_i001_client_workaround",
+          "text": "Make clients read campaign internals and calculate a preview from raw state."
+        },
+        {
+          "optionId": "n09b05_i001_remove_old_contract",
+          "text": "Remove ApplyReward now and require both client groups to upgrade together."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A campaign service exposes a reward operation to two groups of clients. Existing clients call ApplyReward and depend on its current immediate effect. A new client needs to preview a reward without applying it. Which API evolution keeps those contracts distinct?",
+    "questionId": "ood-n09-b05-i001",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i002_compatible_addition"
+    },
+    "constraints": [
+      "The old request omits custody owner because the service applies a documented standard handoff. New clients need to name a receiving custodian; old requests must keep the standard handoff.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The new request needs an explicit value that old callers never sent. The established operation can keep its documented default while the new contract carries the added input.",
+        "scenarioApplication": "New callers provide a receiving custodian; old callers continue to receive the stated standard handoff.",
+        "errorCorrection": "Rejecting old requests would break a currently supported call shape, while guessing a custodian changes its meaning.",
+        "boundaryOrTradeoff": "The old route can be deprecated later under a stated migration plan; the prompt gives no basis for removing it now.",
+        "transfer": "When an input becomes necessary for a new use case but old callers have a defined behavior, offer an explicit new contract and preserve the old behavior."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i002_breaking_change",
+          "text": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: The old request omits custody owner because the service applies a documented standard handoff. New clients need to name a receiving custodian; old requests must keep the standard handoff. Add the capability without withdrawing that call."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i002_silent_reinterpretation",
+          "text": "Keeping the same call while changing its meaning makes existing clients lose their stated behavior without an explicit migration: The old request omits custody owner because the service applies a documented standard handoff. New clients need to name a receiving custodian; old requests must keep the standard handoff."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i002_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: The old request omits custody owner because the service applies a documented standard handoff. New clients need to name a receiving custodian; old requests must keep the standard handoff."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i002_remove_old_contract",
+          "text": "Older requests omit a custodian because the service supplies the documented handoff. Moving that default behind an undocumented header leaves those callers without the behavior they rely on."
+        }
+      ],
+      "reason": "The new request needs an explicit value that old callers never sent. The established operation can keep its documented default while the new contract carries the added input. New callers provide a receiving custodian; old callers continue to receive the stated standard handoff.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i002_client_workaround",
+          "text": "Have each caller edit shipment custody fields directly before reassignment."
+        },
+        {
+          "optionId": "n09b05_i002_remove_old_contract",
+          "text": "Remove the standard handoff rule and ask old clients to supply it through an undocumented header."
+        },
+        {
+          "optionId": "n09b05_i002_compatible_addition",
+          "text": "Add a reassignment request with an explicit custodian; keep the old request’s standard handoff."
+        },
+        {
+          "optionId": "n09b05_i002_breaking_change",
+          "text": "Make custodian required on the existing request and reject every older client call."
+        },
+        {
+          "optionId": "n09b05_i002_silent_reinterpretation",
+          "text": "Guess the new custodian from carrier identity while silently changing the old handoff."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A cold-chain dispatch API reassigns shipments to carriers. The old request omits custody owner because the service applies a documented standard handoff. New clients need to name a receiving custodian; old requests must keep the standard handoff. What change preserves both client groups?",
+    "questionId": "ood-n09-b05-i002",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i003_compatible_addition"
+    },
+    "constraints": [
+      "The existing API accepts one amount and applies it to one named balance. New clients need to allocate one repayment across several named buckets; old callers depend on the single-balance behavior.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "One amount applied to one balance has a distinct shape and meaning from a set of bucket allocations. A separate operation makes the new contract explicit.",
+        "scenarioApplication": "Old callers keep their single-balance operation; new callers send a named allocation set.",
+        "errorCorrection": "Reinterpreting one amount as a multi-bucket instruction changes the existing request meaning.",
+        "boundaryOrTradeoff": "A coordinated version migration could replace the old operation if all consumers were scheduled together; the case says they are not.",
+        "transfer": "Do not overload an established input with a new meaning when the new capability has a different data shape."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i003_breaking_change",
+          "text": "Changing the old scalar amount into a collection changes the existing request shape; clients that send one amount can no longer rely on the current call."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i003_silent_reinterpretation",
+          "text": "An undocumented allocation order changes what the existing amount means while preserving its signature, so old clients receive a new result without opting in."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i003_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: The existing API accepts one amount and applies it to one named balance. New clients need to allocate one repayment across several named buckets; old callers depend on the single-balance behavior."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i003_remove_old_contract",
+          "text": "Removing the established call discards behavior existing clients rely on: The existing API accepts one amount and applies it to one named balance. New clients need to allocate one repayment across several named buckets; old callers depend on the single-balance behavior. They need a compatible path before it is retired."
+        }
+      ],
+      "reason": "One amount applied to one balance has a distinct shape and meaning from a set of bucket allocations. A separate operation makes the new contract explicit. Old callers keep their single-balance operation; new callers send a named allocation set.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i003_breaking_change",
+          "text": "Change the old amount to mean a list of bucket allocations and update only the server."
+        },
+        {
+          "optionId": "n09b05_i003_silent_reinterpretation",
+          "text": "Keep the old signature but distribute amounts across buckets by an undocumented order."
+        },
+        {
+          "optionId": "n09b05_i003_client_workaround",
+          "text": "Make clients write account balances directly and skip the allocation API."
+        },
+        {
+          "optionId": "n09b05_i003_remove_old_contract",
+          "text": "Delete the single-balance operation as soon as the first multi-allocation caller ships."
+        },
+        {
+          "optionId": "n09b05_i003_compatible_addition",
+          "text": "Add a multi-allocation operation and preserve the existing single-balance call."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A lending ledger allocates repayment amounts to account balances. The existing API accepts one amount and applies it to one named balance. New clients need to allocate one repayment across several named buckets; old callers depend on the single-balance behavior. Which evolution avoids reinterpreting the old amount parameter?",
+    "questionId": "ood-n09-b05-i003",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i004_compatible_addition"
+    },
+    "constraints": [
+      "Those clients accept only win, loss, or draw and reject unknown outcome values. The service must add a forfeit result for new clients.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The case explicitly says old clients reject unrecognized values. A contract that can represent the new state must be distinguishable from the legacy three-value response.",
+        "scenarioApplication": "New clients request the expanded outcome; legacy clients continue receiving only values their contract accepts.",
+        "errorCorrection": "Returning an unrecognized value through the old response fails under the stated client behavior.",
+        "boundaryOrTradeoff": "If old clients had a defined unknown-value fallback, additive evolution could be possible; this prompt rules that out.",
+        "transfer": "When a consumer rejects values outside a closed set, do not add a new value to that same contract without a migration path."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i004_breaking_change",
+          "text": "Older clients reject values outside win, loss, and draw, so sending forfeit through their existing response breaks the closed value contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i004_silent_reinterpretation",
+          "text": "Keeping the same call while changing its meaning makes existing clients lose their stated behavior without an explicit migration: Those clients accept only win, loss, or draw and reject unknown outcome values. The service must add a forfeit result for new clients."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i004_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: Those clients accept only win, loss, or draw and reject unknown outcome values. The service must add a forfeit result for new clients."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i004_remove_old_contract",
+          "text": "Requiring every consumer to deploy together withdraws the existing response contract instead of adding a compatible route for the new clients."
+        }
+      ],
+      "reason": "The case explicitly says old clients reject unrecognized values. A contract that can represent the new state must be distinguishable from the legacy three-value response. New clients request the expanded outcome; legacy clients continue receiving only values their contract accepts.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i004_remove_old_contract",
+          "text": "Replace the old response immediately and require all consumers to deploy together."
+        },
+        {
+          "optionId": "n09b05_i004_compatible_addition",
+          "text": "Expose forfeit in a new outcome contract; keep the old response within its three accepted values."
+        },
+        {
+          "optionId": "n09b05_i004_breaking_change",
+          "text": "Send forfeit through the old response and assume older clients will ignore it."
+        },
+        {
+          "optionId": "n09b05_i004_silent_reinterpretation",
+          "text": "Map forfeit to draw in every response, including clients that need the actual outcome."
+        },
+        {
+          "optionId": "n09b05_i004_client_workaround",
+          "text": "Ask callers to inspect internal match state instead of using the outcome API."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A tournament API reports match outcomes to older clients. Those clients accept only win, loss, or draw and reject unknown outcome values. The service must add a forfeit result for new clients. How should the new outcome be exposed?",
+    "questionId": "ood-n09-b05-i004",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i005_compatible_addition"
+    },
+    "constraints": [
+      "Classification and refund eligibility are independent decisions. Existing clients read only the classification; a new consumer needs the refund decision too.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The prompt states the decisions are independent. A separate result communicates eligibility without overloading the established classification.",
+        "scenarioApplication": "Existing consumers still receive the same category; the new consumer can read a distinct eligibility decision.",
+        "errorCorrection": "Combining two independent decisions into one category makes the old field ambiguous.",
+        "boundaryOrTradeoff": "A combined response object can carry both fields if it keeps their meanings separate; the key is not to reinterpret classification.",
+        "transfer": "Add independent information as a separate contract element instead of encoding it into a field with an existing meaning."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i005_breaking_change",
+          "text": "Combining category and refund eligibility changes the established classification value, so clients that interpret that value alone will break."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i005_silent_reinterpretation",
+          "text": "Keeping the same call while changing its meaning makes existing clients lose their stated behavior without an explicit migration: Classification and refund eligibility are independent decisions. Existing clients read only the classification; a new consumer needs the refund decision too."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i005_client_workaround",
+          "text": "An eligibility-only boolean drops the classification value that existing callers need; it does not preserve both decisions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i005_remove_old_contract",
+          "text": "Making the returns screen read private policy fields moves the API decision into one client and exposes internals rather than preserving the existing response."
+        }
+      ],
+      "reason": "The prompt states the decisions are independent. A separate result communicates eligibility without overloading the established classification. Existing consumers still receive the same category; the new consumer can read a distinct eligibility decision.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i005_silent_reinterpretation",
+          "text": "Make old clients infer refund eligibility from the classification label."
+        },
+        {
+          "optionId": "n09b05_i005_client_workaround",
+          "text": "Replace the classification response with an eligibility-only boolean."
+        },
+        {
+          "optionId": "n09b05_i005_remove_old_contract",
+          "text": "Require the returns screen to inspect private policy fields and calculate eligibility itself."
+        },
+        {
+          "optionId": "n09b05_i005_compatible_addition",
+          "text": "Keep classification unchanged and expose refund eligibility as a separate result."
+        },
+        {
+          "optionId": "n09b05_i005_breaking_change",
+          "text": "Change the classification value to encode both the item category and refund decision."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A returns service classifies items and determines whether they qualify for a refund. Classification and refund eligibility are independent decisions. Existing clients read only the classification; a new consumer needs the refund decision too. What API change keeps classification meaning stable?",
+    "questionId": "ood-n09-b05-i005",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i006_compatible_addition"
+    },
+    "constraints": [
+      "Existing clients read the result value and ignore unknown response fields. New clients need the input-data ID and code revision used for each result.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The scenario explicitly states that existing readers ignore added fields. The new information is additive and does not need to replace the established result value.",
+        "scenarioApplication": "Old clients continue reading the same result; new clients can use the input and code references.",
+        "errorCorrection": "Changing the result field’s type or meaning would violate what old clients read.",
+        "boundaryOrTradeoff": "A versioned response could be appropriate if old consumers rejected unknown fields; the case says they ignore them.",
+        "transfer": "When consumers are known to tolerate additive fields, add independent data without changing existing field meanings."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i006_breaking_change",
+          "text": "Existing clients read the result value as before; replacing it with an object changes the response shape they consume."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i006_silent_reinterpretation",
+          "text": "Keeping the same call while changing its meaning makes existing clients lose their stated behavior without an explicit migration: Existing clients read the result value and ignore unknown response fields. New clients need the input-data ID and code revision used for each result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i006_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: Existing clients read the result value and ignore unknown response fields. New clients need the input-data ID and code revision used for each result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i006_remove_old_contract",
+          "text": "A copied result without its existing identifiers cannot serve callers that use those IDs to link to prior results; adding a service does not preserve that contract."
+        }
+      ],
+      "reason": "The scenario explicitly states that existing readers ignore added fields. The new information is additive and does not need to replace the established result value. Old clients continue reading the same result; new clients can use the input and code references.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i006_compatible_addition",
+          "text": "Add the two provenance fields without changing the existing result value."
+        },
+        {
+          "optionId": "n09b05_i006_breaking_change",
+          "text": "Replace the result value with a provenance object and make old clients parse it."
+        },
+        {
+          "optionId": "n09b05_i006_silent_reinterpretation",
+          "text": "Make old clients recover input and code versions from private storage paths."
+        },
+        {
+          "optionId": "n09b05_i006_client_workaround",
+          "text": "Change the meaning of result to mean the combination of value and provenance."
+        },
+        {
+          "optionId": "n09b05_i006_remove_old_contract",
+          "text": "Create a new service that copies results but omits their existing identifiers."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A research API returns published result snapshots. Existing clients read the result value and ignore unknown response fields. New clients need the input-data ID and code revision used for each result. Which response change preserves existing consumers?",
+    "questionId": "ood-n09-b05-i006",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i007_compatible_addition"
+    },
+    "constraints": [
+      "AcceptComment returns a saved comment immediately. New consumers want a notification event; existing clients rely on the current saved-comment response.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The established operation returns a saved comment, while notification is a separate concern. An additional contract avoids changing the return shape or timing assumed by existing clients.",
+        "scenarioApplication": "AcceptComment still returns the saved record; a distinct notification path communicates the new event.",
+        "errorCorrection": "Replacing the result with a notification receipt discards data the current clients use.",
+        "boundaryOrTradeoff": "An event-driven implementation may deliver the notification, but the public saved-comment contract can remain stable.",
+        "transfer": "Add a new consumer-facing capability without substituting it for the response established clients already depend on."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i007_breaking_change",
+          "text": "Returning only a notification receipt removes the saved comment that current callers receive from AcceptComment."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i007_silent_reinterpretation",
+          "text": "Waiting for every notification consumer changes the timing and completion meaning of the existing response, even if its shape stays the same."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i007_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: AcceptComment returns a saved comment immediately. New consumers want a notification event; existing clients rely on the current saved-comment response."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i007_remove_old_contract",
+          "text": "Removing the established call discards behavior existing clients rely on: AcceptComment returns a saved comment immediately. New consumers want a notification event; existing clients rely on the current saved-comment response. They need a compatible path before it is retired."
+        }
+      ],
+      "reason": "The established operation returns a saved comment, while notification is a separate concern. An additional contract avoids changing the return shape or timing assumed by existing clients. AcceptComment still returns the saved record; a distinct notification path communicates the new event.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i007_client_workaround",
+          "text": "Make clients infer notifications from later reads of the comment store."
+        },
+        {
+          "optionId": "n09b05_i007_remove_old_contract",
+          "text": "Remove the current operation and require every caller to use a notification-only command."
+        },
+        {
+          "optionId": "n09b05_i007_compatible_addition",
+          "text": "Keep AcceptComment’s response and add a separate notification contract."
+        },
+        {
+          "optionId": "n09b05_i007_breaking_change",
+          "text": "Change AcceptComment to return only a notification receipt instead of the saved comment."
+        },
+        {
+          "optionId": "n09b05_i007_silent_reinterpretation",
+          "text": "Delay the existing response until every notification consumer finishes processing."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A review API stores comments and notifies assigned authors. AcceptComment returns a saved comment immediately. New consumers want a notification event; existing clients rely on the current saved-comment response. How should notification be added?",
+    "questionId": "ood-n09-b05-i007",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i008_compatible_addition"
+    },
+    "constraints": [
+      "Version 1 responses contain complete or failed, and older clients treat any other value as a terminal error. New clients need to distinguish work that can be retried.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Older clients have an explicit behavior for unknown statuses: they treat them as terminal errors. The new state therefore needs a contract those clients do not consume.",
+        "scenarioApplication": "New clients can use the retryable outcome; version 1 continues to return its documented statuses.",
+        "errorCorrection": "Adding retryable to the old response triggers the terminal-error behavior stated in the prompt.",
+        "boundaryOrTradeoff": "A negotiated compatibility period may later retire version 1, but no such migration is established here.",
+        "transfer": "Before expanding a status set, use the actual consumer’s unknown-value behavior to choose whether the same contract can carry it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i008_breaking_change",
+          "text": "Version 1 clients treat an unknown state as terminal, so they will not treat this new value as retryable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i008_silent_reinterpretation",
+          "text": "Keeping the same call while changing its meaning makes existing clients lose their stated behavior without an explicit migration: Version 1 responses contain complete or failed, and older clients treat any other value as a terminal error. New clients need to distinguish work that can be retried."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i008_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: Version 1 responses contain complete or failed, and older clients treat any other value as a terminal error. New clients need to distinguish work that can be retried."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i008_remove_old_contract",
+          "text": "Removing the established call discards behavior existing clients rely on: Version 1 responses contain complete or failed, and older clients treat any other value as a terminal error. New clients need to distinguish work that can be retried. They need a compatible path before it is retired."
+        }
+      ],
+      "reason": "Older clients have an explicit behavior for unknown statuses: they treat them as terminal errors. The new state therefore needs a contract those clients do not consume. New clients can use the retryable outcome; version 1 continues to return its documented statuses.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i008_breaking_change",
+          "text": "Add retryable to the old response and assume older clients will treat it as nonterminal."
+        },
+        {
+          "optionId": "n09b05_i008_silent_reinterpretation",
+          "text": "Map retryable to complete so old clients stop showing an error."
+        },
+        {
+          "optionId": "n09b05_i008_client_workaround",
+          "text": "Have clients infer retryability from a missing inspection record."
+        },
+        {
+          "optionId": "n09b05_i008_remove_old_contract",
+          "text": "Replace version 1 responses now and require all older clients to upgrade first."
+        },
+        {
+          "optionId": "n09b05_i008_compatible_addition",
+          "text": "Expose retryable in a new response contract while preserving version 1 values."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "An inspection API reports the result of an offline submission. Version 1 responses contain complete or failed, and older clients treat any other value as a terminal error. New clients need to distinguish work that can be retried. What is the compatible way to add retryable status?",
+    "questionId": "ood-n09-b05-i008",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i009_compatible_addition"
+    },
+    "constraints": [
+      "InvoiceId identifies the customer obligation and remains stable across reissues. New clients need to inspect each issue attempt separately; older clients use InvoiceId as before.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The prompt assigns different meanings to the obligation identity and an individual issuance. A distinct identifier preserves both.",
+        "scenarioApplication": "Old callers continue to address the obligation by InvoiceId; new callers can distinguish issue attempts.",
+        "errorCorrection": "Changing InvoiceId per attempt breaks its stated stable-obligation meaning.",
+        "boundaryOrTradeoff": "A nested issue-history collection could also be added if clients tolerate it; the identity distinction must remain explicit.",
+        "transfer": "When a new lifecycle event needs its own reference, keep it distinct from the established parent identity."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i009_breaking_change",
+          "text": "InvoiceId names the customer obligation. Changing it for each issue attempt breaks references that older clients use for that same obligation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i009_silent_reinterpretation",
+          "text": "Reusing InvoiceId for an issue attempt changes what an established identifier names, making existing invoice references ambiguous."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i009_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: InvoiceId identifies the customer obligation and remains stable across reissues. New clients need to inspect each issue attempt separately; older clients use InvoiceId as before."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i009_remove_old_contract",
+          "text": "An issue-history-only response removes invoice fields current callers use; the new history needs to be added without erasing the existing response."
+        }
+      ],
+      "reason": "The prompt assigns different meanings to the obligation identity and an individual issuance. A distinct identifier preserves both. Old callers continue to address the obligation by InvoiceId; new callers can distinguish issue attempts.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i009_remove_old_contract",
+          "text": "Replace the invoice contract with an issue-history-only response."
+        },
+        {
+          "optionId": "n09b05_i009_compatible_addition",
+          "text": "Keep InvoiceId stable and add a separate issue-attempt identifier."
+        },
+        {
+          "optionId": "n09b05_i009_breaking_change",
+          "text": "Change InvoiceId on each reissue and make old clients discover the replacement by searching."
+        },
+        {
+          "optionId": "n09b05_i009_silent_reinterpretation",
+          "text": "Reuse InvoiceId to mean the most recent issue attempt, changing its existing identity role."
+        },
+        {
+          "optionId": "n09b05_i009_client_workaround",
+          "text": "Ask older callers to inspect invoice storage and reconstruct prior issue attempts."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "An invoice API reissues rejected invoices. InvoiceId identifies the customer obligation and remains stable across reissues. New clients need to inspect each issue attempt separately; older clients use InvoiceId as before. How should issue history be added?",
+    "questionId": "ood-n09-b05-i009",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i010_compatible_addition"
+    },
+    "constraints": [
+      "Older clients interpret active and revoked; they reject any other state. A new workflow needs to expose revocation-pending separately from final revocation.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The prompt says old readers reject unknown states, and pending is not equivalent to either active or revoked. An expanded contract must be isolated from those readers.",
+        "scenarioApplication": "New readers distinguish pending from final revocation; old readers continue receiving their known state values.",
+        "errorCorrection": "Mapping pending to active or revoked changes a security-relevant state meaning.",
+        "boundaryOrTradeoff": "A safe legacy projection could be designed if its exact behavior were specified; this case instead calls for a separate expanded response.",
+        "transfer": "For state additions that old readers cannot interpret, isolate the expanded state from the old value set."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i010_breaking_change",
+          "text": "Older clients reject states beyond active and revoked, so revocation-pending cannot safely travel through their existing state field."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i010_silent_reinterpretation",
+          "text": "Keeping the same call while changing its meaning makes existing clients lose their stated behavior without an explicit migration: Older clients interpret active and revoked; they reject any other state. A new workflow needs to expose revocation-pending separately from final revocation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i010_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: Older clients interpret active and revoked; they reject any other state. A new workflow needs to expose revocation-pending separately from final revocation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i010_remove_old_contract",
+          "text": "Pending revocation is not final revocation. Folding it into “revoked” makes older clients interpret an unfinished state as the completed one."
+        }
+      ],
+      "reason": "The prompt says old readers reject unknown states, and pending is not equivalent to either active or revoked. An expanded contract must be isolated from those readers. New readers distinguish pending from final revocation; old readers continue receiving their known state values.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i010_silent_reinterpretation",
+          "text": "Map pending to active for all new clients so the old shape stays unchanged."
+        },
+        {
+          "optionId": "n09b05_i010_client_workaround",
+          "text": "Require door clients to read private revocation timestamps and infer the state."
+        },
+        {
+          "optionId": "n09b05_i010_remove_old_contract",
+          "text": "Change the meaning of revoked to include pending without informing current clients."
+        },
+        {
+          "optionId": "n09b05_i010_compatible_addition",
+          "text": "Expose the pending state in a new response contract and retain the old two-state response."
+        },
+        {
+          "optionId": "n09b05_i010_breaking_change",
+          "text": "Return revocation-pending through the old state field and hope clients fail closed."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A building-access API exposes badge states to older door clients. Older clients interpret active and revoked; they reject any other state. A new workflow needs to expose revocation-pending separately from final revocation. Which contract evolution avoids an unsafe old-client interpretation?",
+    "questionId": "ood-n09-b05-i010",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i011_compatible_addition"
+    },
+    "constraints": [
+      "Older clients parse the current text exactly. New clients need structured approved-address and package fields; both must represent the same approved shipment.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The old parser depends on an exact representation, while the new consumer needs structured fields. A parallel contract avoids changing the existing representation.",
+        "scenarioApplication": "Legacy clients continue parsing the text; new clients request the structured representation of the same approved data.",
+        "errorCorrection": "Replacing the representation at the existing route breaks the stated exact parser dependency.",
+        "boundaryOrTradeoff": "A planned versioned migration could eventually retire the text route, but the prompt says old clients remain.",
+        "transfer": "When consumers depend on a representation, add a new representation alongside it rather than silently changing the old one."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i011_breaking_change",
+          "text": "Replacing the text at the same route breaks older parsers that depend on the current response format."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i011_silent_reinterpretation",
+          "text": "Undocumented delimiters change the text contract without giving older parsers a supported way to distinguish the added structure."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i011_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: Older clients parse the current text exactly. New clients need structured approved-address and package fields; both must represent the same approved shipment."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i011_remove_old_contract",
+          "text": "Removing the established call discards behavior existing clients rely on: Older clients parse the current text exactly. New clients need structured approved-address and package fields; both must represent the same approved shipment. They need a compatible path before it is retired."
+        }
+      ],
+      "reason": "The old parser depends on an exact representation, while the new consumer needs structured fields. A parallel contract avoids changing the existing representation. Legacy clients continue parsing the text; new clients request the structured representation of the same approved data.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i011_compatible_addition",
+          "text": "Add a structured label endpoint and keep the existing text response unchanged."
+        },
+        {
+          "optionId": "n09b05_i011_breaking_change",
+          "text": "Replace the text with a JSON object at the existing route and expect old parsers to adapt."
+        },
+        {
+          "optionId": "n09b05_i011_silent_reinterpretation",
+          "text": "Embed structured fields in the text using undocumented delimiters."
+        },
+        {
+          "optionId": "n09b05_i011_client_workaround",
+          "text": "Make clients fetch shipment internals and reconstruct the label themselves."
+        },
+        {
+          "optionId": "n09b05_i011_remove_old_contract",
+          "text": "Remove the old response as soon as the structured client is available."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A label API returns printable text for shipping clients. Older clients parse the current text exactly. New clients need structured approved-address and package fields; both must represent the same approved shipment. What addition serves new clients without breaking old parsing?",
+    "questionId": "ood-n09-b05-i011",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i012_compatible_addition"
+    },
+    "constraints": [
+      "The existing MoveBooking call uses the documented default cancellation policy. New callers need to select a policy explicitly; old callers must keep the existing default.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The new input is needed by new callers, while the old call already has a defined policy. Keeping both call paths distinct preserves the existing default.",
+        "scenarioApplication": "New clients select a policy; the existing call continues using its documented default.",
+        "errorCorrection": "Requiring an input from old clients breaks their current call shape.",
+        "boundaryOrTradeoff": "The old call can be deprecated after consumers migrate; the prompt provides no basis for immediate removal.",
+        "transfer": "When an established method has a documented default, preserve it for old callers and expose explicit control separately."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i012_breaking_change",
+          "text": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: The existing MoveBooking call uses the documented default cancellation policy. New callers need to select a policy explicitly; old callers must keep the existing default. Add the capability without withdrawing that call."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i012_silent_reinterpretation",
+          "text": "Keeping the same call while changing its meaning makes existing clients lose their stated behavior without an explicit migration: The existing MoveBooking call uses the documented default cancellation policy. New callers need to select a policy explicitly; old callers must keep the existing default."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i012_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: The existing MoveBooking call uses the documented default cancellation policy. New callers need to select a policy explicitly; old callers must keep the existing default."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i012_remove_old_contract",
+          "text": "Removing the established call discards behavior existing clients rely on: The existing MoveBooking call uses the documented default cancellation policy. New callers need to select a policy explicitly; old callers must keep the existing default. They need a compatible path before it is retired."
+        }
+      ],
+      "reason": "The new input is needed by new callers, while the old call already has a defined policy. Keeping both call paths distinct preserves the existing default. New clients select a policy; the existing call continues using its documented default.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i012_client_workaround",
+          "text": "Let every client update cancellation fields directly after moving the booking."
+        },
+        {
+          "optionId": "n09b05_i012_remove_old_contract",
+          "text": "Remove the default policy and require all clients to migrate in one release."
+        },
+        {
+          "optionId": "n09b05_i012_compatible_addition",
+          "text": "Add an explicit-policy operation and map the old call to its documented default."
+        },
+        {
+          "optionId": "n09b05_i012_breaking_change",
+          "text": "Make policy required on the old call and reject callers that do not send it."
+        },
+        {
+          "optionId": "n09b05_i012_silent_reinterpretation",
+          "text": "Guess a policy from the destination room and change existing behavior silently."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A rehearsal API moves bookings between rooms. The existing MoveBooking call uses the documented default cancellation policy. New callers need to select a policy explicitly; old callers must keep the existing default. How should the added policy input be introduced?",
+    "questionId": "ood-n09-b05-i012",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i013_compatible_addition"
+    },
+    "constraints": [
+      "Old clients send a command string and receive accepted or rejected. New clients need a structured reason explaining why a command was rejected; old clients only depend on the status.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The old client’s dependency is a status value, and the scenario says it ignores extra fields. An added explanation can coexist with that status.",
+        "scenarioApplication": "Old clients continue using accepted/rejected; new clients can display the reason field.",
+        "errorCorrection": "Replacing the status with free-form text removes the value old clients expect.",
+        "boundaryOrTradeoff": "If old consumers rejected unknown fields, a versioned response might be safer; this prompt states they ignore them.",
+        "transfer": "Add explanatory response data without replacing a stable status contract when old clients tolerate additive fields."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i013_breaking_change",
+          "text": "Existing clients consume accepted or rejected. Replacing that status with free-form reason text removes the signal their response handling expects."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i013_silent_reinterpretation",
+          "text": "Changing a rejected operation into an accepted one changes the existing status meaning; a missing reason must not turn rejection into success."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i013_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: Old clients send a command string and receive accepted or rejected. New clients need a structured reason explaining why a command was rejected; old clients only depend on the status."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i013_remove_old_contract",
+          "text": "Removing the established call discards behavior existing clients rely on: Old clients send a command string and receive accepted or rejected. New clients need a structured reason explaining why a command was rejected; old clients only depend on the status. They need a compatible path before it is retired."
+        }
+      ],
+      "reason": "The old client’s dependency is a status value, and the scenario says it ignores extra fields. An added explanation can coexist with that status. Old clients continue using accepted/rejected; new clients can display the reason field.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i013_breaking_change",
+          "text": "Replace accepted/rejected with the reason text and require old clients to parse it."
+        },
+        {
+          "optionId": "n09b05_i013_silent_reinterpretation",
+          "text": "Change rejection into acceptance when a reason cannot be supplied."
+        },
+        {
+          "optionId": "n09b05_i013_client_workaround",
+          "text": "Make clients inspect controller state to decide why a command failed."
+        },
+        {
+          "optionId": "n09b05_i013_remove_old_contract",
+          "text": "Remove the old command route and publish only the new reason-bearing response."
+        },
+        {
+          "optionId": "n09b05_i013_compatible_addition",
+          "text": "Keep the old status and add a reason field that old clients ignore."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "An exhibit-control API accepts commands during maintenance windows. Old clients send a command string and receive accepted or rejected. New clients need a structured reason explaining why a command was rejected; old clients only depend on the status. What is the least disruptive response evolution?",
+    "questionId": "ood-n09-b05-i013",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i014_compatible_addition"
+    },
+    "constraints": [
+      "Older clients expect the default list to contain active lessons only. New clients need an explicit way to include retired lessons while keeping stable lesson IDs.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The new need is an optional view over existing identities; the old default remains meaningful and should not be broadened for all callers.",
+        "scenarioApplication": "New callers explicitly request retired lessons; existing callers continue receiving active entries by default.",
+        "errorCorrection": "Changing the default silently broadens results that old clients assume are active-only.",
+        "boundaryOrTradeoff": "A separate history endpoint could also preserve the default; the chosen opt-in query keeps the same catalog identity context.",
+        "transfer": "When consumers need an expanded view, make it explicit while preserving the established default response."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i014_breaking_change",
+          "text": "Older clients expect the default result to contain active lessons only; they are not required to filter retired items out themselves."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i014_silent_reinterpretation",
+          "text": "Keeping the same call while changing its meaning makes existing clients lose their stated behavior without an explicit migration: Older clients expect the default list to contain active lessons only. New clients need an explicit way to include retired lessons while keeping stable lesson IDs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i014_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: Older clients expect the default list to contain active lessons only. New clients need an explicit way to include retired lessons while keeping stable lesson IDs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i014_remove_old_contract",
+          "text": "Progress records keep the retired lesson IDs. Removing those IDs from the catalog leaves existing progress references unresolved."
+        }
+      ],
+      "reason": "The new need is an optional view over existing identities; the old default remains meaningful and should not be broadened for all callers. New callers explicitly request retired lessons; existing callers continue receiving active entries by default.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i014_remove_old_contract",
+          "text": "Create a separate catalog for retired lessons and remove their stable IDs from the current one."
+        },
+        {
+          "optionId": "n09b05_i014_compatible_addition",
+          "text": "Add an opt-in include-retired query while leaving the existing default active-only."
+        },
+        {
+          "optionId": "n09b05_i014_breaking_change",
+          "text": "Change the default list to include retired lessons and ask old clients to filter them."
+        },
+        {
+          "optionId": "n09b05_i014_silent_reinterpretation",
+          "text": "Return retired lessons under newly generated IDs so old clients do not recognize them."
+        },
+        {
+          "optionId": "n09b05_i014_client_workaround",
+          "text": "Have every client query the internal lesson table directly."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A learning-catalog API hides retired lessons from the default list. Older clients expect the default list to contain active lessons only. New clients need an explicit way to include retired lessons while keeping stable lesson IDs. Which query evolution preserves the default behavior?",
+    "questionId": "ood-n09-b05-i014",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i015_compatible_addition"
+    },
+    "constraints": [
+      "Existing clients read edit history and ignore additional response fields. New clients need a snapshot revision to compare exports; the edit history remains unchanged.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The revision is independent metadata, and old readers explicitly tolerate additional response fields. Existing history can remain intact.",
+        "scenarioApplication": "Legacy clients keep reading edits; new clients use the added revision for export comparison.",
+        "errorCorrection": "Replacing history or reusing session identity would change established field meanings.",
+        "boundaryOrTradeoff": "A request-side revision precondition might be needed for conditional writes, but the prompt only adds comparison metadata.",
+        "transfer": "Add a new independent reference as a distinct field when existing readers tolerate additive response data."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i015_breaking_change",
+          "text": "Older clients read the edit history. Replacing it with a revision token removes information those clients still consume."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i015_silent_reinterpretation",
+          "text": "A revision token identifies a revision, not the session. Reusing it as SessionId breaks clients that rely on session identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i015_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: Existing clients read edit history and ignore additional response fields. New clients need a snapshot revision to compare exports; the edit history remains unchanged."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i015_remove_old_contract",
+          "text": "Existing clients do not send this new request field. Requiring it rejects their current calls before the snapshot can be returned."
+        }
+      ],
+      "reason": "The revision is independent metadata, and old readers explicitly tolerate additional response fields. Existing history can remain intact. Legacy clients keep reading edits; new clients use the added revision for export comparison.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i015_silent_reinterpretation",
+          "text": "Use the revision token as the session ID, changing its existing meaning."
+        },
+        {
+          "optionId": "n09b05_i015_client_workaround",
+          "text": "Ask clients to infer revisions by hashing the returned edits."
+        },
+        {
+          "optionId": "n09b05_i015_remove_old_contract",
+          "text": "Make the revision field mandatory in old requests and reject existing calls."
+        },
+        {
+          "optionId": "n09b05_i015_compatible_addition",
+          "text": "Add a snapshot revision field and retain the existing edit-history field."
+        },
+        {
+          "optionId": "n09b05_i015_breaking_change",
+          "text": "Replace the edit-history field with a revision token and make old clients reconstruct edits."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A whiteboard API returns closed-session snapshots. Existing clients read edit history and ignore additional response fields. New clients need a snapshot revision to compare exports; the edit history remains unchanged. What response change is compatible with both?",
+    "questionId": "ood-n09-b05-i015",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i016_compatible_addition"
+    },
+    "constraints": [
+      "The existing call applies a documented default response deadline. New clients need to choose a deadline; old clients continue to use the default.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The existing default is part of the current behavior; the added caller choice is a separate capability.",
+        "scenarioApplication": "New callers supply a deadline while existing integrations continue to receive the documented default.",
+        "errorCorrection": "Changing the default globally alters behavior for callers that did not opt into the new choice.",
+        "boundaryOrTradeoff": "A later deprecation could remove the old call after a stated migration period; no migration completion is given.",
+        "transfer": "Expose new caller control without silently changing the default existing consumers receive."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i016_breaking_change",
+          "text": "Requiring a new input on the existing operation breaks clients that depend on its current behavior: The existing call applies a documented default response deadline. New clients need to choose a deadline; old clients continue to use the default. Add the capability without withdrawing that call."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i016_silent_reinterpretation",
+          "text": "Keeping the same call while changing its meaning makes existing clients lose their stated behavior without an explicit migration: The existing call applies a documented default response deadline. New clients need to choose a deadline; old clients continue to use the default."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i016_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: The existing call applies a documented default response deadline. New clients need to choose a deadline; old clients continue to use the default."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i016_remove_old_contract",
+          "text": "Removing the established call discards behavior existing clients rely on: The existing call applies a documented default response deadline. New clients need to choose a deadline; old clients continue to use the default. They need a compatible path before it is retired."
+        }
+      ],
+      "reason": "The existing default is part of the current behavior; the added caller choice is a separate capability. New callers supply a deadline while existing integrations continue to receive the documented default.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i016_compatible_addition",
+          "text": "Add a deadline-selecting call and preserve the existing default on the old call."
+        },
+        {
+          "optionId": "n09b05_i016_breaking_change",
+          "text": "Make deadline mandatory on the current call and reject older callers."
+        },
+        {
+          "optionId": "n09b05_i016_silent_reinterpretation",
+          "text": "Change the default deadline for every caller when new clients arrive."
+        },
+        {
+          "optionId": "n09b05_i016_client_workaround",
+          "text": "Have clients edit the conversation deadline directly after escalation."
+        },
+        {
+          "optionId": "n09b05_i016_remove_old_contract",
+          "text": "Remove the old call immediately and require every integration to upgrade."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A support API escalates conversations to a response team. The existing call applies a documented default response deadline. New clients need to choose a deadline; old clients continue to use the default. How should deadline selection be added?",
+    "questionId": "ood-n09-b05-i016",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i017_compatible_addition"
+    },
+    "constraints": [
+      "The existing response is a boolean indicating publication. New clients need structured validation messages; old clients only read the boolean and ignore extra response fields.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The boolean’s publication meaning stays stable; added diagnostics are supplemental data that current consumers explicitly tolerate.",
+        "scenarioApplication": "Old clients still read the boolean; new clients can show the validation messages when present.",
+        "errorCorrection": "Replacing or redefining the boolean changes the signal existing callers depend on.",
+        "boundaryOrTradeoff": "A richer versioned response could later replace the boolean after migration, but additive fields meet the stated tolerance.",
+        "transfer": "Keep a stable outcome field intact when enriching a response with diagnostics."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i017_breaking_change",
+          "text": "Older clients expect a boolean publication result; a string is a different response type they cannot consume as that signal."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i017_silent_reinterpretation",
+          "text": "Keeping the same call while changing its meaning makes existing clients lose their stated behavior without an explicit migration: The existing response is a boolean indicating publication. New clients need structured validation messages; old clients only read the boolean and ignore extra response fields."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i017_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: The existing response is a boolean indicating publication. New clients need structured validation messages; old clients only read the boolean and ignore extra response fields."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i017_remove_old_contract",
+          "text": "False currently means the publication did not occur. Reusing it to mean only that messages exist makes the established boolean misleading."
+        }
+      ],
+      "reason": "The boolean’s publication meaning stays stable; added diagnostics are supplemental data that current consumers explicitly tolerate. Old clients still read the boolean; new clients can show the validation messages when present.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i017_client_workaround",
+          "text": "Make clients query listing internals to reconstruct validation outcomes."
+        },
+        {
+          "optionId": "n09b05_i017_remove_old_contract",
+          "text": "Change the meaning of false to mean only that a message is available."
+        },
+        {
+          "optionId": "n09b05_i017_compatible_addition",
+          "text": "Keep the publication boolean and add a separate validation-messages field."
+        },
+        {
+          "optionId": "n09b05_i017_breaking_change",
+          "text": "Replace the boolean with a string message and expect old clients to parse it."
+        },
+        {
+          "optionId": "n09b05_i017_silent_reinterpretation",
+          "text": "Return true for every request and rely on clients to read validation messages."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A marketplace API publishes seasonal inventory changes. The existing response is a boolean indicating publication. New clients need structured validation messages; old clients only read the boolean and ignore extra response fields. What response evolution retains the established signal?",
+    "questionId": "ood-n09-b05-i017",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b05_i018_compatible_addition"
+    },
+    "constraints": [
+      "The old response identifies the original request and preserves its delivery promise. New clients need a separate ID for each vendor portion; old clients continue using the original request ID.",
+      "Do not change the observable meaning on which existing clients rely."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The source request and its derived portions have different identities. Add the new identifiers without overloading the original one.",
+        "scenarioApplication": "Old clients keep addressing the source request; new clients can address each vendor portion.",
+        "errorCorrection": "Replacing the source ID breaks the existing reference and loses the parent-child relationship.",
+        "boundaryOrTradeoff": "A nested response may encode the same relation; the important contract is separate stable identities.",
+        "transfer": "When a new child resource is exposed, add its identity while retaining the existing parent reference."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i018_breaking_change",
+          "text": "The original request ID carries the existing delivery promise. Replacing it with a vendor-portion ID loses that stable reference for older clients."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i018_silent_reinterpretation",
+          "text": "One portion ID cannot stand for both the original request and every vendor portion; existing clients would lose the source identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i018_client_workaround",
+          "text": "Making each client implement the change bypasses the shared API and can yield inconsistent behavior: The old response identifies the original request and preserves its delivery promise. New clients need a separate ID for each vendor portion; old clients continue using the original request ID."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b05_i018_remove_old_contract",
+          "text": "Returning only portion IDs removes the original request reference, so older clients cannot associate the split with the request whose delivery promise they track."
+        }
+      ],
+      "reason": "The source request and its derived portions have different identities. Add the new identifiers without overloading the original one. Old clients keep addressing the source request; new clients can address each vendor portion.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b05_i018_breaking_change",
+          "text": "Replace the source request ID with each portion ID so old clients can address the latest split."
+        },
+        {
+          "optionId": "n09b05_i018_silent_reinterpretation",
+          "text": "Reuse one new portion ID for both the original request and every vendor result."
+        },
+        {
+          "optionId": "n09b05_i018_client_workaround",
+          "text": "Ask old clients to derive portion IDs from vendor names."
+        },
+        {
+          "optionId": "n09b05_i018_remove_old_contract",
+          "text": "Return only vendor portion IDs and remove the original request reference."
+        },
+        {
+          "optionId": "n09b05_i018_compatible_addition",
+          "text": "Keep the source request ID and add a distinct ID to each vendor portion."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B05",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A parts API splits a backordered request across vendors. The old response identifies the original request and preserves its delivery promise. New clients need a separate ID for each vendor portion; old clients continue using the original request ID. How should the new identifiers be represented?",
+    "questionId": "ood-n09-b05-i018",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+      "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

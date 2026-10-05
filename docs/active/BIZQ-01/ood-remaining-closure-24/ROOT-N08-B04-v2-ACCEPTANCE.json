@@ -1,0 +1,14 @@
+{
+  "verdict": "PASS_ROOT_BOUND_INACTIVE_CONTENT_ONLY",
+  "unit": "N08-B04",
+  "revision": "v2",
+  "reportSha256": "f7bbab7510533d36c6b5afb3aeec5390f6f98bb07fd85935bfa25f6e840d4560",
+  "reportMarkdownSha256": "231afe75e9e582017afc1d59253f43d791fcd4bac21ffc1bcf59144c61799118",
+  "actualInputBindings": 5,
+  "actualWholeBeforeCurrentBindings": 18,
+  "sameQuestionIds": 18,
+  "proposalSha256": "4eba890055c2cccd810540df6d47f1f65f2842108683be90c5e632e630a09646",
+  "sourceActivationAccepted": false,
+  "nativeOrPremiumAccepted": false,
+  "fullBIZQ01Accepted": false
+}

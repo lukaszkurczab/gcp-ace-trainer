@@ -1,0 +1,802 @@
+{
+  "schemaVersion": "bizq01-ood-n08-author-notes-v1",
+  "sourceFile": "patternly-content/content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B02.json",
+  "sourceSha256": "1db1cf0b1c16746d2899fadd9dd2afdfb2d40e3fc945e220a79404b0883efba8",
+  "proposalFile": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/proposals/N08-B02-v2.json",
+  "proposalSha256": "b1cf5583d99cd754ee91fe159134d84cdc7a5012a1886ddfefb3fd1d8495d5d7",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n08-b02-i001",
+      "questionId": "ood-n08-b02-i001",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A marketplace payout service, The finance operator releases a seller payout. Settlement and release requests can overlap for one order; an order must be settled before its payout is accepted, while unrelated orders should continue. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Read settled status in the finance screen, then submit a release based on that earlier result.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “release is idempotent and tied to a settled order” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_snapshot_01",
+          "currentText": "Read settled status in the finance screen, then submit a release based on that earlier result."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_global_01",
+          "currentText": "Put every seller's order behind one global lock for the full payout workflow."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "split_transition_01",
+          "currentText": "Queue release only after the request returns; let each caller decide whether a timeout means it was recorded."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Serialize settlement and release for that order at its order-state owner; recheck settled status in the same operation that records release.",
+        "currentText": "Check settlement and serialize release for that order.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i002",
+      "questionId": "ood-n08-b02-i002",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A public-transit disruption board, Each platform change receives an effective sequence number before publication. A delayed earlier update must not appear after a later effective update; separate lines publish independently. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Publish each update as soon as its network request arrives and sort the board afterward.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “passengers receive the change in the order in which it becomes effective” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_snapshot_02",
+          "currentText": "Publish each update as soon as its network request arrives and sort the board afterward."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_global_02",
+          "currentText": "Use one global queue ordered by arrival time across every transit line."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "split_transition_02",
+          "currentText": "Let each passenger client merge the newest text it has seen into its own board copy."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Queue updates by line and apply them in effective-sequence order, so delayed delivery does not redefine event order.",
+        "currentText": "Apply each line's updates in effective-sequence order.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i003",
+      "questionId": "ood-n08-b02-i003",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A neighborhood energy-sharing service, Two reservation requests can overlap for the same meter and time window. The service must never confirm both; reservations for different meters should proceed independently. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Check for an open window, release coordination, and insert the reservation in a later step.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “a meter cannot be committed twice for an overlapping window” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "caller_snapshot_03",
+          "currentText": "Check for an open window, release coordination, and insert the reservation in a later step."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "shared_global_03",
+          "currentText": "Lock the entire neighborhood reservation service while every meter request is processed."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "split_transition_03",
+          "currentText": "Let each operator hold an immutable schedule snapshot and confirm from the snapshot without rechecking."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Make the meter reservation operation check overlap and record the winning window as one serialized decision scoped to that meter.",
+        "currentText": "Serialize each meter's overlap check and reservation write.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i004",
+      "questionId": "ood-n08-b02-i004",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A live captioning studio, A stream keeps the provider configuration it began with, including its timing and error contract. A provider switch should affect new streams only; active streams may continue while the next stream starts. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Mutate the shared provider object while all active stream handlers keep references to it.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “the current stream keeps its timing and error contract” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "caller_snapshot_04",
+          "currentText": "Mutate the shared provider object while all active stream handlers keep references to it."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "shared_global_04",
+          "currentText": "Stop every active stream, change the provider, then restart them even though the contract permits them to continue."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "split_transition_04",
+          "currentText": "Have each caption callback read whichever provider is currently configured when it emits a caption."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Create an immutable provider configuration for each stream and atomically select the new configuration for streams started after the switch.",
+        "currentText": "Pin each stream to one immutable provider configuration; switch only new streams.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i005",
+      "questionId": "ood-n08-b02-i005",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A volunteer coordination hub, Two volunteers exchange shifts in one operation. Both skills and availability checks must pass for the same pair of assignments; other shift pairs can be updated independently. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Write the first volunteer's new shift, then check and write the second; compensate the first write if the second check fails.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “skills and availability constraints hold for both assignments” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "caller_snapshot_05",
+          "currentText": "Write the first volunteer's new shift, then check and write the second; compensate the first write if the second check fails."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "shared_global_05",
+          "currentText": "Lock the whole volunteer directory for every pair swap, including swaps on unrelated dates."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "split_transition_05",
+          "currentText": "Ask each volunteer's client to update its own assignment after displaying the roster snapshot."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Have the roster owner validate both target assignments and commit the pair together for that shift window.",
+        "currentText": "Validate and commit the two assignments together at the roster owner.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i006",
+      "questionId": "ood-n08-b02-i006",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A local-first map editor, Each offline route proposal records its base revision. Two devices can submit against the same base; if one has already been accepted, the other must receive a conflict rather than replace it. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Check the revision on the device before upload, then overwrite the route when the upload finishes.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “conflicts are explicit and never silently overwrite accepted geometry” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_snapshot_06",
+          "currentText": "Check the revision on the device before upload, then overwrite the route when the upload finishes."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_global_06",
+          "currentText": "Use last-arrival-wins for route geometry and preserve the old version only in a support log."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "split_transition_06",
+          "currentText": "Lock all maps while any one route proposal is compared and accepted."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Compare the submitted base revision with the current accepted revision and commit the proposal at one route-owner boundary.",
+        "currentText": "Reject proposals based on a superseded route revision.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i007",
+      "questionId": "ood-n08-b02-i007",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A board-game campaign manager, Reward actions are legal only in the current campaign phase. A host and moderator can issue them concurrently, but actions in separate campaigns are independent. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Let each screen compute the next phase from its displayed campaign copy and replace the phase after applying rewards.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_snapshot_07",
+          "currentText": "Let each screen compute the next phase from its displayed campaign copy and replace the phase after applying rewards."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_global_07",
+          "currentText": "Place every campaign in one global command queue, even when they have no shared state."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "split_transition_07",
+          "currentText": "Let a moderator edit phase directly while the host appends reward points separately."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Send each campaign's commands through its state owner, which evaluates each against the latest phase before recording the accepted transition.",
+        "currentText": "Evaluate campaign commands against the latest phase at the campaign owner.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i008",
+      "questionId": "ood-n08-b02-i008",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A cold-chain logistics console, A carrier hand-off changes carrier and hand-off status together, while the shipment's temperature limits stay attached. The old carrier may finish reading its view after transfer; only one carrier owns new work after acceptance. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Give both carriers a mutable reference to the same shipment and let each mark its own hand-off complete.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "caller_snapshot_08",
+          "currentText": "Give both carriers a mutable reference to the same shipment and let each mark its own hand-off complete."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "shared_global_08",
+          "currentText": "Switch the carrier field first and copy temperature limits in a later background update."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "split_transition_08",
+          "currentText": "Let dispatchers duplicate a mutable shipment record for each carrier and reconcile the duplicates at delivery."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Transfer a versioned shipment record containing the current limits and new carrier, then make the new owner active only for that accepted version.",
+        "currentText": "Transfer one versioned shipment; activate its carrier only for the accepted version.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i009",
+      "questionId": "ood-n08-b02-i009",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A cooperative lending ledger, Concurrent repayments for one account must not allocate more than its current outstanding balance. Each accepted allocation needs a matching ledger entry; other accounts can be handled at the same time. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Have each repayment screen compute a remaining balance and write it with a separate ledger entry.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “a repayment cannot reduce the outstanding balance below zero” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "caller_snapshot_09",
+          "currentText": "Have each repayment screen compute a remaining balance and write it with a separate ledger entry."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "shared_global_09",
+          "currentText": "Lock the entire cooperative ledger while any member repayment is evaluated."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "split_transition_09",
+          "currentText": "Append an allocation event first and let a background job decide later whether the balance allowed it."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "At the account ledger boundary, coordinate the balance check, allocation, and matching entry as one accepted account operation.",
+        "currentText": "Validate and commit the allocation with its matching ledger entry as one account operation.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i010",
+      "questionId": "ood-n08-b02-i010",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A tournament bracket service, A match can receive both a timeout and an official result. The match's accepted terminal result must advance the bracket once; another match must not wait for it. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Let the timer and official handler each write the next bracket slot, then deduplicate duplicate slots later.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “the bracket advances only from a legal match state” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "caller_snapshot_10",
+          "currentText": "Let the timer and official handler each write the next bracket slot, then deduplicate duplicate slots later."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "shared_global_10",
+          "currentText": "Use one global tournament mutex and hold it while all match details are evaluated."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "split_transition_10",
+          "currentText": "Let the official's screen replace the match state from its last displayed copy."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Serialize result commands at the match owner and accept only the first legal transition from the current match state.",
+        "currentText": "Accept only the first legal terminal transition at the match owner.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i011",
+      "questionId": "ood-n08-b02-i011",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A returns inspection workflow, The inspection record captures condition and evidence. A refund reviewer can read that record while another inspection is being completed; the reviewer must not change the inspection facts. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Let the reviewer update the inspection fields to show whether the refund was approved.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_snapshot_11",
+          "currentText": "Let the reviewer update the inspection fields to show whether the refund was approved."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_global_11",
+          "currentText": "Share one mutable return object among all inspectors and refund reviewers, each writing its own fields."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "split_transition_11",
+          "currentText": "Copy the inspection into a new subtype when the refund review starts."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Store accepted findings as an immutable inspection revision and give the refund decision that revision to evaluate.",
+        "currentText": "Give refund review the accepted, immutable inspection revision.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i012",
+      "questionId": "ood-n08-b02-i012",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A research-notebook platform, A publication uses one selected dataset and code revision. Notebook edits may continue while the job runs; the output must identify the exact selection used. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Let the job read the live notebook whenever each stage starts and infer the revision from the last stage.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_snapshot_12",
+          "currentText": "Let the job read the live notebook whenever each stage starts and infer the revision from the last stage."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_global_12",
+          "currentText": "Lock the entire notebook workspace until the publication completes, including unrelated experiments."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "split_transition_12",
+          "currentText": "Let the job and editor both update one mutable publication record as inputs are discovered."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Capture the chosen dataset and code revision in an immutable publication input before the job reads it.",
+        "currentText": "Pin publication input to its selected dataset and code revisions.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i013",
+      "questionId": "ood-n08-b02-i013",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A collaborative annotation workspace, An accepted comment names its author and document revision. Notification can be delayed or retried, but the same accepted comment must keep those values. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Have the notification handler fill in author and revision from whichever editor is current when it sends.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "caller_snapshot_13",
+          "currentText": "Have the notification handler fill in author and revision from whichever editor is current when it sends."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "shared_global_13",
+          "currentText": "Let concurrent reviewers append to a shared list and let the last notification repair missing fields."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "split_transition_13",
+          "currentText": "Put every document's comment and notification work in one global serial queue."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Commit the comment with author and revision, then emit a notification description containing that accepted record's identity.",
+        "currentText": "Notify using the accepted comment's stored author and revision.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i014",
+      "questionId": "ood-n08-b02-i014",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A mobile field-inspection app, The inspector can edit a later draft while an earlier revision is being submitted. The server returns complete or retryable for the submitted revision; it must not mark later edits complete by mistake. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Let the server read the live draft throughout submission and mark the current draft complete when its response arrives.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “a submission is either complete or explicitly retryable” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "caller_snapshot_14",
+          "currentText": "Let the server read the live draft throughout submission and mark the current draft complete when its response arrives."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "shared_global_14",
+          "currentText": "Have each device update one shared draft object and reconcile the newest fields after submission."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "split_transition_14",
+          "currentText": "Use a global upload lock that prevents every inspector from editing any draft while one submission is in flight."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Freeze the submitted revision and bind the returned completion state to that revision, leaving later edits as a separate draft.",
+        "currentText": "Bind completion to the frozen submission; keep later edits separate.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i015",
+      "questionId": "ood-n08-b02-i015",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A digital invoice exchange, The invoice exchange can return a response after an operator has begun a corrected issue. Each issued copy must retain its submitted values and the exchange result must attach to the matching copy. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Update one mutable invoice object when each exchange response arrives, regardless of which issue it answers.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “the new issue is traceable and does not double-charge the customer” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "caller_snapshot_15",
+          "currentText": "Update one mutable invoice object when each exchange response arrives, regardless of which issue it answers."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "shared_global_15",
+          "currentText": "Serialize all sellers' invoice exchanges through one global queue until every response returns."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "split_transition_15",
+          "currentText": "Let the operator edit submitted invoice fields in place and treat the newest fields as the prior issue."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Send an immutable invoice revision and attach the response to that revision's exchange record, leaving the corrected issue separate.",
+        "currentText": "Attach each exchange result to the submitted invoice revision.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i016",
+      "questionId": "ood-n08-b02-i016",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A smart-building access controller, The authority assigns a new badge revision on revocation. A door request carries the revision it checked; if revocation has advanced the authority's revision, the request must not grant from its older view. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Let each door write revocation into its local badge cache and reconcile with the authority later.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “revocation is visible to the door policy before access is granted” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_snapshot_16",
+          "currentText": "Let each door write revocation into its local badge cache and reconcile with the authority later."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_global_16",
+          "currentText": "Allow a request to grant from any cached badge copy as long as the copy was once valid."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "split_transition_16",
+          "currentText": "Lock every building door while one badge is revoked."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Compare the request's checked revision with the authority's current badge revision at the grant decision and reject an older view.",
+        "currentText": "Check the current badge revision at the grant decision.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i017",
+      "questionId": "ood-n08-b02-i017",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A package-label generation service, A correction creates a new approved shipment revision. An already-running print job must use the revision it started with; a later job should use the new approved revision. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Let the print callback read the shipment's current address for every label field as it renders.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “the printed label represents the current approved shipment data” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_snapshot_17",
+          "currentText": "Let the print callback read the shipment's current address for every label field as it renders."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_global_17",
+          "currentText": "Share one mutable address buffer between correction forms and all print workers."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "split_transition_17",
+          "currentText": "Pause every shipment's label generation until all address corrections finish."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "Pass each print job an immutable approved shipment revision and do not mutate the in-flight job's input.",
+        "currentText": "Give each print job an immutable approved shipment revision.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    },
+    {
+      "beforeQuestionId": "ood-n08-b02-i018",
+      "questionId": "ood-n08-b02-i018",
+      "mentalUnitId": "OOD-N08-B02",
+      "learningObjective": "Scope coordination to the state that must change together or the sequence that defines acceptance. Keep independent aggregates moving, and pass immutable records when a consumer needs a stable view.",
+      "decisiveFact": "In A multi-tenant rehearsal scheduler, A room has capacity three for overlapping bookings. Two coordinators can reserve the final slot concurrently; reservations in other rooms should proceed independently. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Let each coordinator check a search result and add a booking after returning to the form.",
+      "changedCondition": "The former domain outcome is now paired with a visible overlap, ordering boundary, or versioned consumer fact; the decision is scoped to that exact coordination boundary.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old key was: Choose one synchronization owner or immutable transfer model so a compound invariant has one coordination point. In this case, that keeps the rule “the room capacity and cancellation policy must remain consistent” inside the owner that can observe and enforce it. The current key still chooses one coordination boundary or immutable handoff for the same unit decision; its per-case mechanism specializes that accepted meaning to the newly explicit case facts.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "caller_snapshot_18",
+          "currentText": "Let each coordinator check a search result and add a booking after returning to the form."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "shared_global_18",
+          "currentText": "Lock the full multi-tenant schedule while any room reservation is processed."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "split_transition_18",
+          "currentText": "Let each room screen keep a private schedule copy and reconcile it when a booking is cancelled."
+        }
+      ],
+      "v2KeyCorrection": {
+        "beforeText": "At the room's booking owner, check the current overlap count and accept a reservation as one room-scoped decision.",
+        "currentText": "Check overlap and accept each reservation in one room-scoped operation.",
+        "reason": "Remove redundant workflow clauses from the accepted option while retaining its case-specific coordination decision."
+      }
+    }
+  ],
+  "revision": "v2: concise accepted-option text only; all v1 prompts, IDs, distractors, explanations, and mappings preserved."
+}

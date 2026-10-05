@@ -1,0 +1,643 @@
+{
+  "schemaVersion": "bizq01-ood-semantic-qa-v1",
+  "unitId": "OOD-N09-B05",
+  "verdict": "REVISE",
+  "reviewInputs": {
+    "frozenProposalFile": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/review-inputs/N09-B05-v1.json",
+    "frozenProposalSha256": "f88d5aef9359dd0a69511a6caedba9851168367bcb7bb1bd93d3466cd58b4d4d",
+    "sourceFile": "patternly-content/content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B05.json",
+    "sourceRawSha256": "57688e786e10393b743e1399aece4b41020005c0bd9c16bd9ab91d2c9bf8f294",
+    "sourceWholeTrackQuestionSetSha256": "cdb6b644d1029b0ffc5d1a09cbaed2aecb3f7785d718bb056c5d6a0cbd5eeefa",
+    "manifestFile": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/N08-N09-MANIFEST.json",
+    "manifestSha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612",
+    "guidelinesFile": "docs/07-content-guidelines.md",
+    "guidelinesSha256": "00c20d8c74d8e4dfec3ffb9211865642a5ae72d218bdd7473b8f41e52bfa5471"
+  },
+  "summary": {
+    "questionsReviewed": 18,
+    "preservedQuestionIds": 18,
+    "supportedPrimaryDecisions": 18,
+    "contractGaps": 0,
+    "wrongOptionMessagesCopiedVerbatim": 72,
+    "blockingFinding": "All wrong-option messages duplicate their option text exactly and supply no authored diagnosis, contrary to the canonical wrong-option explanation requirement."
+  },
+  "sourceClaimScope": "Microsoft compatibility/library guidance supports preserving existing public behavior and recognizing breaking changes. Consumer behavior in each prompt is stated as an authored case premise.",
+  "primaryReferences": [
+    "https://learn.microsoft.com/en-us/dotnet/core/compatibility/library-change-rules",
+    "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+  ],
+  "items": [
+    {
+      "questionId": "ood-n09-b05-i001",
+      "sourceQuestionSha256": "a8542626f432a674a25d241c4196de6a2c685d9fe027172737399530b3e2b922",
+      "proposalQuestionSha256": "04f9277929c28389ea8647fb700d5f6a94973718dca64c321d6403153bce2322",
+      "beforeQuestionId": "ood-n09-b05-i001",
+      "proposedQuestionId": "ood-n09-b05-i001",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it. Current key: Add a preview operation; leave ApplyReward’s existing effect unchanged. The case changes from In a board-game campaign manager, the campaign host must apply a reward to a character. Reward rules depend on the current legal campaign state. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is an operational incident: which decision best preserves the contract? to A campaign service exposes a reward operation to two groups of clients. Existing clients call ApplyReward and depend on its current immediate effect. A new client needs to preview a reward without applying it. Which API evolution keeps those contracts distinct?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i001_compatible_addition",
+      "proposedKey": "Add a preview operation; leave ApplyReward’s existing effect unchanged.",
+      "nearestAlternativeOptionId": "n09b05_i001_breaking_change",
+      "nearestAlternative": "Change ApplyReward so it previews for new clients and applies only when a new flag is supplied.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i002",
+      "sourceQuestionSha256": "a42a347bddf1e47efb8b1a2fe9fc0b4382196ac8f60794481201f2caac63ac84",
+      "proposalQuestionSha256": "2632d206adbae34229885652a51acb99d90cd019e113d5982ad443b4276a795b",
+      "beforeQuestionId": "ood-n09-b05-i002",
+      "proposedQuestionId": "ood-n09-b05-i002",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it. Current key: Add a reassignment request with an explicit custodian; keep the old request’s standard handoff. The case changes from In a cold-chain logistics console, the dispatch planner must reassign a shipment to a carrier. Temperature restrictions and hand-off ownership travel with the shipment. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is an invalid-state probe: which decision best preserves the contract? to A cold-chain dispatch API reassigns shipments to carriers. The old request omits custody owner because the service applies a documented standard handoff. New clients need to name a receiving custodian; old requests must keep the standard handoff. What change preserves both client groups?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i002_compatible_addition",
+      "proposedKey": "Add a reassignment request with an explicit custodian; keep the old request’s standard handoff.",
+      "nearestAlternativeOptionId": "n09b05_i002_breaking_change",
+      "nearestAlternative": "Make custodian required on the existing request and reject every older client call.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i003",
+      "sourceQuestionSha256": "d078c2e97d088c017ac64c0bc6652be87c365c6d64c9e75cb26fbde835a05ff1",
+      "proposalQuestionSha256": "df8d3d7acb7d189f80c9cf448cc9b787ab717e3131c19b54d41bf46b8d9f4dcf",
+      "beforeQuestionId": "ood-n09-b05-i003",
+      "proposedQuestionId": "ood-n09-b05-i003",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “a repayment cannot reduce the outstanding balance below zero” inside the owner that can observe and enforce it. Current key: Add a multi-allocation operation and preserve the existing single-balance call. The case changes from In a cooperative lending ledger, the account steward must record a repayment allocation. A repayment cannot reduce the outstanding balance below zero. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a collaboration trace: which decision best preserves the contract? to A lending ledger allocates repayment amounts to account balances. The existing API accepts one amount and applies it to one named balance. New clients need to allocate one repayment across several named buckets; old callers depend on the single-balance behavior. Which evolution avoids reinterpreting the old amount parameter?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i003_compatible_addition",
+      "proposedKey": "Add a multi-allocation operation and preserve the existing single-balance call.",
+      "nearestAlternativeOptionId": "n09b05_i003_breaking_change",
+      "nearestAlternative": "Change the old amount to mean a list of bucket allocations and update only the server.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i004",
+      "sourceQuestionSha256": "1c689d9061ea4a99ea8c8817cd0752c467182e99f81f85a181649405858eef5c",
+      "proposalQuestionSha256": "6e808d32a2e6e2ae8c0f31866715c495f67820954adf59dfede6cf86e624bdc2",
+      "beforeQuestionId": "ood-n09-b05-i004",
+      "proposedQuestionId": "ood-n09-b05-i004",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “the bracket advances only from a legal match state” inside the owner that can observe and enforce it. Current key: Expose forfeit in a new outcome contract; keep the old response within its three accepted values. The case changes from In a tournament bracket service, the match official must forfeit a match after a timeout. The bracket advances only from a legal match state. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a counterexample: which decision best preserves the contract? to A tournament API reports match outcomes to older clients. Those clients accept only win, loss, or draw and reject unknown outcome values. The service must add a forfeit result for new clients. How should the new outcome be exposed?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i004_compatible_addition",
+      "proposedKey": "Expose forfeit in a new outcome contract; keep the old response within its three accepted values.",
+      "nearestAlternativeOptionId": "n09b05_i004_breaking_change",
+      "nearestAlternative": "Send forfeit through the old response and assume older clients will ignore it.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i005",
+      "sourceQuestionSha256": "eca65a222d1e316e4d88685e1f577f23203e366bd0a50165975dd294d3d55937",
+      "proposalQuestionSha256": "142821b9dde8d301dbd78db2da91f0ec7a4fed49302c0f2dca6641f3892a6925",
+      "beforeQuestionId": "ood-n09-b05-i005",
+      "proposedQuestionId": "ood-n09-b05-i005",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it. Current key: Keep classification unchanged and expose refund eligibility as a separate result. The case changes from In a returns inspection workflow, the warehouse inspector must classify a returned item. Classification and refund eligibility are not the same responsibility. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a permission or trust boundary: which decision best preserves the contract? to A returns service classifies items and determines whether they qualify for a refund. Classification and refund eligibility are independent decisions. Existing clients read only the classification; a new consumer needs the refund decision too. What API change keeps classification meaning stable?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i005_compatible_addition",
+      "proposedKey": "Keep classification unchanged and expose refund eligibility as a separate result.",
+      "nearestAlternativeOptionId": "n09b05_i005_breaking_change",
+      "nearestAlternative": "Change the classification value to encode both the item category and refund decision.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i006",
+      "sourceQuestionSha256": "7976b6c655ddc84bc63af7f74c40e1dcb1e035423594fa23dfc84825c8e7db81",
+      "proposalQuestionSha256": "362a7f84c24730fdf4af69f97cb2f4fca67b8f3ba2aefb056d1fe8e90827cadf",
+      "beforeQuestionId": "ood-n09-b05-i006",
+      "proposedQuestionId": "ood-n09-b05-i006",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it. Current key: Add the two provenance fields without changing the existing result value. The case changes from In a research-notebook platform, the experiment owner must publish a result snapshot. Published outputs reference immutable inputs and code versions. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a retry or recovery path: which decision best preserves the contract? to A research API returns published result snapshots. Existing clients read the result value and ignore unknown response fields. New clients need the input-data ID and code revision used for each result. Which response change preserves existing consumers?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i006_compatible_addition",
+      "proposedKey": "Add the two provenance fields without changing the existing result value.",
+      "nearestAlternativeOptionId": "n09b05_i006_breaking_change",
+      "nearestAlternative": "Replace the result value with a provenance object and make old clients parse it.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i007",
+      "sourceQuestionSha256": "b227871c91fa56be9400ea3100d477e8cb5c810a5571bb21034d4dd961c135cf",
+      "proposalQuestionSha256": "b74c76db8086c41a4ad0b5473ce71ab0c673e5c121bf38dbbac021cf9c7cecfb",
+      "beforeQuestionId": "ood-n09-b05-i007",
+      "proposedQuestionId": "ood-n09-b05-i007",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it. Current key: Keep AcceptComment’s response and add a separate notification contract. The case changes from In a collaborative annotation workspace, the review editor must accept a comment and notify the assigned author. Accepted comments must retain their author and document revision. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a direct application: which decision best preserves the contract? to A review API stores comments and notifies assigned authors. AcceptComment returns a saved comment immediately. New consumers want a notification event; existing clients rely on the current saved-comment response. How should notification be added?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i007_compatible_addition",
+      "proposedKey": "Keep AcceptComment’s response and add a separate notification contract.",
+      "nearestAlternativeOptionId": "n09b05_i007_breaking_change",
+      "nearestAlternative": "Change AcceptComment to return only a notification receipt instead of the saved comment.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i008",
+      "sourceQuestionSha256": "461e4bbf3928cdee8796029c3d947a5d7e993937973f00aee016b07129d8b4f5",
+      "proposalQuestionSha256": "15d133fc5bf95623c936c2b6962bea7ae146f93f8ece24daeda83c94f6c949c4",
+      "beforeQuestionId": "ood-n09-b05-i008",
+      "proposedQuestionId": "ood-n09-b05-i008",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “a submission is either complete or explicitly retryable” inside the owner that can observe and enforce it. Current key: Expose retryable in a new response contract while preserving version 1 values. The case changes from In a mobile field-inspection app, the inspector must submit an offline inspection. A submission is either complete or explicitly retryable. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a near-miss design: which decision best preserves the contract? to An inspection API reports the result of an offline submission. Version 1 responses contain complete or failed, and older clients treat any other value as a terminal error. New clients need to distinguish work that can be retried. What is the compatible way to add retryable status?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i008_compatible_addition",
+      "proposedKey": "Expose retryable in a new response contract while preserving version 1 values.",
+      "nearestAlternativeOptionId": "n09b05_i008_breaking_change",
+      "nearestAlternative": "Add retryable to the old response and assume older clients will treat it as nonterminal.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i009",
+      "sourceQuestionSha256": "69b088f90cee64a78a802496f74fa9e3ce2e5e84f48edeb921152e394e1b903a",
+      "proposalQuestionSha256": "adb396e280206d47d4b0d21bced97395100199f3bd736e942996f6dbf8e9a2aa",
+      "beforeQuestionId": "ood-n09-b05-i009",
+      "proposedQuestionId": "ood-n09-b05-i009",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “the new issue is traceable and does not double-charge the customer” inside the owner that can observe and enforce it. Current key: Keep InvoiceId stable and add a separate issue-attempt identifier. The case changes from In a digital invoice exchange, the billing operator must reissue a rejected invoice. The new issue is traceable and does not double-charge the customer. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a review of a common misconception: which decision best preserves the contract? to An invoice API reissues rejected invoices. InvoiceId identifies the customer obligation and remains stable across reissues. New clients need to inspect each issue attempt separately; older clients use InvoiceId as before. How should issue history be added?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i009_compatible_addition",
+      "proposedKey": "Keep InvoiceId stable and add a separate issue-attempt identifier.",
+      "nearestAlternativeOptionId": "n09b05_i009_breaking_change",
+      "nearestAlternative": "Change InvoiceId on each reissue and make old clients discover the replacement by searching.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i010",
+      "sourceQuestionSha256": "954786824915b5615162e81b09ebfb8cc2a22f93554a7957a0bac99a294605de",
+      "proposalQuestionSha256": "917d69eb46fd9721195de2b410dedd6dd6ff23678d6b615632ba1a5c46169642",
+      "beforeQuestionId": "ood-n09-b05-i010",
+      "proposedQuestionId": "ood-n09-b05-i010",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “revocation is visible to the door policy before access is granted” inside the owner that can observe and enforce it. Current key: Expose the pending state in a new response contract and retain the old two-state response. The case changes from In a smart-building access controller, the facilities administrator must revoke a badge. Revocation is visible to the door policy before access is granted. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a new requirement: which decision best preserves the contract? to A building-access API exposes badge states to older door clients. Older clients interpret active and revoked; they reject any other state. A new workflow needs to expose revocation-pending separately from final revocation. Which contract evolution avoids an unsafe old-client interpretation?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i010_compatible_addition",
+      "proposedKey": "Expose the pending state in a new response contract and retain the old two-state response.",
+      "nearestAlternativeOptionId": "n09b05_i010_breaking_change",
+      "nearestAlternative": "Return revocation-pending through the old state field and hope clients fail closed.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i011",
+      "sourceQuestionSha256": "71121ba424944ef0827ff9c2efd4e7aa7960aaea13076d50ce33fb03a832282f",
+      "proposalQuestionSha256": "8cf4bb91f17035b2d20af09b5620ceb4d95c4940ae4380bd53ead565781fb497",
+      "beforeQuestionId": "ood-n09-b05-i011",
+      "proposedQuestionId": "ood-n09-b05-i011",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “the printed label represents the current approved shipment data” inside the owner that can observe and enforce it. Current key: Add a structured label endpoint and keep the existing text response unchanged. The case changes from In a package-label generation service, the shipping operator must print a label after address correction. The printed label represents the current approved shipment data. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a failure rehearsal: which decision best preserves the contract? to A label API returns printable text for shipping clients. Older clients parse the current text exactly. New clients need structured approved-address and package fields; both must represent the same approved shipment. What addition serves new clients without breaking old parsing?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i011_compatible_addition",
+      "proposedKey": "Add a structured label endpoint and keep the existing text response unchanged.",
+      "nearestAlternativeOptionId": "n09b05_i011_breaking_change",
+      "nearestAlternative": "Replace the text with a JSON object at the existing route and expect old parsers to adapt.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i012",
+      "sourceQuestionSha256": "6f756437bde399cdf6f7993dca4949d87be1bbab2f815a46107cae59a46e3bd2",
+      "proposalQuestionSha256": "2d43f7ed7fa3f2490c26069e023cea6742a165c19f353754fcf9eedb9f51a96b",
+      "beforeQuestionId": "ood-n09-b05-i012",
+      "proposedQuestionId": "ood-n09-b05-i012",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “the room capacity and cancellation policy must remain consistent” inside the owner that can observe and enforce it. Current key: Add an explicit-policy operation and map the old call to its documented default. The case changes from In a multi-tenant rehearsal scheduler, the studio coordinator must move a booked rehearsal to a different room. The room capacity and cancellation policy must remain consistent. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a transfer to a neighboring domain: which decision best preserves the contract? to A rehearsal API moves bookings between rooms. The existing MoveBooking call uses the documented default cancellation policy. New callers need to select a policy explicitly; old callers must keep the existing default. How should the added policy input be introduced?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i012_compatible_addition",
+      "proposedKey": "Add an explicit-policy operation and map the old call to its documented default.",
+      "nearestAlternativeOptionId": "n09b05_i012_breaking_change",
+      "nearestAlternative": "Make policy required on the old call and reject callers that do not send it.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i013",
+      "sourceQuestionSha256": "813cdf2cdddac5d6c6e128919258ce20cca5caecdc9306a13e6f7d36aebf696c",
+      "proposalQuestionSha256": "0d8bb0824e5e309f16af029a2d067445e112843ff715a13a38cdb6e2e80a2aa4",
+      "beforeQuestionId": "ood-n09-b05-i013",
+      "proposedQuestionId": "ood-n09-b05-i013",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “unsafe commands are rejected while maintenance is active” inside the owner that can observe and enforce it. Current key: Keep the old status and add a reason field that old clients ignore. The case changes from In a museum exhibit controller, the exhibit operator must switch an exhibit into maintenance mode. Unsafe commands are rejected while maintenance is active. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a design-review comparison: which decision best preserves the contract? to An exhibit-control API accepts commands during maintenance windows. Old clients send a command string and receive accepted or rejected. New clients need a structured reason explaining why a command was rejected; old clients only depend on the status. What is the least disruptive response evolution?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i013_compatible_addition",
+      "proposedKey": "Keep the old status and add a reason field that old clients ignore.",
+      "nearestAlternativeOptionId": "n09b05_i013_breaking_change",
+      "nearestAlternative": "Replace accepted/rejected with the reason text and require old clients to parse it.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i014",
+      "sourceQuestionSha256": "59d36ec605ed84876cb730b37aaf708e9284dfb8774b4a14face5ecef0dd8fda",
+      "proposalQuestionSha256": "ccbce73fbf4386cb0452b83693b6fbc7e46ddc77d3fa9f58f62eea42db513518",
+      "beforeQuestionId": "ood-n09-b05-i014",
+      "proposedQuestionId": "ood-n09-b05-i014",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “progress refers to a stable lesson identity” inside the owner that can observe and enforce it. Current key: Add an opt-in include-retired query while leaving the existing default active-only. The case changes from In a video-learning library, the curriculum editor must retire a lesson while preserving learner progress. Progress refers to a stable lesson identity. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a lifecycle boundary: which decision best preserves the contract? to A learning-catalog API hides retired lessons from the default list. Older clients expect the default list to contain active lessons only. New clients need an explicit way to include retired lessons while keeping stable lesson IDs. Which query evolution preserves the default behavior?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i014_compatible_addition",
+      "proposedKey": "Add an opt-in include-retired query while leaving the existing default active-only.",
+      "nearestAlternativeOptionId": "n09b05_i014_breaking_change",
+      "nearestAlternative": "Change the default list to include retired lessons and ask old clients to filter them.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i015",
+      "sourceQuestionSha256": "d8ce0fa175c8a2f4385f7a18e11b81025297470c83dfaf784018e597674d5b9f",
+      "proposalQuestionSha256": "1812e17eef290842b8a8f4231e5b015f4620e12c3d55faa7e6a23e4f1171f761",
+      "beforeQuestionId": "ood-n09-b05-i015",
+      "proposedQuestionId": "ood-n09-b05-i015",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “export observes a stable session state” inside the owner that can observe and enforce it. Current key: Add a snapshot revision field and retain the existing edit-history field. The case changes from In a shared whiteboard application, the session host must close a board and export its history. Export observes a stable session state. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is an ownership dispute: which decision best preserves the contract? to A whiteboard API returns closed-session snapshots. Existing clients read edit history and ignore additional response fields. New clients need a snapshot revision to compare exports; the edit history remains unchanged. What response change is compatible with both?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i015_compatible_addition",
+      "proposedKey": "Add a snapshot revision field and retain the existing edit-history field.",
+      "nearestAlternativeOptionId": "n09b05_i015_breaking_change",
+      "nearestAlternative": "Replace the edit-history field with a revision token and make old clients reconstruct edits.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i016",
+      "sourceQuestionSha256": "4cb4e86f94fa474e8c1d2cd4c410d3382b4c7749b6b267f816e3ff7af39d077a",
+      "proposalQuestionSha256": "3f2cde1759fdd1138bc22f90e0ce9677d4248825203caec9cbe0906629b77a23",
+      "beforeQuestionId": "ood-n09-b05-i016",
+      "proposedQuestionId": "ood-n09-b05-i016",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “the escalation keeps ownership and response deadlines” inside the owner that can observe and enforce it. Current key: Add a deadline-selecting call and preserve the existing default on the old call. The case changes from In a customer-support escalation desk, the support lead must escalate a conversation. The escalation keeps ownership and response deadlines. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a second workflow variant. This is a boundary decision: which decision best preserves the contract? to A support API escalates conversations to a response team. The existing call applies a documented default response deadline. New clients need to choose a deadline; old clients continue to use the default. How should deadline selection be added?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i016_compatible_addition",
+      "proposedKey": "Add a deadline-selecting call and preserve the existing default on the old call.",
+      "nearestAlternativeOptionId": "n09b05_i016_breaking_change",
+      "nearestAlternative": "Make deadline mandatory on the current call and reject older callers.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i017",
+      "sourceQuestionSha256": "50622b762ee1e955ebe951b493546a9cbbfe3eab3d0e4f1aebbd2cb1844df293",
+      "proposalQuestionSha256": "f54448a9ff96c0b43c58c9a12f945e2ea0414a92bf2be805a48a5534a840c4c6",
+      "beforeQuestionId": "ood-n09-b05-i017",
+      "proposedQuestionId": "ood-n09-b05-i017",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “a listing cannot become visible before its price and stock rule are valid” inside the owner that can observe and enforce it. Current key: Keep the publication boolean and add a separate validation-messages field. The case changes from In a regional produce marketplace, the seller operations lead must publish a seasonal inventory change. A listing cannot become visible before its price and stock rule are valid. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a failure path that must be retried or explained. This is a simplicity check: which decision best preserves the contract? to A marketplace API publishes seasonal inventory changes. The existing response is a boolean indicating publication. New clients need structured validation messages; old clients only read the boolean and ignore extra response fields. What response evolution retains the established signal?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i017_compatible_addition",
+      "proposedKey": "Keep the publication boolean and add a separate validation-messages field.",
+      "nearestAlternativeOptionId": "n09b05_i017_breaking_change",
+      "nearestAlternative": "Replace the boolean with a string message and expect old clients to parse it.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i018",
+      "sourceQuestionSha256": "500d248a277ad10ea263eed6b1f0d2d5dab44d42c361519b3bdbea17d394801e",
+      "proposalQuestionSha256": "8082e29bc6863f5153736ba24c4ccfcf97364f78fd8243be71bc81e999fb7d54",
+      "beforeQuestionId": "ood-n09-b05-i018",
+      "proposedQuestionId": "ood-n09-b05-i018",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Before key: Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “each split retains the original request identity and delivery promise” inside the owner that can observe and enforce it. Current key: Keep the source request ID and add a distinct ID to each vendor portion. The case changes from In a repair-parts marketplace, the fulfillment specialist must split a backordered request across vendors. Each split retains the original request identity and delivery promise. The interview lens is “Public API compatibility, versioning, and deprecation”: apply it without relying on a pattern name. The design review now adds a new caller without changing existing behavior. This is a testability review: which decision best preserves the contract? to A parts API splits a backordered request across vendors. The old response identifies the original request and preserves its delivery promise. New clients need a separate ID for each vendor portion; old clients continue using the original request ID. How should the new identifiers be represented?. Both decisions remain within the unit's Public API compatibility, versioning, and deprecation objective; the proposed key concretizes that same accepted decision in the case facts, so retain the question ID.",
+      "answerSupport": "PASS",
+      "proposedKeyOptionId": "n09b05_i018_compatible_addition",
+      "proposedKey": "Keep the source request ID and add a distinct ID to each vendor portion.",
+      "nearestAlternativeOptionId": "n09b05_i018_breaking_change",
+      "nearestAlternative": "Replace the source request ID with each portion ID so old clients can address the latest split.",
+      "reasonAndDetailsAssessment": "Case-specific application and wrong-boundary consequences are present; Details includes mechanism/application/error boundary/transfer beyond the key. No independent Reason/Details blocker found in this item.",
+      "wrongOptionFeedback": {
+        "wrongOptionCount": 4,
+        "messageCount": 4,
+        "exactTargetTextCopies": 4,
+        "targetIDsMatchWrongOptions": true,
+        "finding": "Every message is the verbatim text of its targeted option rather than an explanation."
+      },
+      "issues": [
+        {
+          "code": "OPTION_DIAGNOSTIC_REPEATS_OPTION",
+          "severity": "blocking_for_content_acceptance",
+          "criterion": "docs/07-content-guidelines.md §Choice-item contract: authored wrong-option explanations must explain plausibility and the failed assumption/boundary.",
+          "evidence": "4/4 wrong-option message texts exactly equal their target option text. The IDs align, but the messages add no diagnosis."
+        }
+      ],
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    }
+  ]
+}

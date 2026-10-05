@@ -1,0 +1,435 @@
+{
+  "schemaVersion": "bizq01-n09-authoring-notes-v1",
+  "revision": "N09-B03-v2",
+  "proposal": {
+    "path": "proposals/N09-B03-v2.json",
+    "sha256": "cd50cda18d98f92d335366abd6a57170d11863ef3b541f0b3246990668ef9fef"
+  },
+  "baseline": {
+    "path": "patternly-content/content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B03.json",
+    "sha256": "cf1bb509ae2152a1a7f5f57a69198390bbb29ad4a25e73c63030d408bfc82da3"
+  },
+  "decisionBoundary": "All 18 question IDs are retained because each remains a concrete choice about where behavior or a cohesive value boundary belongs under the N09-B03 code-smell/object-ownership objective. This is an identity hypothesis pending independent whole-object review; no identity approval is claimed.",
+  "sourceBoundary": "Microsoft’s DDD guidance and Fowler’s refactoring catalog are conceptual references only. Scenario facts are fictional premises stated in each stem, not universal architectural guarantees.",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n09-b03-i001",
+      "questionId": "ood-n09-b03-i001",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A shipping team’s label service builds a label after an address correction. Shipment owns the approved address and package dimensions; the current printer service reads both fields to decide which label values to include.",
+      "nearestAlternative": "Keep the decision in the printer service and give it more shipment fields, so other callers can share the same implementation.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i002",
+      "questionId": "ood-n09-b03-i002",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A rehearsal scheduler moves an existing booking to a room with a different capacity. A Booking owns the reserved time and attendee count; Room owns capacity. The scheduler currently loads both and duplicates the capacity comparison in two callers.",
+      "nearestAlternative": "Keep copying Room capacity into each scheduler caller and repeat the comparison wherever a booking is moved.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i003",
+      "questionId": "ood-n09-b03-i003",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "An exhibit controller switches an exhibit into maintenance mode. Exhibit stores its current mode and the commands permitted in that mode. The operator component currently reads mode and filters unsafe commands before sending them.",
+      "nearestAlternative": "Expose Exhibit’s mutable mode so callers can set it before issuing commands.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i004",
+      "questionId": "ood-n09-b03-i004",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A learning catalog retires a lesson while existing learners retain progress. Progress rows refer to a stable Lesson ID; the curriculum editor currently rewrites progress references while retiring a lesson.",
+      "nearestAlternative": "Move identity and progress mapping into a global catalog coordinator that all readers must call.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i005",
+      "questionId": "ood-n09-b03-i005",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A whiteboard session closes and exports its history. The session owns the latest edits and its closed state. The export worker currently reads session edits while the host can still append changes.",
+      "nearestAlternative": "Subclass Session for export and replace the existing close behavior for all callers.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i006",
+      "questionId": "ood-n09-b03-i006",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A support desk escalates a conversation to a new team. Conversation stores its owner and response deadline. The escalation handler currently updates these fields in separate steps, and callers can forget the deadline adjustment.",
+      "nearestAlternative": "Keep owner and deadline setters public and require each caller to remember both updates.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i007",
+      "questionId": "ood-n09-b03-i007",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A produce marketplace publishes a listing after its price and stock are checked. Listing owns its price, stock, and visibility. The publish controller currently checks both values and then flips visibility; a second caller skips the stock check.",
+      "nearestAlternative": "Keep the two checks in each controller and rely on every caller to use the same order.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i008",
+      "questionId": "ood-n09-b03-i008",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A repair-parts request is split across vendors after a partial backorder. The original request owns its identity and delivery promise. The fulfillment specialist currently copies those values into child requests by hand.",
+      "nearestAlternative": "Put request splitting in a general vendor coordinator that receives mutable request internals.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i009",
+      "questionId": "ood-n09-b03-i009",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A community garden transfers an approved plot reservation to another steward. PlotReservation owns the plot boundary and approval history. The transfer screen currently checks both and then rewrites the steward field.",
+      "nearestAlternative": "Move all reservation rules to a general garden coordinator that reads copied plot data.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i010",
+      "questionId": "ood-n09-b03-i010",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A subscription catalog adds a regional bundle whose price is derived from several components. No component owns the regional pricing rule; it combines every component’s price with one independent regional policy and changes when that policy changes.",
+      "nearestAlternative": "Put the full regional formula on the first component, which does not own the other component prices.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i011",
+      "questionId": "ood-n09-b03-i011",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A charging station reserves a connector for a vehicle. ChargerReservation stores connector capacity and expiry. The station operator currently checks both before writing a reservation, but a maintenance job uses a second entry path.",
+      "nearestAlternative": "Keep the check in the station operator and duplicate it in the maintenance job.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i012",
+      "questionId": "ood-n09-b03-i012",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "An archive merges duplicate descriptive metadata for one asset. Asset identity is stable while descriptive values may change. The curator tool currently compares identity and merges fields in the screen controller.",
+      "nearestAlternative": "Replace the asset ID whenever the metadata set changes and repair every reference afterward.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i013",
+      "questionId": "ood-n09-b03-i013",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A rights clearance is granted for one territory until a stated expiry. Every approval call separately passes a territory code and expiry, and two call sites have accidentally swapped their argument order. The pair is validated together.",
+      "nearestAlternative": "Accept an untyped map of clearance values and cast its contents at each approval call.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i014",
+      "questionId": "ood-n09-b03-i014",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A drone fleet assigns a replacement battery to an aircraft. Battery stores its current aircraft assignment; the fleet coordinator currently reads that field and then writes a new one. Two assignment paths can run.",
+      "nearestAlternative": "Move battery assignment into a general fleet service that reads and writes private battery state.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i015",
+      "questionId": "ood-n09-b03-i015",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A care navigator routes a referral to a specialist. The referral record carries consent status and allowed disclosures. The navigator currently reads those fields and decides whether to send.",
+      "nearestAlternative": "Move the entire referral lifecycle into a consent-policy class, including transport and delivery.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i016",
+      "questionId": "ood-n09-b03-i016",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A learner completes a timed exercise after the scoring policy has changed. ExerciseAttempt records the exercise version and scoring-policy ID at completion. The report service currently reads the latest policy when it renders a historical result.",
+      "nearestAlternative": "Re-score every historical attempt with whichever policy is current when a report is opened.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i017",
+      "questionId": "ood-n09-b03-i017",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "A procurement queue approves a bounded exception. ApprovalRecord holds the approver, allowed amount, and required control evidence. The purchasing screen currently checks the amount but another import path can create records without evidence.",
+      "nearestAlternative": "Keep the checks in the purchasing screen and duplicate them in the import path.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    },
+    {
+      "beforeQuestionId": "ood-n09-b03-i018",
+      "questionId": "ood-n09-b03-i018",
+      "mentalUnitId": "OOD-N09-B03",
+      "learningObjective": "Identify misplaced behavior, feature envy, data clumps, and code smells from the concrete information and invariant an operation uses.",
+      "decisiveFact": "An editor replaces a podcast recording while preserving annotations. Annotation references a stable segment ID; the current editor remaps by file offset and owns no decoder data. A replacement can shift offsets.",
+      "nearestAlternative": "Let the editor rewrite annotation offsets directly using fields copied from the decoder.",
+      "changedCondition": "If the owner of the governing facts, the operation scope, or the stated invariant changed, the appropriate placement or value boundary could change with it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The primary decision and keyed answer remain unchanged. This additive correction repairs the explanations or, for B04 i008, makes the eligibility fact used by the existing selection decision visible.",
+      "sourceRefs": [
+        "https://martinfowler.com/refactoring/catalog/",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice",
+        "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-model-layer-validations"
+      ],
+      "changedFields": [
+        "feedback.messages[0].text",
+        "feedback.messages[1].text",
+        "feedback.messages[2].text",
+        "feedback.messages[3].text"
+      ],
+      "correction": "Replaced the repeated option text with a causal explanation of how this alternative fails the case-specific boundary."
+    }
+  ],
+  "supersedes": {
+    "path": "proposals/N09-B03.json",
+    "sha256": "184713fc55a2484453eec47e84f513b0f3cf0e88d0a96656d82e17e14764f8c8"
+  },
+  "correctionScope": "Additive author correction only; all v1 proposal and report files are preserved. Mechanical checks do not constitute semantic acceptance or source activation."
+}

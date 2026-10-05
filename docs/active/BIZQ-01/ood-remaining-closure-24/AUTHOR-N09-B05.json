@@ -1,0 +1,286 @@
+{
+  "schemaVersion": "bizq01-n09-authoring-notes-v1",
+  "revision": "N09-B05-v1",
+  "proposal": {
+    "path": "proposals/N09-B05.json",
+    "sha256": "f88d5aef9359dd0a69511a6caedba9851168367bcb7bb1bd93d3466cd58b4d4d"
+  },
+  "baseline": {
+    "path": "patternly-content/content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B05.json",
+    "sha256": "57688e786e10393b743e1399aece4b41020005c0bd9c16bd9ab91d2c9bf8f294"
+  },
+  "identityBoundary": "The 18 question IDs remain because each still tests compatible evolution of an existing public contract for a specific consumer. New answer option IDs distinguish the case-specific migration choices. This is provisional pending independent item and cross-unit review.",
+  "sourceBoundary": "Consumer behavior is explicitly stipulated in each fictional scenario. Microsoft compatibility documentation supports the API-evolution concept but is .NET-specific and is not stated as a universal policy.",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n09-b05-i001",
+      "questionId": "ood-n09-b05-i001",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A campaign service exposes a reward operation to two groups of clients. Existing clients call ApplyReward and depend on its current immediate effect. A new client needs to preview a reward without applying it. Which API evolution keeps those contracts distinct?",
+      "nearestAlternative": "Change ApplyReward so it previews for new clients and applies only when a new flag is supplied.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i002",
+      "questionId": "ood-n09-b05-i002",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A cold-chain dispatch API reassigns shipments to carriers. The old request omits custody owner because the service applies a documented standard handoff. New clients need to name a receiving custodian; old requests must keep the standard handoff. What change preserves both client groups?",
+      "nearestAlternative": "Have each caller edit shipment custody fields directly before reassignment.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i003",
+      "questionId": "ood-n09-b05-i003",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A lending ledger allocates repayment amounts to account balances. The existing API accepts one amount and applies it to one named balance. New clients need to allocate one repayment across several named buckets; old callers depend on the single-balance behavior. Which evolution avoids reinterpreting the old amount parameter?",
+      "nearestAlternative": "Change the old amount to mean a list of bucket allocations and update only the server.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i004",
+      "questionId": "ood-n09-b05-i004",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A tournament API reports match outcomes to older clients. Those clients accept only win, loss, or draw and reject unknown outcome values. The service must add a forfeit result for new clients. How should the new outcome be exposed?",
+      "nearestAlternative": "Replace the old response immediately and require all consumers to deploy together.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i005",
+      "questionId": "ood-n09-b05-i005",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A returns service classifies items and determines whether they qualify for a refund. Classification and refund eligibility are independent decisions. Existing clients read only the classification; a new consumer needs the refund decision too. What API change keeps classification meaning stable?",
+      "nearestAlternative": "Make old clients infer refund eligibility from the classification label.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i006",
+      "questionId": "ood-n09-b05-i006",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A research API returns published result snapshots. Existing clients read the result value and ignore unknown response fields. New clients need the input-data ID and code revision used for each result. Which response change preserves existing consumers?",
+      "nearestAlternative": "Replace the result value with a provenance object and make old clients parse it.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i007",
+      "questionId": "ood-n09-b05-i007",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A review API stores comments and notifies assigned authors. AcceptComment returns a saved comment immediately. New consumers want a notification event; existing clients rely on the current saved-comment response. How should notification be added?",
+      "nearestAlternative": "Make clients infer notifications from later reads of the comment store.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i008",
+      "questionId": "ood-n09-b05-i008",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "An inspection API reports the result of an offline submission. Version 1 responses contain complete or failed, and older clients treat any other value as a terminal error. New clients need to distinguish work that can be retried. What is the compatible way to add retryable status?",
+      "nearestAlternative": "Add retryable to the old response and assume older clients will treat it as nonterminal.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i009",
+      "questionId": "ood-n09-b05-i009",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "An invoice API reissues rejected invoices. InvoiceId identifies the customer obligation and remains stable across reissues. New clients need to inspect each issue attempt separately; older clients use InvoiceId as before. How should issue history be added?",
+      "nearestAlternative": "Replace the invoice contract with an issue-history-only response.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i010",
+      "questionId": "ood-n09-b05-i010",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A building-access API exposes badge states to older door clients. Older clients interpret active and revoked; they reject any other state. A new workflow needs to expose revocation-pending separately from final revocation. Which contract evolution avoids an unsafe old-client interpretation?",
+      "nearestAlternative": "Map pending to active for all new clients so the old shape stays unchanged.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i011",
+      "questionId": "ood-n09-b05-i011",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A label API returns printable text for shipping clients. Older clients parse the current text exactly. New clients need structured approved-address and package fields; both must represent the same approved shipment. What addition serves new clients without breaking old parsing?",
+      "nearestAlternative": "Replace the text with a JSON object at the existing route and expect old parsers to adapt.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i012",
+      "questionId": "ood-n09-b05-i012",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A rehearsal API moves bookings between rooms. The existing MoveBooking call uses the documented default cancellation policy. New callers need to select a policy explicitly; old callers must keep the existing default. How should the added policy input be introduced?",
+      "nearestAlternative": "Let every client update cancellation fields directly after moving the booking.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i013",
+      "questionId": "ood-n09-b05-i013",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "An exhibit-control API accepts commands during maintenance windows. Old clients send a command string and receive accepted or rejected. New clients need a structured reason explaining why a command was rejected; old clients only depend on the status. What is the least disruptive response evolution?",
+      "nearestAlternative": "Replace accepted/rejected with the reason text and require old clients to parse it.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i014",
+      "questionId": "ood-n09-b05-i014",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A learning-catalog API hides retired lessons from the default list. Older clients expect the default list to contain active lessons only. New clients need an explicit way to include retired lessons while keeping stable lesson IDs. Which query evolution preserves the default behavior?",
+      "nearestAlternative": "Create a separate catalog for retired lessons and remove their stable IDs from the current one.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i015",
+      "questionId": "ood-n09-b05-i015",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A whiteboard API returns closed-session snapshots. Existing clients read edit history and ignore additional response fields. New clients need a snapshot revision to compare exports; the edit history remains unchanged. What response change is compatible with both?",
+      "nearestAlternative": "Use the revision token as the session ID, changing its existing meaning.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i016",
+      "questionId": "ood-n09-b05-i016",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A support API escalates conversations to a response team. The existing call applies a documented default response deadline. New clients need to choose a deadline; old clients continue to use the default. How should deadline selection be added?",
+      "nearestAlternative": "Make deadline mandatory on the current call and reject older callers.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i017",
+      "questionId": "ood-n09-b05-i017",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A marketplace API publishes seasonal inventory changes. The existing response is a boolean indicating publication. New clients need structured validation messages; old clients only read the boolean and ignore extra response fields. What response evolution retains the established signal?",
+      "nearestAlternative": "Make clients query listing internals to reconstruct validation outcomes.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i018",
+      "questionId": "ood-n09-b05-i018",
+      "mentalUnitId": "OOD-N09-B05",
+      "learningObjective": "Evolve public APIs while preserving the contracts and consumer expectations already in use.",
+      "decisiveFact": "A parts API splits a backordered request across vendors. The old response identifies the original request and preserves its delivery promise. New clients need a separate ID for each vendor portion; old clients continue using the original request ID. How should the new identifiers be represented?",
+      "nearestAlternative": "Replace the source request ID with each portion ID so old clients can address the latest split.",
+      "changedCondition": "If all consumers had a coordinated migration window or different unknown-field/value handling, a version replacement could be valid; each item states the actual current consumer behavior.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The question remains about compatible public-contract evolution under an explicit consumer constraint. The revised case supplies a distinct API change while keeping the existing N09-B05 decision objective.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/compatibility/",
+        "https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/breaking-changes"
+      ]
+    }
+  ]
+}

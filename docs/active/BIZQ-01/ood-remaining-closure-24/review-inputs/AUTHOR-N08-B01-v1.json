@@ -1,0 +1,747 @@
+{
+  "schemaVersion": "bizq01-ood-n08-author-notes-v1",
+  "sourceFile": "patternly-content/content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B01.json",
+  "proposalFile": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/proposals/N08-B01.json",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n08-b01-i001",
+      "questionId": "ood-n08-b01-i001",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A local-first map editor, The route has an accepted revision and a separate offline proposal. Two devices can submit edits before either sees the other's save. A conflicting geometry must be surfaced; neither device may silently replace the accepted route.",
+      "nearestAlternative": "Let each device replace the route it last downloaded; a later upload wins and the user can compare versions afterward.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “conflicts are explicit and never silently overwrite accepted geometry” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_copy_001",
+          "currentText": "Let each device replace the route it last downloaded; a later upload wins and the user can compare versions afterward."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_registry_001",
+          "currentText": "Move route fields into a global edit coordinator that every screen can modify directly."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "subtype_split_001",
+          "currentText": "Give each workflow a route subclass with its own geometry and merge rule."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i002",
+      "questionId": "ood-n08-b01-i002",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A board-game campaign manager, A reward changes both a character's available points and the campaign's legal phase. A host and a moderator may apply actions at the same time, while campaigns remain independent.",
+      "nearestAlternative": "Have the host read points and phase, calculate a new pair, then send both values for replacement.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_copy_002",
+          "currentText": "Have the host read points and phase, calculate a new pair, then send both values for replacement."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_registry_002",
+          "currentText": "Put every campaign behind one process-wide mutable game state so no two campaigns advance together."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "subtype_split_002",
+          "currentText": "Store reward state in a campaign subtype and let each screen define which phases allow it."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i003",
+      "questionId": "ood-n08-b01-i003",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A cold-chain logistics console, A shipment's carrier, temperature limits, and hand-off status change as one dispatch decision. Dispatchers and the carrier portal can overlap; a hand-off to a new carrier must retain the shipment's existing limits.",
+      "nearestAlternative": "Let each client update carrier and hand-off fields separately, then repair missing temperature data during reconciliation.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "caller_copy_003",
+          "currentText": "Let each client update carrier and hand-off fields separately, then repair missing temperature data during reconciliation."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "shared_registry_003",
+          "currentText": "Maintain one mutable dispatch table shared by all shipment screens, with each screen applying its own field updates."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "subtype_split_003",
+          "currentText": "Create a carrier-specific shipment subtype and copy limits into it at hand-off."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i004",
+      "questionId": "ood-n08-b01-i004",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A cooperative lending ledger, A repayment allocation changes the member's outstanding amount and the ledger entry that explains it. Two stewards can allocate repayments for the same account; separate accounts must continue independently.",
+      "nearestAlternative": "Read the outstanding amount in each steward screen and submit a replacement balance plus a separate ledger entry.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “a repayment cannot reduce the outstanding balance below zero” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "caller_copy_004",
+          "currentText": "Read the outstanding amount in each steward screen and submit a replacement balance plus a separate ledger entry."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "shared_registry_004",
+          "currentText": "Lock the entire cooperative ledger during every repayment, including allocations to unrelated accounts."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "subtype_split_004",
+          "currentText": "Give each repayment method its own account subtype so it can apply a preferred allocation rule."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i005",
+      "questionId": "ood-n08-b01-i005",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A tournament bracket service, A match can receive a timeout and an official's result close together. The bracket may advance only once from the match's current legal state, and other matches must proceed independently.",
+      "nearestAlternative": "Have timer and official handlers each write the next bracket slot, then reconcile if both advanced it.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “the bracket advances only from a legal match state” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "caller_copy_005",
+          "currentText": "Have timer and official handlers each write the next bracket slot, then reconcile if both advanced it."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "shared_registry_005",
+          "currentText": "Put all tournament matches behind one mutable bracket object that each handler can edit directly."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "subtype_split_005",
+          "currentText": "Make a different match subtype for timeout closure and official-result closure."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i006",
+      "questionId": "ood-n08-b01-i006",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A returns inspection workflow, An inspection records item condition and evidence; a separate refund review uses that record. Inspectors and reviewers may update their own work at the same time, but a refund decision must not rewrite the inspection.",
+      "nearestAlternative": "Let the refund reviewer edit condition fields on the same inspection object while deciding eligibility.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_copy_006",
+          "currentText": "Let the refund reviewer edit condition fields on the same inspection object while deciding eligibility."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_registry_006",
+          "currentText": "Use one global mutable return record for every item and let inspectors update whichever fields they need."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "subtype_split_006",
+          "currentText": "Clone the inspection into a new subtype whenever a refund is requested."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i007",
+      "questionId": "ood-n08-b01-i007",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A research-notebook platform, An experiment owner can edit a notebook while a publication job runs. A published result must identify the exact input dataset and code revision used, even if the notebook changes later.",
+      "nearestAlternative": "Let the job retain a live reference to the notebook and read its current inputs when each stage runs.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_copy_007",
+          "currentText": "Let the job retain a live reference to the notebook and read its current inputs when each stage runs."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_registry_007",
+          "currentText": "Copy all notebook fields into a shared mutable publication registry that both editor and job can update."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "subtype_split_007",
+          "currentText": "Create a publication-specific notebook subtype that inherits the editor's mutable fields."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i008",
+      "questionId": "ood-n08-b01-i008",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A collaborative annotation workspace, A document has an accepted revision. Reviewers can submit comments concurrently; each accepted comment must retain its author and the document revision it addressed. Notification delivery may be retried separately.",
+      "nearestAlternative": "Let each reviewer append directly to a shared comment array and let notification handlers fill in missing author or revision fields later.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "caller_copy_008",
+          "currentText": "Let each reviewer append directly to a shared comment array and let notification handlers fill in missing author or revision fields later."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "shared_registry_008",
+          "currentText": "Keep one mutable comment object per document and replace its author/revision with the most recent submitter's values."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "subtype_split_008",
+          "currentText": "Create one comment subclass per notification channel and store the same comment content in each."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i009",
+      "questionId": "ood-n08-b01-i009",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A mobile field-inspection app, The inspector may edit a draft offline while a submission is in flight. The server reports either a complete accepted submission or a retryable result; it must not mix fields from two draft revisions.",
+      "nearestAlternative": "Let the submission read the live draft field by field, then mark whichever draft is current as complete.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “a submission is either complete or explicitly retryable” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "caller_copy_009",
+          "currentText": "Let the submission read the live draft field by field, then mark whichever draft is current as complete."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "shared_registry_009",
+          "currentText": "Have every device update one shared draft object and resolve conflicting fields by last save time."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "subtype_split_009",
+          "currentText": "Give offline and online submissions separate inspection subclasses with different completion flags."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i010",
+      "questionId": "ood-n08-b01-i010",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A digital invoice exchange, The operator can correct invoice details while a rejected issue is being prepared again. The customer must be charged only for an accepted issue, and each issued revision must remain traceable.",
+      "nearestAlternative": "Let the operator mutate the invoice in place after sending it, then treat the latest invoice fields as the issued copy.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “the new issue is traceable and does not double-charge the customer” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "caller_copy_010",
+          "currentText": "Let the operator mutate the invoice in place after sending it, then treat the latest invoice fields as the issued copy."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "shared_registry_010",
+          "currentText": "Use a shared global invoice object that every exchange handler updates as responses arrive."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "subtype_split_010",
+          "currentText": "Create a new invoice subtype for every exchange attempt and copy fields between attempts."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i011",
+      "questionId": "ood-n08-b01-i011",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A smart-building access controller, A badge can be revoked while a door request is being evaluated. The decision must use the current badge status at the access authority; a door may cache a read view but cannot approve a revoked badge from an old copy.",
+      "nearestAlternative": "Let the door change its local badge copy and report revocation to the authority later.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “revocation is visible to the door policy before access is granted” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_copy_011",
+          "currentText": "Let the door change its local badge copy and report revocation to the authority later."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_registry_011",
+          "currentText": "Expose the authority's mutable badge map to all door handlers so each one can update it directly."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "subtype_split_011",
+          "currentText": "Represent revoked badges as a separate subtype and let each door decide whether that subtype is valid."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i012",
+      "questionId": "ood-n08-b01-i012",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A package-label generation service, Address corrections and label generation can overlap. A printed label must correspond to one approved shipment revision; label generation must not change the approved address.",
+      "nearestAlternative": "Let the label generator edit the shipment's address after checking it, then print whichever value is present at the end.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “the printed label represents the current approved shipment data” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_copy_012",
+          "currentText": "Let the label generator edit the shipment's address after checking it, then print whichever value is present at the end."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_registry_012",
+          "currentText": "Share one mutable address object between correction screens and print jobs, with both allowed to normalize it."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "subtype_split_012",
+          "currentText": "Create an address subtype for each carrier and copy the shipment address into whichever one prints."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i013",
+      "questionId": "ood-n08-b01-i013",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A multi-tenant rehearsal scheduler, Bookings for one room must respect capacity and cancellation rules. Coordinators may edit bookings concurrently; separate rooms should not block each other, and search results are only a view.",
+      "nearestAlternative": "Let each coordinator reserve from a search result and replace the full result list after the change.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “the room capacity and cancellation policy must remain consistent” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "caller_copy_013",
+          "currentText": "Let each coordinator reserve from a search result and replace the full result list after the change."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "shared_registry_013",
+          "currentText": "Use one mutable schedule for every tenant and let room screens filter it before writing."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "subtype_split_013",
+          "currentText": "Create a separate booking subtype for each coordinator so each can interpret cancellations."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i014",
+      "questionId": "ood-n08-b01-i014",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A museum exhibit controller, When maintenance mode is active, unsafe exhibit commands are rejected. The operator can change the mode while command requests are arriving; the sensor adapter reports readings but must not change mode itself.",
+      "nearestAlternative": "Let each command handler cache mode, accept unsafe commands if its copy says running, and reconcile later.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “unsafe commands are rejected while maintenance is active” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "caller_copy_014",
+          "currentText": "Let each command handler cache mode, accept unsafe commands if its copy says running, and reconcile later."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "shared_registry_014",
+          "currentText": "Allow sensor adapters to write directly to the exhibit's mode field when readings indicate a fault."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "subtype_split_014",
+          "currentText": "Create separate running and maintenance exhibit subclasses and move the same exhibit between them for each mode change."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i015",
+      "questionId": "ood-n08-b01-i015",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A video-learning library, A lesson can be retired while learners are using it. Existing progress must remain attached to the stable lesson identity; new catalog views should stop offering retired lessons.",
+      "nearestAlternative": "Delete the lesson row and let each learner client reconstruct progress from the title and current catalog position.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “progress refers to a stable lesson identity” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "caller_copy_015",
+          "currentText": "Delete the lesson row and let each learner client reconstruct progress from the title and current catalog position."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "shared_registry_015",
+          "currentText": "Let each catalog screen hold a mutable copy of lesson availability and reconcile its copy when opened."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "subtype_split_015",
+          "currentText": "Create a retired-lesson subtype and move learner progress into a separate progress object during retirement."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i016",
+      "questionId": "ood-n08-b01-i016",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A shared whiteboard application, Participants can add strokes while an export is running. The exported history must represent one stable board revision; a failed export can be retried without changing board contents.",
+      "nearestAlternative": "Let the export worker read the live stroke list as it writes the file and mark the board closed when finished.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “export observes a stable session state” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_copy_016",
+          "currentText": "Let the export worker read the live stroke list as it writes the file and mark the board closed when finished."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_registry_016",
+          "currentText": "Copy strokes into a mutable shared export buffer that participants and exporter both update."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "subtype_split_016",
+          "currentText": "Create a closed-board subtype at export start and redirect participants to it afterward."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i017",
+      "questionId": "ood-n08-b01-i017",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A customer-support escalation desk, An escalation changes assignee and response deadline together. Two agents can act on a conversation at nearly the same time, and the customer-visible record must not pair one agent's assignment with another action's deadline.",
+      "nearestAlternative": "Let each agent update assignee and deadline through separate editable fields and repair mismatches in a later report.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “the escalation keeps ownership and response deadlines” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "caller_copy_017",
+          "currentText": "Let each agent update assignee and deadline through separate editable fields and repair mismatches in a later report."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "shared_registry_017",
+          "currentText": "Keep all conversations in one mutable escalation table that any agent can update directly."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "subtype_split_017",
+          "currentText": "Make a new conversation subtype for each escalation level and copy the prior assignment into it."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b01-i018",
+      "questionId": "ood-n08-b01-i018",
+      "mentalUnitId": "OOD-N08-B01",
+      "learningObjective": "Choose a single ownership boundary for shared mutable state so concurrent callers cannot bypass the case invariant; distinguish object-local ownership from caller copies, shared registries, and case subtypes.",
+      "decisiveFact": "In A regional produce marketplace, A seller may edit price and stock while a publication request is being reviewed. A listing becomes visible only when both values satisfy the current listing rule; unrelated sellers should publish independently.",
+      "nearestAlternative": "Let the marketplace update price and stock as separate public fields and hide mismatches with a later cleanup job.",
+      "changedCondition": "The original case outcome is retained and made operational: the revised stem identifies overlapping writers or a mutable read path and states the record boundary that must remain coherent.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Confine or replace shared mutable state before adding synchronization to every caller. In this case, that keeps the rule “a listing cannot become visible before its price and stock rule are valid” inside the owner that can observe and enforce it. The revised key still chooses confinement of the same mutable domain state before callers coordinate; the added facts make the same decision testable in this case rather than changing its primary meaning.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "optionIdentity": "The accepted option ID owner_preserves_contract retains its broad confinement meaning. The three replacement distractors have fresh per-item IDs because their case-specific meanings replace the previous generic coordinator/subtype/representation/indirection alternatives.",
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "caller_copy_018",
+          "currentText": "Let the marketplace update price and stock as separate public fields and hide mismatches with a later cleanup job."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "shared_registry_018",
+          "currentText": "Let sellers edit a shared mutable catalog table directly and ask buyers to ignore invalid intermediate rows."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "subtype_split_018",
+          "currentText": "Create one listing subtype per publication attempt and copy seller state into it."
+        }
+      ],
+      "questionObjectIdentity": "Same old/current question ID; difficulty and unit are inherited by source position."
+    }
+  ],
+  "sourceSha256": "54965b9ec48485096bf94f11ede2c0a7e9c53a16bccf1a7bd22cd23d46f631f3",
+  "proposalSha256": "1383b96bb94e9a23adef6c4a3f88d796d8e8a99c838b8e3f2823cebeff169118"
+}

@@ -1,0 +1,333 @@
+{
+  "schemaVersion": "bizq01-n08-b07-author-v2",
+  "previousProposal": "review-inputs/N08-B07-v1.json",
+  "proposalFile": "proposals/N08-B07-v2.json",
+  "proposalSha256": "d656e287a7063d06aebf2dc42fc5f18ba4fba40d2cad08f96da06f75afab3318",
+  "scope": "Kept the resource-lifetime decisions and correct option IDs. Replaced the three short/extreme distractors with more concrete competing lifetime policies, rebound their diagnostic messages, and shortened the accepted policies without changing their boundaries. Option arrays retain their source order; root owns the runtime presentation-order correction.",
+  "items": [
+    {
+      "questionId": "ood-n08-b07-i001",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A research-notebook platform, A publication job opens a dataset handle and a temporary output file. The job owns both until it publishes the result; any failed or canceled run must close the handle and remove the temporary file. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Let the editor retain the dataset handle after the job exits.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i002",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A collaborative annotation workspace, An editor subscribes to document-revision notifications while its review panel is open. Closing the panel ends that subscription, but accepted comments and their attribution remain stored. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the subscription app-wide so reopening the panel is faster.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i003",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A mobile field-inspection app, Each upload attempt opens a file stream for one frozen inspection revision. The stream belongs to that attempt and must close on success, cancellation, or retryable failure; the inspection draft itself remains available. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Reuse the failed attempt’s open stream for the next upload.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i004",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A digital invoice exchange, The exchange client returns a response body stream. The invoice operation reads it to determine acceptance and owns it until parsing finishes; the response must close whether parsing succeeds or throws. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the response body open until the invoice is paid.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i005",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A smart-building access controller, Each door subscribes to badge-revocation updates while its controller is active. Shutting down that door ends its subscription; the authority's badge record remains valid for other doors. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep a shutdown door subscribed for future revocations.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i006",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A package-label generation service, A print attempt writes to a temporary file. The printer opens only the completed file; after print handoff, the print attempt must close its file handle, and failed attempts must remove incomplete files. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Let the printer read the final path while the attempt is still writing it.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i007",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A multi-tenant rehearsal scheduler, A room move acquires a temporary destination hold while awaiting coordinator approval. The move operation owns that hold; denial or cancellation releases it, while a committed move consumes it as the booking. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the hold after denial so the coordinator can reconsider without reacquiring.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i008",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A museum exhibit controller, A maintenance command acquires a hardware session. The session belongs to that command and must close when the command completes or fails; the exhibit's mode remains owned by the controller. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Leave the session open after failure for another command to inherit without checking.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i009",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A video-learning library, Retirement scans a learner-progress cursor. The scan owns the cursor only while reading; closing it must not delete or re-key the stable progress records. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep a live cursor open for future retirements.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i010",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A shared whiteboard application, Export owns a snapshot cursor and an output file while producing history. Canceling export must close both, but the live board continues accepting strokes. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Close the live board session whenever an export is canceled.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i011",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A customer-support escalation desk, An escalation starts a deadline timer for a conversation. The escalation operation owns the timer until it completes; a successful escalation cancels the timer, while a failed attempt returns a retryable state and leaves no timer running. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the timer after success so it can notify the next agent.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i012",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A regional produce marketplace, Validation opens a short database transaction for one listing revision. If price/stock checks fail, the transaction must roll back and close; a successful revision is committed before publication. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the transaction open while buyers read the listing.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i013",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A repair-parts marketplace, A split operation launches two vendor checks. Each check owns its response stream; if one fails, the operation cancels the other check and closes any stream it already opened before leaving the parent request unchanged. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the successful stream open while retrying the failed vendor check.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i014",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A community garden allocation tool, A plot transfer holds a temporary approval token. The transfer operation owns that token until commit or denial; the existing reservation remains with its current member until commit. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the token after the operation ends to block future requests.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i015",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A subscription packaging service, A bundle build opens component streams and a temporary package file. The build operation owns them until validation completes; after success it publishes a new package, and on failure it must close streams and discard the temporary file. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep component streams open after success for checkout to reread.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i016",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A fleet charging coordinator, A reservation acquires a temporary charger lease with an expiry. The reservation operation owns the lease until confirmation; cancellation before confirmation releases it, while confirmation transfers it to the booking. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the lease after cancellation to avoid checking capacity again.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i017",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A photo-archive curation tool, A metadata merge opens two asset locks and a temporary merge record. The merge operation owns all three; a conflict or cancellation releases both locks and discards the temporary record without changing the accepted asset. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Hold the first lock while a curator resolves a conflict.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i018",
+      "learningObjective": "Assign cleanup and ownership transfer to the shortest operation whose explicit lifetime covers the resource.",
+      "decisiveFact": "In A digital rights clearance tool, A license check opens an external response stream. The clearance operation owns it until the result is read; denial, error, or cancellation must close it and leave the territory unapproved. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep a denied territory’s stream open for another territory to inspect.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The accepted operation-scope cleanup decision remains supported by the prompt. Competing resource-lifetime meanings changed, so each rewritten distractor has a new stable option ID.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional ownership and terminal conditions are explicit in the prompt."
+      ]
+    }
+  ]
+}

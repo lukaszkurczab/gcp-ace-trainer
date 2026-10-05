@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "bizq01-n09-bounded-author-correction-check-v1",
+  "unit": "B04",
+  "base": {
+    "path": "review-inputs/N09-B04-v2.json",
+    "sha256": "4d5a76202d6cd470c2de5516b03fa35c3c4ee6aaed3fb2ae52770afa12cfbf8c"
+  },
+  "proposal": {
+    "path": "proposals/N09-B04-v3.json",
+    "sha256": "0e20cea69df7dc17306c7180c5a064f2c170fab66a2901a49eaa34f3551e7d8c"
+  },
+  "notes": {
+    "path": "AUTHOR-N09-B04-v3.json",
+    "sha256": "7465683527ca40748d3fa4f4d39351cef4cbc255aeb18463ec8f534d7a32ece2"
+  },
+  "notesMarkdown": {
+    "path": "AUTHOR-N09-B04-v3.md",
+    "sha256": "764bae0676a8b168b4d69d6ce7f2bad9ea864ef9fc1657dbf74b54664f613861"
+  },
+  "validator": "patternly-content/scripts/content/question-contract.mjs validateQuestion",
+  "scorer": "patternly-content/scripts/content/question-contract.mjs scoreQuestion",
+  "totalQuestions": 18,
+  "validQuestions": 18,
+  "correctKeys": 18,
+  "wrongOptionsIncorrect": 72,
+  "reversedOrderKeysCorrect": 18,
+  "feedbackTargetSetsMatch": 18,
+  "questionIdsSame": 18,
+  "acceptedOptionIdsSame": 18,
+  "actualChangedLeafPaths": [
+    "[7].feedback.messages[1].text",
+    "[8].feedback.messages[1].text",
+    "[11].feedback.messages[1].text",
+    "[13].feedback.messages[1].text",
+    "[17].feedback.messages[1].text"
+  ],
+  "scope": "Mechanics and exact-delta verification only; not semantic acceptance."
+}

@@ -1,0 +1,275 @@
+{
+  "schemaVersion": "bizq01-n08-b07-author-v3",
+  "previousProposal": "proposals/N08-B07-v2.json",
+  "previousSha256": "d656e287a7063d06aebf2dc42fc5f18ba4fba40d2cad08f96da06f75afab3318",
+  "proposalFile": "proposals/N08-B07-v3.json",
+  "proposalSha256": "0b1a94aa9b8f8eb81d1c270ff8a63dd585a6c85700f5c968a2509ae2920610a6",
+  "sourceBinding": "../patternly-content/content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B07.json",
+  "sourceSha256": "b535b0f1672a873e59c5f61c53fd9164f5bab43499801804990ff4134fdddf20",
+  "items": [
+    {
+      "questionId": "ood-n08-b07-i001",
+      "beforeQuestionId": "ood-n08-b07-i001",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Close both job-owned resources and publish only the completed render.",
+      "decisiveFact": "The failed run must close its dataset handle and remove its temporary file.",
+      "nearestAlternative": "Keeping resources in a registry delegates cleanup to a later job after this owner has failed.",
+      "changedCondition": "The revised competing policy preserves the surrounding lifecycle steps but fails the specific owner/close/commit boundary stated in the prompt.",
+      "identityAction": "preserve_question_id_and_accepted_option_id; assign_new_id_to_rewritten_distractor",
+      "identityReason": "The accepted lifetime decision remains unchanged; the rewritten wrong alternative now has a distinct, case-specific lifecycle-policy meaning and a fresh option ID.",
+      "changedFields": [
+        "feedback.messages[2].targetId",
+        "feedback.messages[2].text",
+        "interaction.options[3].optionId",
+        "interaction.options[3].text"
+      ],
+      "beforeWholeSha256": "dac1ff05258bc620292499ca2ea2c4b056abf41e61a1876d68b40bb7c232ad31",
+      "currentWholeSha256": "12c3eb98b5e7732179921d68ffecec32930baa33f3e750a96ab44d0e44ec7140",
+      "sourceRefs": [
+        "Fictional resource-lifetime contract stated in prompt; no external guarantee."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i003",
+      "beforeQuestionId": "ood-n08-b07-i003",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Close each upload attempt’s stream before retry while retaining the inspection draft.",
+      "decisiveFact": "A retryable failure ends that upload attempt, but the inspection draft remains available.",
+      "nearestAlternative": "Reusing the open stream crosses the stated per-attempt lifetime.",
+      "changedCondition": "The revised competing policy preserves the surrounding lifecycle steps but fails the specific owner/close/commit boundary stated in the prompt.",
+      "identityAction": "preserve_question_id_and_accepted_option_id; assign_new_id_to_rewritten_distractor",
+      "identityReason": "The accepted lifetime decision remains unchanged; the rewritten wrong alternative now has a distinct, case-specific lifecycle-policy meaning and a fresh option ID.",
+      "changedFields": [
+        "feedback.messages[0].targetId",
+        "feedback.messages[0].text",
+        "interaction.options[1].optionId",
+        "interaction.options[1].text"
+      ],
+      "beforeWholeSha256": "2e770dd1e05a966b2bd4b0914684eec8b54fda48c1ad9c0da12762b51942909b",
+      "currentWholeSha256": "2dea0f0b44e593ce6a86975d110a3ca643db1c2db426f4590163552cd0b4bd33",
+      "sourceRefs": [
+        "Fictional resource-lifetime contract stated in prompt; no external guarantee."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i007",
+      "beforeQuestionId": "ood-n08-b07-i007",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Release a temporary room hold on denial or cancellation; transfer it to the booking only on commit.",
+      "decisiveFact": "Denial ends the move operation and releases its hold.",
+      "nearestAlternative": "Caching a denied hold for another request keeps a resource past its operation’s end.",
+      "changedCondition": "The revised competing policy preserves the surrounding lifecycle steps but fails the specific owner/close/commit boundary stated in the prompt.",
+      "identityAction": "preserve_question_id_and_accepted_option_id; assign_new_id_to_rewritten_distractor",
+      "identityReason": "The accepted lifetime decision remains unchanged; the rewritten wrong alternative now has a distinct, case-specific lifecycle-policy meaning and a fresh option ID.",
+      "changedFields": [
+        "feedback.messages[0].targetId",
+        "feedback.messages[0].text",
+        "interaction.options[1].optionId",
+        "interaction.options[1].text"
+      ],
+      "beforeWholeSha256": "21a012dc7e99a53f8297d860d591d73cb688bc37474bb06d19307dab4897da8c",
+      "currentWholeSha256": "ea4e71cc2ebeffe872190a4e5ba37f8ce0c92c161066ca778f63f7180caced0b",
+      "sourceRefs": [
+        "Fictional resource-lifetime contract stated in prompt; no external guarantee."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i008",
+      "beforeQuestionId": "ood-n08-b07-i008",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Close each command’s hardware session on completion or failure; keep exhibit mode with the controller.",
+      "decisiveFact": "The command owns the session; the controller owns mode state.",
+      "nearestAlternative": "Passing the failed command’s open session to another command crosses that ownership boundary.",
+      "changedCondition": "The revised competing policy preserves the surrounding lifecycle steps but fails the specific owner/close/commit boundary stated in the prompt.",
+      "identityAction": "preserve_question_id_and_accepted_option_id; assign_new_id_to_rewritten_distractor",
+      "identityReason": "The accepted lifetime decision remains unchanged; the rewritten wrong alternative now has a distinct, case-specific lifecycle-policy meaning and a fresh option ID.",
+      "changedFields": [
+        "feedback.messages[0].targetId",
+        "feedback.messages[0].text",
+        "interaction.options[1].optionId",
+        "interaction.options[1].text"
+      ],
+      "beforeWholeSha256": "6961086bec69a7718b379982ca41b540c1de464aa05b9564694750c7efbb249c",
+      "currentWholeSha256": "6d42bb03100ca5e86b49df617fdc01567f06d5702c5c9d110ae49bf9f0352a69",
+      "sourceRefs": [
+        "Fictional resource-lifetime contract stated in prompt; no external guarantee."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i009",
+      "beforeQuestionId": "ood-n08-b07-i009",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Close the cursor after the scan while preserving the stable progress records.",
+      "decisiveFact": "The scan owns the cursor only while it reads; closing it does not delete or re-key progress.",
+      "nearestAlternative": "Returning the scan’s live cursor to learner clients gives them ownership after the scan ends.",
+      "changedCondition": "The revised competing policy preserves the surrounding lifecycle steps but fails the specific owner/close/commit boundary stated in the prompt.",
+      "identityAction": "preserve_question_id_and_accepted_option_id; assign_new_id_to_rewritten_distractor",
+      "identityReason": "The accepted lifetime decision remains unchanged; the rewritten wrong alternative now has a distinct, case-specific lifecycle-policy meaning and a fresh option ID.",
+      "changedFields": [
+        "feedback.messages[2].targetId",
+        "feedback.messages[2].text",
+        "interaction.options[3].optionId",
+        "interaction.options[3].text"
+      ],
+      "beforeWholeSha256": "acd5855b75c45dd1cc465e0815452cfc1b544bc1080401119db03bc01d3fcce8",
+      "currentWholeSha256": "db6a1bd067dcde1bf99042096be72f7425b2681e4ff556c6ba2c7d8bafe71794",
+      "sourceRefs": [
+        "Fictional resource-lifetime contract stated in prompt; no external guarantee."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i010",
+      "beforeQuestionId": "ood-n08-b07-i010",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Close the export cursor and file on cancellation while the live board remains open.",
+      "decisiveFact": "Cancellation closes both resources owned by export, but the board continues accepting strokes.",
+      "nearestAlternative": "Keeping export resources open for a later run extends them past the canceled operation.",
+      "changedCondition": "The revised competing policy preserves the surrounding lifecycle steps but fails the specific owner/close/commit boundary stated in the prompt.",
+      "identityAction": "preserve_question_id_and_accepted_option_id; assign_new_id_to_rewritten_distractor",
+      "identityReason": "The accepted lifetime decision remains unchanged; the rewritten wrong alternative now has a distinct, case-specific lifecycle-policy meaning and a fresh option ID.",
+      "changedFields": [
+        "feedback.messages[2].targetId",
+        "feedback.messages[2].text",
+        "interaction.options[3].optionId",
+        "interaction.options[3].text"
+      ],
+      "beforeWholeSha256": "44d8f6358eb66dc3f0f1a46eaf3cc6b227375731b15a9f91453ae710c77d1117",
+      "currentWholeSha256": "4d30c457793c0b409c19006e24a824d9b1c8bd8e19dc47ffb5219078188ba9c1",
+      "sourceRefs": [
+        "Fictional resource-lifetime contract stated in prompt; no external guarantee."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i011",
+      "beforeQuestionId": "ood-n08-b07-i011",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Cancel the attempt’s timer on success and return retryable failure with no timer running.",
+      "decisiveFact": "A failed attempt must leave no timer active when it returns.",
+      "nearestAlternative": "A later cleanup guess does not guarantee the timer is gone at return.",
+      "changedCondition": "The revised competing policy preserves the surrounding lifecycle steps but fails the specific owner/close/commit boundary stated in the prompt.",
+      "identityAction": "preserve_question_id_and_accepted_option_id; assign_new_id_to_rewritten_distractor",
+      "identityReason": "The accepted lifetime decision remains unchanged; the rewritten wrong alternative now has a distinct, case-specific lifecycle-policy meaning and a fresh option ID.",
+      "changedFields": [
+        "feedback.messages[2].targetId",
+        "feedback.messages[2].text",
+        "interaction.options[3].optionId",
+        "interaction.options[3].text"
+      ],
+      "beforeWholeSha256": "1cf30347f677e49e86cb3f9ba0b80e80fce4c60c7da0b5abb773bc16eac2bf25",
+      "currentWholeSha256": "1c5963f3d4fd89bc46fa2b70c1c5dbb6640575b89ab319bebafcdc0ab1e756e7",
+      "sourceRefs": [
+        "Fictional resource-lifetime contract stated in prompt; no external guarantee."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i013",
+      "beforeQuestionId": "ood-n08-b07-i013",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Close opened streams and cancel remaining checks before leaving the parent unchanged on failure.",
+      "decisiveFact": "If either vendor check fails, the split is not accepted and its parent stays unchanged.",
+      "nearestAlternative": "Publishing one child while retrying the other exposes a partial split.",
+      "changedCondition": "The revised competing policy preserves the surrounding lifecycle steps but fails the specific owner/close/commit boundary stated in the prompt.",
+      "identityAction": "preserve_question_id_and_accepted_option_id; assign_new_id_to_rewritten_distractor",
+      "identityReason": "The accepted lifetime decision remains unchanged; the rewritten wrong alternative now has a distinct, case-specific lifecycle-policy meaning and a fresh option ID.",
+      "changedFields": [
+        "feedback.messages[1].targetId",
+        "feedback.messages[1].text",
+        "interaction.options[2].optionId",
+        "interaction.options[2].text"
+      ],
+      "beforeWholeSha256": "cb8d3bc8896c30ba52ebeee1fd60132522d9539818cfca90d46a0e69438fb874",
+      "currentWholeSha256": "5726189b6110451cd2bbd4e4b987aa6ce9ff334f46989a893b0999eb669bb228",
+      "sourceRefs": [
+        "Fictional resource-lifetime contract stated in prompt; no external guarantee."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i014",
+      "beforeQuestionId": "ood-n08-b07-i014",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Release the temporary token on denial/cancel and transfer its reservation at commit.",
+      "decisiveFact": "The transfer operation owns the token through commit or denial.",
+      "nearestAlternative": "Delegating token release to a screen can release it after commit, when the booking owns the reservation.",
+      "changedCondition": "The revised competing policy preserves the surrounding lifecycle steps but fails the specific owner/close/commit boundary stated in the prompt.",
+      "identityAction": "preserve_question_id_and_accepted_option_id; assign_new_id_to_rewritten_distractor",
+      "identityReason": "The accepted lifetime decision remains unchanged; the rewritten wrong alternative now has a distinct, case-specific lifecycle-policy meaning and a fresh option ID.",
+      "changedFields": [
+        "feedback.messages[2].targetId",
+        "feedback.messages[2].text",
+        "interaction.options[3].optionId",
+        "interaction.options[3].text"
+      ],
+      "beforeWholeSha256": "4d20dc7215588573ac308481c9f752d70a54dc0fc23666f53440c739a5feb53b",
+      "currentWholeSha256": "f7bbba58efde2735ee9a46d4bd846cfa57fa28fc671e31905b24c3c5f8e62bae",
+      "sourceRefs": [
+        "Fictional resource-lifetime contract stated in prompt; no external guarantee."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i015",
+      "beforeQuestionId": "ood-n08-b07-i015",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Publish only a validated package; the build closes its streams and discards its temp file on failure.",
+      "decisiveFact": "The build owns its component streams and temporary output through validation.",
+      "nearestAlternative": "A shared stream cache lets resources outlive the build that opened them.",
+      "changedCondition": "The revised competing policy preserves the surrounding lifecycle steps but fails the specific owner/close/commit boundary stated in the prompt.",
+      "identityAction": "preserve_question_id_and_accepted_option_id; assign_new_id_to_rewritten_distractor",
+      "identityReason": "The accepted lifetime decision remains unchanged; the rewritten wrong alternative now has a distinct, case-specific lifecycle-policy meaning and a fresh option ID.",
+      "changedFields": [
+        "feedback.messages[2].targetId",
+        "feedback.messages[2].text",
+        "interaction.options[3].optionId",
+        "interaction.options[3].text"
+      ],
+      "beforeWholeSha256": "36e3a90aa59520480fed172edfc3c0cfd952a4a8e1a448a4a59218a9a117c411",
+      "currentWholeSha256": "3109c441baccaa771d687cea9d2a2c57a72039dfc739e17e1f641df451b40825",
+      "sourceRefs": [
+        "Fictional resource-lifetime contract stated in prompt; no external guarantee."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i017",
+      "beforeQuestionId": "ood-n08-b07-i017",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "On conflict or cancellation release both locks and discard the temporary record without changing the asset.",
+      "decisiveFact": "The merge operation owns both locks and its temporary record until success or failure.",
+      "nearestAlternative": "Returning these resources to another job can publish or retain them after the merge reports conflict.",
+      "changedCondition": "The revised competing policy preserves the surrounding lifecycle steps but fails the specific owner/close/commit boundary stated in the prompt.",
+      "identityAction": "preserve_question_id_and_accepted_option_id; assign_new_id_to_rewritten_distractor",
+      "identityReason": "The accepted lifetime decision remains unchanged; the rewritten wrong alternative now has a distinct, case-specific lifecycle-policy meaning and a fresh option ID.",
+      "changedFields": [
+        "feedback.messages[2].targetId",
+        "feedback.messages[2].text",
+        "interaction.options[3].optionId",
+        "interaction.options[3].text"
+      ],
+      "beforeWholeSha256": "acb4efc6bd76ca515affccda07a661895c78e30863bc15e6e24d68ab59823f52",
+      "currentWholeSha256": "30b34f30b10000724798fa7fdaa189a5225e3ec8ca819b9d94cf0e254266a007",
+      "sourceRefs": [
+        "Fictional resource-lifetime contract stated in prompt; no external guarantee."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b07-i018",
+      "beforeQuestionId": "ood-n08-b07-i018",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Close the response stream on every exit and approve only after successful clearance.",
+      "decisiveFact": "The clearance operation owns the stream until it has read the result.",
+      "nearestAlternative": "Returning the unread stream while clearance still consumes it splits ownership.",
+      "changedCondition": "The revised competing policy preserves the surrounding lifecycle steps but fails the specific owner/close/commit boundary stated in the prompt.",
+      "identityAction": "preserve_question_id_and_accepted_option_id; assign_new_id_to_rewritten_distractor",
+      "identityReason": "The accepted lifetime decision remains unchanged; the rewritten wrong alternative now has a distinct, case-specific lifecycle-policy meaning and a fresh option ID.",
+      "changedFields": [
+        "feedback.messages[2].targetId",
+        "feedback.messages[2].text",
+        "interaction.options[3].optionId",
+        "interaction.options[3].text"
+      ],
+      "beforeWholeSha256": "716229249faebbe34e82b1ad7b9fb6467740c051d808cc79524da3a586ab5589",
+      "currentWholeSha256": "7e6569211f73b7879ef60f2a030d0268a1018a7484f4d9ca677a70afbd5bc206",
+      "sourceRefs": [
+        "Fictional resource-lifetime contract stated in prompt; no external guarantee."
+      ]
+    }
+  ]
+}

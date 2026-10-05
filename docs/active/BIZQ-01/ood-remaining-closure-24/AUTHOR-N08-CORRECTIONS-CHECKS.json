@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "bizq01-n08-correction-checks-v1",
+  "validator": "patternly-content/scripts/content/question-contract.mjs validateQuestion/scoreQuestion",
+  "suites": [
+    {
+      "unit": "B02",
+      "version": 4,
+      "path": "proposals/N08-B02-v4.json",
+      "proposalSha256": "33c0cbc1cd355618a5b55f2cd423e6f66a7014ce61b08fa9cf7fb317f6f09fe8",
+      "questions": 18,
+      "invalid": [],
+      "correct": 18,
+      "reversedCorrect": 18,
+      "wrong": 54,
+      "reversedWrong": 54,
+      "feedbackTargetsMatched": 18
+    },
+    {
+      "unit": "B05",
+      "version": 3,
+      "path": "proposals/N08-B05-v3.json",
+      "proposalSha256": "ba8349e503dcfe6e6c58ef7cb1af63b312d2b8239c4ef0813f14716dede97677",
+      "questions": 18,
+      "invalid": [],
+      "correct": 18,
+      "reversedCorrect": 18,
+      "wrong": 54,
+      "reversedWrong": 54,
+      "feedbackTargetsMatched": 18
+    },
+    {
+      "unit": "B03",
+      "version": 3,
+      "path": "proposals/N08-B03-v3.json",
+      "proposalSha256": "74ac35a41d3045172ee281c0aa6819a4fc275b627ee7882ee1d981bb85e6d4a1",
+      "questions": 18,
+      "invalid": [],
+      "correct": 18,
+      "reversedCorrect": 18,
+      "wrong": 54,
+      "reversedWrong": 54,
+      "feedbackTargetsMatched": 18
+    },
+    {
+      "unit": "B06",
+      "version": 3,
+      "path": "proposals/N08-B06-v3.json",
+      "proposalSha256": "d214610eb75d80ac03851bb803f920ff6846091b331c163bd6cf98ed3989a341",
+      "questions": 18,
+      "invalid": [],
+      "correct": 18,
+      "reversedCorrect": 18,
+      "wrong": 54,
+      "reversedWrong": 54,
+      "feedbackTargetsMatched": 18
+    },
+    {
+      "unit": "B07",
+      "version": 3,
+      "path": "proposals/N08-B07-v3.json",
+      "proposalSha256": "0b1a94aa9b8f8eb81d1c270ff8a63dd585a6c85700f5c968a2509ae2920610a6",
+      "questions": 18,
+      "invalid": [],
+      "correct": 18,
+      "reversedCorrect": 18,
+      "wrong": 54,
+      "reversedWrong": 54,
+      "feedbackTargetsMatched": 18
+    }
+  ]
+}

@@ -1,0 +1,193 @@
+{
+  "schemaVersion": "bizq01-semantic-correction-review-v1",
+  "track": "OOD-N09",
+  "unit": "OOD-N09-B06",
+  "version": 3,
+  "verdict": "PASS",
+  "proposal": {
+    "path": "review-inputs/N09-B06-v3.json",
+    "sha256": "c1b0d362bc233193eed1095190c2d5302a432b5a7578b9b7e6a0bd45abe52310"
+  },
+  "authorProposal": {
+    "path": "proposals/N09-B06-v3.json",
+    "sha256": "c1b0d362bc233193eed1095190c2d5302a432b5a7578b9b7e6a0bd45abe52310"
+  },
+  "priorReview": {
+    "path": "SEMANTIC-N09-B06-v2-QA.json",
+    "sha256": "977447bcdad70af9e798ff4c70c7c20ff19a0e487d3c91e77782424812b8faf7",
+    "markdownPath": "SEMANTIC-N09-B06-v2-QA.md",
+    "markdownSha256": "e16027af02a40622096de3ed4d03fed07b7be4e2ff25373693d8ae6d97ad8f0e"
+  },
+  "targetIdErratum": {
+    "path": "SEMANTIC-N09-B05-B07-v2-TARGET-ERRATUM.json",
+    "sha256": "6cf108967883477466244fdef3a359c13e0f55c6fee136dc900fe0e32280d8d5"
+  },
+  "manifest": {
+    "path": "N08-N09-MANIFEST.json",
+    "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+  },
+  "contract": {
+    "path": "N08-N09-CONTRACT.json",
+    "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+  },
+  "spec": {
+    "path": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3"
+  },
+  "fingerprintMethod": "SHA-256(repository canonicalJson(question), recursively sorted keys); selected key resolved by answer.optionId.",
+  "delta": {
+    "priorProposal": {
+      "path": "review-inputs/N09-B06-v2.json",
+      "sha256": "8de7e8965b42bc3835282c716a6665617bb20551fc42f5589424c08021596052"
+    },
+    "changedQuestionCount": 4,
+    "changedMessageCount": 5,
+    "changedQuestionIds": [
+      "ood-n09-b06-i009",
+      "ood-n09-b06-i011",
+      "ood-n09-b06-i016",
+      "ood-n09-b06-i018"
+    ],
+    "verifiedAllOtherFieldsAndAllOptionIdsUnchanged": true,
+    "description": "The revised messages now explain the concrete case consequence: hiding timeout-versus-withdrawal, unavailable provenance, excessive address disclosure, or mismatching the calibration with the latest sensor version.",
+    "allCurrentFeedbackTargetsBind": true
+  },
+  "mechanicalCheck": {
+    "validator": "patternly-content/scripts/content/question-contract.mjs validateQuestion/scoreQuestion",
+    "questionCount": 18,
+    "invalidQuestions": 0,
+    "correctAnswers": 18,
+    "incorrectDistractors": 72,
+    "reversedCorrectAnswers": 18,
+    "feedbackTargetSetsExact": 18
+  },
+  "items": [
+    {
+      "questionId": "ood-n09-b06-i001",
+      "currentWholeObjectSha256": "ef2b3c62b5d0b65abe255b43ede13c32e381f6b2f4da19ab7a91b35c4b88d0b1",
+      "currentAcceptedOptionId": "n09b06_i001_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i002",
+      "currentWholeObjectSha256": "4c62f8bb1fc77f7dc2d8e3d225fb77f7b97eb3ff4d51989415446df02114231a",
+      "currentAcceptedOptionId": "n09b06_i002_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i003",
+      "currentWholeObjectSha256": "16dbd53b2975049364b980a00588546f4022cf349f5d281c3a3cfe89b0d9994b",
+      "currentAcceptedOptionId": "n09b06_i003_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i004",
+      "currentWholeObjectSha256": "b813ef0f3ca0eecbfa5ee91f2a7557011c0155147ae3d679ba1dc2f91c980c9b",
+      "currentAcceptedOptionId": "n09b06_i004_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i005",
+      "currentWholeObjectSha256": "a480b125f18b6979a7b2808ca1e926166cbeb4e53bc8360b646cdf4a4da5f959",
+      "currentAcceptedOptionId": "n09b06_i005_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i006",
+      "currentWholeObjectSha256": "83f22d988c2f5c8524d08309576d713cccaa68e286b4fa22eddd5a4a9f5ebe01",
+      "currentAcceptedOptionId": "n09b06_i006_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i007",
+      "currentWholeObjectSha256": "b211a846d501a0650fbc8a17397a5895e6de17fdc3af4fd58b621c892fd7d4c4",
+      "currentAcceptedOptionId": "n09b06_i007_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i008",
+      "currentWholeObjectSha256": "67842c90f4af6229ff772284092a9a0c4e85c5816d7cf90a9e7b257900325ecf",
+      "currentAcceptedOptionId": "n09b06_i008_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i009",
+      "currentWholeObjectSha256": "1b30776cb67cd767d680857a4db9036eb25cc6252bb6f20aaf847cb9421c3933",
+      "currentAcceptedOptionId": "n09b06_i009_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    },
+    {
+      "questionId": "ood-n09-b06-i010",
+      "currentWholeObjectSha256": "8e4cb146d14ba7479b0415564fb39176e18f75969da9da1efba12a05078abf4f",
+      "currentAcceptedOptionId": "n09b06_i010_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i011",
+      "currentWholeObjectSha256": "a4d945139c59cc891d29e67e26ef1b99e783accc6cc80c8cf86aa748860a9a16",
+      "currentAcceptedOptionId": "n09b06_i011_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    },
+    {
+      "questionId": "ood-n09-b06-i012",
+      "currentWholeObjectSha256": "36f00c8ca0d5de30504f4b3522bc5ea9478a6b54932ff7dfb73de81c33e32a57",
+      "currentAcceptedOptionId": "n09b06_i012_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i013",
+      "currentWholeObjectSha256": "405d7a0d7e3d913a293dac682138538a29fb27bb31be9f3a72009a7617895628",
+      "currentAcceptedOptionId": "n09b06_i013_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i014",
+      "currentWholeObjectSha256": "34ec14ffd91a8ffb158980f33a15054cea480166edec84ff1d085f396b18a39b",
+      "currentAcceptedOptionId": "n09b06_i014_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i015",
+      "currentWholeObjectSha256": "d03169a7c5fa538e096f8caf3d972b1274f2416e191d05e558f6e518c14ae778",
+      "currentAcceptedOptionId": "n09b06_i015_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i016",
+      "currentWholeObjectSha256": "ed7738b4762c582edd43883eb11c7ab5b4c893f83b211d646ae6f6a1b3eeb308",
+      "currentAcceptedOptionId": "n09b06_i016_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    },
+    {
+      "questionId": "ood-n09-b06-i017",
+      "currentWholeObjectSha256": "4b8424a0eb648fdd139f2def0111ef2d5cbc4da3ebaaa7a598f36dfb15fe522f",
+      "currentAcceptedOptionId": "n09b06_i017_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b06-i018",
+      "currentWholeObjectSha256": "e3c163a6c2ed04ab58c046ebd163b0b5a3d0feaacfe25f635752abe696cb9997",
+      "currentAcceptedOptionId": "n09b06_i018_bounded_explanation",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    }
+  ],
+  "limits": "Bounded message correction acceptance only; no new source, producer, runtime/admission, native/Premium, or full BIZQ-01 acceptance."
+}

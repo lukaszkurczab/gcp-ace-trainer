@@ -1,0 +1,1226 @@
+[
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A fleet charging coordinator, A reservation worker locks the station before the reservation; an expiry worker locks the reservation before the station. They can wait on each other, and unrelated stations should keep reserving. Which coordination change best restores progress without broadening the blocked scope? Order both station and reservation locks the same way in reserve and expiry.",
+        "errorCorrection": "Retrying does not remove the reverse acquisition order, so the same wait cycle remains. The charger response is outside the local reservation transition and can hold station state indefinitely. The prompt requires unrelated stations to keep reserving.",
+        "boundaryOrTradeoff": "The tempting alternative is Keep reserve and expiry in opposite orders; retry the one that times out. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i001_alt1_v2",
+          "text": "Retrying does not remove the reverse acquisition order, so the same wait cycle remains."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i001_alt2_v2",
+          "text": "The charger response is outside the local reservation transition and can hold station state indefinitely."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i001_alt3_v2",
+          "text": "The prompt requires unrelated stations to keep reserving."
+        }
+      ],
+      "reason": "Reserve and expiry touch the same station-reservation pair in reverse order, which permits a wait cycle. Giving both paths one order removes that cycle while keeping unrelated stations available.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Order both station and reservation locks the same way in reserve and expiry."
+        },
+        {
+          "optionId": "n08b04_i001_alt1_v2",
+          "text": "Keep reserve and expiry in opposite orders; retry the one that times out."
+        },
+        {
+          "optionId": "n08b04_i001_alt2_v2",
+          "text": "Keep the station lock until the charger confirms the reservation."
+        },
+        {
+          "optionId": "n08b04_i001_alt3_v2",
+          "text": "Use one lock for every station whenever any reservation expires."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A fleet charging coordinator, A reservation worker locks the station before the reservation; an expiry worker locks the reservation before the station. They can wait on each other, and unrelated stations should keep reserving. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i001",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A photo-archive curation tool, A merge locks two asset records. Curators can request the same pair in opposite order; the archive must also allow unrelated asset pairs to proceed. Which coordination change best restores progress without broadening the blocked scope? Acquire both assets in stable ID order before merging them.",
+        "errorCorrection": "Request order differs for the opposite-pair requests described in the stem. Repeated release and reacquisition can livelock instead of finishing a merge. A whole-archive lock blocks unrelated asset pairs that the stem says can proceed.",
+        "boundaryOrTradeoff": "The tempting alternative is Acquire the first asset in request order, then wait for the second. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i002_alt1_v2",
+          "text": "Request order differs for the opposite-pair requests described in the stem."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i002_alt2_v2",
+          "text": "Repeated release and reacquisition can livelock instead of finishing a merge."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i002_alt3_v2",
+          "text": "A whole-archive lock blocks unrelated asset pairs that the stem says can proceed."
+        }
+      ],
+      "reason": "Two curators can request the same assets in opposite order. Sorting the pair before either acquisition prevents each merge from waiting on the other’s first lock.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Acquire both assets in stable ID order before merging them."
+        },
+        {
+          "optionId": "n08b04_i002_alt1_v2",
+          "text": "Acquire the first asset in request order, then wait for the second."
+        },
+        {
+          "optionId": "n08b04_i002_alt2_v2",
+          "text": "Release whichever lock is available and reacquire until the pair is held."
+        },
+        {
+          "optionId": "n08b04_i002_alt3_v2",
+          "text": "Serialize metadata merges across the archive."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A photo-archive curation tool, A merge locks two asset records. Curators can request the same pair in opposite order; the archive must also allow unrelated asset pairs to proceed. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i002",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A digital rights clearance tool, Granting a role needs both territory policy and role state. Approval currently locks territory then role, while expiry locks role then territory; a clearance check must remain available for unrelated territories. Which coordination change best restores progress without broadening the blocked scope? Acquire territory before role in both grant and expiry paths.",
+        "errorCorrection": "Timeout duration does not change the two acquisition orders that permit a cycle. Human review time is unbounded relative to the territory and role locks. The stem requires unrelated territories to remain available.",
+        "boundaryOrTradeoff": "The tempting alternative is Keep the reverse orders and lengthen the timeout. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i003_alt1_v2",
+          "text": "Timeout duration does not change the two acquisition orders that permit a cycle."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i003_alt2_v2",
+          "text": "Human review time is unbounded relative to the territory and role locks."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i003_alt3_v2",
+          "text": "The stem requires unrelated territories to remain available."
+        }
+      ],
+      "reason": "Approval and expiry need both territory and role state, and their current reverse order can cycle. A shared territory-before-role order resolves that conflict while unrelated territory checks continue.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Acquire territory before role in both grant and expiry paths."
+        },
+        {
+          "optionId": "n08b04_i003_alt1_v2",
+          "text": "Keep the reverse orders and lengthen the timeout."
+        },
+        {
+          "optionId": "n08b04_i003_alt2_v2",
+          "text": "Hold both locks while the analyst reads the external license."
+        },
+        {
+          "optionId": "n08b04_i003_alt3_v2",
+          "text": "Serialize all territories during any one clearance decision."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A digital rights clearance tool, Granting a role needs both territory policy and role state. Approval currently locks territory then role, while expiry locks role then territory; a clearance check must remain available for unrelated territories. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i003",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A drone maintenance planner, Assigning a battery needs an aircraft record and a battery record. Two planners can swap batteries and aircraft in opposite order; a battery must never end assigned to two aircraft. Which coordination change best restores progress without broadening the blocked scope? Acquire the aircraft and battery in one stable ID order for both assignments.",
+        "errorCorrection": "The swap paths still acquire the pair in opposing order. Remote inventory time can prevent another assignment from using the aircraft or battery. The coordination scope becomes every aircraft despite a pair-specific assignment.",
+        "boundaryOrTradeoff": "The tempting alternative is Lock the request’s first record, then wait for the second and retry. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i004_alt1_v2",
+          "text": "The swap paths still acquire the pair in opposing order."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i004_alt2_v2",
+          "text": "Remote inventory time can prevent another assignment from using the aircraft or battery."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i004_alt3_v2",
+          "text": "The coordination scope becomes every aircraft despite a pair-specific assignment."
+        }
+      ],
+      "reason": "Opposite battery and aircraft acquisition can deadlock before either assignment checks uniqueness. Ordering both records consistently lets the paired assignment proceed without blocking every aircraft.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Acquire the aircraft and battery in one stable ID order for both assignments."
+        },
+        {
+          "optionId": "n08b04_i004_alt1_v2",
+          "text": "Lock the request’s first record, then wait for the second and retry."
+        },
+        {
+          "optionId": "n08b04_i004_alt2_v2",
+          "text": "Keep the aircraft lock while remote inventory responds."
+        },
+        {
+          "optionId": "n08b04_i004_alt3_v2",
+          "text": "Stop every aircraft assignment while any battery changes."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A drone maintenance planner, Assigning a battery needs an aircraft record and a battery record. Two planners can swap batteries and aircraft in opposite order; a battery must never end assigned to two aircraft. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i004",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A clinic referral coordinator, Consent and referral state are checked together, but sending the referral can wait on an external specialist. A retry should not make other referrals for the same patient wait on that response. Which coordination change best restores progress without broadening the blocked scope? Check consent and record the referral attempt, then send without local locks held.",
+        "errorCorrection": "The local state remains locked across a potentially slow external response. The paths still acquire the same pair in opposing orders. A pending referral for one patient blocks unrelated patients.",
+        "boundaryOrTradeoff": "The tempting alternative is Hold patient and referral locks until the specialist responds. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i005_alt1_v2",
+          "text": "The local state remains locked across a potentially slow external response."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i005_alt2_v2",
+          "text": "The paths still acquire the same pair in opposing orders."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i005_alt3_v2",
+          "text": "A pending referral for one patient blocks unrelated patients."
+        }
+      ],
+      "reason": "Consent and referral state must be coordinated locally, but the specialist response is outside that state boundary. Record the attempt before releasing locks for the remote send.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Check consent and record the referral attempt, then send without local locks held."
+        },
+        {
+          "optionId": "n08b04_i005_alt1_v2",
+          "text": "Hold patient and referral locks until the specialist responds."
+        },
+        {
+          "optionId": "n08b04_i005_alt2_v2",
+          "text": "Use patient-before-referral on retry but referral-before-patient on initial send."
+        },
+        {
+          "optionId": "n08b04_i005_alt3_v2",
+          "text": "Pause all patients’ referrals while one response is pending."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A clinic referral coordinator, Consent and referral state are checked together, but sending the referral can wait on an external specialist. A retry should not make other referrals for the same patient wait on that response. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i005",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A music practice tracker, Exercise publication locks the exercise then learner progress; completion locks learner progress then exercise. Both need a consistent revision, but different learners can complete in parallel. Which coordination change best restores progress without broadening the blocked scope? Acquire exercise revision before learner progress in both paths.",
+        "errorCorrection": "Retrying preserves the reverse lock order. File upload is not part of the learner-progress transition and can stall it. A publication for one exercise need not block every learner.",
+        "boundaryOrTradeoff": "The tempting alternative is Keep opposite orders and retry completion after a timeout. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i006_alt1_v2",
+          "text": "Retrying preserves the reverse lock order."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i006_alt2_v2",
+          "text": "File upload is not part of the learner-progress transition and can stall it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i006_alt3_v2",
+          "text": "A publication for one exercise need not block every learner."
+        }
+      ],
+      "reason": "Publication and completion need the same exercise-revision/progress pair. Taking the revision lock first in both paths prevents a cycle while different learners still progress independently.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Acquire exercise revision before learner progress in both paths."
+        },
+        {
+          "optionId": "n08b04_i006_alt1_v2",
+          "text": "Keep opposite orders and retry completion after a timeout."
+        },
+        {
+          "optionId": "n08b04_i006_alt2_v2",
+          "text": "Hold learner progress while the new exercise file uploads."
+        },
+        {
+          "optionId": "n08b04_i006_alt3_v2",
+          "text": "Lock every learner while any exercise is published."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A music practice tracker, Exercise publication locks the exercise then learner progress; completion locks learner progress then exercise. Both need a consistent revision, but different learners can complete in parallel. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i006",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A procurement approval queue, Approval reads an exception and its control evidence. The approval path locks exception then evidence; the audit correction path locks evidence then exception; unrelated exceptions remain independent. Which coordination change best restores progress without broadening the blocked scope? Acquire exception before evidence for approval and correction.",
+        "errorCorrection": "Abandoning a waiter does not establish a common order for the next attempt. Human input time can hold both shared records without changing them. The prompt identifies unrelated exceptions as independent.",
+        "boundaryOrTradeoff": "The tempting alternative is Keep the reverse orders and let a watchdog abandon a waiting approval. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i007_alt1_v2",
+          "text": "Abandoning a waiter does not establish a common order for the next attempt."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i007_alt2_v2",
+          "text": "Human input time can hold both shared records without changing them."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i007_alt3_v2",
+          "text": "The prompt identifies unrelated exceptions as independent."
+        }
+      ],
+      "reason": "Approval and correction need the same exception and evidence records. Acquiring them in a single order avoids the cycle; unrelated exceptions need not wait.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Acquire exception before evidence for approval and correction."
+        },
+        {
+          "optionId": "n08b04_i007_alt1_v2",
+          "text": "Keep the reverse orders and let a watchdog abandon a waiting approval."
+        },
+        {
+          "optionId": "n08b04_i007_alt2_v2",
+          "text": "Hold both records while an auditor types a narrative."
+        },
+        {
+          "optionId": "n08b04_i007_alt3_v2",
+          "text": "Serialize the full queue during any exception correction."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A procurement approval queue, Approval reads an exception and its control evidence. The approval path locks exception then evidence; the audit correction path locks evidence then exception; unrelated exceptions remain independent. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i007",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A podcast production desk, Replacing a recording locks the episode before its segment map; annotation editing locks the segment map before the episode. The producer needs a consistent mapping and other episodes must continue. Which coordination change best restores progress without broadening the blocked scope? Acquire the episode before its segment map in replacement and annotation paths.",
+        "errorCorrection": "The opposite acquisition order can form the same cycle on retry. Transcoding can take a long time while episode state remains locked. The stem explicitly allows other episodes to continue.",
+        "boundaryOrTradeoff": "The tempting alternative is Keep the two orders and retry after a lock timeout. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i008_alt1_v2",
+          "text": "The opposite acquisition order can form the same cycle on retry."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i008_alt2_v2",
+          "text": "Transcoding can take a long time while episode state remains locked."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i008_alt3_v2",
+          "text": "The stem explicitly allows other episodes to continue."
+        }
+      ],
+      "reason": "Replacement and annotation edit acquire the episode and map in opposite order. One shared order prevents the cycle while edits to other episodes continue.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Acquire the episode before its segment map in replacement and annotation paths."
+        },
+        {
+          "optionId": "n08b04_i008_alt1_v2",
+          "text": "Keep the two orders and retry after a lock timeout."
+        },
+        {
+          "optionId": "n08b04_i008_alt2_v2",
+          "text": "Hold the episode lock until external transcoding completes."
+        },
+        {
+          "optionId": "n08b04_i008_alt3_v2",
+          "text": "Pause edits to every episode during a single replacement."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A podcast production desk, Replacing a recording locks the episode before its segment map; annotation editing locks the segment map before the episode. The producer needs a consistent mapping and other episodes must continue. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i008",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A permissions review service, The grant path acquires user then role, while the expiry worker acquires role then user. Expiry must complete even during repeated grant attempts; other users remain available. Which coordination change best restores progress without broadening the blocked scope? Acquire user before role in both grant and expiry paths.",
+        "errorCorrection": "The cycle remains possible because grant and expiry still take opposite orders. The external time response can keep both permission records locked. One user’s expiry should not block other users.",
+        "boundaryOrTradeoff": "The tempting alternative is Keep opposite orders and add retries when either path times out. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i009_alt1_v2",
+          "text": "The cycle remains possible because grant and expiry still take opposite orders."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i009_alt2_v2",
+          "text": "The external time response can keep both permission records locked."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i009_alt3_v2",
+          "text": "One user’s expiry should not block other users."
+        }
+      ],
+      "reason": "Grant and expiry can wait on the same user-role pair in opposite order. Making both use user-before-role removes the cycle without blocking other users.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Acquire user before role in both grant and expiry paths."
+        },
+        {
+          "optionId": "n08b04_i009_alt1_v2",
+          "text": "Keep opposite orders and add retries when either path times out."
+        },
+        {
+          "optionId": "n08b04_i009_alt2_v2",
+          "text": "Hold both locks while an external time source responds."
+        },
+        {
+          "optionId": "n08b04_i009_alt3_v2",
+          "text": "Lock all users’ permissions while one grant expires."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A permissions review service, The grant path acquires user then role, while the expiry worker acquires role then user. Expiry must complete even during repeated grant attempts; other users remain available. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i009",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A document notarization service, Sealing a revision locks its document then the seal registry; correction locks the registry then the document. Both operations can overlap, but unrelated documents should proceed. Which coordination change best restores progress without broadening the blocked scope? Acquire the document before the seal registry in both paths.",
+        "errorCorrection": "Retrying leaves the conflicting order in place. The manual review can hold the document while other operations need it. The prompt requires unrelated documents to proceed.",
+        "boundaryOrTradeoff": "The tempting alternative is Keep opposite orders and retry whichever handler times out. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i010_alt1_v2",
+          "text": "Retrying leaves the conflicting order in place."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i010_alt2_v2",
+          "text": "The manual review can hold the document while other operations need it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i010_alt3_v2",
+          "text": "The prompt requires unrelated documents to proceed."
+        }
+      ],
+      "reason": "Sealing and correction touch the same document and registry in reverse order. Document-before-registry gives both paths one acquisition order while other documents remain available.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Acquire the document before the seal registry in both paths."
+        },
+        {
+          "optionId": "n08b04_i010_alt1_v2",
+          "text": "Keep opposite orders and retry whichever handler times out."
+        },
+        {
+          "optionId": "n08b04_i010_alt2_v2",
+          "text": "Hold the document lock through a long manual notary review."
+        },
+        {
+          "optionId": "n08b04_i010_alt3_v2",
+          "text": "Use one registry lock to block seals for all documents."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A document notarization service, Sealing a revision locks its document then the seal registry; correction locks the registry then the document. Both operations can overlap, but unrelated documents should proceed. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i010",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A marketplace payout service, Release acquires an order then seller balance; reconciliation acquires seller balance then order. Two releases for different sellers should not wait on a market-wide lock. Which coordination change best restores progress without broadening the blocked scope? Acquire order before seller balance for release and reconciliation.",
+        "errorCorrection": "A retry does not remove the order-balance cycle. Bank latency is outside the local payout-state change and can hold both records. One reconciliation must not pause payouts for every seller.",
+        "boundaryOrTradeoff": "The tempting alternative is Keep opposite orders and retry a payout after timeout. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i011_alt1_v2",
+          "text": "A retry does not remove the order-balance cycle."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i011_alt2_v2",
+          "text": "Bank latency is outside the local payout-state change and can hold both records."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i011_alt3_v2",
+          "text": "One reconciliation must not pause payouts for every seller."
+        }
+      ],
+      "reason": "Release and reconciliation can wait on the same order-balance pair in opposite order. One shared order prevents that cycle without pausing unrelated sellers.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Acquire order before seller balance for release and reconciliation."
+        },
+        {
+          "optionId": "n08b04_i011_alt1_v2",
+          "text": "Keep opposite orders and retry a payout after timeout."
+        },
+        {
+          "optionId": "n08b04_i011_alt2_v2",
+          "text": "Hold both records while waiting for the bank response."
+        },
+        {
+          "optionId": "n08b04_i011_alt3_v2",
+          "text": "Pause every seller payout during one order reconciliation."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A marketplace payout service, Release acquires an order then seller balance; reconciliation acquires seller balance then order. Two releases for different sellers should not wait on a market-wide lock. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i011",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A public-transit disruption board, A route update locks the route before its subscriber list. Subscription changes lock the subscriber before the route. A publication should not wait for subscriber network acknowledgements while holding route state. Which coordination change best restores progress without broadening the blocked scope? Capture subscribers with the route update, then notify after releasing both locks.",
+        "errorCorrection": "The reverse order still allows a route/subscriber wait cycle. Device acknowledgement latency can leave route state locked indefinitely. The route update is scoped to one route, not every route.",
+        "boundaryOrTradeoff": "The tempting alternative is Keep reverse route/subscriber orders and retry when publication times out. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i012_alt1_v2",
+          "text": "The reverse order still allows a route/subscriber wait cycle."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i012_alt2_v2",
+          "text": "Device acknowledgement latency can leave route state locked indefinitely."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i012_alt3_v2",
+          "text": "The route update is scoped to one route, not every route."
+        }
+      ],
+      "reason": "Route publication and subscription change can wait on route and subscriber state in opposite order. Capture the intended subscribers under one order, then do network acknowledgements after releasing those locks.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Capture subscribers with the route update, then notify after releasing both locks."
+        },
+        {
+          "optionId": "n08b04_i012_alt1_v2",
+          "text": "Keep reverse route/subscriber orders and retry when publication times out."
+        },
+        {
+          "optionId": "n08b04_i012_alt2_v2",
+          "text": "Hold route state until every passenger device acknowledges."
+        },
+        {
+          "optionId": "n08b04_i012_alt3_v2",
+          "text": "Lock every route while one subscriber list changes."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A public-transit disruption board, A route update locks the route before its subscriber list. Subscription changes lock the subscriber before the route. A publication should not wait for subscriber network acknowledgements while holding route state. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i012",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A neighborhood energy-sharing service, A request can reserve two meters for one discharge window. Requests may name the same pair in reverse order; unrelated meter pairs should not block each other. Which coordination change best restores progress without broadening the blocked scope? Acquire the two meters by sorted ID before checking and recording the reservation.",
+        "errorCorrection": "Opposite request order still allows each request to hold one meter while waiting for the other. Forecast latency is unrelated to acquiring the local meter pair. Requests for unrelated meters should proceed.",
+        "boundaryOrTradeoff": "The tempting alternative is Acquire meters in request order and retry if the second lock times out. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i013_alt1_v2",
+          "text": "Opposite request order still allows each request to hold one meter while waiting for the other."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i013_alt2_v2",
+          "text": "Forecast latency is unrelated to acquiring the local meter pair."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i013_alt3_v2",
+          "text": "Requests for unrelated meters should proceed."
+        }
+      ],
+      "reason": "Requests for the same meter pair can arrive in reverse order. Sorting IDs before acquisition prevents the two reservations from holding one meter while waiting for the other.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Acquire the two meters by sorted ID before checking and recording the reservation."
+        },
+        {
+          "optionId": "n08b04_i013_alt1_v2",
+          "text": "Acquire meters in request order and retry if the second lock times out."
+        },
+        {
+          "optionId": "n08b04_i013_alt2_v2",
+          "text": "Hold both meters while waiting for the neighborhood forecast."
+        },
+        {
+          "optionId": "n08b04_i013_alt3_v2",
+          "text": "Lock every meter for a reservation on any one interval."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A neighborhood energy-sharing service, A request can reserve two meters for one discharge window. Requests may name the same pair in reverse order; unrelated meter pairs should not block each other. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i013",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A live captioning studio, A provider switch locks the stream registry and then waits for callbacks; a callback can reacquire the registry while finishing a caption. A provider change may affect new streams without interrupting existing streams. Which coordination change best restores progress without broadening the blocked scope? Swap the immutable provider revision under the registry lock; notify callbacks afterward.",
+        "errorCorrection": "The callback cannot finish if it waits on a registry held by the switch. Opposing lock order leaves a callback-switch deadlock possible. The case permits existing streams to continue on their captured configuration.",
+        "boundaryOrTradeoff": "The tempting alternative is Keep the registry lock until every callback drains. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i014_alt1_v2",
+          "text": "The callback cannot finish if it waits on a registry held by the switch."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i014_alt2_v2",
+          "text": "Opposing lock order leaves a callback-switch deadlock possible."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i014_alt3_v2",
+          "text": "The case permits existing streams to continue on their captured configuration."
+        }
+      ],
+      "reason": "The callback may need the registry while the switch waits for that callback. Swap the immutable configuration under the registry lock, then notify or drain callbacks after releasing it.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Swap the immutable provider revision under the registry lock; notify callbacks afterward."
+        },
+        {
+          "optionId": "n08b04_i014_alt1_v2",
+          "text": "Keep the registry lock until every callback drains."
+        },
+        {
+          "optionId": "n08b04_i014_alt2_v2",
+          "text": "Let callback and switch paths acquire provider and registry in opposite orders."
+        },
+        {
+          "optionId": "n08b04_i014_alt3_v2",
+          "text": "Stop even captured-configuration streams before every provider selection."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A live captioning studio, A provider switch locks the stream registry and then waits for callbacks; a callback can reacquire the registry while finishing a caption. A provider change may affect new streams without interrupting existing streams. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i014",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A volunteer coordination hub, A shift swap locks two volunteer records. Different coordinators can request the same pair in reverse order; swaps for other volunteers should continue. Which coordination change best restores progress without broadening the blocked scope? Acquire both volunteer records by stable ID before validating and swapping.",
+        "errorCorrection": "Opposite request order can recreate the pair-lock cycle. Waiting for confirmation while holding both locks blocks other swaps involving either volunteer. The prompt says swaps for other volunteers should continue.",
+        "boundaryOrTradeoff": "The tempting alternative is Lock the first volunteer named, then wait for the second and retry. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i015_alt1_v2",
+          "text": "Opposite request order can recreate the pair-lock cycle."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i015_alt2_v2",
+          "text": "Waiting for confirmation while holding both locks blocks other swaps involving either volunteer."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i015_alt3_v2",
+          "text": "The prompt says swaps for other volunteers should continue."
+        }
+      ],
+      "reason": "Two coordinators can acquire the same volunteer pair in reverse order. Stable-ID ordering avoids that cycle while leaving swaps for other volunteers available.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Acquire both volunteer records by stable ID before validating and swapping."
+        },
+        {
+          "optionId": "n08b04_i015_alt1_v2",
+          "text": "Lock the first volunteer named, then wait for the second and retry."
+        },
+        {
+          "optionId": "n08b04_i015_alt2_v2",
+          "text": "Hold both records while awaiting each person’s confirmation."
+        },
+        {
+          "optionId": "n08b04_i015_alt3_v2",
+          "text": "Pause every shift swap while one pair is under review."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A volunteer coordination hub, A shift swap locks two volunteer records. Different coordinators can request the same pair in reverse order; swaps for other volunteers should continue. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i015",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A local-first map editor, The merge path locks map then route; a route-edit path locks route then map. Conflicts must be reported, and independent maps should continue accepting edits. Which coordination change best restores progress without broadening the blocked scope? Use map before route for merge and edit, then check the submitted base.",
+        "errorCorrection": "The merge/edit cycle remains possible on every retry. An offline device may never reconnect, holding both map and route unavailable. Independent maps must continue accepting edits.",
+        "boundaryOrTradeoff": "The tempting alternative is Keep opposite orders and rerun a merge after timeout. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i016_alt1_v2",
+          "text": "The merge/edit cycle remains possible on every retry."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i016_alt2_v2",
+          "text": "An offline device may never reconnect, holding both map and route unavailable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i016_alt3_v2",
+          "text": "Independent maps must continue accepting edits."
+        }
+      ],
+      "reason": "Merge and route edit acquire map and route in reverse order, so either can wait indefinitely before conflict detection. One order lets the base check run without holding locks for offline reconnection.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Use map before route for merge and edit, then check the submitted base."
+        },
+        {
+          "optionId": "n08b04_i016_alt1_v2",
+          "text": "Keep opposite orders and rerun a merge after timeout."
+        },
+        {
+          "optionId": "n08b04_i016_alt2_v2",
+          "text": "Hold map and route locks until an offline device reconnects."
+        },
+        {
+          "optionId": "n08b04_i016_alt3_v2",
+          "text": "Lock every map until all offline proposals are resolved."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A local-first map editor, The merge path locks map then route; a route-edit path locks route then map. Conflicts must be reported, and independent maps should continue accepting edits. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i016",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A board-game campaign manager, Reward processing locks campaign then player; phase correction locks player then campaign. Each reward must use the current legal phase, and separate campaigns should continue. Which coordination change best restores progress without broadening the blocked scope? Acquire campaign before player in both reward and correction paths.",
+        "errorCorrection": "The phase/reward paths retain the opposing acquisition order. An external lookup can hold campaign and player state without bound. The prompt requires separate campaigns to continue.",
+        "boundaryOrTradeoff": "The tempting alternative is Keep opposite orders and retry when a moderator reports a wait. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i017_alt1_v2",
+          "text": "The phase/reward paths retain the opposing acquisition order."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i017_alt2_v2",
+          "text": "An external lookup can hold campaign and player state without bound."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i017_alt3_v2",
+          "text": "The prompt requires separate campaigns to continue."
+        }
+      ],
+      "reason": "Reward and phase correction touch campaign and player state in reverse order. A shared campaign-before-player order prevents the cycle while other campaigns proceed.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Acquire campaign before player in both reward and correction paths."
+        },
+        {
+          "optionId": "n08b04_i017_alt1_v2",
+          "text": "Keep opposite orders and retry when a moderator reports a wait."
+        },
+        {
+          "optionId": "n08b04_i017_alt2_v2",
+          "text": "Hold campaign and player while an external rulebook lookup runs."
+        },
+        {
+          "optionId": "n08b04_i017_alt3_v2",
+          "text": "Freeze every campaign while one phase is corrected."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A board-game campaign manager, Reward processing locks campaign then player; phase correction locks player then campaign. Each reward must use the current legal phase, and separate campaigns should continue. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i017",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A wait cycle is prevented by a consistent acquisition order or by releasing ownership before waiting on work that does not need the protected state.",
+        "scenarioApplication": "In A cold-chain logistics console, The transfer path locks shipment then carrier; carrier acceptance locks carrier then shipment. A shipment has one new owner only after acceptance, and unrelated shipments should proceed. Which coordination change best restores progress without broadening the blocked scope? Acquire shipment before carrier for transfer and acceptance.",
+        "errorCorrection": "The two paths continue acquiring shipment and carrier in opposite order. A remote response can keep both local records unavailable for unrelated work. Unrelated shipments must continue through hand-off.",
+        "boundaryOrTradeoff": "The tempting alternative is Keep opposite orders and retry whichever hand-off times out. It leaves both paths with the acquisition pattern named in the case, so the same pair can wait on itself.",
+        "transfer": "Choose one order before either path takes the shared locks. Complete the local state change under that order, then release locks before work that can wait on people, devices, or external services."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i018_alt1_v2",
+          "text": "The two paths continue acquiring shipment and carrier in opposite order."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i018_alt2_v2",
+          "text": "A remote response can keep both local records unavailable for unrelated work."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b04_i018_alt3_v2",
+          "text": "Unrelated shipments must continue through hand-off."
+        }
+      ],
+      "reason": "Transfer and acceptance can each hold one side of the shipment-carrier pair and wait for the other. Shipment-before-carrier makes both use one order without pausing other hand-offs.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Acquire shipment before carrier for transfer and acceptance."
+        },
+        {
+          "optionId": "n08b04_i018_alt1_v2",
+          "text": "Keep opposite orders and retry whichever hand-off times out."
+        },
+        {
+          "optionId": "n08b04_i018_alt2_v2",
+          "text": "Hold shipment and carrier until remote acknowledgement returns."
+        },
+        {
+          "optionId": "n08b04_i018_alt3_v2",
+          "text": "Stop all hand-offs while one carrier accepts a shipment."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B04",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A cold-chain logistics console, The transfer path locks shipment then carrier; carrier acceptance locks carrier then shipment. A shipment has one new owner only after acceptance, and unrelated shipments should proceed. Which coordination change best restores progress without broadening the blocked scope?",
+    "questionId": "ood-n08-b04-i018",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

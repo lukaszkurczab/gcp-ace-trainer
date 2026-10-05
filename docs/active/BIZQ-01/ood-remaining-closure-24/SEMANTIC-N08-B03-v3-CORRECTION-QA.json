@@ -1,0 +1,318 @@
+{
+  "schemaVersion": "bizq01-semantic-n08-b03-v3-correction-qa-v1",
+  "review": "SEMANTIC-N08-B03-v3-CORRECTION-QA",
+  "verdict": "PASS",
+  "scope": "Bounded review of B03 correction only. Unchanged whole objects reuse the cited prior semantic review after exact serialized-object comparison; this does not expand acceptance to other units, cohort, source activation, producer, runtime/admission, native/Premium, or full BIZQ-01.",
+  "inputs": {
+    "proposal": {
+      "path": "review-inputs/N08-B03-v3.json",
+      "sha256": "74ac35a41d3045172ee281c0aa6819a4fc275b627ee7882ee1d981bb85e6d4a1",
+      "matchesProposalBytes": true
+    },
+    "previousProposal": {
+      "path": "review-inputs/N08-B03-v2.json",
+      "sha256": "0cb7df8cfb1c70ba4bfe488e3a657e5bd308602ec928a75df7757ac793e3788b"
+    },
+    "manifest": {
+      "path": "N08-N09-MANIFEST.json",
+      "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    },
+    "contract": {
+      "path": "N08-N09-CONTRACT.json",
+      "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+    },
+    "source": {
+      "path": "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B03.json",
+      "manifestSha256": "f5d4bddc1bff1672949c81722bb919e15ed204a923a86726e9aae1a4b0969d41",
+      "diskSha256": "f5d4bddc1bff1672949c81722bb919e15ed204a923a86726e9aae1a4b0969d41",
+      "matchesManifest": true
+    },
+    "priorSemanticReview": {
+      "path": "SEMANTIC-N08-B03-v2-QA.json",
+      "sha256": "3c544cf36ceec78bf2a58b1db5be0d3c4420350b89ca04b288aae27c85d7ddd7"
+    }
+  },
+  "method": {
+    "wholeObjects": 18,
+    "changedObjects": 1,
+    "unchangedObjects": 17,
+    "unchangedPriorReviewsReusedOnlyWhenWholeCanonicalObjectEqualsPriorSnapshot": true,
+    "validator": "validateQuestion from patternly-content/scripts/content/question-contract.mjs",
+    "scorer": "scoreQuestion from patternly-content/scripts/content/question-contract.mjs",
+    "structuralAndScoring": {
+      "valid": 18,
+      "keyCorrect": 18,
+      "wrongOptionsIncorrect": 54,
+      "keyCorrectAfterReversal": 18,
+      "feedbackTargetFailures": 0
+    },
+    "identityComparedAgainstManifestBeforeObjects": true,
+    "semanticScope": "Changed prompts/options/answer/diagnostics and coupled explanation leaves were reviewed against the actual case facts; no question identity is changed absent a primary-decision shift."
+  },
+  "correctionFindings": [
+    {
+      "questionId": "ood-n08-b03-i002",
+      "result": "PASS",
+      "evidence": "The prompt now gives a stable request ID reused by the retry and requires returning the first committed approval; the changed keyed option atomically commits that ID with exception/control evidence and returns the same approval. The accepted option ID is fresh because its meaning now adds retry-result identity; the question remains the same atomicity decision (SAME_ID). No exactly-once delivery guarantee is asserted."
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n08-b03-i001",
+      "beforeQuestionId": "ood-n08-b03-i001",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "323b17bb0f3c62ebd409246e477529ed02c90677951f7120f7085e748541b0b6",
+      "priorReviewedFingerprint": "ec0e4333b2a3a9d6747e4187877f4b063850a1feb8dfa027c6baa3a956eecef2",
+      "currentFingerprint": "ec0e4333b2a3a9d6747e4187877f4b063850a1feb8dfa027c6baa3a956eecef2",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i002",
+      "beforeQuestionId": "ood-n08-b03-i002",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "61edf48af67c98875fb7954c6a564d723e453c22d5edd3140dfb7fbb104f626e",
+      "priorReviewedFingerprint": "2ff49c6dfdef3d597189788f095ffda1020b8bb31ef129bc35e20375247d22da",
+      "currentFingerprint": "711a1d010986715db4eccbf49e505f3e876c479bc0d129b8d72fee46cc6466bc",
+      "acceptedOptionIdentity": "CHANGED_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract_retry_i002_v3",
+      "changedFieldsSincePriorReview": [
+        "answer",
+        "feedback",
+        "interaction",
+        "prompt"
+      ],
+      "priorDisposition": "DEFECT",
+      "correctionDisposition": "REVIEWED_CORRECTION"
+    },
+    {
+      "questionId": "ood-n08-b03-i003",
+      "beforeQuestionId": "ood-n08-b03-i003",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "f12846f03c4a2f70973a4c077e87833fafa11c8120b66244bc61f42555d0abd5",
+      "priorReviewedFingerprint": "4fd366161d2d2190d577131338d1ac4cd05fea221c58bba796750b57f70cf9f7",
+      "currentFingerprint": "4fd366161d2d2190d577131338d1ac4cd05fea221c58bba796750b57f70cf9f7",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i004",
+      "beforeQuestionId": "ood-n08-b03-i004",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "865799afabeea12533a996d3ea0e36e6b616d049280181ff48026e991a94c75d",
+      "priorReviewedFingerprint": "59b1b737f5a0cd55e5f05e470283536a8fca92716b9c21fcb79466cbe24701a7",
+      "currentFingerprint": "59b1b737f5a0cd55e5f05e470283536a8fca92716b9c21fcb79466cbe24701a7",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i005",
+      "beforeQuestionId": "ood-n08-b03-i005",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "51baff34186a2c81a6dd551d53d2b20d82c456dfcf5e6c7c5b95c2b7fddee98a",
+      "priorReviewedFingerprint": "36d320534cbe9e82e06a8ae604959d0e380d374f9591beb2d7ec68e814b02c5b",
+      "currentFingerprint": "36d320534cbe9e82e06a8ae604959d0e380d374f9591beb2d7ec68e814b02c5b",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i006",
+      "beforeQuestionId": "ood-n08-b03-i006",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "8de7c7686d1231ffcd69ab4355a28c136f64eb96cada3f51b8c3214668c31701",
+      "priorReviewedFingerprint": "dec41f945a5d1635770adb46e4f25f78f1798c206d98e0c7a8279012f58ab323",
+      "currentFingerprint": "dec41f945a5d1635770adb46e4f25f78f1798c206d98e0c7a8279012f58ab323",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i007",
+      "beforeQuestionId": "ood-n08-b03-i007",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "315bc093bd03b8bb0b3f28b95037211fdcb34b2b172412a3b67234550740d05f",
+      "priorReviewedFingerprint": "b068ba3ece679e78c25486603b43379be4323b581bdc5c911f4e12a069476c76",
+      "currentFingerprint": "b068ba3ece679e78c25486603b43379be4323b581bdc5c911f4e12a069476c76",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i008",
+      "beforeQuestionId": "ood-n08-b03-i008",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "717e79e21977fb2b0f572c743d1a5c4582a5244ea562693e5dd299a75fa974a9",
+      "priorReviewedFingerprint": "e9d8aa44ca9b8cb94c157b63f456bcf0f5cb9afc602eecbaf6519ba0b975e363",
+      "currentFingerprint": "e9d8aa44ca9b8cb94c157b63f456bcf0f5cb9afc602eecbaf6519ba0b975e363",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i009",
+      "beforeQuestionId": "ood-n08-b03-i009",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "677d09dde245207bee7b6c45440b0d7ffaf079260ace00964edfd2930a3312bc",
+      "priorReviewedFingerprint": "5cc24615cbe7e474146325916567417fab5b3c3f117b5b1a61a89c0d88b57773",
+      "currentFingerprint": "5cc24615cbe7e474146325916567417fab5b3c3f117b5b1a61a89c0d88b57773",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i010",
+      "beforeQuestionId": "ood-n08-b03-i010",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "71754b7e6e2f8f99adfa70b3eabc3e87e5cb36cd2ded84eb3880ea8b991290c3",
+      "priorReviewedFingerprint": "72f94de3a2e66f6be483a5013c2a152b2aecdef7a86bdbdbd46f1fbba10ec0c2",
+      "currentFingerprint": "72f94de3a2e66f6be483a5013c2a152b2aecdef7a86bdbdbd46f1fbba10ec0c2",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i011",
+      "beforeQuestionId": "ood-n08-b03-i011",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "056ec681ed60740ff678f828c6026f118dcd61f57331db0fed1db50cd05d20a7",
+      "priorReviewedFingerprint": "97bfb16d830b50bcc5f468c9196d90891e95005e8fb3f044043a1b3d748e410e",
+      "currentFingerprint": "97bfb16d830b50bcc5f468c9196d90891e95005e8fb3f044043a1b3d748e410e",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i012",
+      "beforeQuestionId": "ood-n08-b03-i012",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "220337c3bd98a1ca52c0e3c03aa78b943965ab2f0d725349c5616de430d5232b",
+      "priorReviewedFingerprint": "aac8de49cbcab8a8e6dfcb7db6145ceadd3d359dbd258a5fa62b382e9fb56038",
+      "currentFingerprint": "aac8de49cbcab8a8e6dfcb7db6145ceadd3d359dbd258a5fa62b382e9fb56038",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i013",
+      "beforeQuestionId": "ood-n08-b03-i013",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "e953347cf2dd34c553910b9fab43888dc01e34c5e255ebdc8df8aa6eb6c789fa",
+      "priorReviewedFingerprint": "e349882220c065ac11324874566757fa1427e2518c8ee7d1a9e984be2efae178",
+      "currentFingerprint": "e349882220c065ac11324874566757fa1427e2518c8ee7d1a9e984be2efae178",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i014",
+      "beforeQuestionId": "ood-n08-b03-i014",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "763241a64db5603a169f20a71cfb33ec25cdb0fecc68a4f203e51f34de5e81d7",
+      "priorReviewedFingerprint": "c1f5efb2e9cff2ded2c6d40946ac2cf0b8cedbfcebff6f8db28ccc2bfac57c76",
+      "currentFingerprint": "c1f5efb2e9cff2ded2c6d40946ac2cf0b8cedbfcebff6f8db28ccc2bfac57c76",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i015",
+      "beforeQuestionId": "ood-n08-b03-i015",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "52f5b29b9aa521385b83ae8bd5f82e106da71db9cd3b21990f08883b87a80c42",
+      "priorReviewedFingerprint": "995f09b9c1e2c28d32c9807d7f3496c665fa60951b5b9bac0e04ff1447bb37c1",
+      "currentFingerprint": "995f09b9c1e2c28d32c9807d7f3496c665fa60951b5b9bac0e04ff1447bb37c1",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i016",
+      "beforeQuestionId": "ood-n08-b03-i016",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "859b5837afbfee408ff71723bc563ad818202eb3bcddb40b928e4f53a4afe7d6",
+      "priorReviewedFingerprint": "32970536897649a501089967ed7653f07102199598e1c0a4b462877261279d59",
+      "currentFingerprint": "32970536897649a501089967ed7653f07102199598e1c0a4b462877261279d59",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i017",
+      "beforeQuestionId": "ood-n08-b03-i017",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "f4e02b4c7e423bfc474947fc508b378bcb81d102924fc3fecd056cb495af145d",
+      "priorReviewedFingerprint": "17799538e604da39dacba8b522866bff0396ad02a96fec8eb39ca0e28cf242c2",
+      "currentFingerprint": "17799538e604da39dacba8b522866bff0396ad02a96fec8eb39ca0e28cf242c2",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    },
+    {
+      "questionId": "ood-n08-b03-i018",
+      "beforeQuestionId": "ood-n08-b03-i018",
+      "questionIdentity": "SAME_ID",
+      "beforeFingerprint": "80e05bbd5036fd2aacd70c6c21050944caf4e7db9715c86f4b4ba896d9ed6271",
+      "priorReviewedFingerprint": "6ab02d275a3ffed3d99013bb19118a47ff9167296d94da025f79de5c89fc72ba",
+      "currentFingerprint": "6ab02d275a3ffed3d99013bb19118a47ff9167296d94da025f79de5c89fc72ba",
+      "acceptedOptionIdentity": "SAME_ACCEPTED_OPTION_MEANING",
+      "priorAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "changedFieldsSincePriorReview": [],
+      "priorDisposition": "PASS",
+      "correctionDisposition": "REUSED_EXACT_PRIOR_REVIEW"
+    }
+  ]
+}

@@ -1,0 +1,351 @@
+{
+  "schemaVersion": "bizq01-n08-b09-author-v2",
+  "previousProposal": "review-inputs/N08-B09-v1.json",
+  "proposalFile": "proposals/N08-B09-v2.json",
+  "proposalSha256": "d1c326629e7fb6187e29df95d3363a8d2570b1b5c564ba216ecc04836cf1a7fe",
+  "scope": "Shortened only accepted option text and the matching scenarioApplication sentence to state each concrete retry identity/outcome without repeating the full prompt. Correct IDs, distractors, their feedback, Reason, remaining Details, prompts, and source option order are unchanged. The all-first presentation cue is handled by root runtime work, not by rotating source arrays. No exactly-once guarantee is added.",
+  "items": [
+    {
+      "questionId": "ood-n08-b09-i001",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A public-transit disruption board, Each platform change has a stable change ID and effective sequence. If the acknowledgement is lost, the controller retries the same change ID; a distinct later change has a different ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Generate a new change ID after every lost acknowledgement and publish the same platform change again.",
+      "v1ToV2": {
+        "beforeKey": "Store the outcome by change ID and apply the effective-sequence transition once; replaying that ID returns its recorded outcome.",
+        "key": "Replay the change ID and return its recorded effective-sequence outcome."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i002",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A neighborhood energy-sharing service, Every discharge reservation has a request ID. A timeout may occur after the meter accepted the window; retrying the same ID must return the original reservation result, while a new ID is a new request. Which retry identity should the operation honor?",
+      "nearestAlternative": "Assign a new ID on timeout and try to reserve the same interval again.",
+      "v1ToV2": {
+        "beforeKey": "Record the accepted window and result under the request ID; same-ID retries read that result before attempting another reservation.",
+        "key": "Replay the request ID and return its accepted window; a new ID is a new request."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i003",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A live captioning studio, A provider-switch command has a switch ID. The callback can finish after the supervisor times out; retrying that same switch must not create a second stream transition, while a later switch uses a different ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new switch ID for every retry and apply each command to active streams again.",
+      "v1ToV2": {
+        "beforeKey": "Store the switch result by switch ID and return it on replay; apply each distinct switch once at the stream boundary.",
+        "key": "Replay the switch ID’s result; apply a distinct later switch at its stream boundary."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i004",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A volunteer coordination hub, A two-volunteer swap uses one swap ID. The response can be lost after both assignments changed; a retry must return that swap's result instead of swapping them back. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new swap ID each time the manager retries after a lost response.",
+      "v1ToV2": {
+        "beforeKey": "Keep the swap ID with the accepted pair transition and return the stored outcome for a repeated ID.",
+        "key": "Replay the swap ID’s stored pair outcome; do not swap the pair back."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i005",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A local-first map editor, A proposal carries a proposal ID and base route revision. A lost response after acceptance can be retried with the same ID; a different proposal based on an old revision must still receive a conflict. Which retry identity should the operation honor?",
+      "nearestAlternative": "Generate a fresh proposal ID on retry so the geometry is uploaded again as a new edit.",
+      "v1ToV2": {
+        "beforeKey": "Store each proposal outcome by proposal ID and preserve its base-revision result; replay the same proposal returns that result, while a distinct stale proposal is checked anew.",
+        "key": "Replay the proposal ID’s saved base-revision result; check a distinct stale proposal anew."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i006",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A board-game campaign manager, A reward command has a campaign ID and action ID. The host may retry after losing the response; the same action must not award points twice, but a different action in the campaign remains valid. Which retry identity should the operation honor?",
+      "nearestAlternative": "Generate a new action ID after timeout and award the same points a second time.",
+      "v1ToV2": {
+        "beforeKey": "Use the action ID within the campaign to record one reward outcome; a replay returns that outcome without applying points again.",
+        "key": "Return the campaign action ID’s outcome without awarding its points again."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i007",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A cold-chain logistics console, A hand-off request includes a transfer ID. The carrier may accept before the dispatch screen times out; retrying the same transfer must not create another ownership change. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a new transfer ID after timeout and resend the same carrier change as another transfer.",
+      "v1ToV2": {
+        "beforeKey": "Store the accepted carrier and transfer outcome under the transfer ID; on replay return it without applying another hand-off.",
+        "key": "Replay the transfer ID’s accepted hand-off result without another ownership change."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i008",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A cooperative lending ledger, A repayment carries a receipt ID. The account may be debited before the client receives the receipt; retrying the same receipt ID must not reduce the balance twice, while another receipt remains a new repayment. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new receipt ID after timeout and debit the account again.",
+      "v1ToV2": {
+        "beforeKey": "Record the applied allocation under its receipt ID and return the same outcome for a replay of that receipt.",
+        "key": "Return the allocation recorded under this receipt ID; another receipt is a new repayment."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i009",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A tournament bracket service, A terminal result has a match ID and result-event ID. The bracket may advance before the official sees the response; replaying the same event must not advance twice, while a new legal event is evaluated against current match state. Which retry identity should the operation honor?",
+      "nearestAlternative": "Generate a new result-event ID after timeout and advance the same bracket slot again.",
+      "v1ToV2": {
+        "beforeKey": "Store the result-event outcome and bracket advancement under that event ID; a replay returns the outcome without repeating advancement.",
+        "key": "Replay the result-event ID’s bracket outcome without advancing the slot again."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i010",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A returns inspection workflow, Each submitted inspection revision has a submission ID. If its acknowledgement is lost, retrying that submission must preserve the same findings; a later corrected inspection gets a new revision and ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new submission ID for each retry and append another inspection of the same revision.",
+      "v1ToV2": {
+        "beforeKey": "Keep the submission ID with its immutable findings and return that submission's recorded status when the same ID is replayed.",
+        "key": "Replay the submission ID’s recorded status for its immutable findings."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i011",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A research-notebook platform, A publication request has a run ID and selected input revisions. If the job finishes but its response is lost, retrying that run ID must return the same publication; a changed input selection uses a new run ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Generate a new run ID after timeout and publish the same output again as another result.",
+      "v1ToV2": {
+        "beforeKey": "Store the completed output under the run ID and return it on replay; create a new run only for the new input revision selection.",
+        "key": "Replay the run ID’s completed output; use a new ID for a changed input selection."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i012",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A collaborative annotation workspace, A comment submission has a comment ID. Notification may be retried after acceptance; the same notification must refer to the accepted comment, while a new comment has a new ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new comment ID for every notification retry and append the same text again.",
+      "v1ToV2": {
+        "beforeKey": "Persist the accepted comment by comment ID and make notification delivery replay that comment's event rather than create another comment.",
+        "key": "Replay notification for the accepted comment ID; do not create another comment."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i013",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A mobile field-inspection app, An offline submission has a submission ID and frozen draft revision. The server may finish it before the device receives an acknowledgement; replaying the same ID must return complete/retryable for that revision, not submit later edits. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new submission ID each time the device retries after reconnecting.",
+      "v1ToV2": {
+        "beforeKey": "Bind the server outcome to submission ID and frozen revision; same-ID replay returns that status and later edits use a new submission.",
+        "key": "Replay the submission ID and frozen revision; later edits need a new submission."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i014",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A digital invoice exchange, Each invoice issue has a stable issue ID. The exchange can accept before the response is lost; retrying the same issue ID must return the same accepted/rejected outcome without charging twice. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new issue ID after every timeout and resend the invoice as a new chargeable issue.",
+      "v1ToV2": {
+        "beforeKey": "Reuse the issue ID on retry and have the invoice boundary return its recorded exchange result before creating another issue.",
+        "key": "Replay the stable issue ID and return its recorded exchange result before creating another issue."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i015",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A smart-building access controller, A badge revocation command has a command ID. A door may apply the revocation before the administrator sees the acknowledgement; retrying the same command must not toggle the badge back to active. Which retry identity should the operation honor?",
+      "nearestAlternative": "Use a toggle command and send it again whenever the administrator sees no acknowledgement.",
+      "v1ToV2": {
+        "beforeKey": "Record revocation by command ID as a state-setting operation; replay reports revoked without applying an inverse transition.",
+        "key": "Replay the command ID as revoked; never turn the same command into a toggle."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i016",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A package-label generation service, A label request has a print-job ID tied to an approved shipment revision. The printer can finish before its acknowledgement arrives; replay must identify that print job rather than print another label. Which retry identity should the operation honor?",
+      "nearestAlternative": "Generate a fresh print-job ID whenever the operator retries a missing acknowledgement.",
+      "v1ToV2": {
+        "beforeKey": "Return the recorded print-job result for the same ID and shipment revision; use a new job ID only for a genuinely new approved revision.",
+        "key": "Return the print-job ID’s result for that shipment revision; use a new ID for a new revision."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i017",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A multi-tenant rehearsal scheduler, A room-move request has a move ID. The move may commit before the coordinator receives its response; retrying the same ID must not move the booking again, while a later new move remains allowed. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new move ID after a timeout and move the booking from its current room again.",
+      "v1ToV2": {
+        "beforeKey": "Store the move outcome under its move ID; replay that ID returns the existing result, and a distinct move is checked against current room capacity.",
+        "key": "Replay the move ID’s outcome; check a distinct move against current room capacity."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b09-i018",
+      "learningObjective": "Resolve a retry by the same operation identity while keeping a genuinely new operation distinct.",
+      "decisiveFact": "In A museum exhibit controller, A maintenance command has a command ID and desired mode. The controller may set maintenance before the operator receives the acknowledgement; repeating the same command must not toggle back to running. Which retry identity should the operation honor?",
+      "nearestAlternative": "Implement maintenance as a toggle and retry it when the response is late.",
+      "v1ToV2": {
+        "beforeKey": "Store the desired maintenance state for that command ID; a replay reports the current accepted result without applying a toggle.",
+        "key": "Replay the desired maintenance state for this command ID without toggling it."
+      },
+      "identityAction": "preserve_question_id_and_correct_option_id",
+      "identityReason": "The operation-ID replay decision and its case-specific outcome remain the same primary meaning. The accepted text is concise and retains the distinguishing boundary for this case. i014 makes no exactly-once guarantee: it describes the stored response at the invoice boundary.",
+      "changedFields": [
+        "interaction.options[answer.optionId].text",
+        "feedback.details.scenarioApplication"
+      ],
+      "sourceRefs": [
+        "The fictional stable ID, retry, and outcome contract is explicit in the prompt."
+      ]
+    }
+  ]
+}

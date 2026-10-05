@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "bizq01-n08-b09-v3-v4-identity-presentation-erratum-v2",
+  "scope": "Additive clarification correcting temporal attribution of identity finding and the assessment of v4 presentation finding. Preserves original reports/proposals and prior erratum.",
+  "inputs": {
+    "beforeSourceSha256": "093bdea05d1a2e9854c474025fea368aac46a1c70f57f4a8371c990f0461e15d",
+    "manifestSha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612",
+    "v3ProposalSha256": "960bf89a2f3a3d8fa9a91b587957b7c0e452a2c77b476b116274b7955938a4cf",
+    "v4ProposalSha256": "9e0251f2010279f88ca52d7e0e039dafae7f342ebd02152294c89662c973df71",
+    "contractSha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27",
+    "v3QASha256": "bc69408fe1d80aedf538e617608d9d4aa87bad256b3f9f80777c0a0776953b07",
+    "priorV3ErratumSha256": "245d32a21a4ec5a0d646cd55debff867eb97b18e25e91b57c646787cdb318ff9",
+    "v4QASha256": "8190de2ba9bef53d9add1cb65e10ef08c553a5f711619d6de376a54cce41f28c"
+  },
+  "identityClarification": {
+    "answer": "The full review found that the identity mismatch existed in v3 already; v4 did not introduce a new primary-decision change relative to v3. The v3 SAME_ID rationale was the mistaken conclusion. The v4 REVISE verdict remains because current v4 still differs from the manifest before decision.",
+    "beforeDecision": "Locate responsibility for the case invariant at an object boundary/owner that can enforce it, rather than shifting it to coordinator sequencing, exposed representation, an invalid subtype, or speculative indirection.",
+    "v3Decision": "Choose operation/request-ID scope for retries (same operation identity across an uncertain acknowledgement, while a genuinely later operation remains distinct).",
+    "v4Decision": "Same operation/request-ID scope decision as v3, with prompt/options/feedback reworded.",
+    "i014": {
+      "beforeAsk": "Where should the invoice reissue/no-double-charge invariant be enforced?",
+      "beforeKey": "Make a retry key or idempotent state transition part of the object boundary before adding automatic retries, keeping the traceability/no-double-charge rule inside the enforcing owner.",
+      "v3Ask": "Which retry identity should the client use when a stable issue ID may have been accepted before a lost response?",
+      "v3Key": "Return the recorded exchange result for this stable issue ID before creating another issue.",
+      "v4Ask": "Which retry policy should reconcile a stable issue ID after possible acceptance and keep a corrected reissue separate?",
+      "v4Key": "Look up this issue ID’s outcome; treat a corrected reissue as a separate invoice issue.",
+      "protectedFacet": "Retry/idempotency remains supported and the current version makes no exactly-once guarantee. That topic facet alone does not prove the same primary decision or accepted meaning."
+    }
+  },
+  "presentationClarification": {
+    "status": "V4 fixes the consistent shortest-key statistic but does not fully resolve the qualitative form asymmetry identified in v3.",
+    "requirement": "docs/07-content-guidelines.md §§4.2 and 4.3 require plausible competing options at a comparable abstraction level and avoidance of giveaway wording. This assessment is qualitative; no length threshold or equal-word-count rule is applied.",
+    "actualPattern": "Across the v4 set, the accepted policy is generally stated as a constructive lookup/replay by operation ID with a separate later operation. The three wrong policies repeatedly append their own explicit adverse outcomes: a new ID may duplicate the effect, a resource-wide key may suppress later valid work, or silence may be incorrectly treated as rejection and cause reversal/duplication. This repeats the same positive-key versus self-disqualifying-alternatives structure across the unit.",
+    "examples": [
+      {
+        "questionId": "ood-n08-b09-i001",
+        "accepted": "Replay by change ID and read its sequence result; handle a later platform edit as another operation.",
+        "alternatives": [
+          "Give each attempt a fresh ID; a lost reply can publish the same platform change twice.",
+          "Deduplicate by platform ID; a later valid edit to that same platform is mistaken for the first.",
+          "Treat silence as rejection and reverse the platform state, even if the change was published."
+        ],
+        "risk": "Each alternative names a harmful result in its own text, so the learner can reject it from the wording rather than evaluate the retry boundary."
+      },
+      {
+        "questionId": "ood-n08-b09-i014",
+        "accepted": "Look up this issue ID’s outcome; treat a corrected reissue as a separate invoice issue.",
+        "alternatives": [
+          "Give each retry a new ID; an accepted issue can be charged again.",
+          "Deduplicate by customer ID; a corrected invoice issue is suppressed with the first.",
+          "Assume no reply means rejection and submit another chargeable issue before reconciling."
+        ],
+        "risk": "The alternatives advertise duplicate charging, suppressed correction, or premature reissue while the key is the only policy without an overtly adverse clause."
+      }
+    ],
+    "conclusion": "The key-length cue is no longer present (0 shortest, 10 intermediate, 8 longest), but those ranks do not settle the separate qualitative cue. Because the self-disqualifying alternative wording is repeated, the v3 form finding should be treated as partially unresolved pending an independent judgment that these remain credible competing decisions under the objective.",
+    "notClaimed": "This does not automatically fail every distractor, require removing consequences, impose equal lengths, or create a new unit-uniqueness gate."
+  },
+  "preservedFindings": [
+    "The current retry-identity decision differs from the before object primary decision; this difference was already in v3.",
+    "The v4 direct answer leak and consistent shortest-key cue were corrected.",
+    "The v4 qualitative positive-key/adverse-alternatives pattern remains a review concern."
+  ],
+  "reportRelationship": "This addendum supplements SEMANTIC-N08-B09-IDENTITY-ERRATUM.md/json and clarifies SEMANTIC-N08-B09-v4-QA.md/json. Original reports and authored inputs remain unchanged."
+}

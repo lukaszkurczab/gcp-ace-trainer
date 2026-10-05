@@ -1,0 +1,286 @@
+{
+  "schemaVersion": "bizq01-n09-authoring-notes-v1",
+  "revision": "N09-B09-v2-identity-correction",
+  "proposal": {
+    "path": "proposals/N09-B09-v2.json",
+    "sha256": "5d5a43477f2347412caaeea2c1885d6d0bcb6881b6e7216cc2d9ce62e26351b6"
+  },
+  "baseline": {
+    "path": "patternly-content/content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B09.json",
+    "sha256": "30831be63166c269207fd5e0d3d3950eecb9dbe2ed457381853891d1fd07890d"
+  },
+  "identityBoundary": "All 18 frozen before/current pairs retain the same primary item-level decision and question identity. Restore each original question ID from i001–i018. This correction changes only questionId; prompts, constraints, options, answer, scoring, feedback, references, taxonomy, and difficulty remain exactly the current v1 proposal values.",
+  "sourceBoundary": "The listed workflow, requirements, tests, measurements, actors, and risks are fictional scenario facts. Microsoft ADR guidance supports recording context, alternatives, rationale, implications, confidence/status, and unresolved assumptions; it does not establish the case-specific product contract.",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n09-b09-i001",
+      "questionId": "ood-n09-b09-i001",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "The listing must not become visible until price and stock rules validate. The reviewer has measured the validation path but has not confirmed whether seasonal imports share the same stock source.",
+      "nearestAlternative": "State that all seasonal imports use the same stock source because the current seller flow does.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i002",
+      "questionId": "ood-n09-b09-i002",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "Each split must retain the original request identity and delivery promise. One vendor can meet the promise; the second vendor has not confirmed its date.",
+      "nearestAlternative": "State that both vendors meet the promise because the original request has one delivery date.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i003",
+      "questionId": "ood-n09-b09-i003",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "The plot boundary and approval history must survive the transfer. The current flow checks those fields, but there is no test showing two simultaneous transfers of the same plot.",
+      "nearestAlternative": "Mark concurrent transfers safe because the single-transfer path passes.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i004",
+      "questionId": "ood-n09-b09-i004",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "Bundle price must remain consistent with component prices. The current proposal recalculates the bundle only when an editor saves it; no evidence covers later component-price changes.",
+      "nearestAlternative": "Say the bundle always matches its components because save-time recalculation passed.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i005",
+      "questionId": "ood-n09-b09-i005",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "The station has a fixed capacity and reservations expire. The current test creates one reservation; there is no test for two requests arriving when only one slot remains.",
+      "nearestAlternative": "Claim the last slot cannot be double-booked because capacity is checked before insert.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i006",
+      "questionId": "ood-n09-b09-i006",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "Asset identity must remain stable while descriptive values may be replaced. The proposal merges by a normalized title; two assets with the same title but different archive IDs have not been tested.",
+      "nearestAlternative": "Treat normalized titles as unique because the current sample has no collision.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i007",
+      "questionId": "ood-n09-b09-i007",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "Each approval needs a territory and expiry. The proposed screen collects both, but the policy owner has not confirmed whether the expiry is measured from approval or first use.",
+      "nearestAlternative": "State expiry starts at approval because the screen calculates it when saved.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i008",
+      "questionId": "ood-n09-b09-i008",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "A battery cannot be assigned to two aircraft at once. The planner’s single-request test passes; no evidence shows behavior when two aircraft request the same battery together.",
+      "nearestAlternative": "Say the battery is exclusive because the request rejects an already assigned battery.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i009",
+      "questionId": "ood-n09-b09-i009",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "Consent must be checked before external disclosure. The current integration test uses consented referrals; denied and missing-consent responses have not been exercised.",
+      "nearestAlternative": "State that the integration is safe because the consented test passed.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i010",
+      "questionId": "ood-n09-b09-i010",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "A saved result must remain explainable under the exercise version and scoring policy used when completed. The proposed migration rewrites older results using the current policy.",
+      "nearestAlternative": "Say old scores are equivalent because the new policy produces similar examples.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i011",
+      "questionId": "ood-n09-b09-i011",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "The exception must retain the approver and the applicable spending cap. A proposed shortcut lets a requester raise the cap on their own; the test suite covers only the approver path.",
+      "nearestAlternative": "Declare the requester bypass impossible because the approver test passed.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i012",
+      "questionId": "ood-n09-b09-i012",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "Annotations follow stable segment IDs, not file offsets. The proposal stores offsets for new recordings; there is no test covering a different-length replacement.",
+      "nearestAlternative": "Treat offsets as stable because the current replacement has the same duration.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i013",
+      "questionId": "ood-n09-b09-i013",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "Each grant requires a specific approval and expiry. The service and reviewer console use different clock sources; the allowed clock skew has not been agreed.",
+      "nearestAlternative": "State that expiry is exact because both systems display UTC timestamps.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i014",
+      "questionId": "ood-n09-b09-i014",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "The seal must cover the exact immutable revision selected by the user. The current test seals the latest revision; it does not change the selected revision between selection and sealing.",
+      "nearestAlternative": "Treat latest and selected revision as equivalent because they match in the test.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i015",
+      "questionId": "ood-n09-b09-i015",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "A payout release is tied to a settled order and uses a stable request key. After a timeout, the processor may have accepted the request; no lookup behavior is specified.",
+      "nearestAlternative": "State that the stable key guarantees exactly one payout despite the timeout.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i016",
+      "questionId": "ood-n09-b09-i016",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "Passengers must see changes in effective-time order. The operator can send a delayed earlier change after a newer one; the current test sends updates in order.",
+      "nearestAlternative": "Say arrival order is adequate because all current tests send updates in order.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i017",
+      "questionId": "ood-n09-b09-i017",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "A meter cannot hold overlapping reservations. The normal reservation path passes; no test injects a failure between checking overlap and recording the reservation.",
+      "nearestAlternative": "Declare the reservation atomic because the normal request test passes.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b09-i018",
+      "questionId": "ood-n09-b09-i018",
+      "mentalUnitId": "OOD-N09-B09",
+      "learningObjective": "Design-review communication, alternatives, and iterative refinement",
+      "decisiveFact": "The new provider has a different request format. Existing consumers rely on the current timing and error contract; no compatibility test has run against the new provider.",
+      "nearestAlternative": "State that the contract is preserved because the adapter compiles.",
+      "changedCondition": "If the stated evidence, assumption, or change boundary changes, revise the record to distinguish the new confirmed fact from any remaining open question; do not carry forward an earlier conclusion without reassessing it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Independent review of the full before/current objects found the same scenario and primary decision. The reserved replacement ID is unsupported; restoring the original ID is the narrow correction. All other question fields remain unchanged.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+        "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+      ]
+    }
+  ]
+}

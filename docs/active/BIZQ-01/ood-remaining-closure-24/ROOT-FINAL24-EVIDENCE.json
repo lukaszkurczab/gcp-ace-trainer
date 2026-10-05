@@ -1,0 +1,263 @@
+{
+  "result": "PASS_ROOT_GATES_FINAL_INDEPENDENT_QA_PENDING",
+  "scope": "Source24 producer/consumer/admission/export/static acceptance evidence only; no native/Premium/fullBIZQ/release/deployment/push claim",
+  "sourceCheckpoint": "1487f24db63af0627b8f3b3739c125594a345b80",
+  "readinessCheckpoint": "0a05f73d82c9dd9acac59cd26e4be8228b0a850a",
+  "consumerCheckpoint": "fa95d027076e970d71dacf0d1fd7976fa0ba8f60",
+  "admissionCheckpoint": "cf119c3f8e8ebfce3e5bdbcd3d5f4e4c7c5dd509",
+  "refs": {
+    "app": "fa95d027076e970d71dacf0d1fd7976fa0ba8f60",
+    "content": "cf119c3f8e8ebfce3e5bdbcd3d5f4e4c7c5dd509",
+    "web": "563eff9dc28ddce60c03a633edebf6db2c968a42",
+    "backend": "039f7f000e701c4fbc69e18a1fb66528cbc5cdcb"
+  },
+  "candidateId": "ebd5f2d614ca620323b6abf111d06e84acf30cc1d9a5e819bc8df4ed2c071525",
+  "contentVersion": "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24",
+  "questionSetSha256": "c92a9f04488efb4ef7a5fa8b3257495c21e6c62125123df8073141c60000b2d8",
+  "artifactSha256": "9df476e414158da0f33e118c06ed7fbc476b53bc8f0a115a470f61f9c1bf1ea3",
+  "checks": {
+    "rootProducerFocused": 5,
+    "independentProducerFocused": 5,
+    "independentHistorical": 60,
+    "canonical": {
+      "result": "PASS_AGGREGATE",
+      "scope": "Matching first canonical186 passing cases reused; committed-source targeted3/3 resolves2snapshot failures, no freshfull188/188 claim",
+      "sourceCommit": "1487f24db63af0627b8f3b3739c125594a345b80",
+      "distinctCanonicalTests": 188,
+      "distinctPass": 188,
+      "remainingFailures": 0,
+      "skip": 0,
+      "firstRunReceipt": "ROOT-CANONICAL24-FIRST-RECEIPT.json",
+      "targetedTests": 3,
+      "targetedPass": 3,
+      "targetedLogSha256": "1e6aed2bedb505f81a3884276bb7c22c5279b6a9487b8a2ea9d9b8a71b87ddf4",
+      "onlySourceChangeAfterFirstRun": "six spaces removed from blank line120 of producer24 test; no test behavior changed; sourcecheckpoint nowcommitted"
+    },
+    "rootConsumer": 17,
+    "independentConsumer": 17,
+    "postAdmission": 7,
+    "static": {
+      "result": "PASS_AGGREGATE",
+      "scope": "Required Node22 app static gate; matching1878 passes/4existing skips plus stable-status targeted1/1 and bothboundaries, notfreshfull1883/1883",
+      "nodeVersion": "v22.22.3",
+      "tests": 1883,
+      "pass": 1879,
+      "fail": 0,
+      "skip": 4,
+      "first": {
+        "pass": 1878,
+        "fail": 1,
+        "skip": 4
+      },
+      "resolvedFailure": "releaseGate stage contract compared dirty-path counts521 and524 while ownnew evidencefiles were created; no writes duringtargetedretry,1/1 passed; testunchanged",
+      "recovery": "passed",
+      "typecheck": "passed",
+      "contentBoundary": "passed",
+      "runtimePrivacyBoundary": "passed",
+      "environment": {
+        "PATTERNLY_CONTENT_CURRENT_ROOT": "/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content",
+        "PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA": "cf119c3f8e8ebfce3e5bdbcd3d5f4e4c7c5dd509",
+        "PATTERNLY_CONTENT_HISTORICAL_ROOT": "/private/tmp/patternly-content-historical-aud08-v14"
+      },
+      "logs": {
+        "ROOT-STATIC24-FIRST.log": "60f1bacb4cc525e9427f4de13000c1c48349c94b74fc3e92ee6ff42c1a13cbd2",
+        "ROOT-STATIC24-STABLE-SNAPSHOT-RETRY.log": "bc5b1b57db001234e9fe907780ffe49be8126c82d481420beba8842e24c16112",
+        "ROOT-STATIC24-CONTENT-BOUNDARY.log": "b53b6b76837ae0f573e69c69856be2930ca32f2381e7602b1f603e30fa43f938",
+        "ROOT-STATIC24-PRIVACY-BOUNDARY.log": "bcb4b78593b6751177c7facf707db4f73a2da89f45bfd01153c277cea6945197"
+      }
+    },
+    "releaseGate": "passed",
+    "exporter": "passed",
+    "exporterCheck": "passed",
+    "webLocal": "passed"
+  },
+  "preservation": {
+    "source": {
+      "result": "PASS",
+      "scope": "Actual current source24/all324/wholeQset and unchanged1089OOD/935content/15proofs/8app artifacts/catalog; does not establish migration, consumer synchronization, admission or native acceptance",
+      "wholeQuestions": 1413,
+      "changedQuestions": 324,
+      "preservedOOD": 1089,
+      "untouchedContentFiles": 935,
+      "immutableProofFiles": 15,
+      "otherArtifacts": 8,
+      "questionSetSha256": "c92a9f04488efb4ef7a5fa8b3257495c21e6c62125123df8073141c60000b2d8"
+    },
+    "guards": {
+      "verdict": "PASS",
+      "scope": "Actual AST-selected existing14 descriptors and closed17/19/19a/20/21/22/23 private-guard bytes versus accepted baseline; additive24 dispatch/global history assembly are not covered by this check and require actual implementation review",
+      "baselineCommit": "9e2d97f5ee28793c14341d031697cd89273fe288",
+      "currentVerifierSha256": "c641acd70ae2fa074c4de350e491c193762d702f6df92a01cf0126fe477a5501",
+      "unchangedDescriptors": [
+        "BIZQ01_PROOF",
+        "BIZQ01_BESD_COHORT14_PROOF",
+        "BIZQ01_COPY_PROOF",
+        "BIZQ01_OOD_PROOF",
+        "BIZQ01_OOD_SUCCESSOR_PROOF",
+        "BIZQ01_OOD_COHORT13_PROOF",
+        "BIZQ01_OOD_COHORT16_PROOF",
+        "BIZQ01_OOD_COHORT17_PROOF",
+        "BIZQ01_OOD_COHORT19_PROOF",
+        "BIZQ01_OOD_COHORT23_PROOF",
+        "BIZQ01_OOD_COHORT22_PROOF",
+        "BIZQ01_OOD_COHORT21_PROOF",
+        "BIZQ01_OOD_COHORT20_PROOF",
+        "BIZQ01_OOD_REASON_AMENDMENT_19A_PROOF"
+      ],
+      "unchangedPrivateGuardFunctions": [
+        "validateBizq01OodClosedCohortProof",
+        "validateBizq01OodReasonAmendment19a",
+        "validateBizq01OodCohort20Proof",
+        "validateBizq01OodCohort21Proof",
+        "validateBizq01OodCohort22Proof",
+        "validateBizq01OodCohort23Proof"
+      ]
+    },
+    "consumer": {
+      "result": "PASS",
+      "scope": "Actual generated source24 consumer preservation; no native/realPremium/admission/fullBIZQ claim",
+      "currentQuestions": 1413,
+      "changedQuestions": 324,
+      "preservedQuestions": 1089,
+      "otherArtifacts": 8,
+      "simulationProfilesUnchanged": true,
+      "historicalLockUnchanged": true,
+      "artifactSha256": "9df476e414158da0f33e118c06ed7fbc476b53bc8f0a115a470f61f9c1bf1ea3",
+      "questionSetSha256": "c92a9f04488efb4ef7a5fa8b3257495c21e6c62125123df8073141c60000b2d8",
+      "premiumPolicyBytes": [
+        {
+          "file": "src/application/trainingLifecycle/premiumProductModePolicy.ts",
+          "sha256": "03835160163c0a208c417d66749e667d02b2d50c283b2b5ec834a53fdf336ff3"
+        },
+        {
+          "file": "src/tracks/design-interview/designModes.ts",
+          "sha256": "74d703007c93a7ee2d120a03e841f74f7bd2872e8ca50fb820d0680a8d9889f8"
+        }
+      ]
+    },
+    "demo": {
+      "result": "PASS",
+      "scope": "Exact two authorised Free demo payloads retained; only eight provenance fields per demo changed; no native/fullBIZQ/publication claim",
+      "demoPayloadsUnchanged": true,
+      "beforeSha256": "86ff78bbf2b92aac838e83143e47321db2382e4dec3831fa799ef54dc33a722b",
+      "currentSha256": "bdc9422c5953bb27039beed0ee9f5d533f06db80bc41e170fb690e4077bfb59d",
+      "changes": [
+        {
+          "questionId": "alg-complexity-time-005",
+          "changedFields": [
+            "admissionSha256",
+            "appContentLockSha256",
+            "candidateId",
+            "producerCommit",
+            "releaseId",
+            "releaseLockSha256",
+            "runtimeEvidenceSha256",
+            "sourceReleaseSha256"
+          ]
+        },
+        {
+          "questionId": "aws-saa-c03-architecture-001-odk096",
+          "changedFields": [
+            "admissionSha256",
+            "appContentLockSha256",
+            "candidateId",
+            "producerCommit",
+            "releaseId",
+            "releaseLockSha256",
+            "runtimeEvidenceSha256",
+            "sourceReleaseSha256"
+          ]
+        }
+      ]
+    }
+  },
+  "sample216": {
+    "result": "PASS_BOUNDED_RECONCILIATION",
+    "bindings": {
+      "reconcile-review18-n24.mjs": "c5ec08cfa4e1cbf662561c0002d7205cc59733ee4611d8945e27491fa62f9254",
+      "ROOT-REVIEW18-CURRENT24.json": "63a1431942e06c75486431aa6bcdccf14dc5ae02251da6fbbdf667eb949292e5",
+      "REVIEW18-CURRENT24.md": "98550cce331f99644e4e728afed84139d4b286df33162b9ff40376099989dba1"
+    },
+    "actualReplayByteIdentical": true,
+    "actualCurrentSourceHead": "0a05f73d82c9dd9acac59cd26e4be8228b0a850a",
+    "rows": 216,
+    "totals": {
+      "EXACT_OBJECT_PRIOR_PASS_REMAINS_MATCHED": 79,
+      "EXACT_OBJECT_PRIOR_FINDING_REMAINS_MATCHED": 119,
+      "REPLACED_ID_CURRENT_PREDECESSOR_OBJECT": 4,
+      "SAME_ID_CHANGED_CURRENT_FIXED_ACCEPTED_OBJECT": 12,
+      "REPLACED_ID_CURRENT_FIXED_ACCEPTED_OBJECT": 1,
+      "HISTORICAL_FINDING_EXCLUDED_CURRENT_FIXED_OBJECT_ACCEPTED": 1
+    },
+    "scope": "Originalsample/currentmap/source binding only; no wholebankrate/admission/native/fullBIZQ claim",
+    "metadataErratumPending": "MD stale uncommitted-checkout sentence; actualsource24committed1487/currentHEAD0a05/contentclean"
+  },
+  "consumerFiles": {
+    "src/content/bizq01OodNodeClosure21.test.ts": "9d3cc443d844a62f4dae481148cea3bf2d0182e8639f42f4196ef9d35a65383e",
+    "src/content/bizq01OodNodeClosure22.test.ts": "8848b11e7d91c931ac8ef176eb19e0caca9b6189dc163025d3852919b37c7ed3",
+    "src/content/bizq01OodNodeClosure23.test.ts": "73a0f7b17a9e9399561c23e36d2895afcf1b21456479c7d904089361d35be0bb",
+    "src/content/bizq01OodNodeClosure24.test.ts": "76cfdc015af82aee20685f643c58c36ebfeac6e11660d6567ca856923f425062",
+    "src/content/generated/canonical-content/content-lock.json": "9a0eba3e26189511d2cc4af96bbc68f5317c25952afd6e780f11c8ea43163aa0",
+    "src/content/generated/canonical-content/object-oriented-design-interview.json": "9df476e414158da0f33e118c06ed7fbc476b53bc8f0a115a470f61f9c1bf1ea3",
+    "src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts": "071b81dcc33ffacd990c6e643b17b98eb6d0671d89d78b511da9e4e9630af5cb",
+    "integration/contracts/content-release/release.lock.json": "071ea7906369f7cc16da4c9284b808f27a2c92deb62c61dd8678303e2d3f31de",
+    "docs/active/BIZQ-01/ood-remaining-closure-24/ROOT-N24-PRODUCER-MAP.json": "dd444141610a8057053501ade6997323b833bb4d4e7fbd268cff4b896abf9892"
+  },
+  "sourceFiles": {
+    "content/catalog.json": "b70b1d33c1e7585afb79bd554b1b6434ea1754e31ce9ac8e14f19690f27391b2",
+    "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B01.json": "68d8aeaa8842be7d83327939d2942b603b596f0c369ea380b9034c885719b39b",
+    "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B02.json": "b0336b657e2f6ed4f2795ad3738aadec0a3e14f69bfba46dd62fe715b92e941d",
+    "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B03.json": "54e00a0194c0b37f13d12b6f04f97abcae0a83feccf758a58e0c7a6614225d40",
+    "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B04.json": "2d80a2d9d44f6651efb52ada26e91c8351de086f45cd84103da66a0cd9204445",
+    "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B05.json": "756caf99bc4a6a6563527d3fb3f1ab75545fad3df3163139a09e1a8e3090f04f",
+    "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B06.json": "ce62dc38709cf2defc8c0e0a8d2c244b8ad9ae046a85ee517f62ccd91c20609f",
+    "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B07.json": "0fb3e420e6a5de6068c9196b3bbfec22fcc721d6dc90b62441aaf7ce4aecec4a",
+    "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B08.json": "0ae24b526a482a5fb4645f9c410350e1213133a3ad7e1e44247c03058e222edd",
+    "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B09.json": "a43011d556b02d499b286ef9d3306afccc1b846dd4c91479aabf66b784f77d5f",
+    "content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B01.json": "0da0aeee8ae8bfeb49c3504f20a7e5b482d987b4edc89c39f9455e3faeb4d0ed",
+    "content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B02.json": "1f96c49cbb6cb08d268743524c0973c864c7fb2d69ff225b4c526773b98b8c49",
+    "content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B03.json": "f8d24be898b76c7011e08ece108f268629f90a628c6c53e5471f54e8cde5fd55",
+    "content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B04.json": "ac7964838d92a3b6550abe2138cf8ccd2a8105a2950da90842d3782de39a5581",
+    "content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B05.json": "82ebf36e1c1435a00ac7c6f5c316f4496a3864a570c78d88e7de3b0972f4fde6",
+    "content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B06.json": "3f526d4b2f3ac31460400b46ef95199086abac69524d182446a6e8475a69b8a0",
+    "content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B07.json": "f4fee6ac9f48d8291b8506c5f9ce647312a2f9a0d412dcf9ae620c2e535a3c46",
+    "content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B08.json": "24565d3ffcdd831b1b6849ee31ce190ae5972f04ccb5526a40e675f02c32a0a2",
+    "content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B09.json": "11921d3957161635cf1290bf6e71bedeca07aad0a992ed0f98955e9ef833db51",
+    "package.json": "d6c14a5e56d3e3456507572217bd9b8a9ccf652f9e4b88f882265fbf59065a69",
+    "scripts/content/verify-migration.mjs": "c641acd70ae2fa074c4de350e491c193762d702f6df92a01cf0126fe477a5501",
+    "tests/bizq01-migration-proof.test.mjs": "489938ba7975b3644fb2d7ca2064ddaa0a3e518159f2396a90a3cdac08ecc2af",
+    "tests/bizq01-ood-node-closure-16.test.mjs": "c5ba8862d8b7aeae418d4dc0064436d48eebcce9fd74d434272e1ddd98c6435b",
+    "tests/bizq01-ood-node-closure-17.test.mjs": "3da3a61680b84ce259a172378fb60cd54ff2f903c67f226f81cb4d0c3b5302df",
+    "tests/bizq01-ood-node-closure-19.test.mjs": "4feaa0940178097b2fcad7b6f4120bd20a04175a2a0e8d4a8f68660bb73a3636",
+    "tests/bizq01-ood-node-closure-20.test.mjs": "5b2d38fe0e9c251f509fd3d4e25576f04cdb836fc03f93fa5926a77635c2c211",
+    "tests/bizq01-ood-node-closure-21.test.mjs": "9c851b7bdd17a642231f7c93dfd9af2621a41e4ca9b1620b389046db99c2164c",
+    "tests/bizq01-ood-node-closure-22.test.mjs": "fe4b20ed2d9ae4f414f1c8bb5fcec27b323f1de8d819e859cc1e97e913fbff3a",
+    "tests/bizq01-ood-node-closure-23.test.mjs": "4921a6a75274542c6f8df2cc34e92f8dc53f70ffd0d4e6a51c3b8eb1648f55bb",
+    "tests/bizq01-ood-source-11.test.mjs": "3cde59ec4b2d82c9ef2882feec6aa2f6c69cde2b8d7e31c2b9de1e40bf601e0e",
+    "tests/bizq01-ood-source-12.test.mjs": "42afbf9ceb895a2b80e38cd2dc8a554b0bc3445935d419de0a383be685ec9b80",
+    "tests/bizq01-ood-unit-cohort-13.test.mjs": "6d85f11f6e08d0c265944a659c8637fb5df947c4b655a6eef601798659f6f1db",
+    "tests/content-builder.test.mjs": "d4ece87bda8e043a9cb93e57e5768d5642196a21d7a260abf53d2015e8a35e63",
+    "tests/odk097-design-session-matrix.test.mjs": "203e673429b6462802cb91b172fd6a4fb7a4c9510afa1a3382985bb213b0a77c",
+    "tests/ood-cohort16-historical-fixture.mjs": "09b4a24be1a0bf246f15cd6a284e4d05d23e6b36c94f0aa229fb057a13997462",
+    "evidence/business-quality/bizq-01-ood-node-closure-24.json": "3c2636ac2d98c7eb0179281bf3bb30aa89934e5a11846e79f69ba35d36e0c1c9",
+    "tests/bizq01-ood-node-closure-24.test.mjs": "8afbebbcc22350ec44f3b53079a7e2b9289f86eeb8f92c622f4cb48ac6b864c9"
+  },
+  "admissionFiles": {
+    "evidence/admissions/candidate-admission-v3.json": "7a6faca45056f6949f92f341c86bffa315e7c832d086a6a4ae64a6969fb3ebbf",
+    "evidence/admissions/runtime/ebd5f2d614ca620323b6abf111d06e84acf30cc1d9a5e819bc8df4ed2c071525-fa95d027076e970d71dacf0d1fd7976fa0ba8f60.json": "5e6fef6b6e34486f210c5341fdaf7c68f565b0f18ac40a7d2348f3097ffcccd1"
+  },
+  "webDemoSha256": "bdc9422c5953bb27039beed0ee9f5d533f06db80bc41e170fb690e4077bfb59d",
+  "logs": {
+    "ROOT-PRODUCER24-MIGRATION-GREEN.log": "2ce9af03505ff28b01f874f5bebe575384de6b6a7aca50d327ef75b672f5ff66",
+    "ROOT-PRODUCER24-FOCUSED.log": "6d99c3c1eb2de6fcbec6c4f1accc790d36f3d81f6210f280cdc2eee0bbc35fb0",
+    "ROOT-CANONICAL24-FIRST.log": "dfdb4cfd1dde17ad5a395485081af434f3b4b02064f5f2300e7ad4ee5213aaa0",
+    "ROOT-CANONICAL24-POST-COMMIT-TARGETED.log": "1e6aed2bedb505f81a3884276bb7c22c5279b6a9487b8a2ea9d9b8a71b87ddf4",
+    "ROOT-CONSUMER24-FOCUSED.log": "a97acd97813d7373ad9adf93439c83ca6172096c2f1f04433e680be4bb51167b",
+    "ROOT-ADMISSION24.log": "25492e83e265f035862bae5778835ac9c04d8066b518249b3857cc0f7ec78254",
+    "ROOT-RELEASE24-GATE.log": "be7c8a1949599f8c208a86465bfd9e8e12cc09235472b30370dc8de48da8a3a3",
+    "ROOT-POST-ADMISSION24.log": "39f1788588c182ed2c7c2a18d0b1db85c03fd402f852fbe40b7d41f5cab0cb67",
+    "ROOT-DEMO24-EXPORT.log": "5c606f0a72fc8927466903f2fca7014c8ff75d309591abe6c0f91b58b6b500e5",
+    "ROOT-DEMO24-CHECK.log": "5358d2794deb8fade7c72540ed24d17449391af08f474e244b0055dbb22f26ab",
+    "ROOT-WEB24-VERIFY.log": "090f57c9475fe4aeb3f4044ae97f48d460e27e4c8c0043dc78642f3885a0e6d5"
+  }
+}

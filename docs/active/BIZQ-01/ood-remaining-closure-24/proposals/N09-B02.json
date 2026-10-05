@@ -1,0 +1,1429 @@
+[
+  {
+    "answer": {
+      "optionId": "n09b02_i001_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Escalation must keep the current owner and deadline.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid escalation request before it is observed."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The time source used to compute the deadline is explicit at escalation request assembly, so each test can choose its own values while the real constructing an escalation request applies the rule.",
+        "scenarioApplication": "Construct requests on both sides of the deadline without changing the machine clock The test runs constructing an escalation request with those values and observes the resulting escalation request.",
+        "errorCorrection": "The same test cannot reliably choose a before/after instant if construction reads ambient time. A live clock makes the boundary depend on when the test happens.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires construct requests on both sides of the deadline without changing the machine clock.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i001_ambient",
+          "text": "A live clock makes the boundary depend on when the test happens."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i001_post_create",
+          "text": "Post-construction mutation skips the deadline calculation made during assembly."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i001_bypass",
+          "text": "The hand-built value bypasses the request assembly whose deadline must be checked."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i001_shared_state",
+          "text": "Parallel tests can interfere through a process-wide clock override."
+        }
+      ],
+      "reason": "Construct requests on both sides of the deadline without changing the machine clock. The same test cannot reliably choose a before/after instant if construction reads ambient time. The instance-specific input belongs at escalation request assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i001_explicit_assembly_input",
+          "text": "Pass a clock dependency into request assembly and construct each request against the selected instant."
+        },
+        {
+          "optionId": "n09b02_i001_ambient",
+          "text": "Let the constructor read the live system clock."
+        },
+        {
+          "optionId": "n09b02_i001_post_create",
+          "text": "Construct a default request and change its deadline afterward."
+        },
+        {
+          "optionId": "n09b02_i001_bypass",
+          "text": "Stub the completed request with a hand-written deadline."
+        },
+        {
+          "optionId": "n09b02_i001_shared_state",
+          "text": "Inject a shared, process-wide clock that all test cases reset."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A support escalation retains its current owner and response deadline. The test must construct requests on both sides of the deadline without changing the machine clock. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i001",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i002_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "A listing must not be visible before its price and stock rule is valid.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid listing before it is observed."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The regional pricing and stock configuration is explicit at listing assembly, so each test can choose its own values while the real assembling a listing for publication applies the rule.",
+        "scenarioApplication": "Construct valid and invalid regional listings side by side without editing process environment variables The test runs assembling a listing for publication with those values and observes the resulting listing.",
+        "errorCorrection": "The test must vary regional policy per instance, so process-level configuration is the wrong input scope. Changing environment variables makes tests order-dependent and does not provide separate configurations to concurrent cases.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires construct valid and invalid regional listings side by side without editing process environment variables.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i002_ambient",
+          "text": "Changing environment variables makes tests order-dependent and does not provide separate configurations to concurrent cases."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i002_post_create",
+          "text": "Publication can observe the incomplete listing between construction and later mutation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i002_bypass",
+          "text": "The mocked publisher never exercises the listing’s validation-before-publication path."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i002_shared_state",
+          "text": "The requirement excludes a live catalog and needs deterministic regional input."
+        }
+      ],
+      "reason": "Construct valid and invalid regional listings side by side without editing process environment variables. The test must vary regional policy per instance, so process-level configuration is the wrong input scope. The instance-specific input belongs at listing assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i002_bypass",
+          "text": "Mock the publisher to report success for a hand-built listing."
+        },
+        {
+          "optionId": "n09b02_i002_shared_state",
+          "text": "Resolve pricing from the live marketplace catalog during object construction."
+        },
+        {
+          "optionId": "n09b02_i002_explicit_assembly_input",
+          "text": "Supply the region’s pricing and stock configuration as an explicit assembly input and validate the listing before publication."
+        },
+        {
+          "optionId": "n09b02_i002_ambient",
+          "text": "Read the deployment region and stock defaults from environment variables inside the constructor."
+        },
+        {
+          "optionId": "n09b02_i002_post_create",
+          "text": "Construct a visible listing first, then patch price and stock after creation."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A produce listing becomes visible only after its regional price and stock rule are valid. The test must construct valid and invalid regional listings side by side without editing process environment variables. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i002",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i003_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Every split must retain the parent request identity and delivery promise.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid vendor split before it is observed."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The child-split identifier source is explicit at vendor split assembly, so each test can choose its own values while the real assembling split requests applies the rule.",
+        "scenarioApplication": "Assert repeatable child identities for a chosen sequence without relying on random values The test runs assembling split requests with those values and observes the resulting vendor split.",
+        "errorCorrection": "Random construction prevents the test from selecting and repeating the child-ID sequence it needs to inspect. The production random source makes the expected generated identities uncontrolled.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires assert repeatable child identities for a chosen sequence without relying on random values.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i003_ambient",
+          "text": "The production random source makes the expected generated identities uncontrolled."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i003_post_create",
+          "text": "Overwriting IDs after assembly can miss the path that assigns IDs and may expose a split before its identity is corrected."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i003_bypass",
+          "text": "A saved result does not execute split assembly or verify inherited request identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i003_shared_state",
+          "text": "Shared random state can be consumed by another test and change this case’s split sequence."
+        }
+      ],
+      "reason": "Assert repeatable child identities for a chosen sequence without relying on random values. Random construction prevents the test from selecting and repeating the child-ID sequence it needs to inspect. The instance-specific input belongs at vendor split assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i003_ambient",
+          "text": "Generate child IDs from the production random source during the test."
+        },
+        {
+          "optionId": "n09b02_i003_post_create",
+          "text": "Create split objects with random IDs, then overwrite them after construction."
+        },
+        {
+          "optionId": "n09b02_i003_bypass",
+          "text": "Return a saved example of the expected vendor splits."
+        },
+        {
+          "optionId": "n09b02_i003_shared_state",
+          "text": "Seed a process-wide random generator and share it across parallel tests."
+        },
+        {
+          "optionId": "n09b02_i003_explicit_assembly_input",
+          "text": "Pass a controlled identifier generator into split assembly and supply the same sequence in the test."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A backordered request may split across vendors while retaining the original request identity and delivery promise. The test must assert repeatable child identities for a chosen sequence without relying on random values. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i003",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i004_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The transfer must retain the plot boundary and approval history.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid plot transfer before it is observed."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The approval-history reader used during transfer construction is explicit at plot transfer assembly, so each test can choose its own values while the real assembling a transfer request applies the rule.",
+        "scenarioApplication": "Build a transfer from two chosen approval histories without opening the live garden record store The test runs assembling a transfer request with those values and observes the resulting plot transfer.",
+        "errorCorrection": "The test needs different histories for separate instances, which a live registry cannot deterministically supply. A live registry makes the test depend on mutable records outside its control.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires build a transfer from two chosen approval histories without opening the live garden record store.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i004_ambient",
+          "text": "A live registry makes the test depend on mutable records outside its control."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i004_post_create",
+          "text": "The object can be observed or accepted before its required history has been assembled."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i004_bypass",
+          "text": "A canned transfer skips the assembly decision that selects and carries the history."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i004_shared_state",
+          "text": "A shared list cannot isolate distinct plot histories or avoid cross-test mutation."
+        }
+      ],
+      "reason": "Build a transfer from two chosen approval histories without opening the live garden record store. The test needs different histories for separate instances, which a live registry cannot deterministically supply. The instance-specific input belongs at plot transfer assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i004_shared_state",
+          "text": "Use one static approval list shared by all plot-transfer tests."
+        },
+        {
+          "optionId": "n09b02_i004_explicit_assembly_input",
+          "text": "Provide the approval-history reader to the transfer assembler and construct the request from the selected history."
+        },
+        {
+          "optionId": "n09b02_i004_ambient",
+          "text": "Look up approval history from the live plot registry inside the constructor."
+        },
+        {
+          "optionId": "n09b02_i004_post_create",
+          "text": "Create an empty transfer and append approvals after it is accepted."
+        },
+        {
+          "optionId": "n09b02_i004_bypass",
+          "text": "Return a canned transfer object with the expected history."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A garden plot transfer preserves the plot boundary and its approval history. The test must build a transfer from two chosen approval histories without opening the live garden record store. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i004",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i005_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The bundle price must use the same regional policy as its components.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid bundle before it is observed."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The regional pricing policy is explicit at bundle assembly, so each test can choose its own values while the real assembling a regional bundle applies the rule.",
+        "scenarioApplication": "Construct bundles under two different region policies in one process without changing global locale The test runs assembling a regional bundle with those values and observes the resulting bundle.",
+        "errorCorrection": "The test must contrast region policies independently of the host machine locale. Host locale is not the two explicit regional policies and can vary between test environments.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires construct bundles under two different region policies in one process without changing global locale.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i005_ambient",
+          "text": "Host locale is not the two explicit regional policies and can vary between test environments."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i005_post_create",
+          "text": "Rewriting only the total does not assemble the bundle from a consistent component policy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i005_bypass",
+          "text": "The calculator stub hides whether assembly supplies the selected policy to the real calculation."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i005_shared_state",
+          "text": "A singleton makes simultaneous region cases share mutable configuration."
+        }
+      ],
+      "reason": "Construct bundles under two different region policies in one process without changing global locale. The test must contrast region policies independently of the host machine locale. The instance-specific input belongs at bundle assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i005_post_create",
+          "text": "Construct the bundle using a default policy and rewrite its price afterward."
+        },
+        {
+          "optionId": "n09b02_i005_bypass",
+          "text": "Mock the price calculator to return the expected bundle total."
+        },
+        {
+          "optionId": "n09b02_i005_shared_state",
+          "text": "Temporarily mutate a singleton pricing policy between test cases."
+        },
+        {
+          "optionId": "n09b02_i005_explicit_assembly_input",
+          "text": "Pass the selected regional pricing policy to bundle assembly for each instance."
+        },
+        {
+          "optionId": "n09b02_i005_ambient",
+          "text": "Read the machine locale and infer the pricing policy in the bundle constructor."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A regional bundle is priced consistently with its component products. The test must construct bundles under two different region policies in one process without changing global locale. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i005",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i006_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Capacity and reservation expiry are captured together.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid reservation before it is observed."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The clock used when the reservation is constructed is explicit at reservation assembly, so each test can choose its own values while the real constructing a charger reservation applies the rule.",
+        "scenarioApplication": "Create reservations at a specific instant without waiting for real time to pass The test runs constructing a charger reservation with those values and observes the resulting reservation.",
+        "errorCorrection": "The required creation instant must be selected by the test, not inherited from the host. The live clock can cross the boundary while tests run and cannot be advanced deterministically.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires create reservations at a specific instant without waiting for real time to pass.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i006_ambient",
+          "text": "The live clock can cross the boundary while tests run and cannot be advanced deterministically."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i006_post_create",
+          "text": "Two time reads can disagree and leave capacity paired with an expiry from a different instant."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i006_bypass",
+          "text": "The fixture avoids the constructor that calculates the expiry."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i006_shared_state",
+          "text": "Global freezing is unsafe for parallel tests and affects unrelated reservation cases."
+        }
+      ],
+      "reason": "Create reservations at a specific instant without waiting for real time to pass. The required creation instant must be selected by the test, not inherited from the host. The instance-specific input belongs at reservation assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i006_explicit_assembly_input",
+          "text": "Give reservation assembly a controllable clock instance and calculate expiry from that supplied time."
+        },
+        {
+          "optionId": "n09b02_i006_ambient",
+          "text": "Read the system clock directly in the reservation constructor."
+        },
+        {
+          "optionId": "n09b02_i006_post_create",
+          "text": "Construct the reservation with a guessed expiry, then update it from a later clock read."
+        },
+        {
+          "optionId": "n09b02_i006_bypass",
+          "text": "Return a prebuilt reservation with a fixed expiry."
+        },
+        {
+          "optionId": "n09b02_i006_shared_state",
+          "text": "Freeze a global clock and restore it after each case."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A charger reservation coordinates capacity and an expiry calculated at creation. The test must create reservations at a specific instant without waiting for real time to pass. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i006",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i007_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "A metadata update must not create a new asset identity.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid merged asset before it is observed."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The source of the preserved asset identity is explicit at merged asset assembly, so each test can choose its own values while the real assembling the merged asset applies the rule.",
+        "scenarioApplication": "Construct from conflicting metadata while preserving a selected existing ID The test runs assembling the merged asset with those values and observes the resulting merged asset.",
+        "errorCorrection": "The test must choose the identity independently of storage and prove the merge carries it into the assembled value. A live lookup cannot guarantee the selected conflicting-record case.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires construct from conflicting metadata while preserving a selected existing ID.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i007_ambient",
+          "text": "A live lookup cannot guarantee the selected conflicting-record case."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i007_post_create",
+          "text": "Replacing the generated ID after construction can leave references already attached to the wrong identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i007_bypass",
+          "text": "A canned merge result does not exercise the identity-preserving assembly path."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i007_shared_state",
+          "text": "A shared global identity makes fixtures collide and hides accidental identity reuse."
+        }
+      ],
+      "reason": "Construct from conflicting metadata while preserving a selected existing ID. The test must choose the identity independently of storage and prove the merge carries it into the assembled value. The instance-specific input belongs at merged asset assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i007_bypass",
+          "text": "Stub merge to return an asset with the expected ID and description."
+        },
+        {
+          "optionId": "n09b02_i007_shared_state",
+          "text": "Use a static global ID value shared by all merge fixtures."
+        },
+        {
+          "optionId": "n09b02_i007_explicit_assembly_input",
+          "text": "Pass the existing asset identity into merge assembly separately from the replacement descriptive values."
+        },
+        {
+          "optionId": "n09b02_i007_ambient",
+          "text": "Have construction read the current asset ID from the archive service."
+        },
+        {
+          "optionId": "n09b02_i007_post_create",
+          "text": "Construct a new asset with a generated ID and replace it after the merge."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A metadata merge keeps asset identity while replacing descriptive values. The test must construct from conflicting metadata while preserving a selected existing ID. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i007",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i008_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "No request may be assembled without both clearance dimensions.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid clearance request before it is observed."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The territory and expiry policy supplied to the clearance request is explicit at clearance request assembly, so each test can choose its own values while the real constructing the clearance request applies the rule.",
+        "scenarioApplication": "Build requests for two territories and expiries without reading a live licensing account The test runs constructing the clearance request with those values and observes the resulting clearance request.",
+        "errorCorrection": "The test must construct distinct explicit requests; provider defaults would hide omitted caller inputs. A live account cannot provide controlled per-case inputs and is excluded from this test.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires build requests for two territories and expiries without reading a live licensing account.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i008_ambient",
+          "text": "A live account cannot provide controlled per-case inputs and is excluded from this test."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i008_post_create",
+          "text": "The request exists in an invalid partial state before the required dimensions are added."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i008_bypass",
+          "text": "An approval stub avoids request construction and cannot detect a missing territory or expiry."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i008_shared_state",
+          "text": "Shared defaults make the two intended territory/expiry combinations indistinguishable."
+        }
+      ],
+      "reason": "Build requests for two territories and expiries without reading a live licensing account. The test must construct distinct explicit requests; provider defaults would hide omitted caller inputs. The instance-specific input belongs at clearance request assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i008_ambient",
+          "text": "Fill a missing territory or expiry from the current provider account."
+        },
+        {
+          "optionId": "n09b02_i008_post_create",
+          "text": "Construct an incomplete request and add the missing values before sending."
+        },
+        {
+          "optionId": "n09b02_i008_bypass",
+          "text": "Stub the provider response as approved for each test request."
+        },
+        {
+          "optionId": "n09b02_i008_shared_state",
+          "text": "Use a global default territory and fixed expiry for every constructor call."
+        },
+        {
+          "optionId": "n09b02_i008_explicit_assembly_input",
+          "text": "Pass territory and expiry as required constructor inputs and reject construction when either is absent."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A territory-specific rights approval requires both an explicit territory and expiry. The test must build requests for two territories and expiries without reading a live licensing account. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i008",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i009_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The schedule must include only compatible replacement parts.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid replacement schedule before it is observed."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The parts-compatibility catalog used during schedule construction is explicit at replacement schedule assembly, so each test can choose its own values while the real assembling a battery replacement schedule applies the rule.",
+        "scenarioApplication": "Supply two controlled aircraft catalogs without reading a live parts service The test runs assembling a battery replacement schedule with those values and observes the resulting replacement schedule.",
+        "errorCorrection": "The test must choose compatibility inputs independently for each aircraft and observe assembly validation. A live parts service cannot guarantee which compatibility record the test receives.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires supply two controlled aircraft catalogs without reading a live parts service.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i009_ambient",
+          "text": "A live parts service cannot guarantee which compatibility record the test receives."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i009_post_create",
+          "text": "Filtering after assembly can leave an invalid schedule available to callers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i009_bypass",
+          "text": "A mocked schedule bypasses the compatibility selection and validation under test."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i009_shared_state",
+          "text": "Concurrent tests can observe another aircraft’s catalog and produce the wrong part selection."
+        }
+      ],
+      "reason": "Supply two controlled aircraft catalogs without reading a live parts service. The test must choose compatibility inputs independently for each aircraft and observe assembly validation. The instance-specific input belongs at replacement schedule assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i009_shared_state",
+          "text": "Use a mutable global catalog that each test overwrites."
+        },
+        {
+          "optionId": "n09b02_i009_explicit_assembly_input",
+          "text": "Pass a parts-catalog collaborator to schedule assembly and construct from the selected aircraft’s compatibility data."
+        },
+        {
+          "optionId": "n09b02_i009_ambient",
+          "text": "Load the current compatibility catalog from the parts service inside construction."
+        },
+        {
+          "optionId": "n09b02_i009_post_create",
+          "text": "Construct a generic schedule and filter incompatible parts afterward."
+        },
+        {
+          "optionId": "n09b02_i009_bypass",
+          "text": "Mock scheduling to return one valid replacement schedule."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A battery replacement is scheduled for one aircraft, and the same battery cannot be assigned to another. The test must supply two controlled aircraft catalogs without reading a live parts service. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i009",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i010_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Disclosure remains behind the consent decision.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid referral workflow before it is observed."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The consent policy and sender collaborators assembled into the workflow is explicit at referral workflow assembly, so each test can choose its own values while the real constructing a referral workflow applies the rule.",
+        "scenarioApplication": "Create a no-consent case with a recording sender and no live specialist endpoint The test runs constructing a referral workflow with those values and observes the resulting referral workflow.",
+        "errorCorrection": "The test must observe a no-consent workflow with a recorder at the outbound edge and the real decision path intact. A live specialist client crosses the boundary this test must not contact.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires create a no-consent case with a recording sender and no live specialist endpoint.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i010_ambient",
+          "text": "A live specialist client crosses the boundary this test must not contact."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i010_post_create",
+          "text": "The workflow may retain or invoke the original sender before the replacement occurs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i010_bypass",
+          "text": "A blocked result does not verify how the assembled workflow connects consent and sender behavior."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i010_shared_state",
+          "text": "Shared sender state can leak between concurrent referral tests."
+        }
+      ],
+      "reason": "Create a no-consent case with a recording sender and no live specialist endpoint. The test must observe a no-consent workflow with a recorder at the outbound edge and the real decision path intact. The instance-specific input belongs at referral workflow assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i010_post_create",
+          "text": "Build the workflow with a default sender and replace it after construction."
+        },
+        {
+          "optionId": "n09b02_i010_bypass",
+          "text": "Stub the workflow result as blocked when consent is absent."
+        },
+        {
+          "optionId": "n09b02_i010_shared_state",
+          "text": "Use one process-wide sender that tests reconfigure before each run."
+        },
+        {
+          "optionId": "n09b02_i010_explicit_assembly_input",
+          "text": "Assemble the workflow with explicit consent-policy and sender collaborators for the test instance."
+        },
+        {
+          "optionId": "n09b02_i010_ambient",
+          "text": "Have the constructor create a live specialist client from deployment settings."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A referral workflow checks privacy and consent before any external disclosure. The test must create a no-consent case with a recording sender and no live specialist endpoint. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i010",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i011_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The attempt remains tied to the version selected when it started.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid exercise attempt before it is observed."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The selected exercise-version snapshot and scoring policy is explicit at exercise attempt assembly, so each test can choose its own values while the real assembling an exercise attempt applies the rule.",
+        "scenarioApplication": "Construct an attempt from an older selected version while the catalog head has advanced The test runs assembling an exercise attempt with those values and observes the resulting exercise attempt.",
+        "errorCorrection": "The test must build an attempt from the earlier selection even while a newer head exists. Rereading current state loses the selected snapshot that the scenario requires.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires construct an attempt from an older selected version while the catalog head has advanced.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i011_ambient",
+          "text": "Rereading current state loses the selected snapshot that the scenario requires."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i011_post_create",
+          "text": "Changing version after completion can mislabel work already scored under another policy."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i011_bypass",
+          "text": "A manually created record avoids the attempt constructor and its version binding."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i011_shared_state",
+          "text": "A shared current value cannot model the old and new versions independently."
+        }
+      ],
+      "reason": "Construct an attempt from an older selected version while the catalog head has advanced. The test must build an attempt from the earlier selection even while a newer head exists. The instance-specific input belongs at exercise attempt assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i011_explicit_assembly_input",
+          "text": "Pass the selected immutable version and its score policy into attempt assembly rather than rereading the catalog head."
+        },
+        {
+          "optionId": "n09b02_i011_ambient",
+          "text": "Read whichever catalog version is current during completion construction."
+        },
+        {
+          "optionId": "n09b02_i011_post_create",
+          "text": "Construct an attempt with current defaults and overwrite its version when it finishes."
+        },
+        {
+          "optionId": "n09b02_i011_bypass",
+          "text": "Create a completed record with the old version and assert its fields."
+        },
+        {
+          "optionId": "n09b02_i011_shared_state",
+          "text": "Use a mutable global “current exercise” variable for all fixtures."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A timed exercise completion records the started exercise version and score policy. The test must construct an attempt from an older selected version while the catalog head has advanced. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i011",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i012_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The eventual decision must remain attributable to its named actor.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid approval command before it is observed."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The actor context used to assemble the approval command is explicit at approval command assembly, so each test can choose its own values while the real constructing a procurement approval command applies the rule.",
+        "scenarioApplication": "Create authorized and unauthorized commands side by side without a logged-in global session The test runs constructing a procurement approval command with those values and observes the resulting approval command.",
+        "errorCorrection": "Separate actor inputs must be constructed without changing shared session state. A global session cannot safely represent two concurrent actors in one test process.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires create authorized and unauthorized commands side by side without a logged-in global session.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i012_ambient",
+          "text": "A global session cannot safely represent two concurrent actors in one test process."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i012_post_create",
+          "text": "The actor may differ between command creation and submission, weakening attribution."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i012_bypass",
+          "text": "A result stub does not test which actor identity the constructed command carries."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i012_shared_state",
+          "text": "An all-powerful actor never represents the unauthorized case."
+        }
+      ],
+      "reason": "Create authorized and unauthorized commands side by side without a logged-in global session. Separate actor inputs must be constructed without changing shared session state. The instance-specific input belongs at approval command assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i012_bypass",
+          "text": "Stub the command result as approved or denied for each test."
+        },
+        {
+          "optionId": "n09b02_i012_shared_state",
+          "text": "Use one administrator identity for every command fixture."
+        },
+        {
+          "optionId": "n09b02_i012_explicit_assembly_input",
+          "text": "Require the actor context as an explicit command-construction input for each approval request."
+        },
+        {
+          "optionId": "n09b02_i012_ambient",
+          "text": "Read the currently logged-in user from a global session during construction."
+        },
+        {
+          "optionId": "n09b02_i012_post_create",
+          "text": "Construct a command without an actor, then attach whichever user is active at submission."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A procurement exception names its approver and cannot bypass required controls. The test must create authorized and unauthorized commands side by side without a logged-in global session. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i012",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i013_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "File position is not the annotation’s identity.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid annotation before it is observed."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The stable segment identity supplied to annotation construction is explicit at annotation assembly, so each test can choose its own values while the real assembling an annotation for a segment applies the rule.",
+        "scenarioApplication": "Construct annotations for segments whose IDs stay fixed while offsets change The test runs assembling an annotation for a segment with those values and observes the resulting annotation.",
+        "errorCorrection": "The test must hold identity constant while changing position, so construction cannot infer identity from the offset. A live media index would not provide the two controlled offset layouts together.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires construct annotations for segments whose IDs stay fixed while offsets change.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i013_ambient",
+          "text": "A live media index would not provide the two controlled offset layouts together."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i013_post_create",
+          "text": "Repairing after replacement treats the old position as identity and can orphan annotations."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i013_bypass",
+          "text": "A prebuilt annotation does not exercise how the constructor receives segment identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i013_shared_state",
+          "text": "A shared mutable factory can retain the prior file’s offset for the next fixture."
+        }
+      ],
+      "reason": "Construct annotations for segments whose IDs stay fixed while offsets change. The test must hold identity constant while changing position, so construction cannot infer identity from the offset. The instance-specific input belongs at annotation assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i013_ambient",
+          "text": "Infer the segment ID by querying the live media index during construction."
+        },
+        {
+          "optionId": "n09b02_i013_post_create",
+          "text": "Construct from the old file offset, then repair annotations after replacement."
+        },
+        {
+          "optionId": "n09b02_i013_bypass",
+          "text": "Return a prebuilt annotation with the expected segment ID."
+        },
+        {
+          "optionId": "n09b02_i013_shared_state",
+          "text": "Store both stable ID and offset in a shared global annotation factory."
+        },
+        {
+          "optionId": "n09b02_i013_explicit_assembly_input",
+          "text": "Require the stable segment ID as an explicit annotation-construction input, separate from its current offset."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A replacement recording shifts offsets, but annotations remain attached to stable segment IDs. The test must construct annotations for segments whose IDs stay fixed while offsets change. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i013",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i014_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "A grant cannot be attributed to a different reviewer’s approval.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid role grant before it is observed."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The approval record selected for role-grant construction is explicit at role grant assembly, so each test can choose its own values while the real constructing a temporary role grant applies the rule.",
+        "scenarioApplication": "Build grants with matching and mismatching reviewer records without a live directory The test runs constructing a temporary role grant with those values and observes the resulting role grant.",
+        "errorCorrection": "The record under comparison must be selected per fixture before the grant object is valid. A live directory cannot deterministically provide the desired matching and mismatching records.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires build grants with matching and mismatching reviewer records without a live directory.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i014_ambient",
+          "text": "A live directory cannot deterministically provide the desired matching and mismatching records."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i014_post_create",
+          "text": "Attaching approval after authorization leaves a grant that was created without its required attribution."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i014_bypass",
+          "text": "A result stub bypasses the constructor’s approval-to-reviewer consistency check."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i014_shared_state",
+          "text": "The singleton may associate a grant with a different request’s approval."
+        }
+      ],
+      "reason": "Build grants with matching and mismatching reviewer records without a live directory. The record under comparison must be selected per fixture before the grant object is valid. The instance-specific input belongs at role grant assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i014_shared_state",
+          "text": "Use a global latest-approval singleton for every grant."
+        },
+        {
+          "optionId": "n09b02_i014_explicit_assembly_input",
+          "text": "Pass the selected approval record into grant construction and validate that its reviewer matches the grant actor."
+        },
+        {
+          "optionId": "n09b02_i014_ambient",
+          "text": "Look up an arbitrary current approval in the live permission directory."
+        },
+        {
+          "optionId": "n09b02_i014_post_create",
+          "text": "Construct the grant first and attach an approval after it is authorized."
+        },
+        {
+          "optionId": "n09b02_i014_bypass",
+          "text": "Stub the grant result for matching and mismatching reviewers."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A temporary role expires and must cite the approval that names its reviewer. The test must build grants with matching and mismatching reviewer records without a live directory. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i014",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i015_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "The request must identify the exact revision being sealed.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid seal request before it is observed."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The selected revision snapshot passed to seal assembly is explicit at seal request assembly, so each test can choose its own values while the real assembling a seal request applies the rule.",
+        "scenarioApplication": "Construct the request for one revision while the editable draft changes separately The test runs assembling a seal request with those values and observes the resulting seal request.",
+        "errorCorrection": "The test must distinguish the selected snapshot from the mutable draft at construction time. A live server read can return the later draft, not the selected immutable revision.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires construct the request for one revision while the editable draft changes separately.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i015_ambient",
+          "text": "A live server read can return the later draft, not the selected immutable revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i015_post_create",
+          "text": "Post-construction replacement can leave derived seal data based on the earlier draft."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i015_bypass",
+          "text": "A canned request skips the choice of revision made by seal assembly."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i015_shared_state",
+          "text": "Mutating a shared draft can change a request already used by another test."
+        }
+      ],
+      "reason": "Construct the request for one revision while the editable draft changes separately. The test must distinguish the selected snapshot from the mutable draft at construction time. The instance-specific input belongs at seal request assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i015_post_create",
+          "text": "Build from the mutable draft and replace its contents with the selected revision afterward."
+        },
+        {
+          "optionId": "n09b02_i015_bypass",
+          "text": "Return a canned seal request containing the expected revision ID."
+        },
+        {
+          "optionId": "n09b02_i015_shared_state",
+          "text": "Store the draft in a global variable and point each test at it."
+        },
+        {
+          "optionId": "n09b02_i015_explicit_assembly_input",
+          "text": "Pass the immutable revision snapshot explicitly into seal-request construction."
+        },
+        {
+          "optionId": "n09b02_i015_ambient",
+          "text": "Read whichever draft revision is current from the document server."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A notary seal covers the exact immutable document revision rather than the mutable draft. The test must construct the request for one revision while the editable draft changes separately. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i015",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i016_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "A retry must not create a different payout identity.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid payout request before it is observed."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The payout identity derived for the settled order is explicit at payout request assembly, so each test can choose its own values while the real assembling a payout request applies the rule.",
+        "scenarioApplication": "Create repeated requests for one order and verify the identity stays the same without moving money The test runs assembling a payout request with those values and observes the resulting payout request.",
+        "errorCorrection": "The test compares repeated requests, so the identity must be supplied consistently at assembly. Fresh random values defeat the stated same-identity retry assertion.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires create repeated requests for one order and verify the identity stays the same without moving money.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i016_ambient",
+          "text": "Fresh random values defeat the stated same-identity retry assertion."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i016_post_create",
+          "text": "Changing a key after construction can leave logged or serialized requests carrying the old identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i016_bypass",
+          "text": "A canned success does not exercise the request identity used by the caller."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i016_shared_state",
+          "text": "Shared state can assign an unrelated order’s key to this request."
+        }
+      ],
+      "reason": "Create repeated requests for one order and verify the identity stays the same without moving money. The test compares repeated requests, so the identity must be supplied consistently at assembly. The instance-specific input belongs at payout request assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i016_explicit_assembly_input",
+          "text": "Pass the order-bound payout identity into request assembly and reuse it for each retry request."
+        },
+        {
+          "optionId": "n09b02_i016_ambient",
+          "text": "Generate a new random payout key inside the constructor for every request."
+        },
+        {
+          "optionId": "n09b02_i016_post_create",
+          "text": "Construct the request with a temporary key and change it on retry."
+        },
+        {
+          "optionId": "n09b02_i016_bypass",
+          "text": "Stub the payment result as successful and skip request construction."
+        },
+        {
+          "optionId": "n09b02_i016_shared_state",
+          "text": "Read the latest payout key from a process-wide mutable variable."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A payout request is tied to a settled order and a stable retry identity. The test must create repeated requests for one order and verify the identity stays the same without moving money. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i016",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i017_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Arrival time must not replace the stated effective time.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid platform-change notice before it is observed."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The effective-time values carried by announcement construction is explicit at platform-change notice assembly, so each test can choose its own values while the real constructing platform-change notices applies the rule.",
+        "scenarioApplication": "Build two notices with reversed arrival but fixed effective times without reading the machine clock The test runs constructing platform-change notices with those values and observes the resulting platform-change notice.",
+        "errorCorrection": "The test must distinguish effective time from arrival order using fixed values. System time records test execution order, not the effective time given for each change.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires build two notices with reversed arrival but fixed effective times without reading the machine clock.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i017_ambient",
+          "text": "System time records test execution order, not the effective time given for each change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i017_post_create",
+          "text": "Changing effective time after construction can leave ordering data derived from arrival time."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i017_bypass",
+          "text": "A pre-sorted output avoids notice construction and cannot test which timestamp it uses."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i017_shared_state",
+          "text": "One shared value erases the ordering distinction the case requires."
+        }
+      ],
+      "reason": "Build two notices with reversed arrival but fixed effective times without reading the machine clock. The test must distinguish effective time from arrival order using fixed values. The instance-specific input belongs at platform-change notice assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i017_bypass",
+          "text": "Provide a pre-sorted notice list as the constructor’s output."
+        },
+        {
+          "optionId": "n09b02_i017_shared_state",
+          "text": "Use a shared global effective-time value for both notices."
+        },
+        {
+          "optionId": "n09b02_i017_explicit_assembly_input",
+          "text": "Pass each notice’s effective instant explicitly during construction and order by that value."
+        },
+        {
+          "optionId": "n09b02_i017_ambient",
+          "text": "Stamp each notice with the current system time as it is constructed."
+        },
+        {
+          "optionId": "n09b02_i017_post_create",
+          "text": "Construct notices with arrival timestamps and change their effective times during delivery."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "Platform-change announcements follow the order in which changes become effective. The test must build two notices with reversed arrival but fixed effective times without reading the machine clock. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i017",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "n09b02_i018_explicit_assembly_input",
+      "type": "choice_single"
+    },
+    "constraints": [
+      "Overlap checks must compare the intended instants for one meter.",
+      "The test must not use the live undefined.",
+      "Construction must produce a valid meter reservation before it is observed."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The explicit window and time basis used by reservation construction is explicit at meter reservation assembly, so each test can choose its own values while the real constructing a discharge reservation applies the rule.",
+        "scenarioApplication": "Build two windows around a fixed boundary without depending on local timezone settings The test runs constructing a discharge reservation with those values and observes the resulting meter reservation.",
+        "errorCorrection": "The test must vary fixed windows independently of the machine’s timezone. A host-local interpretation may change the instant and overlap result across environments.",
+        "boundaryOrTradeoff": "If the value were identical for every instance and required no test variation, a fixed default could be simpler; this case requires build two windows around a fixed boundary without depending on local timezone settings.",
+        "transfer": "Keep values needed to assemble a valid object explicit at its creation boundary; avoid reading ambient state or repairing required fields after callers can observe the instance."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i018_ambient",
+          "text": "A host-local interpretation may change the instant and overlap result across environments."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i018_post_create",
+          "text": "Converting after construction can leave derived interval data based on the default zone."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i018_bypass",
+          "text": "A canned decision does not test how construction represents the requested time window."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b02_i018_shared_state",
+          "text": "Global timezone mutation is shared state and can affect concurrently running tests."
+        }
+      ],
+      "reason": "Build two windows around a fixed boundary without depending on local timezone settings. The test must vary fixed windows independently of the machine’s timezone. The instance-specific input belongs at meter reservation assembly.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b02_i018_ambient",
+          "text": "Interpret window strings using the host’s default timezone inside construction."
+        },
+        {
+          "optionId": "n09b02_i018_post_create",
+          "text": "Construct a reservation under a default zone, then convert it to the requested zone afterward."
+        },
+        {
+          "optionId": "n09b02_i018_bypass",
+          "text": "Stub the overlap decision as accepted or rejected for each window."
+        },
+        {
+          "optionId": "n09b02_i018_shared_state",
+          "text": "Set a process-wide timezone before each test and restore it later."
+        },
+        {
+          "optionId": "n09b02_i018_explicit_assembly_input",
+          "text": "Pass the requested window and its defined time basis into reservation construction for each test case."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B02",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A meter reservation carries its time window and may not overlap another reservation for that meter. The test must build two windows around a fixed boundary without depending on local timezone settings. Which construction input should be explicit?",
+    "questionId": "ood-n09-b02-i018",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

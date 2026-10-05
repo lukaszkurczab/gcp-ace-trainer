@@ -1,0 +1,11 @@
+{
+  "scope": "Correct exact review-input binding before review; no source or semantic acceptance",
+  "logicalProposalVersion": "v2",
+  "actualSource": "proposals/N08-B01-v2.json",
+  "correctFrozenInput": "review-inputs/N08-B01-v2-actual.json",
+  "correctSha256": "031233aab469faddd56eef90a9b4c04759c250d4f60423dcd059e97426e64061",
+  "invalidMislabelledSnapshot": "review-inputs/N08-B01-v2.json",
+  "invalidSnapshotSha256": "1383b96bb94e9a23adef6c4a3f88d796d8e8a99c838b8e3f2823cebeff169118",
+  "cause": "Root helper read mutable N08-B01.json (stillv1) while author had delivered additive N08-B01-v2.json. Hash revealed mismatch; old snapshot retained as failed handoff, excluded from acceptance.",
+  "correction": "Read exact proposalFile from author notes, assert announced031 hash before exclusive copy; do not overwrite mistaken snapshot."
+}

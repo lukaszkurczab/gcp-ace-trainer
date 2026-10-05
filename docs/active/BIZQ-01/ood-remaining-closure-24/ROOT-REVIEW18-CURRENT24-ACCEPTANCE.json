@@ -1,0 +1,21 @@
+{
+  "result": "PASS_BOUNDED_RECONCILIATION",
+  "bindings": {
+    "reconcile-review18-n24.mjs": "c5ec08cfa4e1cbf662561c0002d7205cc59733ee4611d8945e27491fa62f9254",
+    "ROOT-REVIEW18-CURRENT24.json": "63a1431942e06c75486431aa6bcdccf14dc5ae02251da6fbbdf667eb949292e5",
+    "REVIEW18-CURRENT24.md": "98550cce331f99644e4e728afed84139d4b286df33162b9ff40376099989dba1"
+  },
+  "actualReplayByteIdentical": true,
+  "actualCurrentSourceHead": "0a05f73d82c9dd9acac59cd26e4be8228b0a850a",
+  "rows": 216,
+  "totals": {
+    "EXACT_OBJECT_PRIOR_PASS_REMAINS_MATCHED": 79,
+    "EXACT_OBJECT_PRIOR_FINDING_REMAINS_MATCHED": 119,
+    "REPLACED_ID_CURRENT_PREDECESSOR_OBJECT": 4,
+    "SAME_ID_CHANGED_CURRENT_FIXED_ACCEPTED_OBJECT": 12,
+    "REPLACED_ID_CURRENT_FIXED_ACCEPTED_OBJECT": 1,
+    "HISTORICAL_FINDING_EXCLUDED_CURRENT_FIXED_OBJECT_ACCEPTED": 1
+  },
+  "scope": "Originalsample/currentmap/source binding only; no wholebankrate/admission/native/fullBIZQ claim",
+  "metadataErratumPending": "MD stale uncommitted-checkout sentence; actualsource24committed1487/currentHEAD0a05/contentclean"
+}

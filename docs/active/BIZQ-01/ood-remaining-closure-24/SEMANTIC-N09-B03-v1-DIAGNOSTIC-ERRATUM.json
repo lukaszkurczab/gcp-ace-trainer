@@ -1,0 +1,268 @@
+{
+  "schemaVersion": "bizq01-n09-b03-v1-diagnostic-erratum-v1",
+  "review": "SEMANTIC-N09-B03-v1-DIAGNOSTIC-ERRATUM",
+  "verdict": "REVISE",
+  "scope": "Additive correction to the diagnostic portion of the historical PASS report. Primary key correctness, item meaning, and identity findings remain; diagnostics require correction.",
+  "inputs": {
+    "proposal": {
+      "path": "review-inputs/N09-B03-v1.json",
+      "sha256": "184713fc55a2484453eec47e84f513b0f3cf0e88d0a96656d82e17e14764f8c8"
+    },
+    "sourceProposal": {
+      "path": "proposals/N09-B03.json",
+      "sha256": "184713fc55a2484453eec47e84f513b0f3cf0e88d0a96656d82e17e14764f8c8"
+    },
+    "historicalReview": {
+      "path": "SEMANTIC-N09-B03-v1-QA.md",
+      "sha256": "5c341b758fca778688f1ef600058fa9f9dbdd0d246181a67c736136dae39ecaa"
+    },
+    "historicalReviewJson": {
+      "path": "SEMANTIC-N09-B03-v1-QA.json",
+      "sha256": "a3ea5292afe24ec6ddcebbddf11381822abb8c3728347ec9a22b1a1f3738fd47"
+    },
+    "rootDiagnosticObservation": {
+      "path": "ROOT-N09-DIAGNOSTIC-OBSERVATIONS.json",
+      "sha256": "b4e5dc64d693ffea772b963a499acc59e052ac19a310ec897ddd0af877cfa6de"
+    },
+    "canonicalContentGuideline": {
+      "path": "../../../../../docs/07-content-guidelines.md",
+      "sha256": "00c20d8c74d8e4dfec3ffb9211865642a5ae72d218bdd7473b8f41e52bfa5471"
+    },
+    "bizq01Spec": {
+      "path": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+      "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3"
+    }
+  },
+  "method": {
+    "answerLookup": "answer.optionId",
+    "messageLookup": "feedback.messages[kind=wrong_option].targetId",
+    "wholeObjectFingerprint": "SHA-256 of repository canonicalJson(question), recursively sorted keys",
+    "questions": 18,
+    "wrongOptionMessages": 72,
+    "verbatimTextEchoes": 72,
+    "nonEchoes": 0
+  },
+  "finding": {
+    "requirement": "Canonical docs/07-content-guidelines.md Choice-item contract (meaningful explanation: plausible rationale and why the stated fact/boundary makes it wrong; no fabricated explanation from option text) and BIZQ-01 Q05.",
+    "rationale": "Each wrong-option message is exactly the option text identified by targetId. A correct stable target proves mapping only; the copied option contains no authored causal diagnosis. The prior report stated it found no stale diagnostic and therefore its PASS conclusion must be qualified for this field. This is a concrete contract violation, not a duplicate-text count gate.",
+    "correction": "Replace each echo with an authored explanation of the misconception plus the case-specific deciding fact/boundary and failure. Include a valid-context boundary where it is educationally useful. Do not require 72 unique phrasings; the text must diagnose the actual targeted option in its scenario."
+  },
+  "items": [
+    {
+      "questionId": "ood-n09-b03-i001",
+      "canonicalWholeObjectSha256": "5b874fcba3478188773ac68ad55666f14e1fed7f394063b0ef6b057e0f3b5355",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i001_caller_copy",
+        "n09b03_i001_representation_write",
+        "n09b03_i001_generic_service",
+        "n09b03_i001_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i002",
+      "canonicalWholeObjectSha256": "ed65d1e634f0450fb91787332084f1f95786743a2fa2f5e38eb52f01ed5fd0a8",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i002_caller_copy",
+        "n09b03_i002_representation_write",
+        "n09b03_i002_generic_service",
+        "n09b03_i002_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i003",
+      "canonicalWholeObjectSha256": "f2b4b15e6f94715fc0a4727929039c5ce6117a740660cfdbd619ffc4fedf6c45",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i003_caller_copy",
+        "n09b03_i003_representation_write",
+        "n09b03_i003_generic_service",
+        "n09b03_i003_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i004",
+      "canonicalWholeObjectSha256": "368c1ce0a8cda08e8dcd258be668a73968b235c90b610986eeaf4dbd7ef37356",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i004_caller_copy",
+        "n09b03_i004_representation_write",
+        "n09b03_i004_generic_service",
+        "n09b03_i004_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i005",
+      "canonicalWholeObjectSha256": "a89f2f2a74c356eea607a48f52f790a41ce1b2ed0f87304cae46923bdf2c1cb8",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i005_caller_copy",
+        "n09b03_i005_representation_write",
+        "n09b03_i005_generic_service",
+        "n09b03_i005_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i006",
+      "canonicalWholeObjectSha256": "7292d22a559de27233343ab4cdd6a4c07cdd739e12cd29f506e9d2fd282a912d",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i006_caller_copy",
+        "n09b03_i006_representation_write",
+        "n09b03_i006_generic_service",
+        "n09b03_i006_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i007",
+      "canonicalWholeObjectSha256": "26c2dc249eb61e520bf2296fd32bc4e23a05f008cbe263fbe305e98450c0b393",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i007_caller_copy",
+        "n09b03_i007_representation_write",
+        "n09b03_i007_generic_service",
+        "n09b03_i007_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i008",
+      "canonicalWholeObjectSha256": "25b4149dde6c7d81b53d7beccb4e1b3626b1dcc7e9b483d0a619ba599ad918e3",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i008_caller_copy",
+        "n09b03_i008_representation_write",
+        "n09b03_i008_generic_service",
+        "n09b03_i008_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i009",
+      "canonicalWholeObjectSha256": "4f037faf531a4dff1e92345acc27f062a245a19f4405098c3da812f9be406b0d",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i009_caller_copy",
+        "n09b03_i009_representation_write",
+        "n09b03_i009_generic_service",
+        "n09b03_i009_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i010",
+      "canonicalWholeObjectSha256": "508e2af9bf94c333b9cf466409e9b6f67678267a67be81dfd5135c179d4dcf99",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i010_caller_copy",
+        "n09b03_i010_representation_write",
+        "n09b03_i010_generic_service",
+        "n09b03_i010_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i011",
+      "canonicalWholeObjectSha256": "ae587bb4b9976fc777d7e4d86ce5ca93cc3e6ce447896b88bc5e5930c52f5959",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i011_caller_copy",
+        "n09b03_i011_representation_write",
+        "n09b03_i011_generic_service",
+        "n09b03_i011_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i012",
+      "canonicalWholeObjectSha256": "935f1a976e07415af257c635c4584fd4d741616ff4e819b2d5e4a2c4203f909d",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i012_caller_copy",
+        "n09b03_i012_representation_write",
+        "n09b03_i012_generic_service",
+        "n09b03_i012_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i013",
+      "canonicalWholeObjectSha256": "1e75fe90726549bbca52305f551ba663c92ae06ed8bc16be7c58fa31b59cc2a8",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i013_caller_copy",
+        "n09b03_i013_representation_write",
+        "n09b03_i013_generic_service",
+        "n09b03_i013_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i014",
+      "canonicalWholeObjectSha256": "a3050c05bc93d3674a7fc7163fbff1056028128ee78be55e89b9b330376dc63f",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i014_caller_copy",
+        "n09b03_i014_representation_write",
+        "n09b03_i014_generic_service",
+        "n09b03_i014_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i015",
+      "canonicalWholeObjectSha256": "92e3b202245d1d3f841e0a1fc64c9134ac8ddd108c03999b99ea59843e8eec76",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i015_caller_copy",
+        "n09b03_i015_representation_write",
+        "n09b03_i015_generic_service",
+        "n09b03_i015_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i016",
+      "canonicalWholeObjectSha256": "d37b9a61d3fcd99bcb501b34133d489e8895efce0ed518c2d4168eaefb20e879",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i016_caller_copy",
+        "n09b03_i016_representation_write",
+        "n09b03_i016_generic_service",
+        "n09b03_i016_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i017",
+      "canonicalWholeObjectSha256": "4e82f32793cf70a255304806ac4729def69d99ef753a22bd35d59926623dc9be",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i017_caller_copy",
+        "n09b03_i017_representation_write",
+        "n09b03_i017_generic_service",
+        "n09b03_i017_subtype_reuse"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b03-i018",
+      "canonicalWholeObjectSha256": "71c1fe2d26995f1f447a41d15e443af8886e513dd3ae809d8311af692dd899d0",
+      "wrongMessageCount": 4,
+      "verbatimEchoCount": 4,
+      "targets": [
+        "n09b03_i018_caller_copy",
+        "n09b03_i018_representation_write",
+        "n09b03_i018_generic_service",
+        "n09b03_i018_subtype_reuse"
+      ]
+    }
+  ]
+}

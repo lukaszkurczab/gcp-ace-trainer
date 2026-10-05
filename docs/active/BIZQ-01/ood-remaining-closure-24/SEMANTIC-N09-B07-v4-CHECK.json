@@ -1,0 +1,499 @@
+{
+  "schemaVersion": "bizq01-n09-b07-v4-independent-correction-check-v1",
+  "method": "Production validateQuestion/scoreQuestion for every accepted answer, every distractor, reversed options, exact diagnostic target set, exact manifest before-object hashes, and canonical whole-object v3-to-v4 diff accounting.",
+  "frozenInputs": {
+    "v3": {
+      "path": "review-inputs/N09-B07-v3.json",
+      "rawSha256": "428676e548e3da6ef68e3bfa4530c36818b7650e5c5dd2f5ea9e9c577e872a8a"
+    },
+    "v4": {
+      "path": "review-inputs/N09-B07-v4.json",
+      "rawSha256": "87689861d0d722d81c8e62f9909078701ea461e0126b6173e8fe6448441bd17d"
+    },
+    "manifest": {
+      "path": "N08-N09-MANIFEST.json",
+      "rawSha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    }
+  },
+  "totals": {
+    "questions": 18,
+    "changedWholeObjects": 18,
+    "unchangedWholeObjects": 0,
+    "changedOptionLeaves": 6,
+    "changedDiagnosticMessagesWithTargetRemaps": 72,
+    "changedDiagnosticMessageTextsAtStableTargets": 69,
+    "diagnosticTargetRemapQuestions": [
+      "ood-n09-b07-i021",
+      "ood-n09-b07-i026",
+      "ood-n09-b07-i029"
+    ],
+    "invalid": 0,
+    "correctAcceptedAnswers": 18,
+    "allDistractorsIncorrect": 18,
+    "correctAfterReversal": 18,
+    "exactFeedbackTargetSets": 18
+  },
+  "changedQuestionIds": [
+    "ood-n09-b07-i019",
+    "ood-n09-b07-i020",
+    "ood-n09-b07-i021",
+    "ood-n09-b07-i022",
+    "ood-n09-b07-i023",
+    "ood-n09-b07-i024",
+    "ood-n09-b07-i025",
+    "ood-n09-b07-i026",
+    "ood-n09-b07-i027",
+    "ood-n09-b07-i028",
+    "ood-n09-b07-i029",
+    "ood-n09-b07-i030",
+    "ood-n09-b07-i031",
+    "ood-n09-b07-i032",
+    "ood-n09-b07-i033",
+    "ood-n09-b07-i034",
+    "ood-n09-b07-i035",
+    "ood-n09-b07-i036"
+  ],
+  "items": [
+    {
+      "questionId": "ood-n09-b07-i019",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "02444da93db7afd1dd4211fd17decd587fa8945db287a3bebd8bc0bfc003ccc4",
+      "currentCanonicalSha256": "8df18248ac55c2c8a4866773af0769d1ff05387d7889819946ce08817b64cae0",
+      "manifestBeforeCanonicalSha256": "22b81b674cb5ba0d3e9fcaa5e107cc2afb519c46c7c9fd7c512292904064db30",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i019_assumed_cache",
+        "n09b07_i019_wrong_cost_center",
+        "n09b07_i019_contract_shortcut",
+        "n09b07_i019_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i020",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "989567d2e1408f059c048343a04e920c3e3ce1fd1bb00b3bc0bd6bd5ad656078",
+      "currentCanonicalSha256": "940f15e9f614a63816aa604c86973e0ec0e0ff2a8b9e4441e13d76aa84783b54",
+      "manifestBeforeCanonicalSha256": "b23e9a7b809f67213e3cb1dfcce6178cf2557368c433dc978186d112cd52130c",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i020_assumed_cache",
+        "n09b07_i020_wrong_cost_center",
+        "n09b07_i020_contract_shortcut",
+        "n09b07_i020_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i021",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "98f9b2d95c7a46a22770707c24a738b3751dfaa20ca956b7186aa075fdfacf2f",
+      "currentCanonicalSha256": "a09922888bdea229ed176ff3ba38b7ef0d0fc1faed5b0cf9ddbc3e78760a759f",
+      "manifestBeforeCanonicalSha256": "d1bbc259d8784800f10722db655432997a872f084a85b3b755b89c9dd45c2821",
+      "optionIdsAdded": [
+        "n09b07_i021_full_image_not_preview"
+      ],
+      "optionIdsRemoved": [
+        "n09b07_i021_contract_shortcut"
+      ],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i021_assumed_cache",
+        "n09b07_i021_wrong_cost_center",
+        "n09b07_i021_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": true,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i022",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "29d163c724bc8f0fa13deab43c6745ef720953896c67ef170ab09996a1bd4125",
+      "currentCanonicalSha256": "eb70a3448c8fa550e108dd7b0423337d158b9b6bc9d2c41c4c1086cd93b94ef7",
+      "manifestBeforeCanonicalSha256": "f34872d5824879efbc8cdfbee3a23b7939e717ee57f94655a906de3e37a8dbfd",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i022_assumed_cache",
+        "n09b07_i022_wrong_cost_center",
+        "n09b07_i022_contract_shortcut",
+        "n09b07_i022_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i023",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "87b16abec59407205b0b8c3b6a78b14269d280987da18a06a54b3afff25072a7",
+      "currentCanonicalSha256": "be78f5050d9b0a3d70ba3f1c7cbde9752c625d8e8a2f74ed6d0770ce81e7ddfe",
+      "manifestBeforeCanonicalSha256": "7d52a69f87055b22a46cde44477255726377e64d41cafe43a6d374f847a7961c",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i023_assumed_cache",
+        "n09b07_i023_wrong_cost_center",
+        "n09b07_i023_contract_shortcut",
+        "n09b07_i023_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i024",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "54e6c16e9491e4118ad788a00bb793afae5951052ef4c36376db316fe61a7e82",
+      "currentCanonicalSha256": "bc694a80773b4610a499f167c3d79c8f22829f9890900bce1f287525a24c3549",
+      "manifestBeforeCanonicalSha256": "8536fb5e83fb5152c085ff6810a29fdd9095b8824f7ae50a783e4efc8f85f447",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i024_assumed_cache",
+        "n09b07_i024_wrong_cost_center",
+        "n09b07_i024_contract_shortcut",
+        "n09b07_i024_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i025",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "23d692ee7dfcac1155e962eaa4f52e6365b87e7e0fa1298dab5c0938b80f860c",
+      "currentCanonicalSha256": "d78b65501d195b11628313052ec93b68b22f0c39ad91b842ccc8db6e1fd31d1a",
+      "manifestBeforeCanonicalSha256": "5a409db42e331edb2eb1f49106faddbe795a45f7b0ad0574fc33e10a088baa11",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i025_assumed_cache",
+        "n09b07_i025_wrong_cost_center",
+        "n09b07_i025_contract_shortcut",
+        "n09b07_i025_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i026",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "e9720e23493b910574bb7aff377439a1569232a25e5ba75b9fe8c410f47bcb8f",
+      "currentCanonicalSha256": "41570c9f2be392d0d19f6fe4ca58252332080e4e63a7d77e8a8fde3c5c1df94c",
+      "manifestBeforeCanonicalSha256": "30172f3b5253d9d5efe23763288523b2809e60ad20fe7b171fd0b9ae0f3550ec",
+      "optionIdsAdded": [
+        "n09b07_i026_first_page_only"
+      ],
+      "optionIdsRemoved": [
+        "n09b07_i026_broad_rewrite"
+      ],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i026_assumed_cache",
+        "n09b07_i026_wrong_cost_center",
+        "n09b07_i026_contract_shortcut"
+      ],
+      "feedbackTargetSetChanged": true,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i027",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "ac7bd43b19e55e6ead115b8b9a5915af6aeb2a08ef99983ed0da57271efdb3e0",
+      "currentCanonicalSha256": "d442cf93ac192ffaf5d2a6979809304970e16667afa80e18248639715d0e59ae",
+      "manifestBeforeCanonicalSha256": "5c6cd0b76ef5b71039aa65c4210cfb1bd04d869f634daa0084c1152811dc4038",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i027_assumed_cache",
+        "n09b07_i027_wrong_cost_center",
+        "n09b07_i027_contract_shortcut",
+        "n09b07_i027_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i028",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "a7a408bb6929fc1d895ef07b9998c87ec8bb33c90b602cd5674d2cf210b3cf8c",
+      "currentCanonicalSha256": "5316930f1c6d5ecb9676ba2e9223441e8b526df568377c90a5fa89fa4f342d60",
+      "manifestBeforeCanonicalSha256": "b26544647e16be5653c6abfb961e7c770d5c60f7ef83164c9c6a2db7e4963e6e",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i028_assumed_cache",
+        "n09b07_i028_wrong_cost_center",
+        "n09b07_i028_contract_shortcut",
+        "n09b07_i028_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i029",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "ece224234abf8f1319fc690b987a4362131e3996a531281558501a1697947b8d",
+      "currentCanonicalSha256": "e0b9ebc78a308ddb4b0583941645a06ddd46a30bbc50d5d428e0a662028e3b34",
+      "manifestBeforeCanonicalSha256": "c6be33975100c2efb5460bf4ecd94b4a5a85c904154acaf770e0129d5d0aa6ab",
+      "optionIdsAdded": [
+        "n09b07_i029_stale_snapshot_reuse"
+      ],
+      "optionIdsRemoved": [
+        "n09b07_i029_broad_rewrite"
+      ],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i029_assumed_cache",
+        "n09b07_i029_wrong_cost_center",
+        "n09b07_i029_contract_shortcut"
+      ],
+      "feedbackTargetSetChanged": true,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i030",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "33ed96c4937f0653338f60c37be2ce3c7b700a568fc5e47e519d88f124a30563",
+      "currentCanonicalSha256": "b848785846776d83fdfaf8411b787384ee01c242f6f820ce36853888a8caddee",
+      "manifestBeforeCanonicalSha256": "4a272ab3880fb0a4705f6dbfba7496032d9af8055b5022b0fb0d70bb2433a71f",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i030_assumed_cache",
+        "n09b07_i030_wrong_cost_center",
+        "n09b07_i030_contract_shortcut",
+        "n09b07_i030_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i031",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "9061a4b8e607b4d5dcf86b731bdcda4f97bbc025bb218d7a068b1c1499f0ef76",
+      "currentCanonicalSha256": "780c1415764a37a41bf5fbab30e9d3bc96eca8e2aae91bdacbe5644e62966ac9",
+      "manifestBeforeCanonicalSha256": "59ff4bef662b6335279783fb931b293df30f8569c541d1ccb0cbc4a67b8d7545",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i031_assumed_cache",
+        "n09b07_i031_wrong_cost_center",
+        "n09b07_i031_contract_shortcut",
+        "n09b07_i031_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i032",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "87aa00eb2370eabad28e69a4fd50098ed45176c7de533841cc69a397c5d7903b",
+      "currentCanonicalSha256": "d52f1627b2d627737c7a3a6e30287fa67eb9878d918dc4303d283f18e4493b8c",
+      "manifestBeforeCanonicalSha256": "7cc970d0de5ae0c24c1784c271c190766f07556922732f5c18b77a4f6621e0a1",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i032_assumed_cache",
+        "n09b07_i032_wrong_cost_center",
+        "n09b07_i032_contract_shortcut",
+        "n09b07_i032_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i033",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "7f37ddef36851bf34201e6bed909d5c8b4c98ce7b12f4d0ff96ea7bcc94730cf",
+      "currentCanonicalSha256": "6376f89592e5ff8abd9f5414aae02dbf59656522c9d3a4e66f87c8af59cef6dd",
+      "manifestBeforeCanonicalSha256": "f55021bb9a14aa96a7f66ab839e24a611a319329114316be7d1319ff67fb9cf9",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i033_assumed_cache",
+        "n09b07_i033_wrong_cost_center",
+        "n09b07_i033_contract_shortcut",
+        "n09b07_i033_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i034",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "d1c990650e9d17b98fdee4cdee2f8e4570e4549efb58c33a4b0b19d79012759b",
+      "currentCanonicalSha256": "4108c097b212188a153deb1b8ec53aa9f09c96e61a20ad124821aad43e3c2bd2",
+      "manifestBeforeCanonicalSha256": "d8413b4452613fbeb7f31f24fd3a7c4fdc73bba371fa55b55b8d3625cb383810",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i034_assumed_cache",
+        "n09b07_i034_wrong_cost_center",
+        "n09b07_i034_contract_shortcut",
+        "n09b07_i034_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i035",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "ddd97b83ac1dd8160778d41ea4227e8c043c6180e746067440170cb1f9b4b1c5",
+      "currentCanonicalSha256": "8c6b756d0c8edb54c4fb00aef282853ea396fc5f3b1b5c10723aeebbbbec7523",
+      "manifestBeforeCanonicalSha256": "dcb6adb67081d9509a16077f43c3ac8eefa4a1230d517768de5fe7309d7aab0a",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i035_assumed_cache",
+        "n09b07_i035_wrong_cost_center",
+        "n09b07_i035_contract_shortcut",
+        "n09b07_i035_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    },
+    {
+      "questionId": "ood-n09-b07-i036",
+      "changedFromV3": true,
+      "beforeCanonicalSha256": "0145d44c56b38a1b894f0e246341329d2f2e8f724c8b40b7331b86b9ead2da42",
+      "currentCanonicalSha256": "74d9ff08dfe3b0525a1dc8f8afc204e0998fab2a0b759089b13d5be4c359af51",
+      "manifestBeforeCanonicalSha256": "0974947ef6e6ddb8b4ecde0c7eb90d6458c1904b45f50149b3e6a3d80186cc46",
+      "optionIdsAdded": [],
+      "optionIdsRemoved": [],
+      "optionTextChanges": [],
+      "changedMessageTargetIds": [
+        "n09b07_i036_assumed_cache",
+        "n09b07_i036_wrong_cost_center",
+        "n09b07_i036_contract_shortcut",
+        "n09b07_i036_broad_rewrite"
+      ],
+      "feedbackTargetSetChanged": false,
+      "valid": true,
+      "validationErrors": [],
+      "acceptedStatus": "correct",
+      "distractorCount": 4,
+      "allDistractorsIncorrect": true,
+      "reversedAcceptedStatus": "correct",
+      "feedbackTargetSetExact": true
+    }
+  ]
+}

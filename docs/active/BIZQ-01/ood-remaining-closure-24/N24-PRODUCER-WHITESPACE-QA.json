@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "patternly-bizq01-n24-producer-whitespace-qa-v1",
+  "verdict": "PASS",
+  "scope": "Independent byte-level validation of the routine six-space removal from the blank line in the N24 producer test; no semantic or behavior retest claimed.",
+  "inputs": {
+    "erratumPath": "ROOT-PRODUCER24-WHITESPACE-ERRATUM.json",
+    "erratumSha256": "f0493c8c6ea06252c88fde3f010dd81047a08965ed1eb723740ba2e2e00eea08",
+    "originalProducerQaPath": "N24-PRODUCER-IMPLEMENTATION-QA.json",
+    "originalProducerQaSha256": "c9ec4c90b4f6b45f7a473cf7d01ce30aee2429f42f01d957adfa0afdd9dd73c0",
+    "testPath": "patternly-content/tests/bizq01-ood-node-closure-24.test.mjs",
+    "originalTestSha256": "93084d4115ab825af280c0e406a7b6be472d5ef572017ec1ae6cc6dccea5a779",
+    "correctedTestSha256": "8afbebbcc22350ec44f3b53079a7e2b9289f86eeb8f92c622f4cb48ac6b864c9"
+  },
+  "check": {
+    "actualLine120AfterCorrection": "",
+    "reconstructedLine120BeforeCorrection": "      ",
+    "reconstruction": "Restored exactly six ASCII spaces to the empty line at line 120 in memory and hashed the reconstructed complete file; no file was modified.",
+    "reconstructedSha256": "93084d4115ab825af280c0e406a7b6be472d5ef572017ec1ae6cc6dccea5a779",
+    "matchesErratumBeforeSha256": true,
+    "matchesCurrentCorrectedSha256": true,
+    "originalQaBytesMatchErratumBinding": true,
+    "result": "The full original test-file hash is recovered by that single six-space restoration; current file hash matches the erratum’s corrected hash. The original producer QA JSON remains byte-exact."
+  },
+  "testDisposition": {
+    "testsRepeated": false,
+    "reason": "The only byte delta is six spaces on an otherwise empty source line. The separate N24 consumer and producer test runs bind their own current snapshots; this correction does not alter executable code or test expressions."
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "scope": "Root read-only exact diagnostics observation; current proposals, no activation or automatic whole-unit quality verdict",
+  "canonicalRequirement": "docs/07-content-guidelines.md lines357–365: meaningful authored explanation bystableoptionID, why plausible and whichfact/boundary makesit fail; BIZQ01 Q05",
+  "records": [
+    {
+      "unit": "N09-B01",
+      "proposalPath": "proposals/N09-B01.json",
+      "proposalSha256": "665d4e8969561a28a36097c9aef64b05efd3b0a32e969c5005e61e4377071e1b",
+      "questions": 18,
+      "wrongMessages": 72,
+      "exactEchoCount": 0,
+      "firstExactEcho": null
+    },
+    {
+      "unit": "N09-B02",
+      "proposalPath": "proposals/N09-B02.json",
+      "proposalSha256": "12b0af8142102ad33689c605503c2c0cb25bcfae39d2ff97f97766f4e29ae2b1",
+      "questions": 18,
+      "wrongMessages": 72,
+      "exactEchoCount": 0,
+      "firstExactEcho": null
+    },
+    {
+      "unit": "N09-B03",
+      "proposalPath": "proposals/N09-B03.json",
+      "proposalSha256": "184713fc55a2484453eec47e84f513b0f3cf0e88d0a96656d82e17e14764f8c8",
+      "questions": 18,
+      "wrongMessages": 72,
+      "exactEchoCount": 72,
+      "firstExactEcho": {
+        "questionId": "ood-n09-b03-i001",
+        "targetId": "n09b03_i001_caller_copy",
+        "optionText": "Keep the decision in the printer service and give it more shipment fields, so other callers can share the same implementation.",
+        "message": "Keep the decision in the printer service and give it more shipment fields, so other callers can share the same implementation."
+      }
+    },
+    {
+      "unit": "N09-B04",
+      "proposalPath": "proposals/N09-B04.json",
+      "proposalSha256": "8a3c2dda63e35560476ba11cae75d400b36a2277efd4a52ecbece54e8293e355",
+      "questions": 18,
+      "wrongMessages": 72,
+      "exactEchoCount": 72,
+      "firstExactEcho": {
+        "questionId": "ood-n09-b04-i001",
+        "targetId": "n09b04_i001_partial_observation",
+        "optionText": "Rewrite the whole publishing pipeline and compare only whether the displayed number looks right.",
+        "message": "Rewrite the whole publishing pipeline and compare only whether the displayed number looks right."
+      }
+    },
+    {
+      "unit": "N09-B05",
+      "proposalPath": "proposals/N09-B05.json",
+      "proposalSha256": "f88d5aef9359dd0a69511a6caedba9851168367bcb7bb1bd93d3466cd58b4d4d",
+      "questions": 18,
+      "wrongMessages": 72,
+      "exactEchoCount": 72,
+      "firstExactEcho": {
+        "questionId": "ood-n09-b05-i001",
+        "targetId": "n09b05_i001_breaking_change",
+        "optionText": "Change ApplyReward so it previews for new clients and applies only when a new flag is supplied.",
+        "message": "Change ApplyReward so it previews for new clients and applies only when a new flag is supplied."
+      }
+    },
+    {
+      "unit": "N09-B06",
+      "proposalPath": "proposals/N09-B06.json",
+      "proposalSha256": "985d78d4f8dd5fff2f4d353001078794efabce52efb51f0bb2c9823d3003b0be",
+      "questions": 18,
+      "wrongMessages": 72,
+      "exactEchoCount": 72,
+      "firstExactEcho": {
+        "questionId": "ood-n09-b06-i001",
+        "targetId": "n09b06_i001_overexpose",
+        "optionText": "Dump the full route table after every change, including unrelated passenger fields.",
+        "message": "Dump the full route table after every change, including unrelated passenger fields."
+      }
+    },
+    {
+      "unit": "N09-B07",
+      "proposalPath": "proposals/N09-B07.json",
+      "proposalSha256": "6c86e2b2bc11f219f3956de71fd2f166d7c63c41ef159713a0154cb47d23cbd8",
+      "questions": 18,
+      "wrongMessages": 72,
+      "exactEchoCount": 72,
+      "firstExactEcho": {
+        "questionId": "ood-n09-b07-i019",
+        "targetId": "n09b07_i019_assumed_cache",
+        "optionText": "Cache every price indefinitely even though tax rules can change during the day.",
+        "message": "Cache every price indefinitely even though tax rules can change during the day."
+      }
+    },
+    {
+      "unit": "N09-B08",
+      "proposalPath": "proposals/N09-B08.json",
+      "proposalSha256": "18daca7ed08d6ed69d2ad28ad9e5088c0c9d460e851778f77724a3d08c705c64",
+      "questions": 18,
+      "wrongMessages": 72,
+      "exactEchoCount": 0,
+      "firstExactEcho": null
+    },
+    {
+      "unit": "N09-B09",
+      "proposalPath": "proposals/N09-B09.json",
+      "proposalSha256": "eaf029085771773417ad6a008dcbeeb93fa670385bb4fee60c2c5e54618704e0",
+      "questions": 18,
+      "wrongMessages": 72,
+      "exactEchoCount": 0,
+      "firstExactEcho": null
+    }
+  ],
+  "reviewDiscrepancy": "N09-B03-v1 QA currently saysPASS/diagnostics targetactualoptions; all72messages actually repeatoptiontext. Examplei001caller_copy repeats an instruction tokeepdecisioninprinter, without explainingwhythatleaksShipment ownership. Matchingtargetalone doesnotestablish diagnosticquality. Independent reviewer askedtoadjudicate additively; originalreport preserved.",
+  "groupedCorrectionScope": "Actualechoes foundB03–B07; author should add causal peroptiondiagnosis groundedincase after finishing B06–09 authorhandoff. B01/B02/B08/B09 havezeroexactechoes; this measurement doesnotaccepttheirdiagnosticquality.",
+  "sourceWrites": false
+}

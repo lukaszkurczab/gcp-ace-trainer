@@ -1,0 +1,1226 @@
+[
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A public-transit disruption board, Each platform change has a stable change ID and effective sequence. If the acknowledgement is lost, the controller retries the same change ID; a distinct later change has a different ID. Which retry identity should the operation honor? Replay the change ID and return its sequence outcome; a different change ID is checked in sequence.",
+        "errorCorrection": "The original platform update may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is generate a new change id after every lost acknowledgement and publish the same platform change again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i001_alt1_v3",
+          "text": "The original platform update may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i001_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i001_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "The retry is the same effective change; a new ID can publish it twice. Distinct changes have distinct IDs and must not be collapsed by sender.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Replay the change ID and return its sequence outcome; a different change ID is checked in sequence."
+        },
+        {
+          "optionId": "n08b09_i001_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the platform update, risking the same platform change twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i001_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing later changes from this controller even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i001_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and reverse the published platform state, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A public-transit disruption board, Each platform change has a stable change ID and effective sequence. If the acknowledgement is lost, the controller retries the same change ID; a distinct later change has a different ID. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i001",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A neighborhood energy-sharing service, Every discharge reservation has a request ID. A timeout may occur after the meter accepted the window; retrying the same ID must return the original reservation result, while a new ID is a new request. Which retry identity should the operation honor? Return the accepted window for this request ID; a different ID requests a new interval.",
+        "errorCorrection": "The original meter reservation may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is assign a new id on timeout and try to reserve the same interval again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i002_alt1_v3",
+          "text": "The original meter reservation may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i002_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i002_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A new ID bypasses the identity of a reservation that may already have committed. Meter-only deduplication collapses legitimate later windows.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the accepted window for this request ID; a different ID requests a new interval."
+        },
+        {
+          "optionId": "n08b09_i002_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the meter reservation, risking the same discharge window twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i002_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing later non-overlapping reservations on this meter even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i002_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and tell the operator the accepted window was rejected, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A neighborhood energy-sharing service, Every discharge reservation has a request ID. A timeout may occur after the meter accepted the window; retrying the same ID must return the original reservation result, while a new ID is a new request. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i002",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A live captioning studio, A provider-switch command has a switch ID. The callback can finish after the supervisor times out; retrying that same switch must not create a second stream transition, while a later switch uses a different ID. Which retry identity should the operation honor? Replay the switch ID’s result; check a distinct switch at its own stream boundary.",
+        "errorCorrection": "The original provider switch may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new switch id for every retry and apply each command to active streams again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i003_alt1_v3",
+          "text": "The original provider switch may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i003_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i003_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A new ID makes one requested switch look like multiple operations. A later intentional switch needs its own identity and must not be suppressed.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Replay the switch ID’s result; check a distinct switch at its own stream boundary."
+        },
+        {
+          "optionId": "n08b09_i003_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the provider switch, risking the same provider transition twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i003_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing later intentional provider changes even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i003_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and restore the previous provider without checking the accepted switch, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A live captioning studio, A provider-switch command has a switch ID. The callback can finish after the supervisor times out; retrying that same switch must not create a second stream transition, while a later switch uses a different ID. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i003",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A volunteer coordination hub, A two-volunteer swap uses one swap ID. The response can be lost after both assignments changed; a retry must return that swap's result instead of swapping them back. Which retry identity should the operation honor? Return the pair outcome for this swap ID; a different ID requests another swap.",
+        "errorCorrection": "The original volunteer swap may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new swap id each time the manager retries after a lost response. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i004_alt1_v3",
+          "text": "The original volunteer swap may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i004_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i004_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A retry under a fresh ID could execute a second swap and undo the accepted pair. Different dates or pairs are distinct swaps and must not be collapsed by a volunteer-only key.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the pair outcome for this swap ID; a different ID requests another swap."
+        },
+        {
+          "optionId": "n08b09_i004_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the volunteer swap, risking the same pair swap twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i004_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing later swaps for either volunteer even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i004_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and issue a reverse swap from the old roster display, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A volunteer coordination hub, A two-volunteer swap uses one swap ID. The response can be lost after both assignments changed; a retry must return that swap's result instead of swapping them back. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i004",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A local-first map editor, A proposal carries a proposal ID and base route revision. A lost response after acceptance can be retried with the same ID; a different proposal based on an old revision must still receive a conflict. Which retry identity should the operation honor? Replay the proposal ID’s base-revision result; check a distinct proposal against current route state.",
+        "errorCorrection": "The original route proposal may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is generate a fresh proposal id on retry so the geometry is uploaded again as a new edit. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i005_alt1_v3",
+          "text": "The original route proposal may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i005_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i005_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "Fresh identity can apply the same geometry twice and hide that it is a retry. Device-only dedupe would drop independent route proposals.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Replay the proposal ID’s base-revision result; check a distinct proposal against current route state."
+        },
+        {
+          "optionId": "n08b09_i005_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the route proposal, risking the same geometry proposal twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i005_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing a new route edit from that device even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i005_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and discard an accepted proposal as rejected, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A local-first map editor, A proposal carries a proposal ID and base route revision. A lost response after acceptance can be retried with the same ID; a different proposal based on an old revision must still receive a conflict. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i005",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A board-game campaign manager, A reward command has a campaign ID and action ID. The host may retry after losing the response; the same action must not award points twice, but a different action in the campaign remains valid. Which retry identity should the operation honor? Return this campaign action ID’s reward outcome; a different action ID can earn its own result.",
+        "errorCorrection": "The original reward action may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is generate a new action id after timeout and award the same points a second time. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i006_alt1_v3",
+          "text": "The original reward action may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i006_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i006_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A new action ID defeats the explicit retry identity and can double the award. Distinct rewards for one character remain separate actions.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return this campaign action ID’s reward outcome; a different action ID can earn its own result."
+        },
+        {
+          "optionId": "n08b09_i006_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the reward action, risking the same points twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i006_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing a different reward action in the campaign even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i006_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and apply a negative reward based on a missing response, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A board-game campaign manager, A reward command has a campaign ID and action ID. The host may retry after losing the response; the same action must not award points twice, but a different action in the campaign remains valid. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i006",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A cold-chain logistics console, A hand-off request includes a transfer ID. The carrier may accept before the dispatch screen times out; retrying the same transfer must not create another ownership change. Which retry identity should the operation honor? Return the hand-off recorded for this transfer ID; use a new ID for a later carrier change.",
+        "errorCorrection": "The original carrier hand-off may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is mint a new transfer id after timeout and resend the same carrier change as another transfer. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i007_alt1_v3",
+          "text": "The original carrier hand-off may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i007_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i007_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A fresh ID can create duplicate hand-off events after the first acceptance. A shipment may legitimately change carrier again under a new transfer ID.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the hand-off recorded for this transfer ID; use a new ID for a later carrier change."
+        },
+        {
+          "optionId": "n08b09_i007_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the carrier hand-off, risking the same ownership transfer twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i007_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing a later legitimate carrier transfer even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i007_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and assign the old carrier after an unconfirmed notification, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A cold-chain logistics console, A hand-off request includes a transfer ID. The carrier may accept before the dispatch screen times out; retrying the same transfer must not create another ownership change. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i007",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A cooperative lending ledger, A repayment carries a receipt ID. The account may be debited before the client receives the receipt; retrying the same receipt ID must not reduce the balance twice, while another receipt remains a new repayment. Which retry identity should the operation honor? Return the allocation recorded for this receipt ID; a different receipt is another repayment.",
+        "errorCorrection": "The original repayment may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new receipt id after timeout and debit the account again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i008_alt1_v3",
+          "text": "The original repayment may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i008_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i008_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A new ID turns a replay into another debit. Distinct receipts represent distinct repayments even when submitted by the same steward.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the allocation recorded for this receipt ID; a different receipt is another repayment."
+        },
+        {
+          "optionId": "n08b09_i008_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the repayment, risking the same debit twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i008_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing another receipt from the same steward even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i008_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and overwrite the balance from a stale screen value, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A cooperative lending ledger, A repayment carries a receipt ID. The account may be debited before the client receives the receipt; retrying the same receipt ID must not reduce the balance twice, while another receipt remains a new repayment. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i008",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A tournament bracket service, A terminal result has a match ID and result-event ID. The bracket may advance before the official sees the response; replaying the same event must not advance twice, while a new legal event is evaluated against current match state. Which retry identity should the operation honor? Return the bracket result for this event ID; evaluate a distinct legal event against current match state.",
+        "errorCorrection": "The original match result event may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is generate a new result-event id after timeout and advance the same bracket slot again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i009_alt1_v3",
+          "text": "The original match result event may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i009_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i009_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A new ID can repeat advancement from one already accepted event. A match can have a distinct permitted event, so match-only dedupe is too broad.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the bracket result for this event ID; evaluate a distinct legal event against current match state."
+        },
+        {
+          "optionId": "n08b09_i009_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the match result event, risking the same bracket advancement twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i009_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing a distinct permitted correction event even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i009_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and submit the opposite result to force a response, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A tournament bracket service, A terminal result has a match ID and result-event ID. The bracket may advance before the official sees the response; replaying the same event must not advance twice, while a new legal event is evaluated against current match state. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i009",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A returns inspection workflow, Each submitted inspection revision has a submission ID. If its acknowledgement is lost, retrying that submission must preserve the same findings; a later corrected inspection gets a new revision and ID. Which retry identity should the operation honor? Return the stored status for this submission ID and its immutable findings; use a new ID for corrected findings.",
+        "errorCorrection": "The original inspection submission may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new submission id for each retry and append another inspection of the same revision. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i010_alt1_v3",
+          "text": "The original inspection submission may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i010_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i010_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A new ID can duplicate one submitted revision and its findings. A corrected revision is a distinct inspection and should not be collapsed by item ID.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the stored status for this submission ID and its immutable findings; use a new ID for corrected findings."
+        },
+        {
+          "optionId": "n08b09_i010_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the inspection submission, risking the same findings twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i010_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing a later corrected inspection revision even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i010_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and replace accepted findings with the latest local draft, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A returns inspection workflow, Each submitted inspection revision has a submission ID. If its acknowledgement is lost, retrying that submission must preserve the same findings; a later corrected inspection gets a new revision and ID. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i010",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A research-notebook platform, A publication request has a run ID and selected input revisions. If the job finishes but its response is lost, retrying that run ID must return the same publication; a changed input selection uses a new run ID. Which retry identity should the operation honor? Return the output stored for this run ID; use a new ID when selected inputs change.",
+        "errorCorrection": "The original publication run may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is generate a new run id after timeout and publish the same output again as another result. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i011_alt1_v3",
+          "text": "The original publication run may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i011_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i011_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A new ID can create duplicate results from the same completed run. Later experiments by the same owner are distinct when their selected inputs change.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the output stored for this run ID; use a new ID when selected inputs change."
+        },
+        {
+          "optionId": "n08b09_i011_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the publication run, risking the same output twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i011_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing a later run with new input revisions even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i011_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and discard a completed output because its response was lost, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A research-notebook platform, A publication request has a run ID and selected input revisions. If the job finishes but its response is lost, retrying that run ID must return the same publication; a changed input selection uses a new run ID. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i011",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A collaborative annotation workspace, A comment submission has a comment ID. Notification may be retried after acceptance; the same notification must refer to the accepted comment, while a new comment has a new ID. Which retry identity should the operation honor? Replay delivery for the accepted comment ID; a new comment has a different identity.",
+        "errorCorrection": "The original comment notification may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new comment id for every notification retry and append the same text again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i012_alt1_v3",
+          "text": "The original comment notification may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i012_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i012_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A new ID creates duplicate accepted comments instead of replaying delivery. Author-only dedupe merges distinct messages from one reviewer.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Replay delivery for the accepted comment ID; a new comment has a different identity."
+        },
+        {
+          "optionId": "n08b09_i012_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the comment notification, risking the same comment text twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i012_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing a distinct comment from the same reviewer even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i012_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and delete an accepted comment after a delivery failure, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A collaborative annotation workspace, A comment submission has a comment ID. Notification may be retried after acceptance; the same notification must refer to the accepted comment, while a new comment has a new ID. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i012",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A mobile field-inspection app, An offline submission has a submission ID and frozen draft revision. The server may finish it before the device receives an acknowledgement; replaying the same ID must return complete/retryable for that revision, not submit later edits. Which retry identity should the operation honor? Return the status for this submission ID and frozen revision; later edits use a new submission.",
+        "errorCorrection": "The original offline inspection submission may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new submission id each time the device retries after reconnecting. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i013_alt1_v3",
+          "text": "The original offline inspection submission may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i013_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i013_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A new ID may submit the same frozen revision twice. A later revision on the same device is not the same upload.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the status for this submission ID and frozen revision; later edits use a new submission."
+        },
+        {
+          "optionId": "n08b09_i013_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the offline inspection submission, risking the same frozen draft twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i013_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing a later inspection revision from that device even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i013_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and close the current draft as complete without server confirmation, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A mobile field-inspection app, An offline submission has a submission ID and frozen draft revision. The server may finish it before the device receives an acknowledgement; replaying the same ID must return complete/retryable for that revision, not submit later edits. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i013",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A digital invoice exchange, Each invoice issue has a stable issue ID. The exchange can accept before the response is lost; retrying the same issue ID must return the same accepted/rejected outcome without charging twice. Which retry identity should the operation honor? Return the recorded exchange result for this stable issue ID before creating another issue.",
+        "errorCorrection": "The original invoice issue may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new issue id after every timeout and resend the invoice as a new chargeable issue. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i014_alt1_v3",
+          "text": "The original invoice issue may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i014_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i014_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "The control requires the same issue identity to prevent duplicate charges after lost acknowledgement. A customer may have a later corrected invoice, which is distinct under its own issue ID.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the recorded exchange result for this stable issue ID before creating another issue."
+        },
+        {
+          "optionId": "n08b09_i014_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the invoice issue, risking the same chargeable invoice issue twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i014_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing a corrected invoice with a new issue ID even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i014_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and submit a second issue on the assumption the first was rejected, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A digital invoice exchange, Each invoice issue has a stable issue ID. The exchange can accept before the response is lost; retrying the same issue ID must return the same accepted/rejected outcome without charging twice. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i014",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A smart-building access controller, A badge revocation command has a command ID. A door may apply the revocation before the administrator sees the acknowledgement; retrying the same command must not toggle the badge back to active. Which retry identity should the operation honor? Replay this command ID as the recorded revocation; a distinct reactivation command remains separate.",
+        "errorCorrection": "The original badge revocation may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is use a toggle command and send it again whenever the administrator sees no acknowledgement. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i015_alt1_v3",
+          "text": "The original badge revocation may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i015_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i015_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A repeated toggle can undo the already accepted revocation. A distinct later authorization must be allowed under its own operation ID.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Replay this command ID as the recorded revocation; a distinct reactivation command remains separate."
+        },
+        {
+          "optionId": "n08b09_i015_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the badge revocation, risking the same badge revocation twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i015_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing a later authorized reactivation even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i015_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and restore active state because acknowledgement was missing, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A smart-building access controller, A badge revocation command has a command ID. A door may apply the revocation before the administrator sees the acknowledgement; retrying the same command must not toggle the badge back to active. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i015",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A package-label generation service, A label request has a print-job ID tied to an approved shipment revision. The printer can finish before its acknowledgement arrives; replay must identify that print job rather than print another label. Which retry identity should the operation honor? Return the print result for this job ID and shipment revision; use a new ID for a new approved revision.",
+        "errorCorrection": "The original label print job may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is generate a fresh print-job id whenever the operator retries a missing acknowledgement. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i016_alt1_v3",
+          "text": "The original label print job may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i016_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i016_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "Fresh identity can create a duplicate physical label after the first job completed. A corrected shipment revision may require a distinct label job.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the print result for this job ID and shipment revision; use a new ID for a new approved revision."
+        },
+        {
+          "optionId": "n08b09_i016_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the label print job, risking the same physical label twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i016_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing a later print for a corrected approved revision even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i016_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and submit another print because the first acknowledgement was lost, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A package-label generation service, A label request has a print-job ID tied to an approved shipment revision. The printer can finish before its acknowledgement arrives; replay must identify that print job rather than print another label. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i016",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A multi-tenant rehearsal scheduler, A room-move request has a move ID. The move may commit before the coordinator receives its response; retrying the same ID must not move the booking again, while a later new move remains allowed. Which retry identity should the operation honor? Return the move outcome for this move ID; check a distinct move against current room capacity.",
+        "errorCorrection": "The original room move may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new move id after a timeout and move the booking from its current room again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i017_alt1_v3",
+          "text": "The original room move may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i017_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i017_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A second move under a fresh ID can operate on the booking's already changed location. A later move can be valid and must be distinguished from a replay.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the move outcome for this move ID; check a distinct move against current room capacity."
+        },
+        {
+          "optionId": "n08b09_i017_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the room move, risking the same booking move twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i017_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing a later move with a different ID even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i017_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and reserve the destination again from the old room display, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A multi-tenant rehearsal scheduler, A room-move request has a move ID. The move may commit before the coordinator receives its response; retrying the same ID must not move the booking again, while a later new move remains allowed. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i017",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "In A museum exhibit controller, A maintenance command has a command ID and desired mode. The controller may set maintenance before the operator receives the acknowledgement; repeating the same command must not toggle back to running. Which retry identity should the operation honor? Return the accepted desired state for this command ID; a later mode change uses a different command.",
+        "errorCorrection": "The original maintenance command may already have committed, so a new ID could apply its effect again. The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity. A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome.",
+        "boundaryOrTradeoff": "The nearest alternative is implement maintenance as a toggle and retry it when the response is late. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i018_alt1_v3",
+          "text": "The original maintenance command may already have committed, so a new ID could apply its effect again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i018_alt2_v3",
+          "text": "The case distinguishes operations by their IDs; a later distinct action must not be collapsed into the same identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i018_alt3_v3",
+          "text": "A missing acknowledgement does not establish rejection; this policy can contradict an already recorded outcome."
+        }
+      ],
+      "reason": "A retrying toggle can undo the state that the first command already set. A later authorized mode change is a distinct command and should remain possible.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the accepted desired state for this command ID; a later mode change uses a different command."
+        },
+        {
+          "optionId": "n08b09_i018_alt1_v3",
+          "text": "Mint a fresh ID after a lost acknowledgement and repeat the maintenance command, risking the same maintenance command twice if the original committed."
+        },
+        {
+          "optionId": "n08b09_i018_alt2_v3",
+          "text": "Dedupe by the broader resource instead of operation ID, suppressing a later authorized exit from maintenance even though it has a different ID."
+        },
+        {
+          "optionId": "n08b09_i018_alt3_v3",
+          "text": "Treat the missing acknowledgement as rejection and send an opposite command because acknowledgement was missing, without checking the recorded operation outcome."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A museum exhibit controller, A maintenance command has a command ID and desired mode. The controller may set maintenance before the operator receives the acknowledgement; repeating the same command must not toggle back to running. Which retry identity should the operation honor?",
+    "questionId": "ood-n08-b09-i018",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

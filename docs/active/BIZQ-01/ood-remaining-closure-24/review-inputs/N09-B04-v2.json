@@ -1,0 +1,1424 @@
+[
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i001_contract_assertion"
+    },
+    "constraints": [
+      "Published results retain the exact input-data ID and code revision used to produce them. The existing implementation has no tests around those references.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The result contract includes two provenance references, not just its displayed value. A focused test fixes those observable fields before structure changes.",
+        "scenarioApplication": "The test publishes a known input/code pair and asserts both IDs remain on the stored result.",
+        "errorCorrection": "Checking only the number misses provenance loss while still passing the visible summary assertion.",
+        "boundaryOrTradeoff": "A broader end-to-end test can supplement this contract test, but it does not replace a precise assertion on the saved references.",
+        "transfer": "Before extracting code that creates durable results, record which fields downstream readers rely on."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i001_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: Published results retain the exact input-data ID and code revision used to produce them. The existing implementation has no tests around those references. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i001_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: Published results retain the exact input-data ID and code revision used to produce them. The existing implementation has no tests around those references. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i001_contract_change",
+          "text": "This drops or changes the existing contract: Published results retain the exact input-data ID and code revision used to produce them. The existing implementation has no tests around those references. Extraction should keep that behavior intact."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i001_big_bang",
+          "text": "Adding a second snapshot framework before capturing current behavior changes the design under test and does not establish whether the existing extraction preserves provenance."
+        }
+      ],
+      "reason": "The result contract includes two provenance references, not just its displayed value. A focused test fixes those observable fields before structure changes. The test publishes a known input/code pair and asserts both IDs remain on the stored result.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i001_contract_assertion",
+          "text": "Add a contract test that checks both stored references on a published snapshot."
+        },
+        {
+          "optionId": "n09b04_i001_partial_observation",
+          "text": "Rewrite the whole publishing pipeline and compare only whether the displayed number looks right."
+        },
+        {
+          "optionId": "n09b04_i001_stubbed_path",
+          "text": "Stub snapshot storage so the test asserts the UI message without checking saved provenance."
+        },
+        {
+          "optionId": "n09b04_i001_contract_change",
+          "text": "Delete the input and code references during extraction; they complicate the new API."
+        },
+        {
+          "optionId": "n09b04_i001_big_bang",
+          "text": "Add a second snapshot framework before measuring whether the current method needs separation."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A research notebook publishes a result snapshot. Published results retain the exact input-data ID and code revision used to produce them. The existing implementation has no tests around those references. Before extracting snapshot construction from a large method, what should the team do first?",
+    "questionId": "ood-n09-b04-i001",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i002_contract_assertion"
+    },
+    "constraints": [
+      "A saved comment must retain the author ID and document revision. The current method persists the comment and sends the notification in one branch.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The saved comment contract is independent of the notification effect. Assert the two durable fields before extracting the sender boundary.",
+        "scenarioApplication": "A test accepts a comment, reads it back, and checks author ID and revision before notification code is moved.",
+        "errorCorrection": "Asserting only that a message was sent can miss corrupted or omitted comment provenance.",
+        "boundaryOrTradeoff": "A separate delivery test is useful for transport behavior; the first characterization step protects the saved record.",
+        "transfer": "When a method mixes a durable write with an external effect, first pin the durable result that must survive the split."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i002_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: A saved comment must retain the author ID and document revision. The current method persists the comment and sends the notification in one branch. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i002_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: A saved comment must retain the author ID and document revision. The current method persists the comment and sends the notification in one branch. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i002_contract_change",
+          "text": "This drops or changes the existing contract: A saved comment must retain the author ID and document revision. The current method persists the comment and sends the notification in one branch. Extraction should keep that behavior intact."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i002_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: A saved comment must retain the author ID and document revision. The current method persists the comment and sends the notification in one branch. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The saved comment contract is independent of the notification effect. Assert the two durable fields before extracting the sender boundary. A test accepts a comment, reads it back, and checks author ID and revision before notification code is moved.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i002_stubbed_path",
+          "text": "Mock the entire review method and assert it was called with a comment object."
+        },
+        {
+          "optionId": "n09b04_i002_contract_change",
+          "text": "Replace the saved comment model with a notification payload containing only the author name."
+        },
+        {
+          "optionId": "n09b04_i002_big_bang",
+          "text": "Rewrite comment persistence and delivery together so the new design has fewer methods."
+        },
+        {
+          "optionId": "n09b04_i002_contract_assertion",
+          "text": "Characterize the saved author and revision before separating notification delivery."
+        },
+        {
+          "optionId": "n09b04_i002_partial_observation",
+          "text": "Move notification first and update the comment fields later, then test only that a message was sent."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A collaborative review tool accepts a comment and then notifies its author. A saved comment must retain the author ID and document revision. The current method persists the comment and sends the notification in one branch. Which first refactoring step protects that persisted behavior?",
+    "questionId": "ood-n09-b04-i002",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i003_contract_assertion"
+    },
+    "constraints": [
+      "A submission ends as complete or explicitly retryable; an offline retry must not appear as a completed inspection. The current result mapping is embedded in a long method.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The contract distinguishes completed work from work that may be retried. Tests need to preserve both outcomes before the mapping moves.",
+        "scenarioApplication": "The tests assert that an offline attempt retains the retryable state and a completed submission remains complete.",
+        "errorCorrection": "A UI-only assertion cannot prove which status is stored for later retry processing.",
+        "boundaryOrTradeoff": "A retry queue may be a separate product decision; it is not needed to characterize this state mapping.",
+        "transfer": "For a refactor around status mapping, test each existing state transition at the operation boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i003_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: A submission ends as complete or explicitly retryable; an offline retry must not appear as a completed inspection. The current result mapping is embedded in a long method. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i003_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: A submission ends as complete or explicitly retryable; an offline retry must not appear as a completed inspection. The current result mapping is embedded in a long method. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i003_contract_change",
+          "text": "Replacing mapping and persistence in one rewrite does not isolate the behavior under test. Comparing only screen text can miss a retryable result being marked complete."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i003_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: A submission ends as complete or explicitly retryable; an offline retry must not appear as a completed inspection. The current result mapping is embedded in a long method. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The contract distinguishes completed work from work that may be retried. Tests need to preserve both outcomes before the mapping moves. The tests assert that an offline attempt retains the retryable state and a completed submission remains complete.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i003_big_bang",
+          "text": "Add a generic retry queue even though this change is only extracting result mapping."
+        },
+        {
+          "optionId": "n09b04_i003_contract_assertion",
+          "text": "Test the complete and retryable result states against the existing operation."
+        },
+        {
+          "optionId": "n09b04_i003_partial_observation",
+          "text": "Treat every offline response as success and repair incomplete submissions in a later batch."
+        },
+        {
+          "optionId": "n09b04_i003_stubbed_path",
+          "text": "Stub the operation to return “complete” in every test and cover retry with a comment."
+        },
+        {
+          "optionId": "n09b04_i003_contract_change",
+          "text": "Replace the result mapping and persistence flow in one rewrite, then compare only the screen text."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A field-inspection app stores work while a device is offline. A submission ends as complete or explicitly retryable; an offline retry must not appear as a completed inspection. The current result mapping is embedded in a long method. What should be locked down before extracting that mapping?",
+    "questionId": "ood-n09-b04-i003",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i004_contract_assertion"
+    },
+    "constraints": [
+      "The reissue receives a traceable issue ID and must not create a second customer charge. Both outcomes are currently handled in one method.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The contract spans traceability and a side effect count. A targeted regression test makes those observations explicit before the branches separate.",
+        "scenarioApplication": "The test reissues a rejected invoice and checks the new issue reference while confirming the customer is charged only once.",
+        "errorCorrection": "A display-number assertion alone does not detect a duplicate charge.",
+        "boundaryOrTradeoff": "Payment-provider behavior may need its own integration test; the first refactor test checks the application’s observable charge count.",
+        "transfer": "When splitting a retry/reissue path, assert both the new identity and the side effect that must not repeat."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i004_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: The reissue receives a traceable issue ID and must not create a second customer charge. Both outcomes are currently handled in one method. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i004_stubbed_path",
+          "text": "A canned success skips the charge path, so the test cannot detect whether reissue creates a second customer charge."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i004_contract_change",
+          "text": "This drops or changes the existing contract: The reissue receives a traceable issue ID and must not create a second customer charge. Both outcomes are currently handled in one method. Extraction should keep that behavior intact."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i004_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: The reissue receives a traceable issue ID and must not create a second customer charge. Both outcomes are currently handled in one method. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The contract spans traceability and a side effect count. A targeted regression test makes those observations explicit before the branches separate. The test reissues a rejected invoice and checks the new issue reference while confirming the customer is charged only once.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i004_partial_observation",
+          "text": "Test only that the reissued invoice has a new display number, without checking the charge record."
+        },
+        {
+          "optionId": "n09b04_i004_stubbed_path",
+          "text": "Make the new reissue method return a canned success and skip the existing charge path."
+        },
+        {
+          "optionId": "n09b04_i004_contract_change",
+          "text": "Move charge creation into the invoice formatter and let formatting tests cover it."
+        },
+        {
+          "optionId": "n09b04_i004_big_bang",
+          "text": "Replace the issue flow and payment flow together, then inspect a successful response."
+        },
+        {
+          "optionId": "n09b04_i004_contract_assertion",
+          "text": "Add a regression test for the new issue ID and unchanged charge count."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "An invoice exchange reissues an invoice rejected by a customer’s system. The reissue receives a traceable issue ID and must not create a second customer charge. Both outcomes are currently handled in one method. Which test should precede the extraction of the reissue path?",
+    "questionId": "ood-n09-b04-i004",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i005_contract_assertion"
+    },
+    "constraints": [
+      "The door policy must observe revocation before the next access decision. The current service updates a badge record and publishes the policy input in separate steps.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The behavior contract is the ordering visible at the policy decision, not merely a successful database update.",
+        "scenarioApplication": "The test revokes a badge, then evaluates access through the policy boundary and expects the revoked state to be visible.",
+        "errorCorrection": "A row-update assertion misses a stale policy input that could still grant access.",
+        "boundaryOrTradeoff": "A database test can check persistence separately, but the decision contract needs an observation at the policy boundary.",
+        "transfer": "For a refactor around authorization state, test what the authorization decision observes after the change."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i005_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: The door policy must observe revocation before the next access decision. The current service updates a badge record and publishes the policy input in separate steps. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i005_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: The door policy must observe revocation before the next access decision. The current service updates a badge record and publishes the policy input in separate steps. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i005_contract_change",
+          "text": "The badge screen does not own the access decision. Moving it there leaves the required ordering between stored revocation and the next policy read uncharacterized."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i005_big_bang",
+          "text": "Replacing the update mechanism and policy input together obscures whether the next access decision observes the revocation at the required time."
+        }
+      ],
+      "reason": "The behavior contract is the ordering visible at the policy decision, not merely a successful database update. The test revokes a badge, then evaluates access through the policy boundary and expects the revoked state to be visible.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i005_contract_change",
+          "text": "Move the access decision into the badge screen and test its button state."
+        },
+        {
+          "optionId": "n09b04_i005_big_bang",
+          "text": "Replace both record update and policy input with a new cache before measuring current behavior."
+        },
+        {
+          "optionId": "n09b04_i005_contract_assertion",
+          "text": "Test that the next door-policy decision sees the revoked badge state."
+        },
+        {
+          "optionId": "n09b04_i005_partial_observation",
+          "text": "Assert only that the badge row changed, without exercising the policy read."
+        },
+        {
+          "optionId": "n09b04_i005_stubbed_path",
+          "text": "Stub the policy to deny every badge so revocation timing no longer matters."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A building-access system revokes a badge. The door policy must observe revocation before the next access decision. The current service updates a badge record and publishes the policy input in separate steps. What contract test best protects the refactor?",
+    "questionId": "ood-n09-b04-i005",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i006_contract_assertion"
+    },
+    "constraints": [
+      "The exported stop sequence omits the closed stop and preserves all unaffected stop order. The route editor currently mixes filtering and export formatting.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The contract is a specific sequence transformation: remove the closed stop while preserving the remaining relative order.",
+        "scenarioApplication": "A fixed route fixture makes the expected sequence observable before filtering and formatting are separated.",
+        "errorCorrection": "A stop-count assertion can pass even if the wrong stop is removed or others are reordered.",
+        "boundaryOrTradeoff": "Snapshot testing may help with formatting, but the sequence assertion is the essential behavior contract.",
+        "transfer": "When extracting a pipeline step, characterize the exact transformation and the properties that must remain unchanged."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i006_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: The exported stop sequence omits the closed stop and preserves all unaffected stop order. The route editor currently mixes filtering and export formatting. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i006_stubbed_path",
+          "text": "A new route algorithm and one screenshot do not assert that the closed stop is absent while unaffected stops retain order."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i006_contract_change",
+          "text": "This drops or changes the existing contract: The exported stop sequence omits the closed stop and preserves all unaffected stop order. The route editor currently mixes filtering and export formatting. Extraction should keep that behavior intact."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i006_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: The exported stop sequence omits the closed stop and preserves all unaffected stop order. The route editor currently mixes filtering and export formatting. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The contract is a specific sequence transformation: remove the closed stop while preserving the remaining relative order. A fixed route fixture makes the expected sequence observable before filtering and formatting are separated.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i006_contract_assertion",
+          "text": "Assert the corrected stop sequence and unchanged order of unaffected stops."
+        },
+        {
+          "optionId": "n09b04_i006_partial_observation",
+          "text": "Assert only that the export contains fewer stops than before."
+        },
+        {
+          "optionId": "n09b04_i006_stubbed_path",
+          "text": "Replace the route algorithm and compare a single screenshot of the editor."
+        },
+        {
+          "optionId": "n09b04_i006_contract_change",
+          "text": "Stub the export formatter with the expected list, bypassing route correction."
+        },
+        {
+          "optionId": "n09b04_i006_big_bang",
+          "text": "Move stop filtering into the UI and let each export caller choose its own order."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A transit planner corrects a route after a stop closure. The exported stop sequence omits the closed stop and preserves all unaffected stop order. The route editor currently mixes filtering and export formatting. What should be captured before separating those steps?",
+    "questionId": "ood-n09-b04-i006",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i007_contract_assertion"
+    },
+    "constraints": [
+      "The borrower’s place in the hold queue stays unchanged, and the due date moves by the configured extension. The current method updates both fields.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The extension changes one date but preserves a separate ordering property. Both are visible contract facts and should be asserted before the method is split.",
+        "scenarioApplication": "The test captures the borrower’s queue position before extension and checks it alongside the new due date.",
+        "errorCorrection": "Checking only the date permits an accidental queue reorder that violates the case facts.",
+        "boundaryOrTradeoff": "A separate queue algorithm test can cover general ordering; this scenario should preserve the borrower’s current place.",
+        "transfer": "A refactor test should pair the intended change with the neighboring state that must remain stable."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i007_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: The borrower’s place in the hold queue stays unchanged, and the due date moves by the configured extension. The current method updates both fields. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i007_stubbed_path",
+          "text": "Resetting the queue changes the case state instead of preserving it; the refactor must show the borrower keeps their place as the due date moves."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i007_contract_change",
+          "text": "This drops or changes the existing contract: The borrower’s place in the hold queue stays unchanged, and the due date moves by the configured extension. The current method updates both fields. Extraction should keep that behavior intact."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i007_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: The borrower’s place in the hold queue stays unchanged, and the due date moves by the configured extension. The current method updates both fields. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The extension changes one date but preserves a separate ordering property. Both are visible contract facts and should be asserted before the method is split. The test captures the borrower’s queue position before extension and checks it alongside the new due date.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i007_stubbed_path",
+          "text": "Reset the hold queue during the refactor so the new code has fewer states."
+        },
+        {
+          "optionId": "n09b04_i007_contract_change",
+          "text": "Stub the extension method and assert that a repository update was requested."
+        },
+        {
+          "optionId": "n09b04_i007_big_bang",
+          "text": "Replace circulation storage and queue ordering in one migration before recording current behavior."
+        },
+        {
+          "optionId": "n09b04_i007_contract_assertion",
+          "text": "Characterize queue position and the resulting due date in one extension case."
+        },
+        {
+          "optionId": "n09b04_i007_partial_observation",
+          "text": "Test only that the due date changes and ignore the borrower’s queue position."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A library circulation service extends a hold for a book already on loan. The borrower’s place in the hold queue stays unchanged, and the due date moves by the configured extension. The current method updates both fields. Which first step best protects the refactor?",
+    "questionId": "ood-n09-b04-i007",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i008_contract_assertion"
+    },
+    "constraints": [
+      "Candidate requests include active and withdrawn entries in request-time order; only active requests are eligible, and one offer is made.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The offer contract combines ordering, eligibility, and a single recipient. A test should bind all three before selection moves.",
+        "scenarioApplication": "Run selection against an ordered candidate list containing an earlier withdrawn request followed by active requests; verify the one offer names the earliest active request.",
+        "errorCorrection": "Taking the first input entry would select the withdrawn request in this case. Filtering to active candidates is required before choosing the earliest request.",
+        "boundaryOrTradeoff": "If the input were already guaranteed to contain active requests only, selecting its first entry would be equivalent. This prompt intentionally includes withdrawn entries so the eligibility boundary is testable.",
+        "transfer": "For refactors of selection flows, assert the chosen subject and cardinality of the resulting action."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i008_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: Withdrawn requests are removed before selection; the remaining waitlist is ordered by request time, and only one attendee is offered the seat. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i008_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: Withdrawn requests are removed before selection; the remaining waitlist is ordered by request time, and only one attendee is offered the seat. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i008_contract_change",
+          "text": "The candidate list can begin with a withdrawn request. Returning its first element skips the stated active-only eligibility rule and would offer the seat to someone ineligible."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i008_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: Withdrawn requests are removed before selection; the remaining waitlist is ordered by request time, and only one attendee is offered the seat. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The input includes withdrawn and active requests in request-time order, but only active attendees can receive an offer. A regression test should pin that selection skips withdrawn entries and offers the seat to the earliest remaining active request.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i008_big_bang",
+          "text": "Rebuild the waitlist API and offer flow at once, then check that some offer exists."
+        },
+        {
+          "optionId": "n09b04_i008_contract_assertion",
+          "text": "Assert that the earliest eligible attendee receives the single offer."
+        },
+        {
+          "optionId": "n09b04_i008_partial_observation",
+          "text": "Offer the seat to every waitlisted attendee and let the first response win."
+        },
+        {
+          "optionId": "n09b04_i008_stubbed_path",
+          "text": "Test only that an offer email was sent, not which attendee it names."
+        },
+        {
+          "optionId": "n09b04_i008_contract_change",
+          "text": "Stub selection to return the first array item without applying eligibility."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "An event-ticket service offers a newly freed seat. Its candidate list includes active and withdrawn requests, ordered by request time; only active attendees are eligible to receive the single offer. The selection and offer currently share one method. What regression test should come before extracting seat selection?",
+    "questionId": "ood-n09-b04-i008",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i009_contract_assertion"
+    },
+    "constraints": [
+      "The decision record keeps the reviewer ID and evidence-set revision. The existing flow also formats a notice for the customer.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The durable decision record carries authorship and evidence provenance; notice formatting is a separate presentation concern.",
+        "scenarioApplication": "The test closes one dispute and reads back the reviewer ID and evidence revision before the notice code is extracted.",
+        "errorCorrection": "A notice assertion says nothing about the provenance retained on the decision record.",
+        "boundaryOrTradeoff": "A notice snapshot can be added later to cover formatting, but it does not protect the decision data.",
+        "transfer": "When a refactor separates communication from a decision, pin the durable decision facts first."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i009_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: The decision record keeps the reviewer ID and evidence-set revision. The existing flow also formats a notice for the customer. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i009_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: The decision record keeps the reviewer ID and evidence-set revision. The existing flow also formats a notice for the customer. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i009_contract_change",
+          "text": "A canned closed result skips the decision record, so the test cannot prove that its reviewer and evidence revision survive notice extraction."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i009_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: The decision record keeps the reviewer ID and evidence-set revision. The existing flow also formats a notice for the customer. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The durable decision record carries authorship and evidence provenance; notice formatting is a separate presentation concern. The test closes one dispute and reads back the reviewer ID and evidence revision before the notice code is extracted.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i009_partial_observation",
+          "text": "Verify only the notice wording and assume the decision record is unchanged."
+        },
+        {
+          "optionId": "n09b04_i009_stubbed_path",
+          "text": "Move evidence review into the notice formatter and test its rendered text."
+        },
+        {
+          "optionId": "n09b04_i009_contract_change",
+          "text": "Stub the close operation to return “closed” without reading the decision record."
+        },
+        {
+          "optionId": "n09b04_i009_big_bang",
+          "text": "Replace the dispute model and notice API together, then inspect one successful case."
+        },
+        {
+          "optionId": "n09b04_i009_contract_assertion",
+          "text": "Verify the closed decision retains the reviewer and evidence revision."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A payment-dispute desk closes a dispute after evidence is reviewed. The decision record keeps the reviewer ID and evidence-set revision. The existing flow also formats a notice for the customer. Which behavior should a first regression test pin before notice formatting moves?",
+    "questionId": "ood-n09-b04-i009",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i010_contract_assertion"
+    },
+    "constraints": [
+      "Valid rows are committed; malformed rows remain available with their original line numbers. The current import method parses and reports in one block.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The import contract has two outcomes: accepted data is committed and rejected input remains traceable to its source line.",
+        "scenarioApplication": "A mixed fixture lets the test inspect both saved counts and the line numbers attached to quarantined rows.",
+        "errorCorrection": "A total-only assertion can pass after rejected input disappears or valid rows are misattributed.",
+        "boundaryOrTradeoff": "Parser unit tests can cover syntax details separately; this characterization test protects import behavior across the extraction.",
+        "transfer": "For batch-processing refactors, test both accepted and rejected records and the information retained for each."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i010_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: Valid rows are committed; malformed rows remain available with their original line numbers. The current import method parses and reports in one block. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i010_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: Valid rows are committed; malformed rows remain available with their original line numbers. The current import method parses and reports in one block. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i010_contract_change",
+          "text": "The report renderer does not own parsing. Moving parsing there couples display to import semantics and still does not prove malformed rows retain original line numbers."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i010_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: Valid rows are committed; malformed rows remain available with their original line numbers. The current import method parses and reports in one block. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The import contract has two outcomes: accepted data is committed and rejected input remains traceable to its source line. A mixed fixture lets the test inspect both saved counts and the line numbers attached to quarantined rows.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i010_contract_change",
+          "text": "Move parsing into the report renderer so import tests can assert the displayed summary."
+        },
+        {
+          "optionId": "n09b04_i010_big_bang",
+          "text": "Replace the importer and storage format together, then compare only total row count."
+        },
+        {
+          "optionId": "n09b04_i010_contract_assertion",
+          "text": "Test committed valid counts and retained line numbers for rejected rows."
+        },
+        {
+          "optionId": "n09b04_i010_partial_observation",
+          "text": "Drop malformed rows silently and test only the final inventory total."
+        },
+        {
+          "optionId": "n09b04_i010_stubbed_path",
+          "text": "Stub the parser with already-normalized counts and skip original line locations."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A warehouse import accepts valid counts and quarantines malformed rows. Valid rows are committed; malformed rows remain available with their original line numbers. The current import method parses and reports in one block. What should be characterized before that block is decomposed?",
+    "questionId": "ood-n09-b04-i010",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i011_contract_assertion"
+    },
+    "constraints": [
+      "Calibration records include the sensor revision and unit used for the measured offset. The current method updates the offset and calibration record together.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The calibration output is meaningful only with the sensor revision and unit that define it. The test should pin those linked fields.",
+        "scenarioApplication": "The fixture uses a known sensor revision and unit; after calibration, the saved record must carry both with the offset.",
+        "errorCorrection": "An offset-only assertion can preserve the number while losing the context needed to interpret it.",
+        "boundaryOrTradeoff": "A sensor driver test can check raw readings separately; this test protects the stored calibration result.",
+        "transfer": "When a computed value depends on version or unit metadata, characterize the value together with that context."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i011_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: Calibration records include the sensor revision and unit used for the measured offset. The current method updates the offset and calibration record together. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i011_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: Calibration records include the sensor revision and unit used for the measured offset. The current method updates the offset and calibration record together. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i011_contract_change",
+          "text": "Replacing storage and calibration together prevents a before/after comparison of the offset and its sensor revision/unit contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i011_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: Calibration records include the sensor revision and unit used for the measured offset. The current method updates the offset and calibration record together. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The calibration output is meaningful only with the sensor revision and unit that define it. The test should pin those linked fields. The fixture uses a known sensor revision and unit; after calibration, the saved record must carry both with the offset.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i011_contract_assertion",
+          "text": "Check the saved offset alongside the sensor revision and measurement unit."
+        },
+        {
+          "optionId": "n09b04_i011_partial_observation",
+          "text": "Assert only that the displayed offset changed, omitting the calibration record."
+        },
+        {
+          "optionId": "n09b04_i011_stubbed_path",
+          "text": "Use a mock calibration repository that returns the expected record without running conversion."
+        },
+        {
+          "optionId": "n09b04_i011_contract_change",
+          "text": "Rewrite sensor replacement and calibration storage together, then check the screen label."
+        },
+        {
+          "optionId": "n09b04_i011_big_bang",
+          "text": "Move calibration-record creation into the UI and trust each caller to supply the unit."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A workshop calibrates a measurement tool after replacing a sensor. Calibration records include the sensor revision and unit used for the measured offset. The current method updates the offset and calibration record together. Which test should anchor the first extraction?",
+    "questionId": "ood-n09-b04-i011",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i012_contract_assertion"
+    },
+    "constraints": [
+      "Both volunteers remain assigned exactly one shift, and the swap history records both old and new assignments. The current operation mutates two rows.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The operation changes two assignments and records their history. Assertions on both records reveal partial updates.",
+        "scenarioApplication": "After the swap, the test reads both volunteer assignments and confirms the corresponding before/after history entries.",
+        "errorCorrection": "A one-sided assertion allows one volunteer to end up unassigned or double-booked.",
+        "boundaryOrTradeoff": "Delivery of a swap notification can be tested separately; this test protects the assignment change itself.",
+        "transfer": "For a refactor of a multi-record operation, assert every side of the change and the history the contract retains."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i012_partial_observation",
+          "text": "Checking only that the second volunteer has some shift misses whether both volunteers still have exactly one and whether both old/new assignments were recorded."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i012_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: Both volunteers remain assigned exactly one shift, and the swap history records both old and new assignments. The current operation mutates two rows. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i012_contract_change",
+          "text": "A repository stub returns the expected rows regardless of the two writes, so it cannot establish that both assignments and paired history are actually updated."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i012_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: Both volunteers remain assigned exactly one shift, and the swap history records both old and new assignments. The current operation mutates two rows. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The operation changes two assignments and records their history. Assertions on both records reveal partial updates. After the swap, the test reads both volunteer assignments and confirms the corresponding before/after history entries.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i012_stubbed_path",
+          "text": "Assert only that a swap event was emitted, without reading the assignments."
+        },
+        {
+          "optionId": "n09b04_i012_contract_change",
+          "text": "Stub the repository so it returns the expected swapped rows regardless of writes."
+        },
+        {
+          "optionId": "n09b04_i012_big_bang",
+          "text": "Replace assignment storage and notification delivery together before capturing current behavior."
+        },
+        {
+          "optionId": "n09b04_i012_contract_assertion",
+          "text": "Test both final assignments and the paired history entries after the swap."
+        },
+        {
+          "optionId": "n09b04_i012_partial_observation",
+          "text": "Update the first assignment, then test that the second volunteer received some shift."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A volunteer platform swaps two assigned shifts. Both volunteers remain assigned exactly one shift, and the swap history records both old and new assignments. The current operation mutates two rows. What should be asserted before extracting the swap operation?",
+    "questionId": "ood-n09-b04-i012",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i013_contract_assertion"
+    },
+    "constraints": [
+      "The revised window reflects the delay, while the original estimate remains available for audit. The method currently overwrites one field and appends a history entry.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The contract intentionally changes the current estimate while retaining the prior one. Both values should remain observable after extraction.",
+        "scenarioApplication": "The test starts with an original window, applies one depot delay, then checks the new window and history entry.",
+        "errorCorrection": "A latest-value-only assertion cannot detect loss of the audit value.",
+        "boundaryOrTradeoff": "A separate audit viewer test can cover presentation; the estimator test should protect retained history.",
+        "transfer": "When a refactor changes a current value but preserves history, assert both the new state and retained prior state."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i013_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: The revised window reflects the delay, while the original estimate remains available for audit. The method currently overwrites one field and appends a history entry. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i013_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: The revised window reflects the delay, while the original estimate remains available for audit. The method currently overwrites one field and appends a history entry. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i013_contract_change",
+          "text": "The dashboard is a consumer of the audit history, not its owner. Asking it to infer the prior estimate can lose the original value when the window changes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i013_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: The revised window reflects the delay, while the original estimate remains available for audit. The method currently overwrites one field and appends a history entry. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The contract intentionally changes the current estimate while retaining the prior one. Both values should remain observable after extraction. The test starts with an original window, applies one depot delay, then checks the new window and history entry.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i013_big_bang",
+          "text": "Replace the estimate model and dashboard together, then check the latest displayed time."
+        },
+        {
+          "optionId": "n09b04_i013_contract_assertion",
+          "text": "Check the revised window and that the original estimate remains in history."
+        },
+        {
+          "optionId": "n09b04_i013_partial_observation",
+          "text": "Check only the revised window and discard the old estimate as unused."
+        },
+        {
+          "optionId": "n09b04_i013_stubbed_path",
+          "text": "Stub the estimator to return a fixed window and skip the delay calculation."
+        },
+        {
+          "optionId": "n09b04_i013_contract_change",
+          "text": "Move audit-history creation into the dashboard and let it infer the previous window."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A delivery estimator recalculates an arrival window after a depot delay. The revised window reflects the delay, while the original estimate remains available for audit. The method currently overwrites one field and appends a history entry. Which regression assertion protects the refactor?",
+    "questionId": "ood-n09-b04-i013",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i014_contract_assertion"
+    },
+    "constraints": [
+      "The start time changes but the program keeps its channel and episode ID. The current method updates scheduling and builds a notice.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The change affects time but preserves channel and episode identity. A focused test prevents the refactor from broadening the mutation.",
+        "scenarioApplication": "The test moves one program and verifies only the start time changes among the stated fields.",
+        "errorCorrection": "A notice-only assertion cannot catch an accidental identity change in the schedule record.",
+        "boundaryOrTradeoff": "Notice formatting can be characterized in a separate test; this one protects the schedule contract.",
+        "transfer": "For a targeted refactor, state both the field expected to change and the neighboring fields that must remain stable."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i014_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: The start time changes but the program keeps its channel and episode ID. The current method updates scheduling and builds a notice. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i014_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: The start time changes but the program keeps its channel and episode ID. The current method updates scheduling and builds a notice. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i014_contract_change",
+          "text": "A canned schedule skips the outage adjustment, so it cannot show that the start time changes while channel and episode identity remain stable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i014_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: The start time changes but the program keeps its channel and episode ID. The current method updates scheduling and builds a notice. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The change affects time but preserves channel and episode identity. A focused test prevents the refactor from broadening the mutation. The test moves one program and verifies only the start time changes among the stated fields.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i014_partial_observation",
+          "text": "Check only that a notice is produced and leave the saved schedule unexamined."
+        },
+        {
+          "optionId": "n09b04_i014_stubbed_path",
+          "text": "Regenerate the episode ID when the start time changes to simplify the schedule record."
+        },
+        {
+          "optionId": "n09b04_i014_contract_change",
+          "text": "Stub scheduling to return a new time without exercising the outage adjustment."
+        },
+        {
+          "optionId": "n09b04_i014_big_bang",
+          "text": "Move schedule mutation into the notice builder and let it decide the new identity."
+        },
+        {
+          "optionId": "n09b04_i014_contract_assertion",
+          "text": "Assert the new start time and unchanged channel and episode identity."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A broadcast scheduler moves a program after a studio outage. The start time changes but the program keeps its channel and episode ID. The current method updates scheduling and builds a notice. What should be locked down before separating schedule changes from notice construction?",
+    "questionId": "ood-n09-b04-i014",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i015_contract_assertion"
+    },
+    "constraints": [
+      "The public copy omits personal identifiers but retains the case ID and decision date. The export method currently redacts and serializes in sequence.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The behavior contract has both an omission rule and required retained fields. Assertions for both prevent over-redaction and leakage.",
+        "scenarioApplication": "A known record lets the test verify that personal identifiers are absent while case ID and decision date survive.",
+        "errorCorrection": "A field-count check can pass while retaining a prohibited identifier or dropping required case context.",
+        "boundaryOrTradeoff": "Serializer tests can cover byte formatting; they should use an already-verified redacted object.",
+        "transfer": "For a privacy-sensitive refactor, characterize prohibited output and required context together."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i015_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: The public copy omits personal identifiers but retains the case ID and decision date. The export method currently redacts and serializes in sequence. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i015_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: The public copy omits personal identifiers but retains the case ID and decision date. The export method currently redacts and serializes in sequence. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i015_contract_change",
+          "text": "Redacting after serialization operates on rendered bytes rather than the structured public copy; it risks leaving personal identifiers while failing to retain the required case ID/date fields."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i015_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: The public copy omits personal identifiers but retains the case ID and decision date. The export method currently redacts and serializes in sequence. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The behavior contract has both an omission rule and required retained fields. Assertions for both prevent over-redaction and leakage. A known record lets the test verify that personal identifiers are absent while case ID and decision date survive.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i015_contract_change",
+          "text": "Serialize first and remove personal fields from the finished byte string."
+        },
+        {
+          "optionId": "n09b04_i015_big_bang",
+          "text": "Replace the export format and redaction policy together, then check that a file exists."
+        },
+        {
+          "optionId": "n09b04_i015_contract_assertion",
+          "text": "Assert identifiers are absent while the case ID and decision date remain."
+        },
+        {
+          "optionId": "n09b04_i015_partial_observation",
+          "text": "Check only that the export contains fewer fields than the internal record."
+        },
+        {
+          "optionId": "n09b04_i015_stubbed_path",
+          "text": "Stub redaction with a fixed public object and test only the serializer."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A records office exports a redacted case summary. The public copy omits personal identifiers but retains the case ID and decision date. The export method currently redacts and serializes in sequence. Which test should precede separating redaction from serialization?",
+    "questionId": "ood-n09-b04-i015",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i016_contract_assertion"
+    },
+    "constraints": [
+      "The renewal uses the plan version attached to the renewal preview; it does not silently adopt a newer plan published afterward. The current method reads the plan twice.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The preview’s version is a contract input that must survive the split between preview and renewal.",
+        "scenarioApplication": "The test creates a preview, advances the catalog, then verifies renewal still uses the preview’s recorded plan version.",
+        "errorCorrection": "Reading the latest plan twice can produce a renewal different from the preview that the user accepted.",
+        "boundaryOrTradeoff": "A user-confirmed plan change could legitimately select another version, but that condition is not in this case.",
+        "transfer": "When two steps are separated by time, preserve the explicit version or choice connecting the earlier decision to the later effect."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i016_partial_observation",
+          "text": "The catalog head can advance after preview. Reading it at renewal can apply a different plan than the version attached to the preview."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i016_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: The renewal uses the plan version attached to the renewal preview; it does not silently adopt a newer plan published afterward. The current method reads the plan twice. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i016_contract_change",
+          "text": "Updating the preview and removing its plan reference erases the version that the renewal is required to honor."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i016_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: The renewal uses the plan version attached to the renewal preview; it does not silently adopt a newer plan published afterward. The current method reads the plan twice. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The preview’s version is a contract input that must survive the split between preview and renewal. The test creates a preview, advances the catalog, then verifies renewal still uses the preview’s recorded plan version.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i016_contract_assertion",
+          "text": "Verify renewal uses the preview’s plan version after the catalog advances."
+        },
+        {
+          "optionId": "n09b04_i016_partial_observation",
+          "text": "Read the latest plan at renewal and assume it matches the preview."
+        },
+        {
+          "optionId": "n09b04_i016_stubbed_path",
+          "text": "Stub the renewal result with the preview amount without exercising plan selection."
+        },
+        {
+          "optionId": "n09b04_i016_contract_change",
+          "text": "Update the preview whenever the catalog changes and remove its plan reference."
+        },
+        {
+          "optionId": "n09b04_i016_big_bang",
+          "text": "Replace plan storage and renewal calculation together, then compare only the final amount."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A subscription renews after a rate plan changes. The renewal uses the plan version attached to the renewal preview; it does not silently adopt a newer plan published afterward. The current method reads the plan twice. What test should come before splitting preview and renewal?",
+    "questionId": "ood-n09-b04-i016",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i017_contract_assertion"
+    },
+    "constraints": [
+      "Each entry retains the actor ID and effective timestamp. A refactor will separate change validation from log serialization.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The actor and effective time describe who made the change and when it took effect; they must be retained by the stored entry.",
+        "scenarioApplication": "The test performs a change under a known actor/time and reads back those same values from the audit record.",
+        "errorCorrection": "A row-exists assertion does not protect attribution or the effective timestamp.",
+        "boundaryOrTradeoff": "The serializer may format timestamps differently while preserving the underlying instant and actor reference.",
+        "transfer": "Before refactoring audit paths, assert the durable attribution fields rather than only successful insertion."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i017_partial_observation",
+          "text": "That narrow check can pass without proving the stated contract: Each entry retains the actor ID and effective timestamp. A refactor will separate change validation from log serialization. Characterize the complete outcome before moving the code."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i017_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: Each entry retains the actor ID and effective timestamp. A refactor will separate change validation from log serialization. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i017_contract_change",
+          "text": "Using the current viewer as the actor attributes a past manual change to whoever reads it; the audit entry must retain the original actor."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i017_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: Each entry retains the actor ID and effective timestamp. A refactor will separate change validation from log serialization. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The actor and effective time describe who made the change and when it took effect; they must be retained by the stored entry. The test performs a change under a known actor/time and reads back those same values from the audit record.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i017_stubbed_path",
+          "text": "Stub the serializer with a complete row and skip the validation operation."
+        },
+        {
+          "optionId": "n09b04_i017_contract_change",
+          "text": "Use the current viewer identity at read time instead of retaining the actor who made the change."
+        },
+        {
+          "optionId": "n09b04_i017_big_bang",
+          "text": "Replace the log schema and validator together, then inspect one formatted entry."
+        },
+        {
+          "optionId": "n09b04_i017_contract_assertion",
+          "text": "Read back the entry and assert its actor ID and effective timestamp."
+        },
+        {
+          "optionId": "n09b04_i017_partial_observation",
+          "text": "Assert only that a log row exists, regardless of its actor or time."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "An audit service records a manual change to a public dataset. Each entry retains the actor ID and effective timestamp. A refactor will separate change validation from log serialization. Which characterization best protects the audit contract?",
+    "questionId": "ood-n09-b04-i017",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b04_i018_contract_assertion"
+    },
+    "constraints": [
+      "The release keeps its release ID and each track keeps its recording ID; only the ordered positions change. The current editor reorders records and writes a summary.",
+      "The refactor must preserve all other behavior stated in this case."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The requested change is order only. Tests should guard identity while confirming the new positions.",
+        "scenarioApplication": "After reorder, the test reads the release and verifies its ID and recording IDs remain while positions change.",
+        "errorCorrection": "A summary-only assertion can hide identity churn that breaks references to the release or tracks.",
+        "boundaryOrTradeoff": "A new release identity would fit a separately published edition, but this scenario is an in-place reorder.",
+        "transfer": "For a refactor changing arrangement, assert what changes and what stable identifiers must not."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i018_partial_observation",
+          "text": "Generating new release/recording IDs changes identity even though the case says only positions change; the test must verify those IDs remain stable."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i018_stubbed_path",
+          "text": "A stub avoids the production path that maintains this behavior: The release keeps its release ID and each track keeps its recording ID; only the ordered positions change. The current editor reorders records and writes a summary. It cannot show the refactor preserves the outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i018_contract_change",
+          "text": "This drops or changes the existing contract: The release keeps its release ID and each track keeps its recording ID; only the ordered positions change. The current editor reorders records and writes a summary. Extraction should keep that behavior intact."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b04_i018_big_bang",
+          "text": "Changing a broader subsystem at the same time obscures whether the stated behavior survived extraction: The release keeps its release ID and each track keeps its recording ID; only the ordered positions change. The current editor reorders records and writes a summary. It also adds work outside this boundary."
+        }
+      ],
+      "reason": "The requested change is order only. Tests should guard identity while confirming the new positions. After reorder, the test reads the release and verifies its ID and recording IDs remain while positions change.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b04_i018_big_bang",
+          "text": "Move identity rewriting into the summary generator and let it infer new IDs."
+        },
+        {
+          "optionId": "n09b04_i018_contract_assertion",
+          "text": "Check the new positions and verify release and recording identities are unchanged."
+        },
+        {
+          "optionId": "n09b04_i018_partial_observation",
+          "text": "Create new release and recording IDs for every reorder so old positions are not reused."
+        },
+        {
+          "optionId": "n09b04_i018_stubbed_path",
+          "text": "Check only that a summary was generated, not which tracks occupy each position."
+        },
+        {
+          "optionId": "n09b04_i018_contract_change",
+          "text": "Stub the reorder operation to return a sorted list without exercising saved positions."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B04",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A music library changes the order of tracks in a release. The release keeps its release ID and each track keeps its recording ID; only the ordered positions change. The current editor reorders records and writes a summary. What should be asserted before separating reorder logic from summary generation?",
+    "questionId": "ood-n09-b04-i018",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+      "https://martinfowler.com/refactoring/catalog/"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

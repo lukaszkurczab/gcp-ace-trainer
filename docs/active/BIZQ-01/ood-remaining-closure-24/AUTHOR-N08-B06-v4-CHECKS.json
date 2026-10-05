@@ -1,0 +1,364 @@
+{
+  "schemaVersion": "bizq01-n08-b06-v4-author-check-v1",
+  "method": "Exact v3-to-v4 whole-object comparison, production validateQuestion/scoreQuestion for each option, and reversed-option answer scoring. Mechanical checks only; semantic acceptance remains independent.",
+  "beforePath": "review-inputs/N08-B06-v3.json",
+  "beforeSha256": "d214610eb75d80ac03851bb803f920ff6846091b331c163bd6cf98ed3989a341",
+  "currentPath": "proposals/N08-B06-v4.json",
+  "currentSha256": "8ba061292da10875ec6b2c1148b4e249d610daf520894d9ba520dae9e52c433a",
+  "notesPath": "AUTHOR-N08-B06-v4.json",
+  "notesSha256": "ebf358a8119f6fcda4b0e9d51d97233e7c838fdadb80ce7998f48e4f22ccae4e",
+  "totals": {
+    "questions": 18,
+    "valid": 18,
+    "correctAnswers": 18,
+    "incorrectDistractors": 54,
+    "reversedCorrect": 18,
+    "changedQuestionIds": [
+      "ood-n08-b06-i008"
+    ]
+  },
+  "items": [
+    {
+      "questionId": "ood-n08-b06-i001",
+      "beforeCanonicalSha256": "8e6219a12f5d7c58d6ad41553a690c9ce9415f222bf1e96fea3687c481ea8490",
+      "currentCanonicalSha256": "8e6219a12f5d7c58d6ad41553a690c9ce9415f222bf1e96fea3687c481ea8490",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i001_alt1_v2",
+        "n08b06_i001_alt2_v2",
+        "n08b06_i001_alt3_v3"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i002",
+      "beforeCanonicalSha256": "ea3691cc5da34f001293548f99a3763eea5170e350ac5c865155d7a469d70771",
+      "currentCanonicalSha256": "ea3691cc5da34f001293548f99a3763eea5170e350ac5c865155d7a469d70771",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i002_alt1_v2",
+        "n08b06_i002_alt2_v2",
+        "n08b06_i002_alt3_v3"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i003",
+      "beforeCanonicalSha256": "6406b5f7363f4218bcf13d33086f7415f16f80a316dc27e23bdb0bf6924172dc",
+      "currentCanonicalSha256": "6406b5f7363f4218bcf13d33086f7415f16f80a316dc27e23bdb0bf6924172dc",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i003_alt1_v2",
+        "n08b06_i003_alt2_v2",
+        "n08b06_i003_alt3_v2"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i004",
+      "beforeCanonicalSha256": "55922f18a2464e9a172149175a0cbed51d360b6a4da8e6260ad39215503beaf6",
+      "currentCanonicalSha256": "55922f18a2464e9a172149175a0cbed51d360b6a4da8e6260ad39215503beaf6",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i004_alt1_v3",
+        "n08b06_i004_alt2_v2",
+        "n08b06_i004_alt3_v2"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i005",
+      "beforeCanonicalSha256": "84eb67e7ac8dab00cfed275fd3548c769e512b53eacc1a1608b0d9a1e01276e7",
+      "currentCanonicalSha256": "84eb67e7ac8dab00cfed275fd3548c769e512b53eacc1a1608b0d9a1e01276e7",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i005_alt1_v2",
+        "n08b06_i005_alt2_v2",
+        "n08b06_i005_alt3_v3"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i006",
+      "beforeCanonicalSha256": "f0d6496458ebdfdfb9325d76ae6abea2ec89248ccb72363a9cfdff643c39c555",
+      "currentCanonicalSha256": "f0d6496458ebdfdfb9325d76ae6abea2ec89248ccb72363a9cfdff643c39c555",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i006_alt1_v2",
+        "n08b06_i006_alt2_v2",
+        "n08b06_i006_alt3_v2"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i007",
+      "beforeCanonicalSha256": "01e9398a32012cc27d660a066b3823c0920b5bb6b37546b3ddd76088da31ed59",
+      "currentCanonicalSha256": "01e9398a32012cc27d660a066b3823c0920b5bb6b37546b3ddd76088da31ed59",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i007_alt1_v3",
+        "n08b06_i007_alt2_v3",
+        "n08b06_i007_alt3_v3"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i008",
+      "beforeCanonicalSha256": "0d57e8f45114a71f98dc2d073e10750e45a868aeb6f44dc9b7450b128c9270ab",
+      "currentCanonicalSha256": "bbc924a948d9ef2e49d8dc9c3f1a2ec107b932ccf3d7e453de4ce0f39f6b6f45",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i008_alt1_v2",
+        "n08b06_i008_alt2_v4",
+        "n08b06_i008_alt3_v2"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i009",
+      "beforeCanonicalSha256": "b3a71a4db285b0b814073ad92f9c240c97e503f034bb0628766cb4aed8bf5c8d",
+      "currentCanonicalSha256": "b3a71a4db285b0b814073ad92f9c240c97e503f034bb0628766cb4aed8bf5c8d",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i009_alt1_v2",
+        "n08b06_i009_alt2_v3",
+        "n08b06_i009_alt3_v2"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i010",
+      "beforeCanonicalSha256": "dc485931993adc75270f5f26e50b5de8d286496285c976e6f04b8e7192927b66",
+      "currentCanonicalSha256": "dc485931993adc75270f5f26e50b5de8d286496285c976e6f04b8e7192927b66",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i010_alt1_v2",
+        "n08b06_i010_alt2_v2",
+        "n08b06_i010_alt3_v2"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i011",
+      "beforeCanonicalSha256": "31c511084cfaa96df8d15155397890cafc4dcd34989e37e0442f7f32931ae5cd",
+      "currentCanonicalSha256": "31c511084cfaa96df8d15155397890cafc4dcd34989e37e0442f7f32931ae5cd",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i011_alt1_v2",
+        "n08b06_i011_alt2_v2",
+        "n08b06_i011_alt3_v3"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i012",
+      "beforeCanonicalSha256": "55792e063f3702eb489e44789c5c1a3dba395342c4e5f64a70433892334d92f3",
+      "currentCanonicalSha256": "55792e063f3702eb489e44789c5c1a3dba395342c4e5f64a70433892334d92f3",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i012_alt1_v2",
+        "n08b06_i012_alt2_v2",
+        "n08b06_i012_alt3_v2"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i013",
+      "beforeCanonicalSha256": "0ec007fc34c72bf1677e5df19e6750db0517b53be0c8f2120f7fa0630261fcc9",
+      "currentCanonicalSha256": "0ec007fc34c72bf1677e5df19e6750db0517b53be0c8f2120f7fa0630261fcc9",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i013_alt1_v2",
+        "n08b06_i013_alt2_v2",
+        "n08b06_i013_alt3_v3"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i014",
+      "beforeCanonicalSha256": "90ed7a3bae94e5be3273721d273b2947a34a2fbba0864494dd9076ca976bb6bd",
+      "currentCanonicalSha256": "90ed7a3bae94e5be3273721d273b2947a34a2fbba0864494dd9076ca976bb6bd",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i014_alt1_v2",
+        "n08b06_i014_alt2_v2",
+        "n08b06_i014_alt3_v2"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i015",
+      "beforeCanonicalSha256": "3ee3a99e5d0232b0e4c4708e8bb53fd2c3877aaffa2970562cca19e0a9ef026a",
+      "currentCanonicalSha256": "3ee3a99e5d0232b0e4c4708e8bb53fd2c3877aaffa2970562cca19e0a9ef026a",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i015_alt1_v2",
+        "n08b06_i015_alt2_v2",
+        "n08b06_i015_alt3_v2"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i016",
+      "beforeCanonicalSha256": "595b657255f37997d3707dcc0dd14ae3c160782ff5f5d7fbd9c40d149518d91c",
+      "currentCanonicalSha256": "595b657255f37997d3707dcc0dd14ae3c160782ff5f5d7fbd9c40d149518d91c",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i016_alt1_v2",
+        "n08b06_i016_alt2_v2",
+        "n08b06_i016_alt3_v2"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i017",
+      "beforeCanonicalSha256": "2df125595313999057d6179c410124fd2d315a5c90e8ae8ce54377fc464b2a14",
+      "currentCanonicalSha256": "2df125595313999057d6179c410124fd2d315a5c90e8ae8ce54377fc464b2a14",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i017_alt1_v2",
+        "n08b06_i017_alt2_v2",
+        "n08b06_i017_alt3_v2"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    },
+    {
+      "questionId": "ood-n08-b06-i018",
+      "beforeCanonicalSha256": "793a4e017ba4ef98bfea57645694d6b5d5e0806ad9ce94c03b3313ba3770da1c",
+      "currentCanonicalSha256": "793a4e017ba4ef98bfea57645694d6b5d5e0806ad9ce94c03b3313ba3770da1c",
+      "valid": true,
+      "acceptedOptionId": "owner_preserves_contract",
+      "wrongOptionIds": [
+        "n08b06_i018_alt1_v3",
+        "n08b06_i018_alt2_v2",
+        "n08b06_i018_alt3_v2"
+      ],
+      "answerStatus": "correct",
+      "wrongStatuses": [
+        "incorrect",
+        "incorrect",
+        "incorrect"
+      ],
+      "reversedAnswerStatus": "correct"
+    }
+  ]
+}

@@ -1,0 +1,338 @@
+{
+  "schemaVersion": "bizq01-ood-n08-b08-semantic-qa-v1",
+  "review": "SEMANTIC-N08-B08-v1-QA",
+  "verdict": "REVISE",
+  "scope": "N08-B08 v1 unit semantics and identity plus bounded current option-order disclosure check; not full N08/N09 or producer/source/runtime acceptance.",
+  "inputs": {
+    "proposal": {
+      "path": "review-inputs/N08-B08-v1.json",
+      "sha256": "7b1fa356e8aa25acc102793da1abad04f42eba87293692c60261b3617481aaf7"
+    },
+    "manifest": {
+      "path": "N08-N09-MANIFEST.json",
+      "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    },
+    "contract": {
+      "path": "N08-N09-CONTRACT.json",
+      "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+    },
+    "authorNotes": {
+      "path": "AUTHOR-N08-B08-v1.json",
+      "sha256": "328d938c99781a3c1c6b7f91735977be2b5a270bf0e8535f73df1c6dd6100cb4"
+    },
+    "authorNotesMarkdown": {
+      "path": "AUTHOR-N08-B08-v1.md",
+      "sha256": "979042e94d61cbb3d7783e26a2460d271dfa468544147881681ed08d7c9959a2"
+    },
+    "source": {
+      "path": "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B08.json",
+      "sha256": "b222555c7a79b975fde1a321c045b516733612f8f88b483c9c329a1438f5785c"
+    }
+  },
+  "method": {
+    "wholeObjectFingerprint": "SHA-256 of repository canonicalJson(question), recursively sorted keys",
+    "answerResolution": "answer.optionId, not option position",
+    "wholeObjectsReviewed": 18,
+    "longestCorrectCount": 18,
+    "acceptedOptionPositionCounts": {
+      "position0": 18
+    },
+    "currentRendererFiles": [
+      {
+        "path": "patternly/src/features/practice/canonicalQuestionViewModel.ts",
+        "sha256": "dcf17cee634856644f9f077665033f305d98f75b5d16737f4630cddc789ac1e3"
+      },
+      {
+        "path": "patternly/src/features/practice/CertificationPracticeSessionScreen.tsx",
+        "sha256": "acd4aedb8c25a155fe3ee93d5254e932fb2def0b92b6218355de1193cea7109f"
+      },
+      {
+        "path": "patternly/src/features/practice/PracticeResponseControls.tsx",
+        "sha256": "bd6238fe06ab1481bc2a3a3ca4c766619758f15ff8e3cf4ca867fde51c21576f"
+      }
+    ]
+  },
+  "identitySummary": {
+    "counts": {
+      "sameQuestionId": 18,
+      "replacementQuestionId": 0,
+      "acceptedOptionMeaningRetained": 18
+    },
+    "rationale": "The old accepted decision concerned exception safety and the meaning of partial effects. Each current case distinguishes state before versus after commit or an unknown external outcome while keeping the same answer meaning."
+  },
+  "findings": [
+    {
+      "id": "N08-B08-F1",
+      "severity": "blocking",
+      "requirement": "BIZQ-01 §§4.2–4.3 require no learner-visible answer disclosure and removal of systematic answer-form cues.",
+      "items": [
+        "ood-n08-b08-i001",
+        "ood-n08-b08-i002",
+        "ood-n08-b08-i003",
+        "ood-n08-b08-i004",
+        "ood-n08-b08-i005",
+        "ood-n08-b08-i006",
+        "ood-n08-b08-i007",
+        "ood-n08-b08-i008",
+        "ood-n08-b08-i009",
+        "ood-n08-b08-i010",
+        "ood-n08-b08-i011",
+        "ood-n08-b08-i012",
+        "ood-n08-b08-i013",
+        "ood-n08-b08-i014",
+        "ood-n08-b08-i015",
+        "ood-n08-b08-i016",
+        "ood-n08-b08-i017",
+        "ood-n08-b08-i018"
+      ],
+      "rationale": "The accepted answer is index0 and strictly longest in all18; the actual question view and renderer preserve input order. The choice text also repeatedly states the full success/failure outcome while distractors openly contradict visible commit facts.",
+      "correction": "Resolve this directly visible answer-position cue through the existing content/presentation owner and keep alternatives case-specific and credible. Do not impose an equal-length quota or a new randomization policy."
+    },
+    {
+      "id": "N08-B08-F2",
+      "severity": "blocking",
+      "requirement": "BIZQ-01 §§4.1–4.2 require one defensible answer based on visible scenario facts.",
+      "items": [
+        "ood-n08-b08-i010"
+      ],
+      "rationale": "The accepted key says door checks use the authority result, but the prompt only states the authority committed and the door cache failed to refresh; it does not establish an online authority path for checks.",
+      "correction": "Remove the unsupported access-check clause or state the existing premise that enables it; retain the answer that the authority commit stands while propagation to the door is pending."
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n08-b08-i001",
+      "beforeCanonicalJsonSha256": "96e043e4ebd05fd49f92f48ebcabc7d21c6b0bfb1a02d25d37ec93770c6cf8b9",
+      "currentCanonicalJsonSha256": "e0f5cfa76a661f94dce0233f5dde15302df36d6825671c154b735a2e50510f4c",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i001",
+      "currentQuestionId": "ood-n08-b08-i001",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the committed reward; surface the audit publication failure as pending work that can be retried without changing points again.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i002",
+      "beforeCanonicalJsonSha256": "589b570269447e943402aa824f7de4c6243ea6c8ae4b0c8013596753daa65e9d",
+      "currentCanonicalJsonSha256": "8e9de339e0674402c26c5867945d69abb02b6c0c1dcf4244c25b2b905fd66d35",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i002",
+      "currentQuestionId": "ood-n08-b08-i002",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Retain the accepted carrier hand-off and report notification as pending; do not restore the old owner after the commit point.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i003",
+      "beforeCanonicalJsonSha256": "54a2a842e6fc115666cf86808a1207f8e39c0e38c15250cb0bada071681e8f0c",
+      "currentCanonicalJsonSha256": "8f4a77555af94c8f2b7faac50e7b1ed3f984b8f913f80caf4e495edddeec9720",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i003",
+      "currentQuestionId": "ood-n08-b08-i003",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Roll back both local changes on pre-commit validation failure and return a retryable allocation error.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i004",
+      "beforeCanonicalJsonSha256": "a72f72688faca611bebe3539e69627e0790d03c070e579119734b0541e572915",
+      "currentCanonicalJsonSha256": "395242b735c93c369025eb5fa9b6493b8de189e35f50132e2cfec0c75ed16a16",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i004",
+      "currentQuestionId": "ood-n08-b08-i004",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the accepted match result, expose the bracket advancement as pending, and retry that transition before opening the next match.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i005",
+      "beforeCanonicalJsonSha256": "d4ae11f7a31bc9f79a71d36cb07dcda188b8c6581a6021e2fc3316582eddf7eb",
+      "currentCanonicalJsonSha256": "72d7afdbb0ec4d1ef6888a7c29a9b8435d2056dd36474ba8043e7005ed37ae83",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i005",
+      "currentQuestionId": "ood-n08-b08-i005",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Retain the accepted inspection revision and report the refund decision as pending; retry review against that same revision.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i006",
+      "beforeCanonicalJsonSha256": "cbd48445273fefb0c72e7d778b4916b01114dd4c68fe57163bd5532bcd9b28fa",
+      "currentCanonicalJsonSha256": "7b372c891652d630e51bd195059c7357ee39667f0398e00ed38e125c94021d04",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i006",
+      "currentQuestionId": "ood-n08-b08-i006",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the output unlisted, report the catalog error, and either retain it as a retryable candidate or clean it under the job's defined cleanup path.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i007",
+      "beforeCanonicalJsonSha256": "d585e8e8f91d59e01f1aa1e65137b6e785203dba49756e78f9760e91b2bcb131",
+      "currentCanonicalJsonSha256": "eaf19af3f0b99cb71d5c638553790da2bda7b150e437be135aa6019f5968aab5",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i007",
+      "currentQuestionId": "ood-n08-b08-i007",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the accepted comment and record notification as pending against its immutable comment ID.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i008",
+      "beforeCanonicalJsonSha256": "4c727dbdeeef5aac82bd257c1e9befd975e7588fc39c9f49c988b141e9218097",
+      "currentCanonicalJsonSha256": "15dfc9dd809e28e6b854e177fec7afc6f5ce87b266b7b1843dc499aa9a1c44ef",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i008",
+      "currentQuestionId": "ood-n08-b08-i008",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the submission incomplete and retryable until checksum and finalization succeed; expose staged state separately from completion.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i009",
+      "beforeCanonicalJsonSha256": "ca2792d21ef3446f0aa1937226794570470bf1a5161feba1575de0e518bbc198",
+      "currentCanonicalJsonSha256": "3088da84db77e2920cecf118ec761325bce40743137ef7e91c37b9e3e2329c81",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i009",
+      "currentQuestionId": "ood-n08-b08-i009",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Report an unknown exchange outcome tied to the invoice issue and reconcile that same issue before deciding whether another issue is needed.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i010",
+      "beforeCanonicalJsonSha256": "36eb221e7b3c544c34e5a998b958260ff9e38b59a960ef3396b8753a7196a8c0",
+      "currentCanonicalJsonSha256": "c18a85818fa252c569bab84aa2eb4d0e81e638b5221a24bd51d8daa9d1b66721",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i010",
+      "currentQuestionId": "ood-n08-b08-i010",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the revocation committed at the authority and expose propagation as pending; access checks use the authority result required by the scenario.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i011",
+      "beforeCanonicalJsonSha256": "9d8b38f86f57b6d089576d67817b2952ee90af99c21aed61e26685fc37c20f52",
+      "currentCanonicalJsonSha256": "020a02bb86449761ebb626f809942aa831dfa2527bc5ca90688045afe768b99f",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i011",
+      "currentQuestionId": "ood-n08-b08-i011",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Record the print result as an external effect and surface audit persistence as pending reconciliation for that same label revision.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i012",
+      "beforeCanonicalJsonSha256": "e79ff0e48ba255b4c467453e038d7eacf9f7fe7777ba97bdcb5c6b06daec993f",
+      "currentCanonicalJsonSha256": "90b48650e5c64655143d7b4556e03ae2b109d137d247382f92ed73add86f528c",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i012",
+      "currentQuestionId": "ood-n08-b08-i012",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the committed new booking and report the old reservation release as pending cleanup for that booking.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i013",
+      "beforeCanonicalJsonSha256": "51c4b9673601ddd22ac2363bf58ae99a413adef011aef8e98a4aed1bb041dc90",
+      "currentCanonicalJsonSha256": "c2b5097efffa343e34025b6303e4b28146f423de920d22f30553cc7150a7648f",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i013",
+      "currentQuestionId": "ood-n08-b08-i013",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the controller's maintenance state and expose the failed stop command; do not claim physical shutdown until acknowledgement.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i014",
+      "beforeCanonicalJsonSha256": "7a09b4566a7a86f087862e455b0f3b41de784bae31235465975b0ed0f7aa6b4b",
+      "currentCanonicalJsonSha256": "da6ea4a644f99ccfbf0cad98ead1c233f1fe0ec29e8efb53c55978cedd3545f2",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i014",
+      "currentQuestionId": "ood-n08-b08-i014",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Leave the current catalog revision visible and return a failed retirement attempt until the mapping check succeeds.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i015",
+      "beforeCanonicalJsonSha256": "634b3049cbeb10719690489764c19ae82e02bfed18a7102ecbcbd0088e026ec9",
+      "currentCanonicalJsonSha256": "ffed7f56bd07f721810b31eaacdf8389290ee08ee5ce3d6963a5985db40ba850",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i015",
+      "currentQuestionId": "ood-n08-b08-i015",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Retain the completed private export under the session revision and report indexing as pending; do not close or alter the live board.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i016",
+      "beforeCanonicalJsonSha256": "a4aa68f7e990b7ca09d0a212d595a5d21faee3c1c77dd7277bc23d0476a3b6f6",
+      "currentCanonicalJsonSha256": "b027764480500c3ef853cf493239b5667cf00483d0bf051797d83d77aa12c6eb",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i016",
+      "currentQuestionId": "ood-n08-b08-i016",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the accepted escalation transition and report the email notice separately as pending delivery.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i017",
+      "beforeCanonicalJsonSha256": "954f2e40114461f31d73cd8f3e93d72c17b3da482638d3f36e83c2b0ac9fc9c2",
+      "currentCanonicalJsonSha256": "b9b62f5a9c5941c158acec6a8e2c2b9f1252055b8a2faeec4bb50cee0fc6b146",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i017",
+      "currentQuestionId": "ood-n08-b08-i017",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the validated catalog revision published and surface the search projection failure as pending work.",
+      "longestCorrect": true
+    },
+    {
+      "questionId": "ood-n08-b08-i018",
+      "beforeCanonicalJsonSha256": "6a75e9950be4bbeb0033044afd795cb88a601b0a17890696cf37a01a3a0e3906",
+      "currentCanonicalJsonSha256": "c73ae49bdb557e247b3d6739f17060cf38e1782e0557f7fe9610b64d58949a64",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b08-i018",
+      "currentQuestionId": "ood-n08-b08-i018",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the committed split and retry the failed notification against its child request without changing the parent identity or promise.",
+      "longestCorrect": true
+    }
+  ]
+}

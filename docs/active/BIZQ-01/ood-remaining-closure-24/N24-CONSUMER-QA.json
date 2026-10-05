@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "patternly-bizq01-n24-consumer-qa-v1",
+  "verdict": "PASS",
+  "scope": "Independent app-side consumer acceptance for the fixed N24 content candidate. Does not grant admission or establish web/native/Premium/full BIZQ-01 acceptance.",
+  "candidate": {
+    "candidateId": "ebd5f2d614ca620323b6abf111d06e84acf30cc1d9a5e819bc8df4ed2c071525",
+    "sourceRepositoryCommit": "1487f24db63af0627b8f3b3739c125594a345b80",
+    "trackId": "object-oriented-design-interview",
+    "contentVersion": "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24",
+    "questionCount": 1413,
+    "questionSetSha256": "c92a9f04488efb4ef7a5fa8b3257495c21e6c62125123df8073141c60000b2d8",
+    "artifactSha256": "9df476e414158da0f33e118c06ed7fbc476b53bc8f0a115a470f61f9c1bf1ea3",
+    "producerMapSha256": "dd444141610a8057053501ade6997323b833bb4d4e7fbd268cff4b896abf9892",
+    "producerProofSha256": "3c2636ac2d98c7eb0179281bf3bb30aa89934e5a11846e79f69ba35d36e0c1c9",
+    "appReleaseLockCandidateId": "ebd5f2d614ca620323b6abf111d06e84acf30cc1d9a5e819bc8df4ed2c071525",
+    "contentRepositoryHeadAtSync": "0a05f73d82c9dd9acac59cd26e4be8228b0a850a",
+    "admissionStatusInCandidateReadiness": {
+      "publishing": "not_granted",
+      "runtime": "not_granted"
+    }
+  },
+  "implementationFiles": [
+    {"path":"src/content/bizq01OodNodeClosure21.test.ts","sha256":"9d3cc443d844a62f4dae481148cea3bf2d0182e8639f42f4196ef9d35a65383e"},
+    {"path":"src/content/bizq01OodNodeClosure22.test.ts","sha256":"8848b11e7d91c931ac8ef176eb19e0caca9b6189dc163025d3852919b37c7ed3"},
+    {"path":"src/content/bizq01OodNodeClosure23.test.ts","sha256":"73a0f7b17a9e9399561c23e36d2895afcf1b21456479c7d904089361d35be0bb"},
+    {"path":"src/content/bizq01OodNodeClosure24.test.ts","sha256":"76cfdc015af82aee20685f643c58c36ebfeac6e11660d6567ca856923f425062"},
+    {"path":"src/content/generated/canonical-content/content-lock.json","sha256":"9a0eba3e26189511d2cc4af96bbc68f5317c25952afd6e780f11c8ea43163aa0"},
+    {"path":"src/content/generated/canonical-content/object-oriented-design-interview.json","sha256":"9df476e414158da0f33e118c06ed7fbc476b53bc8f0a115a470f61f9c1bf1ea3"},
+    {"path":"src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts","sha256":"071b81dcc33ffacd990c6e643b17b98eb6d0671d89d78b511da9e4e9630af5cb"},
+    {"path":"integration/contracts/content-release/release.lock.json","sha256":"071ea7906369f7cc16da4c9284b808f27a2c92deb62c61dd8678303e2d3f31de"}
+  ],
+  "consumerChecks": {
+    "reviewedQuestionObjects": 324,
+    "replacements": 36,
+    "retiredIdsAbsent": 36,
+    "sameIdCorrections": 288,
+    "preservedQuestions": 1089,
+    "questionCount": 1413,
+    "ordinaryN01Pools": 136,
+    "ordinaryN01Modes": [
+      "design-interview-learn-framework",
+      "design-interview-tradeoff-practice",
+      "design-interview-weak-area-review"
+    ],
+    "allOptionsScoredOriginalAndReversed": true,
+    "wrongOptionFeedbackTargetsChecked": true,
+    "preAnswerViewModelCheckedForAnswerDisclosure": true,
+    "feedbackCompositionAndControlProjectionChecked": true,
+    "candidateLockAndArtifactBindingsChecked": true,
+    "eightOtherTrackLockEntriesUnchanged": true
+  },
+  "verification": [
+    {
+      "command": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" node --import tsx --test src/content/bizq01OodNodeClosure21.test.ts src/content/bizq01OodNodeClosure22.test.ts src/content/bizq01OodNodeClosure23.test.ts src/content/bizq01OodNodeClosure24.test.ts src/domain/tracks/runtimeAdmissionLaunchTracks.test.ts",
+      "result": "PASS",
+      "tests": 17,
+      "passed": 17,
+      "failed": 0,
+      "independentRun": true
+    },
+    {
+      "command": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" npm run check:content-release",
+      "result": "PASS",
+      "detail": "CANONICAL_CONTENT_CHECK=passed; content inventory 9/117/943/16077"
+    },
+    {
+      "command": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" npm run validate:content-boundary",
+      "result": "PASS",
+      "detail": "CONTENT_BOUNDARY_CHECK=passed"
+    },
+    {
+      "command": "PATH=\"/opt/homebrew/opt/node@22/bin:$PATH\" npm run validate:runtime-privacy-boundary",
+      "result": "PASS",
+      "detail": "RUNTIME_PRIVACY_BOUNDARY_CHECK=passed"
+    },
+    {
+      "command": "Read-only candidate lock cross-check against current nine generated artifacts and prior app content lock",
+      "result": "PASS",
+      "details": {
+        "candidateIdMatches": true,
+        "bundledContentLockHashMatches": true,
+        "releaseArtifactOrderMatches": true,
+        "allNineRawArtifactHashesMatch": true,
+        "otherEightTrackEntriesUnchanged": true
+      }
+    },
+    {
+      "command": "Producer test whitespace erratum byte reconstruction",
+      "result": "PASS",
+      "reportPath": "N24-PRODUCER-WHITESPACE-QA.json",
+      "testsRepeated": false
+    }
+  ],
+  "limitations": [
+    "The test exercises the actual app runtime catalog, scorer, view-model, feedback composer, and control projection, but does not verify durable submission or journal persistence/rebinding.",
+    "No native UI, VoiceOver, Premium entitlement, or real-profile flow was exercised.",
+    "The report is not candidate/runtime admission; readiness still says both admissions are not granted.",
+    "This does not establish full BIZQ-01 acceptance."
+  ]
+}

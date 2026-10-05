@@ -1,0 +1,1226 @@
+[
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A board-game campaign manager: A reward updates character points and campaign phase in one local command. If the optional audit publisher fails after that command commits, the reward remains accepted and the audit event is marked pending. Keep the committed reward; surface the audit publication failure as pending work that can be retried without changing points again.",
+        "errorCorrection": "The scenario says the reward committed before the separate audit failure; rolling it back would misreport the local outcome. Hiding the publisher failure loses the required pending audit work. Separate field writes can expose a reward whose points and phase do not match.",
+        "boundaryOrTradeoff": "The nearest alternative is roll back points after the audit publisher fails, even though the reward command already committed. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_01",
+          "text": "The scenario says the reward committed before the separate audit failure; rolling it back would misreport the local outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_01",
+          "text": "Hiding the publisher failure loses the required pending audit work."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_01",
+          "text": "Separate field writes can expose a reward whose points and phase do not match."
+        }
+      ],
+      "reason": "The scenario says the reward committed before the separate audit failure; rolling it back would misreport the local outcome. Hiding the publisher failure loses the required pending audit work.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the reward committed; mark audit publication pending and retry without applying points again."
+        },
+        {
+          "optionId": "undo_or_rewrite_01",
+          "text": "Roll back points after the audit publisher fails, even though the reward command already committed."
+        },
+        {
+          "optionId": "claim_uncommitted_01",
+          "text": "Tell the host the reward failed and discard the publisher error."
+        },
+        {
+          "optionId": "discard_failure_01",
+          "text": "Apply points first and phase later, then let the host infer success from whichever field changed."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A board-game campaign manager, A reward updates character points and campaign phase in one local command. If the optional audit publisher fails after that command commits, the reward remains accepted and the audit event is marked pending. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i001",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A cold-chain logistics console: The new carrier accepts a shipment hand-off before a notification service fails. The hand-off is the ownership commit point; the notification is a later notice and can be retried. Retain the accepted carrier hand-off and report notification as pending; do not restore the old owner after the commit point.",
+        "errorCorrection": "The external hand-off already committed; restoring the old owner would contradict the accepted transfer. Suppressing the failure hides a notice that still needs attention. Two simultaneous owners leave responsibility ambiguous after acceptance.",
+        "boundaryOrTradeoff": "The nearest alternative is undo the shipment hand-off when notification fails, even though the new carrier has accepted responsibility. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_02",
+          "text": "The external hand-off already committed; restoring the old owner would contradict the accepted transfer."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_02",
+          "text": "Suppressing the failure hides a notice that still needs attention."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_02",
+          "text": "Two simultaneous owners leave responsibility ambiguous after acceptance."
+        }
+      ],
+      "reason": "The external hand-off already committed; restoring the old owner would contradict the accepted transfer. Suppressing the failure hides a notice that still needs attention.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the accepted hand-off; retry its notification without restoring the old owner."
+        },
+        {
+          "optionId": "undo_or_rewrite_02",
+          "text": "Undo the shipment hand-off when notification fails, even though the new carrier has accepted responsibility."
+        },
+        {
+          "optionId": "claim_uncommitted_02",
+          "text": "Report the entire transfer failed and suppress the notification error."
+        },
+        {
+          "optionId": "discard_failure_02",
+          "text": "Give the old and new carriers mutable ownership until a retry decides which message arrived first."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A cold-chain logistics console, The new carrier accepts a shipment hand-off before a notification service fails. The hand-off is the ownership commit point; the notification is a later notice and can be retried. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i002",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A cooperative lending ledger: The account's balance reduction and repayment entry are in one local transaction. If entry validation fails before commit, neither change is visible and the repayment can be corrected. Roll back both local changes on pre-commit validation failure and return a retryable allocation error.",
+        "errorCorrection": "The two local effects form one transaction and validation failed before either committed. A balance without its ledger entry violates the stated visible record. Compensating a rollback would create a second balance change.",
+        "boundaryOrTradeoff": "The nearest alternative is keep the reduced balance and omit the entry because the balance write succeeded first. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_03",
+          "text": "The two local effects form one transaction and validation failed before either committed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_03",
+          "text": "A balance without its ledger entry violates the stated visible record."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_03",
+          "text": "Compensating a rollback would create a second balance change."
+        }
+      ],
+      "reason": "The two local effects form one transaction and validation failed before either committed. A balance without its ledger entry violates the stated visible record.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "On pre-commit validation failure, roll back both local changes and return a retryable error."
+        },
+        {
+          "optionId": "undo_or_rewrite_03",
+          "text": "Keep the reduced balance and omit the entry because the balance write succeeded first."
+        },
+        {
+          "optionId": "claim_uncommitted_03",
+          "text": "Return success and let the report job recreate a missing entry later."
+        },
+        {
+          "optionId": "discard_failure_03",
+          "text": "Compensate by adding the amount back after the transaction has already rolled back."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A cooperative lending ledger, The account's balance reduction and repayment entry are in one local transaction. If entry validation fails before commit, neither change is visible and the repayment can be corrected. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i003",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A tournament bracket service: The match result is accepted and stored, but writing the next bracket slot fails. The match result remains authoritative; the slot transition is visibly pending and no later match may start yet. Keep the accepted match result, expose the bracket advancement as pending, and retry that transition before opening the next match.",
+        "errorCorrection": "The result is already accepted; deleting it would hide the known outcome. Starting the next match before the slot exists would choose a participant without an accepted transition. A completed status would conceal the unresolved bracket update.",
+        "boundaryOrTradeoff": "The nearest alternative is erase the accepted result when the slot write fails, then ask the official to submit it again. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_04",
+          "text": "The result is already accepted; deleting it would hide the known outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_04",
+          "text": "Starting the next match before the slot exists would choose a participant without an accepted transition."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_04",
+          "text": "A completed status would conceal the unresolved bracket update."
+        }
+      ],
+      "reason": "The result is already accepted; deleting it would hide the known outcome. Starting the next match before the slot exists would choose a participant without an accepted transition.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the result; mark bracket advancement pending and retry before starting the next match."
+        },
+        {
+          "optionId": "undo_or_rewrite_04",
+          "text": "Erase the accepted result when the slot write fails, then ask the official to submit it again."
+        },
+        {
+          "optionId": "claim_uncommitted_04",
+          "text": "Start the next match from a guessed winner while the slot write is unavailable."
+        },
+        {
+          "optionId": "discard_failure_04",
+          "text": "Mark the bracket complete and swallow the slot-write error."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A tournament bracket service, The match result is accepted and stored, but writing the next bracket slot fails. The match result remains authoritative; the slot transition is visibly pending and no later match may start yet. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i004",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A returns inspection workflow: Inspection findings commit before a separate refund review begins. If refund review fails, the submitted findings remain immutable and the refund result is pending. Retain the accepted inspection revision and report the refund decision as pending; retry review against that same revision.",
+        "errorCorrection": "The inspection already committed and must continue to describe observed condition. Changing evidence after review failure corrupts what was inspected. Deleting the record loses the immutable findings unrelated to refund review.",
+        "boundaryOrTradeoff": "The nearest alternative is edit the inspection findings to make them pass refund review after the review service fails. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_05",
+          "text": "The inspection already committed and must continue to describe observed condition."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_05",
+          "text": "Changing evidence after review failure corrupts what was inspected."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_05",
+          "text": "Deleting the record loses the immutable findings unrelated to refund review."
+        }
+      ],
+      "reason": "The inspection already committed and must continue to describe observed condition. Changing evidence after review failure corrupts what was inspected.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the immutable inspection; retry refund review against that same revision."
+        },
+        {
+          "optionId": "undo_or_rewrite_05",
+          "text": "Edit the inspection findings to make them pass refund review after the review service fails."
+        },
+        {
+          "optionId": "claim_uncommitted_05",
+          "text": "Tell the inspector the inspection itself failed and discard its committed findings."
+        },
+        {
+          "optionId": "discard_failure_05",
+          "text": "Delete the item record until refund review becomes available."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A returns inspection workflow, Inspection findings commit before a separate refund review begins. If refund review fails, the submitted findings remain immutable and the refund result is pending. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i005",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A research-notebook platform: A job writes a complete output file, then catalog publication fails. The file is still private until the catalog points to it; the run must report publication failure without exposing the output. Keep the output unlisted, report the catalog error, and either retain it as a retryable candidate or clean it under the job's defined cleanup path.",
+        "errorCorrection": "The catalog is the visibility boundary; the unregistered output is not yet a published result. The computation completed, so calling it a compute failure misstates the failed stage. A published status cannot be true while the catalog lacks the output.",
+        "boundaryOrTradeoff": "The nearest alternative is publish the output file directly to readers before the catalog registration succeeds. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_06",
+          "text": "The catalog is the visibility boundary; the unregistered output is not yet a published result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_06",
+          "text": "The computation completed, so calling it a compute failure misstates the failed stage."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_06",
+          "text": "A published status cannot be true while the catalog lacks the output."
+        }
+      ],
+      "reason": "The catalog is the visibility boundary; the unregistered output is not yet a published result. The computation completed, so calling it a compute failure misstates the failed stage.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the output private and publication failed; retry registration or clean up the candidate."
+        },
+        {
+          "optionId": "undo_or_rewrite_06",
+          "text": "Publish the output file directly to readers before the catalog registration succeeds."
+        },
+        {
+          "optionId": "claim_uncommitted_06",
+          "text": "Delete the completed output and tell the researcher the computation failed, though only registration failed."
+        },
+        {
+          "optionId": "discard_failure_06",
+          "text": "Mark the run published and suppress the catalog error."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A research-notebook platform, A job writes a complete output file, then catalog publication fails. The file is still private until the catalog points to it; the run must report publication failure without exposing the output. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i006",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A collaborative annotation workspace: The comment is accepted with author and revision. Notification delivery fails afterward; the comment remains accepted, while delivery is separately retryable. Keep the accepted comment and record notification as pending against its immutable comment ID.",
+        "errorCorrection": "Notification failure occurs after acceptance and does not reverse the comment record. A rejected result contradicts the accepted comment already stored. A retry must not create duplicate comments for one accepted submission.",
+        "boundaryOrTradeoff": "The nearest alternative is delete the comment because the author did not receive a notification. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_07",
+          "text": "Notification failure occurs after acceptance and does not reverse the comment record."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_07",
+          "text": "A rejected result contradicts the accepted comment already stored."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_07",
+          "text": "A retry must not create duplicate comments for one accepted submission."
+        }
+      ],
+      "reason": "Notification failure occurs after acceptance and does not reverse the comment record. A rejected result contradicts the accepted comment already stored.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the comment accepted; retry delivery against its immutable ID."
+        },
+        {
+          "optionId": "undo_or_rewrite_07",
+          "text": "Delete the comment because the author did not receive a notification."
+        },
+        {
+          "optionId": "claim_uncommitted_07",
+          "text": "Tell the editor the comment was rejected and hide the delivery failure."
+        },
+        {
+          "optionId": "discard_failure_07",
+          "text": "Create another comment on each notification retry to make sure one reaches the author."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A collaborative annotation workspace, The comment is accepted with author and revision. Notification delivery fails afterward; the comment remains accepted, while delivery is separately retryable. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i007",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A mobile field-inspection app: Upload chunks are staged, but the final checksum has not passed. The server must not mark the inspection complete; it can keep the upload retryable and identify the staged attempt. Keep the submission incomplete and retryable until checksum and finalization succeed; expose staged state separately from completion.",
+        "errorCorrection": "Staged chunks are not a finalized inspection under the stated contract. A failed transfer does not authorize deleting the only editable draft. Sending bytes is not proof that the server completed the inspection.",
+        "boundaryOrTradeoff": "The nearest alternative is mark the inspection complete after the first chunk and repair missing fields on a later upload. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_08",
+          "text": "Staged chunks are not a finalized inspection under the stated contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_08",
+          "text": "A failed transfer does not authorize deleting the only editable draft."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_08",
+          "text": "Sending bytes is not proof that the server completed the inspection."
+        }
+      ],
+      "reason": "Staged chunks are not a finalized inspection under the stated contract. A failed transfer does not authorize deleting the only editable draft.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the upload staged and incomplete until checksum and finalization succeed."
+        },
+        {
+          "optionId": "undo_or_rewrite_08",
+          "text": "Mark the inspection complete after the first chunk and repair missing fields on a later upload."
+        },
+        {
+          "optionId": "claim_uncommitted_08",
+          "text": "Delete the inspector's local draft whenever a chunk request fails."
+        },
+        {
+          "optionId": "discard_failure_08",
+          "text": "Report success when all chunks were sent, before the server confirms finalization."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A mobile field-inspection app, Upload chunks are staged, but the final checksum has not passed. The server must not mark the inspection complete; it can keep the upload retryable and identify the staged attempt. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i008",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A digital invoice exchange: The exchange may accept an invoice, but the response connection can fail before the client receives the acknowledgement. The local outcome is unknown until the operation is reconciled; it is not safe to label it rejected. Report an unknown exchange outcome tied to the invoice issue and reconcile that same issue before deciding whether another issue is needed.",
+        "errorCorrection": "A connection failure after submission does not establish the exchange's decision. A second issue may double-charge if the first was accepted. The attempted issue identity is needed to resolve the uncertain result.",
+        "boundaryOrTradeoff": "The nearest alternative is mark the invoice rejected as soon as the response read fails. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_09",
+          "text": "A connection failure after submission does not establish the exchange's decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_09",
+          "text": "A second issue may double-charge if the first was accepted."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_09",
+          "text": "The attempted issue identity is needed to resolve the uncertain result."
+        }
+      ],
+      "reason": "A connection failure after submission does not establish the exchange's decision. A second issue may double-charge if the first was accepted.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Report unknown for that invoice issue; reconcile it before deciding whether to issue another."
+        },
+        {
+          "optionId": "undo_or_rewrite_09",
+          "text": "Mark the invoice rejected as soon as the response read fails."
+        },
+        {
+          "optionId": "claim_uncommitted_09",
+          "text": "Issue a second invoice immediately and assume the first one was not accepted."
+        },
+        {
+          "optionId": "discard_failure_09",
+          "text": "Erase the issue record because the exchange response was incomplete."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A digital invoice exchange, The exchange may accept an invoice, but the response connection can fail before the client receives the acknowledgement. The local outcome is unknown until the operation is reconciled; it is not safe to label it rejected. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i009",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A smart-building access controller: Revocation commits at the badge authority. A door update service then fails to refresh its copy; until it confirms the authority's current revision, it must not claim that the revocation reached that door. Keep the revocation committed at the authority and expose propagation as pending; access checks use the authority result required by the scenario.",
+        "errorCorrection": "The authority commit is distinct from propagation; reversing it would undo the known decision. Suppressing the failed refresh makes an unsupported claim about door state. Local inference is not the authoritative revocation record.",
+        "boundaryOrTradeoff": "The nearest alternative is undo the revocation because one door's cache update failed. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_10",
+          "text": "The authority commit is distinct from propagation; reversing it would undo the known decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_10",
+          "text": "Suppressing the failed refresh makes an unsupported claim about door state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_10",
+          "text": "Local inference is not the authoritative revocation record."
+        }
+      ],
+      "reason": "The authority commit is distinct from propagation; reversing it would undo the known decision. Suppressing the failed refresh makes an unsupported claim about door state.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the authority revocation committed; report door propagation pending until confirmed."
+        },
+        {
+          "optionId": "undo_or_rewrite_10",
+          "text": "Undo the revocation because one door's cache update failed."
+        },
+        {
+          "optionId": "claim_uncommitted_10",
+          "text": "Tell facilities every door has applied revocation and suppress the failed refresh."
+        },
+        {
+          "optionId": "discard_failure_10",
+          "text": "Delete the badge authority record and let each door infer whether it was revoked."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A smart-building access controller, Revocation commits at the badge authority. A door update service then fails to refresh its copy; until it confirms the authority's current revision, it must not claim that the revocation reached that door. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i010",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A package-label generation service: A physical label prints successfully, then saving its audit record fails. The printed label cannot be unprinted; the job must report printed-but-audit-pending and retain the shipment revision it used. Record the print result as an external effect and surface audit persistence as pending reconciliation for that same label revision.",
+        "errorCorrection": "The physical print already occurred; reporting failure as if nothing printed may create a duplicate. An absent audit row is not evidence that the audit write succeeded. The printed label needs its approved shipment revision for traceability.",
+        "boundaryOrTradeoff": "The nearest alternative is report the whole print failed and print a second label immediately. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_11",
+          "text": "The physical print already occurred; reporting failure as if nothing printed may create a duplicate."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_11",
+          "text": "An absent audit row is not evidence that the audit write succeeded."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_11",
+          "text": "The printed label needs its approved shipment revision for traceability."
+        }
+      ],
+      "reason": "The physical print already occurred; reporting failure as if nothing printed may create a duplicate. An absent audit row is not evidence that the audit write succeeded.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the printed effect; reconcile the pending audit against the label revision used."
+        },
+        {
+          "optionId": "undo_or_rewrite_11",
+          "text": "Report the whole print failed and print a second label immediately."
+        },
+        {
+          "optionId": "claim_uncommitted_11",
+          "text": "Claim the audit record exists and discard the storage error."
+        },
+        {
+          "optionId": "discard_failure_11",
+          "text": "Delete the shipment revision used for the printed label so a later audit cannot refer to it."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A package-label generation service, A physical label prints successfully, then saving its audit record fails. The printed label cannot be unprinted; the job must report printed-but-audit-pending and retain the shipment revision it used. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i011",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A multi-tenant rehearsal scheduler: A move reserves the destination and commits the new booking, but release of the old room fails. The move operation must expose the new booking plus an old-room cleanup pending state; other rooms remain available. Keep the committed new booking and report the old reservation release as pending cleanup for that booking.",
+        "errorCorrection": "The new room is committed; deleting it would reverse a known successful move. The old-room reservation still consumes capacity and must be reported. Unrelated rooms do not need to be blocked by one cleanup item.",
+        "boundaryOrTradeoff": "The nearest alternative is delete the new booking because the old-room release failed after commit. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_12",
+          "text": "The new room is committed; deleting it would reverse a known successful move."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_12",
+          "text": "The old-room reservation still consumes capacity and must be reported."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_12",
+          "text": "Unrelated rooms do not need to be blocked by one cleanup item."
+        }
+      ],
+      "reason": "The new room is committed; deleting it would reverse a known successful move. The old-room reservation still consumes capacity and must be reported.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the new booking; report release of the old room as pending cleanup."
+        },
+        {
+          "optionId": "undo_or_rewrite_12",
+          "text": "Delete the new booking because the old-room release failed after commit."
+        },
+        {
+          "optionId": "claim_uncommitted_12",
+          "text": "Tell the coordinator the move is fully complete and hide the old-room hold."
+        },
+        {
+          "optionId": "discard_failure_12",
+          "text": "Lock all rooms until the old reservation release service returns."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A multi-tenant rehearsal scheduler, A move reserves the destination and commits the new booking, but release of the old room fails. The move operation must expose the new booking plus an old-room cleanup pending state; other rooms remain available. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i012",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A museum exhibit controller: The controller records maintenance mode before sending a hardware stop command. If the stop command fails, unsafe commands remain rejected and the hardware action is explicitly pending. Keep the controller's maintenance state and expose the failed stop command; do not claim physical shutdown until acknowledgement.",
+        "errorCorrection": "Mode state and physical acknowledgement are separate effects in the stated workflow. Restoring running would re-enable unsafe commands while the stop is unresolved. The controller cannot claim a hardware result it did not receive.",
+        "boundaryOrTradeoff": "The nearest alternative is restore running mode when the hardware stop call fails, even though the safety state was already committed. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_13",
+          "text": "Mode state and physical acknowledgement are separate effects in the stated workflow."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_13",
+          "text": "Restoring running would re-enable unsafe commands while the stop is unresolved."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_13",
+          "text": "The controller cannot claim a hardware result it did not receive."
+        }
+      ],
+      "reason": "Mode state and physical acknowledgement are separate effects in the stated workflow. Restoring running would re-enable unsafe commands while the stop is unresolved.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep maintenance committed; report stop pending until hardware acknowledges it."
+        },
+        {
+          "optionId": "undo_or_rewrite_13",
+          "text": "Restore running mode when the hardware stop call fails, even though the safety state was already committed."
+        },
+        {
+          "optionId": "claim_uncommitted_13",
+          "text": "Tell the operator the exhibit is physically stopped as soon as maintenance mode is stored."
+        },
+        {
+          "optionId": "discard_failure_13",
+          "text": "Ignore the hardware failure and clear the pending command."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A museum exhibit controller, The controller records maintenance mode before sending a hardware stop command. If the stop command fails, unsafe commands remain rejected and the hardware action is explicitly pending. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i013",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A video-learning library: The lesson availability change and progress mapping are prepared together. If the mapping check fails before publication, the current lesson remains available and progress continues on the same identity. Leave the current catalog revision visible and return a failed retirement attempt until the mapping check succeeds.",
+        "errorCorrection": "The validation failed before the catalog commit, so the old visible revision remains the truthful state. Guessing after hiding the lesson creates a period without a valid progress destination. A completed response would conceal lost progress mappings.",
+        "boundaryOrTradeoff": "The nearest alternative is hide the lesson first, then let a later job guess how progress should map. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_14",
+          "text": "The validation failed before the catalog commit, so the old visible revision remains the truthful state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_14",
+          "text": "Guessing after hiding the lesson creates a period without a valid progress destination."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_14",
+          "text": "A completed response would conceal lost progress mappings."
+        }
+      ],
+      "reason": "The validation failed before the catalog commit, so the old visible revision remains the truthful state. Guessing after hiding the lesson creates a period without a valid progress destination.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the current lesson visible; fail retirement until mapping validation succeeds."
+        },
+        {
+          "optionId": "undo_or_rewrite_14",
+          "text": "Hide the lesson first, then let a later job guess how progress should map."
+        },
+        {
+          "optionId": "claim_uncommitted_14",
+          "text": "Re-key learner progress to the retirement attempt ID before the catalog change commits."
+        },
+        {
+          "optionId": "discard_failure_14",
+          "text": "Report retirement complete and silently omit learners whose mapping failed."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A video-learning library, The lesson availability change and progress mapping are prepared together. If the mapping check fails before publication, the current lesson remains available and progress continues on the same identity. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i014",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A shared whiteboard application: The export file is complete, but adding its index entry fails. The live board remains active; users must be told the export exists as an unindexed result rather than as a completed history listing. Retain the completed private export under the session revision and report indexing as pending; do not close or alter the live board.",
+        "errorCorrection": "Index failure occurs after file completion; the snapshot still exists and belongs to that session revision. The live session is independent of indexing an export. Suppressing the write failure falsely claims an index entry exists.",
+        "boundaryOrTradeoff": "The nearest alternative is close the board because the export index write failed. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_15",
+          "text": "Index failure occurs after file completion; the snapshot still exists and belongs to that session revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_15",
+          "text": "The live session is independent of indexing an export."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_15",
+          "text": "Suppressing the write failure falsely claims an index entry exists."
+        }
+      ],
+      "reason": "Index failure occurs after file completion; the snapshot still exists and belongs to that session revision. The live session is independent of indexing an export.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the completed export private; report indexing pending without changing the live board."
+        },
+        {
+          "optionId": "undo_or_rewrite_15",
+          "text": "Close the board because the export index write failed."
+        },
+        {
+          "optionId": "claim_uncommitted_15",
+          "text": "Delete the export and tell the host the snapshot read failed, though it completed."
+        },
+        {
+          "optionId": "discard_failure_15",
+          "text": "Mark the export indexed and suppress the index error."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A shared whiteboard application, The export file is complete, but adding its index entry fails. The live board remains active; users must be told the export exists as an unindexed result rather than as a completed history listing. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i015",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A customer-support escalation desk: The escalation command commits assignee and deadline together. A later email notification fails; ownership and deadline remain committed, while the notification is pending. Keep the accepted escalation transition and report the email notice separately as pending delivery.",
+        "errorCorrection": "The transition already committed; delivery failure does not reverse assignment. The accepted conversation state must not be misreported as absent. A retrying notification must continue to describe the same deadline decision.",
+        "boundaryOrTradeoff": "The nearest alternative is restore the former assignee because the email was not sent. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_16",
+          "text": "The transition already committed; delivery failure does not reverse assignment."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_16",
+          "text": "The accepted conversation state must not be misreported as absent."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_16",
+          "text": "A retrying notification must continue to describe the same deadline decision."
+        }
+      ],
+      "reason": "The transition already committed; delivery failure does not reverse assignment. The accepted conversation state must not be misreported as absent.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the committed escalation; report email delivery as pending."
+        },
+        {
+          "optionId": "undo_or_rewrite_16",
+          "text": "Restore the former assignee because the email was not sent."
+        },
+        {
+          "optionId": "claim_uncommitted_16",
+          "text": "Tell the agent no escalation occurred and hide the mail error."
+        },
+        {
+          "optionId": "discard_failure_16",
+          "text": "Change the deadline on every mail retry to show that work is continuing."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A customer-support escalation desk, The escalation command commits assignee and deadline together. A later email notification fails; ownership and deadline remain committed, while the notification is pending. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i016",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A regional produce marketplace: Price and stock are validated and published together. A search-index update then fails; buyers use the catalog revision, and indexing is a pending projection rather than the publication commit. Keep the validated catalog revision published and surface the search projection failure as pending work.",
+        "errorCorrection": "The catalog is the stated publication commit; a derived index failure does not undo it. A false unpublished status contradicts the accepted revision. Separate field publication can expose the mismatched pair the case forbids.",
+        "boundaryOrTradeoff": "The nearest alternative is roll back price and stock because the index did not refresh. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_17",
+          "text": "The catalog is the stated publication commit; a derived index failure does not undo it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_17",
+          "text": "A false unpublished status contradicts the accepted revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_17",
+          "text": "Separate field publication can expose the mismatched pair the case forbids."
+        }
+      ],
+      "reason": "The catalog is the stated publication commit; a derived index failure does not undo it. A false unpublished status contradicts the accepted revision.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the validated catalog revision published; report its search projection as pending."
+        },
+        {
+          "optionId": "undo_or_rewrite_17",
+          "text": "Roll back price and stock because the index did not refresh."
+        },
+        {
+          "optionId": "claim_uncommitted_17",
+          "text": "Tell sellers the listing was never published and hide the index failure."
+        },
+        {
+          "optionId": "discard_failure_17",
+          "text": "Publish price first and stock only after the search index catches up."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A regional produce marketplace, Price and stock are validated and published together. A search-index update then fails; buyers use the catalog revision, and indexing is a pending projection rather than the publication commit. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i017",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Name the commit point and distinguish effects that already happened from later collaborator work; propagate the failure at the stage where it occurred.",
+        "scenarioApplication": "A repair-parts marketplace: Both vendor checks pass and the split is committed under the original request. A later notification to one vendor fails; the split and delivery promise remain accepted, while that notice is pending. Keep the committed split and retry the failed notification against its child request without changing the parent identity or promise.",
+        "errorCorrection": "Notification occurs after the split commit, so it does not undo accepted child requests. Suppressing the failure leaves one vendor unaware of assigned work. A new parent loses the original request identity and delivery promise.",
+        "boundaryOrTradeoff": "The nearest alternative is undo the committed split and restore the original request because one notification failed. That may seem to preserve an all-or-nothing story, but the prompt states that an earlier local or external effect has already committed and identifies the later failure separately.",
+        "transfer": "Report known committed state accurately, keep unresolved later effects explicit and actionable, and do not promise rollback of an effect the scenario says already occurred."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "undo_or_rewrite_18",
+          "text": "Notification occurs after the split commit, so it does not undo accepted child requests."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "claim_uncommitted_18",
+          "text": "Suppressing the failure leaves one vendor unaware of assigned work."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "discard_failure_18",
+          "text": "A new parent loses the original request identity and delivery promise."
+        }
+      ],
+      "reason": "Notification occurs after the split commit, so it does not undo accepted child requests. Suppressing the failure leaves one vendor unaware of assigned work.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep the committed split; retry notice to that child without changing parent identity or promise."
+        },
+        {
+          "optionId": "undo_or_rewrite_18",
+          "text": "Undo the committed split and restore the original request because one notification failed."
+        },
+        {
+          "optionId": "claim_uncommitted_18",
+          "text": "Mark both vendors notified and discard the delivery error."
+        },
+        {
+          "optionId": "discard_failure_18",
+          "text": "Create a new parent request for the vendor that missed its notification."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B08",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A repair-parts marketplace, Both vendor checks pass and the split is committed under the original request. A later notification to one vendor fails; the split and delivery promise remain accepted, while that notice is pending. What outcome should the operation expose after the collaborator fails?",
+    "questionId": "ood-n08-b08-i018",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

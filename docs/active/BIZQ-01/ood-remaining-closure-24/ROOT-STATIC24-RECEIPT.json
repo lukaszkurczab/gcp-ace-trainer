@@ -1,0 +1,30 @@
+{
+  "result": "PASS_AGGREGATE",
+  "scope": "Required Node22 app static gate; matching1878 passes/4existing skips plus stable-status targeted1/1 and bothboundaries, notfreshfull1883/1883",
+  "nodeVersion": "v22.22.3",
+  "tests": 1883,
+  "pass": 1879,
+  "fail": 0,
+  "skip": 4,
+  "first": {
+    "pass": 1878,
+    "fail": 1,
+    "skip": 4
+  },
+  "resolvedFailure": "releaseGate stage contract compared dirty-path counts521 and524 while ownnew evidencefiles were created; no writes duringtargetedretry,1/1 passed; testunchanged",
+  "recovery": "passed",
+  "typecheck": "passed",
+  "contentBoundary": "passed",
+  "runtimePrivacyBoundary": "passed",
+  "environment": {
+    "PATTERNLY_CONTENT_CURRENT_ROOT": "/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content",
+    "PATTERNLY_CONTENT_EXPECTED_CURRENT_SHA": "cf119c3f8e8ebfce3e5bdbcd3d5f4e4c7c5dd509",
+    "PATTERNLY_CONTENT_HISTORICAL_ROOT": "/private/tmp/patternly-content-historical-aud08-v14"
+  },
+  "logs": {
+    "ROOT-STATIC24-FIRST.log": "60f1bacb4cc525e9427f4de13000c1c48349c94b74fc3e92ee6ff42c1a13cbd2",
+    "ROOT-STATIC24-STABLE-SNAPSHOT-RETRY.log": "bc5b1b57db001234e9fe907780ffe49be8126c82d481420beba8842e24c16112",
+    "ROOT-STATIC24-CONTENT-BOUNDARY.log": "b53b6b76837ae0f573e69c69856be2930ca32f2381e7602b1f603e30fa43f938",
+    "ROOT-STATIC24-PRIVACY-BOUNDARY.log": "bcb4b78593b6751177c7facf707db4f73a2da89f45bfd01153c277cea6945197"
+  }
+}

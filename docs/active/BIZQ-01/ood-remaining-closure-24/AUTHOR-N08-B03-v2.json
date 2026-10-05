@@ -1,0 +1,405 @@
+{
+  "schemaVersion": "bizq01-n08-b03-author-v2",
+  "previousProposal": "review-inputs/N08-B03-v1.json",
+  "proposalFile": "proposals/N08-B03-v2.json",
+  "proposalSha256": "0cb7df8cfb1c70ba4bfe488e3a657e5bd308602ec928a75df7757ac793e3788b",
+  "items": [
+    {
+      "questionId": "ood-n08-b03-i001",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A music practice tracker, A completion stores both exercise revision and score policy. An instructor can publish a new exercise revision while a learner submits; the completion must refer to one matching pair. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Save the score, then attach whichever exercise revision is current.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i002",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A procurement approval queue, An approval references a named exception and the control checks that were required for it. A retry may arrive after the first approval committed; it must not create a second approval or lose attribution. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Write approval status, then attach the exception and reviewer evidence later.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i003",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A podcast production desk, Replacing a recording creates a new revision. Existing annotations point to stable segment IDs; listeners must see either the old recording with its annotations or the new recording with the matching segment map. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Replace audio first and remap stable annotation IDs afterward.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i004",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A permissions review service, A temporary grant is valid only with its approving decision and expiry instant. The access check must never observe an active role without those two fields. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Set the role active, then attach approver and expiry in later writes.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i005",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A document notarization service, A seal names a specific immutable document revision. A new document revision may be uploaded while sealing runs; the seal must not be attached to whichever revision happens to be current later. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Hash the selected revision, then store the seal against the latest revision.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i006",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A marketplace payout service, An order may settle while payout release is being requested. A release is accepted only for a settled order, and the order's settlement state and release record must be observed together. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Read settlement, then call a separately synchronized release writer.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i007",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A public-transit disruption board, A route update has an effective sequence assigned by the controller. Delivery may be delayed or reordered; passengers must see later effective changes only after earlier ones for that route. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Publish by arrival and reorder only the displayed text afterward.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i008",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A neighborhood energy-sharing service, A reserved discharge window covers a meter and interval. Two overlapping requests may race; the service must expose either the prior schedule or one accepted reservation, never a partially written interval list. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Mark the interval occupied, then attach its reservation ID.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i009",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A live captioning studio, Each stream uses a provider configuration and timing contract selected at stream start. Switching providers may affect new streams but must not change the configuration an active stream already uses. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Mutate provider fields while active streams hold a shared configuration.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i010",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A volunteer coordination hub, A two-person shift swap requires both assignments to satisfy skill and availability checks. The roster must show either the original pair or the accepted swapped pair, not one moved assignment alone. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Write one assignment before checking the other, then try to undo on failure.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i011",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A local-first map editor, An offline edit submits its base route revision and proposed geometry. If another edit was accepted first, the service must preserve the accepted route and return a conflict for the later proposal. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Check the base before upload, then overwrite geometry when upload completes.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i012",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A board-game campaign manager, A reward is legal only in the current campaign phase and updates both points and phase. A host and moderator may act concurrently; readers must not see points from the reward with the old phase. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Update points and phase separately and let readers combine their latest values.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i013",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A cold-chain logistics console, A hand-off binds carrier, temperature restriction, and acceptance state. Dispatch and carrier responses can interleave; external readers must see the old owner or the complete new hand-off. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Switch carrier first and send temperature limits after it accepts work.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i014",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A cooperative lending ledger, The account's outstanding amount and repayment entry must agree at every visible revision. Two allocations to one account may overlap; a report reader must never see only one side of an accepted allocation. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Reduce the balance, then append the repayment entry in a separate operation.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i015",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A tournament bracket service, A terminal match result and advancement to the next bracket slot are one decision. Timeout and official result can arrive together; the next match must not start from a half-advanced bracket. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Mark the match terminal, then retry bracket advancement separately.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i016",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A returns inspection workflow, The inspector's findings are immutable once submitted; refund review may proceed later and can produce a separate outcome. The system must preserve the inspection facts even if a refund is denied. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Let refund review edit the inspection so it agrees with eligibility.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i017",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A research-notebook platform, A publication run uses a selected immutable dataset revision and code revision. The editor can keep working; every output row must identify the same selected pair. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Read current dataset and code independently at each stage.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b03-i018",
+      "learningObjective": "Identify the smallest accepted state transition that preserves the related values named in the case.",
+      "decisiveFact": "In A collaborative annotation workspace, A comment is accepted against one author and document revision. Notification can fail after acceptance; retry must send the accepted comment identity without changing what was committed. Which change should become visible as one coherent state?",
+      "nearestAlternative": "Send the notification first and create the comment only after delivery.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The case still tests the same atomic transition and keeps owner_preserves_contract as the supported decision. The three distractors now have different, explicit failure meanings, so each received a new stable ID and matching feedback.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "interaction.options[1..3].optionId",
+        "answer.optionId (same ID)",
+        "feedback.reason",
+        "feedback.messages",
+        "feedback.details.scenarioApplication",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ],
+      "sourceRefs": [
+        "The fictional case contract stated in the prompt; no new external technical claim."
+      ]
+    }
+  ],
+  "scope": "Repaired the supported same-ID atomicity cases with case-specific competing policies and causal feedback. Question IDs, prompt, accepted option ID and meaning, source facts, taxonomy, scoring and difficulty remain unchanged. Rewritten distractors use fresh option IDs."
+}

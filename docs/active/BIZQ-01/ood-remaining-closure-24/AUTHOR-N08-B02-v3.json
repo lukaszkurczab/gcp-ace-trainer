@@ -1,0 +1,281 @@
+{
+  "schemaVersion": "bizq01-n08-b02-author-v3",
+  "previousProposal": "proposals/N08-B02-v2.json",
+  "previousSha256": "b1cf5583d99cd754ee91fe159134d84cdc7a5012a1886ddfefb3fd1d8495d5d7",
+  "proposalFile": "proposals/N08-B02-v3.json",
+  "proposalSha256": "de9bb542883a708eb7f64cc5c2eabdf4dbe1ccd3c4a052a952cfd69753b0f7c7",
+  "correctionScope": "Revised the four choice texts, every wrong-option message, and errorCorrection detail while keeping the supported primary decision, all question and option IDs, answer meanings, question order, prompts, Reason, other Details, sourceRefs, taxonomy and scoring. The answer position remains source order; correcting learner-facing order is owned by the root presentation work, so no array rotation is included here.",
+  "positionIssueDisposition": "Source option order intentionally unchanged under controller direction; root is repairing runtime order application, and these content changes do not claim to resolve answer-position disclosure.",
+  "items": [
+    {
+      "questionId": "ood-n08-b02-i001",
+      "learningObjective": "Release only after the order owner checks current settlement.",
+      "decisiveFact": "In A marketplace payout service, The finance operator releases a seller payout. Settlement and release requests can overlap for one order; an order must be settled before its payout is accepted, while unrelated orders should continue. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "The nearest caller-side release from its earlier screen read fails because the state may change before acceptance.",
+      "v2ToV3": "Choice texts now contrast a current order-scoped check with stale read, overbroad lock, and caller inference after timeout.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i002",
+      "learningObjective": "Publish updates for each line in effective-sequence order.",
+      "decisiveFact": "In A public-transit disruption board, Each platform change receives an effective sequence number before publication. A delayed earlier update must not appear after a later effective update; separate lines publish independently. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Arrival order and passenger-local merges can show the earlier effective update after the later one.",
+      "v2ToV3": "Choice texts now compare effective sequencing with arrival publication, cross-line queueing, and per-passenger copies.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i003",
+      "learningObjective": "Check the meter window and reserve it as one operation.",
+      "decisiveFact": "In A neighborhood energy-sharing service, Two reservation requests can overlap for the same meter and time window. The service must never confirm both; reservations for different meters should proceed independently. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "A check-then-insert permits two overlapping requests to confirm the same final window.",
+      "v2ToV3": "Choice texts now compare the meter-scoped overlap decision with the TOCTOU gap, service-wide lock, and stale schedule snapshot.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i004",
+      "learningObjective": "Keep each active stream on the provider configuration it captured.",
+      "decisiveFact": "In A live captioning studio, A stream keeps the provider configuration it began with, including its timing and error contract. A provider switch should affect new streams only; active streams may continue while the next stream starts. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "A mutable provider reference or per-caption lookup can change the active stream contract during a switch.",
+      "v2ToV3": "Choice texts now compare per-stream captured config with shared mutation, unnecessary stream restarts, and callback-time lookup.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i005",
+      "learningObjective": "Validate and commit both shift assignments together.",
+      "decisiveFact": "In A volunteer coordination hub, Two volunteers exchange shifts in one operation. Both skills and availability checks must pass for the same pair of assignments; other shift pairs can be updated independently. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "The first write can escape before the second skill/availability check fails.",
+      "v2ToV3": "Choice texts now compare pairwise roster commit with compensating writes, whole-directory locking, and independent client changes.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i006",
+      "learningObjective": "Compare the proposal base with the current route revision before accepting.",
+      "decisiveFact": "In A local-first map editor, Each offline route proposal records its base revision. Two devices can submit against the same base; if one has already been accepted, the other must receive a conflict rather than replace it. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "The device may upload from a superseded base; last-arrival-wins omits the required conflict.",
+      "v2ToV3": "Choice texts now distinguish route-scoped revision comparison from stale device checks, silent last-arrival selection, and map-wide blocking.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i007",
+      "learningObjective": "Evaluate campaign reward legality against current phase at command acceptance.",
+      "decisiveFact": "In A board-game campaign manager, Reward actions are legal only in the current campaign phase. A host and moderator can issue them concurrently, but actions in separate campaigns are independent. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "The phase displayed on a screen may be stale, and separate host/moderator writes can interleave.",
+      "v2ToV3": "Choice texts now compare current campaign state with screen-derived phase, cross-campaign queueing, and separate owner writes.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i008",
+      "learningObjective": "Transfer a versioned shipment and activate the new carrier on acceptance.",
+      "decisiveFact": "In A cold-chain logistics console, A carrier hand-off changes carrier and hand-off status together, while the shipment's temperature limits stay attached. The old carrier may finish reading its view after transfer; only one carrier owns new work after acceptance. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "New-carrier work cannot begin before the hand-off is accepted with the shipment limits retained.",
+      "v2ToV3": "Choice texts now distinguish accepted-version ownership from simultaneous writers, delayed limit copying, and duplicated shipment records.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i009",
+      "learningObjective": "Check current account balance and record its allocation together.",
+      "decisiveFact": "In A cooperative lending ledger, Concurrent repayments for one account must not allocate more than its current outstanding balance. Each accepted allocation needs a matching ledger entry; other accounts can be handled at the same time. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Two screens can spend the same amount if allocation and ledger recording are separate.",
+      "v2ToV3": "Choice texts now compare the account-scoped transition with stale calculations, whole-ledger lock, and post-check event acceptance.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i010",
+      "learningObjective": "Accept one legal terminal result before advancing the match.",
+      "decisiveFact": "In A tournament bracket service, A match can receive both a timeout and an official result. The match's accepted terminal result must advance the bracket once; another match must not wait for it. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Timer and official can both advance from one open-state read; unrelated matches should not block.",
+      "v2ToV3": "Choice texts now distinguish match-scoped current transition from duplicate handler writes, tournament mutex, and stale screen replacement.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i011",
+      "learningObjective": "Let refund review read the accepted inspection revision.",
+      "decisiveFact": "In A returns inspection workflow, The inspection record captures condition and evidence. A refund reviewer can read that record while another inspection is being completed; the reviewer must not change the inspection facts. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Refund outcome is not an inspection fact, and a replacement record would lose the source inspection.",
+      "v2ToV3": "Choice texts now compare immutable inspection input with reviewer edits, shared record replacement, and a refund-specific copy.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i012",
+      "learningObjective": "Pin publication to its selected dataset and code revisions.",
+      "decisiveFact": "In A research-notebook platform, A publication uses one selected dataset and code revision. Notebook edits may continue while the job runs; the output must identify the exact selection used. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Live stage reads can use different inputs, while workspace-wide locking blocks independent experiments.",
+      "v2ToV3": "Choice texts now contrast pinned inputs with live reads, workspace lock, and an editor-writable publication record.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i013",
+      "learningObjective": "Notify from author and revision stored on the accepted comment.",
+      "decisiveFact": "In A collaborative annotation workspace, An accepted comment names its author and document revision. Notification can be delayed or retried, but the same accepted comment must keep those values. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Delivery-time lookup can attach another editor or document revision after a retry.",
+      "v2ToV3": "Choice texts now compare accepted-comment metadata with delivery lookup, shared list repair, and unrelated global queueing.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i014",
+      "learningObjective": "Bind the server result to the frozen submitted revision.",
+      "decisiveFact": "In A mobile field-inspection app, The inspector can edit a later draft while an earlier revision is being submitted. The server returns complete or retryable for the submitted revision; it must not mark later edits complete by mistake. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "A live draft response can mark later edits complete; shared draft merging can mix revisions.",
+      "v2ToV3": "Choice texts now compare revision-bound result with live reads, shared copies, and an unnecessarily global upload lock.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i015",
+      "learningObjective": "Attach the exchange result to the exact submitted invoice revision.",
+      "decisiveFact": "In A digital invoice exchange, The invoice exchange can return a response after an operator has begun a corrected issue. Each issued copy must retain its submitted values and the exchange result must attach to the matching copy. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "A late response cannot safely update a mutable invoice representing a corrected issue.",
+      "v2ToV3": "Choice texts now compare per-revision results with shared mutable state, cross-seller queueing, and in-place edits.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i016",
+      "learningObjective": "Check current authority revision before the door grants.",
+      "decisiveFact": "In A smart-building access controller, The authority assigns a new badge revision on revocation. A door request carries the revision it checked; if revocation has advanced the authority's revision, the request must not grant from its older view. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "A local cache or previously valid badge revision can be stale at grant time.",
+      "v2ToV3": "Choice texts now distinguish authority-current grant from local writes, old cached approval, and a building-wide lock.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i017",
+      "learningObjective": "Give each print job its approved shipment revision.",
+      "decisiveFact": "In A package-label generation service, A correction creates a new approved shipment revision. An already-running print job must use the revision it started with; a later job should use the new approved revision. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "Reading current fields while rendering can combine two approved address revisions.",
+      "v2ToV3": "Choice texts now compare job-pinned revision with live field reads, shared mutable buffer, and cross-shipment blocking.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i018",
+      "learningObjective": "Check overlap and accept a reservation within the room scope.",
+      "decisiveFact": "In A multi-tenant rehearsal scheduler, A room has capacity three for overlapping bookings. Two coordinators can reserve the final slot concurrently; reservations in other rooms should proceed independently. Which coordination boundary best preserves the stated ordering and state?",
+      "nearestAlternative": "A stale search view can let two coordinators take the final slot.",
+      "v2ToV3": "Choice texts now compare room-scoped acceptance with stale UI, a schedule-wide lock, and private room copies.",
+      "identityAction": "preserve_question_id_and_option_ids",
+      "identityReason": "The case-specific synchronization/immutable-transfer decision and meaning of each wrong alternative family remain the same; only wording and corresponding diagnoses were clarified.",
+      "changedFields": [
+        "interaction.options[*].text",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external technical guarantee changed; conditions derive from the fictional prompt."
+    }
+  ]
+}

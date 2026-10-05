@@ -1,0 +1,1424 @@
+[
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i001_bounded_explanation"
+    },
+    "constraints": [
+      "Dispatchers must explain which effective change passengers saw first. The board’s mutable route table contains unrelated passenger data.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The support question concerns the effective change and its order. A small event record exposes those facts without copying unrelated live state.",
+        "scenarioApplication": "Support can compare platform, effective time, and sequence while passenger data remains outside the diagnostic record.",
+        "errorCorrection": "A whole-table dump exposes unrelated mutable data; a success flag omits the order needed to explain the incident.",
+        "boundaryOrTradeoff": "A broader audit store may be appropriate under a separate retention policy, but the event should still carry only the stated diagnostic fields.",
+        "transfer": "Record the domain change and its ordering facts rather than dumping the entire object that happened to change."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i001_overexpose",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says dispatchers must explain which effective change passengers saw first. the board’s mutable route table contains unrelated passenger data. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i001_generic_result",
+          "text": "This leaves out information needed to explain the decision. The case requires dispatchers must explain which effective change passengers saw first. the board’s mutable route table contains unrelated passenger data. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i001_reconstruct_later",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve dispatchers must explain which effective change passengers saw first. the board’s mutable route table contains unrelated passenger data. when that decision occurs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i001_wrong_boundary",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says dispatchers must explain which effective change passengers saw first. the board’s mutable route table contains unrelated passenger data. The extra fields cross that boundary."
+        }
+      ],
+      "reason": "The support question concerns the effective change and its order. A small event record exposes those facts without copying unrelated live state. Support can compare platform, effective time, and sequence while passenger data remains outside the diagnostic record.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i001_overexpose",
+          "text": "Dump the full route table after every change, including unrelated passenger fields."
+        },
+        {
+          "optionId": "n09b06_i001_generic_result",
+          "text": "Log only “update succeeded,” which cannot distinguish changes that arrive out of order."
+        },
+        {
+          "optionId": "n09b06_i001_reconstruct_later",
+          "text": "Ask each client to poll mutable board state later and infer which change it received."
+        },
+        {
+          "optionId": "n09b06_i001_wrong_boundary",
+          "text": "Record the operator’s credentials alongside the platform change for troubleshooting."
+        },
+        {
+          "optionId": "n09b06_i001_bounded_explanation",
+          "text": "Record the platform ID, effective time, and sequence; leave passenger data out."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A transit board announces a platform change. What diagnostic record is useful without exposing that table?",
+    "questionId": "ood-n09-b06-i001",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i002_bounded_explanation"
+    },
+    "constraints": [
+      "Operators need to identify an overlapping reservation that blocked the request. Full meter readings are private and are not needed to explain the rejection.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The rejection is caused by a specific overlap. Its identifier and interval explain the result without exposing unrelated readings.",
+        "scenarioApplication": "The caller can show which reservation and time window conflict with the proposed discharge.",
+        "errorCorrection": "A generic failure provides no next diagnostic step, while a full history exceeds the facts needed for this explanation.",
+        "boundaryOrTradeoff": "A detailed support tool may retrieve authorized history separately; the operation result need not include it all.",
+        "transfer": "Expose the smallest stable reference and condition that explains a rejected domain operation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i002_overexpose",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says operators need to identify an overlapping reservation that blocked the request. full meter readings are private and are not needed to explain the rejection. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i002_generic_result",
+          "text": "This leaves out information needed to explain the decision. The case requires operators need to identify an overlapping reservation that blocked the request. full meter readings are private and are not needed to explain the rejection. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i002_reconstruct_later",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says operators need to identify an overlapping reservation that blocked the request. full meter readings are private and are not needed to explain the rejection. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i002_wrong_boundary",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve operators need to identify an overlapping reservation that blocked the request. full meter readings are private and are not needed to explain the rejection. when that decision occurs."
+        }
+      ],
+      "reason": "The rejection is caused by a specific overlap. Its identifier and interval explain the result without exposing unrelated readings. The caller can show which reservation and time window conflict with the proposed discharge.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i002_reconstruct_later",
+          "text": "Log raw meter readings and account identifiers along with the failure."
+        },
+        {
+          "optionId": "n09b06_i002_wrong_boundary",
+          "text": "Have the dashboard reread the live reservation table later and guess which row caused it."
+        },
+        {
+          "optionId": "n09b06_i002_bounded_explanation",
+          "text": "Return the conflicting reservation ID and overlap window so the operator can identify the blocked slot."
+        },
+        {
+          "optionId": "n09b06_i002_overexpose",
+          "text": "Return the entire meter history so operators can search for the conflict themselves."
+        },
+        {
+          "optionId": "n09b06_i002_generic_result",
+          "text": "Return only “reservation failed,” leaving the operator unable to locate the conflict."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A neighborhood energy service rejects a meter discharge reservation. Which failure detail should the reservation operation expose?",
+    "questionId": "ood-n09-b06-i002",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i003_bounded_explanation"
+    },
+    "constraints": [
+      "Support must identify which configured adapter handled a failed stream and its error category. Provider credentials must not enter logs.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "An adapter reference and bounded failure category identify the path without exposing the secret configuration.",
+        "scenarioApplication": "The diagnostic ties the failure to the provider selected for that stream and preserves the error category for investigation.",
+        "errorCorrection": "Printing the full configuration leaks credentials, while rereading current settings may not identify the provider used for the failed call.",
+        "boundaryOrTradeoff": "A protected credential-management system may audit secret access separately; playback diagnostics do not need secret values.",
+        "transfer": "Keep diagnostic correlation fields while omitting credentials and other sensitive inputs."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i003_overexpose",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says support must identify which configured adapter handled a failed stream and its error category. provider credentials must not enter logs. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i003_generic_result",
+          "text": "This leaves out information needed to explain the decision. The case requires support must identify which configured adapter handled a failed stream and its error category. provider credentials must not enter logs. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i003_reconstruct_later",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says support must identify which configured adapter handled a failed stream and its error category. provider credentials must not enter logs. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i003_wrong_boundary",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve support must identify which configured adapter handled a failed stream and its error category. provider credentials must not enter logs. when that decision occurs."
+        }
+      ],
+      "reason": "An adapter reference and bounded failure category identify the path without exposing the secret configuration. The diagnostic ties the failure to the provider selected for that stream and preserves the error category for investigation.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i003_bounded_explanation",
+          "text": "Record the selected adapter ID and bounded error category for the failed stream; omit its credentials."
+        },
+        {
+          "optionId": "n09b06_i003_overexpose",
+          "text": "Log the complete provider configuration so support can see every setting."
+        },
+        {
+          "optionId": "n09b06_i003_generic_result",
+          "text": "Return only a generic playback failure with no adapter or error category."
+        },
+        {
+          "optionId": "n09b06_i003_reconstruct_later",
+          "text": "Have the dashboard print the request headers, including provider credentials."
+        },
+        {
+          "optionId": "n09b06_i003_wrong_boundary",
+          "text": "Infer the provider from current configuration after the stream has already failed."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A video-streaming studio switches the active language provider. What should the failure diagnostic contain?",
+    "questionId": "ood-n09-b06-i003",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i004_bounded_explanation"
+    },
+    "constraints": [
+      "A coordinator investigates swaps that leave one volunteer unassigned. The history must show the actor and both before/after assignments.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The failure concerns paired assignment state. The event must retain the actor and both sides of the transition, not unrelated profile data.",
+        "scenarioApplication": "The coordinator can trace the requested swap to the old and new assignment IDs.",
+        "errorCorrection": "A notification does not prove the assignments changed, and current schedules cannot reconstruct prior state reliably.",
+        "boundaryOrTradeoff": "The event can reference volunteer IDs; contact details belong in the authorized profile view.",
+        "transfer": "For paired state changes, record the actor and both sides of the domain transition."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i004_overexpose",
+          "text": "This leaves out information needed to explain the decision. The case requires a coordinator investigates swaps that leave one volunteer unassigned. the history must show the actor and both before/after assignments. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i004_generic_result",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says a coordinator investigates swaps that leave one volunteer unassigned. the history must show the actor and both before/after assignments. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i004_reconstruct_later",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve a coordinator investigates swaps that leave one volunteer unassigned. the history must show the actor and both before/after assignments. when that decision occurs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i004_wrong_boundary",
+          "text": "That consumer or adapter does not own the authoritative change, and its view can diverge from it. The event must explain a coordinator investigates swaps that leave one volunteer unassigned. the history must show the actor and both before/after assignments. from the source that observed the decision."
+        }
+      ],
+      "reason": "The failure concerns paired assignment state. The event must retain the actor and both sides of the transition, not unrelated profile data. The coordinator can trace the requested swap to the old and new assignment IDs.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i004_generic_result",
+          "text": "Dump both volunteer profiles, including contact details, into the event log."
+        },
+        {
+          "optionId": "n09b06_i004_reconstruct_later",
+          "text": "Have support compare current schedules and infer the former assignments."
+        },
+        {
+          "optionId": "n09b06_i004_wrong_boundary",
+          "text": "Record a notification-send event as if it were the assignment change."
+        },
+        {
+          "optionId": "n09b06_i004_bounded_explanation",
+          "text": "Record the actor and both volunteers’ old and new shift IDs for the swap."
+        },
+        {
+          "optionId": "n09b06_i004_overexpose",
+          "text": "Record only “swap complete” and discard the two assignment references."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A volunteer platform swaps two assigned shifts. Which event makes the change explainable?",
+    "questionId": "ood-n09-b06-i004",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i005_bounded_explanation"
+    },
+    "constraints": [
+      "The editor must explain which accepted geometry revision conflicted with the incoming revision. Route coordinates can contain sensitive locations.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The revisions identify the two inputs involved; the reason explains why they could not be merged. Coordinates are not required for that diagnosis.",
+        "scenarioApplication": "The caller can show which accepted and incoming versions need review without dumping location data.",
+        "errorCorrection": "A boolean does not identify the conflicting pair, while a coordinate dump exposes far more data than the stated explanation needs.",
+        "boundaryOrTradeoff": "An authorized map inspector may load geometry separately when resolving the conflict; the failure response can remain bounded.",
+        "transfer": "Return version references and a reason when the consumer needs to locate a conflict, not all underlying content."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i005_overexpose",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says the editor must explain which accepted geometry revision conflicted with the incoming revision. route coordinates can contain sensitive locations. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i005_generic_result",
+          "text": "This leaves out information needed to explain the decision. The case requires the editor must explain which accepted geometry revision conflicted with the incoming revision. route coordinates can contain sensitive locations. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i005_reconstruct_later",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve the editor must explain which accepted geometry revision conflicted with the incoming revision. route coordinates can contain sensitive locations. when that decision occurs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i005_wrong_boundary",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says the editor must explain which accepted geometry revision conflicted with the incoming revision. route coordinates can contain sensitive locations. The extra fields cross that boundary."
+        }
+      ],
+      "reason": "The revisions identify the two inputs involved; the reason explains why they could not be merged. Coordinates are not required for that diagnosis. The caller can show which accepted and incoming versions need review without dumping location data.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i005_wrong_boundary",
+          "text": "Log the editor’s complete local map cache to reproduce the conflict."
+        },
+        {
+          "optionId": "n09b06_i005_bounded_explanation",
+          "text": "Return both geometry revision IDs and the conflict reason; leave route coordinates behind authorized access."
+        },
+        {
+          "optionId": "n09b06_i005_overexpose",
+          "text": "Return the full coordinate set for both routes in every failure response."
+        },
+        {
+          "optionId": "n09b06_i005_generic_result",
+          "text": "Return only a boolean conflict flag without either revision reference."
+        },
+        {
+          "optionId": "n09b06_i005_reconstruct_later",
+          "text": "Let the client overwrite the accepted route and compare it afterward."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A local map editor rejects an offline route merge. What should the conflict result identify?",
+    "questionId": "ood-n09-b06-i005",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i006_bounded_explanation"
+    },
+    "constraints": [
+      "Moderators need to explain which phase and rule version governed the decision. The campaign object also contains private player notes.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The decision’s explanation depends on the phase and rule version at evaluation time. Those references should be captured with the outcome.",
+        "scenarioApplication": "Moderators can explain the denial using the same phase and rule version that the operation evaluated.",
+        "errorCorrection": "Using current state later may explain a different decision than the one actually made.",
+        "boundaryOrTradeoff": "The outcome may include a reason code as well; the recorded phase and rule version anchor that reason.",
+        "transfer": "Capture the policy inputs that governed a decision rather than reconstructing them from mutable current state."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i006_overexpose",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says moderators need to explain which phase and rule version governed the decision. the campaign object also contains private player notes. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i006_generic_result",
+          "text": "This leaves out information needed to explain the decision. The case requires moderators need to explain which phase and rule version governed the decision. the campaign object also contains private player notes. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i006_reconstruct_later",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve moderators need to explain which phase and rule version governed the decision. the campaign object also contains private player notes. when that decision occurs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i006_wrong_boundary",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve moderators need to explain which phase and rule version governed the decision. the campaign object also contains private player notes. when that decision occurs."
+        }
+      ],
+      "reason": "The decision’s explanation depends on the phase and rule version at evaluation time. Those references should be captured with the outcome. Moderators can explain the denial using the same phase and rule version that the operation evaluated.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i006_overexpose",
+          "text": "Dump the whole campaign object, including private player notes."
+        },
+        {
+          "optionId": "n09b06_i006_generic_result",
+          "text": "Record only “reward denied” and omit which phase was active."
+        },
+        {
+          "optionId": "n09b06_i006_reconstruct_later",
+          "text": "Recompute the decision later using the latest rule version."
+        },
+        {
+          "optionId": "n09b06_i006_wrong_boundary",
+          "text": "Ask the client to infer the phase from its last screen refresh."
+        },
+        {
+          "optionId": "n09b06_i006_bounded_explanation",
+          "text": "Record the campaign phase and reward-rule version used by the decision."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A game service declines a reward after a campaign phase changes. What decision detail should be retained?",
+    "questionId": "ood-n09-b06-i006",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i007_bounded_explanation"
+    },
+    "constraints": [
+      "Dispatch support needs the shipment ID, previous custodian ID, new custodian ID, and change time. Temperature sensor samples are stored separately.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The listed fields explain who held custody and when it changed. Sensor samples and credentials do not explain this ownership transition.",
+        "scenarioApplication": "Support can trace the handoff across both custodian IDs while sensor history remains in its own record.",
+        "errorCorrection": "The “carrier changed” summary omits the previous owner, and a later read cannot reliably recover the earlier state.",
+        "boundaryOrTradeoff": "A temperature excursion event can reference sensor history separately if that is the incident under review.",
+        "transfer": "Keep transition diagnostics scoped to the identities and time of the transition."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i007_overexpose",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says dispatch support needs the shipment id, previous custodian id, new custodian id, and change time. temperature sensor samples are stored separately. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i007_generic_result",
+          "text": "This leaves out information needed to explain the decision. The case requires dispatch support needs the shipment id, previous custodian id, new custodian id, and change time. temperature sensor samples are stored separately. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i007_reconstruct_later",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve dispatch support needs the shipment id, previous custodian id, new custodian id, and change time. temperature sensor samples are stored separately. when that decision occurs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i007_wrong_boundary",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says dispatch support needs the shipment id, previous custodian id, new custodian id, and change time. temperature sensor samples are stored separately. The extra fields cross that boundary."
+        }
+      ],
+      "reason": "The listed fields explain who held custody and when it changed. Sensor samples and credentials do not explain this ownership transition. Support can trace the handoff across both custodian IDs while sensor history remains in its own record.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i007_reconstruct_later",
+          "text": "Use the latest custodian record to reconstruct the old owner later."
+        },
+        {
+          "optionId": "n09b06_i007_wrong_boundary",
+          "text": "Include carrier API credentials so the next custodian can retry the handoff."
+        },
+        {
+          "optionId": "n09b06_i007_bounded_explanation",
+          "text": "Record the shipment ID, prior and new custodian, and handoff time to trace the ownership change."
+        },
+        {
+          "optionId": "n09b06_i007_overexpose",
+          "text": "Copy every sensor sample into the handoff event so support sees the whole shipment history."
+        },
+        {
+          "optionId": "n09b06_i007_generic_result",
+          "text": "Record only that the carrier changed, omitting who accepted custody."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A cold-chain dispatch changes the custodian for a shipment. What belongs in the handoff diagnostic?",
+    "questionId": "ood-n09-b06-i007",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i008_bounded_explanation"
+    },
+    "constraints": [
+      "The caller needs a stable reason and the account balance used for the decision. It must not receive another borrower’s account history.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The rejection depends on a balance snapshot. A reason plus reference supports explanation without disclosing broad history or credentials.",
+        "scenarioApplication": "The client can explain that the proposed allocation exceeded the balance used during evaluation.",
+        "errorCorrection": "A later reread may show a different balance and cannot explain the original decision.",
+        "boundaryOrTradeoff": "The numeric balance may be shown only to an authorized caller; the stable reference and reason still make the decision traceable.",
+        "transfer": "Explain a failed invariant with the reason and the version/reference of the data evaluated."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i008_overexpose",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says the caller needs a stable reason and the account balance used for the decision. it must not receive another borrower’s account history. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i008_generic_result",
+          "text": "This leaves out information needed to explain the decision. The case requires the caller needs a stable reason and the account balance used for the decision. it must not receive another borrower’s account history. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i008_reconstruct_later",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve the caller needs a stable reason and the account balance used for the decision. it must not receive another borrower’s account history. when that decision occurs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i008_wrong_boundary",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says the caller needs a stable reason and the account balance used for the decision. it must not receive another borrower’s account history. The extra fields cross that boundary."
+        }
+      ],
+      "reason": "The rejection depends on a balance snapshot. A reason plus reference supports explanation without disclosing broad history or credentials. The client can explain that the proposed allocation exceeded the balance used during evaluation.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i008_bounded_explanation",
+          "text": "Return an overpayment reason and evaluated balance reference to explain the rejected allocation."
+        },
+        {
+          "optionId": "n09b06_i008_overexpose",
+          "text": "Return the full ledger history across every borrower for comparison."
+        },
+        {
+          "optionId": "n09b06_i008_generic_result",
+          "text": "Return “bad request” without identifying the balance rule that failed."
+        },
+        {
+          "optionId": "n09b06_i008_reconstruct_later",
+          "text": "Have the client reread the balance later and assume it matches the rejected decision."
+        },
+        {
+          "optionId": "n09b06_i008_wrong_boundary",
+          "text": "Log the borrower’s authentication token to link the request to the account."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A lending ledger rejects a repayment allocation that would overpay a balance. What failure response supports a safe explanation?",
+    "questionId": "ood-n09-b06-i008",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i009_bounded_explanation"
+    },
+    "constraints": [
+      "Officials need to distinguish a timeout forfeit from a player withdrawal. The public result should not expose internal server timing traces.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The prompt requires consumers to distinguish two causes with the same broad outcome. A bounded reason preserves that information without exposing implementation traces.",
+        "scenarioApplication": "The result identifies timeout versus withdrawal while retaining the forfeit outcome.",
+        "errorCorrection": "The broad status alone loses the distinction the officials need.",
+        "boundaryOrTradeoff": "Detailed timing data may be retained in restricted diagnostics, but it is not part of the public result contract.",
+        "transfer": "When one status covers materially different causes, expose a safe reason category that explains the branch."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i009_overexpose",
+          "text": "This leaves out information needed to explain the decision. The case requires officials need to distinguish a timeout forfeit from a player withdrawal. the public result should not expose internal server timing traces. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i009_generic_result",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says officials need to distinguish a timeout forfeit from a player withdrawal. the public result should not expose internal server timing traces. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i009_reconstruct_later",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve officials need to distinguish a timeout forfeit from a player withdrawal. the public result should not expose internal server timing traces. when that decision occurs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i009_wrong_boundary",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says officials need to distinguish a timeout forfeit from a player withdrawal. the public result should not expose internal server timing traces. The extra fields cross that boundary."
+        }
+      ],
+      "reason": "The prompt requires consumers to distinguish two causes with the same broad outcome. A bounded reason preserves that information without exposing implementation traces. The result identifies timeout versus withdrawal while retaining the forfeit outcome.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i009_generic_result",
+          "text": "Expose the server’s full timing trace to every result consumer."
+        },
+        {
+          "optionId": "n09b06_i009_reconstruct_later",
+          "text": "Have the client infer the reason from when it last polled the match."
+        },
+        {
+          "optionId": "n09b06_i009_wrong_boundary",
+          "text": "Change the result to “draw” and keep the timeout reason only in a private log."
+        },
+        {
+          "optionId": "n09b06_i009_bounded_explanation",
+          "text": "Add a bounded reason for timeout versus withdrawal alongside the match result."
+        },
+        {
+          "optionId": "n09b06_i009_overexpose",
+          "text": "Return only “forfeit,” collapsing timeout and withdrawal into one explanation."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A tournament bracket records a forfeit after a match timeout. Which result detail provides that distinction?",
+    "questionId": "ood-n09-b06-i009",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i010_bounded_explanation"
+    },
+    "constraints": [
+      "Agents need to see the classification and eligibility decision separately. Customer notes are private and irrelevant to that distinction.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The two outcomes are independent per the case. Separate fields preserve each decision’s meaning and let agents explain them without private notes.",
+        "scenarioApplication": "The agent sees the returned-item class and the refund decision as distinct values.",
+        "errorCorrection": "A single overloaded label conflates classification and eligibility, while recomputation may use rules that changed after the decision.",
+        "boundaryOrTradeoff": "The response can also include reason codes if the contract defines them; it should not merge these independent outputs.",
+        "transfer": "Keep independent decisions separate in diagnostics so consumers can explain each one accurately."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i010_overexpose",
+          "text": "This changes or conflates the result rather than recording its explanation. The case requires agents need to see the classification and eligibility decision separately. customer notes are private and irrelevant to that distinction. Preserve the original outcome and its separate context."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i010_generic_result",
+          "text": "This substitutes a related action for the event the reader needs to understand. The case requires agents need to see the classification and eligibility decision separately. customer notes are private and irrelevant to that distinction. Keep the diagnostic bound to that decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i010_reconstruct_later",
+          "text": "This leaves out information needed to explain the decision. The case requires agents need to see the classification and eligibility decision separately. customer notes are private and irrelevant to that distinction. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i010_wrong_boundary",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve agents need to see the classification and eligibility decision separately. customer notes are private and irrelevant to that distinction. when that decision occurs."
+        }
+      ],
+      "reason": "The two outcomes are independent per the case. Separate fields preserve each decision’s meaning and let agents explain them without private notes. The agent sees the returned-item class and the refund decision as distinct values.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i010_wrong_boundary",
+          "text": "Let the dashboard reread current rules and recreate the earlier eligibility result."
+        },
+        {
+          "optionId": "n09b06_i010_bounded_explanation",
+          "text": "Return classification and refund eligibility as separate decision fields."
+        },
+        {
+          "optionId": "n09b06_i010_overexpose",
+          "text": "Encode eligibility in the classification label and make agents decode it."
+        },
+        {
+          "optionId": "n09b06_i010_generic_result",
+          "text": "Return customer notes so agents can decide refund eligibility themselves."
+        },
+        {
+          "optionId": "n09b06_i010_reconstruct_later",
+          "text": "Return only “returned” and hide both decisions."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A returns service classifies an item and evaluates refund eligibility. How should the operation expose its explanation?",
+    "questionId": "ood-n09-b06-i010",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i011_bounded_explanation"
+    },
+    "constraints": [
+      "Reviewers need the input-data ID and code revision that produced a result. Raw input datasets are access-controlled.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Stable references make the output traceable while respecting the dataset access boundary.",
+        "scenarioApplication": "Reviewers can locate the exact source references and request authorized access separately if needed.",
+        "errorCorrection": "Looking up current versions can misattribute an older result, and embedding raw data bypasses the access boundary.",
+        "boundaryOrTradeoff": "The result may include additional safe summary fields; raw source material remains behind its existing access control.",
+        "transfer": "Make derived results explainable with stable provenance references, not copied sensitive inputs."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i011_overexpose",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says reviewers need the input-data id and code revision that produced a result. raw input datasets are access-controlled. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i011_generic_result",
+          "text": "This leaves out information needed to explain the decision. The case requires reviewers need the input-data id and code revision that produced a result. raw input datasets are access-controlled. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i011_reconstruct_later",
+          "text": "This substitutes a related action for the event the reader needs to understand. The case requires reviewers need the input-data id and code revision that produced a result. raw input datasets are access-controlled. Keep the diagnostic bound to that decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i011_wrong_boundary",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says reviewers need the input-data id and code revision that produced a result. raw input datasets are access-controlled. The extra fields cross that boundary."
+        }
+      ],
+      "reason": "Stable references make the output traceable while respecting the dataset access boundary. Reviewers can locate the exact source references and request authorized access separately if needed.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i011_overexpose",
+          "text": "Copy the entire raw dataset into the public result record."
+        },
+        {
+          "optionId": "n09b06_i011_generic_result",
+          "text": "Publish only the computed number and ask reviewers to guess its source."
+        },
+        {
+          "optionId": "n09b06_i011_reconstruct_later",
+          "text": "Resolve provenance from the latest dataset and code when the result is opened."
+        },
+        {
+          "optionId": "n09b06_i011_wrong_boundary",
+          "text": "Store the input and code references only in a private process log that readers cannot access."
+        },
+        {
+          "optionId": "n09b06_i011_bounded_explanation",
+          "text": "Attach the input ID and code revision to the result metadata."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A research service publishes analysis results. What provenance should the published result expose?",
+    "questionId": "ood-n09-b06-i011",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i012_bounded_explanation"
+    },
+    "constraints": [
+      "Support must correlate a notification with the document revision and accepted comment ID. The comment body may contain confidential review text.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The correlation IDs connect the notification to the accepted comment and revision without copying confidential content.",
+        "scenarioApplication": "Support can find the affected comment and revision and see the delivery outcome.",
+        "errorCorrection": "Logging the body expands exposure, while a generic failure cannot identify the affected comment.",
+        "boundaryOrTradeoff": "Authorized review tools can access the comment body when needed; operational telemetry needs only stable references.",
+        "transfer": "Correlate external effects by stable IDs and outcomes instead of placing sensitive payloads in logs."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i012_overexpose",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says support must correlate a notification with the document revision and accepted comment id. the comment body may contain confidential review text. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i012_generic_result",
+          "text": "This leaves out information needed to explain the decision. The case requires support must correlate a notification with the document revision and accepted comment id. the comment body may contain confidential review text. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i012_reconstruct_later",
+          "text": "This substitutes a related action for the event the reader needs to understand. The case requires support must correlate a notification with the document revision and accepted comment id. the comment body may contain confidential review text. Keep the diagnostic bound to that decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i012_wrong_boundary",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve support must correlate a notification with the document revision and accepted comment id. the comment body may contain confidential review text. when that decision occurs."
+        }
+      ],
+      "reason": "The correlation IDs connect the notification to the accepted comment and revision without copying confidential content. Support can find the affected comment and revision and see the delivery outcome.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i012_reconstruct_later",
+          "text": "Use the latest document revision when investigating a prior notification."
+        },
+        {
+          "optionId": "n09b06_i012_wrong_boundary",
+          "text": "Ask support to inspect the mutable notification queue and infer which comment was sent."
+        },
+        {
+          "optionId": "n09b06_i012_bounded_explanation",
+          "text": "Record comment ID and document revision with delivery outcome, without copying the confidential body."
+        },
+        {
+          "optionId": "n09b06_i012_overexpose",
+          "text": "Log the full comment body with every retry so support can search it."
+        },
+        {
+          "optionId": "n09b06_i012_generic_result",
+          "text": "Record only “notification failed,” omitting the comment and revision references."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A review service accepts comments and notifies authors. What should the notification diagnostic record include?",
+    "questionId": "ood-n09-b06-i012",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i013_bounded_explanation"
+    },
+    "constraints": [
+      "Operators need the outcome and a safe failure category; device credentials and the full inspection payload must stay out of logs.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The status distinguishes work that finished from work that can be retried, while a bounded category helps operators investigate safely.",
+        "scenarioApplication": "The dashboard can separate completed from retryable submissions without receiving credentials or the full payload.",
+        "errorCorrection": "A generic error obscures retry handling, and marking failures complete loses the stated outcome.",
+        "boundaryOrTradeoff": "A secured support workflow can retrieve the payload when authorized; routine diagnostics should not copy it.",
+        "transfer": "Expose operational status and safe error categories while keeping secrets and large payloads out of routine logs."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i013_overexpose",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says operators need the outcome and a safe failure category; device credentials and the full inspection payload must stay out of logs. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i013_generic_result",
+          "text": "This changes or conflates the result rather than recording its explanation. The case requires operators need the outcome and a safe failure category; device credentials and the full inspection payload must stay out of logs. Preserve the original outcome and its separate context."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i013_reconstruct_later",
+          "text": "This leaves out information needed to explain the decision. The case requires operators need the outcome and a safe failure category; device credentials and the full inspection payload must stay out of logs. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i013_wrong_boundary",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve operators need the outcome and a safe failure category; device credentials and the full inspection payload must stay out of logs. when that decision occurs."
+        }
+      ],
+      "reason": "The status distinguishes work that finished from work that can be retried, while a bounded category helps operators investigate safely. The dashboard can separate completed from retryable submissions without receiving credentials or the full payload.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i013_bounded_explanation",
+          "text": "Record complete or retryable status with a non-sensitive failure category."
+        },
+        {
+          "optionId": "n09b06_i013_overexpose",
+          "text": "Log the full payload and device token for every failed upload."
+        },
+        {
+          "optionId": "n09b06_i013_generic_result",
+          "text": "Mark all uploads complete so dashboards avoid retry warnings."
+        },
+        {
+          "optionId": "n09b06_i013_reconstruct_later",
+          "text": "Return only a generic error with no retry state or category."
+        },
+        {
+          "optionId": "n09b06_i013_wrong_boundary",
+          "text": "Reread the current inspection row later and treat it as the upload result."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "An offline inspection upload finishes or remains retryable. Which diagnostic result is useful and bounded?",
+    "questionId": "ood-n09-b06-i013",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i014_bounded_explanation"
+    },
+    "constraints": [
+      "Support needs to correlate each issue attempt with the original invoice and know whether a charge was created. Customer payment credentials must remain private.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The event needs both the stable invoice and specific attempt, plus the charge result, to explain the reissue without exposing payment secrets.",
+        "scenarioApplication": "Support can link the attempt to its invoice and see the charge outcome.",
+        "errorCorrection": "The invoice ID alone cannot distinguish attempts, and a later payment state may not explain the earlier result.",
+        "boundaryOrTradeoff": "A dedicated payment processor audit can hold sensitive details; this event can reference it without copying credentials.",
+        "transfer": "Use stable parent and attempt identifiers to explain retries, and record the side-effect outcome separately."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i014_overexpose",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says support needs to correlate each issue attempt with the original invoice and know whether a charge was created. customer payment credentials must remain private. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i014_generic_result",
+          "text": "This leaves out information needed to explain the decision. The case requires support needs to correlate each issue attempt with the original invoice and know whether a charge was created. customer payment credentials must remain private. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i014_reconstruct_later",
+          "text": "This changes or conflates the result rather than recording its explanation. The case requires support needs to correlate each issue attempt with the original invoice and know whether a charge was created. customer payment credentials must remain private. Preserve the original outcome and its separate context."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i014_wrong_boundary",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve support needs to correlate each issue attempt with the original invoice and know whether a charge was created. customer payment credentials must remain private. when that decision occurs."
+        }
+      ],
+      "reason": "The event needs both the stable invoice and specific attempt, plus the charge result, to explain the reissue without exposing payment secrets. Support can link the attempt to its invoice and see the charge outcome.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i014_generic_result",
+          "text": "Log only “reissued,” hiding whether the charge effect occurred."
+        },
+        {
+          "optionId": "n09b06_i014_reconstruct_later",
+          "text": "Replace the original invoice ID with the most recent issue ID."
+        },
+        {
+          "optionId": "n09b06_i014_wrong_boundary",
+          "text": "Reread the current payment record later and infer the earlier attempt outcome."
+        },
+        {
+          "optionId": "n09b06_i014_bounded_explanation",
+          "text": "Record invoice ID, issue-attempt ID, and whether that attempt created a charge."
+        },
+        {
+          "optionId": "n09b06_i014_overexpose",
+          "text": "Copy payment credentials into the issue event to make retries easier."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "An invoice service reissues a rejected invoice. What event data best explains the attempt?",
+    "questionId": "ood-n09-b06-i014",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i015_bounded_explanation"
+    },
+    "constraints": [
+      "An audit reviewer needs the actor and effective time; door decisions must observe the revocation before the next grant. Do not log badge secrets.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Actor and effective time make the state change attributable; the visible outcome confirms the policy boundary saw it.",
+        "scenarioApplication": "The audit can trace who revoked the badge and the time the policy began treating it as revoked.",
+        "errorCorrection": "A status without actor/time is not attributable, and secrets are not needed for the audit.",
+        "boundaryOrTradeoff": "Individual door decisions may be logged separately under their own contract; the revocation event records the central change.",
+        "transfer": "For an access-state change, preserve actor, effective time, and the outcome at the enforcement boundary."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i015_overexpose",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says an audit reviewer needs the actor and effective time; door decisions must observe the revocation before the next grant. do not log badge secrets. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i015_generic_result",
+          "text": "This leaves out information needed to explain the decision. The case requires an audit reviewer needs the actor and effective time; door decisions must observe the revocation before the next grant. do not log badge secrets. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i015_reconstruct_later",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve an audit reviewer needs the actor and effective time; door decisions must observe the revocation before the next grant. do not log badge secrets. when that decision occurs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i015_wrong_boundary",
+          "text": "That consumer or adapter does not own the authoritative change, and its view can diverge from it. The event must explain an audit reviewer needs the actor and effective time; door decisions must observe the revocation before the next grant. do not log badge secrets. from the source that observed the decision."
+        }
+      ],
+      "reason": "Actor and effective time make the state change attributable; the visible outcome confirms the policy boundary saw it. The audit can trace who revoked the badge and the time the policy began treating it as revoked.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i015_wrong_boundary",
+          "text": "Have each door controller emit its own revocation event from mutable local state."
+        },
+        {
+          "optionId": "n09b06_i015_bounded_explanation",
+          "text": "Include badge ID, actor, effective time, and confirmation that policy saw revocation."
+        },
+        {
+          "optionId": "n09b06_i015_overexpose",
+          "text": "Log the badge secret and full access history with every revocation."
+        },
+        {
+          "optionId": "n09b06_i015_generic_result",
+          "text": "Record only “revoked” without who acted or when it took effect."
+        },
+        {
+          "optionId": "n09b06_i015_reconstruct_later",
+          "text": "Infer the effective time from the next door access attempt."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A building controller revokes an access badge. What should the revocation event preserve?",
+    "questionId": "ood-n09-b06-i015",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i016_bounded_explanation"
+    },
+    "constraints": [
+      "Support needs to know which approved shipment revision the label represents. The complete address should not be copied into general diagnostics.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A stable revision reference identifies the approved input without duplicating address data into diagnostics.",
+        "scenarioApplication": "Support can locate the exact revision behind the label while preserving address access controls.",
+        "errorCorrection": "Current-state comparison may point to a later correction, not the revision used to print the label.",
+        "boundaryOrTradeoff": "The label itself still contains its necessary destination; general diagnostics can remain reference-only.",
+        "transfer": "Tie derived output to a stable input revision instead of copying sensitive source fields into logs."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i016_overexpose",
+          "text": "This substitutes a related action for the event the reader needs to understand. The case requires support needs to know which approved shipment revision the label represents. the complete address should not be copied into general diagnostics. Keep the diagnostic bound to that decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i016_generic_result",
+          "text": "This leaves out information needed to explain the decision. The case requires support needs to know which approved shipment revision the label represents. the complete address should not be copied into general diagnostics. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i016_reconstruct_later",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve support needs to know which approved shipment revision the label represents. the complete address should not be copied into general diagnostics. when that decision occurs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i016_wrong_boundary",
+          "text": "This leaves out information needed to explain the decision. The case requires support needs to know which approved shipment revision the label represents. the complete address should not be copied into general diagnostics. A consumer still could not identify the relevant result."
+        }
+      ],
+      "reason": "A stable revision reference identifies the approved input without duplicating address data into diagnostics. Support can locate the exact revision behind the label while preserving address access controls.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i016_overexpose",
+          "text": "Log the entire address and package record whenever a label is printed."
+        },
+        {
+          "optionId": "n09b06_i016_generic_result",
+          "text": "Store no reference and ask support to compare the current shipment state."
+        },
+        {
+          "optionId": "n09b06_i016_reconstruct_later",
+          "text": "Use the newest shipment revision when investigating an older label."
+        },
+        {
+          "optionId": "n09b06_i016_wrong_boundary",
+          "text": "Return only “printed” without identifying the approved data version."
+        },
+        {
+          "optionId": "n09b06_i016_bounded_explanation",
+          "text": "Attach the approved shipment revision ID to the label result."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A shipping service prints a label after an address correction. Which metadata makes the printed result explainable?",
+    "questionId": "ood-n09-b06-i016",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i017_bounded_explanation"
+    },
+    "constraints": [
+      "Attendees need an explanation showing the old and new session times and the change reason. Personal attendee details are not part of the notice.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The notice depends on the exact time change and reason. A focused event provides those values without exposing attendee records.",
+        "scenarioApplication": "Consumers can explain which session moved, from what time to what time, and why.",
+        "errorCorrection": "A generic event cannot generate a clear notice, while attendee data is not needed for that explanation.",
+        "boundaryOrTradeoff": "The notification service may personalize delivery using separately authorized attendee data; the domain event need not carry it.",
+        "transfer": "Include the before/after values and reason needed to explain a change, not unrelated records."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i017_overexpose",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says attendees need an explanation showing the old and new session times and the change reason. personal attendee details are not part of the notice. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i017_generic_result",
+          "text": "This leaves out information needed to explain the decision. The case requires attendees need an explanation showing the old and new session times and the change reason. personal attendee details are not part of the notice. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i017_reconstruct_later",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve attendees need an explanation showing the old and new session times and the change reason. personal attendee details are not part of the notice. when that decision occurs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i017_wrong_boundary",
+          "text": "That consumer or adapter does not own the authoritative change, and its view can diverge from it. The event must explain attendees need an explanation showing the old and new session times and the change reason. personal attendee details are not part of the notice. from the source that observed the decision."
+        }
+      ],
+      "reason": "The notice depends on the exact time change and reason. A focused event provides those values without exposing attendee records. Consumers can explain which session moved, from what time to what time, and why.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i017_reconstruct_later",
+          "text": "Ask each client to compare the current schedule with its cached copy."
+        },
+        {
+          "optionId": "n09b06_i017_wrong_boundary",
+          "text": "Let the venue adapter rewrite session data and produce an event from its internal state."
+        },
+        {
+          "optionId": "n09b06_i017_bounded_explanation",
+          "text": "Record the session ID and both scheduled times with the reason for the move."
+        },
+        {
+          "optionId": "n09b06_i017_overexpose",
+          "text": "Send every attendee record with the event so downstream systems can rebuild notices."
+        },
+        {
+          "optionId": "n09b06_i017_generic_result",
+          "text": "Record only that “schedule changed,” omitting the affected session and times."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A public-event scheduler moves a session after a venue becomes unavailable. What event should the scheduler expose?",
+    "questionId": "ood-n09-b06-i017",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b06_i018_bounded_explanation"
+    },
+    "constraints": [
+      "Technicians need the sensor revision, unit, and resulting offset to explain readings. Device credentials are managed separately.",
+      "Diagnostic output must respect the scenario’s stated privacy and information boundaries."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "An offset is interpretable only with the sensor revision and unit that produced it.",
+        "scenarioApplication": "Technicians can trace a reading to the calibration context actually used.",
+        "errorCorrection": "An unqualified number can be misread after the sensor or unit changes.",
+        "boundaryOrTradeoff": "Work-order records may add technician attribution separately; the measurement context is required to interpret the offset.",
+        "transfer": "Retain version and unit context alongside any diagnostic measurement."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i018_overexpose",
+          "text": "This leaves out information needed to explain the decision. The case requires technicians need the sensor revision, unit, and resulting offset to explain readings. device credentials are managed separately. A consumer still could not identify the relevant result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i018_generic_result",
+          "text": "This adds sensitive or unrelated data without helping explain the change. The case says technicians need the sensor revision, unit, and resulting offset to explain readings. device credentials are managed separately. The extra fields cross that boundary."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i018_reconstruct_later",
+          "text": "This substitutes a related action for the event the reader needs to understand. The case requires technicians need the sensor revision, unit, and resulting offset to explain readings. device credentials are managed separately. Keep the diagnostic bound to that decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b06_i018_wrong_boundary",
+          "text": "A later or mutable view may no longer represent the event being investigated. The record must preserve technicians need the sensor revision, unit, and resulting offset to explain readings. device credentials are managed separately. when that decision occurs."
+        }
+      ],
+      "reason": "An offset is interpretable only with the sensor revision and unit that produced it. Technicians can trace a reading to the calibration context actually used.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b06_i018_bounded_explanation",
+          "text": "Store the offset with sensor revision and measurement unit so later readings remain interpretable."
+        },
+        {
+          "optionId": "n09b06_i018_overexpose",
+          "text": "Store only the offset number and assume the sensor and unit never change."
+        },
+        {
+          "optionId": "n09b06_i018_generic_result",
+          "text": "Log the device credentials alongside calibration values."
+        },
+        {
+          "optionId": "n09b06_i018_reconstruct_later",
+          "text": "Use the latest sensor revision when displaying a prior calibration."
+        },
+        {
+          "optionId": "n09b06_i018_wrong_boundary",
+          "text": "Ask technicians to reconstruct the old unit from a printed work order."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B06",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A workshop tool is recalibrated after its sensor is replaced. What calibration record should be retained?",
+    "questionId": "ood-n09-b06-i018",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/",
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/domain-events-design-implementation"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

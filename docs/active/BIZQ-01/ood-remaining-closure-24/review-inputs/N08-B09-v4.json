@@ -1,0 +1,1226 @@
+[
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the disruption board, resolve the uncertain sequence under the submitted change ID; a later platform edit remains a separate operation.",
+        "errorCorrection": "A fresh attempt ID disconnects the retry from its original sequence, so the same platform change can be published again. A platform-wide key collapses separate edits; the case permits a later edit to this same platform. A missing reply does not show that the sequence was rejected; reversing a published change can contradict the board.",
+        "boundaryOrTradeoff": "The nearest alternative is generate a new change id after every lost acknowledgement and publish the same platform change again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i001_alt1_v3",
+          "text": "A fresh attempt ID disconnects the retry from its original sequence, so the same platform change can be published again."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i001_alt2_v3",
+          "text": "A platform-wide key collapses separate edits; the case permits a later edit to this same platform."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i001_alt3_v3",
+          "text": "A missing reply does not show that the sequence was rejected; reversing a published change can contradict the board."
+        }
+      ],
+      "reason": "The change ID follows one platform effect across a lost acknowledgement. Keeping sequence results with that identity leaves a later edit independently checkable.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Replay by change ID and read its sequence result; handle a later platform edit as another operation."
+        },
+        {
+          "optionId": "n08b09_i001_alt1_v3",
+          "text": "Give each attempt a fresh ID; a lost reply can publish the same platform change twice."
+        },
+        {
+          "optionId": "n08b09_i001_alt2_v3",
+          "text": "Deduplicate by platform ID; a later valid edit to that platform is mistaken for the first."
+        },
+        {
+          "optionId": "n08b09_i001_alt3_v3",
+          "text": "Treat silence as rejection and reverse the platform state, even if the change was published."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "On a public-transit disruption board, each platform change has a stable change ID and effective sequence. A controller can lose its acknowledgement after submitting a change, and another change to that same platform may be valid later. Which policy should govern a retry?",
+    "questionId": "ood-n08-b09-i001",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the energy-sharing console, resolve the uncertain reservation by its request ID and keep another interval separately identifiable.",
+        "errorCorrection": "A new attempt ID can create a second reservation after the meter already accepted the first window. A meter-wide key conflates separate intervals even though this scenario allows another reservation on that meter. The missing response is not evidence that the meter rejected the window; reporting rejection can misstate its reservation.",
+        "boundaryOrTradeoff": "The nearest alternative is assign a new id on timeout and try to reserve the same interval again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i002_alt1_v3",
+          "text": "A new attempt ID can create a second reservation after the meter already accepted the first window."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i002_alt2_v3",
+          "text": "A meter-wide key conflates separate intervals even though this scenario allows another reservation on that meter."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i002_alt3_v3",
+          "text": "The missing response is not evidence that the meter rejected the window; reporting rejection can misstate its reservation."
+        }
+      ],
+      "reason": "A timeout does not settle whether the meter reserved the window. The request ID lets the console reconcile that reservation without treating a later interval as the same request.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Resolve the window by request ID; reserve a separate interval as a distinct request."
+        },
+        {
+          "optionId": "n08b09_i002_alt1_v3",
+          "text": "Mint a new ID on timeout; the meter may reserve the accepted window twice."
+        },
+        {
+          "optionId": "n08b09_i002_alt2_v3",
+          "text": "Deduplicate by meter ID; a later interval on that meter is hidden as a duplicate."
+        },
+        {
+          "optionId": "n08b09_i002_alt3_v3",
+          "text": "Report the window rejected when the reply times out, though the meter may have accepted it."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a neighborhood energy-sharing service, each discharge reservation has a request ID. A meter may accept a window before the reply reaches the console, and the operator may later reserve another interval on that meter. Which retry policy fits these facts?",
+    "questionId": "ood-n08-b09-i002",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the caption stream, reconcile the outstanding switch ID before deciding whether to request another provider change.",
+        "errorCorrection": "A fresh ID can start the same provider transition again while the timed-out callback is still running. A stream-wide key merges two provider changes, though the prompt allows a later switch on that stream. A late callback is not proof of failure; restoring the previous provider can undo a switch that completed.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new switch id for every retry and apply each command to active streams again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i003_alt1_v3",
+          "text": "A fresh ID can start the same provider transition again while the timed-out callback is still running."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i003_alt2_v3",
+          "text": "A stream-wide key merges two provider changes, though the prompt allows a later switch on that stream."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i003_alt3_v3",
+          "text": "A late callback is not proof of failure; restoring the previous provider can undo a switch that completed."
+        }
+      ],
+      "reason": "The switch ID distinguishes a retry from the next provider transition. Looking up that switch avoids inferring failure from a callback that may still complete.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Look up the switch ID’s outcome; keep a later provider change distinct."
+        },
+        {
+          "optionId": "n08b09_i003_alt1_v3",
+          "text": "Issue a new ID after timeout; the callback may switch providers twice."
+        },
+        {
+          "optionId": "n08b09_i003_alt2_v3",
+          "text": "Deduplicate by stream ID; a later intentional provider change is blocked."
+        },
+        {
+          "optionId": "n08b09_i003_alt3_v3",
+          "text": "Restore the old provider when the callback response is late, even if the switch finished."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a live captioning studio, a provider-switch command has a switch ID and its callback may finish after the supervisor times out. The supervisor may later request another provider change on that stream. Which identity should the retry use?",
+    "questionId": "ood-n08-b09-i003",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the volunteer hub, look up the result for this swap ID; handle a later swap request as its own operation.",
+        "errorCorrection": "A new retry ID can repeat the pair change, potentially swapping the volunteers back after the first swap succeeded. A permanent pair key suppresses later work for the same volunteers, although the scenario allows another swap. The old roster display may be stale after both assignments changed; missing response alone cannot justify restoring it.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new swap id each time the manager retries after a lost response. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i004_alt1_v3",
+          "text": "A new retry ID can repeat the pair change, potentially swapping the volunteers back after the first swap succeeded."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i004_alt2_v3",
+          "text": "A permanent pair key suppresses later work for the same volunteers, although the scenario allows another swap."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i004_alt3_v3",
+          "text": "The old roster display may be stale after both assignments changed; missing response alone cannot justify restoring it."
+        }
+      ],
+      "reason": "The pair change belongs to one swap request, not to each network attempt. Its ID lets coordination recover the outcome without mistaking a later swap for a replay.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Resolve both assignments under the swap ID; identify a later swap separately."
+        },
+        {
+          "optionId": "n08b09_i004_alt1_v3",
+          "text": "Mint a new ID after timeout; the same volunteers may be swapped back."
+        },
+        {
+          "optionId": "n08b09_i004_alt2_v3",
+          "text": "Deduplicate by volunteer pair; a later requested swap is treated as the old one."
+        },
+        {
+          "optionId": "n08b09_i004_alt3_v3",
+          "text": "Restore the displayed roster when the reply is missing, even if both assignments changed."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a volunteer coordination hub, a swap request has one swap ID and both assignments may change before its response arrives. Coordinators can later request another swap involving the same volunteers. Which policy should resolve a retry?",
+    "questionId": "ood-n08-b09-i004",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the map editor, retrieve the outcome for this proposal ID and apply the stated base-revision rule to any distinct proposal.",
+        "errorCorrection": "A fresh ID turns a retry into another proposal, which can duplicate accepted geometry. A route-wide key cannot distinguish a replay from a separate proposal that should receive a revision conflict. A missing acknowledgement does not reject an accepted proposal; replacing current geometry with an old draft can lose the newer route.",
+        "boundaryOrTradeoff": "The nearest alternative is generate a fresh proposal id on retry so the geometry is uploaded again as a new edit. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i005_alt1_v3",
+          "text": "A fresh ID turns a retry into another proposal, which can duplicate accepted geometry."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i005_alt2_v3",
+          "text": "A route-wide key cannot distinguish a replay from a separate proposal that should receive a revision conflict."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i005_alt3_v3",
+          "text": "A missing acknowledgement does not reject an accepted proposal; replacing current geometry with an old draft can lose the newer route."
+        }
+      ],
+      "reason": "A proposal ID lets the editor recover the acceptance result, while a new proposal still goes through the current-revision check. The base revision remains part of the proposal’s meaning.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Resolve the proposal ID against its base revision; evaluate a distinct proposal separately."
+        },
+        {
+          "optionId": "n08b09_i005_alt1_v3",
+          "text": "Assign a new ID on retry; the accepted route geometry may be added twice."
+        },
+        {
+          "optionId": "n08b09_i005_alt2_v3",
+          "text": "Deduplicate by route ID; a distinct proposal is hidden instead of receiving a stale-base conflict."
+        },
+        {
+          "optionId": "n08b09_i005_alt3_v3",
+          "text": "Treat the missing response as rejection and replace current geometry with the editor’s old draft."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a local-first map editor, a route proposal has a proposal ID and base revision. Its response may be lost after acceptance; another proposal can arrive from an older base revision. What should the retry identity let the editor determine?",
+    "questionId": "ood-n08-b09-i005",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the campaign manager, recover the recorded reward result for this action ID without collapsing another action.",
+        "errorCorrection": "A new attempt ID can make the host award the same reward points a second time. A campaign-wide key treats all reward actions as one, despite the prompt allowing another action. No response does not prove the reward was rejected; a negative adjustment can conflict with an action already applied.",
+        "boundaryOrTradeoff": "The nearest alternative is generate a new action id after timeout and award the same points a second time. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i006_alt1_v3",
+          "text": "A new attempt ID can make the host award the same reward points a second time."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i006_alt2_v3",
+          "text": "A campaign-wide key treats all reward actions as one, despite the prompt allowing another action."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i006_alt3_v3",
+          "text": "No response does not prove the reward was rejected; a negative adjustment can conflict with an action already applied."
+        }
+      ],
+      "reason": "The action ID marks one reward effect within the campaign. Reusing it for recovery leaves other valid campaign actions available under their own identities.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return this action ID’s reward result; let another campaign action stand on its own."
+        },
+        {
+          "optionId": "n08b09_i006_alt1_v3",
+          "text": "Mint a fresh ID after a lost response; the host can award the same points again."
+        },
+        {
+          "optionId": "n08b09_i006_alt2_v3",
+          "text": "Deduplicate by campaign ID; a different valid reward action is suppressed."
+        },
+        {
+          "optionId": "n08b09_i006_alt3_v3",
+          "text": "Apply a negative reward when no response arrives, although the action may have committed."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a board-game campaign manager, a reward action has a campaign ID and action ID. The host may lose the response after submission, while another reward action in that campaign can still be valid. Which request policy should apply on retry?",
+    "questionId": "ood-n08-b09-i006",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the cold-chain console, resolve the hand-off by transfer ID before requesting a later carrier change.",
+        "errorCorrection": "A new ID can repeat an accepted ownership transfer instead of recovering its result. A shipment-wide key conflates a later hand-off with this transfer, though another carrier change is allowed. The dispatch timeout says nothing about whether the carrier accepted; restoring the former carrier can contradict the hand-off.",
+        "boundaryOrTradeoff": "The nearest alternative is mint a new transfer id after timeout and resend the same carrier change as another transfer. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i007_alt1_v3",
+          "text": "A new ID can repeat an accepted ownership transfer instead of recovering its result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i007_alt2_v3",
+          "text": "A shipment-wide key conflates a later hand-off with this transfer, though another carrier change is allowed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i007_alt3_v3",
+          "text": "The dispatch timeout says nothing about whether the carrier accepted; restoring the former carrier can contradict the hand-off."
+        }
+      ],
+      "reason": "The transfer ID identifies the ownership hand-off, while a later carrier change is a new operation. The console should reconcile the transfer rather than infer its outcome from the screen timeout.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the hand-off recorded for this transfer ID; separate a later carrier change."
+        },
+        {
+          "optionId": "n08b09_i007_alt1_v3",
+          "text": "Create a new ID on timeout; the shipment may change ownership twice."
+        },
+        {
+          "optionId": "n08b09_i007_alt2_v3",
+          "text": "Deduplicate by shipment ID; a later hand-off to another carrier is blocked."
+        },
+        {
+          "optionId": "n08b09_i007_alt3_v3",
+          "text": "Restore the former carrier on timeout, even if the new carrier accepted."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a cold-chain logistics console, a hand-off request has a transfer ID and the carrier may accept it before the dispatch screen times out. The shipment may later be handed to another carrier. How should a retry be identified?",
+    "questionId": "ood-n08-b09-i007",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the lending ledger, retrieve the allocation for this receipt ID before handling another repayment.",
+        "errorCorrection": "A fresh ID can debit the same repayment twice when the first debit preceded the lost receipt. A member-wide key collapses separate repayments; the case permits another repayment from that member. The client display may predate the debit; resetting it on a missing receipt can overwrite the actual ledger result.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new receipt id after timeout and debit the account again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i008_alt1_v3",
+          "text": "A fresh ID can debit the same repayment twice when the first debit preceded the lost receipt."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i008_alt2_v3",
+          "text": "A member-wide key collapses separate repayments; the case permits another repayment from that member."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i008_alt3_v3",
+          "text": "The client display may predate the debit; resetting it on a missing receipt can overwrite the actual ledger result."
+        }
+      ],
+      "reason": "The receipt ID ties the debit to one repayment attempt. A missing receipt does not settle the balance, and a later repayment from the same member remains distinct.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Resolve the allocation by receipt ID; keep another repayment under its own receipt."
+        },
+        {
+          "optionId": "n08b09_i008_alt1_v3",
+          "text": "Use a new ID after a lost receipt; the account may be debited twice."
+        },
+        {
+          "optionId": "n08b09_i008_alt2_v3",
+          "text": "Deduplicate by member ID; a later repayment from that member is rejected as old."
+        },
+        {
+          "optionId": "n08b09_i008_alt3_v3",
+          "text": "Restore the displayed balance when no receipt arrives, though the debit may have committed."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a cooperative lending ledger, each repayment has a receipt ID and the account may be debited before the receipt reaches the client. The same member can make another repayment later. What should the client use to resolve a retry?",
+    "questionId": "ood-n08-b09-i008",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the tournament service, recover the result tied to this event ID and evaluate a later legal event against the current match.",
+        "errorCorrection": "A fresh ID can apply the same result again after the bracket already advanced. A match-wide key merges distinct events, although this case allows a legal correction for the match. A missing response is not rejection; submitting the opposite result can conflict with an advancement already made.",
+        "boundaryOrTradeoff": "The nearest alternative is generate a new result-event id after timeout and advance the same bracket slot again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i009_alt1_v3",
+          "text": "A fresh ID can apply the same result again after the bracket already advanced."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i009_alt2_v3",
+          "text": "A match-wide key merges distinct events, although this case allows a legal correction for the match."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i009_alt3_v3",
+          "text": "A missing response is not rejection; submitting the opposite result can conflict with an advancement already made."
+        }
+      ],
+      "reason": "The event ID identifies one bracket transition. A distinct correction still has to be checked against current match state rather than treated as the same event.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the bracket result for this event ID; check a later correction against current match state."
+        },
+        {
+          "optionId": "n08b09_i009_alt1_v3",
+          "text": "Mint a new ID after timeout; the same result can advance the bracket twice."
+        },
+        {
+          "optionId": "n08b09_i009_alt2_v3",
+          "text": "Deduplicate by match ID; a separate legal correction event is discarded."
+        },
+        {
+          "optionId": "n08b09_i009_alt3_v3",
+          "text": "Assume rejection and submit the opposite result while the first event may have advanced the bracket."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a tournament bracket service, a result event has a match ID and event ID; the bracket may advance before the official sees a response. A later legal correction event can be submitted for that match. Which retry policy preserves this distinction?",
+    "questionId": "ood-n08-b09-i009",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the returns workflow, retrieve the result for this submission ID; handle corrected findings as a separate revision.",
+        "errorCorrection": "A new retry ID can duplicate the same findings as another submission. A return-wide key conflates the original inspection with a corrected revision. The local draft may not match findings already accepted; overwriting them on a lost acknowledgement can erase submitted facts.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new submission id for each retry and append another inspection of the same revision. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i010_alt1_v3",
+          "text": "A new retry ID can duplicate the same findings as another submission."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i010_alt2_v3",
+          "text": "A return-wide key conflates the original inspection with a corrected revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i010_alt3_v3",
+          "text": "The local draft may not match findings already accepted; overwriting them on a lost acknowledgement can erase submitted facts."
+        }
+      ],
+      "reason": "The submission ID identifies the frozen inspection revision. A corrected inspection is distinct, while an uncertain response should be reconciled against the submitted revision.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the stored findings for this submission ID; use a new revision for corrected findings."
+        },
+        {
+          "optionId": "n08b09_i010_alt1_v3",
+          "text": "Mint a new ID on retry; the same inspection can be recorded as two submissions."
+        },
+        {
+          "optionId": "n08b09_i010_alt2_v3",
+          "text": "Deduplicate by return ID; a corrected inspection revision is blocked as old."
+        },
+        {
+          "optionId": "n08b09_i010_alt3_v3",
+          "text": "Replace accepted findings with the local draft when the acknowledgement is missing."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a returns inspection workflow, each submitted inspection revision has a submission ID. The acknowledgement can be lost after submission, and a corrected inspection can later be filed for the same return. What should identify the retry?",
+    "questionId": "ood-n08-b09-i010",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the notebook, look up the publication associated with this run ID and treat changed inputs as another run.",
+        "errorCorrection": "A fresh ID can launch the same publication again even though the first job may have finished. A notebook-wide key collapses runs with different selected revisions. The job may have finished before its reply was lost; deleting its output can discard a successful publication.",
+        "boundaryOrTradeoff": "The nearest alternative is generate a new run id after timeout and publish the same output again as another result. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i011_alt1_v3",
+          "text": "A fresh ID can launch the same publication again even though the first job may have finished."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i011_alt2_v3",
+          "text": "A notebook-wide key collapses runs with different selected revisions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i011_alt3_v3",
+          "text": "The job may have finished before its reply was lost; deleting its output can discard a successful publication."
+        }
+      ],
+      "reason": "The run ID groups one input selection and its result. Recovering that result must not block a later run with changed revisions.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Resolve this run ID’s output; changed input revisions belong to a separate run."
+        },
+        {
+          "optionId": "n08b09_i011_alt1_v3",
+          "text": "Mint a fresh ID after timeout; the same publication may be created twice."
+        },
+        {
+          "optionId": "n08b09_i011_alt2_v3",
+          "text": "Deduplicate by notebook ID; a later run with new inputs is suppressed."
+        },
+        {
+          "optionId": "n08b09_i011_alt3_v3",
+          "text": "Delete a finished output because the response was lost, despite publication possibly succeeding."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a research-notebook platform, a publication run has a run ID and selected input revisions. The job may finish before its response arrives; a later run can select different inputs. Which identity policy should handle a retry?",
+    "questionId": "ood-n08-b09-i011",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the annotation workspace, retry delivery for this comment ID and preserve another comment as separate work.",
+        "errorCorrection": "A fresh retry ID can create a duplicate comment when acceptance already happened. A thread-wide key merges separate comments even though the scenario permits another comment in that thread. A failed notification response does not undo acceptance of the comment.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new comment id for every notification retry and append the same text again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i012_alt1_v3",
+          "text": "A fresh retry ID can create a duplicate comment when acceptance already happened."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i012_alt2_v3",
+          "text": "A thread-wide key merges separate comments even though the scenario permits another comment in that thread."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i012_alt3_v3",
+          "text": "A failed notification response does not undo acceptance of the comment."
+        }
+      ],
+      "reason": "The comment ID links delivery retry to the accepted comment. A thread can contain another comment, so thread identity is broader than one submitted comment.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Replay delivery for this comment ID; give an additional comment its own identity."
+        },
+        {
+          "optionId": "n08b09_i012_alt1_v3",
+          "text": "Use a new ID for every notification retry; the accepted comment may be duplicated."
+        },
+        {
+          "optionId": "n08b09_i012_alt2_v3",
+          "text": "Deduplicate by thread ID; another reviewer comment is hidden as a retry."
+        },
+        {
+          "optionId": "n08b09_i012_alt3_v3",
+          "text": "Delete the accepted comment when its notification response is missing."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a collaborative annotation workspace, each comment submission has a comment ID and its notification can be retried after acceptance. A reviewer may also add another comment to the same thread. Which policy should govern retries?",
+    "questionId": "ood-n08-b09-i012",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the field-inspection app, resolve the frozen draft under its submission ID and submit later edits separately.",
+        "errorCorrection": "A new ID can send the same offline revision again after the server already completed it. A device-wide key conflates this submission with later edited work from the same device. A missing server response does not confirm completion; closing the draft can mislead the operator.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new submission id each time the device retries after reconnecting. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i013_alt1_v3",
+          "text": "A new ID can send the same offline revision again after the server already completed it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i013_alt2_v3",
+          "text": "A device-wide key conflates this submission with later edited work from the same device."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i013_alt3_v3",
+          "text": "A missing server response does not confirm completion; closing the draft can mislead the operator."
+        }
+      ],
+      "reason": "The frozen revision belongs to one submission ID. Recovery should report that submission’s status without turning later edits into the same request.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return status for this submission ID and frozen revision; later edits form another submission."
+        },
+        {
+          "optionId": "n08b09_i013_alt1_v3",
+          "text": "Mint a new ID after reconnecting; the frozen inspection may be submitted twice."
+        },
+        {
+          "optionId": "n08b09_i013_alt2_v3",
+          "text": "Deduplicate by device ID; a later edited inspection from that device is blocked."
+        },
+        {
+          "optionId": "n08b09_i013_alt3_v3",
+          "text": "Treat no response as completion and close the current draft without server confirmation."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a mobile field-inspection app, an offline submission has a submission ID and frozen draft revision. The server may finish it before the device receives a response, and later edits can be submitted for the same inspection. What should identify a retry?",
+    "questionId": "ood-n08-b09-i013",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the invoice exchange, reconcile the existing issue ID before creating a corrected reissue; this avoids confusing transport uncertainty with rejection.",
+        "errorCorrection": "A new retry ID can create a second chargeable issue when the first was accepted. A customer-wide key merges the corrected reissue with the original issue, though finance needs to trace them separately. A missing response does not establish rejection; another issue before reconciliation risks a duplicate charge.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new issue id after every timeout and resend the invoice as a new chargeable issue. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i014_alt1_v3",
+          "text": "A new retry ID can create a second chargeable issue when the first was accepted."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i014_alt2_v3",
+          "text": "A customer-wide key merges the corrected reissue with the original issue, though finance needs to trace them separately."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i014_alt3_v3",
+          "text": "A missing response does not establish rejection; another issue before reconciliation risks a duplicate charge."
+        }
+      ],
+      "reason": "The issue ID lets finance trace whether the original invoice issue was accepted or rejected. A correction is a separate reissue, not evidence that a lost response rejected the first issue.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Look up this issue ID’s outcome; treat a corrected reissue as a separate invoice issue."
+        },
+        {
+          "optionId": "n08b09_i014_alt1_v3",
+          "text": "Give each retry a new ID; an accepted issue can be charged again."
+        },
+        {
+          "optionId": "n08b09_i014_alt2_v3",
+          "text": "Deduplicate by customer ID; a corrected invoice issue is suppressed with the first."
+        },
+        {
+          "optionId": "n08b09_i014_alt3_v3",
+          "text": "Assume no reply means rejection and submit another chargeable issue before reconciling."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a digital invoice exchange, each issue has a stable issue ID; the exchange may accept it before the response is lost. Finance can correct and reissue an invoice after reconciling the first, and must avoid charging the same issue twice. Which retry policy should the client use?",
+    "questionId": "ood-n08-b09-i014",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the access controller, recover the revocation outcome by command ID; do not merge an authorized later reactivation with it.",
+        "errorCorrection": "A fresh ID can issue the same revocation command again without learning the first outcome. A badge-wide key prevents a distinct authorized reactivation from being represented. The door may already have applied revocation; restoring active state from silence can contradict it.",
+        "boundaryOrTradeoff": "The nearest alternative is use a toggle command and send it again whenever the administrator sees no acknowledgement. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i015_alt1_v3",
+          "text": "A fresh ID can issue the same revocation command again without learning the first outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i015_alt2_v3",
+          "text": "A badge-wide key prevents a distinct authorized reactivation from being represented."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i015_alt3_v3",
+          "text": "The door may already have applied revocation; restoring active state from silence can contradict it."
+        }
+      ],
+      "reason": "The command ID tracks the requested revocation through a missing acknowledgement. A later reactivation changes the desired state and must remain separately expressible.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Replay the recorded revocation for this command ID; keep later reactivation separate."
+        },
+        {
+          "optionId": "n08b09_i015_alt1_v3",
+          "text": "Mint a new ID after timeout; the door may apply the revocation again as a new command."
+        },
+        {
+          "optionId": "n08b09_i015_alt2_v3",
+          "text": "Deduplicate by badge ID; an authorized later reactivation is blocked."
+        },
+        {
+          "optionId": "n08b09_i015_alt3_v3",
+          "text": "Restore active state when the reply is lost, even if the door applied revocation."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a smart-building access controller, a badge revocation has a command ID and a door may apply it before the administrator sees the acknowledgement. An authorized reactivation can happen later. Which identity policy should handle a retry?",
+    "questionId": "ood-n08-b09-i015",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the label service, look up the result for this print-job ID and keep a later approved revision distinct.",
+        "errorCorrection": "A fresh retry ID can produce a second physical label for the same shipment revision. A shipment-wide key conflates a corrected approved revision with the earlier print job. A missing acknowledgement does not show that the printer failed; another print can duplicate a completed label.",
+        "boundaryOrTradeoff": "The nearest alternative is generate a fresh print-job id whenever the operator retries a missing acknowledgement. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i016_alt1_v3",
+          "text": "A fresh retry ID can produce a second physical label for the same shipment revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i016_alt2_v3",
+          "text": "A shipment-wide key conflates a corrected approved revision with the earlier print job."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i016_alt3_v3",
+          "text": "A missing acknowledgement does not show that the printer failed; another print can duplicate a completed label."
+        }
+      ],
+      "reason": "The job ID is tied to the approved shipment revision, so it can identify the print result after a lost response. A corrected revision is a separate print job.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Resolve the print-job ID and shipment revision; a new approved revision gets another job."
+        },
+        {
+          "optionId": "n08b09_i016_alt1_v3",
+          "text": "Mint a new ID after timeout; the same label may print twice."
+        },
+        {
+          "optionId": "n08b09_i016_alt2_v3",
+          "text": "Deduplicate by shipment ID; a label for a corrected approved revision is blocked."
+        },
+        {
+          "optionId": "n08b09_i016_alt3_v3",
+          "text": "Submit another print as rejection, though the first label may already exist."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a package-label service, each print job ID is tied to an approved shipment revision. The printer may finish before its acknowledgement arrives, and a corrected approved revision may later need a label. Which retry identity fits?",
+    "questionId": "ood-n08-b09-i016",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the scheduler, reconcile this move ID before considering another move against current room capacity.",
+        "errorCorrection": "A new retry ID can repeat a booking move already committed. A booking-wide key hides later moves for that booking, though the case permits them. The old display can be stale; a missing response does not establish that the first move failed.",
+        "boundaryOrTradeoff": "The nearest alternative is create a new move id after a timeout and move the booking from its current room again. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i017_alt1_v3",
+          "text": "A new retry ID can repeat a booking move already committed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i017_alt2_v3",
+          "text": "A booking-wide key hides later moves for that booking, though the case permits them."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i017_alt3_v3",
+          "text": "The old display can be stale; a missing response does not establish that the first move failed."
+        }
+      ],
+      "reason": "The move ID is the recovery handle for one booking transition. A later move is assessed as a new request against current capacity.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the result for this move ID; evaluate a distinct later move against current capacity."
+        },
+        {
+          "optionId": "n08b09_i017_alt1_v3",
+          "text": "Mint a new ID after timeout; the booking can be moved twice."
+        },
+        {
+          "optionId": "n08b09_i017_alt2_v3",
+          "text": "Deduplicate by booking ID; a later requested move is treated as the old move."
+        },
+        {
+          "optionId": "n08b09_i017_alt3_v3",
+          "text": "Reserve from the old room display as rejection, though the first move may have committed."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a multi-tenant rehearsal scheduler, a room-move request has a move ID and may commit before the coordinator receives its response. A later move for the booking can still be requested. Which policy should resolve a retry?",
+    "questionId": "ood-n08-b09-i017",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A retry key identifies one requested effect and its recorded outcome; it must be scoped narrowly enough to distinguish a replay from a genuinely new command.",
+        "scenarioApplication": "For the exhibit controller, retrieve the desired state associated with this command ID and keep a later mode change distinct.",
+        "errorCorrection": "A new attempt ID can repeat the same mode command without resolving its first outcome. An exhibit-wide key conflates a later authorized mode change with the current command. The mode may already have changed; sending the opposite command from silence can undo the accepted state.",
+        "boundaryOrTradeoff": "The nearest alternative is implement maintenance as a toggle and retry it when the response is late. It looks like a fresh attempt, but the stem says the caller is replaying the same operation after an uncertain response and gives it a stable identity.",
+        "transfer": "Bind the request identity to the effect whose outcome may be replayed. Reuse it for that same effect, and use a distinct identity for a genuinely new action or revision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i018_alt1_v3",
+          "text": "A new attempt ID can repeat the same mode command without resolving its first outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i018_alt2_v3",
+          "text": "An exhibit-wide key conflates a later authorized mode change with the current command."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b09_i018_alt3_v3",
+          "text": "The mode may already have changed; sending the opposite command from silence can undo the accepted state."
+        }
+      ],
+      "reason": "The command ID tracks one desired-state request rather than each transmission. A later authorized mode change has a different purpose and must not be folded into its retry.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Return the desired state for this command ID; represent a later mode change separately."
+        },
+        {
+          "optionId": "n08b09_i018_alt1_v3",
+          "text": "Mint a new ID on timeout; the same maintenance command may run again."
+        },
+        {
+          "optionId": "n08b09_i018_alt2_v3",
+          "text": "Deduplicate by exhibit ID; a later authorized mode change is blocked."
+        },
+        {
+          "optionId": "n08b09_i018_alt3_v3",
+          "text": "Send the opposite command when acknowledgement is missing, even if maintenance was set."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B09",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a museum exhibit controller, each maintenance command has a command ID and desired mode; the controller may change modes before the operator receives an acknowledgement. A later authorized mode change is possible. Which identity policy should govern a retry?",
+    "questionId": "ood-n08-b09-i018",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

@@ -1,0 +1,370 @@
+{
+  "schemaVersion": "bizq01-n08-b02-v2-independent-semantic-qa-v1",
+  "review": "SEMANTIC-N08-B02-v2-QA",
+  "verdict": "REVISE",
+  "scope": "Bounded N08-B02 v2 choice-text correction; reuses v1 semantic/identity assessment for unchanged fields. Final cohort acceptance remains blocked by visible answer-position disclosure.",
+  "inputs": {
+    "currentProposal": {
+      "path": "review-inputs/N08-B02-v2.json",
+      "sha256": "b1cf5583d99cd754ee91fe159134d84cdc7a5012a1886ddfefb3fd1d8495d5d7"
+    },
+    "baselineProposal": {
+      "path": "review-inputs/N08-B02-v1.json",
+      "sha256": "bd6dd7da862836111d3f03d0655884b45a69635e8cd2af3eef8a919c3fb2dc1c"
+    },
+    "manifest": {
+      "path": "N08-N09-MANIFEST.json",
+      "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    },
+    "contract": {
+      "path": "N08-N09-CONTRACT.json",
+      "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+    },
+    "priorSemanticReview": {
+      "path": "SEMANTIC-N08-B02-v1-QA.md",
+      "sha256": "2f9157144dc00d42d144d8dbb48b3ff1bffdaaa1c28d3bc28aa011524ebe2d83"
+    },
+    "priorSemanticReviewJson": {
+      "path": "SEMANTIC-N08-B02-v1-QA.json",
+      "sha256": "2c285a281b9c9fd5ce564f948320c8bdf58d815d34b39663e95870275cfcf2da"
+    },
+    "authorCorrectionJson": {
+      "path": "AUTHOR-N08-B02-v2.json",
+      "sha256": "674a19d033336406ea2aa660ec8c16806f3194c83f029483bfb296277d4f28a2"
+    },
+    "authorCorrectionMarkdown": {
+      "path": "AUTHOR-N08-B02-v2.md",
+      "sha256": "628915dc81823a03d6151fcd5aeae07943106ced45b4e54c4189039c19dacfb6"
+    }
+  },
+  "method": {
+    "wholeObjectFingerprint": "SHA-256 of repository canonicalJson(question), recursively sorted object keys",
+    "answerLookup": "question.answer.optionId",
+    "fullObjectsReviewed": 18,
+    "exactDelta": "For each object, only the interaction.options text corresponding to answer.optionId changed from v1.",
+    "acceptedChoiceIndex0Count": 18,
+    "shortestCueIsGate": false,
+    "strictlyShortestAcceptedKeys": 16,
+    "acceptedShorterThanAtLeastOneDistractor": 18
+  },
+  "findings": [
+    {
+      "id": "N08-B02-v2-F1",
+      "status": "RESOLVED",
+      "requirement": "BIZQ-01 §4.3: options should avoid systematic longest-correct form cues while retaining plausible alternatives.",
+      "basis": "The current keys directly express the item-specific coordination boundary and the v1 semantic review supports each answer. The v2 delta is limited to keyed wording; the previous lengthy-answer contrast has been removed. This is a qualitative disposition, not a word-count threshold."
+    },
+    {
+      "id": "N08-B02-v2-F2",
+      "status": "BLOCKING",
+      "requirement": "BIZQ-01 §4.3: options should avoid systematic form cues that permit answer selection without comparing the decisions.",
+      "basis": "In 16 items the accepted answer is strictly shorter than every distractor; in all 18 it is shorter than at least one distractor. The repeated contrast is a concise boundary answer against longer descriptions of flawed workflows. This count is supporting evidence, not a numerical gate; the finding is the cohort-level inverse form cue.",
+      "examples": [
+        {"questionId": "ood-n08-b02-i003", "acceptedLength": 59, "shortestDistractorLength": 88},
+        {"questionId": "ood-n08-b02-i014", "acceptedLength": 68, "shortestDistractorLength": 97}
+      ],
+      "correction": "Keep supported keys concise while revising distractors into comparably decision-specific, plausible alternatives; do not pad choices to a length target."
+    },
+    {
+      "id": "N08-B02-v2-F3",
+      "status": "BLOCKING",
+      "requirement": "BIZQ-01 §4.2 and §D: preserve a meaningful learner decision; prepare and persist mixed option order for interactions that allow it, while scoring/feedback use option IDs.",
+      "basis": "Every accepted answer is at option index 0 in the frozen v2 cohort. The current canonical choice-view and controls map supplied options through in order, with no shuffle in this path. These choice_single coordination questions have no order-dependent semantics, so the repeated first-position key exposes a cohort-wide positional shortcut.",
+      "correction": "Prepare a mixed order once per session occurrence and persist that order for rerender/resume. Keep answer and feedback binding by option ID; do not change question/option meaning solely to mask order."
+    }
+  ],
+  "implementationEvidence": [
+    {
+      "path": "patternly/src/features/practice/canonicalQuestionViewModel.ts",
+      "sha256": "dcf17cee634856644f9f077665033f305d98f75b5d16737f4630cddc789ac1e3",
+      "finding": "Maps received option order into the view model."
+    },
+    {
+      "path": "patternly/src/features/practice/CertificationPracticeSessionScreen.tsx",
+      "sha256": "acd4aedb8c25a155fe3ee93d5254e932fb2def0b92b6218355de1193cea7109f",
+      "finding": "Passes question option order into control view model."
+    },
+    {
+      "path": "patternly/src/features/practice/PracticeResponseControls.tsx",
+      "sha256": "bd6238fe06ab1481bc2a3a3ca4c766619758f15ff8e3cf4ca867fde51c21576f",
+      "finding": "Renders supplied control.options in array order."
+    },
+    {
+      "path": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+      "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3",
+      "finding": "§4.2, §D and Step B address meaningful decisions, mixed persisted order, and position-dominance risk."
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n08-b02-i001",
+      "beforeCanonicalJsonSha256": "569a194adcf420baaff30db9aa6f97ddc9a185f8868136578fb9886ed21d67f5",
+      "currentCanonicalJsonSha256": "dcb16964bbde6f35c3b7531a783f741b79a8304c72b82342d651177076c51e3c",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Check settlement and serialize release for that order.",
+      "keyCharacterCount": 54,
+      "longestWrongCharacterCount": 109,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i002",
+      "beforeCanonicalJsonSha256": "98247352ee6b4a435e3f2eab78cc9a07d7c8de9980b6d1036c6ce3973a9eba5d",
+      "currentCanonicalJsonSha256": "6809a167ea6be2a06b73de95102242bf2aeeec093b83de6f7b93bc2ea97ac955",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Apply each line's updates in effective-sequence order.",
+      "keyCharacterCount": 54,
+      "longestWrongCharacterCount": 88,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i003",
+      "beforeCanonicalJsonSha256": "cd89b21d31bf42994a5d10d2bf4f3e5eb5d6cde5419818c0ca330d43420db1f8",
+      "currentCanonicalJsonSha256": "0f4e3567dc7d62a947075a555265fad78c347e9156139f0da5fd77ad09b7b2a0",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Serialize each meter's overlap check and reservation write.",
+      "keyCharacterCount": 59,
+      "longestWrongCharacterCount": 103,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i004",
+      "beforeCanonicalJsonSha256": "14b7ae81b37682c7e97116bc86abd479dde6ed69385711670bfcc0fe73292898",
+      "currentCanonicalJsonSha256": "54dfdf1e4d58f3a16e43a0b9e394ff352134916dbf7acd90e0a2b10a1513f66e",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Pin each stream to one immutable provider configuration; switch only new streams.",
+      "keyCharacterCount": 81,
+      "longestWrongCharacterCount": 115,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i005",
+      "beforeCanonicalJsonSha256": "365625701b53f0d0239a84c695d4d95af26c5b66caa0862529e81ab0bfc50514",
+      "currentCanonicalJsonSha256": "275a8297394ffd8a53205e2749030eb3edb3ab3f578b08d22f05e76b271b9326",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Validate and commit the two assignments together at the roster owner.",
+      "keyCharacterCount": 69,
+      "longestWrongCharacterCount": 125,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i006",
+      "beforeCanonicalJsonSha256": "4f3799716a4d266f68ac3d91005b48975b41369cf961c3905d424e388b28ee2d",
+      "currentCanonicalJsonSha256": "f7da4a28923ad697d0dc7dc0ab196a3e3d75a9032e28bdf956c06afdf19ca91d",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Reject proposals based on a superseded route revision.",
+      "keyCharacterCount": 54,
+      "longestWrongCharacterCount": 98,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i007",
+      "beforeCanonicalJsonSha256": "1e7bf7223fda6851a17c2789d703aad8ef074e620e69b9860e654568300d6c30",
+      "currentCanonicalJsonSha256": "b0b332bc1ac4e0a15734da8d43ad94fe50720c1f1987c514308b788f6e7395b4",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Evaluate campaign commands against the latest phase at the campaign owner.",
+      "keyCharacterCount": 74,
+      "longestWrongCharacterCount": 117,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i008",
+      "beforeCanonicalJsonSha256": "c19ad72cb843d2241e7d28972850a46ec8c871564ac67a94c05a4aa20e3b35f4",
+      "currentCanonicalJsonSha256": "8df76252f5f349d670e3722df77f4aea2940b079984b5c754f9f883867724d6e",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Transfer one versioned shipment; activate its carrier only for the accepted version.",
+      "keyCharacterCount": 84,
+      "longestWrongCharacterCount": 110,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i009",
+      "beforeCanonicalJsonSha256": "77e4b10dc26f8b2b974b46490f0303d1c49c84c4d5140ec5f6291a0bba2e3a32",
+      "currentCanonicalJsonSha256": "e933ed814d8dd58360162182831b5712bca36874036c665b179ddf43c21f41cb",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Validate and commit the allocation with its matching ledger entry as one account operation.",
+      "keyCharacterCount": 91,
+      "longestWrongCharacterCount": 102,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": false,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i010",
+      "beforeCanonicalJsonSha256": "b3630b278bdaa0a17058c979d1a57209ba80c27a670dc5b0dd63e307a4e2cc82",
+      "currentCanonicalJsonSha256": "7e54ec371dca227f78774eb3c6a2505dc91dc632aba03d92b813738bfebd3196",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Accept only the first legal terminal transition at the match owner.",
+      "keyCharacterCount": 67,
+      "longestWrongCharacterCount": 108,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i011",
+      "beforeCanonicalJsonSha256": "5f147e1df35f3b202356b4343da0e66a38d248d3a9dbae0f76ef1376a39582bd",
+      "currentCanonicalJsonSha256": "b14156fce45370803c7b683400c79c3508a84294b4bea2a6b858d0ef0f61b4d2",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Give refund review the accepted, immutable inspection revision.",
+      "keyCharacterCount": 63,
+      "longestWrongCharacterCount": 103,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i012",
+      "beforeCanonicalJsonSha256": "bef242351389ee3f4d61c1dc68888f1a600848a688e1b538796a347e22f93e08",
+      "currentCanonicalJsonSha256": "f23e3ee4f4eda5cea7f25e016966790ccd05206f2534cfd2587b40f8993234a8",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Pin publication input to its selected dataset and code revisions.",
+      "keyCharacterCount": 65,
+      "longestWrongCharacterCount": 105,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i013",
+      "beforeCanonicalJsonSha256": "4550ba6b392cb13b559544afce5bedf14c4187657246cec288705cdc85495f5a",
+      "currentCanonicalJsonSha256": "774faf386d259638ad4126be3e732c385880aec5bcffc8b3a51389e359bec3b2",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Notify using the accepted comment's stored author and revision.",
+      "keyCharacterCount": 63,
+      "longestWrongCharacterCount": 105,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i014",
+      "beforeCanonicalJsonSha256": "659ea7f62bd24f2431d594fc24549f0b4103ce2031597fb51b0a90a2d8fcddc9",
+      "currentCanonicalJsonSha256": "60796eb98dc3c52ca0c3f9e5720d67ea32ca8c9280e72fae18e7313db9ef8dd5",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Bind completion to the frozen submission; keep later edits separate.",
+      "keyCharacterCount": 68,
+      "longestWrongCharacterCount": 119,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i015",
+      "beforeCanonicalJsonSha256": "023149d741ec0373079dcb3bad2b6999fa43f167518a7faae602d2c328f2fd4b",
+      "currentCanonicalJsonSha256": "5edd9bc858f1aeef374523c7252920547d7194062780142558da6fa9f827000f",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Attach each exchange result to the submitted invoice revision.",
+      "keyCharacterCount": 62,
+      "longestWrongCharacterCount": 108,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i016",
+      "beforeCanonicalJsonSha256": "20d77c399ee243c1b2da49ce5e9881939c5a829ebf1728e187dcb90f25b2eeff",
+      "currentCanonicalJsonSha256": "79e62db7a7c10f614cfe525030f49acb712241cb38dbeaac79f7eeb6c83e4b22",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Check the current badge revision at the grant decision.",
+      "keyCharacterCount": 55,
+      "longestWrongCharacterCount": 97,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": false,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i017",
+      "beforeCanonicalJsonSha256": "63e89d725470679e853af70880a4feeeb4ea9be13fec06a5bd75fb2535565109",
+      "currentCanonicalJsonSha256": "87147169ee9f52dd4c6907d4ff81c111eeac98a621f1142a36373081dfc5d841",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Give each print job an immutable approved shipment revision.",
+      "keyCharacterCount": 60,
+      "longestWrongCharacterCount": 95,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    },
+    {
+      "questionId": "ood-n08-b02-i018",
+      "beforeCanonicalJsonSha256": "123a29e37abcaa6d12971ceb4be28b5cb28967301ab42d54055d150745c59a32",
+      "currentCanonicalJsonSha256": "c165084b63a663163f87a11bd58827ca125627716edf901d3ab076cea5aa9f21",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedOptionMeaning": "Same coordination/ownership decision applied to the case invariant; v2 changes only wording.",
+      "currentKeyText": "Check overlap and accept each reservation in one room-scoped operation.",
+      "keyCharacterCount": 71,
+      "longestWrongCharacterCount": 95,
+      "acceptedOptionIndex": 0,
+      "shorterThanEveryDistractor": true,
+      "shorterThanAtLeastOneDistractor": true
+    }
+  ]
+}

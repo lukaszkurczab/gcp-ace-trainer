@@ -1,0 +1,747 @@
+{
+  "schemaVersion": "bizq01-ood-n08-author-notes-v1",
+  "sourceFile": "patternly-content/content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B09.json",
+  "sourceSha256": "093bdea05d1a2e9854c474025fea368aac46a1c70f57f4a8371c990f0461e15d",
+  "proposalFile": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/proposals/N08-B09.json",
+  "proposalSha256": "74cf1619df104dd12c649c8994241400a171342a6401792664c4de2098cc7b8a",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n08-b09-i001",
+      "questionId": "ood-n08-b09-i001",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A public-transit disruption board, Each platform change has a stable change ID and effective sequence. If the acknowledgement is lost, the controller retries the same change ID; a distinct later change has a different ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Generate a new change ID after every lost acknowledgement and publish the same platform change again.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““passengers receive the change in the order in which it becomes effective”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "coordinator_exports_state",
+        "inheritance_for_reuse",
+        "representation_leaks",
+        "speculative_indirection"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_01",
+          "text": "Generate a new change ID after every lost acknowledgement and publish the same platform change again."
+        },
+        {
+          "optionId": "dedupe_too_broad_01",
+          "text": "Deduplicate all updates from one controller, even when their change IDs and effective sequences differ."
+        },
+        {
+          "optionId": "assume_no_commit_01",
+          "text": "Treat a missing acknowledgement as proof the platform change was rejected and reverse it."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i002",
+      "questionId": "ood-n08-b09-i002",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A neighborhood energy-sharing service, Every discharge reservation has a request ID. A timeout may occur after the meter accepted the window; retrying the same ID must return the original reservation result, while a new ID is a new request. Which retry identity should the operation honor?",
+      "nearestAlternative": "Assign a new ID on timeout and try to reserve the same interval again.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““a meter cannot be committed twice for an overlapping window”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "coordinator_exports_state",
+        "inheritance_for_reuse",
+        "representation_leaks",
+        "speculative_indirection"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_02",
+          "text": "Assign a new ID on timeout and try to reserve the same interval again."
+        },
+        {
+          "optionId": "dedupe_too_broad_02",
+          "text": "Deduplicate by meter only, so a later non-overlapping reservation is ignored."
+        },
+        {
+          "optionId": "assume_no_commit_02",
+          "text": "Assume timeout means no reservation occurred and tell the operator to submit a new request."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i003",
+      "questionId": "ood-n08-b09-i003",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A live captioning studio, A provider-switch command has a switch ID. The callback can finish after the supervisor times out; retrying that same switch must not create a second stream transition, while a later switch uses a different ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new switch ID for every retry and apply each command to active streams again.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““the current stream keeps its timing and error contract”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "inheritance_for_reuse",
+        "representation_leaks",
+        "speculative_indirection",
+        "coordinator_exports_state"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_03",
+          "text": "Create a new switch ID for every retry and apply each command to active streams again."
+        },
+        {
+          "optionId": "dedupe_too_broad_03",
+          "text": "Deduplicate every switch from the supervisor for the whole day, including later intentional provider changes."
+        },
+        {
+          "optionId": "assume_no_commit_03",
+          "text": "Treat an absent callback as rejection and restore the previous provider without checking the switch result."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i004",
+      "questionId": "ood-n08-b09-i004",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A volunteer coordination hub, A two-volunteer swap uses one swap ID. The response can be lost after both assignments changed; a retry must return that swap's result instead of swapping them back. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new swap ID each time the manager retries after a lost response.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““skills and availability constraints hold for both assignments”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "representation_leaks",
+        "speculative_indirection",
+        "coordinator_exports_state",
+        "inheritance_for_reuse"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_04",
+          "text": "Create a new swap ID each time the manager retries after a lost response."
+        },
+        {
+          "optionId": "dedupe_too_broad_04",
+          "text": "Deduplicate all swaps involving either volunteer, even when the requested pair or date differs."
+        },
+        {
+          "optionId": "assume_no_commit_04",
+          "text": "Treat no response as a failed swap and issue a reverse swap to restore the displayed roster."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i005",
+      "questionId": "ood-n08-b09-i005",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A local-first map editor, A proposal carries a proposal ID and base route revision. A lost response after acceptance can be retried with the same ID; a different proposal based on an old revision must still receive a conflict. Which retry identity should the operation honor?",
+      "nearestAlternative": "Generate a fresh proposal ID on retry so the geometry is uploaded again as a new edit.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““conflicts are explicit and never silently overwrite accepted geometry”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "speculative_indirection",
+        "coordinator_exports_state",
+        "inheritance_for_reuse",
+        "representation_leaks"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_05",
+          "text": "Generate a fresh proposal ID on retry so the geometry is uploaded again as a new edit."
+        },
+        {
+          "optionId": "dedupe_too_broad_05",
+          "text": "Deduplicate every proposal from one device, including a genuinely new route edit."
+        },
+        {
+          "optionId": "assume_no_commit_05",
+          "text": "Treat any lost upload response as a conflict and discard the proposal without checking whether it committed."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i006",
+      "questionId": "ood-n08-b09-i006",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A board-game campaign manager, A reward command has a campaign ID and action ID. The host may retry after losing the response; the same action must not award points twice, but a different action in the campaign remains valid. Which retry identity should the operation honor?",
+      "nearestAlternative": "Generate a new action ID after timeout and award the same points a second time.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““reward rules depend on the current legal campaign state”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "coordinator_exports_state",
+        "inheritance_for_reuse",
+        "representation_leaks",
+        "speculative_indirection"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_06",
+          "text": "Generate a new action ID after timeout and award the same points a second time."
+        },
+        {
+          "optionId": "dedupe_too_broad_06",
+          "text": "Deduplicate all rewards for the character, even when they have different action IDs."
+        },
+        {
+          "optionId": "assume_no_commit_06",
+          "text": "Treat a lost response as an unaccepted reward and apply a compensating negative reward."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i007",
+      "questionId": "ood-n08-b09-i007",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A cold-chain logistics console, A hand-off request includes a transfer ID. The carrier may accept before the dispatch screen times out; retrying the same transfer must not create another ownership change. Which retry identity should the operation honor?",
+      "nearestAlternative": "Mint a new transfer ID after timeout and resend the same carrier change as another transfer.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““temperature restrictions and hand-off ownership travel with the shipment”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "coordinator_exports_state",
+        "inheritance_for_reuse",
+        "representation_leaks",
+        "speculative_indirection"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_07",
+          "text": "Mint a new transfer ID after timeout and resend the same carrier change as another transfer."
+        },
+        {
+          "optionId": "dedupe_too_broad_07",
+          "text": "Deduplicate all hand-offs for a shipment forever, including later legitimate carrier changes."
+        },
+        {
+          "optionId": "assume_no_commit_07",
+          "text": "Tell dispatch the hand-off failed whenever its acknowledgement is missing, then assign the old carrier again."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i008",
+      "questionId": "ood-n08-b09-i008",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A cooperative lending ledger, A repayment carries a receipt ID. The account may be debited before the client receives the receipt; retrying the same receipt ID must not reduce the balance twice, while another receipt remains a new repayment. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new receipt ID after timeout and debit the account again.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““a repayment cannot reduce the outstanding balance below zero”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "inheritance_for_reuse",
+        "representation_leaks",
+        "speculative_indirection",
+        "coordinator_exports_state"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_08",
+          "text": "Create a new receipt ID after timeout and debit the account again."
+        },
+        {
+          "optionId": "dedupe_too_broad_08",
+          "text": "Deduplicate all repayments from one steward, even when they have different receipt IDs."
+        },
+        {
+          "optionId": "assume_no_commit_08",
+          "text": "Assume a missing receipt means no debit occurred and overwrite the balance from the earlier screen value."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i009",
+      "questionId": "ood-n08-b09-i009",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A tournament bracket service, A terminal result has a match ID and result-event ID. The bracket may advance before the official sees the response; replaying the same event must not advance twice, while a new legal event is evaluated against current match state. Which retry identity should the operation honor?",
+      "nearestAlternative": "Generate a new result-event ID after timeout and advance the same bracket slot again.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““the bracket advances only from a legal match state”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "representation_leaks",
+        "speculative_indirection",
+        "coordinator_exports_state",
+        "inheritance_for_reuse"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_09",
+          "text": "Generate a new result-event ID after timeout and advance the same bracket slot again."
+        },
+        {
+          "optionId": "dedupe_too_broad_09",
+          "text": "Deduplicate every event for the match, including a distinct correction that the rules permit."
+        },
+        {
+          "optionId": "assume_no_commit_09",
+          "text": "Treat a missing response as rejection and submit the opposite result to force a response."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i010",
+      "questionId": "ood-n08-b09-i010",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A returns inspection workflow, Each submitted inspection revision has a submission ID. If its acknowledgement is lost, retrying that submission must preserve the same findings; a later corrected inspection gets a new revision and ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new submission ID for each retry and append another inspection of the same revision.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““classification and refund eligibility are not the same responsibility”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "speculative_indirection",
+        "coordinator_exports_state",
+        "inheritance_for_reuse",
+        "representation_leaks"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_10",
+          "text": "Create a new submission ID for each retry and append another inspection of the same revision."
+        },
+        {
+          "optionId": "dedupe_too_broad_10",
+          "text": "Deduplicate all inspections for an item, including a later corrected inspection with a new revision."
+        },
+        {
+          "optionId": "assume_no_commit_10",
+          "text": "Treat the missing acknowledgement as a denial and replace the submitted findings with the newest local draft."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i011",
+      "questionId": "ood-n08-b09-i011",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A research-notebook platform, A publication request has a run ID and selected input revisions. If the job finishes but its response is lost, retrying that run ID must return the same publication; a changed input selection uses a new run ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Generate a new run ID after timeout and publish the same output again as another result.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““published outputs reference immutable inputs and code versions”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "coordinator_exports_state",
+        "inheritance_for_reuse",
+        "representation_leaks",
+        "speculative_indirection"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_11",
+          "text": "Generate a new run ID after timeout and publish the same output again as another result."
+        },
+        {
+          "optionId": "dedupe_too_broad_11",
+          "text": "Deduplicate all publications from the experiment owner, including later runs with new inputs."
+        },
+        {
+          "optionId": "assume_no_commit_11",
+          "text": "Assume a missing response means the job did not finish and discard the output."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i012",
+      "questionId": "ood-n08-b09-i012",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A collaborative annotation workspace, A comment submission has a comment ID. Notification may be retried after acceptance; the same notification must refer to the accepted comment, while a new comment has a new ID. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new comment ID for every notification retry and append the same text again.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““accepted comments must retain their author and document revision”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "coordinator_exports_state",
+        "inheritance_for_reuse",
+        "representation_leaks",
+        "speculative_indirection"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_12",
+          "text": "Create a new comment ID for every notification retry and append the same text again."
+        },
+        {
+          "optionId": "dedupe_too_broad_12",
+          "text": "Deduplicate every comment by author, dropping distinct comments from that reviewer on the same document."
+        },
+        {
+          "optionId": "assume_no_commit_12",
+          "text": "If notification fails, delete the accepted comment and ask the reviewer to resubmit."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i013",
+      "questionId": "ood-n08-b09-i013",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A mobile field-inspection app, An offline submission has a submission ID and frozen draft revision. The server may finish it before the device receives an acknowledgement; replaying the same ID must return complete/retryable for that revision, not submit later edits. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new submission ID each time the device retries after reconnecting.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““a submission is either complete or explicitly retryable”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "inheritance_for_reuse",
+        "representation_leaks",
+        "speculative_indirection",
+        "coordinator_exports_state"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_13",
+          "text": "Create a new submission ID each time the device retries after reconnecting."
+        },
+        {
+          "optionId": "dedupe_too_broad_13",
+          "text": "Deduplicate every upload from the device, including a later inspection revision."
+        },
+        {
+          "optionId": "assume_no_commit_13",
+          "text": "Assume the absent acknowledgement means complete and close the current draft."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i014",
+      "questionId": "ood-n08-b09-i014",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A digital invoice exchange, Each invoice issue has a stable issue ID. The exchange can accept before the response is lost; retrying the same issue ID must return the same accepted/rejected outcome without charging twice. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new issue ID after every timeout and resend the invoice as a new chargeable issue.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““the new issue is traceable and does not double-charge the customer”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "representation_leaks",
+        "speculative_indirection",
+        "coordinator_exports_state",
+        "inheritance_for_reuse"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_14",
+          "text": "Create a new issue ID after every timeout and resend the invoice as a new chargeable issue."
+        },
+        {
+          "optionId": "dedupe_too_broad_14",
+          "text": "Deduplicate all issues for the customer forever, even when a corrected invoice has a new issue ID."
+        },
+        {
+          "optionId": "assume_no_commit_14",
+          "text": "Treat a missing response as rejection and issue a second invoice with a new number."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i015",
+      "questionId": "ood-n08-b09-i015",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A smart-building access controller, A badge revocation command has a command ID. A door may apply the revocation before the administrator sees the acknowledgement; retrying the same command must not toggle the badge back to active. Which retry identity should the operation honor?",
+      "nearestAlternative": "Use a toggle command and send it again whenever the administrator sees no acknowledgement.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““revocation is visible to the door policy before access is granted”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "speculative_indirection",
+        "coordinator_exports_state",
+        "inheritance_for_reuse",
+        "representation_leaks"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_15",
+          "text": "Use a toggle command and send it again whenever the administrator sees no acknowledgement."
+        },
+        {
+          "optionId": "dedupe_too_broad_15",
+          "text": "Deduplicate all commands for the badge forever, including a later authorized reactivation with a distinct command ID."
+        },
+        {
+          "optionId": "assume_no_commit_15",
+          "text": "Treat timeout as proof the revocation failed and restore the prior active state."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i016",
+      "questionId": "ood-n08-b09-i016",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A package-label generation service, A label request has a print-job ID tied to an approved shipment revision. The printer can finish before its acknowledgement arrives; replay must identify that print job rather than print another label. Which retry identity should the operation honor?",
+      "nearestAlternative": "Generate a fresh print-job ID whenever the operator retries a missing acknowledgement.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““the printed label represents the current approved shipment data”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "coordinator_exports_state",
+        "inheritance_for_reuse",
+        "representation_leaks",
+        "speculative_indirection"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_16",
+          "text": "Generate a fresh print-job ID whenever the operator retries a missing acknowledgement."
+        },
+        {
+          "optionId": "dedupe_too_broad_16",
+          "text": "Deduplicate all labels for a shipment, including a later corrected approved revision."
+        },
+        {
+          "optionId": "assume_no_commit_16",
+          "text": "Mark the first job failed on timeout and submit an identical second print immediately."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i017",
+      "questionId": "ood-n08-b09-i017",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A multi-tenant rehearsal scheduler, A room-move request has a move ID. The move may commit before the coordinator receives its response; retrying the same ID must not move the booking again, while a later new move remains allowed. Which retry identity should the operation honor?",
+      "nearestAlternative": "Create a new move ID after a timeout and move the booking from its current room again.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““the room capacity and cancellation policy must remain consistent”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "coordinator_exports_state",
+        "inheritance_for_reuse",
+        "representation_leaks",
+        "speculative_indirection"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_17",
+          "text": "Create a new move ID after a timeout and move the booking from its current room again."
+        },
+        {
+          "optionId": "dedupe_too_broad_17",
+          "text": "Deduplicate all moves for the booking, even a later move request with a different ID."
+        },
+        {
+          "optionId": "assume_no_commit_17",
+          "text": "Assume timeout means the booking stayed in its old room and reserve the destination again."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    },
+    {
+      "beforeQuestionId": "ood-n08-b09-i018",
+      "questionId": "ood-n08-b09-i018",
+      "mentalUnitId": "OOD-N08-B09",
+      "learningObjective": "Retryable and idempotent object boundaries",
+      "decisiveFact": "In A museum exhibit controller, A maintenance command has a command ID and desired mode. The controller may set maintenance before the operator receives the acknowledgement; repeating the same command must not toggle back to running. Which retry identity should the operation honor?",
+      "nearestAlternative": "Implement maintenance as a toggle and retry it when the response is late.",
+      "changedCondition": "The old stem stated a case rule without naming a retry identity or whether the effect may already have occurred before acknowledgement. The replacement specifies a same-operation replay and distinguishes it from a genuinely new command or revision.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The old keyed meaning was to make retry identity or an idempotent state transition part of the boundary before retrying; its case condition was ““unsafe commands are rejected while maintenance is active”.” The current key still binds replay of one operation to its recorded effect/result, and the new case facts make the retry boundary observable. This preserves the unit decision while replacing an unsupported broad stem.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "retiredDistractorOptionIds": [
+        "inheritance_for_reuse",
+        "representation_leaks",
+        "speculative_indirection",
+        "coordinator_exports_state"
+      ],
+      "currentDistractors": [
+        {
+          "optionId": "new_identity_retry_18",
+          "text": "Implement maintenance as a toggle and retry it when the response is late."
+        },
+        {
+          "optionId": "dedupe_too_broad_18",
+          "text": "Deduplicate all commands for the exhibit, including a later authorized command to leave maintenance."
+        },
+        {
+          "optionId": "assume_no_commit_18",
+          "text": "Assume the command did not run if its acknowledgement is missing and send a second opposite command."
+        }
+      ],
+      "optionIdentity": "The former generic distractors were replaced with three case-specific alternatives. The reduction from four generic wrong choices to three authored alternatives is deliberate; the notes do not claim a one-to-one mapping where the old and new meanings differ.",
+      "questionObjectIdentity": "Same existing question ID: the primary retry/idempotency decision remains the same; no reserved replacement identity is used."
+    }
+  ]
+}

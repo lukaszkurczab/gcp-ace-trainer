@@ -1,0 +1,14 @@
+{
+  "result": "PASS_AGGREGATE",
+  "scope": "Matching first canonical186 passing cases reused; committed-source targeted3/3 resolves2snapshot failures, no freshfull188/188 claim",
+  "sourceCommit": "1487f24db63af0627b8f3b3739c125594a345b80",
+  "distinctCanonicalTests": 188,
+  "distinctPass": 188,
+  "remainingFailures": 0,
+  "skip": 0,
+  "firstRunReceipt": "ROOT-CANONICAL24-FIRST-RECEIPT.json",
+  "targetedTests": 3,
+  "targetedPass": 3,
+  "targetedLogSha256": "1e6aed2bedb505f81a3884276bb7c22c5279b6a9487b8a2ea9d9b8a71b87ddf4",
+  "onlySourceChangeAfterFirstRun": "six spaces removed from blank line120 of producer24 test; no test behavior changed; sourcecheckpoint nowcommitted"
+}

@@ -1,0 +1,213 @@
+{
+  "scope": "Inactive full N08-B09-v5 semantic and replacement-identity proposal accepted; no producer/admission/native/full BIZQ acceptance",
+  "independentVerdict": "PASS",
+  "reportSha256": "53ac4e4ec5efef506b601e5806cb1f458f166a02c3ce6c57bf5aeb44da04d94d",
+  "markdownSha256": "45917294597dab162c875e46ea18970f202652491375193ef1024067768e5fa6",
+  "rawBindings": [
+    {
+      "name": "proposalPath",
+      "path": "/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/active/BIZQ-01/ood-remaining-closure-24/review-inputs/N08-B09-v5.json",
+      "sha256": "7068f9df47d5576317266e3e549574a4145307cfe211c6df2335b4fdb213032a"
+    },
+    {
+      "name": "manifestPath",
+      "path": "/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/active/BIZQ-01/ood-remaining-closure-24/N08-N09-MANIFEST.json",
+      "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    },
+    {
+      "name": "contractPath",
+      "path": "/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/active/BIZQ-01/ood-remaining-closure-24/N08-N09-CONTRACT.json",
+      "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+    },
+    {
+      "name": "sourcePath",
+      "path": "/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B09.json",
+      "sha256": "093bdea05d1a2e9854c474025fea368aac46a1c70f57f4a8371c990f0461e15d"
+    },
+    {
+      "name": "v4ReviewPath",
+      "path": "/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/active/BIZQ-01/ood-remaining-closure-24/SEMANTIC-N08-B09-v4-QA.json",
+      "sha256": "0a5f2a3ee5607c3eca5d750b11ad5429e27f3e2faaa89de7ab5977581c2b8152"
+    },
+    {
+      "name": "identityAdjudicationPath",
+      "path": "/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/active/BIZQ-01/ood-remaining-closure-24/ROOT-CROSS-N24-v1-ADJUDICATION.json",
+      "sha256": "a3bc46b7f073f1165180cde0dc608d62f52309b4a7a13308dfeba158c11d80b7"
+    },
+    {
+      "name": "independentCheckPath",
+      "path": "/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/docs/active/BIZQ-01/ood-remaining-closure-24/INDEPENDENT-CHECK-N08-B09-v5.json",
+      "sha256": "07f927bbf7922bc6aa3efc893c2535db31bad1eab1268ed956bb09b9026cfd12"
+    },
+    {
+      "name": "corrected evidence",
+      "path": "SEMANTIC-N08-B09-v5-QA-ERRATUM.json",
+      "sha256": "436562a7e162eaf9f89d1f732d6380db3f1a4b63c1281b8f12c1196e8f7349be"
+    },
+    {
+      "name": "corrected evidence",
+      "path": "SEMANTIC-N08-B09-v5-QA-ERRATUM.md",
+      "sha256": "1cbcc50aa49dda185a3bf5f835706baf54549059e97a9a7de8a95f913f2b7f2d"
+    },
+    {
+      "name": "corrected evidence",
+      "path": "INDEPENDENT-CHECK-N08-B09-v5.mjs",
+      "sha256": "c8f4697c5f50eb36a7317fdf8e74db971984d15e3f1463e4d61b8050296d2229"
+    },
+    {
+      "name": "corrected evidence",
+      "path": "AUTHOR-N08-B09-v5.json",
+      "sha256": "986447590f1ce57b575e220e6370052c17c0d7f6bb4a542dcb20d94ece07359e"
+    }
+  ],
+  "originalPriorCurrentTriples": [
+    {
+      "originalQuestionId": "ood-n08-b09-i001",
+      "currentQuestionId": "ood-n08-b09-i019",
+      "originalWholeSha256": "1d2a3576cd0f9d7e368600ed174ba25586c4246c40a33c6e769bdf93eb30a15f",
+      "priorWholeSha256": "e26630a4034a402a839317c6d4fa8d8c9a7f3e803b9df26c03e9aefab9f7ae97",
+      "currentWholeSha256": "fc1067dc8209d9eebd8811a61ff7221c08cdb3cdb4aee8becaf9e787ec4e3b70"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i002",
+      "currentQuestionId": "ood-n08-b09-i020",
+      "originalWholeSha256": "cb091330bd70ce8581b1381bf040c1a902162763d41a29998a4256b7596a6f94",
+      "priorWholeSha256": "87e80e0c7a61c98cc8755b3017a82549303da3ce5e5daf52167c927e18cf4c1f",
+      "currentWholeSha256": "3923387ebb0ec4282e5263820801e0e11d4674d08d0198d6ac62ff1158986caf"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i003",
+      "currentQuestionId": "ood-n08-b09-i021",
+      "originalWholeSha256": "5cd8192f781050f9088e2bcf3d023f793526775912a5b6977b93d7ddc609a6b8",
+      "priorWholeSha256": "ab0c46ba6f2b9ed83394ab6ee753af8abc60b1dcaa7c55e2960c87705fe3c556",
+      "currentWholeSha256": "e63dacdd0aa69df7e442f7264fde10c4e8cecfc5c5b99a4deb96ffb734890834"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i004",
+      "currentQuestionId": "ood-n08-b09-i022",
+      "originalWholeSha256": "887955fac02c6af7f55f473fd441b0c8cd675e71f243aabe58682262b0dad290",
+      "priorWholeSha256": "6e48e7b97dce03781f7238e6cdad5c98acd9c56e9cb0e576b794c659ff33611c",
+      "currentWholeSha256": "6c1c86af269711d68cfc88d55abaf4beadf958b81c3c54cd3772f7ff26069a9e"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i005",
+      "currentQuestionId": "ood-n08-b09-i023",
+      "originalWholeSha256": "a41cbeaea057fb1ad701cfefb0e604ecf8f460835722b352d4cbc1c08786af2e",
+      "priorWholeSha256": "bc639b01a7e901b7429e19a38475bf54f9c3f8f3229508b1d17815963135d277",
+      "currentWholeSha256": "ebe0e72d303e81de1d1e6a4e448de2ce727edbacb2e249bde2bd4297e840a933"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i006",
+      "currentQuestionId": "ood-n08-b09-i024",
+      "originalWholeSha256": "19ef29d08049538cea5639f93e1cc9e200e94b332d86a7d2b72791db8489764f",
+      "priorWholeSha256": "5c8ae203ccef61923a5fb3cb48b6a767ab288b48b93b8b36dcc87a364d5920ee",
+      "currentWholeSha256": "be49542cc011632e52146bfd268324cfbc7a8c0e9a31f01d1704fdd0ab6bc02f"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i007",
+      "currentQuestionId": "ood-n08-b09-i025",
+      "originalWholeSha256": "c11841f9bc0c152708d2514e35e1fb830a5ca805a0301cbb5f55c59b2a213c16",
+      "priorWholeSha256": "aa764e38b1bd0f7d26232c891f8008f4560b3ae571839020042fa3c1d523142b",
+      "currentWholeSha256": "4917db8ce07576bd4aac07b5d8a443b5aa1d7792e099173567e14aa5aff515ed"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i008",
+      "currentQuestionId": "ood-n08-b09-i026",
+      "originalWholeSha256": "26d3e9afb46dd98c4de81824f3e51b0354e0b3b9357311b4f09b40bc36f672f5",
+      "priorWholeSha256": "3e0ceabaed44b9d7ac1d906b4caee6c3004732e9e10e6f16b7889cd5e5b4a274",
+      "currentWholeSha256": "98e736bab7b02debe3bb2651bee907909b3b64de86ca651818a97327f678661c"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i009",
+      "currentQuestionId": "ood-n08-b09-i027",
+      "originalWholeSha256": "788bc2e9dcc424000b5c253dab228ed7a3480508d2f02b78652b32a9bc9db6e2",
+      "priorWholeSha256": "32fc752b834fd84b3b575307e1dfe4220a2c57a8edd0e7432eefc24e73f23b77",
+      "currentWholeSha256": "ac7ff50f43620c5e47a725627e05f1bde0831565d1879453bf90aa7dfe6c7fd4"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i010",
+      "currentQuestionId": "ood-n08-b09-i028",
+      "originalWholeSha256": "6241b7a67cee735493b0259f56ff78b321188060345d3fbbc764307206951794",
+      "priorWholeSha256": "5c2c11601247d4af070b32adf99609a02279352e22a888d072c6f1b57a78fc52",
+      "currentWholeSha256": "ca90a11b5dd210f984d99e522d1a0ec28d28a7deb0df15e990c943103bd54f6d"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i011",
+      "currentQuestionId": "ood-n08-b09-i029",
+      "originalWholeSha256": "c52f1d6794ff784b5824ed134cf0dfe91dc62c9089d822ecd89d25f5ffdabec5",
+      "priorWholeSha256": "ad48facd6b827de07b09037f3fde3ccb01830863c327e19225dcc276c11e5fa2",
+      "currentWholeSha256": "e5b147891ea267cc1dc2e95076d47c6164a3cfc07518ba8467e3a4496a64e147"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i012",
+      "currentQuestionId": "ood-n08-b09-i030",
+      "originalWholeSha256": "a409ef8b835d94b3aa90b4c0532c08a80bcd4206fea25026fe2c5c78a10bd94e",
+      "priorWholeSha256": "34776d9cb1faf72220d17bbe7191c58632f3cb14ad6088b5ed41bc0e79d813d1",
+      "currentWholeSha256": "2609a095bbcc13c78ebe31914ebc2b319b78f3ff2d99f88de920dd4efcf94c73"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i013",
+      "currentQuestionId": "ood-n08-b09-i031",
+      "originalWholeSha256": "5c472cd804d3a4163e0c963fe47fad99429f03663a9c0ea3016e5080e579d0d6",
+      "priorWholeSha256": "29f86bad116af2dc98ecfe4e3de1446edcb7734388d77cbc7ba1bbf5eb512eff",
+      "currentWholeSha256": "a059243c27ddfd39fd6b2438237653f4bda849132e02297508f95e0c9dd17520"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i014",
+      "currentQuestionId": "ood-n08-b09-i032",
+      "originalWholeSha256": "ada7625773c6f0c7dda2a8b370995c0eae315324a3a84acdd356d01af9f3600f",
+      "priorWholeSha256": "f4a9e03532990969248d074ca738a767e9e2fa606901cbe9c9e03b1bbba76627",
+      "currentWholeSha256": "bdb719c488b85627cf1f8605633347cfb8b949f9cce902b0e03038fb61d0225d"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i015",
+      "currentQuestionId": "ood-n08-b09-i033",
+      "originalWholeSha256": "922a27fbce6bbc3950499982b1422de85924ec3172d90260b8ab92fc4c144802",
+      "priorWholeSha256": "6aa5737a83161fe2009b5c03056cbf90f26a13274d038ae7855536dcc1e5e587",
+      "currentWholeSha256": "8804033bcfe7f5fd8ebe7702ea8b718bca63be9be984990ccf5b74f280aa635d"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i016",
+      "currentQuestionId": "ood-n08-b09-i034",
+      "originalWholeSha256": "721d7a198cd1bc8838f47db6ee4936ed83982f049d5dadfcad195d3139a53fb2",
+      "priorWholeSha256": "d87192b4741edfae4fdb8d56360ba5fa211f67d8445002da7bb1b7155e8a8d2a",
+      "currentWholeSha256": "f1ea40194a46cb712f20dfedcfc7cfc82566c03f72b03e7e2ae320dbaf40f83e"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i017",
+      "currentQuestionId": "ood-n08-b09-i035",
+      "originalWholeSha256": "f7d1740901b681e4044da67c41cfbcf8bfa9c8b7f61bfd7092faa0e216a9f039",
+      "priorWholeSha256": "6ba1ba5740e98d8cef937e75f2d99f4085b35865a67f664df95316b41920d5e6",
+      "currentWholeSha256": "ea3048c4bddb7d410728aab6f2b8824ee49e4aa75375a087c8e891a3933ff6f6"
+    },
+    {
+      "originalQuestionId": "ood-n08-b09-i018",
+      "currentQuestionId": "ood-n08-b09-i036",
+      "originalWholeSha256": "9a1e5faa6ceadc95de7f54cac23a94b6f6d839570885f9d3a3eb8a62126eefb7",
+      "priorWholeSha256": "9627e0c91d68a74f2fcc63b862a0c025c4fa3171b161ad575693f6c0251d218d",
+      "currentWholeSha256": "992475b3e764fd4cb9b0dd23e30a95d9a04b83114838fe1abd6e0daa6a6f094e"
+    }
+  ],
+  "verification": {
+    "questions": 18,
+    "valid": 18,
+    "acceptedCorrect": 18,
+    "incorrectDistractors": 54,
+    "reversedCorrect": 18,
+    "feedbackTargetSetsMatch": 18,
+    "reservedIdentityBindings": 18,
+    "freshOptionIdSets": 18,
+    "optionLengthRankObservation": {
+      "uniqueShortest": 1,
+      "uniqueLongest": 4,
+      "middleOrTied": 13
+    },
+    "semanticAcceptance": true
+  },
+  "identityAssessment": {
+    "decision": "The reserved replacement identity is justified for each of the 18 items because the old key selected ownership placement for an invariant, while v5 selects the scope of the operation identity used to resolve retries.",
+    "mapping": "Source i001-i018 map one-to-one in order to reserved v5 i019-i036.",
+    "optionIdentity": "All four option IDs per replacement differ from the corresponding source object's option IDs; feedback targets bind to the three current wrong options."
+  },
+  "metadataErratum": "Original report accidentally used checker-script SHA for check-receipt. Additive erratum binds both exact artifacts; report is unchanged, applicable semantic evidence reused."
+}

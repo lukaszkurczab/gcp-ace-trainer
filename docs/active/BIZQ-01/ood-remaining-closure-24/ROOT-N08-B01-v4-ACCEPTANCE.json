@@ -1,0 +1,14 @@
+{
+  "verdict": "PASS_ROOT_BOUND_N08_B01_V4_INACTIVE_CONTENT_ONLY",
+  "independentJsonSha256": "45e557feab4a529c2205616ec195e308a8240b730ac633d7a38e7f76b718d91f",
+  "independentMarkdownSha256": "afc92ff9e35e47e48afb2b2de9d048caea572030ab57216be7698cf9a9224f4c",
+  "actualInputBindings": 6,
+  "changedQuestions": [
+    "ood-n08-b01-i001"
+  ],
+  "exactUnchangedQuestions": 17,
+  "allQuestionIdsKeysPromptsUnchanged": true,
+  "sourceActivationAccepted": false,
+  "nativeOrPremiumAccepted": false,
+  "fullBIZQ01Accepted": false
+}

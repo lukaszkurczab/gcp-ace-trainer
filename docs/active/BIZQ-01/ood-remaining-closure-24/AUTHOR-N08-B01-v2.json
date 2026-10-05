@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "bizq01-ood-n08-b01-author-correction-v2",
+  "baselineProposal": "review-inputs/N08-B01-v1.json",
+  "baselineSha256": "1383b96bb94e9a23adef6c4a3f88d796d8e8a99c838b8e3f2823cebeff169118",
+  "proposalFile": "proposals/N08-B01-v2.json",
+  "proposalSha256": "031233aab469faddd56eef90a9b4c04759c250d4f60423dcd059e97426e64061",
+  "correctionScope": "Correct-option text only: concise ownership boundaries to remove the longest-option cue while retaining the same decision and keyed identity. No distractor padding.",
+  "changes": [
+    {
+      "questionId": "ood-n08-b01-i001",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Keep the accepted route and each proposal in the route document's single write boundary; compare the proposal with the accepted revision there and return a conflict result for review.",
+      "text": "Keep conflict detection and route writes inside the route owner."
+    },
+    {
+      "questionId": "ood-n08-b01-i002",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Route each reward command through its campaign state owner, which checks the phase and changes points and phase together for that campaign.",
+      "text": "Apply each reward through its campaign state owner."
+    },
+    {
+      "questionId": "ood-n08-b01-i003",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Let the shipment hand-off operation own the carrier/status transition and carry forward its temperature limits; return the resulting shipment revision to both clients.",
+      "text": "Hand off the shipment through its owner, carrying its limits forward."
+    },
+    {
+      "questionId": "ood-n08-b01-i004",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Use the account ledger's allocation operation as the only mutation boundary: check the remaining amount and append its matching entry together for that account.",
+      "text": "Allocate repayment through the account ledger operation."
+    },
+    {
+      "questionId": "ood-n08-b01-i005",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Let each match own its state transition; accept a timeout or result against the current match state and produce one explicit accepted or already-closed outcome.",
+      "text": "Let the match owner accept one legal terminal transition."
+    },
+    {
+      "questionId": "ood-n08-b01-i006",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Keep each inspection's mutable findings behind its inspection session; pass a stable reviewed record to the separate refund decision.",
+      "text": "Keep inspection findings with the inspection; assess refund eligibility separately."
+    },
+    {
+      "questionId": "ood-n08-b01-i007",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Have the notebook owner create an immutable publication snapshot of the selected dataset and code revision, then let the job read that snapshot.",
+      "text": "Publish one immutable dataset-and-code snapshot."
+    },
+    {
+      "questionId": "ood-n08-b01-i008",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Let the document's comment operation append a comment with the caller's author and selected revision; send an immutable notification description after acceptance.",
+      "text": "Store comment author and revision when the document accepts it."
+    },
+    {
+      "questionId": "ood-n08-b01-i009",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Submit a frozen draft revision and keep later edits in a new draft version; associate the complete or retryable result with the submitted revision.",
+      "text": "Submit a frozen draft revision with its own completion result."
+    },
+    {
+      "questionId": "ood-n08-b01-i010",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Keep mutable invoice drafting with the invoice owner; issue a specific immutable revision and record the acceptance result against that revision.",
+      "text": "Issue a versioned invoice revision and record its response against that revision."
+    },
+    {
+      "questionId": "ood-n08-b01-i011",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Keep badge status mutation at the access authority and make each access decision consult a current authority result before granting entry.",
+      "text": "Use the access authority's current badge state for each grant."
+    },
+    {
+      "questionId": "ood-n08-b01-i012",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Let the shipment own address approval and expose an immutable approved revision for the label generator to read.",
+      "text": "Print from the shipment's approved address revision."
+    },
+    {
+      "questionId": "ood-n08-b01-i013",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Make the room/day booking owner apply reservation changes against its current bookings; return a snapshot for search and keep unrelated rooms independent.",
+      "text": "Reserve through the room/day booking owner."
+    },
+    {
+      "questionId": "ood-n08-b01-i014",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Let the exhibit controller own mode transitions and evaluate each command against its current mode; adapters submit readings without mutating the mode.",
+      "text": "Let the exhibit controller own mode transitions and command checks."
+    },
+    {
+      "questionId": "ood-n08-b01-i015",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Let the lesson catalog owner change availability for the stable lesson ID while progress records continue to reference that ID.",
+      "text": "Retire catalog availability without changing lesson identity."
+    },
+    {
+      "questionId": "ood-n08-b01-i016",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Let the board session own stroke mutations and give export an immutable revision snapshot to read; keep export status outside the stroke collection.",
+      "text": "Export a stable board snapshot without owning the live session."
+    },
+    {
+      "questionId": "ood-n08-b01-i017",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Let the conversation owner apply an escalation as one state transition that carries the chosen assignee and deadline together.",
+      "text": "Apply assignee and deadline through one conversation transition."
+    },
+    {
+      "questionId": "ood-n08-b01-i018",
+      "optionId": "owner_preserves_contract",
+      "beforeText": "Let each listing owner validate and publish one frozen revision of its price and stock, then expose that revision to buyers.",
+      "text": "Publish a validated price/stock revision for the listing."
+    }
+  ]
+}

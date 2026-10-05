@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: accepts the fixed N08/N09 package and reconstructs 24→23→22→21→20→19a→19→17→16→13→12→11
+ok 1 - accepts the fixed N08/N09 package and reconstructs 24→23→22→21→20→19a→19→17→16→13→12→11
+  ---
+  duration_ms: 5017.506208
+  type: 'test'
+  ...
+# Subtest: requires every fixed proof in the source24 predecessor chain
+ok 2 - requires every fixed proof in the source24 predecessor chain
+  ---
+  duration_ms: 24447.010875
+  type: 'test'
+  ...
+# Subtest: rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+ok 3 - rejects tampered proof identity, objects, membership, source hashes, and accepted keys
+  ---
+  duration_ms: 9379.341917
+  type: 'test'
+  ...
+# Subtest: rejects current-source, catalog-version, and missing-v22-predecessor changes
+ok 4 - rejects current-source, catalog-version, and missing-v22-predecessor changes
+  ---
+  duration_ms: 4893.986583
+  type: 'test'
+  ...
+# Subtest: rejects symlink substitution for fixed proof and source paths
+ok 5 - rejects symlink substitution for fixed proof and source paths
+  ---
+  duration_ms: 1427.352458
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 45517.56625

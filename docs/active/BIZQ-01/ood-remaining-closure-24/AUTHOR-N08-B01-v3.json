@@ -1,0 +1,300 @@
+{
+  "schemaVersion": "bizq01-ood-n08-b01-author-correction-v3",
+  "previousProposal": "proposals/N08-B01-v2.json",
+  "previousSha256": "031233aab469faddd56eef90a9b4c04759c250d4f60423dcd059e97426e64061",
+  "proposalFile": "proposals/N08-B01-v3.json",
+  "proposalSha256": "d2672b21eca943d2c9896b3944bce485a2e339b66f5aaadcc71f1d8eb15f165d",
+  "correctionScope": "Revised the four option texts per item, retained the same question and option IDs and primary decision, and aligned all wrong-option feedback and errorCorrection fields. Alternatives now name plausible case-specific competing boundaries and explain the exact visible condition they fail. This is a qualitative correction to the terse-key/overelaborate-wrong-choice cue; no length or option-count target is used.",
+  "changedQuestionIds": [
+    "ood-n08-b01-i001",
+    "ood-n08-b01-i002",
+    "ood-n08-b01-i003",
+    "ood-n08-b01-i004",
+    "ood-n08-b01-i005",
+    "ood-n08-b01-i006",
+    "ood-n08-b01-i007",
+    "ood-n08-b01-i008",
+    "ood-n08-b01-i009",
+    "ood-n08-b01-i010",
+    "ood-n08-b01-i011",
+    "ood-n08-b01-i012",
+    "ood-n08-b01-i013",
+    "ood-n08-b01-i014",
+    "ood-n08-b01-i015",
+    "ood-n08-b01-i016",
+    "ood-n08-b01-i017",
+    "ood-n08-b01-i018"
+  ],
+  "items": [
+    {
+      "questionId": "ood-n08-b01-i001",
+      "learningObjective": "Apply conflict checking at the route’s accepted-revision boundary.",
+      "decisiveFact": "In A local-first map editor, The route has an accepted revision and a separate offline proposal. Two devices can submit edits before either sees the other's save. A conflicting geometry must be surfaced; neither device may silently replace the accepted route. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "A client can act from its own stale revision, while a shared route can still receive competing replacements.",
+      "v2ToV3": "The choice set now distinguishes local revision checks, client-local shared-record writes, and per-device route copies; each risks accepting or postponing a conflict before it is surfaced.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i002",
+      "learningObjective": "Apply a reward using the campaign’s current phase and change its points and phase together.",
+      "decisiveFact": "In A board-game campaign manager, A reward changes both a character's available points and the campaign's legal phase. A host and a moderator may apply actions at the same time, while campaigns remain independent. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "A moderator can replace from a stale read; a process-wide state also couples independent campaigns.",
+      "v2ToV3": "Alternatives now cover stale host-side replacement, global serialization, and reward-specific types trusting caller phase; their feedback identifies the race, independence, or stale-phase failure.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i003",
+      "learningObjective": "Keep carrier, status, and temperature limits together in a single shipment hand-off.",
+      "decisiveFact": "In A cold-chain logistics console, A shipment's carrier, temperature limits, and hand-off status change as one dispatch decision. Dispatchers and the carrier portal can overlap; a hand-off to a new carrier must retain the shipment's existing limits. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "A portal writing fields it manages can publish a mixed revision, while carrier defaults can replace existing limits.",
+      "v2ToV3": "Alternatives now distinguish split dispatch writes, independently replaced portal fields, and carrier-type defaults that lose the existing limits.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i004",
+      "learningObjective": "Allocate against the current account balance and record the matching ledger entry.",
+      "decisiveFact": "In A cooperative lending ledger, A repayment allocation changes the member's outstanding amount and the ledger entry that explains it. Two stewards can allocate repayments for the same account; separate accounts must continue independently. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "Replacing from a steward read can overspend; a whole-ledger lock blocks unrelated accounts; source-specific balances can disagree with the ledger.",
+      "v2ToV3": "Alternatives now contrast stale replacement, global locking, and separate source balances; each feedback message names its account-level failure.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i005",
+      "learningObjective": "Accept only one timeout or result transition from the match’s current state.",
+      "decisiveFact": "In A tournament bracket service, A match can receive a timeout and an official's result close together. The bracket may advance only once from the match's current legal state, and other matches must proceed independently. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "Independent handler advances can both act on one open match; a bracket-wide lock couples other matches.",
+      "v2ToV3": "Alternatives now contrast timer/official stale reads, global bracket serialization, and separate terminal match types that can both advance.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i006",
+      "learningObjective": "Keep inspection evidence in its record and let refund review consume that record separately.",
+      "decisiveFact": "In A returns inspection workflow, An inspection records item condition and evidence; a separate refund review uses that record. Inspectors and reviewers may update their own work at the same time, but a refund decision must not rewrite the inspection. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "Refund review must not rewrite inspection; substituting a shared or copied return record loses the accepted evidence boundary.",
+      "v2ToV3": "Alternatives now cover reviewer edits, replacement of a shared record, and a refund-specific copy; each message points to the separated inspection source.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i007",
+      "learningObjective": "Freeze the selected dataset and code revision before publication runs.",
+      "decisiveFact": "In A research-notebook platform, An experiment owner can edit a notebook while a publication job runs. A published result must identify the exact input dataset and code revision used, even if the notebook changes later. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "Stage-time reads or an editor-writable shared record can make a result combine changing inputs.",
+      "v2ToV3": "Alternatives now distinguish live stage reads, a shared editable input record, and a publication type still following live editor fields.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i008",
+      "learningObjective": "Capture comment author and addressed revision when the document accepts each comment.",
+      "decisiveFact": "In A collaborative annotation workspace, A document has an accepted revision. Reviewers can submit comments concurrently; each accepted comment must retain its author and the document revision it addressed. Notification delivery may be retried separately. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "Notification retries may happen later, but must not resolve the accepted comment against a different author or document revision.",
+      "v2ToV3": "Alternatives now contrast delivery-time metadata lookup, replacement of prior attribution, and channel-specific copies resolved on retry.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i009",
+      "learningObjective": "Submit one frozen draft revision and attach its completion or retryable result to that revision.",
+      "decisiveFact": "In A mobile field-inspection app, The inspector may edit a draft offline while a submission is in flight. The server reports either a complete accepted submission or a retryable result; it must not mix fields from two draft revisions. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "A live read can mix revisions; device copies can overwrite the submitted draft; a type-level status does not identify the submitted revision.",
+      "v2ToV3": "Alternatives now distinguish field-by-field live reads, stale device replacement, and completion flags on online/offline types.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i010",
+      "learningObjective": "Issue a versioned invoice and record each response against the exact issued revision.",
+      "decisiveFact": "In A digital invoice exchange, The operator can correct invoice details while a rejected issue is being prepared again. The customer must be charged only for an accepted issue, and each issued revision must remain traceable. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "In-place edits or a shared invoice can change what a response appears to describe; a latest-attempt type loses earlier response links.",
+      "v2ToV3": "Alternatives now contrast post-issue edits, a shared invoice updated by handlers, and responses recorded only on the latest attempt type.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i011",
+      "learningObjective": "Check each grant against the access authority’s current badge status.",
+      "decisiveFact": "In A smart-building access controller, A badge can be revoked while a door request is being evaluated. The decision must use the current badge status at the access authority; a door may cache a read view but cannot approve a revoked badge from an old copy. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "A door cache or door-specific revoked-badge interpretation can differ from current authority state.",
+      "v2ToV3": "Alternatives now distinguish late-sync cached grants, door-written shared status, and per-door interpretation of a revoked subtype.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i012",
+      "learningObjective": "Print from an immutable approved shipment address revision.",
+      "decisiveFact": "In A package-label generation service, Address corrections and label generation can overlap. A printed label must correspond to one approved shipment revision; label generation must not change the approved address. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "The generator must not normalize the approved address in place; a carrier copy can diverge from the revision it should print.",
+      "v2ToV3": "Alternatives now compare job-side correction, shared print-time normalization, and carrier-specific copied addresses.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i013",
+      "learningObjective": "Apply capacity and cancellation rules against current bookings for the room/day.",
+      "decisiveFact": "In A multi-tenant rehearsal scheduler, Bookings for one room must respect capacity and cancellation rules. Coordinators may edit bookings concurrently; separate rooms should not block each other, and search results are only a view. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "A search result can be stale; a schedule-wide lock couples rooms; coordinator-specific booking types can disagree on cancellation.",
+      "v2ToV3": "Alternatives now distinguish stale-search replacement, global scheduling lock, and coordinator-specific cancellation policy.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i014",
+      "learningObjective": "Check each command against current exhibit mode when accepting it.",
+      "decisiveFact": "In A museum exhibit controller, When maintenance mode is active, unsafe exhibit commands are rejected. The operator can change the mode while command requests are arriving; the sensor adapter reports readings but must not change mode itself. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "The adapter reports readings but cannot change mode; a handler’s cached mode can be stale; replacing the exhibit type can use stale mode too.",
+      "v2ToV3": "Alternatives now contrast cached handler mode, adapter writes, and mode-specific types whose cached state can accept an unsafe command.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i015",
+      "learningObjective": "Retire catalog availability while keeping progress attached to the stable lesson ID.",
+      "decisiveFact": "In A video-learning library, A lesson can be retired while learners are using it. Existing progress must remain attached to the stable lesson identity; new catalog views should stop offering retired lessons. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "Deletion loses that identity; stale catalog copies can still offer a retired lesson; moving progress changes its identity.",
+      "v2ToV3": "Alternatives now distinguish rebuilding from title/position, stale screen-local availability, and progress moved to a retired-lesson type.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i016",
+      "learningObjective": "Export one fixed board revision while leaving the live session unchanged.",
+      "decisiveFact": "In A shared whiteboard application, Participants can add strokes while an export is running. The exported history must represent one stable board revision; a failed export can be retried without changing board contents. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "Reading live strokes or sharing an appendable export buffer can mix revisions; a failed export must not replace session state.",
+      "v2ToV3": "Alternatives now contrast live reads/closing, a shared appendable retry buffer, and replacing the session at export start.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i017",
+      "learningObjective": "Apply assignee and deadline together through the current conversation transition.",
+      "decisiveFact": "In A customer-support escalation desk, An escalation changes assignee and response deadline together. Two agents can act on a conversation at nearly the same time, and the customer-visible record must not pair one agent's assignment with another action's deadline. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "Separate writes or stale shared-row replacement can create the mismatched customer-visible pair; a copied subtype can preserve an old deadline.",
+      "v2ToV3": "Alternatives now distinguish separate agent edits, replacement from local reads, and escalation-specific copied assignment state.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    },
+    {
+      "questionId": "ood-n08-b01-i018",
+      "learningObjective": "Validate price and stock together before publishing a listing revision.",
+      "decisiveFact": "In A regional produce marketplace, A seller may edit price and stock while a publication request is being reviewed. A listing becomes visible only when both values satisfy the current listing rule; unrelated sellers should publish independently. Which operation boundary best preserves these facts?",
+      "nearestAlternative": "A public row or early price publish can expose a listing before both current values satisfy the rule.",
+      "v2ToV3": "Alternatives now distinguish sequential field publication, direct seller edits followed by cleanup, and an attempt visible before stock is copied in.",
+      "identityAction": "preserve_question_id_and_keyed_option_id",
+      "identityReason": "The primary operation-boundary decision and accepted meaning are unchanged; only distractor models and their explanations were sharpened.",
+      "changedFields": [
+        "interaction.options[*].text (same existing IDs; key meaning retained)",
+        "feedback.messages[wrong-option messages]",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceClaimCoverage": "No external behavior guarantee is introduced. All discriminating conditions are fictional facts stated in the prompt; sourceRefs remain unchanged."
+    }
+  ]
+}

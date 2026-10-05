@@ -1,0 +1,288 @@
+{
+  "schemaVersion": "bizq01-n09-b07-v5-semantic-correction-qa-v1",
+  "verdict": "REVISE",
+  "unit": "OOD-N09-B07",
+  "scope": "Independent v4-to-v5 review of the two changed complete objects; reuse v4 conclusions for the other 16 exact unchanged objects.",
+  "inputs": {
+    "v4": {
+      "path": "review-inputs/N09-B07-v4.json",
+      "sha256": "87689861d0d722d81c8e62f9909078701ea461e0126b6173e8fe6448441bd17d"
+    },
+    "v5": {
+      "path": "review-inputs/N09-B07-v5.json",
+      "sha256": "8114a839b8c3c62a7214cd185412f4229fb313a35f25d3a22633f319b465cfef"
+    },
+    "manifest": {
+      "path": "N08-N09-MANIFEST.json",
+      "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    },
+    "contract": {
+      "path": "N08-N09-CONTRACT.json",
+      "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+    },
+    "businessQualitySpec": {
+      "path": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+      "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3"
+    },
+    "contentGuidelines": {
+      "path": "docs/07-content-guidelines.md",
+      "sha256": "00c20d8c74d8e4dfec3ffb9211865642a5ae72d218bdd7473b8f41e52bfa5471"
+    },
+    "priorV4CorrectionQA": {
+      "path": "SEMANTIC-N09-B07-v4-CORRECTION-QA.json",
+      "sha256": "ce2f420b6ffc2bfd0aeea62f473f1e53abc4885bd0663e6ef63484f76380b80d"
+    },
+    "checker": {
+      "path": "SEMANTIC-N09-B07-v5-CHECK.mjs",
+      "sha256": "4828d1b44b308d10a4deba7eb072658f849d61d1af4facd79f84ed6c7cfdf7de"
+    },
+    "checkReceipt": {
+      "path": "SEMANTIC-N09-B07-v5-CHECK.json",
+      "sha256": "afaccd1bdf72ec1dd9f56e1d40e62822b199f23d23818caffd4f04cf6b9ccf17"
+    }
+  },
+  "delta": {
+    "changedWholeObjects": 2,
+    "unchangedWholeObjects": 16,
+    "changedOptions": 1,
+    "changedWrongOptionTextsAndIDs": 1,
+    "changedFeedbackTargetMappings": 1,
+    "changedConstraints": 2,
+    "changedFeedbackLeaves": 1,
+    "questionIdsChanged": 0,
+    "acceptedAnswerIdsChanged": 0,
+    "changedQuestionIds": [
+      "ood-n09-b07-i021",
+      "ood-n09-b07-i027"
+    ]
+  },
+  "verification": {
+    "questions": 18,
+    "changedWholeObjects": 2,
+    "unchangedWholeObjects": 16,
+    "changedOptionLeaves": 2,
+    "changedDiagnosticMessagesWithTargetRemaps": 1,
+    "changedDiagnosticMessageTextsAtStableTargets": 0,
+    "diagnosticTargetRemapQuestions": [
+      "ood-n09-b07-i027"
+    ],
+    "invalid": 0,
+    "correctAcceptedAnswers": 18,
+    "allDistractorsIncorrect": 18,
+    "correctAfterReversal": 18,
+    "exactFeedbackTargetSets": 18
+  },
+  "findings": [
+    {
+      "id": "N09-B07-i027-serializes-ambiguity",
+      "severity": "blocking",
+      "criterion": "BIZQ-01 single-choice requirement: visible facts must make one answer best; the decisive premise must be unambiguous.",
+      "questionId": "ood-n09-b07-i027",
+      "fields": [
+        "constraints[0]",
+        "feedback.details.errorCorrection",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.reason",
+        "feedback.messages[n09b07_i027_parallel_individual_reads_v5]"
+      ],
+      "evidence": "The stem’s phrase “serializes single-author requests” may mean sequential request processing or payload encoding/serialization. Sequential processing would exclude parallel fan-out; encoding alone would not. This phrase carries the decisive distinction between batching and the new parallel-requests alternative.",
+      "minimumCorrection": "Say explicitly that the service processes/queues single-author requests one at a time; align Reason, Details and the feedback with that behavior."
+    }
+  ],
+  "resolvedFinding": {
+    "id": "N09-B07-i021-supported-preview-sizes",
+    "questionId": "ood-n09-b07-i021",
+    "disposition": "RESOLVED",
+    "basis": "Prompt-visible facts now say clients repeatedly request only thumbnail and card sizes and the storage budget permits both derivatives per image."
+  },
+  "itemReviews": [
+    {
+      "questionId": "ood-n09-b07-i019",
+      "manifestBeforeCanonicalSha256": "22b81b674cb5ba0d3e9fcaa5e107cc2afb519c46c7c9fd7c512292904064db30",
+      "v4CanonicalSha256": "8df18248ac55c2c8a4866773af0769d1ff05387d7889819946ce08817b64cae0",
+      "v5CanonicalSha256": "8df18248ac55c2c8a4866773af0769d1ff05387d7889819946ce08817b64cae0",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i020",
+      "manifestBeforeCanonicalSha256": "b23e9a7b809f67213e3cb1dfcce6178cf2557368c433dc978186d112cd52130c",
+      "v4CanonicalSha256": "940f15e9f614a63816aa604c86973e0ec0e0ff2a8b9e4441e13d76aa84783b54",
+      "v5CanonicalSha256": "940f15e9f614a63816aa604c86973e0ec0e0ff2a8b9e4441e13d76aa84783b54",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i021",
+      "manifestBeforeCanonicalSha256": "d1bbc259d8784800f10722db655432997a872f084a85b3b755b89c9dd45c2821",
+      "v4CanonicalSha256": "a09922888bdea229ed176ff3ba38b7ef0d0fc1faed5b0cf9ddbc3e78760a759f",
+      "v5CanonicalSha256": "3e8a5768823610131b63edd95aba52322c18e7a785769f9fcc1d357c928c9f71",
+      "changedFromV4": true,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": [
+        "Supported preview sizes and budget fit are now visible; correction accepted for this item."
+      ]
+    },
+    {
+      "questionId": "ood-n09-b07-i022",
+      "manifestBeforeCanonicalSha256": "f34872d5824879efbc8cdfbee3a23b7939e717ee57f94655a906de3e37a8dbfd",
+      "v4CanonicalSha256": "eb70a3448c8fa550e108dd7b0423337d158b9b6bc9d2c41c4c1086cd93b94ef7",
+      "v5CanonicalSha256": "eb70a3448c8fa550e108dd7b0423337d158b9b6bc9d2c41c4c1086cd93b94ef7",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i023",
+      "manifestBeforeCanonicalSha256": "7d52a69f87055b22a46cde44477255726377e64d41cafe43a6d374f847a7961c",
+      "v4CanonicalSha256": "be78f5050d9b0a3d70ba3f1c7cbde9752c625d8e8a2f74ed6d0770ce81e7ddfe",
+      "v5CanonicalSha256": "be78f5050d9b0a3d70ba3f1c7cbde9752c625d8e8a2f74ed6d0770ce81e7ddfe",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i024",
+      "manifestBeforeCanonicalSha256": "8536fb5e83fb5152c085ff6810a29fdd9095b8824f7ae50a783e4efc8f85f447",
+      "v4CanonicalSha256": "bc694a80773b4610a499f167c3d79c8f22829f9890900bce1f287525a24c3549",
+      "v5CanonicalSha256": "bc694a80773b4610a499f167c3d79c8f22829f9890900bce1f287525a24c3549",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i025",
+      "manifestBeforeCanonicalSha256": "5a409db42e331edb2eb1f49106faddbe795a45f7b0ad0574fc33e10a088baa11",
+      "v4CanonicalSha256": "d78b65501d195b11628313052ec93b68b22f0c39ad91b842ccc8db6e1fd31d1a",
+      "v5CanonicalSha256": "d78b65501d195b11628313052ec93b68b22f0c39ad91b842ccc8db6e1fd31d1a",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i026",
+      "manifestBeforeCanonicalSha256": "30172f3b5253d9d5efe23763288523b2809e60ad20fe7b171fd0b9ae0f3550ec",
+      "v4CanonicalSha256": "41570c9f2be392d0d19f6fe4ca58252332080e4e63a7d77e8a8fde3c5c1df94c",
+      "v5CanonicalSha256": "41570c9f2be392d0d19f6fe4ca58252332080e4e63a7d77e8a8fde3c5c1df94c",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i027",
+      "manifestBeforeCanonicalSha256": "5c6cd0b76ef5b71039aa65c4210cfb1bd04d869f634daa0084c1152811dc4038",
+      "v4CanonicalSha256": "d442cf93ac192ffaf5d2a6979809304970e16667afa80e18248639715d0e59ae",
+      "v5CanonicalSha256": "3399e6ae1123e929cbe848b8ca27e2d5efa058400db9f410a326cddb9fb0d878",
+      "changedFromV4": true,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "REVISE",
+      "findings": [
+        "“Serializes single-author requests” is ambiguous between sequential handling and payload serialization; because this premise excludes the parallel-read alternative, explicitly state sequential processing/one-at-a-time queueing."
+      ]
+    },
+    {
+      "questionId": "ood-n09-b07-i028",
+      "manifestBeforeCanonicalSha256": "b26544647e16be5653c6abfb961e7c770d5c60f7ef83164c9c6a2db7e4963e6e",
+      "v4CanonicalSha256": "5316930f1c6d5ecb9676ba2e9223441e8b526df568377c90a5fa89fa4f342d60",
+      "v5CanonicalSha256": "5316930f1c6d5ecb9676ba2e9223441e8b526df568377c90a5fa89fa4f342d60",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i029",
+      "manifestBeforeCanonicalSha256": "c6be33975100c2efb5460bf4ecd94b4a5a85c904154acaf770e0129d5d0aa6ab",
+      "v4CanonicalSha256": "e0b9ebc78a308ddb4b0583941645a06ddd46a30bbc50d5d428e0a662028e3b34",
+      "v5CanonicalSha256": "e0b9ebc78a308ddb4b0583941645a06ddd46a30bbc50d5d428e0a662028e3b34",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i030",
+      "manifestBeforeCanonicalSha256": "4a272ab3880fb0a4705f6dbfba7496032d9af8055b5022b0fb0d70bb2433a71f",
+      "v4CanonicalSha256": "b848785846776d83fdfaf8411b787384ee01c242f6f820ce36853888a8caddee",
+      "v5CanonicalSha256": "b848785846776d83fdfaf8411b787384ee01c242f6f820ce36853888a8caddee",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i031",
+      "manifestBeforeCanonicalSha256": "59ff4bef662b6335279783fb931b293df30f8569c541d1ccb0cbc4a67b8d7545",
+      "v4CanonicalSha256": "780c1415764a37a41bf5fbab30e9d3bc96eca8e2aae91bdacbe5644e62966ac9",
+      "v5CanonicalSha256": "780c1415764a37a41bf5fbab30e9d3bc96eca8e2aae91bdacbe5644e62966ac9",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i032",
+      "manifestBeforeCanonicalSha256": "7cc970d0de5ae0c24c1784c271c190766f07556922732f5c18b77a4f6621e0a1",
+      "v4CanonicalSha256": "d52f1627b2d627737c7a3a6e30287fa67eb9878d918dc4303d283f18e4493b8c",
+      "v5CanonicalSha256": "d52f1627b2d627737c7a3a6e30287fa67eb9878d918dc4303d283f18e4493b8c",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i033",
+      "manifestBeforeCanonicalSha256": "f55021bb9a14aa96a7f66ab839e24a611a319329114316be7d1319ff67fb9cf9",
+      "v4CanonicalSha256": "6376f89592e5ff8abd9f5414aae02dbf59656522c9d3a4e66f87c8af59cef6dd",
+      "v5CanonicalSha256": "6376f89592e5ff8abd9f5414aae02dbf59656522c9d3a4e66f87c8af59cef6dd",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i034",
+      "manifestBeforeCanonicalSha256": "d8413b4452613fbeb7f31f24fd3a7c4fdc73bba371fa55b55b8d3625cb383810",
+      "v4CanonicalSha256": "4108c097b212188a153deb1b8ec53aa9f09c96e61a20ad124821aad43e3c2bd2",
+      "v5CanonicalSha256": "4108c097b212188a153deb1b8ec53aa9f09c96e61a20ad124821aad43e3c2bd2",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i035",
+      "manifestBeforeCanonicalSha256": "dcb6adb67081d9509a16077f43c3ac8eefa4a1230d517768de5fe7309d7aab0a",
+      "v4CanonicalSha256": "8c6b756d0c8edb54c4fb00aef282853ea396fc5f3b1b5c10723aeebbbbec7523",
+      "v5CanonicalSha256": "8c6b756d0c8edb54c4fb00aef282853ea396fc5f3b1b5c10723aeebbbbec7523",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i036",
+      "manifestBeforeCanonicalSha256": "0974947ef6e6ddb8b4ecde0c7eb90d6458c1904b45f50149b3e6a3d80186cc46",
+      "v4CanonicalSha256": "74d9ff08dfe3b0525a1dc8f8afc204e0998fab2a0b759089b13d5be4c359af51",
+      "v5CanonicalSha256": "74d9ff08dfe3b0525a1dc8f8afc204e0998fab2a0b759089b13d5be4c359af51",
+      "changedFromV4": false,
+      "identityScope": "Question ID and accepted option ID unchanged; inherited prior N09-B07 identity disposition is unaffected by this correction.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    }
+  ],
+  "limits": [
+    "No length/count threshold was applied.",
+    "Does not approve source migration, source activation, runtime/admission, native/Premium, or complete BIZQ-01."
+  ]
+}

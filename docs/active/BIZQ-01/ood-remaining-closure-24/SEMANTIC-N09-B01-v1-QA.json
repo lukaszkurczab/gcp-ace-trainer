@@ -1,0 +1,64 @@
+{
+  "review": "SEMANTIC-N09-B01-v1-QA",
+  "verdict": "REVISE",
+  "scope": "N09-B01 only; unit semantic and identity review, not whole N08/N09 acceptance",
+  "inputs": {
+    "proposal": {"path": "review-inputs/N09-B01-v1.json", "sha256": "70a812eab3ddbcd0b20dc99eec741e08d04268b7546f9bc5ff68706c37884831"},
+    "manifest": {"path": "N08-N09-MANIFEST.json", "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"},
+    "authorNotes": {"path": "review-inputs/AUTHOR-N09-B01-v1.json", "sha256": "9bd38a23c47f91910f42b27165e1b433bae9a94cddbbdda9a7c3f962b6281bd0"},
+    "sourceArraySha256": "6e75bf2e34178561b500500b2cb449a0e5642ea91cbfb251cc8a25b41277cd7a",
+    "identityRule": "BIZQ-01 §5C / docs/07-content-guidelines.md §766",
+    "qualityRule": "BIZQ-01 §4.3"
+  },
+  "method": {
+    "wholeObjectFingerprint": "SHA-256 of repository canonicalJson(question)",
+    "answerLookup": "answer.optionId, not option-array position",
+    "objectsReviewed": 18,
+    "fieldsReviewed": ["prompt", "constraints", "options", "answer", "Reason", "all Details", "wrong-option diagnostics", "identity rationale", "source references"]
+  },
+  "findings": [
+    {
+      "id": "N09-B01-F1",
+      "severity": "blocking",
+      "requirement": "BIZQ-01 §4.3: plausible alternatives and no systematic form cue",
+      "finding": "All 18 accepted choices are the longest, most procedurally detailed choice. The keys repeatedly append run/inspect/assert instructions already present in each prompt, while alternatives describe shorter partial actions. This makes form a reliable shortcut across the unit; it is not an isolated character-count result.",
+      "smallestCorrection": "Shorten each accepted choice to the distinguishing seam and controlled input. Keep supported answer meaning; do not pad distractors or require equal lengths."
+    },
+    {
+      "id": "N09-B01-F2",
+      "severity": "nonblocking-editorial",
+      "finding": "All constraints contain the typo phrase 'live the' (for example, 'live the fleet service'). Meaning remains understandable.",
+      "smallestCorrection": "Correct the repeated wording while revising the unit."
+    },
+    {
+      "id": "N09-B01-F3",
+      "severity": "optional",
+      "finding": "i009 mentions role expiry, which is not used by the keyed decision.",
+      "smallestCorrection": "Remove or clarify the detail if it is not intended to affect the answer."
+    }
+  ],
+  "items": [
+    {"id":"ood-n09-b01-i001","identityAction":"SAME_ID","acceptedMeaning":"Per-instance clock controls expiry boundary while the real reservation operation runs.","beforeSha256":"e3ab8a93109c45ce03fa6f2d78ac08013f6e845a8ef8a213315d7cc71b7faef5","currentSha256":"86d6db8bbcc906cd5d4cd3740f4041b4e884ef141d9b6663b47675594ba76eec"},
+    {"id":"ood-n09-b01-i002","identityAction":"SAME_ID","acceptedMeaning":"Repository fake supplies merge conflict; exercise the real merge behavior.","beforeSha256":"20250faa2fd123ffe3edd3faa7ed5c6e54862e6e387fb0a2320193eed0efb21f","currentSha256":"4394528acfd35c492447b3caa32aac2503f79676066bf64e96fbb0e6e20ea6b6"},
+    {"id":"ood-n09-b01-i003","identityAction":"SAME_ID","acceptedMeaning":"Recording provider verifies territory/expiry inputs and denial.","beforeSha256":"c6122e92f7eaef084d38c01bd746f674e422c93dda97a5bee6edb73a6c6404f3","currentSha256":"f71e3515351c9d186f86e4058e26475b9d1c2bb9fde0aa0371c0ca42650634a2"},
+    {"id":"ood-n09-b01-i004","identityAction":"SAME_ID","acceptedMeaning":"Repository fake returns post-selection conflict; exercise actual conflict branch.","beforeSha256":"71f7ba13fed0726429bb361c781c9bfb8f2fac2a0035be051663190d22881bb5","currentSha256":"878ec6b78e9387c4b2eb6a1305f7039bc89ba1f9d92d9b54f401ddca7e3e65ef"},
+    {"id":"ood-n09-b01-i005","identityAction":"SAME_ID","acceptedMeaning":"Record sender payload and prove opted-out profile is excluded.","beforeSha256":"20d8ceaab19cf208e899edd8753c1e236eadfffdcb4ae536a7a8c5fa3dd8bb56","currentSha256":"44201a36ef36c3aeb213bc6343a009ea1425c55669519b04d40408b6f9e08407"},
+    {"id":"ood-n09-b01-i006","identityAction":"SAME_ID","acceptedMeaning":"Versioned catalog fake verifies the attempt retains its original version.","beforeSha256":"7a72541f2531911978e141b753998fb0d86b793278bcaaee6850d4473b2ccd8c","currentSha256":"bc4b330ffaf27180985a592b7a90d0b1fbafac1d710efb74460272687f300012"},
+    {"id":"ood-n09-b01-i007","identityAction":"SAME_ID","acceptedMeaning":"Controlled identity collaborator drives authorized/unauthorized real payout path.","beforeSha256":"99094a4ddf733d62bbd390e6c8f1f0368e6c73bcc2f4d400919a18c4b3b62e26","currentSha256":"e59dee0cdac3423d9fa743e10de3f38b0f4d851565547a233b72c38b2aa55a58"},
+    {"id":"ood-n09-b01-i008","identityAction":"SAME_ID","acceptedMeaning":"Deterministic segment IDs exercise real offset remapping.","beforeSha256":"7cce78df57c78afc30c13a72d630a49ee9d9a8f8bbb375bcdadf948e147d070e","currentSha256":"8ec5bba40534492fefeb1359953ea05a9c31bd7f615a93b3fd388afaa83c9e5a"},
+    {"id":"ood-n09-b01-i009","identityAction":"SAME_ID","acceptedMeaning":"Controlled availability drives the actual assignment approval rule.","beforeSha256":"36c1d6e0f76db414d893db27eb88a38d8c4c6b414c04ee9222db44bc0118c8a5","currentSha256":"61ecd25a337b8b8e953f5d65303c4b6140f8e7400120c5e2e70b510da16e7b2a"},
+    {"id":"ood-n09-b01-i010","identityAction":"SAME_ID","acceptedMeaning":"Recording signer verifies selected immutable revision despite later draft edit.","beforeSha256":"d9c6ffb01fc33c4adcb6abbb98d12f96537707bd8d28e265654db00fb57c73e5","currentSha256":"fe0f405047b7d982176c5c35cd7c1eff20e4cad5e98438f7c3cfebe1eb280c57"},
+    {"id":"ood-n09-b01-i011","identityAction":"SAME_ID","acceptedMeaning":"Script timeout then confirmation and verify retry uses same payout ID.","beforeSha256":"2c530176f2c79d8166003dc2887de813f25c23016f8c08c511a8df62edc79a4a","currentSha256":"b1b590cb84de669c5775c94e2d8ac0dd883d949d98d553421b238f6f494d7cdd"},
+    {"id":"ood-n09-b01-i012","identityAction":"SAME_ID","acceptedMeaning":"Record notification order and compare it to effective-time values.","beforeSha256":"69a5d0263738293dae5b788cb8e30936e70644c0b0ba9128ed4d249fe56193ab","currentSha256":"a653ea500d1c3d1a811f039c07e8d850fc71786d1889948ac122d7996579a6bf"},
+    {"id":"ood-n09-b01-i013","identityAction":"SAME_ID","acceptedMeaning":"Seed partial history overlap and exercise real import behavior.","beforeSha256":"7d7e687fcd37544b723f12f983f1aff9723b0b195ce5da8ea0a97f748f7d6402","currentSha256":"f8027e7a14b12bc356b31ab0c949687582809c550b1e6a6988bc6b44a7bfb16d"},
+    {"id":"ood-n09-b01-i014","identityAction":"SAME_ID","acceptedMeaning":"Two deterministic providers exercise real factory/switch and stream-adapter failure.","beforeSha256":"c52233717beb96ca91bdbad978507793ba1e706f2c6456bf56c4467549e09a49","currentSha256":"dadd8e0aac6d33c3795028faf17d538ba607cdba82403dbcffe91ef1c8c8f685"},
+    {"id":"ood-n09-b01-i015","identityAction":"SAME_ID","acceptedMeaning":"Controlled availability for both assignments exercises genuine allocation.","beforeSha256":"a4bbbab24f7c0b0c5ebdff706b294a4289615b753180216b040e171a335cb609","currentSha256":"ae9e015edbf66704b4b96939cac2b51b28fa37f91957d4e53bf05d28c2f5acf6"},
+    {"id":"ood-n09-b01-i016","identityAction":"SAME_ID","acceptedMeaning":"Script accepted-geometry conflict and exercise real sync conflict path.","beforeSha256":"a93964f223df01e801e34840a366fb9ab62780e7c1bdf43df46c46310bac04bb","currentSha256":"809d9dcd47907ec1171e6adf965d1ec7e1c8969323fc55413ade7b303644aef7"},
+    {"id":"ood-n09-b01-i017","identityAction":"SAME_ID","acceptedMeaning":"Controlled active/closed phases exercise real reward operation.","beforeSha256":"2d7bf1d120516cf4d4be6d569d406909ddb86b7322e79f155c977d4696832054","currentSha256":"c15680921147795abc9d4a89d488e237e1d927f039860323b237067733df98e9"},
+    {"id":"ood-n09-b01-i018","identityAction":"SAME_ID","acceptedMeaning":"Record carrier adapter call and inspect actual reassignment payload.","beforeSha256":"97f129c8c9e927b034944d844d9a479b3c284bf3fadcac200a84c969b9bc185d","currentSha256":"a4e79cac666b976c12251bcd1d7e8964d6e78abbcf72ad01aaa8d0315a1cbc95"}
+  ],
+  "limitations": [
+    "No acceptance of the other N08/N09 units or whole324 cross-unit identity map.",
+    "No producer, source activation, runtime, admission, native, or full BIZQ-01 acceptance."
+  ]
+}

@@ -1,0 +1,274 @@
+{
+  "items": [
+    {
+      "beforeQuestionId": "ood-n09-b02-i001",
+      "questionId": "ood-n09-b02-i001",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "construct requests on both sides of the deadline without changing the machine clock",
+      "nearestAlternative": "Let the constructor read the live system clock.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i002",
+      "questionId": "ood-n09-b02-i002",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "construct valid and invalid regional listings side by side without editing process environment variables",
+      "nearestAlternative": "Read the deployment region and stock defaults from environment variables inside the constructor.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i003",
+      "questionId": "ood-n09-b02-i003",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "assert repeatable child identities for a chosen sequence without relying on random values",
+      "nearestAlternative": "Generate child IDs from the production random source during the test.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i004",
+      "questionId": "ood-n09-b02-i004",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "build a transfer from two chosen approval histories without opening the live garden record store",
+      "nearestAlternative": "Look up approval history from the live plot registry inside the constructor.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i005",
+      "questionId": "ood-n09-b02-i005",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "construct bundles under two different region policies in one process without changing global locale",
+      "nearestAlternative": "Read the machine locale and infer the pricing policy in the bundle constructor.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i006",
+      "questionId": "ood-n09-b02-i006",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "create reservations at a specific instant without waiting for real time to pass",
+      "nearestAlternative": "Read the system clock directly in the reservation constructor.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i007",
+      "questionId": "ood-n09-b02-i007",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "construct from conflicting metadata while preserving a selected existing ID",
+      "nearestAlternative": "Have construction read the current asset ID from the archive service.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i008",
+      "questionId": "ood-n09-b02-i008",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "build requests for two territories and expiries without reading a live licensing account",
+      "nearestAlternative": "Fill a missing territory or expiry from the current provider account.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i009",
+      "questionId": "ood-n09-b02-i009",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "supply two controlled aircraft catalogs without reading a live parts service",
+      "nearestAlternative": "Load the current compatibility catalog from the parts service inside construction.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i010",
+      "questionId": "ood-n09-b02-i010",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "create a no-consent case with a recording sender and no live specialist endpoint",
+      "nearestAlternative": "Have the constructor create a live specialist client from deployment settings.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i011",
+      "questionId": "ood-n09-b02-i011",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "construct an attempt from an older selected version while the catalog head has advanced",
+      "nearestAlternative": "Read whichever catalog version is current during completion construction.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i012",
+      "questionId": "ood-n09-b02-i012",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "create authorized and unauthorized commands side by side without a logged-in global session",
+      "nearestAlternative": "Read the currently logged-in user from a global session during construction.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i013",
+      "questionId": "ood-n09-b02-i013",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "construct annotations for segments whose IDs stay fixed while offsets change",
+      "nearestAlternative": "Infer the segment ID by querying the live media index during construction.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i014",
+      "questionId": "ood-n09-b02-i014",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "build grants with matching and mismatching reviewer records without a live directory",
+      "nearestAlternative": "Look up an arbitrary current approval in the live permission directory.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i015",
+      "questionId": "ood-n09-b02-i015",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "construct the request for one revision while the editable draft changes separately",
+      "nearestAlternative": "Read whichever draft revision is current from the document server.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i016",
+      "questionId": "ood-n09-b02-i016",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "create repeated requests for one order and verify the identity stays the same without moving money",
+      "nearestAlternative": "Generate a new random payout key inside the constructor for every request.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i017",
+      "questionId": "ood-n09-b02-i017",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "build two notices with reversed arrival but fixed effective times without reading the machine clock",
+      "nearestAlternative": "Stamp each notice with the current system time as it is constructed.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n09-b02-i018",
+      "questionId": "ood-n09-b02-i018",
+      "mentalUnitId": "OOD-N09-B02",
+      "learningObjective": "Assemble testable objects with explicit construction inputs and controlled clocks, randomness, I/O, or collaborators.",
+      "decisiveFact": "build two windows around a fixed boundary without depending on local timezone settings",
+      "nearestAlternative": "Interpret window strings using the host’s default timezone inside construction.",
+      "changedCondition": "If the construction input did not vary by test case, the value could remain a default; here the test explicitly varies it.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original and revised item both test explicit, controllable object assembly; the new scenario makes the required constructor input concrete. Fresh option IDs replace the old generic meaning.",
+      "sourceRefs": [
+        "https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices",
+        "https://learn.microsoft.com/en-us/dotnet/standard/datetime/timeprovider-overview"
+      ]
+    }
+  ]
+}

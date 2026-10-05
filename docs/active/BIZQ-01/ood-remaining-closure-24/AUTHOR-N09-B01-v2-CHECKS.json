@@ -1,0 +1,17 @@
+{
+  "proposalSha256": "665d4e8969561a28a36097c9aef64b05efd3b0a32e969c5005e61e4377071e1b",
+  "noteJsonSha256": "240fe4ce1304e35a598351f194eee2f97429b5cf1efc7576bc83d034f5913a79",
+  "noteMdSha256": "e587098062bc8f0d59032667b8377f2721568c33ef84c685c4cdd719fd9a7cf9",
+  "verification": {
+    "questionCount": 18,
+    "validQuestions": 18,
+    "scoreCases": 180,
+    "keyedCorrectCases": 36,
+    "wrongOptionsRejectedCases": 144,
+    "oldCorrectLongestOrTied": 18,
+    "newCorrectLongestOrTied": 0,
+    "correctedLiveTheTypos": 18,
+    "errorCount": 0,
+    "errors": []
+  }
+}

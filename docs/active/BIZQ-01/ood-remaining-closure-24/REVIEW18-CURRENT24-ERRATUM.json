@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "bizq01-review18-current24-erratum-v1",
+  "scope": "Corrects one stale source-versus-HEAD sentence in the immutable REVIEW18-CURRENT24.md. No reconciliation rows or semantic conclusions changed.",
+  "originalReport": {
+    "path": "REVIEW18-CURRENT24.md",
+    "sha256": "98550cce331f99644e4e728afed84139d4b286df33162b9ff40376099989dba1"
+  },
+  "originalReconciliation": {
+    "path": "ROOT-REVIEW18-CURRENT24.json",
+    "sha256": "63a1431942e06c75486431aa6bcdccf14dc5ae02251da6fbbdf667eb949292e5"
+  },
+  "correction": {
+    "supersededStatement": "The current source checkout is ahead of its Git HEAD during this preflight.",
+    "correctedFacts": {
+      "sourceContentCommit": "1487f24db63af0627b8f3b3739c125594a345b80",
+      "readinessCheckoutHead": "0a05f73d82c9dd9acac59cd26e4be8228b0a850a",
+      "trackedContentFilesClean": true
+    },
+    "effect": "Metadata correction only; reconciliation results and prior semantic acceptance bindings are unchanged."
+  }
+}

@@ -1,0 +1,315 @@
+{
+  "schemaVersion": "bizq01-n08-b08-author-v3",
+  "previousProposal": "proposals/N08-B08-v2.json",
+  "proposalFile": "proposals/N08-B08-v3.json",
+  "proposalSha256": "c8e7e4fab99c5d297c07a5dc497df0c541f2cd1ae13c15e9f1162e9fff3d47a1",
+  "scope": "Kept concise accepted outcomes and the corrected i010 authority-versus-propagation boundary from v2. Rebuilt the wrong options as complete, case-specific failure policies, assigned fresh IDs, and aligned each diagnostic. No source-array reordering; runtime learner ordering is handled by the root presentation fix.",
+  "items": [
+    {
+      "questionId": "ood-n08-b08-i001",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A board-game campaign manager, A reward updates character points and campaign phase in one local command. If the optional audit publisher fails after that command commits, the reward remains accepted and the audit event is marked pending. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Undo points even though the local reward command committed, then report the audit error as a failed reward.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i002",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A cold-chain logistics console, The new carrier accepts a shipment hand-off before a notification service fails. The hand-off is the ownership commit point; the notification is a later notice and can be retried. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Restore the former carrier when notification fails, despite accepted hand-off.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i003",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A cooperative lending ledger, The account's balance reduction and repayment entry are in one local transaction. If entry validation fails before commit, neither change is visible and the repayment can be corrected. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Keep the reduced balance while omitting the repayment entry whose validation failed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i004",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A tournament bracket service, The match result is accepted and stored, but writing the next bracket slot fails. The match result remains authoritative; the slot transition is visibly pending and no later match may start yet. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Erase the accepted match result because its separate bracket write failed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i005",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A returns inspection workflow, Inspection findings commit before a separate refund review begins. If refund review fails, the submitted findings remain immutable and the refund result is pending. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Change submitted inspection facts to make the refund review pass.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i006",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A research-notebook platform, A job writes a complete output file, then catalog publication fails. The file is still private until the catalog points to it; the run must report publication failure without exposing the output. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Expose the private file directly to readers before catalog registration succeeds.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i007",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A collaborative annotation workspace, The comment is accepted with author and revision. Notification delivery fails afterward; the comment remains accepted, while delivery is separately retryable. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Delete the accepted comment because its notification was not delivered.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i008",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A mobile field-inspection app, Upload chunks are staged, but the final checksum has not passed. The server must not mark the inspection complete; it can keep the upload retryable and identify the staged attempt. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Mark the inspection complete after chunks arrive but before checksum and finalization.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i009",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A digital invoice exchange, The exchange may accept an invoice, but the response connection can fail before the client receives the acknowledgement. The local outcome is unknown until the operation is reconciled; it is not safe to label it rejected. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Mark the issue rejected solely because the response connection failed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i010",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A smart-building access controller, Revocation commits at the badge authority. A door update service then fails to refresh its copy; until it confirms the authority's current revision, it must not claim that the revocation reached that door. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Undo authority revocation when one door refresh fails.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i011",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A package-label generation service, A physical label prints successfully, then saving its audit record fails. The printed label cannot be unprinted; the job must report printed-but-audit-pending and retain the shipment revision it used. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Report the print failed and print a second label despite the first physical label.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i012",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A multi-tenant rehearsal scheduler, A move reserves the destination and commits the new booking, but release of the old room fails. The move operation must expose the new booking plus an old-room cleanup pending state; other rooms remain available. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Delete the committed new booking because releasing the old room failed afterward.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i013",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A museum exhibit controller, The controller records maintenance mode before sending a hardware stop command. If the stop command fails, unsafe commands remain rejected and the hardware action is explicitly pending. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Restore running mode after stop failed, despite the committed maintenance state.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i014",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A video-learning library, The lesson availability change and progress mapping are prepared together. If the mapping check fails before publication, the current lesson remains available and progress continues on the same identity. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Hide the lesson before mapping validation, then try to reconstruct progress later.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i015",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A shared whiteboard application, The export file is complete, but adding its index entry fails. The live board remains active; users must be told the export exists as an unindexed result rather than as a completed history listing. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Close the active board because adding a separate export index failed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i016",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A customer-support escalation desk, The escalation command commits assignee and deadline together. A later email notification fails; ownership and deadline remain committed, while the notification is pending. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Restore the old assignee because its later email notice failed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i017",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A regional produce marketplace, Price and stock are validated and published together. A search-index update then fails; buyers use the catalog revision, and indexing is a pending projection rather than the publication commit. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Roll back the published catalog values because only the search projection failed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i018",
+      "learningObjective": "Report the actual local/external commit boundary and preserve already accepted effects when a collaborator fails.",
+      "decisiveFact": "In A repair-parts marketplace, Both vendor checks pass and the split is committed under the original request. A later notification to one vendor fails; the split and delivery promise remain accepted, while that notice is pending. What outcome should the operation expose after the collaborator fails?",
+      "nearestAlternative": "Undo the committed split and restore the parent because one notice failed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_fresh_ids_to_rewritten_distractors",
+      "identityReason": "The same committed-versus-pending decision remains supported. Distractors now distinguish specific wrong transitions (undo, duplicate, false success, or hidden pending work) and received fresh IDs with matching messages.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "The fictional commit and failure boundary is explicit in the prompt; no external rollback guarantee is inferred."
+      ]
+    }
+  ]
+}

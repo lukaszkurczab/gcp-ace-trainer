@@ -1,0 +1,303 @@
+{
+  "schemaVersion": "bizq01-ood-n08-b05-semantic-qa-v1",
+  "review": "SEMANTIC-N08-B05-v1-QA",
+  "verdict": "REVISE",
+  "scope": "N08-B05 v1 unit semantics and identity only; not full N08/N09 cross-unit or producer/source/runtime acceptance.",
+  "inputs": {
+    "proposal": {
+      "path": "review-inputs/N08-B05-v1.json",
+      "sha256": "379a3176955d92dd842b6bb0682b4ddd49844907105766bca115d5692bd8e0ba"
+    },
+    "manifest": {
+      "path": "N08-N09-MANIFEST.json",
+      "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    },
+    "contract": {
+      "path": "N08-N09-CONTRACT.json",
+      "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+    },
+    "authorNotes": {
+      "path": "AUTHOR-N08-B05-v1.json",
+      "sha256": "b11821396cdec496c5d8ee5ce9e0e046ea5d443d415cb5017e04fc7458bbb9ae"
+    },
+    "authorNotesMarkdown": {
+      "path": "AUTHOR-N08-B05-v1.md",
+      "sha256": "6eb02e624a11ae8686d42971dbdccf0b331b541a513c1286caef2f4ea3ea1f05"
+    },
+    "source": {
+      "path": "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B05.json",
+      "sha256": "9ed4fbc42e1526372553053432cdb1b91de22a78b5547a20647f0571c6fa5910"
+    }
+  },
+  "method": {
+    "wholeObjectFingerprint": "SHA-256 of repository canonicalJson(question), recursively sorted object keys",
+    "answerResolution": "answer.optionId, not option position",
+    "wholeObjectsReviewed": 18,
+    "longestCorrectCount": 17,
+    "longestCorrectItems": [
+      "ood-n08-b05-i001",
+      "ood-n08-b05-i002",
+      "ood-n08-b05-i003",
+      "ood-n08-b05-i004",
+      "ood-n08-b05-i005",
+      "ood-n08-b05-i006",
+      "ood-n08-b05-i007",
+      "ood-n08-b05-i008",
+      "ood-n08-b05-i009",
+      "ood-n08-b05-i011",
+      "ood-n08-b05-i012",
+      "ood-n08-b05-i013",
+      "ood-n08-b05-i014",
+      "ood-n08-b05-i015",
+      "ood-n08-b05-i016",
+      "ood-n08-b05-i017",
+      "ood-n08-b05-i018"
+    ]
+  },
+  "identitySummary": {
+    "counts": {
+      "sameQuestionId": 18,
+      "replacementQuestionId": 0,
+      "acceptedOptionMeaningRetained": 18
+    },
+    "rationale": "The prior answer selected atomic handling of compound collection invariants. Each current key applies that same decision to a visible case-specific invariant; same IDs remain justified."
+  },
+  "findings": [
+    {
+      "id": "N08-B05-F1",
+      "severity": "blocking",
+      "requirement": "BIZQ-01 §4.3 requires plausible alternatives with comparable specificity and removal of a systematic longest-correct signal.",
+      "items": [
+        "ood-n08-b05-i001",
+        "ood-n08-b05-i002",
+        "ood-n08-b05-i003",
+        "ood-n08-b05-i004",
+        "ood-n08-b05-i005",
+        "ood-n08-b05-i006",
+        "ood-n08-b05-i007",
+        "ood-n08-b05-i008",
+        "ood-n08-b05-i009",
+        "ood-n08-b05-i011",
+        "ood-n08-b05-i012",
+        "ood-n08-b05-i013",
+        "ood-n08-b05-i014",
+        "ood-n08-b05-i015",
+        "ood-n08-b05-i016",
+        "ood-n08-b05-i017",
+        "ood-n08-b05-i018"
+      ],
+      "rationale": "17 of 18 accepted options are strictly longest; this accompanies a repeated content cue in which complete atomic-operation keys contrast with partial safe-call, global-lock, or post-hoc-repair distractors despite explicit stem boundaries.",
+      "correction": "Keep each collection-level decision and revise the choices so alternatives are credible, complete policies that fail a visible condition. Do not pad or target a numeric length."
+    },
+    {
+      "id": "N08-B05-F2",
+      "severity": "blocking",
+      "requirement": "BIZQ-01 §§4.1–4.2 require one defensible answer grounded in visible facts.",
+      "items": [
+        "ood-n08-b05-i011"
+      ],
+      "rationale": "The prompt defines the composite completion key as learner, exercise revision, and score policy, then requires rejecting a conflicting duplicate revision. If policy is part of the key, a differing policy is not a duplicate under that identity; if it is not, the actual key boundary is unstated.",
+      "correction": "Clarify the key-versus-duplicate boundary in visible facts and align accepted answer/Reason/Details so the rule is coherent."
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n08-b05-i001",
+      "beforeCanonicalJsonSha256": "4ac6fb74adba0eff7dff846d1980f78a1812bf6887140c7d89ba089266362fa9",
+      "currentCanonicalJsonSha256": "08a5b84481563655dd399d8329f54dae8def4bdb8847b0656de566d572cc1da8",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i001",
+      "currentQuestionId": "ood-n08-b05-i001",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Expose one conversation-level update that replaces assignee and deadline together, using the current record as its input."
+    },
+    {
+      "questionId": "ood-n08-b05-i002",
+      "beforeCanonicalJsonSha256": "9068eb97e99dca345ccce651478edcd1db2228177e21986924cab79d42a3b08f",
+      "currentCanonicalJsonSha256": "30bc35871c1278c37c0ef537b81bcf1253bbbaea71a75722d094e2bca98363b0",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i002",
+      "currentQuestionId": "ood-n08-b05-i002",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Publish a new immutable listing revision containing price and stock together, then switch the listing's visible revision."
+    },
+    {
+      "questionId": "ood-n08-b05-i003",
+      "beforeCanonicalJsonSha256": "90c40e7263a44f819777c1b3c99a05bdaa0dd738ef57d675997b830641ed3989",
+      "currentCanonicalJsonSha256": "ee95723de7e982e841ee12059409c5a49f541aadbb4eab700a8be482d34a08e5",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i003",
+      "currentQuestionId": "ood-n08-b05-i003",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Add the child requests and replace the parent with one committed split revision, so readers see either the original request or the complete split."
+    },
+    {
+      "questionId": "ood-n08-b05-i004",
+      "beforeCanonicalJsonSha256": "a2e1cde554855099b3747da45a96a03fe0c2d74143e064bee5e5d36a557f6265",
+      "currentCanonicalJsonSha256": "bd81fe0bc71f457237e48c28db6090d5a9fa170ca637f8ec09090521244130cb",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i004",
+      "currentQuestionId": "ood-n08-b05-i004",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Commit the current reservation and its approval-history entry as one plot transfer revision."
+    },
+    {
+      "questionId": "ood-n08-b05-i005",
+      "beforeCanonicalJsonSha256": "6e5f8ed1491fb57babcf49492c1f68e328f912ee711f1e8d744586c8504490df",
+      "currentCanonicalJsonSha256": "1260ba846fb157009e3ce9b355644dcdd5fcd3d3c5b97e2207fc3747c9b57797",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i005",
+      "currentQuestionId": "ood-n08-b05-i005",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Build and validate an immutable bundle revision from the chosen component revisions and pricing rule, then atomically make that revision current."
+    },
+    {
+      "questionId": "ood-n08-b05-i006",
+      "beforeCanonicalJsonSha256": "10759742c3174fdf99bcc0f96b93ba229b8d8ec1ae849a97cd8fe1c5dba9a65f",
+      "currentCanonicalJsonSha256": "322f9c8683cfae14a12925b30cbb2fafa26dcbaa4da34f788c93376fdf3e1b43",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i006",
+      "currentQuestionId": "ood-n08-b05-i006",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Make capacity check and reservation insertion one station-scoped conditional operation."
+    },
+    {
+      "questionId": "ood-n08-b05-i007",
+      "beforeCanonicalJsonSha256": "328648c0712c387df69c10481b0d395fdddd34d67167509c3a7d5511cf07b365",
+      "currentCanonicalJsonSha256": "4e136a6d711e75336d2addb8013f92e0a4e0be1e9607babb4ab97f5cc4568b2f",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i007",
+      "currentQuestionId": "ood-n08-b05-i007",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Use a revision-checked replace for that asset and return a conflict when the current revision differs from the curator's base."
+    },
+    {
+      "questionId": "ood-n08-b05-i008",
+      "beforeCanonicalJsonSha256": "a600065e4d074a40ce07a02df49b8dbd740017aa03706d69054d79513d1db031",
+      "currentCanonicalJsonSha256": "178ea82057e3b5e40e83bee6cc780182b9e997f273846182e2aacd53bda1b63c",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i008",
+      "currentQuestionId": "ood-n08-b05-i008",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Create a complete immutable approval record and publish it under the territory key in one replacement."
+    },
+    {
+      "questionId": "ood-n08-b05-i009",
+      "beforeCanonicalJsonSha256": "6128dff9dee1e2d12bf2521a3967f39be755b58ca7f247c7d0ba767cc1701c34",
+      "currentCanonicalJsonSha256": "5e1ac96dc7c38eb67d9c2ed2d58e9c6f039c7b5f1786d8d72aa954e2123bdadd",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i009",
+      "currentQuestionId": "ood-n08-b05-i009",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Coordinate the pair of index changes as one assignment operation that checks both current indexes before publishing either side."
+    },
+    {
+      "questionId": "ood-n08-b05-i010",
+      "beforeCanonicalJsonSha256": "cf50fb8725af754bacf91bb61965f61ee0fe9739ac6822630c01f17c7f3b4086",
+      "currentCanonicalJsonSha256": "c5d40ebecb470ae53015fba7308620471757e541447f67c9a31a106805f0bfc8",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i010",
+      "currentQuestionId": "ood-n08-b05-i010",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Check the consent revision and record the referral against that same revision in one referral-owner operation."
+    },
+    {
+      "questionId": "ood-n08-b05-i011",
+      "beforeCanonicalJsonSha256": "4fa2e3ef44095b9df51ffbbfd2956151c4078193af2ae615fc982951cc820100",
+      "currentCanonicalJsonSha256": "aff6fdefe31d3349869307fad76daa736cb687a9bf6e3aa30e62027c1b3446ac",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i011",
+      "currentQuestionId": "ood-n08-b05-i011",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Use the complete composite identity when recording completion and reject a conflicting duplicate revision rather than merging its policy fields."
+    },
+    {
+      "questionId": "ood-n08-b05-i012",
+      "beforeCanonicalJsonSha256": "009bf3c8034a41d0e645e53f35a0685de3213d3e2479e1bbb7c1834062ef7ec7",
+      "currentCanonicalJsonSha256": "0b40cf92077733c59544f8dfa462b7f14c8131f291301bd7d2bdb4dfa808248d",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i012",
+      "currentQuestionId": "ood-n08-b05-i012",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Validate the required control set and publish an approval record that contains that set and reviewer together."
+    },
+    {
+      "questionId": "ood-n08-b05-i013",
+      "beforeCanonicalJsonSha256": "dce516cc78692138f077d36ced07452d21e846fbc432c6994d1db72e20149bec",
+      "currentCanonicalJsonSha256": "660ba98a9bd7521c61384720b525123bac128cfc98d9bf3eb9592ed27bd610fc",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i013",
+      "currentQuestionId": "ood-n08-b05-i013",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Publish the recording revision and its segment-ID map as one versioned collection entry."
+    },
+    {
+      "questionId": "ood-n08-b05-i014",
+      "beforeCanonicalJsonSha256": "05b60ee569c96e0b7e0fdc6486602dbb38e069be793ff36041b83372f335ac50",
+      "currentCanonicalJsonSha256": "227bb4d11c218d8a4a6cdb0df26c7d5707497d64dc4b9df688225fab3bb48088",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i014",
+      "currentQuestionId": "ood-n08-b05-i014",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Replace the grant with one immutable record containing role, expiry, and approval reference; let revocation replace that same record state."
+    },
+    {
+      "questionId": "ood-n08-b05-i015",
+      "beforeCanonicalJsonSha256": "abf0a286ca3b91b98da6573d3b5bd9a18d40060d20784da4835b7dac96ef0cef",
+      "currentCanonicalJsonSha256": "eacf2c1233c372e1531bfe3e6cdd6c3ef6486ae5b8ec7a0274217c9bb41b8ee4",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i015",
+      "currentQuestionId": "ood-n08-b05-i015",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Append the seal under its revision key and never overwrite the seal entry for a different document revision."
+    },
+    {
+      "questionId": "ood-n08-b05-i016",
+      "beforeCanonicalJsonSha256": "93dbb3a07fb1284ee1c07cb736bf0cc131f52c910f4f36b8bab76712f73ee1e6",
+      "currentCanonicalJsonSha256": "01f6575a7614f92602d2dad427c71bf29beb041edc54f268358aabe1a26279dc",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i016",
+      "currentQuestionId": "ood-n08-b05-i016",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Record the accepted release with its order and settlement revision as one payout result; reject a request whose checked revision is no longer current."
+    },
+    {
+      "questionId": "ood-n08-b05-i017",
+      "beforeCanonicalJsonSha256": "0769232edaf3e88e0e52f1c1df68dae226fdc379ac1d841136e02f064037b474",
+      "currentCanonicalJsonSha256": "89a1f91706c095ead551c39116b3f73b2c012f3e40d764578d24e1c1c881d6bf",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i017",
+      "currentQuestionId": "ood-n08-b05-i017",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Insert updates into a route-scoped ordered queue and publish only the next effective sequence for that route."
+    },
+    {
+      "questionId": "ood-n08-b05-i018",
+      "beforeCanonicalJsonSha256": "a964f78270612cc92c66a0bacea7e80ef0d43ba986fd279119d144e1d8645d84",
+      "currentCanonicalJsonSha256": "3095bf816ecffd7bf5befc6c76c7c93921207bfced2097a3c710fa656c9a1265",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b05-i018",
+      "currentQuestionId": "ood-n08-b05-i018",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedDecision": "Use one meter-scoped conditional insert that checks overlap against current reservations and records only if the interval remains free."
+    }
+  ]
+}

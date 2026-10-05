@@ -1,0 +1,37 @@
+{
+  "scope": "Exact completed author handoff, inactive18perunit; no semantic acceptance",
+  "inputs": [
+    {
+      "unit": "N09-B06",
+      "path": "review-inputs/N09-B06-v1.json",
+      "sha256": "985d78d4f8dd5fff2f4d353001078794efabce52efb51f0bb2c9823d3003b0be",
+      "notesSha256": "6ed78f33ffad67725c04732931b1fe22db005a9aa1d17a517f94d0add024ff2d",
+      "checksSha256": "dd280a8d954055c0b1596938a3a95cf8489126f3701d25be5915df4695c66a10",
+      "mechanicalOnly": true
+    },
+    {
+      "unit": "N09-B07",
+      "path": "review-inputs/N09-B07-v1.json",
+      "sha256": "6c86e2b2bc11f219f3956de71fd2f166d7c63c41ef159713a0154cb47d23cbd8",
+      "notesSha256": "19bcd0b1dc3af4d594045a35e9f7bfb6dd527bb70cb61a109b7376b9903cf23a",
+      "checksSha256": "4893536492178f31dc535170d9626ca639a2ad1f2165d12a850937ece24bc646",
+      "mechanicalOnly": true
+    },
+    {
+      "unit": "N09-B08",
+      "path": "review-inputs/N09-B08-v1.json",
+      "sha256": "18daca7ed08d6ed69d2ad28ad9e5088c0c9d460e851778f77724a3d08c705c64",
+      "notesSha256": "e33ace473d0081b6708777d24dc83aa16d3b34324d5539b80ee96dbae2e93089",
+      "checksSha256": "07b55e45eb960b9bc1e09d414d3aded424f2c7c96561b883d497a5f6b5d4a141",
+      "mechanicalOnly": true
+    },
+    {
+      "unit": "N09-B09",
+      "path": "review-inputs/N09-B09-v1.json",
+      "sha256": "eaf029085771773417ad6a008dcbeeb93fa670385bb4fee60c2c5e54618704e0",
+      "notesSha256": "bc969f777b91c59e54fdbc0e18ab970945207286f61b0f9133330ea34ad1d1c2",
+      "checksSha256": "eaa5c44f536f8ee6586d292ba1d4ebea8bcacb53ba9613154bb6d6c61fd4a547",
+      "mechanicalOnly": true
+    }
+  ]
+}

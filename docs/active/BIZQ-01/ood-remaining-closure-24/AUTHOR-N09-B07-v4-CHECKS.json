@@ -1,0 +1,730 @@
+{
+  "schemaVersion": "bizq01-n09-b07-v4-expanded-correction-v2",
+  "inputPath": "review-inputs/N09-B07-v3.json",
+  "inputSha256": "428676e548e3da6ef68e3bfa4530c36818b7650e5c5dd2f5ea9e9c577e872a8a",
+  "outputPath": "proposals/N09-B07-v4.json",
+  "outputSha256": "87689861d0d722d81c8e62f9909078701ea461e0126b6173e8fe6448441bd17d",
+  "questions": 18,
+  "changedWrongOptionMessages": 72,
+  "changedWrongOptionChoices": 3,
+  "changedOptionIdLeaves": 3,
+  "changedOptionTextLeaves": 3,
+  "changedFeedbackTargetIdLeaves": 3,
+  "changedFeedbackMessageTextLeaves": 72,
+  "changedTotalLeaves": 81,
+  "validationPass": 18,
+  "acceptedAnswerCorrect": 18,
+  "distractorsIncorrect": 72,
+  "reversedAnswerCorrect": 18,
+  "changedTargets": [
+    {
+      "questionId": "ood-n09-b07-i019",
+      "targetId": "n09b07_i019_assumed_cache",
+      "optionText": "Cache every price indefinitely even though tax rules can change during the day.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, a production profile shows repeated tax-service calls account for 62% of request time; the tax service accepts a batch of product ids with the same result contract. This option does not target that measured work or respect its stated scope.",
+      "newText": "Tax rules can change during the day, so an indefinite price cache can return a tax-inclusive total calculated under an earlier rule."
+    },
+    {
+      "questionId": "ood-n09-b07-i019",
+      "targetId": "n09b07_i019_wrong_cost_center",
+      "optionText": "Replace the search index because all database work is presumed to be the bottleneck.",
+      "oldText": "The proposed change targets a different component; the evidence points to a production profile shows repeated tax-service calls account for 62% of request time; the tax service accepts a batch of product ids with the same result contract. The measured operation would remain.",
+      "newText": "The trace assigns 62% of request time to tax-service calls. Replacing the search index leaves those repeated lookups in this response path."
+    },
+    {
+      "questionId": "ood-n09-b07-i019",
+      "targetId": "n09b07_i019_contract_shortcut",
+      "optionText": "Increase the service timeout so the repeated calls have more time to finish.",
+      "oldText": "A longer timeout lets the same calls run longer; it does not remove the repeated work measured here: A production profile shows repeated tax-service calls account for 62% of request time; the tax service accepts a batch of product IDs with the same result contract.",
+      "newText": "A longer timeout changes how long each tax lookup can wait; it does not reduce the number of calls made for the products in this search."
+    },
+    {
+      "questionId": "ood-n09-b07-i019",
+      "targetId": "n09b07_i019_broad_rewrite",
+      "optionText": "Rewrite the endpoint in a lower-level language without profiling its CPU path.",
+      "oldText": "This broad or misplaced change is not justified by the trace. The case identifies a production profile shows repeated tax-service calls account for 62% of request time; the tax service accepts a batch of product ids with the same result contract. and does not show that the proposed rewrite removes it.",
+      "newText": "The profile measures remote tax-call time, not endpoint CPU. Rewriting the endpoint language alone leaves the per-product calls unchanged."
+    },
+    {
+      "questionId": "ood-n09-b07-i020",
+      "targetId": "n09b07_i020_assumed_cache",
+      "optionText": "Add another cache layer even though the measured hit rate is low and freshness is tight.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, the measured cache hit rate is 8%, cache lookup adds 9 ms, and the feed p95 remains inside its stated 120 ms target. profile updates must appear within 2 seconds. This option does not target that measured work or respect its stated scope.",
+      "newText": "With only an 8% hit rate, another cache layer is unlikely to avoid much work and adds to the measured 9 ms lookup while the feed already meets its 120 ms target."
+    },
+    {
+      "questionId": "ood-n09-b07-i020",
+      "targetId": "n09b07_i020_wrong_cost_center",
+      "optionText": "Increase cache lifetime so the reported hit rate rises, despite the 2-second update requirement.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, the measured cache hit rate is 8%, cache lookup adds 9 ms, and the feed p95 remains inside its stated 120 ms target. profile updates must appear within 2 seconds. This option does not target that measured work or respect its stated scope.",
+      "newText": "Extending the cache lifetime can leave a profile out of date for more than the required two seconds; a higher hit rate would come by violating freshness."
+    },
+    {
+      "questionId": "ood-n09-b07-i020",
+      "targetId": "n09b07_i020_contract_shortcut",
+      "optionText": "Replace the profile store before measuring its contribution to request time.",
+      "oldText": "The proposed change targets a different component; the evidence points to the measured cache hit rate is 8%, cache lookup adds 9 ms, and the feed p95 remains inside its stated 120 ms target. profile updates must appear within 2 seconds. The measured operation would remain.",
+      "newText": "The evidence identifies low cache reuse and lookup overhead, not a slow profile store. Replacing that store leaves the unsupported cache layer in the feed path."
+    },
+    {
+      "questionId": "ood-n09-b07-i020",
+      "targetId": "n09b07_i020_broad_rewrite",
+      "optionText": "Preload every profile at startup to avoid the cache lookup on each feed request.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, the measured cache hit rate is 8%, cache lookup adds 9 ms, and the feed p95 remains inside its stated 120 ms target. profile updates must appear within 2 seconds. This option does not target that measured work or respect its stated scope.",
+      "newText": "A startup preload has no stated refresh path to make profile updates visible within two seconds, and it does not establish that the request-time lookup cost disappears."
+    },
+    {
+      "questionId": "ood-n09-b07-i021",
+      "targetId": "n09b07_i021_assumed_cache",
+      "optionText": "Cache every arbitrary resize request without a bound on stored variants.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, profiling the preview request shows resizing consumes 71% of cpu time. the upload path already validates dimensions; larger stored derivatives have a stated storage budget. This option does not target that measured work or respect its stated scope.",
+      "newText": "Storing every arbitrary resize variant has no bound in this case and can exceed the stated derivative-storage budget."
+    },
+    {
+      "questionId": "ood-n09-b07-i021",
+      "targetId": "n09b07_i021_wrong_cost_center",
+      "optionText": "Increase database capacity even though the profile points to CPU spent resizing.",
+      "oldText": "The proposed change targets a different component; the evidence points to profiling the preview request shows resizing consumes 71% of cpu time. the upload path already validates dimensions; larger stored derivatives have a stated storage budget. The measured operation would remain.",
+      "newText": "The measured 71% is CPU spent resizing; adding database capacity does not change the image-resize work on the preview request."
+    },
+    {
+      "questionId": "ood-n09-b07-i021",
+      "targetId": "n09b07_i021_full_image_not_preview",
+      "optionText": "Return the full uploaded image instead of producing a preview.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states profiling the preview request shows resizing consumes 71% of cpu time. the upload path already validates dimensions; larger stored derivatives have a stated storage budget. Keep that output while changing the measured path.",
+      "newText": "This returns the uploaded original instead of producing the preview the service promises, so it changes the output rather than reducing the measured resize work."
+    },
+    {
+      "questionId": "ood-n09-b07-i021",
+      "targetId": "n09b07_i021_broad_rewrite",
+      "optionText": "Rewrite the image endpoint before comparing the measured resize cost.",
+      "oldText": "This broad or misplaced change is not justified by the trace. The case identifies profiling the preview request shows resizing consumes 71% of cpu time. the upload path already validates dimensions; larger stored derivatives have a stated storage budget. and does not show that the proposed rewrite removes it.",
+      "newText": "The endpoint rewrite is not tied to the 71% resize cost; without a change to the measured resize path, the hot work can remain."
+    },
+    {
+      "questionId": "ood-n09-b07-i022",
+      "targetId": "n09b07_i022_assumed_cache",
+      "optionText": "Return any ten eligible sessions and let the client sort those results.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states the profile shows sorting dominates cpu. the caller displays only the first ten sessions, and ties must remain ordered by the supplied stable id. Keep that output while changing the measured path.",
+      "newText": "Returning an arbitrary ten can omit higher-ranked eligible sessions; sorting only that subset at the client cannot recover the correct top ten."
+    },
+    {
+      "questionId": "ood-n09-b07-i022",
+      "targetId": "n09b07_i022_wrong_cost_center",
+      "optionText": "Drop the stable-ID tie-break because the list is truncated after ten.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states the profile shows sorting dominates cpu. the caller displays only the first ten sessions, and ties must remain ordered by the supplied stable id. Keep that output while changing the measured path.",
+      "newText": "The stable-ID tie-break is part of the displayed order, including ties at the ten-item cutoff. Dropping it changes which sessions occupy the prefix."
+    },
+    {
+      "questionId": "ood-n09-b07-i022",
+      "targetId": "n09b07_i022_contract_shortcut",
+      "optionText": "Cache one global ordered list even though eligibility differs by caller.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, the profile shows sorting dominates cpu. the caller displays only the first ten sessions, and ties must remain ordered by the supplied stable id. This option does not target that measured work or respect its stated scope.",
+      "newText": "Eligibility varies by caller, so one global ordered result can include sessions that are not eligible for this request."
+    },
+    {
+      "questionId": "ood-n09-b07-i022",
+      "targetId": "n09b07_i022_broad_rewrite",
+      "optionText": "Use a parallel sort without verifying whether its tie order matches the contract.",
+      "oldText": "This alternative does not address the case’s measured work. The evidence is The profile shows sorting dominates CPU. The caller displays only the first ten sessions, and ties must remain ordered by the supplied stable ID. Choose a change that preserves the stated result while reducing that operation.",
+      "newText": "Parallel execution can change tie ordering. The displayed prefix must preserve the supplied stable-ID tie-break, which this proposal does not verify."
+    },
+    {
+      "questionId": "ood-n09-b07-i023",
+      "targetId": "n09b07_i023_assumed_cache",
+      "optionText": "Add an index to an unrelated display-name field without evidence it is filtered.",
+      "oldText": "The proposed change targets a different component; the evidence points to a database trace shows 78% of query time is spent loading full event rows; the report uses only tenant id, event type, and date. The measured operation would remain.",
+      "newText": "The report does not filter on display name, so an index there does not target the measured full-row loading or the three fields the report uses."
+    },
+    {
+      "questionId": "ood-n09-b07-i023",
+      "targetId": "n09b07_i023_wrong_cost_center",
+      "optionText": "Cache entire event rows indefinitely even though the report is monthly.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, a database trace shows 78% of query time is spent loading full event rows; the report uses only tenant id, event type, and date. This option does not target that measured work or respect its stated scope.",
+      "newText": "The report uses three columns for one monthly result; caching full event objects indefinitely retains unrelated fields and supplies no stated freshness or reuse case."
+    },
+    {
+      "questionId": "ood-n09-b07-i023",
+      "targetId": "n09b07_i023_contract_shortcut",
+      "optionText": "Move date formatting into the database and assume it removes row-transfer cost.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states a database trace shows 78% of query time is spent loading full event rows; the report uses only tenant id, event type, and date. Keep that output while changing the measured path.",
+      "newText": "The trace attributes time to loading full rows, while the report consumes only tenant, type, and date. Moving date formatting does not remove the extra row data."
+    },
+    {
+      "questionId": "ood-n09-b07-i023",
+      "targetId": "n09b07_i023_broad_rewrite",
+      "optionText": "Increase connection-pool size while each query still transfers the same rows.",
+      "oldText": "This alternative does not address the case’s measured work. The evidence is A database trace shows 78% of query time is spent loading full event rows; the report uses only tenant ID, event type, and date. Choose a change that preserves the stated result while reducing that operation.",
+      "newText": "A larger connection pool can run more queries concurrently, but each report query still loads the same full event rows identified by the trace."
+    },
+    {
+      "questionId": "ood-n09-b07-i024",
+      "targetId": "n09b07_i024_assumed_cache",
+      "optionText": "Cache rendered content globally across batches without including locale in the cache key.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, a profile shows the identical locale-specific template is rendered once per recipient. the template and locale are fixed for each delivery batch. This option does not target that measured work or respect its stated scope.",
+      "newText": "A global entry without locale in its key can return one language’s rendered message to a batch using another locale."
+    },
+    {
+      "questionId": "ood-n09-b07-i024",
+      "targetId": "n09b07_i024_wrong_cost_center",
+      "optionText": "Skip locale selection and send the default-language message to every recipient.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states a profile shows the identical locale-specific template is rendered once per recipient. the template and locale are fixed for each delivery batch. Keep that output while changing the measured path.",
+      "newText": "Locale is part of the fixed batch input. Skipping its selection can send recipients the wrong language instead of reusing the correct locale-specific rendering."
+    },
+    {
+      "questionId": "ood-n09-b07-i024",
+      "targetId": "n09b07_i024_contract_shortcut",
+      "optionText": "Increase worker count while each worker repeats the same rendering work.",
+      "oldText": "More concurrent work does not reduce the number or size of operations measured here: A profile shows the identical locale-specific template is rendered once per recipient. The template and locale are fixed for each delivery batch. It may also exceed the stated dependency limit.",
+      "newText": "More workers can render the same template concurrently, but the profile counts one render per recipient. Concurrency does not remove those duplicate render calls."
+    },
+    {
+      "questionId": "ood-n09-b07-i024",
+      "targetId": "n09b07_i024_broad_rewrite",
+      "optionText": "Store the entire subscriber list inside the template object for later rendering.",
+      "oldText": "The consumer needs less or different data than this option transfers or relocates. The measured evidence is a profile shows the identical locale-specific template is rendered once per recipient. the template and locale are fixed for each delivery batch. Moving the same work does not remove that cost.",
+      "newText": "Putting recipients on the template object relocates the list but does not say to reuse one rendered value; the measured render can still run once for every recipient."
+    },
+    {
+      "questionId": "ood-n09-b07-i025",
+      "targetId": "n09b07_i025_assumed_cache",
+      "optionText": "Reuse yesterday’s quotes even though the current request requires fresh prices.",
+      "oldText": "Yesterday’s quote may reduce calls, but it misses the unchanged fresh-price deadline for this request.",
+      "newText": "Yesterday’s quote can miss the unchanged current-price deadline for these parcels, even if it avoids another provider request."
+    },
+    {
+      "questionId": "ood-n09-b07-i025",
+      "targetId": "n09b07_i025_wrong_cost_center",
+      "optionText": "Call fewer carriers and silently omit a quote for the remaining parcels.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states the measured request path calls the same carrier quote endpoint once per parcel. the provider exposes a batch operation with the same per-parcel quote fields; the price deadline is unchanged. Keep that output while changing the measured path.",
+      "newText": "Omitting a carrier quote leaves at least one parcel without the per-parcel quote fields required by the response."
+    },
+    {
+      "questionId": "ood-n09-b07-i025",
+      "targetId": "n09b07_i025_contract_shortcut",
+      "optionText": "Increase the per-call timeout while preserving one call per parcel.",
+      "oldText": "A longer timeout lets the same calls run longer; it does not remove the repeated work measured here: The measured request path calls the same carrier quote endpoint once per parcel. The provider exposes a batch operation with the same per-parcel quote fields; the price deadline is unchanged.",
+      "newText": "The timeout does not change the measured one-call-per-parcel pattern; the provider’s batch operation is the available way to reduce those requests."
+    },
+    {
+      "questionId": "ood-n09-b07-i025",
+      "targetId": "n09b07_i025_broad_rewrite",
+      "optionText": "Move the carrier call into the address form and quote before all parcels are known.",
+      "oldText": "This broad or misplaced change is not justified by the trace. The case identifies the measured request path calls the same carrier quote endpoint once per parcel. the provider exposes a batch operation with the same per-parcel quote fields; the price deadline is unchanged. and does not show that the proposed rewrite removes it.",
+      "newText": "The address form runs before the parcel set is complete, so it cannot quote the full batch; later parcels would still need additional calls."
+    },
+    {
+      "questionId": "ood-n09-b07-i026",
+      "targetId": "n09b07_i026_assumed_cache",
+      "optionText": "Add an in-memory cache for complete reservation objects and still count them after loading.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, a trace shows the service loads each reservation object, but the response uses only the count. the data store supports a count query using the same active-status filter. This option does not target that measured work or respect its stated scope.",
+      "newText": "A cache of full reservation objects still loads and counts those objects; it does not use the store’s count operation to return the one value this response needs."
+    },
+    {
+      "questionId": "ood-n09-b07-i026",
+      "targetId": "n09b07_i026_wrong_cost_center",
+      "optionText": "Remove the active-status filter to make the count query faster.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states a trace shows the service loads each reservation object, but the response uses only the count. the data store supports a count query using the same active-status filter. Keep that output while changing the measured path.",
+      "newText": "Removing the active filter counts inactive reservations too, so the result no longer answers how many are active."
+    },
+    {
+      "questionId": "ood-n09-b07-i026",
+      "targetId": "n09b07_i026_contract_shortcut",
+      "optionText": "Increase the API payload limit even though the response contains one number.",
+      "oldText": "This alternative does not address the case’s measured work. The evidence is A trace shows the service loads each reservation object, but the response uses only the count. The data store supports a count query using the same active-status filter. Choose a change that preserves the stated result while reducing that operation.",
+      "newText": "The response is one number, so raising a payload limit cannot remove the measured loading of reservation objects."
+    },
+    {
+      "questionId": "ood-n09-b07-i026",
+      "targetId": "n09b07_i026_first_page_only",
+      "optionText": "Count only the first page of active-reservation IDs as the total.",
+      "oldText": "The consumer needs less or different data than this option transfers or relocates. The measured evidence is a trace shows the service loads each reservation object, but the response uses only the count. the data store supports a count query using the same active-status filter. Moving the same work does not remove that cost.",
+      "newText": "Later pages can contain additional active reservations, so counting only the first page understates the total returned by the complete active-status count."
+    },
+    {
+      "questionId": "ood-n09-b07-i027",
+      "targetId": "n09b07_i027_assumed_cache",
+      "optionText": "Cache reputations forever even though the profile service updates them.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, the current code fetches each article’s author reputation separately. a trace shows those reads dominate latency; the profile service supports a batch lookup for a fixed candidate set. This option does not target that measured work or respect its stated scope.",
+      "newText": "The profile service updates reputations, so an eternal entry can rank a candidate using a value older than the service’s current profile."
+    },
+    {
+      "questionId": "ood-n09-b07-i027",
+      "targetId": "n09b07_i027_wrong_cost_center",
+      "optionText": "Skip reputation scores and return candidates in database order.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states the current code fetches each article’s author reputation separately. a trace shows those reads dominate latency; the profile service supports a batch lookup for a fixed candidate set. Keep that output while changing the measured path.",
+      "newText": "Returning candidates without reputation scores removes an input to the ranking and changes the order the endpoint is meant to compute."
+    },
+    {
+      "questionId": "ood-n09-b07-i027",
+      "targetId": "n09b07_i027_contract_shortcut",
+      "optionText": "Increase parallel requests without checking the profile service’s stated limit.",
+      "oldText": "More concurrent work does not reduce the number or size of operations measured here: The current code fetches each article’s author reputation separately. A trace shows those reads dominate latency; the profile service supports a batch lookup for a fixed candidate set. It may also exceed the stated dependency limit.",
+      "newText": "Parallel per-author reads keep the repeated-call pattern and do not use the stated fixed-set batch lookup; the option also leaves the service limit unchecked."
+    },
+    {
+      "questionId": "ood-n09-b07-i027",
+      "targetId": "n09b07_i027_broad_rewrite",
+      "optionText": "Read each author record from the client after returning article candidates.",
+      "oldText": "The consumer needs less or different data than this option transfers or relocates. The measured evidence is the current code fetches each article’s author reputation separately. a trace shows those reads dominate latency; the profile service supports a batch lookup for a fixed candidate set. Moving the same work does not remove that cost.",
+      "newText": "The ranker needs reputation scores before it returns the ordered candidates. Fetching author records after that response cannot produce the scored ranking the caller requested."
+    },
+    {
+      "questionId": "ood-n09-b07-i028",
+      "targetId": "n09b07_i028_assumed_cache",
+      "optionText": "Delete failure records first because they are less frequent than successful rows.",
+      "oldText": "The audit requires every failed run, regardless of frequency. Deleting those records breaks that requirement.",
+      "newText": "Failure frequency does not change the retention rule: every failed run must remain available for the audit."
+    },
+    {
+      "questionId": "ood-n09-b07-i028",
+      "targetId": "n09b07_i028_wrong_cost_center",
+      "optionText": "Drop batch summaries and keep every successful-row trace instead.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states storage cost has exceeded its budget. the audit contract requires every failed run and one summary per successful batch; individual successful-row traces are not used for decisions. Keep that output while changing the measured path.",
+      "newText": "The required record for a successful batch is its summary. Dropping summaries while keeping unused per-row success traces removes the audit’s needed evidence and retains the redundant rows."
+    },
+    {
+      "questionId": "ood-n09-b07-i028",
+      "targetId": "n09b07_i028_contract_shortcut",
+      "optionText": "Sample failures while keeping all redundant success traces.",
+      "oldText": "Sampling omits some failed runs even though the audit contract requires every failure; retaining redundant success traces does not repair that gap.",
+      "newText": "Sampling omits some failed runs, although the audit requires every failure. Retaining redundant success traces does not supply the missing failure records."
+    },
+    {
+      "questionId": "ood-n09-b07-i028",
+      "targetId": "n09b07_i028_broad_rewrite",
+      "optionText": "Store the same rows in a compressed duplicate table without changing retention.",
+      "oldText": "This retains or duplicates data the scenario says is not needed for its output: Storage cost has exceeded its budget. The audit contract requires every failed run and one summary per successful batch; individual successful-row traces are not used for decisions. It does not reduce the measured storage cost.",
+      "newText": "A duplicate table preserves the same rows and adds another copy, so it does not bring storage back under budget."
+    },
+    {
+      "questionId": "ood-n09-b07-i029",
+      "targetId": "n09b07_i029_assumed_cache",
+      "optionText": "Cache account history globally across invoices with no refresh rule.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, the profile shows repeated account-history reads for the same account within one invoice request. eligibility depends on a fixed account snapshot for that request. This option does not target that measured work or respect its stated scope.",
+      "newText": "A global cache has no refresh boundary for the next invoice and can evaluate that request against account history older than its required snapshot."
+    },
+    {
+      "questionId": "ood-n09-b07-i029",
+      "targetId": "n09b07_i029_wrong_cost_center",
+      "optionText": "Read account state separately for every line so each line sees the newest value.",
+      "oldText": "This alternative does not address the case’s measured work. The evidence is The profile shows repeated account-history reads for the same account within one invoice request. Eligibility depends on a fixed account snapshot for that request. Choose a change that preserves the stated result while reducing that operation.",
+      "newText": "Eligibility is defined against one account snapshot for the whole invoice request. Re-reading the account for each line can mix states if the account changes mid-request."
+    },
+    {
+      "questionId": "ood-n09-b07-i029",
+      "targetId": "n09b07_i029_contract_shortcut",
+      "optionText": "Skip eligibility checks on later lines after the first line succeeds.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states the profile shows repeated account-history reads for the same account within one invoice request. eligibility depends on a fixed account snapshot for that request. Keep that output while changing the measured path.",
+      "newText": "A successful first line does not establish that every later line is eligible; skipping their checks can admit a line that fails the same request snapshot."
+    },
+    {
+      "questionId": "ood-n09-b07-i029",
+      "targetId": "n09b07_i029_stale_snapshot_reuse",
+      "optionText": "Reuse a copied account snapshot from an earlier invoice for later requests.",
+      "oldText": "The consumer needs less or different data than this option transfers or relocates. The measured evidence is the profile shows repeated account-history reads for the same account within one invoice request. eligibility depends on a fixed account snapshot for that request. Moving the same work does not remove that cost.",
+      "newText": "The fixed snapshot applies to one invoice request. Reusing its copy for later requests can evaluate a new invoice against older account history."
+    },
+    {
+      "questionId": "ood-n09-b07-i030",
+      "targetId": "n09b07_i030_assumed_cache",
+      "optionText": "Persist one checksum globally without binding it to the revision ID.",
+      "oldText": "Without binding the stored checksum to the revision ID, a later revision can reuse a digest for different bytes.",
+      "newText": "Without the revision ID, a global digest can be reused for different uploaded bytes; the checksum must stay associated with the revision it describes."
+    },
+    {
+      "questionId": "ood-n09-b07-i030",
+      "targetId": "n09b07_i030_wrong_cost_center",
+      "optionText": "Skip checksums on later publish steps and assume earlier calls succeeded.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states a profile shows the same immutable revision bytes are hashed three times during one publish request. the revision id uniquely identifies those bytes within the request. Keep that output while changing the measured path.",
+      "newText": "Skipping later checksum steps assumes the earlier computation succeeded; it can leave this publish request without a verified checksum for its selected revision."
+    },
+    {
+      "questionId": "ood-n09-b07-i030",
+      "targetId": "n09b07_i030_contract_shortcut",
+      "optionText": "Hash a mutable draft pointer after each step instead of the selected revision bytes.",
+      "oldText": "This alternative does not address the case’s measured work. The evidence is A profile shows the same immutable revision bytes are hashed three times during one publish request. The revision ID uniquely identifies those bytes within the request. Choose a change that preserves the stated result while reducing that operation.",
+      "newText": "A mutable draft pointer can change after the immutable revision was selected, so its digest may describe different bytes from that revision."
+    },
+    {
+      "questionId": "ood-n09-b07-i030",
+      "targetId": "n09b07_i030_broad_rewrite",
+      "optionText": "Move checksum calculation to the client and trust any supplied value.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states a profile shows the same immutable revision bytes are hashed three times during one publish request. the revision id uniquely identifies those bytes within the request. Keep that output while changing the measured path.",
+      "newText": "Trusting any client-supplied digest does not establish that it matches the immutable revision bytes the service must checksum."
+    },
+    {
+      "questionId": "ood-n09-b07-i031",
+      "targetId": "n09b07_i031_assumed_cache",
+      "optionText": "Install the cache immediately because every feed is expected to repeat.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, measurements show response time is within its target, but a proposed cache adds invalidation work and has no observed hit-rate data. This option does not target that measured work or respect its stated scope.",
+      "newText": "The response target is already met, while cache invalidation adds known work and no representative hit-rate evidence shows a benefit."
+    },
+    {
+      "questionId": "ood-n09-b07-i031",
+      "targetId": "n09b07_i031_wrong_cost_center",
+      "optionText": "Extend expiration until the cache appears to improve the benchmark.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, measurements show response time is within its target, but a proposed cache adds invalidation work and has no observed hit-rate data. This option does not target that measured work or respect its stated scope.",
+      "newText": "Extending expiration can make a benchmark look faster by serving older feed data; it does not measure whether reuse is worth that freshness trade-off."
+    },
+    {
+      "questionId": "ood-n09-b07-i031",
+      "targetId": "n09b07_i031_contract_shortcut",
+      "optionText": "Replace the database with a faster tier without measuring its contribution.",
+      "oldText": "The proposed change targets a different component; the evidence points to measurements show response time is within its target, but a proposed cache adds invalidation work and has no observed hit-rate data. The measured operation would remain.",
+      "newText": "The measurements do not identify the database as the bottleneck, and the response target is already met. Replacing its tier is not evidence for this cache decision."
+    },
+    {
+      "questionId": "ood-n09-b07-i031",
+      "targetId": "n09b07_i031_broad_rewrite",
+      "optionText": "Keep the cache even if representative measurements show no useful reuse.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, measurements show response time is within its target, but a proposed cache adds invalidation work and has no observed hit-rate data. This option does not target that measured work or respect its stated scope.",
+      "newText": "If representative traffic shows no reuse, retaining the cache keeps its invalidation cost without the benefit needed to justify it."
+    },
+    {
+      "questionId": "ood-n09-b07-i032",
+      "targetId": "n09b07_i032_assumed_cache",
+      "optionText": "Download the full object into memory and discard the unused remainder afterward.",
+      "oldText": "The consumer needs less or different data than this option transfers or relocates. The measured evidence is the preview uses only the first 64 kb. the storage api supports range reads, and tracing shows full-object transfer dominates request cost. Moving the same work does not remove that cost.",
+      "newText": "Downloading the full object and discarding the unused bytes still pays the measured full-object transfer cost before the preview can use its prefix."
+    },
+    {
+      "questionId": "ood-n09-b07-i032",
+      "targetId": "n09b07_i032_wrong_cost_center",
+      "optionText": "Cache complete objects indefinitely without a reuse or freshness measurement.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, the preview uses only the first 64 kb. the storage api supports range reads, and tracing shows full-object transfer dominates request cost. This option does not target that measured work or respect its stated scope.",
+      "newText": "An unbounded whole-object cache has no stated reuse or freshness case and does not make this preview request transfer only the range it consumes."
+    },
+    {
+      "questionId": "ood-n09-b07-i032",
+      "targetId": "n09b07_i032_contract_shortcut",
+      "optionText": "Increase preview worker count while transferring the same full payload.",
+      "oldText": "More concurrent work does not reduce the number or size of operations measured here: The preview uses only the first 64 KB. The storage API supports range reads, and tracing shows full-object transfer dominates request cost. It may also exceed the stated dependency limit.",
+      "newText": "More preview workers do not reduce the full payload each request transfers; they can increase concurrent load on the same storage path."
+    },
+    {
+      "questionId": "ood-n09-b07-i032",
+      "targetId": "n09b07_i032_broad_rewrite",
+      "optionText": "Ask the client to send the entire object again for each preview.",
+      "oldText": "The consumer needs less or different data than this option transfers or relocates. The measured evidence is the preview uses only the first 64 kb. the storage api supports range reads, and tracing shows full-object transfer dominates request cost. Moving the same work does not remove that cost.",
+      "newText": "The preview needs only the first 64 KB, so sending the full object from the client repeats the transfer the trace identified as dominant."
+    },
+    {
+      "questionId": "ood-n09-b07-i033",
+      "targetId": "n09b07_i033_assumed_cache",
+      "optionText": "Remove the history view so the page query can skip old records.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states the profile shows archive-history scans dominate a page request. the page displays only current release counts, and the archive remains available through a separate history view. Keep that output while changing the measured path.",
+      "newText": "The history view is a separate available feature. Removing it to simplify this page query discards that history contract instead of narrowing only the measured page read."
+    },
+    {
+      "questionId": "ood-n09-b07-i033",
+      "targetId": "n09b07_i033_wrong_cost_center",
+      "optionText": "Load the full archive into memory and filter it for current releases.",
+      "oldText": "This alternative does not address the case’s measured work. The evidence is The profile shows archive-history scans dominate a page request. The page displays only current release counts, and the archive remains available through a separate history view. Choose a change that preserves the stated result while reducing that operation.",
+      "newText": "Loading the full archive and filtering it in memory still scans and transfers the history that the page does not use."
+    },
+    {
+      "questionId": "ood-n09-b07-i033",
+      "targetId": "n09b07_i033_contract_shortcut",
+      "optionText": "Cache archive data globally despite no measured reuse.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, the profile shows archive-history scans dominate a page request. the page displays only current release counts, and the archive remains available through a separate history view. This option does not target that measured work or respect its stated scope.",
+      "newText": "The page asks for current-release counts and the prompt gives no repeated archive reuse to support a global cache; the separate history view remains the archive path."
+    },
+    {
+      "questionId": "ood-n09-b07-i033",
+      "targetId": "n09b07_i033_broad_rewrite",
+      "optionText": "Return zero for archived contributions to avoid the scan.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states the profile shows archive-history scans dominate a page request. the page displays only current release counts, and the archive remains available through a separate history view. Keep that output while changing the measured path.",
+      "newText": "Returning zero for archived contributions changes the statistics instead of limiting the query to current-release counts."
+    },
+    {
+      "questionId": "ood-n09-b07-i034",
+      "targetId": "n09b07_i034_assumed_cache",
+      "optionText": "Send one request per SKU in parallel without respecting the batch endpoint’s limit.",
+      "oldText": "More concurrent work does not reduce the number or size of operations measured here: A trace shows one network request per SKU. The remote API accepts batches of up to 100 with the same per-SKU update result; the importer already partitions its data. It may also exceed the stated dependency limit.",
+      "newText": "One parallel request per SKU still makes one request per SKU and ignores the remote endpoint’s supported batch limit."
+    },
+    {
+      "questionId": "ood-n09-b07-i034",
+      "targetId": "n09b07_i034_wrong_cost_center",
+      "optionText": "Drop updates beyond the first 100 rather than process later batches.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states a trace shows one network request per sku. the remote api accepts batches of up to 100 with the same per-sku update result; the importer already partitions its data. Keep that output while changing the measured path.",
+      "newText": "The importer must process later partitions too; dropping SKUs after the first hundred omits their stock updates."
+    },
+    {
+      "questionId": "ood-n09-b07-i034",
+      "targetId": "n09b07_i034_contract_shortcut",
+      "optionText": "Retry every successful SKU update to ensure that the service received it.",
+      "oldText": "This alternative does not address the case’s measured work. The evidence is A trace shows one network request per SKU. The remote API accepts batches of up to 100 with the same per-SKU update result; the importer already partitions its data. Choose a change that preserves the stated result while reducing that operation.",
+      "newText": "Retrying updates already reported successful can repeat their effects and increases requests instead of reducing the measured count."
+    },
+    {
+      "questionId": "ood-n09-b07-i034",
+      "targetId": "n09b07_i034_broad_rewrite",
+      "optionText": "Move requests to the UI thread so import code can show progress.",
+      "oldText": "This broad or misplaced change is not justified by the trace. The case identifies a trace shows one network request per sku. the remote api accepts batches of up to 100 with the same per-sku update result; the importer already partitions its data. and does not show that the proposed rewrite removes it.",
+      "newText": "Moving the call to the UI thread changes where it runs, not the one-request-per-SKU count in the trace."
+    },
+    {
+      "questionId": "ood-n09-b07-i035",
+      "targetId": "n09b07_i035_assumed_cache",
+      "optionText": "Cache the rate forever across requests even when the policy version changes.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, a profile shows the same immutable regional rate is fetched for each line during one summary request. the rate is fixed for the request by the accepted policy version. This option does not target that measured work or respect its stated scope.",
+      "newText": "The regional rate is fixed only for the current request’s policy version; a cache held across requests can use a rate from an older version."
+    },
+    {
+      "questionId": "ood-n09-b07-i035",
+      "targetId": "n09b07_i035_wrong_cost_center",
+      "optionText": "Fetch a separate rate for every line to observe possible mid-request changes.",
+      "oldText": "This alternative does not address the case’s measured work. The evidence is A profile shows the same immutable regional rate is fetched for each line during one summary request. The rate is fixed for the request by the accepted policy version. Choose a change that preserves the stated result while reducing that operation.",
+      "newText": "The accepted policy version fixes the rate during this request, so per-line reads repeat the same lookup without observing a permitted mid-request change."
+    },
+    {
+      "questionId": "ood-n09-b07-i035",
+      "targetId": "n09b07_i035_contract_shortcut",
+      "optionText": "Copy the rate into every historical invoice line and rewrite old invoices.",
+      "oldText": "The consumer needs less or different data than this option transfers or relocates. The measured evidence is a profile shows the same immutable regional rate is fetched for each line during one summary request. the rate is fixed for the request by the accepted policy version. Moving the same work does not remove that cost.",
+      "newText": "Rewriting historical invoice lines changes stored past records; the measured duplication is repeated lookup within this summary request."
+    },
+    {
+      "questionId": "ood-n09-b07-i035",
+      "targetId": "n09b07_i035_broad_rewrite",
+      "optionText": "Skip rate lookup and use the previous month’s amount.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states a profile shows the same immutable regional rate is fetched for each line during one summary request. the rate is fixed for the request by the accepted policy version. Keep that output while changing the measured path.",
+      "newText": "A prior-month amount is not the rate fixed by this request’s accepted policy version, so it can change the current summary result."
+    },
+    {
+      "questionId": "ood-n09-b07-i036",
+      "targetId": "n09b07_i036_assumed_cache",
+      "optionText": "Sort all jobs in the application and discard completed jobs after loading them.",
+      "oldText": "This alternative does not address the case’s measured work. The evidence is The service scans all completed and pending jobs, but the query profile shows the filter and sort on status and created time dominate. Only the oldest 20 pending jobs are displayed. Choose a change that preserves the stated result while reducing that operation.",
+      "newText": "Sorting every job in the application still loads the completed rows and does not push the measured pending filter or oldest-first order into the query."
+    },
+    {
+      "questionId": "ood-n09-b07-i036",
+      "targetId": "n09b07_i036_wrong_cost_center",
+      "optionText": "Return any 20 pending jobs and let the dashboard infer which are oldest.",
+      "oldText": "This changes or omits part of the required result instead of reducing cost. The contract states the service scans all completed and pending jobs, but the query profile shows the filter and sort on status and created time dominate. only the oldest 20 pending jobs are displayed. Keep that output while changing the measured path.",
+      "newText": "Any twenty pending jobs can omit older pending jobs; the dashboard specifically needs the oldest twenty."
+    },
+    {
+      "questionId": "ood-n09-b07-i036",
+      "targetId": "n09b07_i036_contract_shortcut",
+      "optionText": "Cache the complete job table indefinitely, including completed jobs.",
+      "oldText": "Caching may be useful when reuse and validity scope support it. Here, the service scans all completed and pending jobs, but the query profile shows the filter and sort on status and created time dominate. only the oldest 20 pending jobs are displayed. This option does not target that measured work or respect its stated scope.",
+      "newText": "An indefinite cache of the whole table can show completed or newly changed jobs as though they were current pending work."
+    },
+    {
+      "questionId": "ood-n09-b07-i036",
+      "targetId": "n09b07_i036_broad_rewrite",
+      "optionText": "Increase the page size so one request loads every job.",
+      "oldText": "This alternative does not address the case’s measured work. The evidence is The service scans all completed and pending jobs, but the query profile shows the filter and sort on status and created time dominate. Only the oldest 20 pending jobs are displayed. Choose a change that preserves the stated result while reducing that operation.",
+      "newText": "Loading every job increases the returned set but still does the filter and sort work that the profile measured; the view needs only twenty pending rows."
+    }
+  ],
+  "changedOptions": [
+    {
+      "questionId": "ood-n09-b07-i021",
+      "oldOptionId": "n09b07_i021_contract_shortcut",
+      "oldText": "Remove dimension validation so the resize step has fewer checks.",
+      "newOptionId": "n09b07_i021_full_image_not_preview",
+      "newText": "Return the full uploaded image instead of producing a preview."
+    },
+    {
+      "questionId": "ood-n09-b07-i026",
+      "oldOptionId": "n09b07_i026_broad_rewrite",
+      "oldText": "Load only reservation IDs and count them in the application.",
+      "newOptionId": "n09b07_i026_first_page_only",
+      "newText": "Count only the first page of active-reservation IDs as the total."
+    },
+    {
+      "questionId": "ood-n09-b07-i029",
+      "oldOptionId": "n09b07_i029_broad_rewrite",
+      "oldText": "Copy account-history data into every line record to avoid repository reads.",
+      "newOptionId": "n09b07_i029_stale_snapshot_reuse",
+      "newText": "Reuse a copied account snapshot from an earlier invoice for later requests."
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n09-b07-i019",
+      "changedTargetIds": [
+        "n09b07_i019_assumed_cache",
+        "n09b07_i019_wrong_cost_center",
+        "n09b07_i019_contract_shortcut",
+        "n09b07_i019_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i020",
+      "changedTargetIds": [
+        "n09b07_i020_assumed_cache",
+        "n09b07_i020_wrong_cost_center",
+        "n09b07_i020_contract_shortcut",
+        "n09b07_i020_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i021",
+      "changedTargetIds": [
+        "n09b07_i021_assumed_cache",
+        "n09b07_i021_wrong_cost_center",
+        "n09b07_i021_full_image_not_preview",
+        "n09b07_i021_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i022",
+      "changedTargetIds": [
+        "n09b07_i022_assumed_cache",
+        "n09b07_i022_wrong_cost_center",
+        "n09b07_i022_contract_shortcut",
+        "n09b07_i022_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i023",
+      "changedTargetIds": [
+        "n09b07_i023_assumed_cache",
+        "n09b07_i023_wrong_cost_center",
+        "n09b07_i023_contract_shortcut",
+        "n09b07_i023_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i024",
+      "changedTargetIds": [
+        "n09b07_i024_assumed_cache",
+        "n09b07_i024_wrong_cost_center",
+        "n09b07_i024_contract_shortcut",
+        "n09b07_i024_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i025",
+      "changedTargetIds": [
+        "n09b07_i025_assumed_cache",
+        "n09b07_i025_wrong_cost_center",
+        "n09b07_i025_contract_shortcut",
+        "n09b07_i025_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i026",
+      "changedTargetIds": [
+        "n09b07_i026_assumed_cache",
+        "n09b07_i026_wrong_cost_center",
+        "n09b07_i026_contract_shortcut",
+        "n09b07_i026_first_page_only"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i027",
+      "changedTargetIds": [
+        "n09b07_i027_assumed_cache",
+        "n09b07_i027_wrong_cost_center",
+        "n09b07_i027_contract_shortcut",
+        "n09b07_i027_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i028",
+      "changedTargetIds": [
+        "n09b07_i028_assumed_cache",
+        "n09b07_i028_wrong_cost_center",
+        "n09b07_i028_contract_shortcut",
+        "n09b07_i028_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i029",
+      "changedTargetIds": [
+        "n09b07_i029_assumed_cache",
+        "n09b07_i029_wrong_cost_center",
+        "n09b07_i029_contract_shortcut",
+        "n09b07_i029_stale_snapshot_reuse"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i030",
+      "changedTargetIds": [
+        "n09b07_i030_assumed_cache",
+        "n09b07_i030_wrong_cost_center",
+        "n09b07_i030_contract_shortcut",
+        "n09b07_i030_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i031",
+      "changedTargetIds": [
+        "n09b07_i031_assumed_cache",
+        "n09b07_i031_wrong_cost_center",
+        "n09b07_i031_contract_shortcut",
+        "n09b07_i031_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i032",
+      "changedTargetIds": [
+        "n09b07_i032_assumed_cache",
+        "n09b07_i032_wrong_cost_center",
+        "n09b07_i032_contract_shortcut",
+        "n09b07_i032_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i033",
+      "changedTargetIds": [
+        "n09b07_i033_assumed_cache",
+        "n09b07_i033_wrong_cost_center",
+        "n09b07_i033_contract_shortcut",
+        "n09b07_i033_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i034",
+      "changedTargetIds": [
+        "n09b07_i034_assumed_cache",
+        "n09b07_i034_wrong_cost_center",
+        "n09b07_i034_contract_shortcut",
+        "n09b07_i034_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i035",
+      "changedTargetIds": [
+        "n09b07_i035_assumed_cache",
+        "n09b07_i035_wrong_cost_center",
+        "n09b07_i035_contract_shortcut",
+        "n09b07_i035_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    },
+    {
+      "questionId": "ood-n09-b07-i036",
+      "changedTargetIds": [
+        "n09b07_i036_assumed_cache",
+        "n09b07_i036_wrong_cost_center",
+        "n09b07_i036_contract_shortcut",
+        "n09b07_i036_broad_rewrite"
+      ],
+      "changedMessageCount": 4
+    }
+  ]
+}

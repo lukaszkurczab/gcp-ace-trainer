@@ -1,0 +1,11 @@
+{
+  "commit": "0a05f73d82c9dd9acac59cd26e4be8228b0a850a",
+  "scope": "Local candidate readiness checkpoint only; consumer/admission/push pending",
+  "files": {
+    "evidence/candidate-decisions/aws-02-codex-decision-v2.json": "075f09731623afd91fe0caeb4759b7fe6bedfb15926e4e049667754469241bf0",
+    "evidence/readiness/candidate-readiness-v2.json": "20764054cb00bf1fc37585a31ea7806b84177a5f5ca38b1b83bd537e477d8089",
+    "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json": "db2f3b95672f36572741d7a91a2d3dac94ff632748b669fcd04ea75a2e8d3733",
+    "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts/object-oriented-design-interview.json": "9df476e414158da0f33e118c06ed7fbc476b53bc8f0a115a470f61f9c1bf1ea3",
+    "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json": "0f637ff621242f7dd8d01eaffb6f53d672b4e9860010145cf025eaa21f467a70"
+  }
+}

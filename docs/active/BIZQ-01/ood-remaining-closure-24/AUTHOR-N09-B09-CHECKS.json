@@ -1,0 +1,23 @@
+{
+  "proposalSha256": "eaf029085771773417ad6a008dcbeeb93fa670385bb4fee60c2c5e54618704e0",
+  "questionCount": 18,
+  "validQuestions": 18,
+  "scorerCases": 180,
+  "correctKeyCases": 36,
+  "wrongOptionRejectedCases": 144,
+  "reservedQuestionIdentityBindings": "PASS",
+  "feedbackTargetBindings": "PASS",
+  "keyPositions": {
+    "0": 4,
+    "1": 3,
+    "2": 3,
+    "3": 4,
+    "4": 4
+  },
+  "qualitativeLengthObservation": {
+    "keyLongestOrTied": 7,
+    "keyShortestOrTied": 0,
+    "interpretation": "Descriptive only; not an acceptance threshold."
+  },
+  "errors": []
+}

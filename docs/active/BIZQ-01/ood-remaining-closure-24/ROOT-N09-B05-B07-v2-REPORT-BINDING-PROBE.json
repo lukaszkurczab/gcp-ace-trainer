@@ -1,0 +1,133 @@
+{
+  "scope": "Root raw/whole-object and reported-target check; independent reports remain REVISE, no source acceptance",
+  "verdict": "REPORT_TARGET_METADATA_REQUIRES_ADDITIVE_ERRATUM",
+  "units": [
+    {
+      "unit": "N09-B05",
+      "verdict": "REVISE",
+      "reportSha256": "3dc41c1d5e1df2c7fa453c07020a82ecc5e80ea6fba449f43ed89f185f306d63",
+      "proposalSha256": "bc2700a32341370d4bd177fc3d3f940718f21e26e9f112fb146e57ff9e020497",
+      "actualRawBindings": 8,
+      "actualBeforeCurrentWholeBindings": 18,
+      "actualDiagnosticFindings": 16
+    },
+    {
+      "unit": "N09-B06",
+      "verdict": "REVISE",
+      "reportSha256": "977447bcdad70af9e798ff4c70c7c20ff19a0e487d3c91e77782424812b8faf7",
+      "proposalSha256": "8de7e8965b42bc3835282c716a6665617bb20551fc42f5589424c08021596052",
+      "actualRawBindings": 8,
+      "actualBeforeCurrentWholeBindings": 18,
+      "actualDiagnosticFindings": 5
+    },
+    {
+      "unit": "N09-B07",
+      "verdict": "REVISE",
+      "reportSha256": "1a459640d9a822c73842f90babea65998c49daffa87f814b12b143b3a62f0600",
+      "proposalSha256": "99d20efb139d9dafb9a57a2947ba1520f6df468991480863764b1330ec0b6f82",
+      "actualRawBindings": 8,
+      "actualBeforeCurrentWholeBindings": 18,
+      "actualDiagnosticFindings": 4
+    }
+  ],
+  "invalidReportedTargets": [
+    {
+      "unit": "N09-B06",
+      "questionId": "ood-n09-b06-i009",
+      "reportedTargetId": "n09b06_i009_boundary",
+      "actualOptionIds": [
+        "n09b06_i009_generic_result",
+        "n09b06_i009_reconstruct_later",
+        "n09b06_i009_wrong_boundary",
+        "n09b06_i009_bounded_explanation",
+        "n09b06_i009_overexpose"
+      ]
+    },
+    {
+      "unit": "N09-B06",
+      "questionId": "ood-n09-b06-i011",
+      "reportedTargetId": "n09b06_i011_boundary",
+      "actualOptionIds": [
+        "n09b06_i011_overexpose",
+        "n09b06_i011_generic_result",
+        "n09b06_i011_reconstruct_later",
+        "n09b06_i011_wrong_boundary",
+        "n09b06_i011_bounded_explanation"
+      ]
+    },
+    {
+      "unit": "N09-B06",
+      "questionId": "ood-n09-b06-i011",
+      "reportedTargetId": "n09b06_i011_later",
+      "actualOptionIds": [
+        "n09b06_i011_overexpose",
+        "n09b06_i011_generic_result",
+        "n09b06_i011_reconstruct_later",
+        "n09b06_i011_wrong_boundary",
+        "n09b06_i011_bounded_explanation"
+      ]
+    },
+    {
+      "unit": "N09-B06",
+      "questionId": "ood-n09-b06-i018",
+      "reportedTargetId": "n09b06_i018_later",
+      "actualOptionIds": [
+        "n09b06_i018_bounded_explanation",
+        "n09b06_i018_overexpose",
+        "n09b06_i018_generic_result",
+        "n09b06_i018_reconstruct_later",
+        "n09b06_i018_wrong_boundary"
+      ]
+    },
+    {
+      "unit": "N09-B07",
+      "questionId": "ood-n09-b07-i025",
+      "reportedTargetId": "n09b07_i025_cache",
+      "actualOptionIds": [
+        "n09b07_i025_assumed_cache",
+        "n09b07_i025_wrong_cost_center",
+        "n09b07_i025_contract_shortcut",
+        "n09b07_i025_broad_rewrite",
+        "n09b07_i025_measured_change"
+      ]
+    },
+    {
+      "unit": "N09-B07",
+      "questionId": "ood-n09-b07-i028",
+      "reportedTargetId": "n09b07_i028_shortcut",
+      "actualOptionIds": [
+        "n09b07_i028_contract_shortcut",
+        "n09b07_i028_broad_rewrite",
+        "n09b07_i028_measured_change",
+        "n09b07_i028_assumed_cache",
+        "n09b07_i028_wrong_cost_center"
+      ]
+    },
+    {
+      "unit": "N09-B07",
+      "questionId": "ood-n09-b07-i028",
+      "reportedTargetId": "n09b07_i028_cache",
+      "actualOptionIds": [
+        "n09b07_i028_contract_shortcut",
+        "n09b07_i028_broad_rewrite",
+        "n09b07_i028_measured_change",
+        "n09b07_i028_assumed_cache",
+        "n09b07_i028_wrong_cost_center"
+      ]
+    },
+    {
+      "unit": "N09-B07",
+      "questionId": "ood-n09-b07-i030",
+      "reportedTargetId": "n09b07_i030_cache",
+      "actualOptionIds": [
+        "n09b07_i030_assumed_cache",
+        "n09b07_i030_wrong_cost_center",
+        "n09b07_i030_contract_shortcut",
+        "n09b07_i030_broad_rewrite",
+        "n09b07_i030_measured_change"
+      ]
+    }
+  ],
+  "initialProbe": "Strict target-existence assertion failed before any receipt writes; this diagnostic rerun inspects every one of the 25 reported targets and identifies eight missing IDs.",
+  "sourceActivationAccepted": false
+}

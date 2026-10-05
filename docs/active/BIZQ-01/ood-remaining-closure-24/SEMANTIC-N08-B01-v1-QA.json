@@ -1,0 +1,311 @@
+{
+  "review": "SEMANTIC-N08-B01-v1-QA",
+  "verdict": "REVISE",
+  "scope": "N08-B01 v1 unit semantics and identity only; not whole N08/N09 or producer acceptance",
+  "inputs": {
+    "proposal": {
+      "path": "review-inputs/N08-B01-v1.json",
+      "sha256": "1383b96bb94e9a23adef6c4a3f88d796d8e8a99c838b8e3f2823cebeff169118"
+    },
+    "manifest": {
+      "path": "N08-N09-MANIFEST.json",
+      "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    },
+    "authorNotes": {
+      "path": "review-inputs/AUTHOR-N08-B01-v1.json",
+      "sha256": "6d88078ae86da5424a4d3c7cee01c2a37e508d4dc026637448ef5d9475d7f0cf"
+    },
+    "authorNotesMarkdown": {
+      "path": "review-inputs/AUTHOR-N08-B01-v1.md",
+      "sha256": "944591e9c84ef65e2d918da0d4c47595d5e94e1ade1bb8ce81fc7d176116e711"
+    },
+    "sourcePath": "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B01.json",
+    "sourceSha256": "54965b9ec48485096bf94f11ede2c0a7e9c53a16bccf1a7bd22cd23d46f631f3",
+    "canonicalGuidelinesSha256": "00c20d8c74d8e4dfec3ffb9211865642a5ae72d218bdd7473b8f41e52bfa5471",
+    "contract": "BIZQ-01 §4.1–4.4 and §5C; canonical docs/07-content-guidelines.md §766"
+  },
+  "method": {
+    "fingerprint": "SHA-256 of repository canonicalJson(question), recursively sorted object keys",
+    "answerResolution": "answer.optionId, not option position",
+    "wholeObjectsReviewed": 18,
+    "keyLongestCount": 17,
+    "keyLongestMethod": "Strict character length comparison of keyed text against each wrong option; used as a signal only, interpreted with actual choice content under §4.3."
+  },
+  "finding": {
+    "id": "N08-B01-F1",
+    "severity": "blocking",
+    "requirement": "BIZQ-01 §4.3 requires plausible alternatives with comparable specificity and forbids a systematic longest-answer cue.",
+    "rationale": "17/18 keyed options are longest. Across the unit the keys repeatedly append operation-level steps and restate scenario invariants, while distractors are shorter partial actions. Combined with the repeated option pattern, the cue can substitute form recognition for comparing the case boundary.",
+    "correction": "Shorten keyed choices to the discriminating owner/operation boundary; rely on stem facts already given. Do not pad distractors or require equal lengths or a fixed choice count."
+  },
+  "nonblockingObservations": [
+    {
+      "id": "N08-B01-O1",
+      "severity": "optional",
+      "finding": "The mechanismOrProperty, boundaryOrTradeoff, and transfer Details fields are identical across the 18 items. They do state the common ownership principle; the scenarioApplication and error correction supply per-case facts, so this repetition alone is not a blocker."
+    },
+    {
+      "id": "N08-B01-O2",
+      "severity": "optional-editorial",
+      "finding": "Several prompts use awkward capitalization such as “In A …, A …”. Editorial polish is optional."
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n08-b01-i001",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Route document owns conflict-aware write boundary; proposal does not silently overwrite accepted revision.",
+      "beforeCanonicalJsonSha256": "2dac73afc37e8bb4e8a36aeb8339f68f3094af2c07612fa50a7f699bc726a6ff",
+      "currentCanonicalJsonSha256": "5a48733e077ea44cd7a3c29f46d9ff0c1d94849f6b4205af1aa3a735ca724065",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 183,
+      "longestDistractorLengthChars": 118,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i002",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Campaign state owner checks phase and changes points/phase together.",
+      "beforeCanonicalJsonSha256": "568887fd284cdf0d2d2166ef1d8839b08430e253cf30829ced98700d8ea69712",
+      "currentCanonicalJsonSha256": "06ce7ebeef77f2a7a72ac6ece56e3d347fea902c40e7abfd499d3c1d5b1275da",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 139,
+      "longestDistractorLengthChars": 99,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i003",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Shipment hand-off carries temperature limits across carrier/status transition.",
+      "beforeCanonicalJsonSha256": "105da457895c483bfafe0d3c85d47ca7a09c6ba4e6aa8eae69223fd0c4648b1e",
+      "currentCanonicalJsonSha256": "fed6e620f661a4e64a84afcd9780f438724008e8d8fcd2f7026bd32422c1c1ed",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 167,
+      "longestDistractorLengthChars": 122,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i004",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Account allocation checks remaining balance and appends matching ledger entry.",
+      "beforeCanonicalJsonSha256": "f9ab228c69c903d1ecd2edb3c4e6565c026d99d4641b87000eb24f1d106f40b8",
+      "currentCanonicalJsonSha256": "66ce3ac725f3eca96ed6f13137fc8a15657d9453e4bb6c27761bea07c4884c9c",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 160,
+      "longestDistractorLengthChars": 113,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i005",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Match owner accepts timeout/result once against current match state.",
+      "beforeCanonicalJsonSha256": "10e32de28a1df7f5d260a077aa2346863fd95c8ea94940520399a1da11e2f3eb",
+      "currentCanonicalJsonSha256": "fc40111130bbf526dd3c80730c84c87c09ab6ca5c051acde493af2d1e8233912",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 160,
+      "longestDistractorLengthChars": 102,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i006",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Inspection owns mutable findings; refund reviewer receives stable reviewed record.",
+      "beforeCanonicalJsonSha256": "06b57757b80c020e08940d3b494e1432efdcd3622bf7e3aeb8dab529c2cf12d0",
+      "currentCanonicalJsonSha256": "a29126afa7df48ed1ffffd391c91ff23a23183203325cbdb89222148c10abbca",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 133,
+      "longestDistractorLengthChars": 105,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i007",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Notebook publication reads immutable snapshot of selected dataset/code revision.",
+      "beforeCanonicalJsonSha256": "4542f3cf28569b366f2755d9d1cc07acadfadcff4f4d87e2a2b6dfa9d0b2d2b0",
+      "currentCanonicalJsonSha256": "654d50c3f0b25f07d9666059aeb09ef08c8f9594f358827b45e3ba046c3d03d9",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 144,
+      "longestDistractorLengthChars": 104,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i008",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Document comment operation records author/revision before notification.",
+      "beforeCanonicalJsonSha256": "47d9128187372ba20caee93c1b6ae018df660e3e5082b26319adafe5fb746533",
+      "currentCanonicalJsonSha256": "1a38fb43d9f8b8d5d3cb38eb57e6936214870df709ab7fd83c28d07e28f172b7",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 162,
+      "longestDistractorLengthChars": 138,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i009",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Frozen draft revision receives complete/retryable submission result; later edits are separate.",
+      "beforeCanonicalJsonSha256": "d142d56ec13db43ec5b52d521ec31d6acbf7fa7e7f55e5edbbdd8d03d4cd992d",
+      "currentCanonicalJsonSha256": "3c6a747cdf448fb66784b4465df196dbf9eea3ebb023f66608976b8a9073459e",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 147,
+      "longestDistractorLengthChars": 104,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i010",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Invoice owner issues immutable revision and records acceptance against it.",
+      "beforeCanonicalJsonSha256": "bbf68de3c137458a4b606fbb5a74ae32f7d61f2f4a011d4026dbee312f43c5ff",
+      "currentCanonicalJsonSha256": "4ac1a43e8f515b2f9d1fd7ce3faacf6b0dc1a6286ebfe5a8c0d253f78cb9d12c",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 145,
+      "longestDistractorLengthChars": 119,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i011",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Access authority owns badge mutation and supplies current status to grant decisions.",
+      "beforeCanonicalJsonSha256": "c928fac76f604ce720f7906f89d8f4e2203fd857b66a80f2cf807bba9eae0a57",
+      "currentCanonicalJsonSha256": "4ec935ead316941d90bb57442eb04f57d3b3ce83bf6e36ebbf0be8207b2ef4c4",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 138,
+      "longestDistractorLengthChars": 102,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i012",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Shipment exposes immutable approved address revision to label generation.",
+      "beforeCanonicalJsonSha256": "66c862858ac43f5f4034d9fd4ddd0ad92ceb34e8295f8bd6ae62da923fb55596",
+      "currentCanonicalJsonSha256": "9ed44e2fc9091889a5a14a08042d1247b71c20436bb5c02d0ec0bd32e3f490e1",
+      "currentKeyIsLongest": false,
+      "currentKeyLengthChars": 112,
+      "longestDistractorLengthChars": 120,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i013",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Room/day booking owner rechecks capacity/cancellation state; search view is not write authority.",
+      "beforeCanonicalJsonSha256": "432f06d1174720df9a9d00ce6d9df3f5c1c4ed7ef707f5ec2c3d3a6197b677c4",
+      "currentCanonicalJsonSha256": "67cc36fb1cca8ba391ba40e5a237c6ee84cd619d7e1ab72baeef880b0f236509",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 154,
+      "longestDistractorLengthChars": 100,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i014",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Exhibit controller owns mode transitions and evaluates commands against current mode.",
+      "beforeCanonicalJsonSha256": "a2897ecd022d1ffa33b7f956a8268bdcf2a81318b8b564d2fdeb5fe36fa942da",
+      "currentCanonicalJsonSha256": "dde30742848738bc3191e3e7332204ed20d3f2654028e600a9103f2a42778483",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 151,
+      "longestDistractorLengthChars": 119,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i015",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Catalog availability changes while progress retains stable lesson identity.",
+      "beforeCanonicalJsonSha256": "1e329bd1d77edadf36061e420978312de7f96a6507ceb6244d3eb5423f5a5530",
+      "currentCanonicalJsonSha256": "cdadbb2dbb55239b97b7b48cb3c9eb843ea0c5b2bea8d9ab40587a552bd7e705",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 127,
+      "longestDistractorLengthChars": 115,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i016",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Board session owns strokes and gives export immutable revision snapshot.",
+      "beforeCanonicalJsonSha256": "412bd4d170533f04d02106efafae7ddc3caeaa1f990c41717e3bc3dc990e9f87",
+      "currentCanonicalJsonSha256": "ef129922f0f4222d02b243f0ef9e13450a3cf8e44fcce24ff46e4152408864ca",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 148,
+      "longestDistractorLengthChars": 110,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i017",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Conversation owner applies assignee/deadline as one transition.",
+      "beforeCanonicalJsonSha256": "a71cab4fd86aa7e80a3941ef665f65a835474bb21971c124603f90bc3dff33c3",
+      "currentCanonicalJsonSha256": "1bfed5181fdd6988c6ed1f1b5985e30718c54ae5aaf4bb1955f38516f300fd1f",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 126,
+      "longestDistractorLengthChars": 117,
+      "keyAndDiagnosticsReviewed": true
+    },
+    {
+      "questionId": "ood-n08-b01-i018",
+      "identityAction": "SAME_ID",
+      "identityRationale": "The old accepted option states the broad confinement/ownership decision; this current answer applies that same primary decision to the visible case boundary. It does not change the objective or answer archetype.",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Listing owner validates and publishes a frozen price/stock revision.",
+      "beforeCanonicalJsonSha256": "486c367d254a31a5fd2ec7441aa43a614096ba93375a22ac3594d696dc1fd7c3",
+      "currentCanonicalJsonSha256": "46d4e0f701ef33ce907a160ca656b085516fb82bebc7f496abf7bc5e193860f7",
+      "currentKeyIsLongest": true,
+      "currentKeyLengthChars": 124,
+      "longestDistractorLengthChars": 114,
+      "keyAndDiagnosticsReviewed": true
+    }
+  ],
+  "limitations": [
+    "No cross-unit review of all 324 N08/N09 questions is accepted here.",
+    "No producer/source/runtime/admission/native/Premium/full BIZQ-01 acceptance."
+  ]
+}

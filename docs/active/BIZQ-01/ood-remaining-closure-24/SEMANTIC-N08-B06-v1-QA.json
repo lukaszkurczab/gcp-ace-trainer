@@ -1,0 +1,330 @@
+{
+  "schemaVersion": "bizq01-ood-n08-b06-semantic-qa-v1",
+  "review": "SEMANTIC-N08-B06-v1-QA",
+  "verdict": "REVISE",
+  "scope": "N08-B06 v1 unit semantics and identity; bounded current option-presentation disclosure check; not full N08/N09, producer/source/runtime/admission acceptance.",
+  "inputs": {
+    "proposal": {
+      "path": "review-inputs/N08-B06-v1.json",
+      "sha256": "7a369798cc0469b6eb49f08e011d2d35a6c62331e8c6a0f93dbe59697b1f9299"
+    },
+    "manifest": {
+      "path": "N08-N09-MANIFEST.json",
+      "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    },
+    "contract": {
+      "path": "N08-N09-CONTRACT.json",
+      "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+    },
+    "authorNotes": {
+      "path": "AUTHOR-N08-B06-v1.json",
+      "sha256": "1384629fd0f4c3cb0686419f394d5d3b72e03ea7b9a628537f8938eba0d0251c"
+    },
+    "authorNotesMarkdown": {
+      "path": "AUTHOR-N08-B06-v1.md",
+      "sha256": "39a9c528a636e412be8d329c6fe20e636a5628f73846330f2432c6e38ebae050"
+    },
+    "source": {
+      "path": "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B06.json",
+      "sha256": "e89dc87ab83957715099a8eee747f07eb435ce4e3fe7d7d1ef04145ff25263bd"
+    }
+  },
+  "method": {
+    "wholeObjectFingerprint": "SHA-256 of repository canonicalJson(question), recursively sorted keys",
+    "answerResolution": "answer.optionId, not option position",
+    "wholeObjectsReviewed": 18,
+    "longestCorrectCount": 18,
+    "longestCorrectItems": [
+      "ood-n08-b06-i001",
+      "ood-n08-b06-i002",
+      "ood-n08-b06-i003",
+      "ood-n08-b06-i004",
+      "ood-n08-b06-i005",
+      "ood-n08-b06-i006",
+      "ood-n08-b06-i007",
+      "ood-n08-b06-i008",
+      "ood-n08-b06-i009",
+      "ood-n08-b06-i010",
+      "ood-n08-b06-i011",
+      "ood-n08-b06-i012",
+      "ood-n08-b06-i013",
+      "ood-n08-b06-i014",
+      "ood-n08-b06-i015",
+      "ood-n08-b06-i016",
+      "ood-n08-b06-i017",
+      "ood-n08-b06-i018"
+    ],
+    "acceptedOptionPositionCounts": {
+      "position0": 18
+    },
+    "currentRendererFiles": [
+      {
+        "path": "patternly/src/features/practice/canonicalQuestionViewModel.ts",
+        "sha256": "dcf17cee634856644f9f077665033f305d98f75b5d16737f4630cddc789ac1e3"
+      },
+      {
+        "path": "patternly/src/features/practice/CertificationPracticeSessionScreen.tsx",
+        "sha256": "acd4aedb8c25a155fe3ee93d5254e932fb2def0b92b6218355de1193cea7109f"
+      },
+      {
+        "path": "patternly/src/features/practice/PracticeResponseControls.tsx",
+        "sha256": "bd6238fe06ab1481bc2a3a3ca4c766619758f15ff8e3cf4ca867fde51c21576f"
+      }
+    ]
+  },
+  "identitySummary": {
+    "counts": {
+      "sameQuestionId": 18,
+      "replacementQuestionId": 0,
+      "acceptedOptionMeaningRetained": 18
+    },
+    "rationale": "The prior accepted answer meant to distinguish async operation lifecycle/cancellation decisions from caller wait state; each new case applies that same unit decision to a visible cancellation, commit, timeout, completion, or resource-ownership boundary."
+  },
+  "findings": [
+    {
+      "id": "N08-B06-F1",
+      "severity": "blocking",
+      "requirement": "BIZQ-01 §§4.2–4.3 require meaningful alternatives without systematic answer-form or learner-visible answer disclosure.",
+      "items": [
+        "ood-n08-b06-i001",
+        "ood-n08-b06-i002",
+        "ood-n08-b06-i003",
+        "ood-n08-b06-i004",
+        "ood-n08-b06-i005",
+        "ood-n08-b06-i006",
+        "ood-n08-b06-i007",
+        "ood-n08-b06-i008",
+        "ood-n08-b06-i009",
+        "ood-n08-b06-i010",
+        "ood-n08-b06-i011",
+        "ood-n08-b06-i012",
+        "ood-n08-b06-i013",
+        "ood-n08-b06-i014",
+        "ood-n08-b06-i015",
+        "ood-n08-b06-i016",
+        "ood-n08-b06-i017",
+        "ood-n08-b06-i018"
+      ],
+      "rationale": "All18 accepted options are strictly longest and index0; their complete lifecycle prescriptions repeatedly mirror the stem, while distractors often directly contradict the named contract. The current view-model and response renderer preserve array order, so index0 exposes the key in the present learner UI.",
+      "correction": "Revise the option sets so learners choose among credible lifecycle contracts using the stated ownership and commit facts, and resolve the actual answer-position disclosure in the existing presentation path before activation. Do not impose an equal-length or randomization policy; preserve option-ID scoring and feedback bindings."
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n08-b06-i001",
+      "beforeCanonicalJsonSha256": "6804310d49230d39e93b9223b2f11f8edc264144c36924f32ffe7ed676eea636",
+      "currentCanonicalJsonSha256": "2ecd70c4c7beb946ff06665f6bd56601d307efbc9fa13de1591d6fd294f4e311",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i001",
+      "currentQuestionId": "ood-n08-b06-i001",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Detach the canceled caller from the shared job; let the job owner finish or cancel only when no consumer remains, and close its temporary file in either terminal path."
+    },
+    {
+      "questionId": "ood-n08-b06-i002",
+      "beforeCanonicalJsonSha256": "9c1bc11393ce99c5b49e02e6b0f7c2eceaafeef95092b9bae5552e329ebe394b",
+      "currentCanonicalJsonSha256": "cb3d999129f33da3d3912241280bce80c1123e23cb55826de5f9e79e5a3ce580",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i002",
+      "currentQuestionId": "ood-n08-b06-i002",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Give the move operation ownership of its hold and release it on every pre-commit cancellation or timeout; after commit, report the committed move."
+    },
+    {
+      "questionId": "ood-n08-b06-i003",
+      "beforeCanonicalJsonSha256": "8783acd89dcada7c1f40fcd783e79e55ab9121e2dc0e18c1f32dbe91df034974",
+      "currentCanonicalJsonSha256": "dbdf4bb8846d01a17ea3457a02255f91e1978d6c5b03bdb34445740b1fef1776",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i003",
+      "currentQuestionId": "ood-n08-b06-i003",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Let the controller decide cancellation at the dispatch boundary and return whether the command was removed or already accepted."
+    },
+    {
+      "questionId": "ood-n08-b06-i004",
+      "beforeCanonicalJsonSha256": "f837951777d3eed62dc390883ffba18f42ce6caf2df7044de3ab7ffa269e213b",
+      "currentCanonicalJsonSha256": "f72008083de638004231a56396697e8552a2df3cea3ac9b9c559604d1f52bb2f",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i004",
+      "currentQuestionId": "ood-n08-b06-i004",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Make publication the operation's commit boundary: cancellation before it leaves the old catalog visible, and post-commit completion reports the stable lesson identity mapping."
+    },
+    {
+      "questionId": "ood-n08-b06-i005",
+      "beforeCanonicalJsonSha256": "e179fc2eae64ff805035f1389cbcbf56bd38c251df1bb15508440e1dd7a0ad47",
+      "currentCanonicalJsonSha256": "de6a6df884c34b130c89c1d1c622b424d772340a2a9297873006f8d701a7ed5e",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i005",
+      "currentQuestionId": "ood-n08-b06-i005",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Give the export operation ownership of the file and close/remove it on cancellation while leaving the live board session running."
+    },
+    {
+      "questionId": "ood-n08-b06-i006",
+      "beforeCanonicalJsonSha256": "b150dd00bc5512ac2e8cd553db2960bdee8d5ec7b547adb9a76ee4c5aed01bb4",
+      "currentCanonicalJsonSha256": "72abd9a55b05fc1610d2e3b2829422b2b4440ed5d0935f934e06b4bcd73fd5af",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i006",
+      "currentQuestionId": "ood-n08-b06-i006",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Return a pending result keyed to the escalation command and let the conversation owner report the committed outcome when known."
+    },
+    {
+      "questionId": "ood-n08-b06-i007",
+      "beforeCanonicalJsonSha256": "22e90214f524715d5844b60f3f4a7a48da973f6dc7e04e23ea6c69ae1233e348",
+      "currentCanonicalJsonSha256": "b80931f6a69a488fb0e4e33edd9a582c5a3dcfa0514b5467097428e3193b3f90",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i007",
+      "currentQuestionId": "ood-n08-b06-i007",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the candidate revision hidden during validation; publish it only on successful completion, and discard it on pre-commit cancellation."
+    },
+    {
+      "questionId": "ood-n08-b06-i008",
+      "beforeCanonicalJsonSha256": "7bc16a2b808c18e4505fd4ef805c6a94b0d066ac10898b735dbfc6a782026ac3",
+      "currentCanonicalJsonSha256": "6673f12fbb3611ffd61ca3eb64d3258e2571f04b7e4620864f3a7e0db7c87e3b",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i008",
+      "currentQuestionId": "ood-n08-b06-i008",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Await both checks under the split operation; on pre-commit failure or cancellation stop outstanding work and publish the parent split only after both results are accepted."
+    },
+    {
+      "questionId": "ood-n08-b06-i009",
+      "beforeCanonicalJsonSha256": "680bb6585e1200a969938b5f097d57bcc18c41ba128a8643761aa82ef206d609",
+      "currentCanonicalJsonSha256": "9c7f4676bfe2cdce2260661700742b68c9917918b3210c08defe9275cfcefc96",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i009",
+      "currentQuestionId": "ood-n08-b06-i009",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the old plot assignment until approval commits, and release the transfer's temporary hold if cancellation arrives first."
+    },
+    {
+      "questionId": "ood-n08-b06-i010",
+      "beforeCanonicalJsonSha256": "57dbeeacf9e817fb90ee942c72f81937fd97aed63d228e9ac32994eacc60ad03",
+      "currentCanonicalJsonSha256": "b77d8285d2f3dfb4b39eb53ffda69c94fbc21093d7a5cbe0700505653026d548",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i010",
+      "currentQuestionId": "ood-n08-b06-i010",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Await all required validations, propagate failure to the publication result, and switch the visible bundle revision only after they succeed."
+    },
+    {
+      "questionId": "ood-n08-b06-i011",
+      "beforeCanonicalJsonSha256": "f9f27eb9d2a913911daf1b017bdc7b47ab5cb368c45307dfb2fdb90c57af1d96",
+      "currentCanonicalJsonSha256": "7f334bba103f23e1f44ef754973e8270bfdf0f97a02000b7e96de3f11da2d136",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i011",
+      "currentQuestionId": "ood-n08-b06-i011",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Tie the hold to the reservation operation and release it on pre-acceptance cancellation; after acceptance, retain it as the reservation."
+    },
+    {
+      "questionId": "ood-n08-b06-i012",
+      "beforeCanonicalJsonSha256": "174088d9d1709e12ad147d164db11e9e6fe8788b0dc216e5df615e8ce796adfa",
+      "currentCanonicalJsonSha256": "2f94cb391d7f0731a1cf901e502ca7a3953a57fb5e1374c7847b5cff2e300a73",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i012",
+      "currentQuestionId": "ood-n08-b06-i012",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Build the candidate off the current record and publish it with a revision check at completion; abandon the candidate if canceled before that step."
+    },
+    {
+      "questionId": "ood-n08-b06-i013",
+      "beforeCanonicalJsonSha256": "98fd55d7d99c53b064f630d80e7267c804b564f8ec58211cb636c654b03be2a7",
+      "currentCanonicalJsonSha256": "22ef3b2e41ec1e6f48a992db6a7b35e954669d8c2a0cb965fee0b1bfc223bb88",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i013",
+      "currentQuestionId": "ood-n08-b06-i013",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Propagate cancellation to the pending check and publish the approval only after a successful result is observed."
+    },
+    {
+      "questionId": "ood-n08-b06-i014",
+      "beforeCanonicalJsonSha256": "369ce02bb9dc60201c1b8a59db14d26bde1779c3235d9dd44be1cd605ebef9f5",
+      "currentCanonicalJsonSha256": "6ae4c2346d75649e5c87b0aa2617fe5d276efb1efa8bf80ac23238965425ada9",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i014",
+      "currentQuestionId": "ood-n08-b06-i014",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Keep the current mapping until the assignment operation commits, and release only its pending hold on pre-commit cancellation."
+    },
+    {
+      "questionId": "ood-n08-b06-i015",
+      "beforeCanonicalJsonSha256": "b12f05c13838bf37178bc78e22241301964076e1bc7c6772d3e753f8c1b473c7",
+      "currentCanonicalJsonSha256": "2bff1161262af09931ffe8060711877114c922b1292c2fd7b445ec84cdb12cf5",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i015",
+      "currentQuestionId": "ood-n08-b06-i015",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Check cancellation before disclosure; after acknowledgement, report the accepted referral state rather than claiming cancellation rolled it back."
+    },
+    {
+      "questionId": "ood-n08-b06-i016",
+      "beforeCanonicalJsonSha256": "6ac41762e3f3f690e3a20a700645ffaf6c297b8cc2bf05218347061c7d992a2d",
+      "currentCanonicalJsonSha256": "fbb9e18ebd67c5ff6540d7c98af63e85a0e8f5e20b80ac3e61222f63fd2a922e",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i016",
+      "currentQuestionId": "ood-n08-b06-i016",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Track cancellation of the learner's wait separately from completion of the scoring task; record any eventual result with its captured exercise revision and policy."
+    },
+    {
+      "questionId": "ood-n08-b06-i017",
+      "beforeCanonicalJsonSha256": "23284fd82d6bff59832b7be1bd07fa65b7e9429fca2e24ffebdee3aa89bbce70",
+      "currentCanonicalJsonSha256": "aaf1f6a3bd5d62f3f28c00e814fa62f060615c39ec6f81ec007dbe5525e29e0d",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i017",
+      "currentQuestionId": "ood-n08-b06-i017",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Await and surface the approval task result; set visible status only from its committed outcome, leaving failure explicit for retry or explanation."
+    },
+    {
+      "questionId": "ood-n08-b06-i018",
+      "beforeCanonicalJsonSha256": "c382e1094c9e59230459a6da90309c60e938f08a53778bd57e12d5f2b660ce56",
+      "currentCanonicalJsonSha256": "980bcba127b1ccbca3bcf81249c5c095a9b044f7fadcef54ef32f3c7fc8313a2",
+      "identityAction": "SAME_ID",
+      "beforeQuestionId": "ood-n08-b06-i018",
+      "currentQuestionId": "ood-n08-b06-i018",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionPosition": 0,
+      "currentDecision": "Let the replacement operation own the temporary file, dispose it on cancellation, and switch the episode pointer only after the new revision is complete."
+    }
+  ]
+}

@@ -1,0 +1,276 @@
+{
+  "review": "SEMANTIC-N08-B02-v1-QA",
+  "verdict": "REVISE",
+  "scope": "N08-B02 v1 unit semantic and identity review only",
+  "inputs": {
+    "proposal": {
+      "path": "review-inputs/N08-B02-v1.json",
+      "sha256": "bd6dd7da862836111d3f03d0655884b45a69635e8cd2af3eef8a919c3fb2dc1c"
+    },
+    "manifest": {
+      "path": "N08-N09-MANIFEST.json",
+      "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    },
+    "authorNotes": {
+      "path": "AUTHOR-N08-B02-v1.json",
+      "sha256": "18eb381d217550c828d831f1a726b07ccdd1db077a2d5f688db4b4d7963b179e"
+    },
+    "sourcePath": "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B02.json",
+    "sourceSha256": "1db1cf0b1c16746d2899fadd9dd2afdfb2d40e3fc945e220a79404b0883efba8",
+    "guidelinePath": "docs/07-content-guidelines.md",
+    "guidelinesSha256": "00c20d8c74d8e4dfec3ffb9211865642a5ae72d218bdd7473b8f41e52bfa5471"
+  },
+  "method": {
+    "fingerprints": "SHA-256 of repository canonicalJson(question), recursively sorted keys",
+    "answerMapping": "answer.optionId, not array order",
+    "wholeBeforeAndCurrentItemsRead": 18,
+    "currentOptionCount": 4,
+    "longestKeyCount": 16,
+    "lengthInterpretation": "Strict longest is a signal interpreted with actual content under §4.3, not a numeric gate."
+  },
+  "finding": {
+    "id": "N08-B02-F1",
+    "severity": "blocking",
+    "requirement": "BIZQ-01 §4.3: plausible alternatives of comparable specificity and no systematic form cue.",
+    "rationale": "16/18 correct choices are strictly longest. The keyed choices repeatedly state an owner plus multiple implementation clauses while alternatives often state one partial action or a broad lock. This repeated format can shortcut the coordination decision.",
+    "smallestCorrection": "Shorten the correct choices to the decision-critical coordination boundary. Retain meaningful case-specific wrong models and explain their failure; do not pad distractors or impose equal lengths or fixed option count."
+  },
+  "identitySummary": {
+    "sameIdCount": 18,
+    "rationale": "All questions retain the same primary coordination-boundary decision and same accepted broad meaning (one synchronization owner or immutable-transfer boundary for the invariant/ordering). Current keyed choices instantiate it with visible case facts; accepted option ID owner_preserves_contract retains that meaning."
+  },
+  "nonblockingObservations": [
+    {
+      "id": "N08-B02-O1",
+      "severity": "nonblocking",
+      "finding": "Mechanism/transfer/boundary Details reuse the unit-level coordination principle. Case applications and error explanations are relevant, so reuse alone is not a blocker."
+    },
+    {
+      "id": "N08-B02-O2",
+      "severity": "optional-editorial",
+      "finding": "Several prompts have awkward capitalization “In A …, A …”."
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n08-b02-i001",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Order-state owner serializes settlement/release and rechecks settlement at release.",
+      "beforeCanonicalJsonSha256": "cb43dbea750d7c387e12b5c00ee47dc21672909237370267f28bdcb476b043c4",
+      "currentCanonicalJsonSha256": "569a194adcf420baaff30db9aa6f97ddc9a185f8868136578fb9886ed21d67f5",
+      "strictlyLongestKey": true,
+      "keyChars": 140,
+      "longestDistractorChars": 109
+    },
+    {
+      "questionId": "ood-n08-b02-i002",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Per-line queue orders updates by effective sequence, not arrival.",
+      "beforeCanonicalJsonSha256": "54d4b2d96775ba9c2785c7b70b5629fda6876d506306a100abe128ff76578c14",
+      "currentCanonicalJsonSha256": "98247352ee6b4a435e3f2eab78cc9a07d7c8de9980b6d1036c6ce3973a9eba5d",
+      "strictlyLongestKey": true,
+      "keyChars": 116,
+      "longestDistractorChars": 88
+    },
+    {
+      "questionId": "ood-n08-b02-i003",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Meter owner checks overlap and records winning reservation as one decision.",
+      "beforeCanonicalJsonSha256": "988e07da11b8ffcce8467cd4788cfdbead28cc38606cbef304f81abf06e28408",
+      "currentCanonicalJsonSha256": "cd89b21d31bf42994a5d10d2bf4f3e5eb5d6cde5419818c0ca330d43420db1f8",
+      "strictlyLongestKey": true,
+      "keyChars": 129,
+      "longestDistractorChars": 103
+    },
+    {
+      "questionId": "ood-n08-b02-i004",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Immutable provider config stays fixed per active stream; switch affects new streams.",
+      "beforeCanonicalJsonSha256": "b1ded229ef3b9a0b80088f80f93433998a360d57c260c9110a69b9f065bdf288",
+      "currentCanonicalJsonSha256": "14b7ae81b37682c7e97116bc86abd479dde6ed69385711670bfcc0fe73292898",
+      "strictlyLongestKey": true,
+      "keyChars": 140,
+      "longestDistractorChars": 115
+    },
+    {
+      "questionId": "ood-n08-b02-i005",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Roster owner validates and commits both assignments for one shift pair.",
+      "beforeCanonicalJsonSha256": "38f1ee516c9e4c16c44639366f15bdf53e95a3d94608d10d070088c09b55fe02",
+      "currentCanonicalJsonSha256": "365625701b53f0d0239a84c695d4d95af26c5b66caa0862529e81ab0bfc50514",
+      "strictlyLongestKey": false,
+      "keyChars": 106,
+      "longestDistractorChars": 125
+    },
+    {
+      "questionId": "ood-n08-b02-i006",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Route owner compares submitted base revision with current accepted revision.",
+      "beforeCanonicalJsonSha256": "586dd7670797a7749ee5142049646e6ef753ae67480b2bb62ea3c2c8729b3550",
+      "currentCanonicalJsonSha256": "4f3799716a4d266f68ac3d91005b48975b41369cf961c3905d424e388b28ee2d",
+      "strictlyLongestKey": true,
+      "keyChars": 123,
+      "longestDistractorChars": 98
+    },
+    {
+      "questionId": "ood-n08-b02-i007",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Campaign owner checks latest phase before recording transition.",
+      "beforeCanonicalJsonSha256": "17b2eb9b2adaab6ef27b73a24a8ffbf12adb7a38b75dd5834be23dea3a2546d9",
+      "currentCanonicalJsonSha256": "1e7bf7223fda6851a17c2789d703aad8ef074e620e69b9860e654568300d6c30",
+      "strictlyLongestKey": true,
+      "keyChars": 142,
+      "longestDistractorChars": 117
+    },
+    {
+      "questionId": "ood-n08-b02-i008",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Versioned shipment transfers limits and carrier; new owner activates for accepted version.",
+      "beforeCanonicalJsonSha256": "6ff2076725c673d01fb7221d1ac5decb86b2c40b9d9691c00cd96646dddec8fb",
+      "currentCanonicalJsonSha256": "c19ad72cb843d2241e7d28972850a46ec8c871564ac67a94c05a4aa20e3b35f4",
+      "strictlyLongestKey": true,
+      "keyChars": 146,
+      "longestDistractorChars": 110
+    },
+    {
+      "questionId": "ood-n08-b02-i009",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Account ledger coordinates balance/allocation/matching entry per account.",
+      "beforeCanonicalJsonSha256": "a58105beb738516976afdade292524395ef244fdef45c523f75eb41c2358ecd6",
+      "currentCanonicalJsonSha256": "77e4b10dc26f8b2b974b46490f0303d1c49c84c4d5140ec5f6291a0bba2e3a32",
+      "strictlyLongestKey": true,
+      "keyChars": 127,
+      "longestDistractorChars": 102
+    },
+    {
+      "questionId": "ood-n08-b02-i010",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Match owner accepts one first legal current-state result transition.",
+      "beforeCanonicalJsonSha256": "1689f60d5aca566b74f280f7aa3a38761a392ccc3b63d6352621689a4a925cb3",
+      "currentCanonicalJsonSha256": "b3630b278bdaa0a17058c979d1a57209ba80c27a670dc5b0dd63e307a4e2cc82",
+      "strictlyLongestKey": true,
+      "keyChars": 117,
+      "longestDistractorChars": 108
+    },
+    {
+      "questionId": "ood-n08-b02-i011",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Refund reads immutable inspection revision without editing findings.",
+      "beforeCanonicalJsonSha256": "bf87be50b05f40d6ea027a7478548a95fd85e8aff2487c2f989cce8275111a13",
+      "currentCanonicalJsonSha256": "5f147e1df35f3b202356b4343da0e66a38d248d3a9dbae0f76ef1376a39582bd",
+      "strictlyLongestKey": true,
+      "keyChars": 115,
+      "longestDistractorChars": 103
+    },
+    {
+      "questionId": "ood-n08-b02-i012",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Publication captures dataset/code revision before job reads.",
+      "beforeCanonicalJsonSha256": "d8c0cb380bae1f24ec02e589940ced302ed1937d4c73f4a2640f7fb7e30ecf8e",
+      "currentCanonicalJsonSha256": "bef242351389ee3f4d61c1dc68888f1a600848a688e1b538796a347e22f93e08",
+      "strictlyLongestKey": false,
+      "keyChars": 103,
+      "longestDistractorChars": 105
+    },
+    {
+      "questionId": "ood-n08-b02-i013",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Comment commits author/revision before notification identifies accepted record.",
+      "beforeCanonicalJsonSha256": "854cd9dc8313acda16dc55765aa4b0cf4c2331a0f1ec4a6592055351ed33e1db",
+      "currentCanonicalJsonSha256": "4550ba6b392cb13b559544afce5bedf14c4187657246cec288705cdc85495f5a",
+      "strictlyLongestKey": true,
+      "keyChars": 125,
+      "longestDistractorChars": 105
+    },
+    {
+      "questionId": "ood-n08-b02-i014",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Submission response is bound to frozen revision; later edits remain separate.",
+      "beforeCanonicalJsonSha256": "ab4706a7bfade691c66c86e660874a02ae1630b92c80b524243d3969f8d78ae6",
+      "currentCanonicalJsonSha256": "659ea7f62bd24f2431d594fc24549f0b4103ce2031597fb51b0a90a2d8fcddc9",
+      "strictlyLongestKey": true,
+      "keyChars": 127,
+      "longestDistractorChars": 119
+    },
+    {
+      "questionId": "ood-n08-b02-i015",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Immutable invoice issue receives its own exchange response.",
+      "beforeCanonicalJsonSha256": "2ba13008bd7a3672b83f09244173d6f57aebc926a1a24aa1639d7a195a8205c5",
+      "currentCanonicalJsonSha256": "023149d741ec0373079dcb3bad2b6999fa43f167518a7faae602d2c328f2fd4b",
+      "strictlyLongestKey": true,
+      "keyChars": 132,
+      "longestDistractorChars": 108
+    },
+    {
+      "questionId": "ood-n08-b02-i016",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Grant compares checked badge revision with current authority revision.",
+      "beforeCanonicalJsonSha256": "ac94390d84ca51faf0a5903a18eff9e01068d5c26a290e8d3cc24c7842d3d540",
+      "currentCanonicalJsonSha256": "20d77c399ee243c1b2da49ce5e9881939c5a829ebf1728e187dcb90f25b2eeff",
+      "strictlyLongestKey": true,
+      "keyChars": 130,
+      "longestDistractorChars": 97
+    },
+    {
+      "questionId": "ood-n08-b02-i017",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Print job receives immutable approved shipment revision.",
+      "beforeCanonicalJsonSha256": "21e4acfce6e2d6b8e89cf0f1799d0791533fba72643ccb920b18f3662ced353c",
+      "currentCanonicalJsonSha256": "63e89d725470679e853af70880a4feeeb4ea9be13fec06a5bd75fb2535565109",
+      "strictlyLongestKey": true,
+      "keyChars": 104,
+      "longestDistractorChars": 95
+    },
+    {
+      "questionId": "ood-n08-b02-i018",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedMeaning": "Room booking owner checks overlap and accepts room-scoped reservation.",
+      "beforeCanonicalJsonSha256": "1841e1a266465b7bcf46d1c81cabce6a3f5281b0b2382f324168316b7a86357d",
+      "currentCanonicalJsonSha256": "123a29e37abcaa6d12971ceb4be28b5cb28967301ab42d54055d150745c59a32",
+      "strictlyLongestKey": true,
+      "keyChars": 114,
+      "longestDistractorChars": 95
+    }
+  ],
+  "limitations": [
+    "Not acceptance of other N08/N09 units or whole324 cross-unit map.",
+    "Not producer/source/runtime/admission/native/Premium/full BIZQ-01 acceptance."
+  ]
+}

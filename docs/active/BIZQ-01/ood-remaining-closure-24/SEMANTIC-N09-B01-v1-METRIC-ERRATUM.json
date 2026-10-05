@@ -1,0 +1,17 @@
+{
+  "erratum": "SEMANTIC-N09-B01-v1-METRIC-ERRATUM",
+  "supplements": {
+    "report": "SEMANTIC-N09-B01-v1-QA.md",
+    "proposalPath": "review-inputs/N09-B01-v1.json",
+    "proposalSha256": "70a812eab3ddbcd0b20dc99eec741e08d04268b7546f9bc5ff68706c37884831"
+  },
+  "method": "Resolve the accepted choice using answer.optionId; compare its text character length strictly against every wrong option in each question.",
+  "correctedMetric": {
+    "n09B01V1StrictlyLongestCount": 18,
+    "n09B01V1QuestionCount": 18,
+    "n08B01V1StrictlyLongestCount": 17,
+    "n08B01V1QuestionCount": 18,
+    "n08B01V1ProposalSha256": "1383b96bb94e9a23adef6c4a3f88d796d8e8a99c838b8e3f2823cebeff169118"
+  },
+  "effect": "Metric correction only. The N09-B01 v1 REVISE verdict and N09-B01 v2 bounded PASS are unchanged. This does not create a numerical acceptance gate."
+}

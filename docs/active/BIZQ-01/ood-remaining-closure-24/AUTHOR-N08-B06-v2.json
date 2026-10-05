@@ -1,0 +1,315 @@
+{
+  "schemaVersion": "bizq01-n08-b06-author-v2",
+  "previousProposal": "review-inputs/N08-B06-v1.json",
+  "proposalFile": "proposals/N08-B06-v2.json",
+  "proposalSha256": "5bb9402840b735f3b5516a0abe927266ef266cf5fbb0e7a1c12b7ec9a2b4ca72",
+  "scope": "Kept the same async lifecycle decisions and correct option IDs. Reworked the three wrong alternatives in each object into case-specific competing contracts and rebound their messages; no array reordering, external delivery guarantee, or rollback promise was added.",
+  "items": [
+    {
+      "questionId": "ood-n08-b06-i001",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A package-label generation service, A print job can be shared by two callers. If one caller cancels its wait, the other still needs the same approved shipment revision rendered; the shared job must release its temporary file on completion. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Cancel the shared render when any caller cancels, even while another caller still needs it.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i002",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A multi-tenant rehearsal scheduler, A room move holds a temporary destination slot while a coordinator waits for confirmation. If the operation times out or is canceled, the slot must be released unless the move has committed; other rooms remain available. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Keep the slot after timeout because the coordinator may retry later.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i003",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A museum exhibit controller, An unsafe command can be queued before maintenance begins. Cancellation before dispatch should remove that command; after the controller has accepted it, the caller must receive the accepted outcome rather than a false canceled result. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Show canceled as soon as the UI request arrives and ignore a later acceptance response.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i004",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A video-learning library, Retirement updates catalog availability and schedules a progress-preservation task. If the editor cancels before publication, learners must still see the old lesson; after publication, the preserved progress mapping must be reported complete. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Hide the lesson when work starts and restore it if cancellation later arrives.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i005",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A shared whiteboard application, Export reads a stable board snapshot into a temporary file. If the host cancels export, the file must be closed and removed, but participants must keep editing the board. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Leave the temporary file open when the host cancels so a later request can take it over.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i006",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A customer-support escalation desk, An escalation command may commit just before the network response is lost. A client timeout is not a rejection; support staff need to distinguish pending/unknown from a confirmed failed command. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Treat a lost response at the deadline as a confirmed rejection.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i007",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A regional produce marketplace, Listing validation is asynchronous. Buyers must not see a listing until validation commits; if validation is canceled before commit, the prior published revision remains visible. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Show the candidate price before validation and retract it after a failed check.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i008",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A repair-parts marketplace, A split starts two vendor checks concurrently. If either check fails before acceptance, the parent request remains unchanged; cancellation should stop remaining checks and retain the original delivery promise. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Publish the first child and show the other as pending despite the all-checks contract.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i009",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A community garden allocation tool, A transfer waits for an approval service. While waiting, the plot remains with its current member; canceling the request releases only the transfer's temporary reservation, not the existing reservation. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Move the plot before approval, then restore it if the service denies the transfer.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i010",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A subscription packaging service, Bundle validation awaits pricing and component checks. If one check fails, publication must fail and the bundle must remain on its prior revision; no task may run unobserved after the result is returned. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Publish while component checks continue, then replace the bundle if a check fails.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i011",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A fleet charging coordinator, A reservation request owns a temporary charger hold until its capacity check finishes. If the request is canceled before acceptance, the hold must expire or be released; a confirmed reservation remains valid. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Keep an expired requester hold indefinitely to make retry easier.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i012",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A photo-archive curation tool, A merge builds a candidate metadata record from two curator edits. Cancellation before the final compare-and-replace must leave the current asset unchanged; success publishes one new revision. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Write fields as they are transformed, then restore them if cancellation is observed.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i013",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A digital rights clearance tool, A territory approval waits for an external license check. No approval is visible until the check completes; cancellation before that result must leave the territory unapproved. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Publish provisional approval and remove it later if the check fails.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i014",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A drone maintenance planner, A battery replacement has a pending assignment hold. The current aircraft/battery mapping remains valid until the replacement is accepted; cancellation before acceptance releases the hold. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Replace the mapping at start and restore it if cancellation arrives.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i015",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A clinic referral coordinator, The referral send may be canceled before any disclosure. Once the specialist has acknowledged receipt, the caller must learn that outcome and must not be told the referral was withdrawn. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Report cancellation when the navigator closes the screen even after acknowledgement.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i016",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A music practice tracker, A learner can stop waiting for a timed exercise result, but the scoring task may still finish. The exercise revision and score policy used by that task must remain attached to its result. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Cancel a shared scoring worker when one view closes even if another still uses it.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i017",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A procurement approval queue, An approval task can fail after checking controls. The manager must receive that failure, and no approved status may appear unless the decision and required evidence committed. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Catch task failure and leave the manager with pending status forever.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    },
+    {
+      "questionId": "ood-n08-b06-i018",
+      "learningObjective": "Distinguish cancellation of waiting from operation ownership, commit state, and cleanup obligations in the stated async case.",
+      "decisiveFact": "In A podcast production desk, A replacement recording is written to a temporary file before it becomes current. If the producer cancels during transcoding, the temp file must be disposed and the old recording remain available. Which async-operation contract should the owner expose?",
+      "nearestAlternative": "Point the episode to the temp file at start, then restore the old pointer on cancellation.",
+      "identityAction": "preserve_question_id_and_correct_option_id; assign_new_ids_to_rewritten_distractors",
+      "identityReason": "The accepted lifecycle boundary and owner_preserves_contract decision remain the same; only competing policy meanings were rewritten and therefore receive fresh option IDs.",
+      "changedFields": [
+        "interaction.options[1..3].text",
+        "interaction.options[1..3].optionId",
+        "feedback.messages",
+        "feedback.details.errorCorrection"
+      ],
+      "sourceRefs": [
+        "Fictional async operation and commit facts are explicit in the prompt; no exactly-once or rollback guarantee added."
+      ]
+    }
+  ]
+}

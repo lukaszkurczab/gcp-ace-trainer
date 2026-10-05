@@ -1,0 +1,295 @@
+{
+  "schemaVersion": "bizq01-semantic-correction-review-v1",
+  "track": "OOD-N08",
+  "unit": "OOD-N08-B07",
+  "version": 3,
+  "verdict": "PASS",
+  "proposal": {
+    "path": "review-inputs/N08-B07-v3.json",
+    "sha256": "0b1a94aa9b8f8eb81d1c270ff8a63dd585a6c85700f5c968a2509ae2920610a6"
+  },
+  "authorProposal": {
+    "path": "proposals/N08-B07-v3.json",
+    "sha256": "0b1a94aa9b8f8eb81d1c270ff8a63dd585a6c85700f5c968a2509ae2920610a6"
+  },
+  "priorReview": {
+    "path": "SEMANTIC-N08-B07-v2-QA.json",
+    "sha256": "3ae5635dcd5b7bb675d25beaefe81b2542e0f88f4d3247cbbfc4cbe8b72a450c",
+    "markdownPath": "SEMANTIC-N08-B07-v2-QA.md",
+    "markdownSha256": "cef7e835ceaa6e7eee6de588350111b350470ad7d0d65de3ec23dc7b7bad2654"
+  },
+  "manifest": {
+    "path": "N08-N09-MANIFEST.json",
+    "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+  },
+  "contract": {
+    "path": "N08-N09-CONTRACT.json",
+    "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+  },
+  "spec": {
+    "path": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3",
+    "criteria": [
+      "§4.1 one defensible answer from visible facts",
+      "§4.3 credible, comparably reasoned alternatives; qualitative review of form cues",
+      "§4.4 causal, case-consistent feedback"
+    ]
+  },
+  "fingerprintMethod": "SHA-256(repository canonicalJson(question), recursively sorted keys); accepted option resolved by answer.optionId; scoring via production validateQuestion/scoreQuestion.",
+  "correctionComparison": {
+    "priorInputPath": "review-inputs/N08-B07-v2.json",
+    "priorInputSha256": "d656e287a7063d06aebf2dc42fc5f18ba4fba40d2cad08f96da06f75afab3318",
+    "v3ChangedQuestionCount": 12,
+    "v3UnchangedQuestionCount": 6,
+    "v3ChangedQuestionIds": [
+      "ood-n08-b07-i001",
+      "ood-n08-b07-i003",
+      "ood-n08-b07-i007",
+      "ood-n08-b07-i008",
+      "ood-n08-b07-i009",
+      "ood-n08-b07-i010",
+      "ood-n08-b07-i011",
+      "ood-n08-b07-i013",
+      "ood-n08-b07-i014",
+      "ood-n08-b07-i015",
+      "ood-n08-b07-i017",
+      "ood-n08-b07-i018"
+    ],
+    "strictLongestCorrectCount": 5,
+    "strictLongestMeasurement": "Diagnostic: correct answer text is longer than every wrong option under raw JS string length; no fixed count/length threshold.",
+    "mechanicalCheck": {
+      "validator": "patternly-content/scripts/content/question-contract.mjs",
+      "questionCount": 18,
+      "invalidQuestions": 0,
+      "correctAnswers": 18,
+      "incorrectDistractors": 54,
+      "reversedCorrectAnswers": 18,
+      "feedbackTargetSetsExact": 18
+    }
+  },
+  "items": [
+    {
+      "questionId": "ood-n08-b07-i001",
+      "beforeWholeObjectSha256": "8c6a962e7a86917552963151b42633e0737dd208599e3e7df8008bbae3b290e5",
+      "currentWholeObjectSha256": "12c3eb98b5e7732179921d68ffecec32930baa33f3e750a96ab44d0e44ec7140",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The job owns and disposes both resources; publish only the completed result.",
+      "disposition": "INDEPENDENTLY_REVIEWED_V3_DELTA",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i002",
+      "beforeWholeObjectSha256": "b79fc5bc85b5e523c8f2fc710b088ee84a1d53e91f62cc6cf6775e5d9636baac",
+      "currentWholeObjectSha256": "6b3c090cae3f09644f2d265e7050d42514cd6ed700640935618c00a57d06123f",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The panel disposes its subscription on close; the document service retains comments.",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_REVIEW",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i003",
+      "beforeWholeObjectSha256": "302e67efc1e44fcdf850280071601b2380247230b07516eb2502fa7958529689",
+      "currentWholeObjectSha256": "2dea0f0b44e593ce6a86975d110a3ca643db1c2db426f4590163552cd0b4bd33",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "Each upload attempt owns its stream and closes it before a retry opens another.",
+      "disposition": "INDEPENDENTLY_REVIEWED_V3_DELTA",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i004",
+      "beforeWholeObjectSha256": "42cbe94153a3133f45c504d072cc303d8d0c3ff9c11abc0da2ebd5acef9b7566",
+      "currentWholeObjectSha256": "a6d1b96ced8985225e0902dbb222db6b3a30fdeb34325846ee9e0d0fc5fa7cfd",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The invoice operation closes the body after parsing, whether parsing returns or throws.",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_REVIEW",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i005",
+      "beforeWholeObjectSha256": "71896033a66c538b5090c6cb1045891b1bf5ac24e0a2060b94f03d3737c40dfe",
+      "currentWholeObjectSha256": "64558b5291b59d10aadd3db53f6897ab2b289ad106999422adf5a047e1e3b422",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "Each door disposes its own subscription; the authority retains badge state.",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_REVIEW",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i006",
+      "beforeWholeObjectSha256": "7d6fceddf6e1e9f63ca3902b4750ef93d879e4d302da5829f4d943cc2bbe8f8f",
+      "currentWholeObjectSha256": "247c541b46e1040e8647465e4922306480a57287f5cfdce9634a39b10da3635c",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The print attempt owns its file, closes it after handoff, and removes incomplete output on failure.",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_REVIEW",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i007",
+      "beforeWholeObjectSha256": "dc2f5ae26fcef27ed24ab5fd50bda6ee807b00b76d8affc191ffba2c6a5894bd",
+      "currentWholeObjectSha256": "ea4e71cc2ebeffe872190a4e5ba37f8ce0c92c161066ca778f63f7180caced0b",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The move owns its temporary hold: release on denial/cancel, transfer on commit.",
+      "disposition": "INDEPENDENTLY_REVIEWED_V3_DELTA",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i008",
+      "beforeWholeObjectSha256": "df89db585da9efd2ecb0a9251d256ac22588be525f33ca717ce1587fdfd4fb38",
+      "currentWholeObjectSha256": "6d42bb03100ca5e86b49df617fdc01567f06d5702c5c9d110ae49bf9f0352a69",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The command closes its hardware session on exit; the controller keeps mode state.",
+      "disposition": "INDEPENDENTLY_REVIEWED_V3_DELTA",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i009",
+      "beforeWholeObjectSha256": "bad1311ef3547073845c63b03312e7fd68006d7a9acc2fe7d0d6e2fe76736b96",
+      "currentWholeObjectSha256": "db6a1bd067dcde1bf99042096be72f7425b2681e4ff556c6ba2c7d8bafe71794",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The scan closes its cursor after reading; progress keeps its stable lesson identity.",
+      "disposition": "INDEPENDENTLY_REVIEWED_V3_DELTA",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i010",
+      "beforeWholeObjectSha256": "a089cd523f72a12099afb479d1d35033c92c3523bb9fa3a94ae79e651918750a",
+      "currentWholeObjectSha256": "4d30c457793c0b409c19006e24a824d9b1c8bd8e19dc47ffb5219078188ba9c1",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "Export owns and closes its cursor and file; the live board remains open.",
+      "disposition": "INDEPENDENTLY_REVIEWED_V3_DELTA",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i011",
+      "beforeWholeObjectSha256": "1b23703869b0c5a3ed9f5d5122c5c0ac89102074e5c262722893d00d9b5b5485",
+      "currentWholeObjectSha256": "1c5963f3d4fd89bc46fa2b70c1c5dbb6640575b89ab319bebafcdc0ab1e756e7",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The escalation cancels its timer on exit and returns the result for that conversation.",
+      "disposition": "INDEPENDENTLY_REVIEWED_V3_DELTA",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i012",
+      "beforeWholeObjectSha256": "9be4bdddcb54fee203a8ef8c18e80e30f69e273d083dda2d2d34a1a331cfad08",
+      "currentWholeObjectSha256": "f3a437d6ba6a40aeb92d1f3f96d2133890d7b25e8fbc00d0940e238e846bbeb0",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "Validation owns the transaction and commits or rolls it back before release.",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_REVIEW",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i013",
+      "beforeWholeObjectSha256": "3228d0881debc56431df987475bb6a5a7e038546be4e880f19b82c55e4888a78",
+      "currentWholeObjectSha256": "5726189b6110451cd2bbd4e4b987aa6ce9ff334f46989a893b0999eb669bb228",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The split attempt owns both response streams; close them before leaving the parent unchanged on failure.",
+      "disposition": "INDEPENDENTLY_REVIEWED_V3_DELTA",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i014",
+      "beforeWholeObjectSha256": "2747cc9d035f4e2623d8c6692bc2b00152519a12244e6534f610e9225cd74486",
+      "currentWholeObjectSha256": "f7bbba58efde2735ee9a46d4bd846cfa57fa28fc671e31905b24c3c5f8e62bae",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The transfer releases its token on denial/cancel and transfers the reservation only at commit.",
+      "disposition": "INDEPENDENTLY_REVIEWED_V3_DELTA",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i015",
+      "beforeWholeObjectSha256": "0a57f558c741e5d56fa84b94495c7a3467752c19edda20e621b58a8e7d03dc82",
+      "currentWholeObjectSha256": "3109c441baccaa771d687cea9d2a2c57a72039dfc739e17e1f641df451b40825",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The build owns component streams and its temp file; publish only the validated package.",
+      "disposition": "INDEPENDENTLY_REVIEWED_V3_DELTA",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i016",
+      "beforeWholeObjectSha256": "4a7e408111107add7c3bbde4055d1de5b2ad0879d278548f11b3bc91bfe637f0",
+      "currentWholeObjectSha256": "7cce43dc4a59b8740d9e155c351aab40033ad5000c72f023dc464248ff5cf25a",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The operation releases its lease before confirmation or transfers it to the booking after confirmation.",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_REVIEW",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i017",
+      "beforeWholeObjectSha256": "cfa826654008b99311178f8792d006caf1169cf113bd5b229481474011be1608",
+      "currentWholeObjectSha256": "30b34f30b10000724798fa7fdaa189a5225e3ec8ca819b9d94cf0e254266a007",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The merge releases its locks and discards its temp record on failure; publish only on success.",
+      "disposition": "INDEPENDENTLY_REVIEWED_V3_DELTA",
+      "verdict": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b07-i018",
+      "beforeWholeObjectSha256": "73511f6b1913217414cad13d0d1924f3ab642898eff0de01dc82356d18650ab6",
+      "currentWholeObjectSha256": "7e6569211f73b7879ef60f2a030d0268a1018a7484f4d9ca677a70afbd5bc206",
+      "questionIdentity": "SAME_ID",
+      "acceptedOptionIdentity": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "acceptedDecision": "The clearance operation closes its stream on every exit and approves only after success.",
+      "disposition": "INDEPENDENTLY_REVIEWED_V3_DELTA",
+      "verdict": "PASS"
+    }
+  ],
+  "cohortDisposition": {
+    "strictLongestCorrectCount": 5,
+    "disposition": "NONBLOCKING_AFTER_CORRECTION",
+    "rationale": "The systematic full-policy key/single-error distractor shape from v2 is reduced: several alternatives now express complete competing lifecycle policies and some exceed the key length. Five remaining longest-key cases do not present a consistent cohort cue; no character-count target is applied."
+  },
+  "findings": [],
+  "limits": "Bounded correction review only; no activation/source/producer/runtime/admission/native/Premium/full BIZQ-01 acceptance."
+}

@@ -1,0 +1,1406 @@
+[
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i019_review_decision"
+    },
+    "constraints": [
+      "The listing must not become visible until price and stock rules validate. The reviewer has measured the validation path but has not confirmed whether seasonal imports share the same stock source."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "An ADR should make context, rationale and implications clear while recording uncertainty instead of hiding it.",
+        "scenarioApplication": "The record keeps the listing invisible until validation succeeds and identifies the source-sharing premise to check.",
+        "errorCorrection": "Reusing the old flow as proof would overstate evidence about a new import path.",
+        "boundaryOrTradeoff": "If the seasonal import is confirmed to use the same source and validation, update the record with that evidence and rollout consequence.",
+        "transfer": "Separate observed facts, assumptions and required checks so the next reviewer can reassess the decision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i019_assume_shared_source",
+          "text": "The new seasonal path has not been checked, so this turns an unverified assumption into a fact."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i019_implementation_only",
+          "text": "A class name does not explain the user-visible requirement or why the decision was selected."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i019_no_measurement",
+          "text": "The review measured a path but has not established that the new import has the same source or workload."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i019_defer_all_changes",
+          "text": "The open fact calls for a focused validation before rollout, not a permanent prohibition."
+        }
+      ],
+      "reason": "The publication boundary is known, but the seasonal source relationship is not. The decision record should preserve the measured evidence and make that assumption a verification item rather than silently promoting it to fact.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i019_review_decision",
+          "text": "Record the visibility gate and flag seasonal stock-source sharing for verification before rollout."
+        },
+        {
+          "optionId": "n09b09_i019_assume_shared_source",
+          "text": "State that all seasonal imports use the same stock source because the current seller flow does."
+        },
+        {
+          "optionId": "n09b09_i019_implementation_only",
+          "text": "Document only the new validation class and omit why visibility waits for validation."
+        },
+        {
+          "optionId": "n09b09_i019_no_measurement",
+          "text": "Say validation is fast enough based on the existing seller flow."
+        },
+        {
+          "optionId": "n09b09_i019_defer_all_changes",
+          "text": "Reject seasonal listings permanently because one source question is open."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A produce marketplace is adding seasonal listings. What belongs in the decision record before the change is approved?",
+    "questionId": "ood-n09-b09-i001",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i020_review_decision"
+    },
+    "constraints": [
+      "Each split must retain the original request identity and delivery promise. One vendor can meet the promise; the second vendor has not confirmed its date."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The decision record makes both the preserved identity and the unresolved date visible.",
+        "scenarioApplication": "Treating the second date as confirmed would turn uncertainty into a fulfillment commitment.",
+        "errorCorrection": "A list of calls is an implementation trace, not a rationale for retaining identity and promise.",
+        "boundaryOrTradeoff": "If the second vendor later confirms a different date, record the impact and ask whether the original delivery promise still holds before final allocation.",
+        "transfer": "Record outcome, evidence, and the next decision trigger separately."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i020_assert_both_dates",
+          "text": "The second vendor has not confirmed its date, so a single promise cannot be asserted as verified."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i020_implementation_steps",
+          "text": "The API sequence does not show whether each split remains traceable to the original request."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i020_drop_identity",
+          "text": "That loses the stipulated original request identity and weakens fulfillment traceability."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i020_delay_everything",
+          "text": "The first vendor is confirmed to meet the promise; withholding that allocation is not required by the facts."
+        }
+      ],
+      "reason": "One split is confirmed and one is still uncertain, while both must remain tied to the original request and promise. The note should distinguish the verified allocation from the pending vendor date.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i020_assert_both_dates",
+          "text": "State that both vendors meet the promise because the original request has one delivery date."
+        },
+        {
+          "optionId": "n09b09_i020_implementation_steps",
+          "text": "List only the two vendor API calls and leave request identity out of the decision."
+        },
+        {
+          "optionId": "n09b09_i020_drop_identity",
+          "text": "Give each split a new unrelated request ID to simplify vendor tracking."
+        },
+        {
+          "optionId": "n09b09_i020_delay_everything",
+          "text": "Wait to allocate either vendor until the second date is confirmed."
+        },
+        {
+          "optionId": "n09b09_i020_review_decision",
+          "text": "Mark the second vendor date pending; retain the original request ID and promise."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A repair-parts marketplace must split a backordered request across two vendors. Which review note best lets fulfillment evaluate the allocation decision?",
+    "questionId": "ood-n09-b09-i002",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i021_review_decision"
+    },
+    "constraints": [
+      "The plot boundary and approval history must survive the transfer. The current flow checks those fields, but there is no test showing two simultaneous transfers of the same plot."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The record separates validated behavior from a test gap rather than extending one test result beyond its scope.",
+        "scenarioApplication": "Plot boundary and approval history remain required outputs of the transfer.",
+        "errorCorrection": "A large allocator rewrite is not justified by the absence of one focused concurrency test.",
+        "boundaryOrTradeoff": "If the focused test shows two transfers can violate uniqueness, document the observed failure and revise the implementation decision.",
+        "transfer": "Tie a review claim to the evidence that actually supports it."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i021_claim_race_safe",
+          "text": "A single-transfer test does not establish what happens when two transfers overlap."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i021_rewrite_allocation",
+          "text": "That prescribes a broad implementation before the missing behavior is evidenced."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i021_omit_history",
+          "text": "The approval history is explicitly required to survive and is part of the decision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i021_block_transfers",
+          "text": "The identified gap is concurrent behavior; the facts do not show the existing single transfer is invalid."
+        }
+      ],
+      "reason": "The single-transfer checks cover boundary and history, but do not settle concurrent transfers. The review should preserve that tested scope and name the missing concurrency case without claiming a solution.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i021_claim_race_safe",
+          "text": "Mark concurrent transfers safe because the single-transfer path passes."
+        },
+        {
+          "optionId": "n09b09_i021_rewrite_allocation",
+          "text": "Replace the reservation flow with a new global allocator before testing concurrency."
+        },
+        {
+          "optionId": "n09b09_i021_omit_history",
+          "text": "Document only the new household ID because the plot boundary remains unchanged."
+        },
+        {
+          "optionId": "n09b09_i021_review_decision",
+          "text": "Keep the transfer decision; add a simultaneous-same-plot test."
+        },
+        {
+          "optionId": "n09b09_i021_block_transfers",
+          "text": "Reject every transfer until a concurrency test exists."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A garden tool transfers a plot reservation to a new household. What should the review record emphasize?",
+    "questionId": "ood-n09-b09-i003",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i022_review_decision"
+    },
+    "constraints": [
+      "Bundle price must remain consistent with component prices. The current proposal recalculates the bundle only when an editor saves it; no evidence covers later component-price changes."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A design note should make the decision’s consequences and confidence visible.",
+        "scenarioApplication": "The current claim is limited to save-time recalculation; later component changes remain unresolved.",
+        "errorCorrection": "Requiring a live service would choose an implementation before the missing behavior is characterized.",
+        "boundaryOrTradeoff": "If components cannot change after bundle creation, the save-time evidence may cover the whole lifecycle; verify that premise.",
+        "transfer": "State the scope of evidence and the case that could change the decision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i022_claim_always_consistent",
+          "text": "The test covers editor save only, not a later component-price change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i022_mandate_live_recalculation",
+          "text": "A live service is one possible implementation, but the evidence gap is about later changes, not a prescribed architecture."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i022_omit_tradeoff",
+          "text": "Code location does not tell reviewers when price consistency is satisfied or where evidence is missing."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i022_disable_bundles",
+          "text": "The known save behavior may work; the unresolved update case needs evidence before a broad rejection."
+        }
+      ],
+      "reason": "The proposal has evidence for editor saves but not for component changes afterward. A clear record states that boundary and requests evidence for the untested update case before claiming ongoing consistency.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i022_claim_always_consistent",
+          "text": "Say the bundle always matches its components because save-time recalculation passed."
+        },
+        {
+          "optionId": "n09b09_i022_mandate_live_recalculation",
+          "text": "Require a new live pricing service before deciding whether the bundle can ship."
+        },
+        {
+          "optionId": "n09b09_i022_review_decision",
+          "text": "Limit the claim to save-time recalculation; test later component-price changes."
+        },
+        {
+          "optionId": "n09b09_i022_omit_tradeoff",
+          "text": "Document the recalculation code but not the consistency condition."
+        },
+        {
+          "optionId": "n09b09_i022_disable_bundles",
+          "text": "Reject the bundle feature without testing how component updates are handled."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A subscription catalog adds a regional bundle. Which decision summary is most useful to the next reviewer?",
+    "questionId": "ood-n09-b09-i004",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i023_review_decision"
+    },
+    "constraints": [
+      "The station has a fixed capacity and reservations expire. The current test creates one reservation; there is no test for two requests arriving when only one slot remains."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Expiry determines whether a reservation occupies capacity, so it belongs in the decision context.",
+        "scenarioApplication": "The last-slot race is the relevant untested boundary.",
+        "errorCorrection": "A specific lock is premature until the concurrent behavior and deployment scope are known.",
+        "boundaryOrTradeoff": "If a concurrent test shows overbooking, record the observed failure and select a mechanism appropriate to the actual store and process boundary.",
+        "transfer": "Communicate the risk as an evidence question rather than as an assumed implementation guarantee."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i023_assume_atomic",
+          "text": "A check-before-insert test does not establish how simultaneous requests are coordinated."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i023_prescribe_lock",
+          "text": "A lock is one possible mechanism; the evidence gap is the concurrent last-slot outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i023_ignore_expiry",
+          "text": "Expiry affects which reservations consume the stated capacity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i023_add_capacity",
+          "text": "Adding capacity changes the product constraint rather than resolving the race in the existing one-slot case."
+        }
+      ],
+      "reason": "Capacity and expiry define the reservation contract, but the single-request test does not establish the competing-request result. The note should expose that exact gap instead of declaring a lock or atomicity guarantee.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i023_assume_atomic",
+          "text": "Claim the last slot cannot be double-booked because capacity is checked before insert."
+        },
+        {
+          "optionId": "n09b09_i023_review_decision",
+          "text": "Test competing requests for the last slot before claiming capacity safety."
+        },
+        {
+          "optionId": "n09b09_i023_prescribe_lock",
+          "text": "Mandate a distributed lock without first reproducing the competing-request case."
+        },
+        {
+          "optionId": "n09b09_i023_ignore_expiry",
+          "text": "Document capacity only and omit expiry because it is a cleanup detail."
+        },
+        {
+          "optionId": "n09b09_i023_add_capacity",
+          "text": "Increase station capacity to avoid testing the last slot."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A fleet tool reserves a charger at a shared station. How should the review communicate the remaining risk?",
+    "questionId": "ood-n09-b09-i005",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i024_review_decision"
+    },
+    "constraints": [
+      "Asset identity must remain stable while descriptive values may be replaced. The proposal merges by a normalized title; two assets with the same title but different archive IDs have not been tested."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The record states the invariant and the evidence gap around the proposed matching key.",
+        "scenarioApplication": "A collision example is the nearest countercase because two distinct IDs may share a title.",
+        "errorCorrection": "Blindly removing normalization or duplicating records is not justified before the match rule is tested.",
+        "boundaryOrTradeoff": "If the test shows title matches can merge distinct IDs, use an identity-safe condition and document the resulting behavior.",
+        "transfer": "Name the field that establishes identity separately from descriptive values used to search."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i024_assert_unique_title",
+          "text": "The sample does not establish uniqueness, and stable identity is explicitly the required rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i024_switch_to_copy",
+          "text": "Copying avoids choosing an ID but leaves identity and later references unresolved."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i024_rewrite_metadata",
+          "text": "A function name does not tell reviewers whether a merge preserves the correct asset identity."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i024_remove_normalization",
+          "text": "A collision test can define the safe matching scope; the facts do not show normalization itself is invalid."
+        }
+      ],
+      "reason": "Stable archive IDs define identity, while normalized titles are only a candidate matching signal. The decision needs a collision test to show how title matching respects that identity boundary.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i024_review_decision",
+          "text": "Test same-title records with different archive IDs before accepting title matching."
+        },
+        {
+          "optionId": "n09b09_i024_assert_unique_title",
+          "text": "Treat normalized titles as unique because the current sample has no collision."
+        },
+        {
+          "optionId": "n09b09_i024_switch_to_copy",
+          "text": "Copy both records whenever titles collide without recording which ID remains authoritative."
+        },
+        {
+          "optionId": "n09b09_i024_rewrite_metadata",
+          "text": "Describe the normalization function only and omit the identity effect."
+        },
+        {
+          "optionId": "n09b09_i024_remove_normalization",
+          "text": "Reject all normalization because titles can collide."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A photo archive merges duplicate descriptive metadata. What should the review distinguish?",
+    "questionId": "ood-n09-b09-i006",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i025_review_decision"
+    },
+    "constraints": [
+      "Each approval needs a territory and expiry. The proposed screen collects both, but the policy owner has not confirmed whether the expiry is measured from approval or first use."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The expiry’s start event changes the effective permission window and must be confirmed by the policy owner.",
+        "scenarioApplication": "The note keeps the confirmed territory/expiry fields and isolates the unresolved policy input.",
+        "errorCorrection": "Recording both possible interpretations as if both applied would create an ambiguous approval.",
+        "boundaryOrTradeoff": "Once the start event is confirmed, update the decision record and verify the resulting expiry behavior.",
+        "transfer": "Separate interface behavior from the authority that defines the policy."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i025_assume_approval_time",
+          "text": "The screen’s calculation does not establish that policy defines approval as the start event."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i025_hide_expiry",
+          "text": "Expiry is already a required approval field and cannot be omitted from the decision context."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i025_implement_both",
+          "text": "Duplicating both interpretations does not resolve which expiry governs the approval."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i025_block_territory",
+          "text": "The territory requirement is known; only the expiry start event needs clarification."
+        }
+      ],
+      "reason": "The required fields are known, but the event that starts expiry is not. The review should not confuse UI calculation timing with the policy decision.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i025_assume_approval_time",
+          "text": "State expiry starts at approval because the screen calculates it when saved."
+        },
+        {
+          "optionId": "n09b09_i025_hide_expiry",
+          "text": "Document territory only and omit expiry until policy responds."
+        },
+        {
+          "optionId": "n09b09_i025_implement_both",
+          "text": "Store two expiry values, one for approval and one for first use, without asking which rule applies."
+        },
+        {
+          "optionId": "n09b09_i025_block_territory",
+          "text": "Reject all territory-specific approvals until the policy owner responds."
+        },
+        {
+          "optionId": "n09b09_i025_review_decision",
+          "text": "Confirm whether expiry starts at approval or first use before finalizing grants."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A licensing analyst approves a territory-specific clip. Which review note preserves what is known and what remains open?",
+    "questionId": "ood-n09-b09-i007",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i026_review_decision"
+    },
+    "constraints": [
+      "A battery cannot be assigned to two aircraft at once. The planner’s single-request test passes; no evidence shows behavior when two aircraft request the same battery together."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The battery’s exclusivity is a business constraint, while the concurrency result remains unverified.",
+        "scenarioApplication": "A test must arrange competing claims for the same battery to cover the gap.",
+        "errorCorrection": "Prescribing a distributed lock without evidence can force a mechanism that does not match the actual process/store boundary.",
+        "boundaryOrTradeoff": "If the competing test demonstrates duplicate assignment, record the failure and select a mechanism based on where coordination occurs.",
+        "transfer": "Do not overstate evidence from a sequential test as concurrency proof."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i026_claim_unique",
+          "text": "A sequential check does not establish the outcome when two requests observe the same free battery."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i026_mandate_distributed_lock",
+          "text": "The actual concurrency boundary is not yet established and the lock prescription exceeds the evidence."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i026_drop_constraint",
+          "text": "That violates the explicit one-aircraft-at-a-time battery rule."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i026_retest_sequential",
+          "text": "More sequential cases do not test simultaneous claims on the same battery."
+        }
+      ],
+      "reason": "The single-request test verifies a different path from competing assignment. The review should retain the exclusivity rule and identify a test that can establish the concurrent outcome.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i026_claim_unique",
+          "text": "Say the battery is exclusive because the request rejects an already assigned battery."
+        },
+        {
+          "optionId": "n09b09_i026_mandate_distributed_lock",
+          "text": "Require a distributed lock as the only acceptable solution before reproducing the case."
+        },
+        {
+          "optionId": "n09b09_i026_drop_constraint",
+          "text": "Permit both assignments and reconcile the aircraft later."
+        },
+        {
+          "optionId": "n09b09_i026_review_decision",
+          "text": "Test simultaneous claims on one battery; the current test proves only sequential exclusivity."
+        },
+        {
+          "optionId": "n09b09_i026_retest_sequential",
+          "text": "Repeat the same one-request test with more batteries."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A maintenance planner schedules a battery replacement for one aircraft. What should the review communicate before release?",
+    "questionId": "ood-n09-b09-i008",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i027_review_decision"
+    },
+    "constraints": [
+      "Consent must be checked before external disclosure. The current integration test uses consented referrals; denied and missing-consent responses have not been exercised."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Consent is a gate before data leaves the clinic; the reviewed test covers only its allowed branch.",
+        "scenarioApplication": "Denied and missing consent need tests that verify no external disclosure occurs.",
+        "errorCorrection": "Logging more referral data would increase exposure without proving the gate.",
+        "boundaryOrTradeoff": "If the external API changes, revisit the integration contract separately from the consent decision.",
+        "transfer": "State both what the test proves and which safety-relevant outcomes remain untested."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i027_assume_all_consent",
+          "text": "The test says nothing about denied or missing-consent paths, where disclosure must be withheld."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i027_log_all_records",
+          "text": "Full data logging expands exposure and does not test the consent gate."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i027_block_all_referrals",
+          "text": "The integration passes with consent; the missing tests concern two local gate outcomes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i027_combine_denied_missing",
+          "text": "Those inputs have different decision states and should not be collapsed into one unexamined path."
+        }
+      ],
+      "reason": "The happy-path test establishes only consented disclosure. The review should retain the pre-disclosure gate and ask for separate denied and absent-consent evidence.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i027_assume_all_consent",
+          "text": "State that the integration is safe because the consented test passed."
+        },
+        {
+          "optionId": "n09b09_i027_log_all_records",
+          "text": "Capture full referral data in logs so reviewers can reconstruct any disclosure."
+        },
+        {
+          "optionId": "n09b09_i027_review_decision",
+          "text": "Test denied and absent consent separately, verifying neither sends the referral."
+        },
+        {
+          "optionId": "n09b09_i027_block_all_referrals",
+          "text": "Stop every referral until the external specialist changes its API."
+        },
+        {
+          "optionId": "n09b09_i027_combine_denied_missing",
+          "text": "Test only one generic failure response for both denied and missing consent."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A clinic navigator routes a referral to an external specialist. What belongs in the design review outcome?",
+    "questionId": "ood-n09-b09-i009",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i028_review_decision"
+    },
+    "constraints": [
+      "A saved result must remain explainable under the exercise version and scoring policy used when completed. The proposed migration rewrites older results using the current policy."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The stored version and policy make a completed score interpretable later.",
+        "scenarioApplication": "A few similar examples cannot prove all old scores retain their meaning.",
+        "errorCorrection": "The review needs the migration impact, not only the new function’s implementation details.",
+        "boundaryOrTradeoff": "If a migration is required, document the conversion rule and how historical meaning is preserved or explicitly changed.",
+        "transfer": "Describe consequences for existing records whenever an implementation changes their interpretation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i028_claim_equivalent",
+          "text": "Similar sample scores do not establish equivalence for all saved attempts or preserve the original policy context."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i028_rewrite_without_record",
+          "text": "That omits the effect on historical records and the reason their interpretation changes."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i028_freeze_all_versions",
+          "text": "Versioned interpretation permits new policies without making every future change impossible."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i028_delete_old_results",
+          "text": "Deleting history is a separate product decision and is not required by the stated version-bound explanation."
+        }
+      ],
+      "reason": "Historical results are tied to their original scoring policy, so rewriting them changes their meaning unless the migration is reviewed and justified. The record should expose that consequence before implementation.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i028_claim_equivalent",
+          "text": "Say old scores are equivalent because the new policy produces similar examples."
+        },
+        {
+          "optionId": "n09b09_i028_review_decision",
+          "text": "Review the effect on historical scores before rewriting policy-versioned results."
+        },
+        {
+          "optionId": "n09b09_i028_rewrite_without_record",
+          "text": "Ship the migration and document only the new scoring function."
+        },
+        {
+          "optionId": "n09b09_i028_freeze_all_versions",
+          "text": "Prohibit any future scoring policy change."
+        },
+        {
+          "optionId": "n09b09_i028_delete_old_results",
+          "text": "Remove old results instead of evaluating the migration effect."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A practice app records results for timed exercises. How should the design decision be recorded?",
+    "questionId": "ood-n09-b09-i010",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i029_review_decision"
+    },
+    "constraints": [
+      "The exception must retain the approver and the applicable spending cap. A proposed shortcut lets a requester raise the cap on their own; the test suite covers only the approver path."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A valid exception ties the approved amount to an attributable approver and cap.",
+        "scenarioApplication": "The bypass path is a different actor/action from the tested approver flow.",
+        "errorCorrection": "Changing a global cap is not a substitute for preserving approval authority.",
+        "boundaryOrTradeoff": "If requesters receive delegated authority later, record the policy and audit implications before allowing cap changes.",
+        "transfer": "Review notes should connect an alternative to the exact control it would weaken."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i029_claim_bypass_blocked",
+          "text": "An approver-path test does not exercise a requester modifying the cap."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i029_document_class_name",
+          "text": "A handler name does not explain the authority boundary the decision must preserve."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i029_raise_cap_globally",
+          "text": "Changing the cap avoids the control question rather than deciding who may set it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i029_remove_audit",
+          "text": "The scenario requires the approver to remain attributable."
+        }
+      ],
+      "reason": "The approver test does not cover requester-controlled caps. The review should name the authority constraint, reject the shortcut, and request a test that exercises the bypass attempt.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i029_review_decision",
+          "text": "Add a requester-controlled-cap test; the approver test does not cover that bypass."
+        },
+        {
+          "optionId": "n09b09_i029_claim_bypass_blocked",
+          "text": "Declare the requester bypass impossible because the approver test passed."
+        },
+        {
+          "optionId": "n09b09_i029_document_class_name",
+          "text": "Record the name of the approval handler and omit who controls the cap."
+        },
+        {
+          "optionId": "n09b09_i029_raise_cap_globally",
+          "text": "Increase the default cap so requesters do not need exceptions."
+        },
+        {
+          "optionId": "n09b09_i029_remove_audit",
+          "text": "Drop the approver field to simplify the workflow."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A procurement team approves a bounded spending exception. Which record helps the next reviewer assess the decision?",
+    "questionId": "ood-n09-b09-i011",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i030_review_decision"
+    },
+    "constraints": [
+      "Annotations follow stable segment IDs, not file offsets. The proposal stores offsets for new recordings; there is no test covering a different-length replacement."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Stable segment IDs are the identity boundary; file offsets are positional data.",
+        "scenarioApplication": "A different-length recording can reveal whether offset-based annotations drift.",
+        "errorCorrection": "Implementation notes about parsing do not establish semantic continuity.",
+        "boundaryOrTradeoff": "If the test shows offsets cannot preserve the target segment, keep the stable IDs through replacement.",
+        "transfer": "Use a counterexample that exercises the assumption behind the proposed representation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i030_assume_offsets_stable",
+          "text": "One same-duration example does not establish offset identity for a different-length recording."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i030_rewrite_all_annotations",
+          "text": "That discards the stated stable-segment contract rather than evaluating the proposed offset change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i030_document_parser",
+          "text": "Parsing behavior does not explain whether annotations still point to the intended segment."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i030_ban_replacement",
+          "text": "The contract requires stable annotation identity; it does not prohibit replacing the source."
+        }
+      ],
+      "reason": "The current example does not challenge the offset assumption, while the contract is based on stable segment identity. The review should ask for a different-length replacement case before accepting offsets.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i030_assume_offsets_stable",
+          "text": "Treat offsets as stable because the current replacement has the same duration."
+        },
+        {
+          "optionId": "n09b09_i030_rewrite_all_annotations",
+          "text": "Rebuild every annotation from the new file without preserving segment identity."
+        },
+        {
+          "optionId": "n09b09_i030_document_parser",
+          "text": "Record only how offsets are parsed, not how annotation identity survives replacement."
+        },
+        {
+          "optionId": "n09b09_i030_ban_replacement",
+          "text": "Reject all recording replacements."
+        },
+        {
+          "optionId": "n09b09_i030_review_decision",
+          "text": "Test a different-length replacement before accepting offset-based anchors."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A podcast editor replaces an audio recording while preserving annotations. What should the review say about the proposed anchor change?",
+    "questionId": "ood-n09-b09-i012",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i031_review_decision"
+    },
+    "constraints": [
+      "Each grant requires a specific approval and expiry. The service and reviewer console use different clock sources; the allowed clock skew has not been agreed."
+    ],
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The clock comparison determines whether a temporary permission is still active.",
+        "scenarioApplication": "The note keeps approval and expiry requirements while naming the missing tolerance decision.",
+        "errorCorrection": "A guessed grace period changes the access boundary without policy authority.",
+        "boundaryOrTradeoff": "Once the tolerated skew is agreed, test the earliest and latest permitted expiry outcomes.",
+        "transfer": "Document unresolved cross-system assumptions where they affect a security decision."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i031_assume_zero_skew",
+          "text": "UTC formatting does not establish synchronized clocks or an accepted tolerance."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i031_add_long_grace",
+          "text": "A guessed grace window changes when the permission ends and can extend access unexpectedly."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i031_omit_expiry",
+          "text": "Expiry is a required part of the grant, not an optional display detail."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i031_claim_clock_safe",
+          "text": "The scenario concerns comparing two clock sources; local monotonic behavior does not establish cross-system agreement."
+        }
+      ],
+      "reason": "The grant needs expiry, but the acceptable difference between two clock sources is unresolved. The record should expose that assumption instead of inventing a grace window or claiming UTC solves it.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i031_assume_zero_skew",
+          "text": "State that expiry is exact because both systems display UTC timestamps."
+        },
+        {
+          "optionId": "n09b09_i031_add_long_grace",
+          "text": "Add a fixed long grace window without policy approval."
+        },
+        {
+          "optionId": "n09b09_i031_omit_expiry",
+          "text": "Document only the approver because time comparison is inconvenient."
+        },
+        {
+          "optionId": "n09b09_i031_review_decision",
+          "text": "Resolve the clock-skew tolerance before relying on expiry comparisons."
+        },
+        {
+          "optionId": "n09b09_i031_claim_clock_safe",
+          "text": "Say the systems are safe because each has a monotonic clock."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A security reviewer grants a temporary role to an operator. Which assumption should be made explicit in the decision record?",
+    "questionId": "ood-n09-b09-i013",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i032_review_decision"
+    },
+    "constraints": [
+      "The seal must cover the exact immutable revision selected by the user. The current test seals the latest revision; it does not change the selected revision between selection and sealing."
+    ],
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The immutable revision identity is the evidence needed to connect the user’s selection to the seal.",
+        "scenarioApplication": "A newer revision provides the case that can falsify an implicit “latest is selected” assumption.",
+        "errorCorrection": "Documenting only a signing function omits the decision’s input boundary.",
+        "boundaryOrTradeoff": "If the operation intentionally seals latest instead, that is a different contract and should be recorded explicitly.",
+        "transfer": "Use tests that separate two values the current happy path happens to make equal."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i032_assume_latest_same",
+          "text": "The test never creates a newer revision after selection, so it cannot support that equivalence."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i032_seal_after_search",
+          "text": "The signature call does not show which bytes or revision were sealed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i032_seal_everything",
+          "text": "That changes the operation and does not prove the requested selected revision is the one identified."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i032_trust_user_copy",
+          "text": "A second confirmation does not itself bind the seal to a stable revision identity."
+        }
+      ],
+      "reason": "The current test cannot distinguish selected revision from latest because they never diverge. The review should request a counterexample where a newer revision appears before sealing.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i032_assume_latest_same",
+          "text": "Treat latest and selected revision as equivalent because they match in the test."
+        },
+        {
+          "optionId": "n09b09_i032_seal_after_search",
+          "text": "Document only the signature call and omit the selected revision binding."
+        },
+        {
+          "optionId": "n09b09_i032_review_decision",
+          "text": "Test a newer revision appearing after selection but before sealing."
+        },
+        {
+          "optionId": "n09b09_i032_seal_everything",
+          "text": "Seal all revisions to avoid choosing the wrong one."
+        },
+        {
+          "optionId": "n09b09_i032_trust_user_copy",
+          "text": "Ask the user to confirm the latest revision again without retaining its identity."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A document service seals a selected revision before archival. What evidence should the review request?",
+    "questionId": "ood-n09-b09-i014",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i033_review_decision"
+    },
+    "constraints": [
+      "A payout release is tied to a settled order and uses a stable request key. After a timeout, the processor may have accepted the request; no lookup behavior is specified."
+    ],
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The record separates the application’s stable-key behavior from the processor’s unspecified timeout semantics.",
+        "scenarioApplication": "A retry with a new key risks duplicating a release that was accepted before the timeout.",
+        "errorCorrection": "The missing lookup contract is an explicit question for the integration owner.",
+        "boundaryOrTradeoff": "If the processor documents a lookup or deduplication result, record that guarantee and test the corresponding retry path.",
+        "transfer": "State what is known and leave external-effect guarantees open until verified."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i033_claim_exactly_once",
+          "text": "The case gives a request key but no processor guarantee about deduplication or lookup after timeout."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i033_retry_new_key",
+          "text": "A new key could represent a second release while the first request may already have been accepted."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i033_assume_rejected",
+          "text": "The prompt explicitly says acceptance may have occurred before the timeout."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i033_manual_reconcile_only",
+          "text": "A manual-only process is a broad operational choice before the missing processor behavior is clarified."
+        }
+      ],
+      "reason": "The stable request key describes the retry intent, but timeout leaves the effect unknown and the processor lookup contract is absent. The review must not promise exactly-once behavior from the key alone.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i033_claim_exactly_once",
+          "text": "State that the stable key guarantees exactly one payout despite the timeout."
+        },
+        {
+          "optionId": "n09b09_i033_review_decision",
+          "text": "Confirm timeout lookup semantics before claiming stable-key retries are safe."
+        },
+        {
+          "optionId": "n09b09_i033_retry_new_key",
+          "text": "Recommend retrying with a new key so a timed-out request cannot block progress."
+        },
+        {
+          "optionId": "n09b09_i033_assume_rejected",
+          "text": "Treat every timeout as a rejection and record no uncertainty."
+        },
+        {
+          "optionId": "n09b09_i033_manual_reconcile_only",
+          "text": "Require staff to inspect every payout manually without checking whether a processor lookup exists."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A marketplace releases seller payouts after settlement. How should the review describe an uncertain processor response?",
+    "questionId": "ood-n09-b09-i015",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i034_review_decision"
+    },
+    "constraints": [
+      "Passengers must see changes in effective-time order. The operator can send a delayed earlier change after a newer one; the current test sends updates in order."
+    ],
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Effective time, not arrival time, is the ordering property passengers rely on.",
+        "scenarioApplication": "The counterexample separates the two clocks and tests the actual contract.",
+        "errorCorrection": "Choosing a queue is premature because the ordering requirement can be evaluated independently of that mechanism.",
+        "boundaryOrTradeoff": "If the operator later guarantees ordered delivery, record and verify that upstream contract rather than assume it.",
+        "transfer": "Use a review example that distinguishes the proposed rule from a plausible competing interpretation."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i034_claim_arrival_sufficient",
+          "text": "Ordered test input cannot establish behavior when a delayed earlier effective time arrives later."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i034_sort_by_receive",
+          "text": "Receive time can conflict with the passenger-visible effective-time contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i034_use_global_queue",
+          "text": "A queue is a proposed mechanism, not the missing evidence about ordering semantics."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i034_drop_older_change",
+          "text": "A late message may carry an earlier effective change that passengers still must see in order."
+        }
+      ],
+      "reason": "The existing test makes receive and effective order identical, so it cannot validate the stated ordering contract. The review needs the delayed earlier event case before asserting the behavior.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i034_review_decision",
+          "text": "Test a delayed earlier effective time before claiming the board preserves order."
+        },
+        {
+          "optionId": "n09b09_i034_claim_arrival_sufficient",
+          "text": "Say arrival order is adequate because all current tests send updates in order."
+        },
+        {
+          "optionId": "n09b09_i034_sort_by_receive",
+          "text": "Record receive timestamp as the ordering source to simplify processing."
+        },
+        {
+          "optionId": "n09b09_i034_use_global_queue",
+          "text": "Mandate a distributed queue before establishing the delayed-update behavior."
+        },
+        {
+          "optionId": "n09b09_i034_drop_older_change",
+          "text": "Ignore any update that arrives late without recording whether it is still effective."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A transit board receives platform changes from an operator. What should the review make clear about event ordering?",
+    "questionId": "ood-n09-b09-i016",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i035_review_decision"
+    },
+    "constraints": [
+      "A meter cannot hold overlapping reservations. The normal reservation path passes; no test injects a failure between checking overlap and recording the reservation."
+    ],
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "A failure/interleaving test can show whether two overlapping reservations are possible at the check-record boundary.",
+        "scenarioApplication": "The prompt does not identify the store or process scope, so a specific lock prescription is unsupported.",
+        "errorCorrection": "A cleanup job would permit the forbidden overlap before repairing it.",
+        "boundaryOrTradeoff": "If the test reproduces the race, choose and document a mechanism that matches the actual persistence boundary.",
+        "transfer": "Review evidence should target the untested state transition, not repeat the already-passing path."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i035_claim_atomic",
+          "text": "A successful normal request does not exercise an interleaving or a failure between check and record."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i035_prescribe_database_lock",
+          "text": "The mechanism cannot be selected from the stated facts; first establish the failure behavior and owning store."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i035_allow_overlap_then_repair",
+          "text": "That violates the immediate no-overlap contract and creates a known invalid state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i035_repeat_normal_test",
+          "text": "Repeated sequential execution does not create the specified check/record interleaving."
+        }
+      ],
+      "reason": "The case’s gap is between overlap validation and reservation recording. The review should preserve the invariant and request a test that exercises that boundary rather than claim atomicity or choose an unsupported lock.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i035_claim_atomic",
+          "text": "Declare the reservation atomic because the normal request test passes."
+        },
+        {
+          "optionId": "n09b09_i035_prescribe_database_lock",
+          "text": "Mandate a database lock without knowing the persistence boundary."
+        },
+        {
+          "optionId": "n09b09_i035_allow_overlap_then_repair",
+          "text": "Allow overlaps and plan to resolve them in a later cleanup job."
+        },
+        {
+          "optionId": "n09b09_i035_repeat_normal_test",
+          "text": "Run the existing normal case many times and infer concurrency safety from no observed error."
+        },
+        {
+          "optionId": "n09b09_i035_review_decision",
+          "text": "Exercise a failure between overlap check and reservation record before claiming concurrent safety."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "An energy-sharing service reserves meter discharge windows. Which review action addresses the unresolved failure mode?",
+    "questionId": "ood-n09-b09-i017",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "type": "choice_single",
+      "optionId": "n09b09_i036_review_decision"
+    },
+    "constraints": [
+      "The new provider has a different request format. Existing consumers rely on the current timing and error contract; no compatibility test has run against the new provider."
+    ],
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "The adapter is intended to isolate the new request format while consumers keep the existing contract.",
+        "scenarioApplication": "Compilation covers type/syntax compatibility, not observed timing or error behavior.",
+        "errorCorrection": "A provider-specific test can compare the response behavior with the existing contract.",
+        "boundaryOrTradeoff": "If that test shows a timing or error difference, record the accepted tradeoff or revise the integration before rollout.",
+        "transfer": "Do not communicate an integration guarantee until the relevant behavior is measured."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i036_claim_contract_preserved",
+          "text": "Compilation does not establish the new provider’s timing or error behavior."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i036_fork_consumers",
+          "text": "This moves provider-specific format changes into consumers that depend on the existing contract."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i036_require_same_protocol",
+          "text": "A format difference can be translated at the boundary; the facts do not establish that the provider must change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n09b09_i036_promise_no_delay",
+          "text": "No compatibility or timing test has run, so zero added latency is unsupported."
+        }
+      ],
+      "reason": "The adapter compiles, but no test establishes that the new provider preserves the stream’s timing and error contract. The review should make that acceptance boundary explicit and request evidence.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "n09b09_i036_claim_contract_preserved",
+          "text": "State that the contract is preserved because the adapter compiles."
+        },
+        {
+          "optionId": "n09b09_i036_fork_consumers",
+          "text": "Ask every consumer to handle the new provider’s response format."
+        },
+        {
+          "optionId": "n09b09_i036_require_same_protocol",
+          "text": "Reject the provider until it adopts the existing request format."
+        },
+        {
+          "optionId": "n09b09_i036_review_decision",
+          "text": "Run a provider-specific test against the existing timing and error contract."
+        },
+        {
+          "optionId": "n09b09_i036_promise_no_delay",
+          "text": "Promise that translation adds no timing cost without measuring it."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N09-B09",
+    "nodeId": "testability_refactoring_api_evolution_and_maintainability",
+    "prompt": "A caption studio is adding a second live language provider. What should the review summary say about the integration boundary?",
+    "questionId": "ood-n09-b09-i018",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record",
+      "https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-design-specification"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

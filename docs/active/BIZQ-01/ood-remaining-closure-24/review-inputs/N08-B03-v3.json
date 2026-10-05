@@ -1,0 +1,1226 @@
+[
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A music practice tracker, A completion stores both exercise revision and score policy. An instructor can publish a new exercise revision while a learner submits; the completion must refer to one matching pair. Which change should become visible as one coherent state? Accept the score only with the exercise revision and policy captured for that completion.",
+        "errorCorrection": "The score can be stored before the revision lookup changes the policy paired with it. A cached client does not know which policy was accepted for this submission. The latest exercise may differ from the one used to compute the stored score.",
+        "boundaryOrTradeoff": "The nearest alternative is Save the score, then attach whichever exercise revision is current. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i001_alt1_v2",
+          "text": "The score can be stored before the revision lookup changes the policy paired with it."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i001_alt2_v2",
+          "text": "A cached client does not know which policy was accepted for this submission."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i001_alt3_v2",
+          "text": "The latest exercise may differ from the one used to compute the stored score."
+        }
+      ],
+      "reason": "The completion is valid only for the revision-policy pair used to score it; reading the revision after storing the score can attach the wrong policy.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Accept the score only with the exercise revision and policy captured for that completion."
+        },
+        {
+          "optionId": "n08b03_i001_alt1_v2",
+          "text": "Save the score, then attach whichever exercise revision is current."
+        },
+        {
+          "optionId": "n08b03_i001_alt2_v2",
+          "text": "Let the learner choose a cached policy and reconcile it after submission."
+        },
+        {
+          "optionId": "n08b03_i001_alt3_v2",
+          "text": "Accept the completion first and reconstruct its score policy from the latest exercise."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A music practice tracker, A completion stores both exercise revision and score policy. An instructor can publish a new exercise revision while a learner submits; the completion must refer to one matching pair. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i001",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract_retry_i002_v3",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "The procurement queue receives the same request ID on a retry. Its committed approval keeps the named exception and the checks performed for it; the owner returns that existing approval rather than creating another.",
+        "errorCorrection": "If status, exception, evidence, and retry identity are separate writes, a retry can create another approval or attach evidence to the wrong one. The owner needs one committed record that resolves the reused request ID and preserves the decision it identifies.",
+        "boundaryOrTradeoff": "The nearest alternative is to write approval status and attach exception evidence later. That exposes a partial decision, and a retry can arrive before those fields identify the approval already committed.",
+        "transfer": "When a request may be retried after a commit, identify the stable request identity and the values that define its accepted result. Let the state owner resolve the retry to the committed result while preserving those values together."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i002_alt1_v2",
+          "text": "Approval status can appear before its exception and control evidence, leaving a partial decision if a retry arrives."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i002_alt2_v2",
+          "text": "The displayed controls may be stale, and asynchronously adding attribution does not let the queue resolve the reused request ID to its committed approval."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i002_alt3_v2",
+          "text": "Reviewer-only evidence does not identify which request or exception the committed approval represents."
+        }
+      ],
+      "reason": "The reused request ID lets the owner resolve the approval committed by the first attempt. Committing that identity with the exception and control evidence prevents a retry from creating a second approval with lost attribution.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract_retry_i002_v3",
+          "text": "Commit one approval per request ID with its exception and required control evidence; return it on retry."
+        },
+        {
+          "optionId": "n08b03_i002_alt1_v2",
+          "text": "Write approval status, then attach the exception and reviewer evidence later."
+        },
+        {
+          "optionId": "n08b03_i002_alt2_v2",
+          "text": "Let the client approve from its displayed controls and add attribution asynchronously."
+        },
+        {
+          "optionId": "n08b03_i002_alt3_v2",
+          "text": "Store evidence under the reviewer only, then infer which exception was approved."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In a procurement approval queue, each submission carries a stable request ID that a retry reuses. An approval references a named exception and the control checks required for it. A retry after the first approval commits must return that approval, not create a second one or lose attribution. Which owner operation makes this contract reliable?",
+    "questionId": "ood-n08-b03-i002",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A podcast production desk, Replacing a recording creates a new revision. Existing annotations point to stable segment IDs; listeners must see either the old recording with its annotations or the new recording with the matching segment map. Which change should become visible as one coherent state? Publish the replacement recording with its matching segment map as one revision.",
+        "errorCorrection": "Offsets can be exposed against audio from a different revision. Cached offsets may not match the replacement recording. Listeners can observe the map before its corresponding recording.",
+        "boundaryOrTradeoff": "The nearest alternative is Replace audio first and remap stable annotation IDs afterward. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i003_alt1_v2",
+          "text": "Offsets can be exposed against audio from a different revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i003_alt2_v2",
+          "text": "Cached offsets may not match the replacement recording."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i003_alt3_v2",
+          "text": "Listeners can observe the map before its corresponding recording."
+        }
+      ],
+      "reason": "Listeners need a recording and segment map from the same revision; exposing either new component alone can move annotations to the wrong segment.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Publish the replacement recording with its matching segment map as one revision."
+        },
+        {
+          "optionId": "n08b03_i003_alt1_v2",
+          "text": "Replace audio first and remap stable annotation IDs afterward."
+        },
+        {
+          "optionId": "n08b03_i003_alt2_v2",
+          "text": "Render the new recording with the listener’s cached segment offsets."
+        },
+        {
+          "optionId": "n08b03_i003_alt3_v2",
+          "text": "Publish the new map first and let annotation readers fetch audio when ready."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A podcast production desk, Replacing a recording creates a new revision. Existing annotations point to stable segment IDs; listeners must see either the old recording with its annotations or the new recording with the matching segment map. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i003",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A permissions review service, A temporary grant is valid only with its approving decision and expiry instant. The access check must never observe an active role without those two fields. Which change should become visible as one coherent state? Expose a grant only with its approving decision and expiry.",
+        "errorCorrection": "Access checks can observe an active role before its bounds exist. Different clocks can infer different expiry instants. The role can become visible without a matching approval revision.",
+        "boundaryOrTradeoff": "The nearest alternative is Set the role active, then attach approver and expiry in later writes. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i004_alt1_v2",
+          "text": "Access checks can observe an active role before its bounds exist."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i004_alt2_v2",
+          "text": "Different clocks can infer different expiry instants."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i004_alt3_v2",
+          "text": "The role can become visible without a matching approval revision."
+        }
+      ],
+      "reason": "An active role is not valid without the decision and expiry that bound it, so access readers must see those fields in the same grant revision.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Expose a grant only with its approving decision and expiry."
+        },
+        {
+          "optionId": "n08b03_i004_alt1_v2",
+          "text": "Set the role active, then attach approver and expiry in later writes."
+        },
+        {
+          "optionId": "n08b03_i004_alt2_v2",
+          "text": "Infer missing expiry from each access service’s local clock."
+        },
+        {
+          "optionId": "n08b03_i004_alt3_v2",
+          "text": "Publish expiry and role separately, relying on the audit update to reconcile them."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A permissions review service, A temporary grant is valid only with its approving decision and expiry instant. The access check must never observe an active role without those two fields. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i004",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A document notarization service, A seal names a specific immutable document revision. A new document revision may be uploaded while sealing runs; the seal must not be attached to whichever revision happens to be current later. Which change should become visible as one coherent state? Seal the exact immutable revision whose bytes were hashed.",
+        "errorCorrection": "The second lookup can name bytes other than those that were hashed. An upload can change the target after hashing. A later current-version lookup does not identify the revision covered by the digest.",
+        "boundaryOrTradeoff": "The nearest alternative is Hash the selected revision, then store the seal against the latest revision. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i005_alt1_v2",
+          "text": "The second lookup can name bytes other than those that were hashed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i005_alt2_v2",
+          "text": "An upload can change the target after hashing."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i005_alt3_v2",
+          "text": "A later current-version lookup does not identify the revision covered by the digest."
+        }
+      ],
+      "reason": "The seal covers bytes from one immutable revision. Looking up the latest revision later can attach the digest to different bytes.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Seal the exact immutable revision whose bytes were hashed."
+        },
+        {
+          "optionId": "n08b03_i005_alt1_v2",
+          "text": "Hash the selected revision, then store the seal against the latest revision."
+        },
+        {
+          "optionId": "n08b03_i005_alt2_v2",
+          "text": "Let upload completion retarget a seal to the newer document revision."
+        },
+        {
+          "optionId": "n08b03_i005_alt3_v2",
+          "text": "Store a digest first and resolve its document revision from the current library later."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A document notarization service, A seal names a specific immutable document revision. A new document revision may be uploaded while sealing runs; the seal must not be attached to whichever revision happens to be current later. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i005",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A marketplace payout service, An order may settle while payout release is being requested. A release is accepted only for a settled order, and the order's settlement state and release record must be observed together. Which change should become visible as one coherent state? Accept release only while settlement and release are recorded together for that order.",
+        "errorCorrection": "Settlement can change between the read and release write. The client can expose release before settlement is accepted. The screen snapshot can be stale when release is recorded.",
+        "boundaryOrTradeoff": "The nearest alternative is Read settlement, then call a separately synchronized release writer. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i006_alt1_v2",
+          "text": "Settlement can change between the read and release write."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i006_alt2_v2",
+          "text": "The client can expose release before settlement is accepted."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i006_alt3_v2",
+          "text": "The screen snapshot can be stale when release is recorded."
+        }
+      ],
+      "reason": "Settlement can change while release is requested, so separately synchronized reads and writes can release an order that is not settled.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Accept release only while settlement and release are recorded together for that order."
+        },
+        {
+          "optionId": "n08b03_i006_alt1_v2",
+          "text": "Read settlement, then call a separately synchronized release writer."
+        },
+        {
+          "optionId": "n08b03_i006_alt2_v2",
+          "text": "Let the payout client publish release and have settlement catch up afterward."
+        },
+        {
+          "optionId": "n08b03_i006_alt3_v2",
+          "text": "Release from the screen’s settlement snapshot and reconcile the order later."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A marketplace payout service, An order may settle while payout release is being requested. A release is accepted only for a settled order, and the order's settlement state and release record must be observed together. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i006",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A public-transit disruption board, A route update has an effective sequence assigned by the controller. Delivery may be delayed or reordered; passengers must see later effective changes only after earlier ones for that route. Which change should become visible as one coherent state? Expose route changes in controller effective-sequence order.",
+        "errorCorrection": "Sorting labels later does not restore the state order passengers already observed. Local arrival time is not the controller’s effective sequence. A refresh can expose the later change before its prerequisite update.",
+        "boundaryOrTradeoff": "The nearest alternative is Publish by arrival and reorder only the displayed text afterward. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i007_alt1_v2",
+          "text": "Sorting labels later does not restore the state order passengers already observed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i007_alt2_v2",
+          "text": "Local arrival time is not the controller’s effective sequence."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i007_alt3_v2",
+          "text": "A refresh can expose the later change before its prerequisite update."
+        }
+      ],
+      "reason": "The controller’s effective sequence determines which route state is current; arrival time can place a later update before an earlier one.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Expose route changes in controller effective-sequence order."
+        },
+        {
+          "optionId": "n08b03_i007_alt1_v2",
+          "text": "Publish by arrival and reorder only the displayed text afterward."
+        },
+        {
+          "optionId": "n08b03_i007_alt2_v2",
+          "text": "Choose whichever update has the newest local arrival timestamp."
+        },
+        {
+          "optionId": "n08b03_i007_alt3_v2",
+          "text": "Publish the latest received update and repair route order in a later board refresh."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A public-transit disruption board, A route update has an effective sequence assigned by the controller. Delivery may be delayed or reordered; passengers must see later effective changes only after earlier ones for that route. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i007",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A neighborhood energy-sharing service, A reserved discharge window covers a meter and interval. Two overlapping requests may race; the service must expose either the prior schedule or one accepted reservation, never a partially written interval list. Which change should become visible as one coherent state? Accept a meter reservation only with its overlap decision and reservation entry.",
+        "errorCorrection": "An occupied interval without its reservation identity is a partial schedule state. The schedule can change after the cached overlap check. The later check can discover a collision only after the request was recorded as accepted.",
+        "boundaryOrTradeoff": "The nearest alternative is Mark the interval occupied, then attach its reservation ID. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i008_alt1_v2",
+          "text": "An occupied interval without its reservation identity is a partial schedule state."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i008_alt2_v2",
+          "text": "The schedule can change after the cached overlap check."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i008_alt3_v2",
+          "text": "The later check can discover a collision only after the request was recorded as accepted."
+        }
+      ],
+      "reason": "The overlap decision and occupied interval must be accepted together; separate checks and writes can confirm two requests for the same slot.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Accept a meter reservation only with its overlap decision and reservation entry."
+        },
+        {
+          "optionId": "n08b03_i008_alt1_v2",
+          "text": "Mark the interval occupied, then attach its reservation ID."
+        },
+        {
+          "optionId": "n08b03_i008_alt2_v2",
+          "text": "Confirm against the cached schedule and append the interval after returning."
+        },
+        {
+          "optionId": "n08b03_i008_alt3_v2",
+          "text": "Record the request first and run the overlap check in a later scheduler pass."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A neighborhood energy-sharing service, A reserved discharge window covers a meter and interval. Two overlapping requests may race; the service must expose either the prior schedule or one accepted reservation, never a partially written interval list. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i008",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A live captioning studio, Each stream uses a provider configuration and timing contract selected at stream start. Switching providers may affect new streams but must not change the configuration an active stream already uses. Which change should become visible as one coherent state? Keep each active stream on the provider revision captured at stream start.",
+        "errorCorrection": "Active callbacks may observe a configuration that belongs to no captured stream revision. One stream can change provider between chunks. Existing streams are required to continue on their starting contract.",
+        "boundaryOrTradeoff": "The nearest alternative is Mutate provider fields while active streams hold a shared configuration. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i009_alt1_v2",
+          "text": "Active callbacks may observe a configuration that belongs to no captured stream revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i009_alt2_v2",
+          "text": "One stream can change provider between chunks."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i009_alt3_v2",
+          "text": "Existing streams are required to continue on their starting contract."
+        }
+      ],
+      "reason": "The stream contract is fixed at start. A shared mutation or callback-time lookup can make one active stream use a mixed configuration.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep each active stream on the provider revision captured at stream start."
+        },
+        {
+          "optionId": "n08b03_i009_alt1_v2",
+          "text": "Mutate provider fields while active streams hold a shared configuration."
+        },
+        {
+          "optionId": "n08b03_i009_alt2_v2",
+          "text": "Choose the current provider separately for each caption callback."
+        },
+        {
+          "optionId": "n08b03_i009_alt3_v2",
+          "text": "Switch active streams to the new provider when the first new chunk arrives."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A live captioning studio, Each stream uses a provider configuration and timing contract selected at stream start. Switching providers may affect new streams but must not change the configuration an active stream already uses. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i009",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A volunteer coordination hub, A two-person shift swap requires both assignments to satisfy skill and availability checks. The roster must show either the original pair or the accepted swapped pair, not one moved assignment alone. Which change should become visible as one coherent state? Publish the two-person swap only after both assignments pass on one roster revision.",
+        "errorCorrection": "The first move can be visible even when the second assignment fails. Client-local acceptance does not publish one accepted pair. The roster may change after the screen snapshot, so separate saves can produce an invalid pair.",
+        "boundaryOrTradeoff": "The nearest alternative is Write one assignment before checking the other, then try to undo on failure. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i010_alt1_v2",
+          "text": "The first move can be visible even when the second assignment fails."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i010_alt2_v2",
+          "text": "Client-local acceptance does not publish one accepted pair."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i010_alt3_v2",
+          "text": "The roster may change after the screen snapshot, so separate saves can produce an invalid pair."
+        }
+      ],
+      "reason": "Both assignments depend on one roster revision; sequential writes expose a one-sided swap when the other validation fails.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Publish the two-person swap only after both assignments pass on one roster revision."
+        },
+        {
+          "optionId": "n08b03_i010_alt1_v2",
+          "text": "Write one assignment before checking the other, then try to undo on failure."
+        },
+        {
+          "optionId": "n08b03_i010_alt2_v2",
+          "text": "Have each volunteer accept a local change and merge their clients later."
+        },
+        {
+          "optionId": "n08b03_i010_alt3_v2",
+          "text": "Validate both assignments from a roster screen snapshot and save them separately."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A volunteer coordination hub, A two-person shift swap requires both assignments to satisfy skill and availability checks. The roster must show either the original pair or the accepted swapped pair, not one moved assignment alone. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i010",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A local-first map editor, An offline edit submits its base route revision and proposed geometry. If another edit was accepted first, the service must preserve the accepted route and return a conflict for the later proposal. Which change should become visible as one coherent state? Commit geometry only if the submitted base is still the route’s current revision.",
+        "errorCorrection": "The route may change after the pre-upload check. A later conflict report does not prevent the overwrite. Geometry can become visible before the conflict decision.",
+        "boundaryOrTradeoff": "The nearest alternative is Check the base before upload, then overwrite geometry when upload completes. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i011_alt1_v2",
+          "text": "The route may change after the pre-upload check."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i011_alt2_v2",
+          "text": "A later conflict report does not prevent the overwrite."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i011_alt3_v2",
+          "text": "Geometry can become visible before the conflict decision."
+        }
+      ],
+      "reason": "The proposal is conditional on its submitted base. Geometry must not replace the accepted route if that base has already been superseded.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Commit geometry only if the submitted base is still the route’s current revision."
+        },
+        {
+          "optionId": "n08b03_i011_alt1_v2",
+          "text": "Check the base before upload, then overwrite geometry when upload completes."
+        },
+        {
+          "optionId": "n08b03_i011_alt2_v2",
+          "text": "Apply the latest uploaded geometry and report conflicts in a later reconciliation."
+        },
+        {
+          "optionId": "n08b03_i011_alt3_v2",
+          "text": "Write geometry first and decide whether it conflicts in a separate handler."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A local-first map editor, An offline edit submits its base route revision and proposed geometry. If another edit was accepted first, the service must preserve the accepted route and return a conflict for the later proposal. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i011",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A board-game campaign manager, A reward is legal only in the current campaign phase and updates both points and phase. A host and moderator may act concurrently; readers must not see points from the reward with the old phase. Which change should become visible as one coherent state? Apply the phase check, points, and resulting phase in one campaign revision.",
+        "errorCorrection": "Readers can observe points and phase from different revisions. The campaign can advance without its reward points being accepted. The host’s phase display may be stale when the moderator writes.",
+        "boundaryOrTradeoff": "The nearest alternative is Update points and phase separately and let readers combine their latest values. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i012_alt1_v2",
+          "text": "Readers can observe points and phase from different revisions."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i012_alt2_v2",
+          "text": "The campaign can advance without its reward points being accepted."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i012_alt3_v2",
+          "text": "The host’s phase display may be stale when the moderator writes."
+        }
+      ],
+      "reason": "Legality is determined by the campaign phase being changed, and readers must not combine reward points with a different phase revision.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Apply the phase check, points, and resulting phase in one campaign revision."
+        },
+        {
+          "optionId": "n08b03_i012_alt1_v2",
+          "text": "Update points and phase separately and let readers combine their latest values."
+        },
+        {
+          "optionId": "n08b03_i012_alt2_v2",
+          "text": "Publish the new phase before confirming that reward points were recorded."
+        },
+        {
+          "optionId": "n08b03_i012_alt3_v2",
+          "text": "Read phase from the host screen, then write points through the moderator service."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A board-game campaign manager, A reward is legal only in the current campaign phase and updates both points and phase. A host and moderator may act concurrently; readers must not see points from the reward with the old phase. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i012",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A cold-chain logistics console, A hand-off binds carrier, temperature restriction, and acceptance state. Dispatch and carrier responses can interleave; external readers must see the old owner or the complete new hand-off. Which change should become visible as one coherent state? Make the new carrier current with the existing limits in one accepted hand-off.",
+        "errorCorrection": "The new carrier can act before the required limits arrive. Readers can see carrier and status values that were never accepted together. Mutable shipment data can change after carrier activation.",
+        "boundaryOrTradeoff": "The nearest alternative is Switch carrier first and send temperature limits after it accepts work. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i013_alt1_v2",
+          "text": "The new carrier can act before the required limits arrive."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i013_alt2_v2",
+          "text": "Readers can see carrier and status values that were never accepted together."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i013_alt3_v2",
+          "text": "Mutable shipment data can change after carrier activation."
+        }
+      ],
+      "reason": "The carrier, temperature limits, and acceptance state describe one hand-off; activating the carrier before the limits arrive exposes an incomplete transfer.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Make the new carrier current with the existing limits in one accepted hand-off."
+        },
+        {
+          "optionId": "n08b03_i013_alt1_v2",
+          "text": "Switch carrier first and send temperature limits after it accepts work."
+        },
+        {
+          "optionId": "n08b03_i013_alt2_v2",
+          "text": "Update carrier in dispatch and hand-off status in the portal independently."
+        },
+        {
+          "optionId": "n08b03_i013_alt3_v2",
+          "text": "Let the new carrier fetch limits from the mutable shipment after activation."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A cold-chain logistics console, A hand-off binds carrier, temperature restriction, and acceptance state. Dispatch and carrier responses can interleave; external readers must see the old owner or the complete new hand-off. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i013",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational_boundary",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A cooperative lending ledger, The account's outstanding amount and repayment entry must agree at every visible revision. Two allocations to one account may overlap; a report reader must never see only one side of an accepted allocation. Which change should become visible as one coherent state? Change the account balance with its matching repayment entry in one revision.",
+        "errorCorrection": "Readers can observe a balance without its matching entry, or the entry without the balance change. A repair job leaves an inconsistent visible interval. A report snapshot may be stale when the allocation is recorded.",
+        "boundaryOrTradeoff": "The nearest alternative is Reduce the balance, then append the repayment entry in a separate operation. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i014_alt1_v2",
+          "text": "Readers can observe a balance without its matching entry, or the entry without the balance change."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i014_alt2_v2",
+          "text": "A repair job leaves an inconsistent visible interval."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i014_alt3_v2",
+          "text": "A report snapshot may be stale when the allocation is recorded."
+        }
+      ],
+      "reason": "The visible balance and repayment entry explain one another, and concurrent allocations must not consume the same outstanding amount twice.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Change the account balance with its matching repayment entry in one revision."
+        },
+        {
+          "optionId": "n08b03_i014_alt1_v2",
+          "text": "Reduce the balance, then append the repayment entry in a separate operation."
+        },
+        {
+          "optionId": "n08b03_i014_alt2_v2",
+          "text": "Append the ledger entry first and repair the balance in a nightly job."
+        },
+        {
+          "optionId": "n08b03_i014_alt3_v2",
+          "text": "Calculate each repayment from a report snapshot and record it after approval."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A cooperative lending ledger, The account's outstanding amount and repayment entry must agree at every visible revision. Two allocations to one account may overlap; a report reader must never see only one side of an accepted allocation. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i014",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A tournament bracket service, A terminal match result and advancement to the next bracket slot are one decision. Timeout and official result can arrive together; the next match must not start from a half-advanced bracket. Which change should become visible as one coherent state? Advance the bracket only with one accepted terminal result for that match.",
+        "errorCorrection": "A failed retry can leave a terminal match without advancement or duplicate advancement. The next match may begin without an accepted source result. Two handlers can advance from the same open state.",
+        "boundaryOrTradeoff": "The nearest alternative is Mark the match terminal, then retry bracket advancement separately. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i015_alt1_v2",
+          "text": "A failed retry can leave a terminal match without advancement or duplicate advancement."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i015_alt2_v2",
+          "text": "The next match may begin without an accepted source result."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i015_alt3_v2",
+          "text": "Two handlers can advance from the same open state."
+        }
+      ],
+      "reason": "A terminal result and its bracket advancement are one match decision; separate retries can leave a terminal match without its slot update.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Advance the bracket only with one accepted terminal result for that match."
+        },
+        {
+          "optionId": "n08b03_i015_alt1_v2",
+          "text": "Mark the match terminal, then retry bracket advancement separately."
+        },
+        {
+          "optionId": "n08b03_i015_alt2_v2",
+          "text": "Advance the slot first and attach the official result afterward."
+        },
+        {
+          "optionId": "n08b03_i015_alt3_v2",
+          "text": "Let timeout and official handlers each write from their last match-state read."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A tournament bracket service, A terminal match result and advancement to the next bracket slot are one decision. Timeout and official result can arrive together; the next match must not start from a half-advanced bracket. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i015",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "intermediate_transfer",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A returns inspection workflow, The inspector's findings are immutable once submitted; refund review may proceed later and can produce a separate outcome. The system must preserve the inspection facts even if a refund is denied. Which change should become visible as one coherent state? Keep submitted inspection facts immutable and attach refund outcome separately.",
+        "errorCorrection": "A denied refund would alter the original inspection evidence. One status cannot retain both immutable findings and the later outcome. Finalizing eligibility must not replace the submitted observation.",
+        "boundaryOrTradeoff": "The nearest alternative is Let refund review edit the inspection so it agrees with eligibility. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i016_alt1_v2",
+          "text": "A denied refund would alter the original inspection evidence."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i016_alt2_v2",
+          "text": "One status cannot retain both immutable findings and the later outcome."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i016_alt3_v2",
+          "text": "Finalizing eligibility must not replace the submitted observation."
+        }
+      ],
+      "reason": "Inspection records what was observed, while refund review records a later decision. Editing findings would erase evidence when a refund is denied.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Keep submitted inspection facts immutable and attach refund outcome separately."
+        },
+        {
+          "optionId": "n08b03_i016_alt1_v2",
+          "text": "Let refund review edit the inspection so it agrees with eligibility."
+        },
+        {
+          "optionId": "n08b03_i016_alt2_v2",
+          "text": "Combine findings and refund outcome in one mutable status field."
+        },
+        {
+          "optionId": "n08b03_i016_alt3_v2",
+          "text": "Replace inspection findings when the refund decision is finalized."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A returns inspection workflow, The inspector's findings are immutable once submitted; refund review may proceed later and can produce a separate outcome. The system must preserve the inspection facts even if a refund is denied. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i016",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_tradeoff",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A research-notebook platform, A publication run uses a selected immutable dataset revision and code revision. The editor can keep working; every output row must identify the same selected pair. Which change should become visible as one coherent state? Have every publication stage read the selected dataset and code revision pair.",
+        "errorCorrection": "A stage can use a different pair than the one chosen for the run. Writing IDs at the end cannot make earlier stages use those inputs. An editor change can mix input revisions within one output.",
+        "boundaryOrTradeoff": "The nearest alternative is Read current dataset and code independently at each stage. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i017_alt1_v2",
+          "text": "A stage can use a different pair than the one chosen for the run."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i017_alt2_v2",
+          "text": "Writing IDs at the end cannot make earlier stages use those inputs."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i017_alt3_v2",
+          "text": "An editor change can mix input revisions within one output."
+        }
+      ],
+      "reason": "A run’s output is meaningful only for the selected dataset-code pair; rereading live notebook inputs can mix revisions across stages.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Have every publication stage read the selected dataset and code revision pair."
+        },
+        {
+          "optionId": "n08b03_i017_alt1_v2",
+          "text": "Read current dataset and code independently at each stage."
+        },
+        {
+          "optionId": "n08b03_i017_alt2_v2",
+          "text": "Let the final stage write its input IDs into the output after earlier stages run."
+        },
+        {
+          "optionId": "n08b03_i017_alt3_v2",
+          "text": "Allow editor changes to replace the run’s inputs while publication continues."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A research-notebook platform, A publication run uses a selected immutable dataset revision and code revision. The editor can keep working; every output row must identify the same selected pair. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i017",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  {
+    "answer": {
+      "optionId": "owner_preserves_contract",
+      "type": "choice_single"
+    },
+    "difficulty": "advanced_failure",
+    "feedback": {
+      "details": {
+        "mechanismOrProperty": "Atomicity is about the relationship among the values that form one accepted state, not the fact that each individual field write has its own lock.",
+        "scenarioApplication": "In A collaborative annotation workspace, A comment is accepted against one author and document revision. Notification can fail after acceptance; retry must send the accepted comment identity without changing what was committed. Which change should become visible as one coherent state? Commit the comment identity and revision before emitting its retryable notification.",
+        "errorCorrection": "A notification may be delivered for a comment that was never committed. The current editor can differ from the accepted comment author or revision. Separate writes can leave notification metadata unrelated to the committed comment.",
+        "boundaryOrTradeoff": "The nearest alternative is Send the notification first and create the comment only after delivery. It looks locally safe, but it can expose a partial state or accept against values that have changed before the owner commits the related fields.",
+        "transfer": "Identify the related values that readers must observe together, then place the check and visible state change at the boundary that owns their shared invariant."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i018_alt1_v2",
+          "text": "A notification may be delivered for a comment that was never committed."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i018_alt2_v2",
+          "text": "The current editor can differ from the accepted comment author or revision."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "n08b03_i018_alt3_v2",
+          "text": "Separate writes can leave notification metadata unrelated to the committed comment."
+        }
+      ],
+      "reason": "The notification must identify the accepted comment even if delivery retries. Sending before acceptance or resolving current editor state can notify for different content.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "owner_preserves_contract",
+          "text": "Commit the comment identity and revision before emitting its retryable notification."
+        },
+        {
+          "optionId": "n08b03_i018_alt1_v2",
+          "text": "Send the notification first and create the comment only after delivery."
+        },
+        {
+          "optionId": "n08b03_i018_alt2_v2",
+          "text": "Fill author and document revision from the current editor when retrying."
+        },
+        {
+          "optionId": "n08b03_i018_alt3_v2",
+          "text": "Commit the comment and notification fields separately, then infer their link from time."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N08-B03",
+    "nodeId": "concurrency_thread_safety_resources_and_failure_handling",
+    "prompt": "In A collaborative annotation workspace, A comment is accepted against one author and document revision. Notification can fail after acceptance; retry must send the accepted comment identity without changing what was committed. Which change should become visible as one coherent state?",
+    "questionId": "ood-n08-b03-i018",
+    "sourceRefs": [
+      "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+      "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+      "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    ],
+    "trackId": "object-oriented-design-interview"
+  }
+]

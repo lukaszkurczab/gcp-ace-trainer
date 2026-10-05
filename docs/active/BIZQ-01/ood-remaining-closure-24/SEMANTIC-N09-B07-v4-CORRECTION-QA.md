@@ -1,0 +1,32 @@
+# Independent N09-B07 v4 correction review
+
+**Verdict: REVISE.** The v4 update makes the wrong-option messages specific to their choices across the unit, and its revised alternatives/messages remain correctly keyed. Two cases still lack visible facts needed to establish one best answer: i021 assumes only two preview variants are supported and affordable, and i027 leaves parallel per-author requests as a potentially valid latency optimization while the key selects batching.
+
+## Scope and evidence
+
+I reviewed all 18 complete v4 objects, all 72 wrong-option messages against their option text and visible prompt/constraints, and the v3-to-v4 delta. This is a bounded correction review; the accepted v3 semantic review of unchanged fields is reused. The finding list is limited to the newly changed content below; it does not reopen other units or approve the N08/N09 source package.
+
+- Frozen v3: [`review-inputs/N09-B07-v3.json`](review-inputs/N09-B07-v3.json), SHA-256 `428676e548e3da6ef68e3bfa4530c36818b7650e5c5dd2f5ea9e9c577e872a8a`.
+- Frozen v4: [`review-inputs/N09-B07-v4.json`](review-inputs/N09-B07-v4.json), SHA-256 `87689861d0d722d81c8e62f9909078701ea461e0126b6173e8fe6448441bd17d`.
+- Before-object manifest: [`N08-N09-MANIFEST.json`](N08-N09-MANIFEST.json), SHA-256 `0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612`.
+- Contract: [`N08-N09-CONTRACT.json`](N08-N09-CONTRACT.json), SHA-256 `6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27`.
+- BIZQ criteria: `patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md`, SHA-256 `c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3`.
+- Content explanation/decision guidance: `docs/07-content-guidelines.md`, SHA-256 `00c20d8c74d8e4dfec3ffb9211865642a5ae72d218bdd7473b8f41e52bfa5471`.
+
+The v4 input changes all 18 whole objects: 72 diagnostic messages, three distractor texts/IDs, and three corresponding feedback-target remaps in i021, i026, and i029. The accepted answer, prompt, constraints, Reason, Details, and source references remain unchanged from v3. I matched each v4 item to its original manifest row through `reservedNewQuestionId` and verified the manifest before-object fingerprint. Production `validateQuestion`/`scoreQuestion` checks pass: 18/18 valid, all 18 accepted answers correct, all 72 distractors incorrect, all 18 remain correct with reversed option order, and all 18 diagnostic target sets match the wrong-option IDs. These checks establish schema/scoring/target binding, not explanation quality.
+
+## Findings requiring correction
+
+**i021 — `ood-n09-b07-i021_measured_change`.** The key says “Generate the two supported preview sizes during upload and reuse them on reads.” The prompt only says that previews are created; the constraints state that resizing consumes 71% of CPU, upload validates dimensions, and larger derivatives have a storage budget. They never establish that requests are limited to two repeated sizes or that storing those two variants fits the budget. `Reason`, Details, and several messages then rely on the missing “two supported” premise. That premise determines whether precomputing derivatives is a bounded, worthwhile trade or could create unused storage. This conflicts with the existing requirement to put material assumptions in the learner-visible prompt and not introduce a decisive constraint only in feedback. Add the actual bounded request facts and that the variants fit the existing budget, or revise the key and its aligned explanation to a choice supported by the visible facts. Do not add a generic claim that every size is supported.
+
+**i027 — `ood-n09-b07-i027_contract_shortcut`.** The stem says each article’s reputation is fetched separately and those reads dominate latency; it does not say the calls are sequential, constrain concurrency, or provide a per-call overhead fact that rules out parallel fan-out. The key’s fixed-set batch lookup is a sensible option, but parallel per-author requests could also reduce latency if the current reads are serial. The option itself says “without checking the profile service’s stated limit,” but the stem gives no such limit; that option text cannot establish the missing scenario fact. Its feedback and `Details.errorCorrection` then rely on the same unstated limit. Add a visible measured or provider constraint that makes fan-out unsuitable (without inventing an arbitrary threshold), or revise the answer/alternatives so one choice follows from the existing evidence. Align the option, feedback, Reason, and Details with that evidence.
+
+## Reviewed cases without a v4 correction blocker
+
+For i019–i020 and i022–i026, i028–i036, the revised feedback ties each wrong choice to a visible cost, output contract, freshness/retention boundary, or relevant alternative. In particular, i026’s new first-page count distractor correctly explains undercounting; its retained count-in-application diagnosis remains consistent with the unchanged full-record loading alternative. The i021 messages about unbounded variants, database capacity, returning the original, and an unrelated endpoint rewrite are individually case-grounded apart from the missing supported-variant premise. In i027 the other three messages match their options; the parallel-read alternative and its explanation need a visible discriminator because the current facts do not exclude fan-out.
+
+No length threshold or warning count was used. The two findings are about missing decisive facts, not answer length, option order, or a requirement that questions avoid repeated practice. The correction is not accepted for activation until these two facts are addressed and the changed item(s) are rebound to the frozen whole-object inputs. This review does not accept producer migration, source activation, runtime/admission, native/Premium, or full BIZQ-01.
+
+## Reproducible check
+
+The versioned checker [`SEMANTIC-N09-B07-v4-CHECK.mjs`](SEMANTIC-N09-B07-v4-CHECK.mjs), SHA-256 `b5c08fde6115c29e225b01fb95a77a364db7f233618eee55d36b01a13d1dc62d`, invokes the production validator and scorer, checks every distractor, reverses options, verifies diagnostic target sets, confirms the exact v3-to-v4 changed scope, and binds each current question to the manifest row via `reservedNewQuestionId`. Its receipt is [`SEMANTIC-N09-B07-v4-CHECK.json`](SEMANTIC-N09-B07-v4-CHECK.json), SHA-256 `e025c0561072be0c5f29ba9ce40aa12b73bba13345e87f7db6a0cb872d131887`.

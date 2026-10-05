@@ -1,0 +1,31 @@
+{
+  "scope": "Exact frozen correction delta for independent review, not content acceptance",
+  "proposalSha256": "5a535122196cd793b893cf518a1afcac36aa044166cafdfb009260dbed8fd1f2",
+  "unchangedWholeObjects": 15,
+  "changes": [
+    {
+      "questionId": "ood-n08-b08-i003",
+      "changedLeaves": [
+        "feedback.details.scenarioApplication",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i009",
+      "changedLeaves": [
+        "feedback.details.scenarioApplication",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ]
+    },
+    {
+      "questionId": "ood-n08-b08-i014",
+      "changedLeaves": [
+        "feedback.details.scenarioApplication",
+        "feedback.details.boundaryOrTradeoff",
+        "feedback.details.transfer"
+      ]
+    }
+  ]
+}

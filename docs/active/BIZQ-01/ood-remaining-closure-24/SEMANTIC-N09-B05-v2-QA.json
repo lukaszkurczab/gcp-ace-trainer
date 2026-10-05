@@ -1,0 +1,418 @@
+{
+  "schemaVersion": "patternly-bizq01-n09-independent-v2-semantic-qa-v1",
+  "unitId": "OOD-N09-B05",
+  "verdict": "REVISE",
+  "reviewInputs": {
+    "proposalPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/review-inputs/N09-B05-v2.json",
+    "proposalSha256": "bc2700a32341370d4bd177fc3d3f940718f21e26e9f112fb146e57ff9e020497",
+    "v1ProposalPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/review-inputs/N09-B05-v1.json",
+    "v1ProposalSha256": "f88d5aef9359dd0a69511a6caedba9851168367bcb7bb1bd93d3466cd58b4d4d",
+    "manifestPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/N08-N09-MANIFEST.json",
+    "manifestSha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612",
+    "sourcePath": "patternly-content/content/object-oriented-design-interview/testability_refactoring_api_evolution_and_maintainability/OOD-N09-B05.json",
+    "beforeSourceSha256": "57688e786e10393b743e1399aece4b41020005c0bd9c16bd9ab91d2c9bf8f294",
+    "guidelinesPath": "docs/07-content-guidelines.md",
+    "guidelinesSha256": "00c20d8c74d8e4dfec3ffb9211865642a5ae72d218bdd7473b8f41e52bfa5471",
+    "contractPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/N08-N09-CONTRACT.json",
+    "contractSha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27",
+    "wholeObjectHashMethod": "Production canonicalJson(question) and SHA-256 from patternly-content/scripts/build.mjs."
+  },
+  "verification": {
+    "validator": "18/18 valid",
+    "scoring": "18/18 accepted answers correct; all 72 distractors incorrect; 18/18 correct when option order reversed.",
+    "diagnosticTargets": "18/18 target sets match wrong-option IDs; this verifies binding, not message quality.",
+    "wholeObjectReview": "B05 current v2 differs from v1 only in all 72 feedback.messages[].text leaves; reuse prior full semantic/identity review. B06/B07 independently reviewed all 18 current objects and matching manifest before objects.",
+    "checkerPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/INDEPENDENT-N09-B05-B07-v2-CHECK.mjs",
+    "checkerSha256": "7ff8140ff86e99337241456727ae9f9e49e01e47e1e1b8123f99c88be477d090",
+    "checkReceiptPath": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/INDEPENDENT-N09-B05-B07-v2-CHECK.json",
+    "checkReceiptSha256": "3a455457c90c3aa4515eebdb1cace60b52caa77d84c8977728b674551129dd6d"
+  },
+  "summary": {
+    "itemsReviewed": 18,
+    "supportedKeys": 18,
+    "itemsWithDiagnosticFindings": 11,
+    "identityDisposition": "B05 preserve 18 QIDs; B06 preserve 18 QIDs; B07 use corresponding reserved IDs i019–i036 for each item because concrete measured action replaces the old generic performance-evidence principle."
+  },
+  "items": [
+    {
+      "questionId": "ood-n09-b05-i001",
+      "beforeQuestionId": "ood-n09-b05-i001",
+      "reservedNewQuestionId": "ood-n09-b05-i019",
+      "beforeCanonicalSha256": "a8542626f432a674a25d241c4196de6a2c685d9fe027172737399530b3e2b922",
+      "currentCanonicalSha256": "9bde9d31e5168d6745ddad93cbd757d2d582c5341a5cf16c60557ff1a522362e",
+      "answerOptionId": "n09b05_i001_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “reward rules depend on the current legal campaign state” inside the owner that can observe and enforce it.",
+      "currentKey": "Add a preview operation; leave ApplyReward’s existing effect unchanged.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "PASS",
+      "diagnosticFindingTargets": []
+    },
+    {
+      "questionId": "ood-n09-b05-i002",
+      "beforeQuestionId": "ood-n09-b05-i002",
+      "reservedNewQuestionId": "ood-n09-b05-i020",
+      "beforeCanonicalSha256": "a42a347bddf1e47efb8b1a2fe9fc0b4382196ac8f60794481201f2caac63ac84",
+      "currentCanonicalSha256": "80ccc100fe73813a7dfa7c2bc41ca2ec4e19a49db3948e5f94e95c0f9b2007c9",
+      "answerOptionId": "n09b05_i002_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “temperature restrictions and hand-off ownership travel with the shipment” inside the owner that can observe and enforce it.",
+      "currentKey": "Add a reassignment request with an explicit custodian; keep the old request’s standard handoff.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "REVISE",
+      "diagnosticFindingTargets": [
+        "n09b05_i002_remove_old_contract"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i003",
+      "beforeQuestionId": "ood-n09-b05-i003",
+      "reservedNewQuestionId": "ood-n09-b05-i021",
+      "beforeCanonicalSha256": "d078c2e97d088c017ac64c0bc6652be87c365c6d64c9e75cb26fbde835a05ff1",
+      "currentCanonicalSha256": "73a83e151743f2d23d4c1a620dea579bafaa6856e7357e1a41304cf1a305d75f",
+      "answerOptionId": "n09b05_i003_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “a repayment cannot reduce the outstanding balance below zero” inside the owner that can observe and enforce it.",
+      "currentKey": "Add a multi-allocation operation and preserve the existing single-balance call.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "PASS",
+      "diagnosticFindingTargets": []
+    },
+    {
+      "questionId": "ood-n09-b05-i004",
+      "beforeQuestionId": "ood-n09-b05-i004",
+      "reservedNewQuestionId": "ood-n09-b05-i022",
+      "beforeCanonicalSha256": "1c689d9061ea4a99ea8c8817cd0752c467182e99f81f85a181649405858eef5c",
+      "currentCanonicalSha256": "feace01c23134e40b57313e07df40873b2c307e020e41d0f85dde3b7bfedcc35",
+      "answerOptionId": "n09b05_i004_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “the bracket advances only from a legal match state” inside the owner that can observe and enforce it.",
+      "currentKey": "Expose forfeit in a new outcome contract; keep the old response within its three accepted values.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "REVISE",
+      "diagnosticFindingTargets": [
+        "n09b05_i004_breaking_change"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i005",
+      "beforeQuestionId": "ood-n09-b05-i005",
+      "reservedNewQuestionId": "ood-n09-b05-i023",
+      "beforeCanonicalSha256": "eca65a222d1e316e4d88685e1f577f23203e366bd0a50165975dd294d3d55937",
+      "currentCanonicalSha256": "9f51ebbea8a84608ec3d3d9561036ab228388ec8b3ec6b801a231ac3a2eb4dd8",
+      "answerOptionId": "n09b05_i005_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “classification and refund eligibility are not the same responsibility” inside the owner that can observe and enforce it.",
+      "currentKey": "Keep classification unchanged and expose refund eligibility as a separate result.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "PASS",
+      "diagnosticFindingTargets": []
+    },
+    {
+      "questionId": "ood-n09-b05-i006",
+      "beforeQuestionId": "ood-n09-b05-i006",
+      "reservedNewQuestionId": "ood-n09-b05-i024",
+      "beforeCanonicalSha256": "7976b6c655ddc84bc63af7f74c40e1dcb1e035423594fa23dfc84825c8e7db81",
+      "currentCanonicalSha256": "0caa1d8a96cf6cc2c1d3279fc8dcd0fcaf06c79b272a3a3ce5dfb976dcd5f2df",
+      "answerOptionId": "n09b05_i006_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it.",
+      "currentKey": "Add the two provenance fields without changing the existing result value.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "REVISE",
+      "diagnosticFindingTargets": [
+        "n09b05_i006_breaking_change"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i007",
+      "beforeQuestionId": "ood-n09-b05-i007",
+      "reservedNewQuestionId": "ood-n09-b05-i025",
+      "beforeCanonicalSha256": "b227871c91fa56be9400ea3100d477e8cb5c810a5571bb21034d4dd961c135cf",
+      "currentCanonicalSha256": "bbe24a98107c6d5fe51d9607f580da22f01e85759fe2c97b8fc29be50a0ce841",
+      "answerOptionId": "n09b05_i007_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it.",
+      "currentKey": "Keep AcceptComment’s response and add a separate notification contract.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "PASS",
+      "diagnosticFindingTargets": []
+    },
+    {
+      "questionId": "ood-n09-b05-i008",
+      "beforeQuestionId": "ood-n09-b05-i008",
+      "reservedNewQuestionId": "ood-n09-b05-i026",
+      "beforeCanonicalSha256": "461e4bbf3928cdee8796029c3d947a5d7e993937973f00aee016b07129d8b4f5",
+      "currentCanonicalSha256": "541ea680ea11448de1992d4fcb92e2d4e4a670bdad2dfb1de2508a45c1aff65d",
+      "answerOptionId": "n09b05_i008_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “a submission is either complete or explicitly retryable” inside the owner that can observe and enforce it.",
+      "currentKey": "Expose retryable in a new response contract while preserving version 1 values.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "REVISE",
+      "diagnosticFindingTargets": [
+        "n09b05_i008_breaking_change"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i009",
+      "beforeQuestionId": "ood-n09-b05-i009",
+      "reservedNewQuestionId": "ood-n09-b05-i027",
+      "beforeCanonicalSha256": "69b088f90cee64a78a802496f74fa9e3ce2e5e84f48edeb921152e394e1b903a",
+      "currentCanonicalSha256": "6c75306cf8292fccb4a009f6e30151d8f524bb3e82522ac54bd51da907057303",
+      "answerOptionId": "n09b05_i009_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “the new issue is traceable and does not double-charge the customer” inside the owner that can observe and enforce it.",
+      "currentKey": "Keep InvoiceId stable and add a separate issue-attempt identifier.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "REVISE",
+      "diagnosticFindingTargets": [
+        "n09b05_i009_breaking_change"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i010",
+      "beforeQuestionId": "ood-n09-b05-i010",
+      "reservedNewQuestionId": "ood-n09-b05-i028",
+      "beforeCanonicalSha256": "954786824915b5615162e81b09ebfb8cc2a22f93554a7957a0bac99a294605de",
+      "currentCanonicalSha256": "1c0c7da80af9763d5d2126b5b66c6f5bc7d0daaeb2435c8dfa31754921aa1d67",
+      "answerOptionId": "n09b05_i010_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “revocation is visible to the door policy before access is granted” inside the owner that can observe and enforce it.",
+      "currentKey": "Expose the pending state in a new response contract and retain the old two-state response.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "REVISE",
+      "diagnosticFindingTargets": [
+        "n09b05_i010_remove_old_contract",
+        "n09b05_i010_breaking_change"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i011",
+      "beforeQuestionId": "ood-n09-b05-i011",
+      "reservedNewQuestionId": "ood-n09-b05-i029",
+      "beforeCanonicalSha256": "71121ba424944ef0827ff9c2efd4e7aa7960aaea13076d50ce33fb03a832282f",
+      "currentCanonicalSha256": "e89d46cdd0b9058ddb17e228c006c6f5dd99d30621018b38b505a3944a85575d",
+      "answerOptionId": "n09b05_i011_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “the printed label represents the current approved shipment data” inside the owner that can observe and enforce it.",
+      "currentKey": "Add a structured label endpoint and keep the existing text response unchanged.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "PASS",
+      "diagnosticFindingTargets": []
+    },
+    {
+      "questionId": "ood-n09-b05-i012",
+      "beforeQuestionId": "ood-n09-b05-i012",
+      "reservedNewQuestionId": "ood-n09-b05-i030",
+      "beforeCanonicalSha256": "6f756437bde399cdf6f7993dca4949d87be1bbab2f815a46107cae59a46e3bd2",
+      "currentCanonicalSha256": "df4a5b4ac5fc3b3544c5a94ec83a6321a4652ab8dbcb2374711f7809ae59e439",
+      "answerOptionId": "n09b05_i012_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “the room capacity and cancellation policy must remain consistent” inside the owner that can observe and enforce it.",
+      "currentKey": "Add an explicit-policy operation and map the old call to its documented default.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "PASS",
+      "diagnosticFindingTargets": []
+    },
+    {
+      "questionId": "ood-n09-b05-i013",
+      "beforeQuestionId": "ood-n09-b05-i013",
+      "reservedNewQuestionId": "ood-n09-b05-i031",
+      "beforeCanonicalSha256": "813cdf2cdddac5d6c6e128919258ce20cca5caecdc9306a13e6f7d36aebf696c",
+      "currentCanonicalSha256": "0e6eb05d77d0fee7ad453f25a32873cb075b3087de4f74c9821a93f890c700b7",
+      "answerOptionId": "n09b05_i013_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “unsafe commands are rejected while maintenance is active” inside the owner that can observe and enforce it.",
+      "currentKey": "Keep the old status and add a reason field that old clients ignore.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "REVISE",
+      "diagnosticFindingTargets": [
+        "n09b05_i013_breaking_change"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i014",
+      "beforeQuestionId": "ood-n09-b05-i014",
+      "reservedNewQuestionId": "ood-n09-b05-i032",
+      "beforeCanonicalSha256": "59d36ec605ed84876cb730b37aaf708e9284dfb8774b4a14face5ecef0dd8fda",
+      "currentCanonicalSha256": "1df32ab296c28fd785b83ddd14e5eb133ad0ea1198808dbb76ea563c9cdcad1e",
+      "answerOptionId": "n09b05_i014_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “progress refers to a stable lesson identity” inside the owner that can observe and enforce it.",
+      "currentKey": "Add an opt-in include-retired query while leaving the existing default active-only.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "REVISE",
+      "diagnosticFindingTargets": [
+        "n09b05_i014_remove_old_contract",
+        "n09b05_i014_breaking_change"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i015",
+      "beforeQuestionId": "ood-n09-b05-i015",
+      "reservedNewQuestionId": "ood-n09-b05-i033",
+      "beforeCanonicalSha256": "d8ce0fa175c8a2f4385f7a18e11b81025297470c83dfaf784018e597674d5b9f",
+      "currentCanonicalSha256": "af1ff113e93f0fecad85955a9e9173419e12ee8b0675ef1bac33517d7514deca",
+      "answerOptionId": "n09b05_i015_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “export observes a stable session state” inside the owner that can observe and enforce it.",
+      "currentKey": "Add a snapshot revision field and retain the existing edit-history field.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "REVISE",
+      "diagnosticFindingTargets": [
+        "n09b05_i015_remove_old_contract",
+        "n09b05_i015_breaking_change"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i016",
+      "beforeQuestionId": "ood-n09-b05-i016",
+      "reservedNewQuestionId": "ood-n09-b05-i034",
+      "beforeCanonicalSha256": "4cb4e86f94fa474e8c1d2cd4c410d3382b4c7749b6b267f816e3ff7af39d077a",
+      "currentCanonicalSha256": "7fdfa8c5f51dc5a055cc6800e2ca89938519ab581dca7dfbd5e45a02d254baa9",
+      "answerOptionId": "n09b05_i016_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “the escalation keeps ownership and response deadlines” inside the owner that can observe and enforce it.",
+      "currentKey": "Add a deadline-selecting call and preserve the existing default on the old call.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "PASS",
+      "diagnosticFindingTargets": []
+    },
+    {
+      "questionId": "ood-n09-b05-i017",
+      "beforeQuestionId": "ood-n09-b05-i017",
+      "reservedNewQuestionId": "ood-n09-b05-i035",
+      "beforeCanonicalSha256": "50622b762ee1e955ebe951b493546a9cbbfe3eab3d0e4f1aebbd2cb1844df293",
+      "currentCanonicalSha256": "b79100af3cb0c8d08f2d3e1af3135452686fee7435826aa95bf440b37ee8e1d7",
+      "answerOptionId": "n09b05_i017_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “a listing cannot become visible before its price and stock rule are valid” inside the owner that can observe and enforce it.",
+      "currentKey": "Keep the publication boolean and add a separate validation-messages field.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "REVISE",
+      "diagnosticFindingTargets": [
+        "n09b05_i017_remove_old_contract",
+        "n09b05_i017_breaking_change"
+      ]
+    },
+    {
+      "questionId": "ood-n09-b05-i018",
+      "beforeQuestionId": "ood-n09-b05-i018",
+      "reservedNewQuestionId": "ood-n09-b05-i036",
+      "beforeCanonicalSha256": "500d248a277ad10ea263eed6b1f0d2d5dab44d42c361519b3bdbea17d394801e",
+      "currentCanonicalSha256": "cc21716476074e3d7c249cec29df0f3ca9e86da4bb5a82bbd3655d61ee42a2e5",
+      "answerOptionId": "n09b05_i018_compatible_addition",
+      "beforeKey": "Evolve a public contract with compatibility and deprecation rules rather than silently changing existing callers. In this case, that keeps the rule “each split retains the original request identity and delivery promise” inside the owner that can observe and enforce it.",
+      "currentKey": "Keep the source request ID and add a distinct ID to each vendor portion.",
+      "answerSupport": "PASS",
+      "identityAction": "preserve_question_id",
+      "identityReason": "Reuse prior v1 full semantic decision: compatibility evolution remains the primary decision in the current API case.",
+      "diagnosticDisposition": "REVISE",
+      "diagnosticFindingTargets": [
+        "n09b05_i018_breaking_change",
+        "n09b05_i018_remove_old_contract"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "questionId": "ood-n09-b05-i002",
+      "targetOptionId": "n09b05_i002_remove_old_contract",
+      "issue": "The option withdraws the documented default handoff through an undocumented header; it does not remove the call. Explain the lost/reinterpreted default rather than claiming the call is removed."
+    },
+    {
+      "questionId": "ood-n09-b05-i004",
+      "targetOptionId": "n09b05_i004_breaking_change",
+      "issue": "The option adds an unknown response value. It does not require a new input; explain that older clients reject the new enum value."
+    },
+    {
+      "questionId": "ood-n09-b05-i006",
+      "targetOptionId": "n09b05_i006_breaking_change",
+      "issue": "The option replaces a response value with an object. It does not require a new request input; diagnose the breaking response shape."
+    },
+    {
+      "questionId": "ood-n09-b05-i008",
+      "targetOptionId": "n09b05_i008_breaking_change",
+      "issue": "The option adds a new response state, not a request input; v1 clients treat unknown states as terminal errors."
+    },
+    {
+      "questionId": "ood-n09-b05-i009",
+      "targetOptionId": "n09b05_i009_breaking_change",
+      "issue": "The option changes InvoiceId meaning on reissue. Explain loss of stable obligation identity, not a required input."
+    },
+    {
+      "questionId": "ood-n09-b05-i010",
+      "targetOptionId": "n09b05_i010_remove_old_contract",
+      "issue": "The option redefines “revoked” to include pending; it does not remove a call. Explain changed state meaning and old-client incompatibility."
+    },
+    {
+      "questionId": "ood-n09-b05-i010",
+      "targetOptionId": "n09b05_i010_breaking_change",
+      "issue": "The option sends a new state through an existing field, not a new input. Explain that old readers reject the value."
+    },
+    {
+      "questionId": "ood-n09-b05-i013",
+      "targetOptionId": "n09b05_i013_breaking_change",
+      "issue": "The option replaces accepted/rejected response status with reason text. It does not require a request input."
+    },
+    {
+      "questionId": "ood-n09-b05-i014",
+      "targetOptionId": "n09b05_i014_remove_old_contract",
+      "issue": "The option removes stable IDs from the current catalog, not the call; explain broken progress references."
+    },
+    {
+      "questionId": "ood-n09-b05-i014",
+      "targetOptionId": "n09b05_i014_breaking_change",
+      "issue": "The option changes default response contents and asks old clients to filter; explain the changed active-only contract, not a new input."
+    },
+    {
+      "questionId": "ood-n09-b05-i015",
+      "targetOptionId": "n09b05_i015_remove_old_contract",
+      "issue": "The option makes a new request field mandatory and rejects old calls; the message incorrectly says the call is removed."
+    },
+    {
+      "questionId": "ood-n09-b05-i015",
+      "targetOptionId": "n09b05_i015_breaking_change",
+      "issue": "The option replaces a response field with a token; explain loss of edit history, not a required request input."
+    },
+    {
+      "questionId": "ood-n09-b05-i017",
+      "targetOptionId": "n09b05_i017_remove_old_contract",
+      "issue": "The option changes the meaning of false; it does not remove the operation."
+    },
+    {
+      "questionId": "ood-n09-b05-i017",
+      "targetOptionId": "n09b05_i017_breaking_change",
+      "issue": "The option replaces a response boolean with a string; explain old clients’ boolean contract, not a new request input."
+    },
+    {
+      "questionId": "ood-n09-b05-i018",
+      "targetOptionId": "n09b05_i018_breaking_change",
+      "issue": "The option replaces the response identity with portion IDs; explain loss of the stable source request reference, not a new input."
+    },
+    {
+      "questionId": "ood-n09-b05-i018",
+      "targetOptionId": "n09b05_i018_remove_old_contract",
+      "issue": "The option removes the original response reference, not the call; explain lost request identity/delivery promise."
+    }
+  ],
+  "limits": "Per-unit semantic/identity review only; no cross-unit acceptance, proof/producer activation, consumer/admission/runtime, native/Premium or full BIZQ-01."
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "bizq01-n08-b08-b09-v3-qa-erratum-v1",
+  "review": "SEMANTIC-N08-B08-B09-v3-QA-ERRATUM",
+  "scope": "Additive report-metadata corrections only. Original QA reports, proposals, and source are preserved.",
+  "corrections": [
+    {
+      "report": "SEMANTIC-N08-B08-v3-QA.md and SEMANTIC-N08-B09-v3-QA.md",
+      "field": "raw SHA-256 for N08-N09-CONTRACT.json",
+      "previousReportValue": "00c20d8c74d8e4dfec3ffb9211865642a5ae72d218bdd7473b8f41e52bfa5471",
+      "actualValue": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27",
+      "evidence": "sha256sum of the exact contract file; already correctly bound by both QA JSON files and the independent check JSON"
+    },
+    {
+      "report": "SEMANTIC-N08-B09-v3-QA.md",
+      "field": "stored accepted-option position",
+      "previousReportValue": "all18 last",
+      "actualValue": "all18 position0",
+      "evidence": "interaction option IDs resolved by answer.optionId in each frozen current object; independent check JSON position count is position0:18",
+      "scopeNote": "Stored source order is not treated as current learner exposure because an independently accepted app presentation correction randomizes displayed options. The shortest-key qualitative finding remains unchanged."
+    },
+    {
+      "report": "SEMANTIC-N08-B09-v3-QA.json",
+      "questionId": "ood-n08-b09-i014",
+      "identity": "SAME_ID",
+      "rationale": "The before object handles a rejected invoice reissue traceably without double charging; current object handles the same issue ID after an uncertain response. Outcome certainty changes, while the primary retry-identity/idempotency decision remains supported.",
+      "claimBoundary": "No exactly-once transport guarantee is inferred."
+    }
+  ]
+}

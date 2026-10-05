@@ -1,0 +1,315 @@
+{
+  "schemaVersion": "bizq01-n09-b07-v4-semantic-correction-qa-v1",
+  "verdict": "REVISE",
+  "unit": "OOD-N09-B07",
+  "scope": "Independent review of the complete v3-to-v4 correction: all 18 current objects and 72 wrong-option messages, with matching prior review reused for unchanged semantic fields.",
+  "reviewInputs": {
+    "v3": {
+      "path": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/review-inputs/N09-B07-v3.json",
+      "sha256": "428676e548e3da6ef68e3bfa4530c36818b7650e5c5dd2f5ea9e9c577e872a8a"
+    },
+    "v4": {
+      "path": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/review-inputs/N09-B07-v4.json",
+      "sha256": "87689861d0d722d81c8e62f9909078701ea461e0126b6173e8fe6448441bd17d"
+    },
+    "manifest": {
+      "path": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/N08-N09-MANIFEST.json",
+      "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    },
+    "contract": {
+      "path": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/N08-N09-CONTRACT.json",
+      "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+    },
+    "businessQualitySpec": {
+      "path": "patternly/docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+      "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3"
+    },
+    "contentGuidelines": {
+      "path": "docs/07-content-guidelines.md",
+      "sha256": "00c20d8c74d8e4dfec3ffb9211865642a5ae72d218bdd7473b8f41e52bfa5471"
+    },
+    "priorSemanticV3CorrectionReport": {
+      "path": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/SEMANTIC-N09-B07-v3-CORRECTION-QA.json",
+      "sha256": "4b45fb33298e02576f1d53dec8d037882715cb14d9d838f6b67fec07d8ce6092"
+    },
+    "independentCheck": {
+      "path": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/SEMANTIC-N09-B07-v4-CHECK.mjs",
+      "sha256": "b5c08fde6115c29e225b01fb95a77a364db7f233618eee55d36b01a13d1dc62d"
+    },
+    "checkReceipt": {
+      "path": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/SEMANTIC-N09-B07-v4-CHECK.json",
+      "sha256": "e025c0561072be0c5f29ba9ce40aa12b73bba13345e87f7db6a0cb872d131887"
+    }
+  },
+  "changedScope": {
+    "changedWholeObjects": 18,
+    "unchangedWholeObjects": 0,
+    "wrongOptionTextsAndIDsChanged": 3,
+    "wrongOptionMessageTextChangesAtStableTargetIds": 69,
+    "wrongOptionTargetRemaps": 3,
+    "semanticDiagnosticMessagesChanged": 72,
+    "targetRemapQuestions": [
+      "ood-n09-b07-i021",
+      "ood-n09-b07-i026",
+      "ood-n09-b07-i029"
+    ],
+    "promptConstraintsReasonDetailsAnswerAndSourcesChanged": false
+  },
+  "verification": {
+    "questions": 18,
+    "changedWholeObjects": 18,
+    "unchangedWholeObjects": 0,
+    "changedOptionLeaves": 6,
+    "changedDiagnosticMessagesWithTargetRemaps": 72,
+    "changedDiagnosticMessageTextsAtStableTargets": 69,
+    "diagnosticTargetRemapQuestions": [
+      "ood-n09-b07-i021",
+      "ood-n09-b07-i026",
+      "ood-n09-b07-i029"
+    ],
+    "invalid": 0,
+    "correctAcceptedAnswers": 18,
+    "allDistractorsIncorrect": 18,
+    "correctAfterReversal": 18,
+    "exactFeedbackTargetSets": 18
+  },
+  "findings": [
+    {
+      "id": "B07-v4-i021-visible-variant-boundary",
+      "severity": "blocking",
+      "criterion": "Existing prompt-quality requirement: material assumptions must be visible in prompt/constraints; BIZQ-01 question/answer/feedback must express one coherent learning contract.",
+      "questionId": "ood-n09-b07-i021",
+      "fields": [
+        "interaction.options[answer.optionId]",
+        "feedback.reason",
+        "feedback.details",
+        "feedback.messages"
+      ],
+      "evidence": "The key and explanation assert there are exactly two supported repeated preview sizes and assume storing both is within budget. The prompt says previews are created; constraints give resize CPU, dimension validation, and a storage budget, but no supported-size bound or budget sufficiency.",
+      "minimumCorrection": "State the actual two repeated supported sizes and that their storage fits the stated budget before the answer, or change the answer/explanation to one supported by the visible facts."
+    },
+    {
+      "id": "B07-v4-i027-parallel-reads-not-excluded",
+      "severity": "blocking",
+      "criterion": "Existing single-choice requirement that the visible facts distinguish one best answer; explanations must diagnose the actual alternative from the case rather than an unstated premise.",
+      "questionId": "ood-n09-b07-i027",
+      "fields": [
+        "constraints",
+        "interaction.options[n09b07_i027_contract_shortcut]",
+        "feedback.details.errorCorrection",
+        "feedback.messages[n09b07_i027_contract_shortcut]"
+      ],
+      "evidence": "The stem says separate author reads dominate latency and a fixed-set batch API exists, but does not say reads are sequential, bound concurrency, or specify per-call overhead. Parallel per-author reads could reduce latency. The option, message and Details invoke a service limit absent from the stem; the option cannot supply the missing case fact.",
+      "minimumCorrection": "Add a real visible measured/provider constraint excluding fan-out, or revise the alternatives/key to distinguish the best action using current facts. Align the option, feedback and Details."
+    }
+  ],
+  "itemReviews": [
+    {
+      "questionId": "ood-n09-b07-i019",
+      "beforeCanonicalSha256": "22b81b674cb5ba0d3e9fcaa5e107cc2afb519c46c7c9fd7c512292904064db30",
+      "v3CanonicalSha256": "02444da93db7afd1dd4211fd17decd587fa8945db287a3bebd8bc0bfc003ccc4",
+      "v4CanonicalSha256": "8df18248ac55c2c8a4866773af0769d1ff05387d7889819946ce08817b64cae0",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i020",
+      "beforeCanonicalSha256": "b23e9a7b809f67213e3cb1dfcce6178cf2557368c433dc978186d112cd52130c",
+      "v3CanonicalSha256": "989567d2e1408f059c048343a04e920c3e3ce1fd1bb00b3bc0bd6bd5ad656078",
+      "v4CanonicalSha256": "940f15e9f614a63816aa604c86973e0ec0e0ff2a8b9e4441e13d76aa84783b54",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i021",
+      "beforeCanonicalSha256": "d1bbc259d8784800f10722db655432997a872f084a85b3b755b89c9dd45c2821",
+      "v3CanonicalSha256": "98f9b2d95c7a46a22770707c24a738b3751dfaa20ca956b7186aa075fdfacf2f",
+      "v4CanonicalSha256": "a09922888bdea229ed176ff3ba38b7ef0d0fc1faed5b0cf9ddbc3e78760a759f",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "REVISE",
+      "findings": [
+        "N09-B07-i021: the prompt does not bound the repeated supported preview sizes or show that the two stored derivatives fit the budget; the key and explanation depend on both facts."
+      ]
+    },
+    {
+      "questionId": "ood-n09-b07-i022",
+      "beforeCanonicalSha256": "f34872d5824879efbc8cdfbee3a23b7939e717ee57f94655a906de3e37a8dbfd",
+      "v3CanonicalSha256": "29d163c724bc8f0fa13deab43c6745ef720953896c67ef170ab09996a1bd4125",
+      "v4CanonicalSha256": "eb70a3448c8fa550e108dd7b0423337d158b9b6bc9d2c41c4c1086cd93b94ef7",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i023",
+      "beforeCanonicalSha256": "7d52a69f87055b22a46cde44477255726377e64d41cafe43a6d374f847a7961c",
+      "v3CanonicalSha256": "87b16abec59407205b0b8c3b6a78b14269d280987da18a06a54b3afff25072a7",
+      "v4CanonicalSha256": "be78f5050d9b0a3d70ba3f1c7cbde9752c625d8e8a2f74ed6d0770ce81e7ddfe",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i024",
+      "beforeCanonicalSha256": "8536fb5e83fb5152c085ff6810a29fdd9095b8824f7ae50a783e4efc8f85f447",
+      "v3CanonicalSha256": "54e6c16e9491e4118ad788a00bb793afae5951052ef4c36376db316fe61a7e82",
+      "v4CanonicalSha256": "bc694a80773b4610a499f167c3d79c8f22829f9890900bce1f287525a24c3549",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i025",
+      "beforeCanonicalSha256": "5a409db42e331edb2eb1f49106faddbe795a45f7b0ad0574fc33e10a088baa11",
+      "v3CanonicalSha256": "23d692ee7dfcac1155e962eaa4f52e6365b87e7e0fa1298dab5c0938b80f860c",
+      "v4CanonicalSha256": "d78b65501d195b11628313052ec93b68b22f0c39ad91b842ccc8db6e1fd31d1a",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i026",
+      "beforeCanonicalSha256": "30172f3b5253d9d5efe23763288523b2809e60ad20fe7b171fd0b9ae0f3550ec",
+      "v3CanonicalSha256": "e9720e23493b910574bb7aff377439a1569232a25e5ba75b9fe8c410f47bcb8f",
+      "v4CanonicalSha256": "41570c9f2be392d0d19f6fe4ca58252332080e4e63a7d77e8a8fde3c5c1df94c",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i027",
+      "beforeCanonicalSha256": "5c6cd0b76ef5b71039aa65c4210cfb1bd04d869f634daa0084c1152811dc4038",
+      "v3CanonicalSha256": "ac7bd43b19e55e6ead115b8b9a5915af6aeb2a08ef99983ed0da57271efdb3e0",
+      "v4CanonicalSha256": "d442cf93ac192ffaf5d2a6979809304970e16667afa80e18248639715d0e59ae",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "REVISE",
+      "findings": [
+        "N09-B07-i027: the stem does not establish sequential calls, a concurrency restriction, or a per-call overhead that rules out parallel fan-out; the option/message/Details assert an unstated service limit."
+      ]
+    },
+    {
+      "questionId": "ood-n09-b07-i028",
+      "beforeCanonicalSha256": "b26544647e16be5653c6abfb961e7c770d5c60f7ef83164c9c6a2db7e4963e6e",
+      "v3CanonicalSha256": "a7a408bb6929fc1d895ef07b9998c87ec8bb33c90b602cd5674d2cf210b3cf8c",
+      "v4CanonicalSha256": "5316930f1c6d5ecb9676ba2e9223441e8b526df568377c90a5fa89fa4f342d60",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i029",
+      "beforeCanonicalSha256": "c6be33975100c2efb5460bf4ecd94b4a5a85c904154acaf770e0129d5d0aa6ab",
+      "v3CanonicalSha256": "ece224234abf8f1319fc690b987a4362131e3996a531281558501a1697947b8d",
+      "v4CanonicalSha256": "e0b9ebc78a308ddb4b0583941645a06ddd46a30bbc50d5d428e0a662028e3b34",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i030",
+      "beforeCanonicalSha256": "4a272ab3880fb0a4705f6dbfba7496032d9af8055b5022b0fb0d70bb2433a71f",
+      "v3CanonicalSha256": "33ed96c4937f0653338f60c37be2ce3c7b700a568fc5e47e519d88f124a30563",
+      "v4CanonicalSha256": "b848785846776d83fdfaf8411b787384ee01c242f6f820ce36853888a8caddee",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i031",
+      "beforeCanonicalSha256": "59ff4bef662b6335279783fb931b293df30f8569c541d1ccb0cbc4a67b8d7545",
+      "v3CanonicalSha256": "9061a4b8e607b4d5dcf86b731bdcda4f97bbc025bb218d7a068b1c1499f0ef76",
+      "v4CanonicalSha256": "780c1415764a37a41bf5fbab30e9d3bc96eca8e2aae91bdacbe5644e62966ac9",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i032",
+      "beforeCanonicalSha256": "7cc970d0de5ae0c24c1784c271c190766f07556922732f5c18b77a4f6621e0a1",
+      "v3CanonicalSha256": "87aa00eb2370eabad28e69a4fd50098ed45176c7de533841cc69a397c5d7903b",
+      "v4CanonicalSha256": "d52f1627b2d627737c7a3a6e30287fa67eb9878d918dc4303d283f18e4493b8c",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i033",
+      "beforeCanonicalSha256": "f55021bb9a14aa96a7f66ab839e24a611a319329114316be7d1319ff67fb9cf9",
+      "v3CanonicalSha256": "7f37ddef36851bf34201e6bed909d5c8b4c98ce7b12f4d0ff96ea7bcc94730cf",
+      "v4CanonicalSha256": "6376f89592e5ff8abd9f5414aae02dbf59656522c9d3a4e66f87c8af59cef6dd",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i034",
+      "beforeCanonicalSha256": "d8413b4452613fbeb7f31f24fd3a7c4fdc73bba371fa55b55b8d3625cb383810",
+      "v3CanonicalSha256": "d1c990650e9d17b98fdee4cdee2f8e4570e4549efb58c33a4b0b19d79012759b",
+      "v4CanonicalSha256": "4108c097b212188a153deb1b8ec53aa9f09c96e61a20ad124821aad43e3c2bd2",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i035",
+      "beforeCanonicalSha256": "dcb6adb67081d9509a16077f43c3ac8eefa4a1230d517768de5fe7309d7aab0a",
+      "v3CanonicalSha256": "ddd97b83ac1dd8160778d41ea4227e8c043c6180e746067440170cb1f9b4b1c5",
+      "v4CanonicalSha256": "8c6b756d0c8edb54c4fb00aef282853ea396fc5f3b1b5c10723aeebbbbec7523",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    },
+    {
+      "questionId": "ood-n09-b07-i036",
+      "beforeCanonicalSha256": "0974947ef6e6ddb8b4ecde0c7eb90d6458c1904b45f50149b3e6a3d80186cc46",
+      "v3CanonicalSha256": "0145d44c56b38a1b894f0e246341329d2f2e8f724c8b40b7331b86b9ead2da42",
+      "v4CanonicalSha256": "74d9ff08dfe3b0525a1dc8f8afc204e0998fab2a0b759089b13d5be4c359af51",
+      "currentFeedbackMessagesReviewed": 4,
+      "v4DeltaReviewed": true,
+      "identityScope": "Question ID, accepted option ID, Reason, Details, prompt, constraints and sourceRefs unchanged from v3; prior N09-B07 semantic/identity conclusions reused only for those unchanged fields.",
+      "disposition": "PASS_CORRECTION_SCOPE",
+      "findings": []
+    }
+  ],
+  "limits": [
+    "Does not accept N08/N09 source migration or activation.",
+    "Does not accept consumer/runtime/admission/native/Premium or full BIZQ-01.",
+    "No option-length, count, or uniqueness threshold was applied."
+  ]
+}

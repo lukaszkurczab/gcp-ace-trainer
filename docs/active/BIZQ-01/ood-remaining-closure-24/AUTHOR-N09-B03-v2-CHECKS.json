@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "bizq01-n09-authored-correction-check-v1",
+  "unit": "N09-B03",
+  "revision": "v2",
+  "proposalPath": "proposals/N09-B03-v2.json",
+  "proposalSha256": "cd50cda18d98f92d335366abd6a57170d11863ef3b541f0b3246990668ef9fef",
+  "previousProposalPath": "proposals/N09-B03.json",
+  "previousProposalSha256": "184713fc55a2484453eec47e84f513b0f3cf0e88d0a96656d82e17e14764f8c8",
+  "notesPath": "AUTHOR-N09-B03-v2.json",
+  "questionCount": 18,
+  "questionIdsPreserved": true,
+  "changedLeafPathCounts": {
+    "feedback.messages[0].text": 18,
+    "feedback.messages[1].text": 18,
+    "feedback.messages[2].text": 18,
+    "feedback.messages[3].text": 18
+  },
+  "validatorFailures": 0,
+  "wrongOptionResponsesScored": 72,
+  "exactTextEchoes": 0,
+  "missingOrWrongMessageTargets": 0,
+  "scoreFailures": 0,
+  "reversedOptionOrderFailures": 0,
+  "undefinedConstraintCount": 0,
+  "keyLengthObservation": {
+    "longer": 2,
+    "tied": 0,
+    "shorter": 16,
+    "thresholdApplied": false
+  },
+  "scope": "Actual question-contract validator and scorer; no semantic acceptance claimed.",
+  "notesSha256": "8b1e432f5d6d355c30560aa1c760d84a3f8efe6041c37421456e1ba806d4a7c3",
+  "reportSha256": "d594f9139afc9e6b4ecac6ca1a15e77d433dbed47dd082157a2c7bdb198037ca"
+}

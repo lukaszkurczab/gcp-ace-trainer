@@ -1,0 +1,307 @@
+{
+  "schemaVersion": "bizq01-semantic-n08-b02-v3-qa-v1",
+  "verdict": "REVISE",
+  "scope": "Independent whole-object semantic and identity review of N08-B02 v3 only; content proposal remains inactive.",
+  "inputs": {
+    "proposal": {
+      "path": "proposals/N08-B02-v3.json",
+      "sha256": "de9bb542883a708eb7f64cc5c2eabdf4dbe1ccd3c4a052a952cfd69753b0f7c7"
+    },
+    "beforeSource": {
+      "path": "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B02.json",
+      "sha256": "1db1cf0b1c16746d2899fadd9dd2afdfb2d40e3fc945e220a79404b0883efba8",
+      "manifestSha256": "1db1cf0b1c16746d2899fadd9dd2afdfb2d40e3fc945e220a79404b0883efba8"
+    },
+    "manifest": {
+      "path": "N08-N09-MANIFEST.json",
+      "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    },
+    "contract": {
+      "path": "N08-N09-CONTRACT.json",
+      "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+    },
+    "priorReviews": [
+      {
+        "path": "SEMANTIC-N08-B02-v1-QA.json",
+        "sha256": "2c285a281b9c9fd5ce564f948320c8bdf58d815d34b39663e95870275cfcf2da"
+      },
+      {
+        "path": "SEMANTIC-N08-B02-v2-QA.json",
+        "sha256": "61c81f9e124b89939b012e94ac3c69d0cbcc10385b26a148db25697292a90344"
+      }
+    ]
+  },
+  "method": {
+    "wholeObjectsReviewed": 18,
+    "answerResolution": "answer.optionId",
+    "wholeObjectFingerprint": "repository canonicalJson(question) followed by sha256",
+    "fieldsRead": [
+      "prompt",
+      "constraints",
+      "interaction.options",
+      "answer",
+      "feedback.reason",
+      "feedback.details.mechanismOrProperty",
+      "feedback.details.scenarioApplication",
+      "feedback.details.errorCorrection",
+      "feedback.details.boundaryOrTradeoff",
+      "feedback.details.transfer",
+      "feedback.messages"
+    ],
+    "technicalClaims": "Case facts are explicit hypothetical premises; no external SDK/framework guarantees inferred.",
+    "excluded": "Source option order/presentation remediation is handled separately and is not a content finding in this review."
+  },
+  "verification": {
+    "actualValidator": "patternly-content/scripts/content/question-contract.mjs validateQuestion",
+    "validQuestions": 18,
+    "totalQuestions": 18,
+    "actualScorer": "patternly-content/scripts/content/question-contract.mjs scoreQuestion",
+    "keyedResponsesCorrect": 18,
+    "wrongOptionResponsesIncorrect": 54,
+    "reversedOptionOrderKeyedResponsesCorrect": 18,
+    "wrongFeedbackTargetSetsMatch": 18,
+    "identityQuestionIdsSame": 18,
+    "identityAcceptedOptionIdsSame": 18
+  },
+  "findings": [
+    {
+      "id": "N08-B02-01",
+      "severity": "blocking",
+      "items": [
+        "ood-n08-b02-i011"
+      ],
+      "requirement": "BIZQ-01 §4.1: a single-choice item must have exactly one option satisfying the visible contract.",
+      "rationale": "A read-only subtype copy may leave the source inspection facts unchanged; the prompt does not require the same record identity or prohibit copying.",
+      "smallestCorrection": "State the intended record-identity/read-only-view boundary if it is required, or replace the distractor with an option that changes the submitted findings."
+    },
+    {
+      "id": "N08-B02-02",
+      "severity": "blocking",
+      "items": [
+        "ood-n08-b02-i013"
+      ],
+      "requirement": "BIZQ-01 §4.1: distractors must fail a requirement visible in the case.",
+      "rationale": "A cross-document queue can retain author/revision and retry semantics; independent notification progress is not stated.",
+      "smallestCorrection": "Add the existing-intent independent-progress fact if required, or replace the distractor with a choice that resolves values from mutable current editor state."
+    },
+    {
+      "id": "N08-B02-03",
+      "severity": "blocking",
+      "items": [
+        "ood-n08-b02-i015"
+      ],
+      "requirement": "BIZQ-01 §4.1: the keyed answer must be uniquely supported by visible facts.",
+      "rationale": "A global seller queue can still preserve submitted invoice copies and bind each response to its matching issue; throughput independence is absent.",
+      "smallestCorrection": "State independent-seller progress as a requirement if intended, or use a distractor that breaks submitted-value/result association."
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n08-b02-i001",
+      "beforeQuestionId": "ood-n08-b02-i001",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "cb43dbea750d7c387e12b5c00ee47dc21672909237370267f28bdcb476b043c4",
+      "currentCanonicalJsonSha256": "f246620a8b2c7bb339b854e0e9788f6a06741340768ed5b22c011c7a3687be20",
+      "acceptedDecision": "Check settlement at the order owner when accepting release.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i002",
+      "beforeQuestionId": "ood-n08-b02-i002",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "54d4b2d96775ba9c2785c7b70b5629fda6876d506306a100abe128ff76578c14",
+      "currentCanonicalJsonSha256": "046f4a55af891c8d11bd68d3561357fee5a781475660b65805349268b0b51668",
+      "acceptedDecision": "Apply each line update in effective-sequence order.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i003",
+      "beforeQuestionId": "ood-n08-b02-i003",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "988e07da11b8ffcce8467cd4788cfdbead28cc38606cbef304f81abf06e28408",
+      "currentCanonicalJsonSha256": "da6beb6594474b3f7b6d84d92989223a0b19e38e1826cbbe1f61f5414bcba834",
+      "acceptedDecision": "Check overlap and reserve together for the meter.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i004",
+      "beforeQuestionId": "ood-n08-b02-i004",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "b1ded229ef3b9a0b80088f80f93433998a360d57c260c9110a69b9f065bdf288",
+      "currentCanonicalJsonSha256": "6eb9ec94b4ccc9c3d5860feba9716a7442e17fc1656b8c9ea71e6e9211d59cd7",
+      "acceptedDecision": "Keep each stream on its captured provider configuration.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i005",
+      "beforeQuestionId": "ood-n08-b02-i005",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "38f1ee516c9e4c16c44639366f15bdf53e95a3d94608d10d070088c09b55fe02",
+      "currentCanonicalJsonSha256": "be8439ba9b4197a2d624355919b9b1fcfaf83b4403b165edc1fca26d011011fc",
+      "acceptedDecision": "Validate both assignments and commit the swap as one roster change.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i006",
+      "beforeQuestionId": "ood-n08-b02-i006",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "586dd7670797a7749ee5142049646e6ef753ae67480b2bb62ea3c2c8729b3550",
+      "currentCanonicalJsonSha256": "8feb4086a36f4233c92d82228a8584ce4703cb6287afb2a3d76f27552ca730ac",
+      "acceptedDecision": "Compare the proposal base with the route’s current revision before accepting.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i007",
+      "beforeQuestionId": "ood-n08-b02-i007",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "17b2eb9b2adaab6ef27b73a24a8ffbf12adb7a38b75dd5834be23dea3a2546d9",
+      "currentCanonicalJsonSha256": "0f9f05bc321153a42a932a0d6b8bbf466fbdc7fba803c6a5bf08394816a84a08",
+      "acceptedDecision": "Check reward legality against the campaign’s current phase when recording it.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i008",
+      "beforeQuestionId": "ood-n08-b02-i008",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "6ff2076725c673d01fb7221d1ac5decb86b2c40b9d9691c00cd96646dddec8fb",
+      "currentCanonicalJsonSha256": "c589fe4a8d9b3935c13d39b62e55ab32791c6b8a34a1dd5f98cda90dc5b40654",
+      "acceptedDecision": "Transfer one shipment revision; activate the new carrier only after acceptance.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i009",
+      "beforeQuestionId": "ood-n08-b02-i009",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "a58105beb738516976afdade292524395ef244fdef45c523f75eb41c2358ecd6",
+      "currentCanonicalJsonSha256": "16697b64b5d85a5958f5b8caf14af75d1eba35d8d103494a977345cf25b293d1",
+      "acceptedDecision": "Apply the allocation and matching entry together against the account balance.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i010",
+      "beforeQuestionId": "ood-n08-b02-i010",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "1689f60d5aca566b74f280f7aa3a38761a392ccc3b63d6352621689a4a925cb3",
+      "currentCanonicalJsonSha256": "5a72732d63f1ac9576aec48afba274edd11747df5d5f9ee5e8ee65606c521e7b",
+      "acceptedDecision": "Accept one legal result at the match owner before advancing the bracket.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i011",
+      "beforeQuestionId": "ood-n08-b02-i011",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "bf87be50b05f40d6ea027a7478548a95fd85e8aff2487c2f989cce8275111a13",
+      "currentCanonicalJsonSha256": "c618f42cb398c667f2414215b33a61650c3052003f5a149e087f88b109a46250",
+      "acceptedDecision": "Give refund review an immutable view of the accepted inspection.",
+      "reviewDisposition": "DEFECT",
+      "status": "DEFECT",
+      "finding": "N08-B02-01",
+      "rationale": "A read-only copy into a refund-specific subtype can preserve the original inspection facts; the prompt does not require the same record identity or forbid copying."
+    },
+    {
+      "questionId": "ood-n08-b02-i012",
+      "beforeQuestionId": "ood-n08-b02-i012",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "d8c0cb380bae1f24ec02e589940ced302ed1937d4c73f4a2640f7fb7e30ecf8e",
+      "currentCanonicalJsonSha256": "f5a169fe91f3c2dc4767092a5ba734f1bbe31ec5ba56bef0e5107c06c9c34e3a",
+      "acceptedDecision": "Pin the job to its selected dataset and code revisions.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i013",
+      "beforeQuestionId": "ood-n08-b02-i013",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "854cd9dc8313acda16dc55765aa4b0cf4c2331a0f1ec4a6592055351ed33e1db",
+      "currentCanonicalJsonSha256": "2a5b0cf66d02592b2e6513f7c0014994f261e39aae7ea033bc97cdc9edcc8866",
+      "acceptedDecision": "Bind notification to the author and revision stored on the accepted comment.",
+      "reviewDisposition": "DEFECT",
+      "status": "DEFECT",
+      "finding": "N08-B02-02",
+      "rationale": "A queue shared across documents can preserve each accepted comment author/revision; no independent-notification progress requirement appears in the prompt."
+    },
+    {
+      "questionId": "ood-n08-b02-i014",
+      "beforeQuestionId": "ood-n08-b02-i014",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "ab4706a7bfade691c66c86e660874a02ae1630b92c80b524243d3969f8d78ae6",
+      "currentCanonicalJsonSha256": "7ecc780e86647d3f71108f01a9537bc5620bef4e6000f1277cd7dd315e37d997",
+      "acceptedDecision": "Bind the result to the frozen submission revision; leave later edits separate.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i015",
+      "beforeQuestionId": "ood-n08-b02-i015",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "2ba13008bd7a3672b83f09244173d6f57aebc926a1a24aa1639d7a195a8205c5",
+      "currentCanonicalJsonSha256": "a2bbfc39bb7d37ef7c81c81464f3a5264b9884e089d7f2b18de7e64488e0de8e",
+      "acceptedDecision": "Record each exchange result against the invoice revision that was submitted.",
+      "reviewDisposition": "DEFECT",
+      "status": "DEFECT",
+      "finding": "N08-B02-03",
+      "rationale": "Serializing sellers until exchange responses return can preserve per-copy submitted values/result association; independent-seller throughput is unstated."
+    },
+    {
+      "questionId": "ood-n08-b02-i016",
+      "beforeQuestionId": "ood-n08-b02-i016",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "ac94390d84ca51faf0a5903a18eff9e01068d5c26a290e8d3cc24c7842d3d540",
+      "currentCanonicalJsonSha256": "2e83c9148567631b25190f256feeaca440d90b2145f5f55dba5a56d7045ba54e",
+      "acceptedDecision": "Check the request revision against current authority state before granting.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i017",
+      "beforeQuestionId": "ood-n08-b02-i017",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "21e4acfce6e2d6b8e89cf0f1799d0791533fba72643ccb920b18f3662ced353c",
+      "currentCanonicalJsonSha256": "e16704d342a4d8a5cf6e8ab390dc172ce11ec15d298ee2707a9fd7907b0aab01",
+      "acceptedDecision": "Give each print job the approved shipment revision it started with.",
+      "reviewDisposition": "PASS"
+    },
+    {
+      "questionId": "ood-n08-b02-i018",
+      "beforeQuestionId": "ood-n08-b02-i018",
+      "identityAction": "SAME_ID",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "beforeCanonicalJsonSha256": "1841e1a266465b7bcf46d1c81cabce6a3f5281b0b2382f324168316b7a86357d",
+      "currentCanonicalJsonSha256": "04d7001bd151c1ad8a5a44302167180d5bdebca909f58cb01bc0fb10fa2c5107",
+      "acceptedDecision": "Check overlap and reserve in one room-scoped operation.",
+      "reviewDisposition": "PASS"
+    }
+  ]
+}

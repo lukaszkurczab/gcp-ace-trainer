@@ -1,0 +1,160 @@
+{
+  "verdict": "PASS_ROOT_BOUND_INACTIVE_DIAGNOSTIC_CORRECTION_ONLY",
+  "unit": "N09-B05",
+  "proposalSha256": "079132e8a69a8de0b58dce533c132c60032e5b2a9f1a1e522c08327f700259cc",
+  "reportSha256": "08f121ca7b447a6a320ccda5b03e3d2061f6372d66726a5e90cad169116940cc",
+  "reportMarkdownSha256": "7252d061f9fa9d672c5deeaa6eb9de552d162215d59153d84087e6bceb4f784f",
+  "actualRawInputBindings": 10,
+  "actualChangedMessageLeaves": 16,
+  "actualDeltaReceiptSha256": "aa1e99240943a462c1388949ddf88a740e5bdc6f8706a8ce69139e7b364e425d",
+  "actualBeforePriorCurrentWholeBindings": [
+    {
+      "beforeQuestionId": "ood-n09-b05-i001",
+      "questionId": "ood-n09-b05-i001",
+      "beforeSha256": "a8542626f432a674a25d241c4196de6a2c685d9fe027172737399530b3e2b922",
+      "priorSha256": "9bde9d31e5168d6745ddad93cbd757d2d582c5341a5cf16c60557ff1a522362e",
+      "currentSha256": "9bde9d31e5168d6745ddad93cbd757d2d582c5341a5cf16c60557ff1a522362e",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i002",
+      "questionId": "ood-n09-b05-i002",
+      "beforeSha256": "a42a347bddf1e47efb8b1a2fe9fc0b4382196ac8f60794481201f2caac63ac84",
+      "priorSha256": "80ccc100fe73813a7dfa7c2bc41ca2ec4e19a49db3948e5f94e95c0f9b2007c9",
+      "currentSha256": "937229e6c9449f48c3780222091ccac13a85d896b50cc3a93c6de2c660c36bd3",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i003",
+      "questionId": "ood-n09-b05-i003",
+      "beforeSha256": "d078c2e97d088c017ac64c0bc6652be87c365c6d64c9e75cb26fbde835a05ff1",
+      "priorSha256": "73a83e151743f2d23d4c1a620dea579bafaa6856e7357e1a41304cf1a305d75f",
+      "currentSha256": "73a83e151743f2d23d4c1a620dea579bafaa6856e7357e1a41304cf1a305d75f",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i004",
+      "questionId": "ood-n09-b05-i004",
+      "beforeSha256": "1c689d9061ea4a99ea8c8817cd0752c467182e99f81f85a181649405858eef5c",
+      "priorSha256": "feace01c23134e40b57313e07df40873b2c307e020e41d0f85dde3b7bfedcc35",
+      "currentSha256": "988fecc625a13a3516eb43f414eb1db7d02091846db154fe0f7d4ceae8ae50d3",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i005",
+      "questionId": "ood-n09-b05-i005",
+      "beforeSha256": "eca65a222d1e316e4d88685e1f577f23203e366bd0a50165975dd294d3d55937",
+      "priorSha256": "9f51ebbea8a84608ec3d3d9561036ab228388ec8b3ec6b801a231ac3a2eb4dd8",
+      "currentSha256": "9f51ebbea8a84608ec3d3d9561036ab228388ec8b3ec6b801a231ac3a2eb4dd8",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i006",
+      "questionId": "ood-n09-b05-i006",
+      "beforeSha256": "7976b6c655ddc84bc63af7f74c40e1dcb1e035423594fa23dfc84825c8e7db81",
+      "priorSha256": "0caa1d8a96cf6cc2c1d3279fc8dcd0fcaf06c79b272a3a3ce5dfb976dcd5f2df",
+      "currentSha256": "faf4272a25d93bd21b0c730db39c15b344f0be1f54e3c7026cdd3d223ad89d27",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i007",
+      "questionId": "ood-n09-b05-i007",
+      "beforeSha256": "b227871c91fa56be9400ea3100d477e8cb5c810a5571bb21034d4dd961c135cf",
+      "priorSha256": "bbe24a98107c6d5fe51d9607f580da22f01e85759fe2c97b8fc29be50a0ce841",
+      "currentSha256": "bbe24a98107c6d5fe51d9607f580da22f01e85759fe2c97b8fc29be50a0ce841",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i008",
+      "questionId": "ood-n09-b05-i008",
+      "beforeSha256": "461e4bbf3928cdee8796029c3d947a5d7e993937973f00aee016b07129d8b4f5",
+      "priorSha256": "541ea680ea11448de1992d4fcb92e2d4e4a670bdad2dfb1de2508a45c1aff65d",
+      "currentSha256": "bfed7de65d94d32efaecae8474a44cfaefdaf4b7e1fa1140a39acc9ebc30dbca",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i009",
+      "questionId": "ood-n09-b05-i009",
+      "beforeSha256": "69b088f90cee64a78a802496f74fa9e3ce2e5e84f48edeb921152e394e1b903a",
+      "priorSha256": "6c75306cf8292fccb4a009f6e30151d8f524bb3e82522ac54bd51da907057303",
+      "currentSha256": "a53434bf66cc7ef8f26dd05ce18eb7d12a27f63fe32e6da02b8597c1fe70ac18",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i010",
+      "questionId": "ood-n09-b05-i010",
+      "beforeSha256": "954786824915b5615162e81b09ebfb8cc2a22f93554a7957a0bac99a294605de",
+      "priorSha256": "1c0c7da80af9763d5d2126b5b66c6f5bc7d0daaeb2435c8dfa31754921aa1d67",
+      "currentSha256": "79fd49518889691b1647711b814a61ccd2d2e5baa6fb98c498cd06c71b81c05f",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i011",
+      "questionId": "ood-n09-b05-i011",
+      "beforeSha256": "71121ba424944ef0827ff9c2efd4e7aa7960aaea13076d50ce33fb03a832282f",
+      "priorSha256": "e89d46cdd0b9058ddb17e228c006c6f5dd99d30621018b38b505a3944a85575d",
+      "currentSha256": "e89d46cdd0b9058ddb17e228c006c6f5dd99d30621018b38b505a3944a85575d",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i012",
+      "questionId": "ood-n09-b05-i012",
+      "beforeSha256": "6f756437bde399cdf6f7993dca4949d87be1bbab2f815a46107cae59a46e3bd2",
+      "priorSha256": "df4a5b4ac5fc3b3544c5a94ec83a6321a4652ab8dbcb2374711f7809ae59e439",
+      "currentSha256": "df4a5b4ac5fc3b3544c5a94ec83a6321a4652ab8dbcb2374711f7809ae59e439",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i013",
+      "questionId": "ood-n09-b05-i013",
+      "beforeSha256": "813cdf2cdddac5d6c6e128919258ce20cca5caecdc9306a13e6f7d36aebf696c",
+      "priorSha256": "0e6eb05d77d0fee7ad453f25a32873cb075b3087de4f74c9821a93f890c700b7",
+      "currentSha256": "67cad5d10c05c0a9a7c0f5046c110e08992de789bdb999723c51d9d037cfce71",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i014",
+      "questionId": "ood-n09-b05-i014",
+      "beforeSha256": "59d36ec605ed84876cb730b37aaf708e9284dfb8774b4a14face5ecef0dd8fda",
+      "priorSha256": "1df32ab296c28fd785b83ddd14e5eb133ad0ea1198808dbb76ea563c9cdcad1e",
+      "currentSha256": "68a5721868ca769f26ea88d78a2d7049797179df56442e0b466687d001efc32c",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i015",
+      "questionId": "ood-n09-b05-i015",
+      "beforeSha256": "d8ce0fa175c8a2f4385f7a18e11b81025297470c83dfaf784018e597674d5b9f",
+      "priorSha256": "af1ff113e93f0fecad85955a9e9173419e12ee8b0675ef1bac33517d7514deca",
+      "currentSha256": "1d00cc781a0f45616e54990e0f04d36744df09567bf5333d637521db9dffb818",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i016",
+      "questionId": "ood-n09-b05-i016",
+      "beforeSha256": "4cb4e86f94fa474e8c1d2cd4c410d3382b4c7749b6b267f816e3ff7af39d077a",
+      "priorSha256": "7fdfa8c5f51dc5a055cc6800e2ca89938519ab581dca7dfbd5e45a02d254baa9",
+      "currentSha256": "7fdfa8c5f51dc5a055cc6800e2ca89938519ab581dca7dfbd5e45a02d254baa9",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i017",
+      "questionId": "ood-n09-b05-i017",
+      "beforeSha256": "50622b762ee1e955ebe951b493546a9cbbfe3eab3d0e4f1aebbd2cb1844df293",
+      "priorSha256": "b79100af3cb0c8d08f2d3e1af3135452686fee7435826aa95bf440b37ee8e1d7",
+      "currentSha256": "285e3f7063258706cf17927ec87a9388ba4598ed72f4d28f5bdfd07930963955",
+      "identityAction": "preserve_question_id"
+    },
+    {
+      "beforeQuestionId": "ood-n09-b05-i018",
+      "questionId": "ood-n09-b05-i018",
+      "beforeSha256": "500d248a277ad10ea263eed6b1f0d2d5dab44d42c361519b3bdbea17d394801e",
+      "priorSha256": "cc21716476074e3d7c249cec29df0f3ca9e86da4bb5a82bbd3655d61ee42a2e5",
+      "currentSha256": "209b7c7716aeaa8a5b333e114cbe45664c727d2bf73491cf1240581c2e48f7c1",
+      "identityAction": "preserve_question_id"
+    }
+  ],
+  "metadataNote": "Original Markdown before-hash column renders undefined because current correction JSON contains current fingerprints only; exact before/prior/current hashes are bound here and prior full QA remains unchanged.",
+  "sourceActivationAccepted": false,
+  "nativeOrPremiumAccepted": false,
+  "fullBIZQ01Accepted": false
+}

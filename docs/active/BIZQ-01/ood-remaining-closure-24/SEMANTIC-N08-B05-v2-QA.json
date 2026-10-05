@@ -1,0 +1,260 @@
+{
+  "schemaVersion": "bizq01-n08-semantic-qa-v2",
+  "review": "SEMANTIC-N08-B05-v2-QA",
+  "verdict": "REVISE",
+  "scope": "N08-B05 v2 full-object semantic and identity review only; no source activation or full N08/N09 acceptance.",
+  "inputs": {
+    "proposal": {
+      "path": "docs/active/BIZQ-01/ood-remaining-closure-24/review-inputs/N08-B05-v2.json",
+      "sha256": "8958fb3508390873dcafadc02beabfbb33cbd1f8209c9fb2b3cae99ff3984a93"
+    },
+    "manifest": {
+      "path": "docs/active/BIZQ-01/ood-remaining-closure-24/N08-N09-MANIFEST.json",
+      "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    },
+    "contract": {
+      "path": "docs/active/BIZQ-01/ood-remaining-closure-24/N08-N09-CONTRACT.json",
+      "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+    },
+    "source": {
+      "path": "content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B05.json",
+      "sha256": "9ed4fbc42e1526372553053432cdb1b91de22a78b5547a20647f0571c6fa5910"
+    },
+    "authorNotes": {
+      "path": "docs/active/BIZQ-01/ood-remaining-closure-24/AUTHOR-N08-B05-v2.json",
+      "sha256": "76954ba79ef4e66259c67912ea2d56b50437a91def1c75f21c982d51b2775e19"
+    },
+    "authorNotesMarkdown": {
+      "path": "docs/active/BIZQ-01/ood-remaining-closure-24/AUTHOR-N08-B05-v2.md",
+      "sha256": "e1a94f0937b1e55e5427c44c29321df158a9e7a084611b77ce2e3067e8f16287"
+    }
+  },
+  "method": {
+    "wholeObjectFingerprint": "SHA-256 of repository canonicalJson(question)",
+    "answerResolution": "question.answer.optionId",
+    "wholeObjectsReviewed": 18,
+    "longestCorrectAdvisory": {
+      "count": 6,
+      "method": "raw text character length strictly greater than every wrong option",
+      "blockingMetric": false
+    }
+  },
+  "summary": {
+    "passed": 17,
+    "revised": 1,
+    "questionIdsSame": 18,
+    "acceptedOptionIdsSameMeaning": 17,
+    "acceptedOptionIdNewMeaning": 1
+  },
+  "findings": [
+    {
+      "id": "N08-B05-v2-i011-details-identity-contradiction",
+      "severity": "blocking",
+      "requirement": "Existing explanation contract: scenario-application feedback must agree with the visible decisive facts and accepted operation.",
+      "questionId": "ood-n08-b05-i011",
+      "field": "feedback.details.scenarioApplication",
+      "rationale": "The sentence says the completion key includes learner, revision, and policy; the prompt, key, Reason, and remaining diagnostic say learner plus revision identify the completion while policy is a stored accepted value.",
+      "minimumCorrection": "Rewrite only this field to describe policy as stored accepted data rather than a key component."
+    }
+  ],
+  "items": [
+    {
+      "questionId": "ood-n08-b05-i001",
+      "beforeQuestionSha256": "4ac6fb74adba0eff7dff846d1980f78a1812bf6887140c7d89ba089266362fa9",
+      "currentQuestionSha256": "29e190cc2412fca1ea3ff9d2bc22b37f178e5697f96437c16c5c92911a6b0e2c",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i002",
+      "beforeQuestionSha256": "9068eb97e99dca345ccce651478edcd1db2228177e21986924cab79d42a3b08f",
+      "currentQuestionSha256": "952d8a652415ccd036703a9a10505d2817e88c15c405f45a46e77fc4e34d848b",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i003",
+      "beforeQuestionSha256": "90c40e7263a44f819777c1b3c99a05bdaa0dd738ef57d675997b830641ed3989",
+      "currentQuestionSha256": "6825dd7def9a61832c10b520254a9be08be41853e708e2a3c4ae71d2c26e4036",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i004",
+      "beforeQuestionSha256": "a2e1cde554855099b3747da45a96a03fe0c2d74143e064bee5e5d36a557f6265",
+      "currentQuestionSha256": "15305ae26884d99cedc2312409b329c967eb106e29c3da6ab047098c0d5f3157",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i005",
+      "beforeQuestionSha256": "6e5f8ed1491fb57babcf49492c1f68e328f912ee711f1e8d744586c8504490df",
+      "currentQuestionSha256": "6845aaf7d1960811544459d6e7150538bbb3c2160b747d9b4dbc5c8f9d7510ba",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i006",
+      "beforeQuestionSha256": "10759742c3174fdf99bcc0f96b93ba229b8d8ec1ae849a97cd8fe1c5dba9a65f",
+      "currentQuestionSha256": "e0bd74f3234a03bc7e8ac8fe41fc0eea5faab0af77e0f098bb419738bfd5bf74",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i007",
+      "beforeQuestionSha256": "328648c0712c387df69c10481b0d395fdddd34d67167509c3a7d5511cf07b365",
+      "currentQuestionSha256": "cfbd311cc6a1482fc5366a450d1ab135efabeca48f6befd55b9145abee80d55f",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i008",
+      "beforeQuestionSha256": "a600065e4d074a40ce07a02df49b8dbd740017aa03706d69054d79513d1db031",
+      "currentQuestionSha256": "3400407261953864a7da05947aa97cbc36a2969991bb211794edebb78e35f7aa",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i009",
+      "beforeQuestionSha256": "6128dff9dee1e2d12bf2521a3967f39be755b58ca7f247c7d0ba767cc1701c34",
+      "currentQuestionSha256": "4fbd4e1d963406d82fd02ffe8a4c3e6d5bc4050d58a5ce287aa1ac6782e74055",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i010",
+      "beforeQuestionSha256": "cf50fb8725af754bacf91bb61965f61ee0fe9739ac6822630c01f17c7f3b4086",
+      "currentQuestionSha256": "8dbea09deaec64dadd9d8881876d76de4b7e284708eb7c90d06cd6319cf8ceb9",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i011",
+      "beforeQuestionSha256": "4fa2e3ef44095b9df51ffbbfd2956151c4078193af2ae615fc982951cc820100",
+      "currentQuestionSha256": "ceaf35e7024820eb65d6b5e64303d412d7df0e7851b2f49f65125427ebf150d9",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract_i011_v2",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "NEW_MEANING",
+      "verdict": "REVISE",
+      "finding": "feedback.details.scenarioApplication states policy is part of the key, contradicting stem/key/Reason."
+    },
+    {
+      "questionId": "ood-n08-b05-i012",
+      "beforeQuestionSha256": "009bf3c8034a41d0e645e53f35a0685de3213d3e2479e1bbb7c1834062ef7ec7",
+      "currentQuestionSha256": "e65ab9b495c231b2fe1581de9491f019750e71add53ae304d902494886459405",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i013",
+      "beforeQuestionSha256": "dce516cc78692138f077d36ced07452d21e846fbc432c6994d1db72e20149bec",
+      "currentQuestionSha256": "8c0aebe79651762b152d939178172609ad3a38db468ea35a38454481a4ddca8f",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i014",
+      "beforeQuestionSha256": "05b60ee569c96e0b7e0fdc6486602dbb38e069be793ff36041b83372f335ac50",
+      "currentQuestionSha256": "a0c8222d09cec7462c8a031aab095f81968390e1a31ffca32214e2c1bee6e48c",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i015",
+      "beforeQuestionSha256": "abf0a286ca3b91b98da6573d3b5bd9a18d40060d20784da4835b7dac96ef0cef",
+      "currentQuestionSha256": "fb248ff5c709ba360dc79e3e3793595441ad99c7b2f34c018adc167474699451",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i016",
+      "beforeQuestionSha256": "93dbb3a07fb1284ee1c07cb736bf0cc131f52c910f4f36b8bab76712f73ee1e6",
+      "currentQuestionSha256": "1d7ae041b2398237e04eafde05bac31abc2d0f98a7097c1eee2b40326e16e148",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i017",
+      "beforeQuestionSha256": "0769232edaf3e88e0e52f1c1df68dae226fdc379ac1d841136e02f064037b474",
+      "currentQuestionSha256": "651e012af96b705d95a9aedcfe0e3b3700c8032f0596523c31713a9cb2786226",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    },
+    {
+      "questionId": "ood-n08-b05-i018",
+      "beforeQuestionSha256": "a964f78270612cc92c66a0bacea7e80ef0d43ba986fd279119d144e1d8645d84",
+      "currentQuestionSha256": "b1b8fdf9b0ebe0b746432a0b4db2d9f36931f44c8642fa306e33bfdb9715fb2f",
+      "beforeAcceptedOptionId": "owner_preserves_contract",
+      "currentAcceptedOptionId": "owner_preserves_contract",
+      "questionIdentity": "SAME_ID",
+      "optionIdentity": "SAME_MEANING",
+      "verdict": "PASS",
+      "finding": null
+    }
+  ]
+}

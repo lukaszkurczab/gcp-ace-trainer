@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "patternly-bizq01-independent-n08-b09-v5-semantic-qa-erratum-v1",
+  "scope": "Correct the independent-check receipt hash reference in the frozen N08-B09 v5 QA metadata; no semantic review content changes.",
+  "originalReview": {
+    "jsonPath": "SEMANTIC-N08-B09-v5-QA.json",
+    "jsonSha256": "53ac4e4ec5efef506b601e5806cb1f458f166a02c3ce6c57bf5aeb44da04d94d",
+    "markdownPath": "SEMANTIC-N08-B09-v5-QA.md",
+    "markdownSha256": "45917294597dab162c875e46ea18970f202652491375193ef1024067768e5fa6",
+    "verdict": "PASS"
+  },
+  "metadataCorrection": {
+    "field": "inputs.independentCheckSha256",
+    "recordedValue": "c8f4697c5f50eb36a7317fdf8e74db971984d15e3f1463e4d61b8050296d2229",
+    "recordedValueIs": "SHA-256 of INDEPENDENT-CHECK-N08-B09-v5.mjs, the checker script",
+    "correctReceiptSha256": "07f927bbf7922bc6aa3efc893c2535db31bad1eab1268ed956bb09b9026cfd12",
+    "receiptPath": "INDEPENDENT-CHECK-N08-B09-v5.json",
+    "scriptPath": "INDEPENDENT-CHECK-N08-B09-v5.mjs",
+    "scriptSha256": "c8f4697c5f50eb36a7317fdf8e74db971984d15e3f1463e4d61b8050296d2229"
+  },
+  "verifiedBindings": {
+    "proposalPath": "review-inputs/N08-B09-v5.json",
+    "proposalSha256": "7068f9df47d5576317266e3e549574a4145307cfe211c6df2335b4fdb213032a",
+    "manifestPath": "N08-N09-MANIFEST.json",
+    "manifestSha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612",
+    "contractPath": "N08-N09-CONTRACT.json",
+    "contractSha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27",
+    "sourcePath": "patternly-content/content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B09.json",
+    "sourceSha256": "093bdea05d1a2e9854c474025fea368aac46a1c70f57f4a8371c990f0461e15d",
+    "notesPath": "AUTHOR-N08-B09-v5.json",
+    "notesSha256": "986447590f1ce57b575e220e6370052c17c0d7f6bb4a542dcb20d94ece07359e",
+    "identityAdjudicationPath": "ROOT-CROSS-N24-v1-ADJUDICATION.json",
+    "identityAdjudicationSha256": "a3bc46b7f073f1165180cde0dc608d62f52309b4a7a13308dfeba158c11d80b7",
+    "receiptItemBindings": 18,
+    "sourceMatchesManifestBeforeSourceText": true
+  },
+  "receiptTotals": {
+    "questions": 18,
+    "valid": 18,
+    "acceptedCorrect": 18,
+    "wrongIncorrect": 54,
+    "reversedCorrect": 18,
+    "feedbackTargetsMatch": 18,
+    "reservedIdentityBindings": 18
+  },
+  "semanticRerun": false,
+  "verdictChanged": false
+}

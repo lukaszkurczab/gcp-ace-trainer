@@ -1,0 +1,711 @@
+{
+  "schemaVersion": "bizq01-ood-n08-author-notes-v1",
+  "sourceFile": "patternly-content/content/object-oriented-design-interview/concurrency_thread_safety_resources_and_failure_handling/OOD-N08-B07.json",
+  "sourceSha256": "b535b0f1672a873e59c5f61c53fd9164f5bab43499801804990ff4134fdddf20",
+  "proposalFile": "patternly/docs/active/BIZQ-01/ood-remaining-closure-24/proposals/N08-B07.json",
+  "proposalSha256": "e4c9de058852ac2624b66e4ff48e69ba9cb516589e3d87a581e1b3290923ba3a",
+  "items": [
+    {
+      "beforeQuestionId": "ood-n08-b07-i001",
+      "questionId": "ood-n08-b07-i001",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A research-notebook platform, A publication job opens a dataset handle and a temporary output file. The job owns both until it publishes the result; any failed or canceled run must close the handle and remove the temporary file. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Leave the dataset handle open in the editor so a retry can reuse it after the job exits.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “published outputs reference immutable inputs and code versions” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "leak_after_exit_01",
+          "currentText": "Leave the dataset handle open in the editor so a retry can reuse it after the job exits."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "release_too_early_01",
+          "currentText": "Delete the output only on the normal success path and leave failed-run files for an operator to discover."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "borrow_without_owner_01",
+          "currentText": "Store both handles in a process-wide registry and let the next job decide which ones to close."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i002",
+      "questionId": "ood-n08-b07-i002",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A collaborative annotation workspace, An editor subscribes to document-revision notifications while its review panel is open. Closing the panel ends that subscription, but accepted comments and their attribution remain stored. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the subscription for the lifetime of the application so reopening the panel is faster.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “accepted comments must retain their author and document revision” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "leak_after_exit_02",
+          "currentText": "Keep the subscription for the lifetime of the application so reopening the panel is faster."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "release_too_early_02",
+          "currentText": "Delete accepted comments when the panel closes to clean up its notification resources."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "borrow_without_owner_02",
+          "currentText": "Let the document service keep a callback to the panel after closure and ask the panel to ignore later events."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i003",
+      "questionId": "ood-n08-b07-i003",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A mobile field-inspection app, Each upload attempt opens a file stream for one frozen inspection revision. The stream belongs to that attempt and must close on success, cancellation, or retryable failure; the inspection draft itself remains available. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the stream open on retryable failure and reuse it from a later upload attempt.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “a submission is either complete or explicitly retryable” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "leak_after_exit_03",
+          "currentText": "Keep the stream open on retryable failure and reuse it from a later upload attempt."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "release_too_early_03",
+          "currentText": "Close the inspection draft and delete it whenever the upload stream closes."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "borrow_without_owner_03",
+          "currentText": "Store the stream in a global upload registry and close it when any device signs out."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i004",
+      "questionId": "ood-n08-b07-i004",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A digital invoice exchange, The exchange client returns a response body stream. The invoice operation reads it to determine acceptance and owns it until parsing finishes; the response must close whether parsing succeeds or throws. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep every response body open until the invoice is paid so support can inspect it later.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “the new issue is traceable and does not double-charge the customer” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "leak_after_exit_04",
+          "currentText": "Keep every response body open until the invoice is paid so support can inspect it later."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "release_too_early_04",
+          "currentText": "Let the caller close the stream after the exchange method returns, even though the method still parses it asynchronously."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "borrow_without_owner_04",
+          "currentText": "On parse error, abandon the body and keep its network connection open for a retry."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i005",
+      "questionId": "ood-n08-b07-i005",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A smart-building access controller, Each door subscribes to badge-revocation updates while its controller is active. Shutting down that door ends its subscription; the authority's badge record remains valid for other doors. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep every door subscription active after shutdown so it can receive future revocations.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “revocation is visible to the door policy before access is granted” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "leak_after_exit_05",
+          "currentText": "Keep every door subscription active after shutdown so it can receive future revocations."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "release_too_early_05",
+          "currentText": "Delete the authority's badge record when one door unsubscribes."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "borrow_without_owner_05",
+          "currentText": "Have the authority retain each door callback forever and rely on a flag inside the callback to ignore events."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i006",
+      "questionId": "ood-n08-b07-i006",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A package-label generation service, A print attempt writes to a temporary file. The printer opens only the completed file; after print handoff, the print attempt must close its file handle, and failed attempts must remove incomplete files. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Open the final label path at the start and let the printer read while the generator continues writing.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “the printed label represents the current approved shipment data” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "leak_after_exit_06",
+          "currentText": "Open the final label path at the start and let the printer read while the generator continues writing."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "release_too_early_06",
+          "currentText": "Leave incomplete files in the final label directory for a later attempt to finish."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "borrow_without_owner_06",
+          "currentText": "Put the file handle in a shared printer singleton so every print attempt uses it."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i007",
+      "questionId": "ood-n08-b07-i007",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A multi-tenant rehearsal scheduler, A room move acquires a temporary destination hold while awaiting coordinator approval. The move operation owns that hold; denial or cancellation releases it, while a committed move consumes it as the booking. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Leave the hold active after denial so the coordinator can reconsider without reacquiring it.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “the room capacity and cancellation policy must remain consistent” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "leak_after_exit_07",
+          "currentText": "Leave the hold active after denial so the coordinator can reconsider without reacquiring it."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "release_too_early_07",
+          "currentText": "Release the destination hold immediately after the approval request is sent, before the move commits."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "borrow_without_owner_07",
+          "currentText": "Store all room holds in a permanent cache with no owner-specific expiration."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i008",
+      "questionId": "ood-n08-b07-i008",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A museum exhibit controller, A maintenance command acquires a hardware session. The session belongs to that command and must close when the command completes or fails; the exhibit's mode remains owned by the controller. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the hardware session open after command failure so a later command can inherit it without checking status.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “unsafe commands are rejected while maintenance is active” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "leak_after_exit_08",
+          "currentText": "Keep the hardware session open after command failure so a later command can inherit it without checking status."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "release_too_early_08",
+          "currentText": "Let the hardware adapter change exhibit mode when the session closes."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "borrow_without_owner_08",
+          "currentText": "Hold one shared hardware session for every command and let each command close it when done."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i009",
+      "questionId": "ood-n08-b07-i009",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A video-learning library, Retirement scans a learner-progress cursor. The scan owns the cursor only while reading; closing it must not delete or re-key the stable progress records. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the cursor open so later retirements can resume from the same live cursor.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “progress refers to a stable lesson identity” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "leak_after_exit_09",
+          "currentText": "Keep the cursor open so later retirements can resume from the same live cursor."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "release_too_early_09",
+          "currentText": "Delete progress records when the cursor closes to avoid leaving unused data behind."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "borrow_without_owner_09",
+          "currentText": "Transfer the cursor to every learner client so each client can close it independently."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i010",
+      "questionId": "ood-n08-b07-i010",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A shared whiteboard application, Export owns a snapshot cursor and an output file while producing history. Canceling export must close both, but the live board continues accepting strokes. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Close the board session together with the export cursor so the snapshot cannot change.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “export observes a stable session state” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "leak_after_exit_10",
+          "currentText": "Close the board session together with the export cursor so the snapshot cannot change."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "release_too_early_10",
+          "currentText": "Leave the output file open after cancellation for participants to append their next strokes."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "borrow_without_owner_10",
+          "currentText": "Let the exporter borrow the board's live collection cursor without an explicit lifetime boundary."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i011",
+      "questionId": "ood-n08-b07-i011",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A customer-support escalation desk, An escalation starts a deadline timer for a conversation. The escalation operation owns the timer until it completes; a successful escalation cancels the timer, while a failed attempt returns a retryable state and leaves no timer running. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the timer running after completion so it can notify the next agent again.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “the escalation keeps ownership and response deadlines” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "leak_after_exit_11",
+          "currentText": "Keep the timer running after completion so it can notify the next agent again."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "release_too_early_11",
+          "currentText": "Cancel every conversation's timer when one escalation completes."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "borrow_without_owner_11",
+          "currentText": "Store timer handles in a global list and let a periodic job guess which ones are obsolete."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i012",
+      "questionId": "ood-n08-b07-i012",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A regional produce marketplace, Validation opens a short database transaction for one listing revision. If price/stock checks fail, the transaction must roll back and close; a successful revision is committed before publication. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the transaction open while buyers read the listing so the validation remains visible.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “a listing cannot become visible before its price and stock rule are valid” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "leak_after_exit_12",
+          "currentText": "Keep the transaction open while buyers read the listing so the validation remains visible."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "release_too_early_12",
+          "currentText": "Mark the listing published first and let a cleanup job rollback invalid values later."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "borrow_without_owner_12",
+          "currentText": "Use one long-lived transaction for all sellers until the catalog is refreshed."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i013",
+      "questionId": "ood-n08-b07-i013",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A repair-parts marketplace, A split operation launches two vendor checks. Each check owns its response stream; if one fails, the operation cancels the other check and closes any stream it already opened before leaving the parent request unchanged. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Leave the successful vendor stream open while waiting for the failed vendor to be retried.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “each split retains the original request identity and delivery promise” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "leak_after_exit_13",
+          "currentText": "Leave the successful vendor stream open while waiting for the failed vendor to be retried."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "release_too_early_13",
+          "currentText": "Publish the first child request and transfer the second response stream to the parent for later interpretation."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "borrow_without_owner_13",
+          "currentText": "Store response streams in the fulfillment service singleton so a later split can reuse them."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i014",
+      "questionId": "ood-n08-b07-i014",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A community garden allocation tool, A plot transfer holds a temporary approval token. The transfer operation owns that token until commit or denial; the existing reservation remains with its current member until commit. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the token after the transfer ends so another member cannot request the plot.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “transfer preserves the plot boundary and approval history” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "leak_after_exit_14",
+          "currentText": "Keep the token after the transfer ends so another member cannot request the plot."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "release_too_early_14",
+          "currentText": "Move the reservation first and let the approval service release its token later."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "borrow_without_owner_14",
+          "currentText": "Let each plot screen store and release the same token on behalf of the transfer."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i015",
+      "questionId": "ood-n08-b07-i015",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A subscription packaging service, A bundle build opens component streams and a temporary package file. The build operation owns them until validation completes; after success it publishes a new package, and on failure it must close streams and discard the temporary file. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep component streams open after success so checkout can reread them later.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “the bundle pricing policy remains consistent with its components” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "leak_after_exit_15",
+          "currentText": "Keep component streams open after success so checkout can reread them later."
+        },
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "release_too_early_15",
+          "currentText": "Publish the temporary package path before validation and replace it if validation fails."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "borrow_without_owner_15",
+          "currentText": "Keep one shared component stream cache open for the lifetime of the catalog, regardless of active builds."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i016",
+      "questionId": "ood-n08-b07-i016",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A fleet charging coordinator, A reservation acquires a temporary charger lease with an expiry. The reservation operation owns the lease until confirmation; cancellation before confirmation releases it, while confirmation transfers it to the booking. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the lease after cancellation so the requester can return without another capacity check.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “charger capacity and reservation expiry are coordinated” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "leak_after_exit_16",
+          "currentText": "Keep the lease after cancellation so the requester can return without another capacity check."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "release_too_early_16",
+          "currentText": "Release the lease as soon as the confirmation request is sent, before the station accepts it."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "borrow_without_owner_16",
+          "currentText": "Let every station request share one lease and close it when any request ends."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i017",
+      "questionId": "ood-n08-b07-i017",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A photo-archive curation tool, A metadata merge opens two asset locks and a temporary merge record. The merge operation owns all three; a conflict or cancellation releases both locks and discards the temporary record without changing the accepted asset. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Keep the first lock held while asking a curator to resolve the conflict later.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “asset identity remains stable while descriptive values are replaced” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "coordinator_exports_state",
+          "beforeText": "Put the rule in a central coordinator, expose the involved objects' data, and require every caller to follow the same sequence.",
+          "currentOptionId": "leak_after_exit_17",
+          "currentText": "Keep the first lock held while asking a curator to resolve the conflict later."
+        },
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "release_too_early_17",
+          "currentText": "Publish the temporary merged metadata before releasing the locks so a later task can finish it."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "borrow_without_owner_17",
+          "currentText": "Transfer the locks to a background cleanup job after the merge returns."
+        }
+      ]
+    },
+    {
+      "beforeQuestionId": "ood-n08-b07-i018",
+      "questionId": "ood-n08-b07-i018",
+      "mentalUnitId": "OOD-N08-B07",
+      "learningObjective": "Assign each temporary resource a clear owner, scope its lifetime to actual use, and close or transfer it correctly on success, failure, or cancellation.",
+      "decisiveFact": "In A digital rights clearance tool, A license check opens an external response stream. The clearance operation owns it until the result is read; denial, error, or cancellation must close it and leave the territory unapproved. Which resource-lifetime boundary is correct?",
+      "nearestAlternative": "Leave the response stream open after denial so another territory can inspect it.",
+      "changedCondition": "The old domain outcome is supplemented with the actual acquired resource, its owner, and the event that ends or transfers its lifetime.",
+      "identityAction": "preserve_question_id",
+      "identityReason": "The original keyed decision was: Acquire and release resources through a scope that survives errors and makes ownership visible. In this case, that keeps the rule “approval requires an explicit territory and expiration” inside the owner that can observe and enforce it. The current key still applies explicit resource ownership and cleanup to the same case; the new facts identify the resource lifecycle that the original stem left implicit.",
+      "sourceRefs": [
+        "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html",
+        "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+        "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/exceptions/",
+        "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+      ],
+      "beforeKeyOptionId": "owner_preserves_contract",
+      "currentKeyOptionId": "owner_preserves_contract",
+      "optionMeaningChanges": [
+        {
+          "beforeOptionId": "inheritance_for_reuse",
+          "beforeText": "Create a subtype for this scenario and use inheritance for reuse, even if the subtype changes the existing caller contract.",
+          "currentOptionId": "leak_after_exit_18",
+          "currentText": "Leave the response stream open after denial so another territory can inspect it."
+        },
+        {
+          "beforeOptionId": "representation_leaks",
+          "beforeText": "Expose storage or mutable state to the caller so the caller can decide the rule after reading the current representation.",
+          "currentOptionId": "release_too_early_18",
+          "currentText": "Create a provisional approval while the stream is still being read and remove it later if the check fails."
+        },
+        {
+          "beforeOptionId": "speculative_indirection",
+          "beforeText": "Introduce a generic registry and asynchronous event chain now, before a second independent variation or delivery contract exists.",
+          "currentOptionId": "borrow_without_owner_18",
+          "currentText": "Make the caller responsible for closing the stream even though the clearance operation consumes it asynchronously."
+        }
+      ]
+    }
+  ]
+}

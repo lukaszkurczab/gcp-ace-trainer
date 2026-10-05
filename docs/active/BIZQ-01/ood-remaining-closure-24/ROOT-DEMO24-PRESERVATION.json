@@ -1,0 +1,35 @@
+{
+  "result": "PASS",
+  "scope": "Exact two authorised Free demo payloads retained; only eight provenance fields per demo changed; no native/fullBIZQ/publication claim",
+  "demoPayloadsUnchanged": true,
+  "beforeSha256": "86ff78bbf2b92aac838e83143e47321db2382e4dec3831fa799ef54dc33a722b",
+  "currentSha256": "bdc9422c5953bb27039beed0ee9f5d533f06db80bc41e170fb690e4077bfb59d",
+  "changes": [
+    {
+      "questionId": "alg-complexity-time-005",
+      "changedFields": [
+        "admissionSha256",
+        "appContentLockSha256",
+        "candidateId",
+        "producerCommit",
+        "releaseId",
+        "releaseLockSha256",
+        "runtimeEvidenceSha256",
+        "sourceReleaseSha256"
+      ]
+    },
+    {
+      "questionId": "aws-saa-c03-architecture-001-odk096",
+      "changedFields": [
+        "admissionSha256",
+        "appContentLockSha256",
+        "candidateId",
+        "producerCommit",
+        "releaseId",
+        "releaseLockSha256",
+        "runtimeEvidenceSha256",
+        "sourceReleaseSha256"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,200 @@
+{
+  "schemaVersion": "bizq01-semantic-correction-review-v1",
+  "track": "OOD-N09",
+  "unit": "OOD-N09-B05",
+  "version": 3,
+  "verdict": "PASS",
+  "proposal": {
+    "path": "review-inputs/N09-B05-v3.json",
+    "sha256": "079132e8a69a8de0b58dce533c132c60032e5b2a9f1a1e522c08327f700259cc"
+  },
+  "authorProposal": {
+    "path": "proposals/N09-B05-v3.json",
+    "sha256": "079132e8a69a8de0b58dce533c132c60032e5b2a9f1a1e522c08327f700259cc"
+  },
+  "priorReview": {
+    "path": "SEMANTIC-N09-B05-v2-QA.json",
+    "sha256": "3dc41c1d5e1df2c7fa453c07020a82ecc5e80ea6fba449f43ed89f185f306d63",
+    "markdownPath": "SEMANTIC-N09-B05-v2-QA.md",
+    "markdownSha256": "e98c0aba200e9c4918d5c096ca75c72b6cfcbd5b5043e3c813e0641424f6eaa8"
+  },
+  "targetIdErratum": {
+    "path": "SEMANTIC-N09-B05-B07-v2-TARGET-ERRATUM.json",
+    "sha256": "6cf108967883477466244fdef3a359c13e0f55c6fee136dc900fe0e32280d8d5"
+  },
+  "manifest": {
+    "path": "N08-N09-MANIFEST.json",
+    "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+  },
+  "contract": {
+    "path": "N08-N09-CONTRACT.json",
+    "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+  },
+  "spec": {
+    "path": "../../../specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "sha256": "c10ce086ecd3b58d7d776a458cb453d0161ac4519ca2474deba952122ceac8a3"
+  },
+  "fingerprintMethod": "SHA-256(repository canonicalJson(question), recursively sorted keys); selected key resolved by answer.optionId.",
+  "delta": {
+    "priorProposal": {
+      "path": "review-inputs/N09-B05-v2.json",
+      "sha256": "bc2700a32341370d4bd177fc3d3f940718f21e26e9f112fb146e57ff9e020497"
+    },
+    "changedQuestionCount": 11,
+    "changedMessageCount": 16,
+    "changedQuestionIds": [
+      "ood-n09-b05-i002",
+      "ood-n09-b05-i004",
+      "ood-n09-b05-i006",
+      "ood-n09-b05-i008",
+      "ood-n09-b05-i009",
+      "ood-n09-b05-i010",
+      "ood-n09-b05-i013",
+      "ood-n09-b05-i014",
+      "ood-n09-b05-i015",
+      "ood-n09-b05-i017",
+      "ood-n09-b05-i018"
+    ],
+    "verifiedAllOtherFieldsAndAllOptionIdsUnchanged": true,
+    "description": "The revised messages now identify the actual compatibility failure for each targeted alternative: withdrawn default behavior, unknown enum/state rejection, changed response shape, unstable obligation/request/history references, and changed boolean/default-list semantics.",
+    "allCurrentFeedbackTargetsBind": true
+  },
+  "mechanicalCheck": {
+    "validator": "patternly-content/scripts/content/question-contract.mjs validateQuestion/scoreQuestion",
+    "questionCount": 18,
+    "invalidQuestions": 0,
+    "correctAnswers": 18,
+    "incorrectDistractors": 72,
+    "reversedCorrectAnswers": 18,
+    "feedbackTargetSetsExact": 18
+  },
+  "items": [
+    {
+      "questionId": "ood-n09-b05-i001",
+      "currentWholeObjectSha256": "9bde9d31e5168d6745ddad93cbd757d2d582c5341a5cf16c60557ff1a522362e",
+      "currentAcceptedOptionId": "n09b05_i001_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b05-i002",
+      "currentWholeObjectSha256": "937229e6c9449f48c3780222091ccac13a85d896b50cc3a93c6de2c660c36bd3",
+      "currentAcceptedOptionId": "n09b05_i002_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    },
+    {
+      "questionId": "ood-n09-b05-i003",
+      "currentWholeObjectSha256": "73a83e151743f2d23d4c1a620dea579bafaa6856e7357e1a41304cf1a305d75f",
+      "currentAcceptedOptionId": "n09b05_i003_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b05-i004",
+      "currentWholeObjectSha256": "988fecc625a13a3516eb43f414eb1db7d02091846db154fe0f7d4ceae8ae50d3",
+      "currentAcceptedOptionId": "n09b05_i004_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    },
+    {
+      "questionId": "ood-n09-b05-i005",
+      "currentWholeObjectSha256": "9f51ebbea8a84608ec3d3d9561036ab228388ec8b3ec6b801a231ac3a2eb4dd8",
+      "currentAcceptedOptionId": "n09b05_i005_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b05-i006",
+      "currentWholeObjectSha256": "faf4272a25d93bd21b0c730db39c15b344f0be1f54e3c7026cdd3d223ad89d27",
+      "currentAcceptedOptionId": "n09b05_i006_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    },
+    {
+      "questionId": "ood-n09-b05-i007",
+      "currentWholeObjectSha256": "bbe24a98107c6d5fe51d9607f580da22f01e85759fe2c97b8fc29be50a0ce841",
+      "currentAcceptedOptionId": "n09b05_i007_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b05-i008",
+      "currentWholeObjectSha256": "bfed7de65d94d32efaecae8474a44cfaefdaf4b7e1fa1140a39acc9ebc30dbca",
+      "currentAcceptedOptionId": "n09b05_i008_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    },
+    {
+      "questionId": "ood-n09-b05-i009",
+      "currentWholeObjectSha256": "a53434bf66cc7ef8f26dd05ce18eb7d12a27f63fe32e6da02b8597c1fe70ac18",
+      "currentAcceptedOptionId": "n09b05_i009_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    },
+    {
+      "questionId": "ood-n09-b05-i010",
+      "currentWholeObjectSha256": "79fd49518889691b1647711b814a61ccd2d2e5baa6fb98c498cd06c71b81c05f",
+      "currentAcceptedOptionId": "n09b05_i010_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    },
+    {
+      "questionId": "ood-n09-b05-i011",
+      "currentWholeObjectSha256": "e89d46cdd0b9058ddb17e228c006c6f5dd99d30621018b38b505a3944a85575d",
+      "currentAcceptedOptionId": "n09b05_i011_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b05-i012",
+      "currentWholeObjectSha256": "df4a5b4ac5fc3b3544c5a94ec83a6321a4652ab8dbcb2374711f7809ae59e439",
+      "currentAcceptedOptionId": "n09b05_i012_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b05-i013",
+      "currentWholeObjectSha256": "67cad5d10c05c0a9a7c0f5046c110e08992de789bdb999723c51d9d037cfce71",
+      "currentAcceptedOptionId": "n09b05_i013_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    },
+    {
+      "questionId": "ood-n09-b05-i014",
+      "currentWholeObjectSha256": "68a5721868ca769f26ea88d78a2d7049797179df56442e0b466687d001efc32c",
+      "currentAcceptedOptionId": "n09b05_i014_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    },
+    {
+      "questionId": "ood-n09-b05-i015",
+      "currentWholeObjectSha256": "1d00cc781a0f45616e54990e0f04d36744df09567bf5333d637521db9dffb818",
+      "currentAcceptedOptionId": "n09b05_i015_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    },
+    {
+      "questionId": "ood-n09-b05-i016",
+      "currentWholeObjectSha256": "7fdfa8c5f51dc5a055cc6800e2ca89938519ab581dca7dfbd5e45a02d254baa9",
+      "currentAcceptedOptionId": "n09b05_i016_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "REUSED_MATCHING_V2_WHOLE_OBJECT_SEMANTIC_REVIEW"
+    },
+    {
+      "questionId": "ood-n09-b05-i017",
+      "currentWholeObjectSha256": "285e3f7063258706cf17927ec87a9388ba4598ed72f4d28f5bdfd07930963955",
+      "currentAcceptedOptionId": "n09b05_i017_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    },
+    {
+      "questionId": "ood-n09-b05-i018",
+      "currentWholeObjectSha256": "209b7c7716aeaa8a5b333e114cbe45664c727d2bf73491cf1240581c2e48f7c1",
+      "currentAcceptedOptionId": "n09b05_i018_compatible_addition",
+      "verdict": "PASS",
+      "disposition": "INDEPENDENTLY_REVIEWED_MESSAGE_CORRECTION"
+    }
+  ],
+  "limits": "Bounded message correction acceptance only; no new source, producer, runtime/admission, native/Premium, or full BIZQ-01 acceptance."
+}

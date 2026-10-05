@@ -1,0 +1,15 @@
+{
+  "verdict": "PASS_ROOT_BOUND_INACTIVE_CORRECTION_ONLY",
+  "unit": "N08-B02",
+  "proposalSha256": "33c0cbc1cd355618a5b55f2cd423e6f66a7014ce61b08fa9cf7fb317f6f09fe8",
+  "reportSha256": "23b9631cf37af65b49487fdf7dbeb6d77e3490a69bec2df4b0d340a140e7df8a",
+  "reportMarkdownSha256": "94b8027bec980891d2241beea288a1d177ee97b4d6e1a6454a62a208636c7529",
+  "actualRawInputBindings": 6,
+  "actualWholeBeforePriorCurrentBindings": 18,
+  "actualChangedObjects": 3,
+  "exactUnchangedWholeObjectsReused": 15,
+  "questionIdsUnchanged": true,
+  "sourceActivationAccepted": false,
+  "nativeOrPremiumAccepted": false,
+  "fullBIZQ01Accepted": false
+}

@@ -1,0 +1,17 @@
+{
+  "verdict": "PASS_ROOT_BOUND_INACTIVE_DETAILS_CORRECTION_ONLY",
+  "unit": "N08-B08",
+  "proposalSha256": "5a535122196cd793b893cf518a1afcac36aa044166cafdfb009260dbed8fd1f2",
+  "reportSha256": "0a7ee358efbaa118300428b6b79eabd8dc7d0409e1b4f4b0e67ebb6d686d1b64",
+  "reportMarkdownSha256": "583862813e50eca348242a3eff7b1358d3993615392ed9cf9beac6ec68392695",
+  "priorSemanticReviewSha256": "e9c10b8a4979ffb692083abf9da42fd043c2e9df3084d57272273ee2f0a444b3",
+  "actualRawBindings": 8,
+  "actualBeforePriorCurrentWholeBindings": 18,
+  "actualDeltaReceiptSha256": "4ef1562c983ca21efd806a63b5b7ef0a377b1ceac09a6e1016b5069c0da561db",
+  "actualChangedObjects": 3,
+  "actualChangedDetailsLeaves": 9,
+  "exactUnchangedWholeObjectsReused": 15,
+  "sourceActivationAccepted": false,
+  "nativeOrPremiumAccepted": false,
+  "fullBIZQ01Accepted": false
+}

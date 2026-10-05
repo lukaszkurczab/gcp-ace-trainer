@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "bizq01-independent-bounded-semantic-correction-review-v1",
+  "unit": "OOD-N08-B01",
+  "verdict": "PASS",
+  "scope": {
+    "reviewedQuestionIds": [
+      "ood-n08-b01-i001"
+    ],
+    "priorReview": "SEMANTIC-N08-B01-v3-QA.md/json",
+    "reusedExactUnchangedQuestions": 17,
+    "sourceActivationAccepted": false
+  },
+  "bindings": {
+    "beforeManifest": {
+      "path": "N08-N09-MANIFEST.json",
+      "sha256": "0551c85ba24cfad5498425c14aae207b31ef9ec021c81b9ba489b37170e80612"
+    },
+    "contract": {
+      "path": "N08-N09-CONTRACT.json",
+      "sha256": "6119adeddae7817f45c28dac286900619cc559ab588b544bf3e8c5365e106c27"
+    },
+    "proposalV3": {
+      "path": "review-inputs/N08-B01-v3.json",
+      "sha256": "d2672b21eca943d2c9896b3944bce485a2e339b66f5aaadcc71f1d8eb15f165d"
+    },
+    "proposalV4": {
+      "path": "review-inputs/N08-B01-v4.json",
+      "sha256": "5c6ed34d5ad4b6873febf875d1ff9fd5b48c7f6826872254370233e4c87b1503"
+    },
+    "authorV4": {
+      "path": "AUTHOR-N08-B01-v4.json",
+      "sha256": "0dac9f76be703f187ecf5defa594851b547f6cbeabfab2c463dc9475ce5c25cf"
+    },
+    "priorReview": {
+      "path": "SEMANTIC-N08-B01-v3-QA.json",
+      "sha256": "37af42dde1cd5e2db1f2fe58ebc6f56077d160c93bfb9f7ac812388931810a9b"
+    }
+  },
+  "fingerprintMethod": "SHA-256(repository canonicalJson(question), using patternly-content/scripts/build.mjs; answer resolved by optionId).",
+  "item": {
+    "beforeQuestionId": "ood-n08-b01-i001",
+    "proposedQuestionId": "ood-n08-b01-i001",
+    "identityAction": "SAME_ID",
+    "beforeWholeObjectSha256": "2dac73afc37e8bb4e8a36aeb8339f68f3094af2c07612fa50a7f699bc726a6ff",
+    "v3WholeObjectSha256": "7cff349a207c11481f1e4b05aed1a92624f9e8bf19d3eef59ff6f669c0654260",
+    "v4WholeObjectSha256": "96ee6ab41894893e5b3e8c6739a2484d81796bc6983821f617201cdcb0f0429c",
+    "acceptedOptionId": "owner_preserves_contract",
+    "issueResolved": "The option now explicitly uses last-write-wins and discards the competing geometry, which violates the prompt’s requirement to surface conflicts. The targeted diagnostic and errorCorrection name that failure. This removes the previously credible per-device merge alternative without changing the key, prompt, or supported decision."
+  },
+  "diff": {
+    "changedQuestionIds": [
+      "ood-n08-b01-i001"
+    ],
+    "changedLeaves": [
+      "interaction.options[3].optionId",
+      "interaction.options[3].text",
+      "feedback.messages[2].targetId",
+      "feedback.messages[2].text",
+      "feedback.details.errorCorrection"
+    ],
+    "allOther17WholeObjectsExact": true
+  },
+  "limitations": [
+    "This bounded content correction does not accept other N08/N09 units, cross-unit map, producer/runtime, renderer, admission, native/Premium or full BIZQ-01."
+  ]
+}
