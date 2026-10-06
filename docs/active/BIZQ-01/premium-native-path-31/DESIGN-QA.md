@@ -1,0 +1,9 @@
+# BIZQ-01 package31 — independent Luna High design review
+
+Verdict: **PASS WITH CONDITIONS**, proposal/source only; no runtime/acceptance claim. Review supplied by independent `/root/recovery_revision_review` (gpt-6-luna, high). The reviewer could not write into this task's outside-root folder, so the controller placed the completed report here. No automatic approval-review rejection occurred.
+
+Scores: objective fit0.94, simplicity0.87, risk0.84, maintainability0.90; minimum0.84. One ordinary authenticated testaccount/session reuses existing API/router/gate. Syntheticexpired/active is honestly app-gate evidence, not RevenueCat/store/provider proof.
+
+Conditions supplied: (1) Never call inspectPreparedProfileState for a purported no-effect read: it can open storage. Use alreadyinitializedSecureStore getters for only specificallynamed NONSECRET registry/logout keys, sanitize values, no keys/tokens/config/factory/bootstrap. (2) Verify ordinary sign-in selects a distinct account scope, whose canonicalbootstrap provisions installation before datafinalization; account data may use discard only there. Stop on adoption/recovery rather than mutate originalGuest. Assert Guestcategory preservation and return. (3) Unrelated pendinglogout set must be preserved. Canonical blockAndQueueRevoke clears old completed receipts while retaining pending entries; classify only this source-defined settled cleanup if freshbaseline establishes applicability.
+
+If the ordinary session does not surface required long OOD content, report that gap; do not force itemIDs or enlarge the run. Existing model/provider/auth gates remain. Root incorporated these conditions in BRIEFING before accepting execution. The fresh pre-mutation SDK probe and category comparison establish facts, rather than infer them from source. The reviewed proposal does not establish repository runtime readiness.

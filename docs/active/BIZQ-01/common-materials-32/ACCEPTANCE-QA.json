@@ -1,0 +1,20 @@
+{
+  "reviewer": "package30_acceptance",
+  "model": "gpt-6-luna",
+  "effort": "high",
+  "nativeBehavior": "PASS-bounded",
+  "capturedPreservation": "PASS-sevenfields81/84-and-limitedpublicprojection",
+  "frozenBindingsVerified": 17,
+  "privateImagesViewedAndHashVerified": 9,
+  "receiptLogHashesVerified": true,
+  "testsRerunByReviewer": false,
+  "reviewerMutations": false,
+  "publication": "pendingexplicitPOapproval",
+  "limits": [
+    "earlyq1scrollbound",
+    "3metadataunread incanonicalsnapshot",
+    "noWholeStore",
+    "notfullQ12/Premium/Q13/BIZQ/release",
+    "noeducationefficacy"
+  ]
+}

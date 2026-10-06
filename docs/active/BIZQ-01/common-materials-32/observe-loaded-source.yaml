@@ -1,0 +1,10 @@
+appId: com.apple.mobilesafari
+name: BIZQ01 observe already opened GCP documentation
+---
+- assertVisible: Organization Policy overview
+- takeScreenshot: gcp32-source-loaded-title
+- swipe:
+    start: 50%,65%
+    end: 50%,30%
+    duration: 500
+- takeScreenshot: gcp32-source-loaded-body

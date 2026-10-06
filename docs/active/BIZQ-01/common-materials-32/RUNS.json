@@ -1,0 +1,50 @@
+{
+  "device": "7F315654-3175-4F3C-BB24-B0263F59360C",
+  "commandPattern": "maestro --device <existingiPhone17> test --no-reinstall-driver --debug-output <private> --test-output-dir <private> <versionedflow>",
+  "runs": [
+    {
+      "run": "open",
+      "exitCode": 0,
+      "privateLogSha256": "e4bc9a039b1100b558bdb8ac0b061d97257938ee4b9d1a4c4554431f80e8134c",
+      "rawLogKeptPrivate": true
+    },
+    {
+      "run": "safari",
+      "exitCode": 0,
+      "privateLogSha256": "f129c5edffeedc4515014fc0420b54bd96c6d3e497c3f7cd40fbc7b1096dcbb7",
+      "rawLogKeptPrivate": true
+    },
+    {
+      "run": "address",
+      "exitCode": 0,
+      "privateLogSha256": "745dd5f75e57c6198348d8d19a6bdf9d96e63efb7feb85eddce680b32bc4f7ab",
+      "rawLogKeptPrivate": true
+    },
+    {
+      "run": "address-focused",
+      "exitCode": 0,
+      "privateLogSha256": "bea0cf174ae7a9b5e4978e8896290d9d7c855d17f00177eb392e94504c2e6117",
+      "rawLogKeptPrivate": true
+    },
+    {
+      "run": "return",
+      "exitCode": 1,
+      "privateLogSha256": "ce1b733e39be6bee92265a6e920d8d5f5668a75a67c5e7825b6a4a7f3ec10462",
+      "rawLogKeptPrivate": true
+    },
+    {
+      "run": "finish",
+      "exitCode": 1,
+      "privateLogSha256": "d48661b6871d0fa0fab79081f4068132f5707c37d8749c5b9bc2b125ad8601af",
+      "rawLogKeptPrivate": true
+    },
+    {
+      "run": "finish-id",
+      "exitCode": 0,
+      "privateLogSha256": "d28ec8507c68f4da7e7e6dc91f5b551501c95fb7bcbd83e93cacfe09efacfe0d",
+      "rawLogKeptPrivate": true
+    }
+  ],
+  "noRawLogsOrImagesOrHierarchiesInGit": true,
+  "corrections": "CAPTURE-CORRECTIONS.md"
+}

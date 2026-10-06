@@ -1,0 +1,24 @@
+{
+  "verdict": "PASS WITH CONDITIONS",
+  "model": "gpt-6-luna",
+  "effort": "high",
+  "scores": {
+    "fit": 0.94,
+    "simplicity": 0.87,
+    "risk": 0.84,
+    "maintainability": 0.9
+  },
+  "minimum": 0.84,
+  "reviewScope": "Independent proposal/source; finalclarifications incorporatedbyroot, no runtimeQA",
+  "reviewer": "/root/recovery_revision_review",
+  "controllerPlacedCompletedReview": true,
+  "conditions": [
+    "No inspectPreparedProfileState/init inreadonlyprobe; initializedSecureStore onlynamednonsecretregistry/control",
+    "Distinctaccountscope beforematerialization; originalGuestexact/pendingpreserved; stopadoption/recovery",
+    "Preserveunrelatedpendinglogout set; onlydocumentedsettledreceiptpruningifapplies",
+    "Honestsyntheticfixture/no providerclaim; noforceditemIDs iflongcontentabsent"
+  ],
+  "conditionDisposition": "Root incorporated inrefinedBRIEFING beforeacceptance",
+  "sourceBindings": "SOURCE-PREFLIGHT.json",
+  "runtimeExecutedByReviewer": false
+}

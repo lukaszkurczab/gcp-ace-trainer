@@ -1,0 +1,6 @@
+appId: com.apple.mobilesafari
+name: BIZQ01 read already opened source address
+---
+- tapOn:
+    point: 50%,93%
+- takeScreenshot: gcp32-source-address

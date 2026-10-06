@@ -1,0 +1,29 @@
+appId: com.lkurczab.patternly
+name: BIZQ01 finish from already reached saved q2
+---
+- assertVisible:
+    id: patternly:session:question:gcp-ace-gcpace-n01-b04-001
+- takeScreenshot: gcp32-saved-next-q2
+- tapOn:
+    id: patternly:practice-review:result
+- extendedWaitUntil:
+    visible:
+      id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+    timeout: 15000
+- scrollUntilVisible:
+    element: Session complete
+    direction: UP
+    centerElement: false
+- takeScreenshot: gcp32-summary-after
+- scrollUntilVisible:
+    element:
+      id: patternly:summary:back-to-practice:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+    direction: DOWN
+    centerElement: false
+- tapOn:
+    id: patternly:summary:back-to-practice:google-cloud-associate-cloud-engineer:certification-focus-practice:2
+- tapOn:
+    id: main-tab-bar-home
+- assertVisible:
+    id: patternly:home:track-card:google-cloud-associate-cloud-engineer
+- takeScreenshot: gcp32-home-after

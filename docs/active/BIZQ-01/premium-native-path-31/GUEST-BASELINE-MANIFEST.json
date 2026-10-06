@@ -1,0 +1,35 @@
+{
+  "status": "PASS-freshGuestbaseline-matchesfinal30",
+  "recordsSha256": "1a65e6a09ecd71e259eb1ca95054a4624b2c12d1ea21ee0b720e9031638f9667",
+  "records": 81,
+  "keys": 84,
+  "equalCapturedFields": [
+    "schema",
+    "deviceTarget",
+    "profile",
+    "keyInventory",
+    "records",
+    "fences",
+    "notifications"
+  ],
+  "profile": {
+    "kind": "guest",
+    "transitionActive": false
+  },
+  "fences": {
+    "activeTrainingSessionPresent": false,
+    "activeDraftPresent": false,
+    "activeMutationJournalPresent": false,
+    "accountSyncUnsettled": true,
+    "accountSignOutStatePresent": true,
+    "accountDeletionStatePresent": false
+  },
+  "notifications": {
+    "permission": "undetermined",
+    "totalScheduled": 0,
+    "appScheduledCount": 0
+  },
+  "metadataValuesUnreadInThisSnapshot": 3,
+  "noWholeStoreClaim": true,
+  "privateBaseline": "mode0600 outsideGit"
+}

@@ -1,0 +1,75 @@
+{
+  "status": "frozen-before-independent-QA",
+  "bindings": [
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/BRIEFING.md",
+      "sha256": "77f6d15dd711b4f240af84fd5412cb8b434b3a52ff3d522a553808f831d04dd1"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/CAPTURE-CORRECTIONS.md",
+      "sha256": "4e09a89f5f04860dd90b10351c606b1cf39077e058d3142ad1fa5f7d548b3c6c"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/COMMON-EVIDENCE.md",
+      "sha256": "b2a72bacc965cb43d552376f211bd9e3076e21364c374c56bd61015b0bfe12ae"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/DESIGN-QA.json",
+      "sha256": "3d06f660f0a6df233ecc7ba8043967441a51a9e6d95bb94bc8d335ce18114bbe"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/PRESERVATION.json",
+      "sha256": "585b4e90cb69c88a988ceb9e5b58f23faf811a5159fe29914f49e31f80108c90"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/PRIVATE-SCREENS-MANIFEST.json",
+      "sha256": "08cc8b9f26e69a5be00628bf9d2043f22fba8263379d1e1ae583bb14172af8c3"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/REPORT.md",
+      "sha256": "156b7bb849ac85f972f47f2e9ec035be0992931524842eaa25cbecde4ea6695c"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/ROOT-PLAN-ACCEPTANCE.json",
+      "sha256": "da4a66c09ed4d8fa4bef9322b5c0e66ddea14f46f3c7f785fdfe0318d6fb9612"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/RUNS.json",
+      "sha256": "5cff5adbd95c67977d931b506faa558303059bbc696cdad4df3d3de7340e7131"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/SOURCE-OPENING.json",
+      "sha256": "6fd13810f4f404285a7575dc1b610a6a04595301b74983cebc79f86843a99334"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/finish-from-saved-q2.yaml",
+      "sha256": "d3b59dfa37b4b89a48f56998c320d63b8b93df899b6409a361d05135841878bf"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/finish-option-label-failed.yaml",
+      "sha256": "0ae3d637d521dc1c3b7205d646dd3b10837a6da222053664726fb360f0c1af17"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/observe-loaded-source.yaml",
+      "sha256": "501a83816f48a80900832260cfc5a0d13dacbb70d283dfe9f033c1654298954a"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/observe-source-address.yaml",
+      "sha256": "0c73d535de1141d37cf3d4f2278296b34e7eb7bb842b4dce7ceb2ea8eef1d7e4"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/open-gcp-source.yaml",
+      "sha256": "626ea25c029de5ef54937c68fc4bddb3d29a267ab05c368798da9cc64a13a142"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/return-and-continue.yaml",
+      "sha256": "3777b0fde565fe249375096cc25f0b41e84612333d621d332bea5180520869aa"
+    },
+    {
+      "path": "docs/active/BIZQ-01/common-materials-32/return-counter-failed.yaml",
+      "sha256": "42bd4850809e2a66dc6e464e0ba7e9581884c58bf8876b163b61768058cd0704"
+    }
+  ],
+  "images": "private exactsha inPRIVATE-SCREENS-MANIFEST; publicationpending",
+  "productChanges": false
+}

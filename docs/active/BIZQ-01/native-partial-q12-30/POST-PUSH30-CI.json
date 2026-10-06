@@ -1,0 +1,52 @@
+{
+  "status": "SUCCESS",
+  "commit": "527f61fac0b738c88493830324a87cc55339d315",
+  "run": 37387676285,
+  "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37387676285",
+  "jobs": [
+    {
+      "name": "Multi-track content release contract",
+      "conclusion": "success"
+    },
+    {
+      "name": "Recovery QA gate",
+      "conclusion": "success"
+    }
+  ],
+  "actualTestSummariesInLogOrder": [
+    {
+      "metric": "tests",
+      "value": 3
+    },
+    {
+      "metric": "pass",
+      "value": 3
+    },
+    {
+      "metric": "fail",
+      "value": 0
+    },
+    {
+      "metric": "skipped",
+      "value": 0
+    },
+    {
+      "metric": "tests",
+      "value": 1901
+    },
+    {
+      "metric": "pass",
+      "value": 1897
+    },
+    {
+      "metric": "fail",
+      "value": 0
+    },
+    {
+      "metric": "skipped",
+      "value": 4
+    }
+  ],
+  "privateLogSha256": "d0fffe3d062130f56fd6619d9ce3401ee16712327ff5f7ee4b9df800e36b0b8f",
+  "scope": "repositoryCI; boundednative/QA independentlyaccepted; notfullBIZQ/release"
+}

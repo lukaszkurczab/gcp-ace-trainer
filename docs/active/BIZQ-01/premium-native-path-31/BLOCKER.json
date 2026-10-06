@@ -1,0 +1,14 @@
+{
+  "status": "DEPENDENT_PREMIUM_UI_BLOCKED_before_authmutation",
+  "finding": "ActualsoleoriginalGuest installation bindingState=adoption_pending, accountBound=false; ordinarysignin sourcepreservesactiveGuestscope onthismarker, reachesadoption ratherthandistinctaccountscope",
+  "actualProbe": "PUBLIC-RUNTIME-PREFLIGHT.json",
+  "source": "src/application/account/AccountSessionProvider.tsx:657-664",
+  "risk": "Executingplannedauth wouldviolatespecifieddistinctscope preservation andcouldrequiretransfer/discard oforiginalGuest",
+  "noAccountsCreated": true,
+  "noAPIorAuthOrMetroRestarts": true,
+  "noSDKAuthTransition": true,
+  "noGuestWrites": true,
+  "POdecision": "Pending: ownerARCH03 resolution or explicitboundedscope delegation; no repeatedPremiumprofileapproval request",
+  "independentAvailableScope": "MainBIZQ01commonmechanism evidence/materialsordinaryGuestpath remainsavailable",
+  "notProductDefectClaim": "Characterizedprecondition/dependency; no runtimeauth effecttested; do notclaimPremiumgatePASS"
+}

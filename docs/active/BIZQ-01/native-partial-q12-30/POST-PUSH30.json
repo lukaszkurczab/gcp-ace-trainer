@@ -1,0 +1,16 @@
+{
+  "status": "ordinary-push-confirmed",
+  "commit": "527f61fac0b738c88493830324a87cc55339d315",
+  "upstreamEqualsHEAD": true,
+  "filesCommitted": 217,
+  "scope": "boundedaccepted30 sharedrenderer/evidence + ownstate/row19a/receipts29, foreignappendix/securityaudit excluded",
+  "rootAcceptanceSha256": "dfcccb146196643d39ac3f0cc3e1efd4d120291dd0634988c2e5dd79faf70ab6",
+  "ci": {
+    "run": 37387676285,
+    "status": "completed",
+    "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37387676285",
+    "conclusion": "success"
+  },
+  "BIZQ01Status": "partial",
+  "fullBIZQOrReleaseAcceptance": false
+}
