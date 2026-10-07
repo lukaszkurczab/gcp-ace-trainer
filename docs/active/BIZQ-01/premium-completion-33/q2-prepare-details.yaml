@@ -1,0 +1,17 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 saved Q2 prepare unobscured Details
+---
+- scrollUntilVisible:
+    element:
+      id: patternly:session:reason:ood-n01-b02-i018
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:result:ood-n01-b02-i018:correct
+- takeScreenshot: q2-correct-reason
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:ood-n01-b02-i018
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: q2-details-before-tap

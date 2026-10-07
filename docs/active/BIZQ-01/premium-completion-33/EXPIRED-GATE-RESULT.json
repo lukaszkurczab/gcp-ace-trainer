@@ -1,0 +1,28 @@
+{
+  "scope": "ordinary UI auth-bound app gate, local smoke input expired",
+  "uiPath": [
+    "ownedaccountsignin",
+    "ordinaryOODselection",
+    "Home Startlearning",
+    "PracticeHub tradeoffpractice",
+    "Premiumoffer"
+  ],
+  "noAccountRequiredWarning": true,
+  "fences": {
+    "activeTrainingSessionPresent": false,
+    "activeDraftPresent": false,
+    "activeMutationJournalPresent": false,
+    "accountSyncUnsettled": true,
+    "accountSignOutStatePresent": false,
+    "accountDeletionStatePresent": false
+  },
+  "notifications": {
+    "permission": "undetermined",
+    "totalScheduled": 0,
+    "appScheduledCount": 0
+  },
+  "noActiveDraftJournal": true,
+  "rawSnapshotPrivate": "/private/tmp/bizq33-expired-denial-account.json",
+  "notRevenueCatOrPurchaseProof": true,
+  "offerUnavailablePurchaseConfiguration": "Known no real provider configuration; not tested purchase. Visible legal service scope placeholder remains outside BIZQ01 session gate acceptance."
+}

@@ -1,0 +1,97 @@
+{
+  "ok": true,
+  "readonly": true,
+  "runtimeMode": "smoke",
+  "project": "patternly-app-sandbox",
+  "profile": {
+    "kind": "guest",
+    "selectedIdSha256": "b880a3a8d1530601f6f1ed2f244078468f09f51f9d68ba5f6d3cec95cfa5e52d",
+    "transitionActive": false,
+    "counts": {
+      "account": 8,
+      "guest": 1
+    },
+    "soleGuest": true
+  },
+  "registry": {
+    "generation": 18,
+    "selectedMatchesActive": true,
+    "profileIdentityHashes": [
+      {
+        "idSha256": "69c4585ed5e8f0a74c590f7b90e0f7734703f6d33bd6478df3257d283021775f",
+        "kind": "account",
+        "accountIdSha256": "1578bd6fa6d01f86438ba19b1897e655d6cc34d53b177020f735ac25d322a9e7"
+      },
+      {
+        "idSha256": "16be5ba959123ab50ea2e748ea0f8f96daed9ab0065f64dbf7a542731e9014eb",
+        "kind": "account",
+        "accountIdSha256": "98a89a8f142f95508d795c15a1bdde5cc43ee59deeb2b9f4b88a3bf9cccc5ef4"
+      },
+      {
+        "idSha256": "4233aa626030d27b18832a79d45f72eb127ee30081eb080cb8c36a779f199f13",
+        "kind": "account",
+        "accountIdSha256": "8aa406252c98cb48fd2891086b9ca2e2e07f960656e9e0d5299f11ef1172caf4"
+      },
+      {
+        "idSha256": "0e16ed6b01e9e88502ed05b6fe2be56ce15beafd9b4b98906ba32721b5282572",
+        "kind": "account",
+        "accountIdSha256": "8824b3430e4fc35287285982a6edd354cadf00a28919cc9788d3b14d4c13187d"
+      },
+      {
+        "idSha256": "b7304adb9f1a161f414c5e11a6a76892237a382453442e18af9f1ea30f980fe4",
+        "kind": "account",
+        "accountIdSha256": "e655451386cf2e7f71ecab1edfcc8b1391b0529c453ab4518bc605ba0dd4bcb7"
+      },
+      {
+        "idSha256": "28191e18b9f7c460954c9b567c452caa23060feb2f66383a23cf2d8b9231eb9a",
+        "kind": "account",
+        "accountIdSha256": "8ec8ecc14569cd2512ca32d10cdd9d326c41b29552a7ef0a2a0ed4c56f768a6d"
+      },
+      {
+        "idSha256": "a18a6a07521e54e54dc61d5dfcd17e483b3fa7ca1b7fb1a7972fbaf279c5fde7",
+        "kind": "account",
+        "accountIdSha256": "8887bd72834f3f781b57d65a4a71979b656fa7efc63282f3c0526f1a68e798a7"
+      },
+      {
+        "idSha256": "bfdcaa54efd53a538d3dfae2e577a500c20774354c4e83ef362aacc44f5d1ef9",
+        "kind": "account",
+        "accountIdSha256": "ee6e118f72175bee3eeaaeb85ee7732b4a7f67a4b13d6eb81136793a69c23e20"
+      },
+      {
+        "idSha256": "b880a3a8d1530601f6f1ed2f244078468f09f51f9d68ba5f6d3cec95cfa5e52d",
+        "kind": "guest",
+        "accountIdSha256": null
+      }
+    ]
+  },
+  "logout": {
+    "present": true,
+    "blockedPairSha256": null,
+    "pendingPairHashes": [
+      "4161bcb6a2e6b12fee71badc691efdd56262d64adfedbd9c32e75a7b317007c8",
+      "42afac1be5572f320100dd34202bc32acca044afd3cc1c1afe8bc9d2fe046673",
+      "7e80fbc5c34fea30aa9b72fa2dc4872bc2bc37eb61edfe7f9fdbeeb43d78bc7b",
+      "c6097ff619cd198561e34ccb991b3a825febb3b4108ec579ed9b3e2bcdb7d2b8",
+      "cd087c603afd08befde1cfe1eda6d4dee69e3a7152d90ed1d7a2e5381532ba09"
+    ],
+    "completedPairHashes": [
+      "f10e7f2a2d3bd0945ead9c6321a75a26dacd383b8489636bb027180cfb804193"
+    ],
+    "pendingUidHashes": [
+      "227ca9a3d972c15f0f1de6cbc61e91506ce943cea922bef84405d5099bddba0a",
+      "2536da7b3f2346fba098c1295d3c392f079665ffb27aa7f1b487047c21ccc500",
+      "6ab1beef5b6e2ec5f2b9c6f07be05161174b75050b4bf297b82487f5efc45309",
+      "ba3775384f96f1e10d46157652c6e2ff160d68da58f1eeb0bad0f1a852a5fca1",
+      "bb6f82b07ab797fe59a9bdd886a589837160a38808735ad988b5d7a1160f6a3b"
+    ]
+  },
+  "guestMarker": {
+    "bindingState": "guest",
+    "accountBound": false,
+    "installationIdSha256": "498a8a5cbc36ed6331567374098786cc922f8133a4afceb7471ca0d77b4de760",
+    "localDatasetIdSha256": "b880a3a8d1530601f6f1ed2f244078468f09f51f9d68ba5f6d3cec95cfa5e52d"
+  },
+  "canonicalApiExportAvailable": true,
+  "legalDocumentVersion": "2026-09-05",
+  "limits": "Named NONSECRET SDK controls and limitedGuestmarker projection only; no encryptionkey/token/configvalues, no init/bootstrap/migration/writes; notwhole-store"
+}

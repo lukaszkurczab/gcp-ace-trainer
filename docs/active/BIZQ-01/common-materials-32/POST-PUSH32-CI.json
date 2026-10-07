@@ -1,0 +1,48 @@
+{
+  "task": "BIZQ-01",
+  "status": "SUCCESS",
+  "commit": "23ee920322e88240b33d4266731f95e899ec95c4",
+  "run": 37454549002,
+  "url": "https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/37454549002",
+  "jobs": {
+    "Recovery QA gate": "success",
+    "Multi-track content release contract": "success"
+  },
+  "actualTestSummariesInLogOrder": [
+    {
+      "metric": "tests",
+      "value": 1901
+    },
+    {
+      "metric": "pass",
+      "value": 1897
+    },
+    {
+      "metric": "fail",
+      "value": 0
+    },
+    {
+      "metric": "skipped",
+      "value": 4
+    },
+    {
+      "metric": "tests",
+      "value": 3
+    },
+    {
+      "metric": "pass",
+      "value": 3
+    },
+    {
+      "metric": "fail",
+      "value": 0
+    },
+    {
+      "metric": "skipped",
+      "value": 0
+    }
+  ],
+  "logSHA256": "3d251c625640916470a38938e910e520f198dbed374a37134a7a3e0c7f3f75a2",
+  "rawLogNotWrittenToGit": true,
+  "scope": "repository CI only; bounded native and publication acceptance separate; not full BIZQ/release"
+}

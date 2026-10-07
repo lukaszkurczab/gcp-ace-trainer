@@ -1,0 +1,65 @@
+{
+  "scope": "reviewed v2 isolated test instrumentation, no installation or runtime claim",
+  "independentToolQaSha256": "acd03961215453d8e566d4660d3aa530fac605b68d43d31e796f2c149cf5a3d0",
+  "copies": [
+    {
+      "sourceRef": "ea4f3d61b39bab6b9f12ace73b34721d0d6e717a",
+      "content": {
+        "artifactSha256": "932b7370d7be44bb5274ad8bc5a31b45f0479b3ff4251160af1ed2b170ca80d7",
+        "contentVersion": "object-oriented-design-interview-authoring-v2026.10.05-bizq01-23"
+      },
+      "nonce": "c9da3c70bc7d5222d1341f787c3e1e894852d871314301c32def085ecd00753e",
+      "patchSha256": "23ee058bd947fb0d17937a6d465d8c3d90ed967f3d37511ae457c134a6320f95",
+      "privateBindingSha256": "da6cb90e8f26b22436b30f2c085edc52bfc8bc4a375003dc8eba94877e8e6b0d",
+      "priorBuildOutcome": "failed_no_install",
+      "buildBinding": null
+    },
+    {
+      "sourceRef": "fa95d027076e970d71dacf0d1fd7976fa0ba8f60",
+      "content": {
+        "artifactSha256": "9df476e414158da0f33e118c06ed7fbc476b53bc8f0a115a470f61f9c1bf1ea3",
+        "contentVersion": "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24"
+      },
+      "nonce": "1ccc35d82069b8fd8ca294ff86d0adb174d4922a372f6c8d477635577d6e94fb",
+      "patchSha256": "58cc8ab300f56cd875d8831a58fab42c0c6e345572869611e36146e2616e3985",
+      "privateBindingSha256": "f853cccf0cc869756945a96d2add34c02dc12e6517e471f88657681242cc58bb",
+      "priorBuildOutcome": "unbuilt_no_install",
+      "buildBinding": null
+    }
+  ],
+  "build": {
+    "oldSession": 61678,
+    "architecture": "arm64 same sole iPhone17 simulator",
+    "derivedCache": "owned first attempt cache reused",
+    "installPerformed": false
+  },
+  "attempts": [
+    {
+      "session": 61678,
+      "exitCode": 66,
+      "installPerformed": false,
+      "stage": "host_access_before_compile",
+      "cause": "sandbox could not access CoreSimulator; workspace exists",
+      "privateLogSha256": "46206d9e2062282c476a6707ed8676fe42a480c770ed6b84b220a7051b7849b9"
+    },
+    {
+      "session": 73577,
+      "status": "completed",
+      "hostAccess": "auto-review approved escalation for Xcode build-only",
+      "installPerformed": false,
+      "exitCode": 0,
+      "privateLogSha256": "bdbdcb11c68ce2f1798c0a30a2c56290bfcc57db98d0c03bdbd46a5dab2202f2"
+    }
+  ],
+  "oldBuiltArtifact": {
+    "bundleIdentifier": "com.lkurczab.patternly",
+    "buildBinding": {
+      "appTreeSha256": "0282c467a790e1aa396d317d41c279edbec301e0ca14237bb1bde5c50be15677",
+      "embeddedJsSha256": "13b4b9052a2bf5a56cc9b49d1d6fea12c7885099cc4ad6c201f0385efb2cbfe1"
+    },
+    "freshNonceInEmbeddedJs": true,
+    "oldCatalogHashInEmbeddedJs": true,
+    "backupForRollback": true,
+    "installed": false
+  }
+}

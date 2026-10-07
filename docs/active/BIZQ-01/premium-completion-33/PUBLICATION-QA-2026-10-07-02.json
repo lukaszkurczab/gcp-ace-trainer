@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "bizq01-package33-publication-qa-v1",
+  "reviewer": "resume_design",
+  "model": "gpt-6-luna",
+  "effort": "high",
+  "verdict": "PASS WITH GAPS",
+  "scope": "staged bounded package publication review; no commit, push, runtime, or service actions",
+  "boundedPackageAccepted": true,
+  "q13Accepted": false,
+  "fullBizq01Accepted": false,
+  "releaseAccepted": false,
+  "commitOrPushPerformed": false,
+  "checks": {
+    "candidatePathCount": 217,
+    "candidatePathsUnique": true,
+    "candidatePathsPresentAndRegular": true,
+    "stagedPathCount": 219,
+    "stagedSetEqualsCandidatePlusTwoMetadataPaths": true,
+    "unstagedTrackedCandidatePaths": [],
+    "onlyUnstagedTrackedPath": "docs/PATTERNLY-WORKING-PLAN.md",
+    "stagedQueuePlanChangeLimitedToRow19a": true,
+    "queuePlanSuffixAfterRow19aByteEqualToHead": true,
+    "stateFooterExpectedSha256": "760755e99ac2e9b6e28fbdf54fa527ec0406d13b45cd094f53f738dc85c4657d",
+    "stateFooterSha256Matches": true,
+    "rawEvidenceFilesIncluded": false,
+    "credentialValuesIncluded": false,
+    "boundFinalAcceptanceReceiptHashesMatch": true,
+    "guestPreservationClaimBounded": true,
+    "gitDiffCachedCheckWarnings": [
+      "Q13-TEST-ATTESTATION-DESIGN-QA.md:61 extra blank line at EOF",
+      "SOURCE-TEXT-FIX-ACCEPTANCE-QA.md:27 extra blank line at EOF"
+    ]
+  },
+  "q13Capability": {
+    "result": "UNAVAILABLE",
+    "stage": "inspector_connect_failed",
+    "breakpointArmed": false,
+    "observationPerformed": false,
+    "diagnosticReloadExecuted": false,
+    "trialCreated": false,
+    "answerSubmitted": false,
+    "profileDiagnosisEstablished": false
+  },
+  "limitations": [
+    "Q13 old/new unanswered-session comparison remains open.",
+    "Full BIZQ-01 remains open.",
+    "Release acceptance remains open.",
+    "No whole-store preservation or educational efficacy claim is made.",
+    "Whitespace warnings are recorded and non-blocking; historical receipt bytes were preserved."
+  ]
+}

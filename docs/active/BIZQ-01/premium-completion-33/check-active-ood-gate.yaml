@@ -1,0 +1,14 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 authenticated active OOD admission
+---
+- assertVisible:
+    id: patternly:practice:hub:root
+- tapOn:
+    id: patternly:practice:mode-card:design-interview-tradeoff-practice
+- extendedWaitUntil:
+    visible:
+      id: patternly:practice:setup:root
+    timeout: 30000
+- assertNotVisible:
+    id: premium-offer-summary
+- takeScreenshot: authenticated-active-ood-setup

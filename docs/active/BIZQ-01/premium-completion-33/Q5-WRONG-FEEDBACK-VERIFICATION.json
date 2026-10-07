@@ -1,0 +1,51 @@
+{
+  "scope": "Actual saved wrong Q5 native feedback; not full BIZQ-01",
+  "session": "object-oriented-design-interview:design-interview-tradeoff-practice:1",
+  "questionId": "ood-n01-b05-i018",
+  "submittedOnce": true,
+  "response": "call_both_refund",
+  "expectedResult": "incorrect",
+  "actualNativeStates": {
+    "call_both_refund": "radio button, checked, Selected, incorrect",
+    "issue_account_credit": "radio button, unchecked, Correct answer, not selected"
+  },
+  "detailsTargetBounds": "[37,618][365,666]",
+  "nextBounds": "[20,724][382,772]",
+  "detailsSingleTap": true,
+  "authoredWrongMessageDelivered": true,
+  "fullDetailsFields": [
+    "boundaryOrTradeoff",
+    "errorCorrection",
+    "mechanismOrProperty",
+    "scenarioApplication",
+    "transfer"
+  ],
+  "newNextDuringDetails": false,
+  "privateImages": [
+    {
+      "path": "/private/tmp/bizq33-resume-2026-10-07/q5-details-expanded/2026-10-07_104806/BIZQ33 saved wrong Q5 expanded authored message and Details/takeScreenshot/q5-wrong-details-authored-message.png",
+      "sha256": "ff76990bae32d77b8119bc4941d861fbe30e1d5364b84b04cc4211f32064c41c"
+    },
+    {
+      "path": "/private/tmp/bizq33-resume-2026-10-07/q5-details-expanded/2026-10-07_104806/BIZQ33 saved wrong Q5 expanded authored message and Details/takeScreenshot/q5-wrong-details-boundaryOrTradeoff.png",
+      "sha256": "2e3c9345a82c5cd252ae4678e2331edae2ef27cb7b2b39e8bbcf680537e34c81"
+    },
+    {
+      "path": "/private/tmp/bizq33-resume-2026-10-07/q5-details-expanded/2026-10-07_104806/BIZQ33 saved wrong Q5 expanded authored message and Details/takeScreenshot/q5-wrong-details-errorCorrection.png",
+      "sha256": "2e3c9345a82c5cd252ae4678e2331edae2ef27cb7b2b39e8bbcf680537e34c81"
+    },
+    {
+      "path": "/private/tmp/bizq33-resume-2026-10-07/q5-details-expanded/2026-10-07_104806/BIZQ33 saved wrong Q5 expanded authored message and Details/takeScreenshot/q5-wrong-details-mechanismOrProperty.png",
+      "sha256": "2e3c9345a82c5cd252ae4678e2331edae2ef27cb7b2b39e8bbcf680537e34c81"
+    },
+    {
+      "path": "/private/tmp/bizq33-resume-2026-10-07/q5-details-expanded/2026-10-07_104806/BIZQ33 saved wrong Q5 expanded authored message and Details/takeScreenshot/q5-wrong-details-scenarioApplication.png",
+      "sha256": "1fe4eefac6d6fc388a45aefdcb2e6079f5bd9a3cd7abd39cd005753e390c5988"
+    },
+    {
+      "path": "/private/tmp/bizq33-resume-2026-10-07/q5-details-expanded/2026-10-07_104806/BIZQ33 saved wrong Q5 expanded authored message and Details/takeScreenshot/q5-wrong-details-transfer.png",
+      "sha256": "91fe4906488d4842a621eb0857c2b0c8c3058875bb50c52857e249f1bb5a6a3a"
+    }
+  ],
+  "screensPrivate": true
+}

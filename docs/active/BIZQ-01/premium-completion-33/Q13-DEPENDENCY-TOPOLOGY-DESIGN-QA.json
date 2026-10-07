@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "bizq01-q13-dependency-topology-design-qa-v1",
+  "reviewer": "runtime33_design",
+  "model": "gpt-6-luna",
+  "effort": "high",
+  "verdict": "PASS_WITH_CONDITIONS",
+  "scope": "Independent design review of the private-checkout Expo entry topology correction; no private checkout, runtime, Metro, simulator, account, storage, build, or install action.",
+  "scores": {
+    "objectiveArchitectureFit": 0.93,
+    "simplicity": 0.84,
+    "risk": 0.90,
+    "maintainability": 0.86,
+    "minimum": 0.84,
+    "threshold": 0.80
+  },
+  "repositoryEvidence": {
+    "packageMain": "package.json declares expo/AppEntry.",
+    "entryImport": "Installed node_modules/expo/AppEntry.js imports App from ../../App.",
+    "physicalResolution": "The installed Expo entry realpath is in the main repository; its relative App resolution targets the main repository App, not a detached private checkout.",
+    "interpretation": "This supports a concrete wrong-entry ownership risk. It does not establish that this caused the prior Profile Storage gate."
+  },
+  "assessment": {
+    "topology": "A private node_modules directory with existing root package entries linked and Expo copied byte-for-byte preserves installed dependency versions while causing Expo AppEntry's relative App import to resolve within the private checkout.",
+    "sourceBinding": "The source binding does not bind node_modules topology. Keep the existing executed binding/receipt immutable, issue a fresh old-ref source-only binding/nonce from a clean exact-ref copy, and separately record the private topology and exact Expo copy digest. Retain the unused new-ref binding only if its existing exact source/tool/patch guards pass.",
+    "gateAndDataSafety": "Require private application module ownership, normal published storage, and exact selected-account baseline before session-changing UI. If storage remains unavailable or the baseline differs, stop without retry, repair, bypass, bootstrap, or Q13 session creation.",
+    "scope": "No product source, package.json, native settings, shared dependency, credential, or storage change is justified."
+  },
+  "conditionsBeforeExecution": [
+    "Verify the private node_modules symlink target before replacing only that owned checkout entry; do not alter the main repository node_modules or shared package contents.",
+    "Verify every copied Expo package byte against the installed source and record its private digest and package-entry/link topology.",
+    "Prove expo/AppEntry resolves to the exact private checkout App.tsx before starting Metro.",
+    "During a read-only app startup, require the loaded application module tree to be private-checkout-owned with no main-repository App/application modules; do not infer this from the planned topology.",
+    "Compare the selected account's fresh baseline before any Q13 session mutation; stop on an unavailable gate or any unexplained difference."
+  ],
+  "verificationPerformed": [
+    "Read package.json main declaration.",
+    "Read installed Expo AppEntry source.",
+    "Resolved installed AppEntry realpath and relative ../../App target.",
+    "Read the accepted Debug/Metro revision and the dependency-topology proposal."
+  ],
+  "notPerformed": [
+    "No private checkout or node_modules symlink was inspected or changed.",
+    "No Metro process, simulator, app, account, storage, build, or install action was performed.",
+    "No claim that the prior Profile Storage gate is fixed or causally explained."
+  ],
+  "preparationHelperSourceReview": {
+    "normalMutationScope": "The helper removes only repo/node_modules when that symlink resolves exactly to the supplied root node_modules, creates a private node_modules directory, links all existing root package entries except expo, copies Expo with symlinks preserved, verifies the source/copy tree digest, and checks the physical AppEntry relative App.tsx resolution. It invokes no package manager and changes no shared package contents.",
+    "staticCheck": "Python AST parse passed on the corrected source; reviewer did not execute the mutating helper.",
+    "correctedGuards": "Current source uses explicit RuntimeError guards rather than assert and resolves the output path before restricting it to /private/tmp. Root reports a python3 -O escaped-output probe failed before mutation.",
+    "residualScopeLimit": "The canonical repo path uses a fixed prefix rather than enumerated exact checkout roots. Mutation still targets only that supplied private checkout's node_modules, and only unlinks it if the target resolves exactly to the supplied root dependencies.",
+    "currentRunDisposition": "Root reports prior calls used plain python3 with exact private absolute args and produced passing Expo tree/AppEntry receipts; PYTHONOPTIMIZE was absent. Root also reports rechecking both physical AppEntry/App resolutions and symlink targets. Reviewer could not inspect private artifacts or independently run these checks.",
+    "noRuntimeClaim": "No Metro listener on port 8081 is parent-reported; no Q13 runtime result is claimed."
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "bizq01-source-text-fix-acceptance-qa-v1",
+  "verdict": "PASS WITH GAPS",
+  "scope": "Acceptance of the bounded max-text Source-row clipping repair only; not Q12 or BIZQ-01 as a whole.",
+  "review": {
+    "sourceChange": {
+      "usesExistingFeedbackText": true,
+      "contexts": ["translated Source heading", "source host label", "Source unavailable fallback"],
+      "geometrySensitiveMeasurementKey": true,
+      "physicalScalePassed": true,
+      "pressableAccessibilityRolePreserved": true,
+      "pressableAccessibilityLabelPreserved": true,
+      "sourceTestIdPreserved": true,
+      "sourceOpenCallbackPreserved": true
+    },
+    "nativeVisualEvidence": {
+      "beforeShowsClipping": true,
+      "afterShowsCompleteHeadingAndHost": true,
+      "configuration": "maximum text, dark appearance",
+      "screenshotAndContinueVisibilityAssertionCompleted": true,
+      "sourceNavigationTested": false,
+      "nextPressed": false
+    },
+    "sessionPreservation": {
+      "recordCountEqual": true,
+      "recordKeysEqual": true,
+      "profileEqual": true,
+      "keyInventoryEqual": true,
+      "fencesEqual": true,
+      "notificationsEqual": true,
+      "activeSessionIndex": 1,
+      "requestedLength": 10,
+      "changedPayloadFields": [
+        "accumulatedForegroundMs",
+        "checkpointRevision",
+        "lastCheckpointAt",
+        "activeForegroundMs"
+      ],
+      "opaquePayloadChanged": false,
+      "revisionChanges": "Associated timer-record revisions and one otherwise byte-identical opaque record revision only."
+    }
+  },
+  "verification": {
+    "focusedTests": {
+      "command": "node --import tsx --test src/features/practice/feedbackTextHeight.test.ts src/features/practice/practiceFeedbackDelivery.test.ts",
+      "passed": 10,
+      "failed": 0
+    },
+    "typecheck": {
+      "command": "npm run typecheck",
+      "passed": true
+    }
+  },
+  "limitations": [
+    "The unavailable-source branch was verified by the adapter regression test, not a native screen.",
+    "Source URL navigation was not tested by this review; the earlier timed-out probe remains inconclusive.",
+    "The reviewer did not independently check restored simulator appearance or claim full Q12/BIZQ-01 acceptance."
+  ],
+  "evidence": {
+    "beforeScreenshot": "/private/tmp/bizq33-resume-2026-10-07/q2-max-source-bottom/dark/artifacts/2026-10-07_102530/BIZQ33 saved Q2 max text source clipped label probe/takeScreenshot/q2-max-source-bottom-stable.png",
+    "afterScreenshot": "/private/tmp/bizq33-resume-2026-10-07/q2-max-source-bottom-fixed/dark/artifacts/2026-10-07_103003/BIZQ33 saved Q2 max text source clipped label probe/takeScreenshot/q2-max-source-bottom-stable.png",
+    "maestroLog": "/private/tmp/bizq33-resume-2026-10-07/q2-max-source-bottom-fixed/dark/artifacts/2026-10-07_103003/BIZQ33 saved Q2 max text source clipped label probe/logs/maestro.log",
+    "snapshotBeforeFix": "/private/tmp/bizq33-resume-2026-10-07/q2-after-submit.json",
+    "snapshotAfterFix": "/private/tmp/bizq33-resume-2026-10-07/q2-after-source-fix.json",
+    "implementation": "src/features/practice/PracticeFeedbackBlock.tsx",
+    "tests": "src/features/practice/feedbackTextHeight.test.ts"
+  }
+}

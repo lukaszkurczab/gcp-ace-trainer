@@ -1,0 +1,96 @@
+import { File, Paths } from "expo-file-system";
+import lockFile from "../content/generated/canonical-content/content-lock.json";
+import type { TrainingSession } from "../domain";
+import { canonicalSerialize } from "../infrastructure/identity/canonicalSerialization";
+import { sha256Utf8 } from "../infrastructure/identity/sha256";
+import { TrainingApplicationFailure } from "../application/trainingLifecycle/contracts";
+import { getActiveStorageProfileOrNull, getKeyValueStorage, isProfileTransitionActive } from "../infrastructure/storage/mmkvClient";
+import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../storage/keys";
+import {
+  classifyQ13ResumeOutcome,
+  createQ13Receipt,
+  Q13_EXACT_RESOLVER_MISS,
+  readQ13OodIdentity,
+  type Q13AttestationStage,
+  Q13_OOD_TRACK_ID,
+  Q13_OOD_V23,
+  type Q13CatalogIdentity,
+  observeQ13Resume,
+} from "./attestation-policy";
+import { capturePublishedQ13PreservationSnapshot, q13PreservationFailureCategory, type Q13PreservationSnapshot } from "./preservation";
+
+const Q13_NONCE = "__Q13_NONCE__";
+const currentOodIdentity = readQ13OodIdentity(lockFile);
+const preservationContract = Object.freeze({
+  namespace: STORAGE_NAMESPACE,
+  trackId: Q13_OOD_TRACK_ID,
+  oldPin: Q13_OOD_V23,
+  hashUtf8: sha256Utf8,
+  canonicalSerialize,
+  keys: STORAGE_KEYS,
+});
+
+writeReceiptOrReport("js_bundle_entry");
+
+export function observeQ13ExactResume<T>(session: TrainingSession, operation: () => Promise<T>): Promise<T> {
+  return observeQ13Resume({
+    operation,
+    onSuccess: () => {
+      const stage = classifyQ13ResumeOutcome(session, currentOodIdentity ?? EMPTY_IDENTITY, { kind: "success" }, () => false);
+      if (stage) writeReceiptOrReport(stage, session);
+    },
+    onFailure: (error) => {
+      const stage = classifyQ13ResumeOutcome(session, currentOodIdentity ?? EMPTY_IDENTITY, { kind: "failure", error }, isExpectedExactMismatch);
+      if (stage) writeReceiptOrReport(stage, session);
+    },
+  });
+}
+
+function isExpectedExactMismatch(error: unknown): boolean {
+  return error instanceof TrainingApplicationFailure
+    && error.code === "resume_unavailable"
+    && error.cause instanceof Error
+    && error.cause.message === Q13_EXACT_RESOLVER_MISS;
+}
+
+function writeReceipt(stage: Q13AttestationStage, session?: TrainingSession): boolean {
+  if (!currentOodIdentity) return false;
+  let preservation: Q13PreservationSnapshot | undefined;
+  if (stage !== "js_bundle_entry") {
+    if (!session) return false;
+    try {
+      preservation = capturePublishedQ13PreservationSnapshot({
+        getStorage: getKeyValueStorage,
+        getProfile: getActiveStorageProfileOrNull,
+        isTransitionActive: isProfileTransitionActive,
+        expectedSession: session,
+        contract: preservationContract,
+      });
+    } catch (error) {
+      console.warn(`q13_attestation_preservation_failed:${stage}:${q13PreservationFailureCategory(error)}`);
+      return false;
+    }
+  }
+  const receipt = createQ13Receipt(Q13_NONCE, currentOodIdentity, stage, preservation);
+  if (!receipt) return false;
+  let file: File | null = null;
+  let created = false;
+  try {
+    file = new File(Paths.cache, `patternly-q13-${Q13_NONCE}-${stage}.json`);
+    file.create({ intermediates: true, overwrite: false });
+    created = true;
+    file.write(JSON.stringify(receipt));
+    return true;
+  } catch {
+    if (created && file) {
+      try { file.delete(); } catch { /* Only this invocation's partial receipt is eligible for cleanup. */ }
+    }
+    return false;
+  }
+}
+
+function writeReceiptOrReport(stage: Q13AttestationStage, session?: TrainingSession): void {
+  if (!writeReceipt(stage, session)) console.warn(`q13_attestation_receipt_failed:${stage}`);
+}
+
+const EMPTY_IDENTITY: Q13CatalogIdentity = Object.freeze({ contentVersion: "", artifactSha256: "" });

@@ -1,0 +1,8 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 visible Settings touch probe
+---
+- tapOn:
+    point: "87%,93%"
+- takeScreenshot: after-settings-touch
+- assertVisible:
+    id: settings-screen

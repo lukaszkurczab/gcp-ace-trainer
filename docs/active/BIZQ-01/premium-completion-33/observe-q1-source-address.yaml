@@ -1,0 +1,6 @@
+appId: com.apple.mobilesafari
+name: BIZQ33 read actual opened Microsoft source URL
+---
+- tapOn:
+    point: "50%,93%"
+- takeScreenshot: q1-source-address-after-toolbar-tap

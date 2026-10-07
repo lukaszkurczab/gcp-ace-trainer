@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import ts from "typescript";
+import { buildPracticeResponseControl, practiceOptionCorrectnessValue } from "./practiceSessionPresentation";
 import { textMeasurementKey } from "../../components/textLayoutHeight";
 
 const certificationSource = readFileSync(new URL("./CertificationPracticeSessionScreen.tsx", import.meta.url), "utf8");
@@ -100,4 +101,30 @@ test("Details JSX gates authored messages on expansion and keeps their text scal
   assert.equal(messageElement.props.key, "wrong_option:wrong");
   assert.equal(messageElement.props.text, "Authored explanation.");
   assert.equal(typeof messageElement.props.contextKey, "string");
+});
+
+
+test("Design screen response adapter delivers keyed feedback and multiple-selection semantics", () => {
+  const file = ts.createSourceFile("screen.tsx", designSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let input: ts.Expression | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node) && node.expression.getText(file) === "buildPracticeResponseControl") input = node.arguments[0];
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  assert.ok(input);
+  const adapter = new Function("projection", "responseForProjection", "renderer", `return (${input.getText(file)});`);
+  const renderer = { kind: "choice" as const, options: [{ id: "omitted", text: "Omitted" }, { id: "wrong", text: "Wrong" }, { id: "right", text: "Right" }].map((option) => ({ ...option, selected: false })) };
+  for (const type of ["choice_single", "choice_multiple"]) {
+    const feedback = { controls: [{ id: "right", state: "correct" }, { id: "wrong", state: "incorrect" }, { id: "omitted", state: "omitted_correct" }] };
+    const control = buildPracticeResponseControl(adapter({ question: { interaction: { type } }, feedback }, null, renderer));
+    assert.equal(control.kind, "choice");
+    if (control.kind !== "choice") throw new Error("Expected choices");
+    assert.equal(control.selectionMode, type === "choice_multiple" ? "multiple" : "single");
+    assert.deepEqual(control.options.map(({ id, state }) => ({ id, state })), [{ id: "omitted", state: "omitted_correct" }, { id: "wrong", state: "incorrect" }, { id: "right", state: "correct" }]);
+    assert.deepEqual(control.options.map(({ state }) => practiceOptionCorrectnessValue(state)), ["Correct answer, not selected", "Selected, incorrect", "Selected, correct"]);
+    const pending = buildPracticeResponseControl(adapter({ question: { interaction: { type } }, feedback: null }, { kind: "choice", selectedOptionIds: ["wrong"] }, renderer));
+    assert.equal(pending.kind, "choice");
+    if (pending.kind === "choice") assert.deepEqual(pending.options.map(({ state }) => state), ["neutral", "selected", "neutral"]);
+  }
 });

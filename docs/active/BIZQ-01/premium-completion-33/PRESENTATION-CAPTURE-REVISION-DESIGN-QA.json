@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "bizq01-presentation-capture-revision-design-qa-v1",
+  "verdict": "PASS WITH GAPS",
+  "verdictScope": "Design review of the bounded next-state native capture plan only; not runtime, Q12, or BIZQ-01 acceptance.",
+  "reviewer": "Independent Luna High",
+  "scores": {
+    "objectiveArchitectureFit": 0.96,
+    "simplicity": 0.92,
+    "risk": 0.87,
+    "maintainability": 0.91,
+    "minimum": 0.87,
+    "threshold": 0.8
+  },
+  "findings": [
+    {
+      "severity": "gap",
+      "finding": "The prior Details run is not a product PASS. Maestro targeted the correct AX element but tapped its center at (201,769), which lies inside the fixed Next button visible in the native screenshot; the next screenshot and snapshot show Q2/index 1 with only the original Q1 attempt.",
+      "evidence": [
+        "PRESENTATION-CAPTURE-REVISION-2026-10-07.md",
+        "/private/tmp/bizq33-resume-2026-10-07/expand-q1/2026-10-07_094627/BIZQ33 saved Q1 expand Details after ordinary resume/logs/maestro.log",
+        "/private/tmp/bizq33-resume-2026-10-07/expand-q1/2026-10-07_094627/BIZQ33 saved Q1 expand Details after ordinary resume/takeScreenshot/saved-q1-details-expanded-after-resume.png",
+        "UI-ATTEMPTS.json"
+      ],
+      "classification": "Observed tool-coordinate/pixel collision; Details handler defect is not established."
+    },
+    {
+      "severity": "condition",
+      "finding": "The follow-up must verify actual unobscured geometry and readback. A centered scroll command and an AX matcher are insufficient if the target still intersects the fixed footer.",
+      "evidence": [
+        "src/components/Screen.tsx:30-51",
+        "src/features/coding-interview/session/SessionShell.tsx:64-88",
+        "src/features/practice/PracticeFeedbackBlock.tsx:38-40",
+        "src/components/DetailsDisclosure.tsx:19-29"
+      ],
+      "condition": "Require the full Details bounds inside the scroll viewport and outside Next before tapping; after the tap, confirm expanded content and unchanged index/attempt count. Stop if unobscured positioning cannot be achieved."
+    },
+    {
+      "severity": "gap",
+      "finding": "The risk-based representative captures do not establish the complete Q12 matrix or a same-Q1 light/dark comparison.",
+      "evidence": [
+        "docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md:172,176"
+      ],
+      "classification": "Same-item dual-theme is a useful preference, not an explicit Q12 requirement; the spec requires legibility of long options and Details across large-text light/dark cases, and does not mandate every item in every theme."
+    }
+  ],
+  "acceptedCoveragePlan": {
+    "retainedSessionOnly": true,
+    "q1ResubmitOrIndexRewind": false,
+    "representativeCases": [
+      "Repaired long-option correct Q1 at maximum text in light, with Details expansion still to be demonstrated safely.",
+      "Previously accepted long partial case at maximum text in dark from package 30.",
+      "Retained unanswered Q2 answered once as correct, then full Details captured at maximum text in dark.",
+      "Repaired wrong Q5 with authored feedback asserted only after Details expansion."
+    ],
+    "scopeClaim": "Risk-based presentation evidence only; no full Q12 or BIZQ-01 acceptance claim."
+  },
+  "reviewedSource": [
+    "docs/active/BIZQ-01/premium-completion-33/PRESENTATION-CAPTURE-REVISION-2026-10-07.md",
+    "src/features/practice/PracticeSessionSurface.tsx",
+    "src/features/practice/PracticeFeedbackBlock.tsx",
+    "src/components/DetailsDisclosure.tsx",
+    "src/features/coding-interview/session/SessionShell.tsx",
+    "src/components/Screen.tsx",
+    "docs/specs/business-quality/01-BIZQ-01-JAKOSC-PYTAN-I-OBJASNIEN.md",
+    "docs/active/BIZQ-01/native-partial-q12-30/ACCEPTANCE-QA.md"
+  ],
+  "limitations": [
+    "Private screenshots/logs were inspected, but no UI, simulator, OS, or runtime action was performed.",
+    "No source correctness, actual follow-up visibility, state preservation, VoiceOver, provider, or full release claim is made.",
+    "A product layout/accessibility issue would need reassessment only if ordinary scrolling cannot move Details above the fixed action region."
+  ]
+}

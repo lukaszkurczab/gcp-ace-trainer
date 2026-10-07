@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-07",
+  "model": "gpt-6-luna",
+  "reasoning": "high",
+  "verdict": "PASS WITH CONDITIONS",
+  "kind": "briefing-only",
+  "scores": {
+    "fit": 0.94,
+    "simplicity": 0.85,
+    "risk": 0.84,
+    "maintainability": 0.88,
+    "minimum": 0.84
+  },
+  "conditions": [
+    "ordinary login and matching selectedaccount baseline before Q13 mutations",
+    "stop oldsource method if blocked; diagnostic separately reviewed",
+    "exactold/new executedidentity plus realUI and scopedpreservation",
+    "restore owntrial/runtime and final protectedGuest checks"
+  ],
+  "runtimeAcceptance": false
+}

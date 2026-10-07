@@ -1,0 +1,6 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 actual Q2 PDF address read only
+---
+- tapOn:
+    point: "50%,93%"
+- takeScreenshot: q2-actual-pdf-address-field

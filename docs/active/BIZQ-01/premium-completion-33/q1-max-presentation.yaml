@@ -1,0 +1,120 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 saved repaired Q1 max text full presentation
+---
+- scrollUntilVisible:
+    element:
+      id: patternly:session:question:ood-n01-b01-i018
+    direction: UP
+    visibilityPercentage: 20
+    centerElement: true
+- swipe:
+    start: "50%,35%"
+    end: "50%,80%"
+    duration: 500
+- swipe:
+    start: "50%,35%"
+    end: "50%,80%"
+    duration: 500
+- swipe:
+    start: "50%,35%"
+    end: "50%,80%"
+    duration: 500
+- takeScreenshot: q1-max-prompt-top
+- swipe:
+    start: "50%,75%"
+    end: "50%,35%"
+    duration: 500
+- takeScreenshot: q1-max-prompt-part-1
+- swipe:
+    start: "50%,75%"
+    end: "50%,35%"
+    duration: 500
+- takeScreenshot: q1-max-prompt-part-2
+- swipe:
+    start: "50%,75%"
+    end: "50%,35%"
+    duration: 500
+- takeScreenshot: q1-max-prompt-part-3
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b01-i018:operator_requests_reservation
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-max-option-operator_requests_reservation
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b01-i018:overlap_checker_actor
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-max-option-overlap_checker_actor
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b01-i018:meter_actor
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-max-option-meter_actor
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b01-i018:relay_actor
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-max-option-relay_actor
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b01-i018:storage_subject
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-max-option-storage_subject
+- scrollUntilVisible:
+    element:
+      id: patternly:session:reason:ood-n01-b01-i018
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- assertVisible:
+    id: patternly:session:result:ood-n01-b01-i018:correct
+- takeScreenshot: q1-max-reason
+- scrollUntilVisible:
+    element: "Keeping\\ the\\ subject\\ at\\ EnergyReservationService\\ makes\\ its\\ request\\ relay,\\ overlap\\ check,\\ and\\ storage\\ part\\ of\\ one\\ modeled\\ service\\ boundary\\.\\ Modeling\\ only\\ the\\ checker\\ or\\ store\\ would\\ describe\\ an\\ internal\\ step\\ instead\\ of\\ the\\ operator\\-facing\\ reservation\\ use\\ case\\."
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-max-details-boundaryOrTradeoff
+- scrollUntilVisible:
+    element: "A\\ checker\\ can\\ enforce\\ the\\ overlap\\ rule\\ without\\ being\\ the\\ primary\\ business\\ actor\\.\\ The\\ meter\\ is\\ acted\\ upon\\ and\\ does\\ not\\ initiate\\ this\\ request\\.\\ The\\ request\\ relay\\ forwards\\ the\\ operator\u2019s\\ command\\ but\\ has\\ no\\ independent\\ business\\ goal\\.\\ Naming\\ the\\ actor\\ and\\ subject\\ does\\ not\\ itself\\ guarantee\\ atomic\\ reservation\\ behavior;\\ EnergyReservationService\\ still\\ has\\ to\\ enforce\\ the\\ overlap\\ rule\\ correctly\\."
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-max-details-errorCorrection
+- scrollUntilVisible:
+    element: "Choose\\ the\\ primary\\ actor\\ by\\ the\\ external\\ business\\ role\\ that\\ initiates\\ the\\ request,\\ identify\\ the\\ goal\\ by\\ the\\ result\\ that\\ role\\ seeks,\\ and\\ name\\ the\\ system\\ under\\ consideration\\ as\\ the\\ subject\\.\\ Within\\ the\\ stated\\ EnergyReservationService\\ subject,\\ the\\ request\\ relay,\\ overlap\\ checker,\\ and\\ reservation\\ store\\ are\\ internal\\ collaborators;\\ classification\\ depends\\ on\\ the\\ chosen\\ subject\\ boundary\\."
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-max-details-mechanismOrProperty
+- scrollUntilVisible:
+    element: "Here\\ the\\ operator\\ asks\\ EnergyReservationService\\ to\\ reserve\\ a\\ discharge\\ window\\ for\\ a\\ named\\ meter\\.\\ The\\ observable\\ result\\ is\\ an\\ accepted\\ reservation\\ or\\ an\\ explicit\\ overlap\\ conflict\\.\\ The\\ overlap\\ checker\\ and\\ reservation\\ store\\ realize\\ the\\ service\\ behavior;\\ the\\ meter\\ is\\ the\\ asset\\ being\\ reserved\\ against\\."
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-max-details-scenarioApplication
+- scrollUntilVisible:
+    element: "Transfer\\ rule:\\ identify\\ the\\ result\\-seeking\\ role\\ and\\ system\\ subject,\\ then\\ use\\ the\\ stated\\ scope\\ to\\ distinguish\\ internal\\ collaborators\\ from\\ external\\ interacting\\ roles\\.\\ Recheck\\ the\\ classification\\ if\\ the\\ subject\\ boundary\\ changes\\."
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-max-details-transfer
+- scrollUntilVisible:
+    element:
+      id: question-source-link-ood-n01-b01-i018-1
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- assertVisible:
+    id: patternly:session:continue:ood-n01-b01-i018
+- takeScreenshot: q1-max-source-next

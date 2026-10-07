@@ -1,0 +1,9 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 one observed centered ordinary Sign out tap
+---
+- assertVisible:
+    id: settings-sign-out
+# Coordinates were observed in the private centered Settings screenshot on iPhone 17.
+- tapOn:
+    point: "50%,77%"
+- takeScreenshot: after-signout

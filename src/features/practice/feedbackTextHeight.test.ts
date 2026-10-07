@@ -101,10 +101,51 @@ test("both feedback text paths preserve outer sibling identity and use the share
     ts.forEachChild(node, visit);
   };
   visit(file);
-  assert.equal(feedbackNodes.length, 2);
+  assert.equal(feedbackNodes.filter((node) => node.getText(file).includes("key=")).length, 2);
   const source = feedbackNodes.map((node) => node.getText(file)).join("\n");
   assert.match(source, /key=\{`\$\{message\.kind\}:\$\{message\.targetId\}`\}/);
   assert.match(source, /key=\{`detail:\$\{index\}`\}/);
-  assert.equal((source.match(/textMeasurementKey\(/g) ?? []).length, 2);
+  assert.equal((source.match(/textMeasurementKey\(/g) ?? []).length, 5);
   assert.doesNotMatch(practiceFeedbackSource, /native28-layout-probe|gcp-ace-gcpace-n01-b03-001|minHeight:\s*221/);
+});
+
+
+test("Source text adapters reset measured layout by geometry and retain the actual link semantics", async () => {
+  const file = ts.createSourceFile("PracticeFeedbackBlock.tsx", practiceFeedbackSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const texts: ts.JsxSelfClosingElement[] = [];
+  let link: ts.JsxOpeningElement | undefined;
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxSelfClosingElement(node) && node.tagName.getText(file) === "FeedbackText" && node.getText(file).includes("styles.source")) texts.push(node);
+    if (ts.isJsxOpeningElement(node) && node.tagName.getText(file) === "Pressable") link = node;
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  assert.equal(texts.length, 3);
+  const expression = (node: ts.JsxSelfClosingElement | ts.JsxOpeningElement, name: string) => {
+    const attribute = node.attributes.properties.find((p): p is ts.JsxAttribute => ts.isJsxAttribute(p) && p.name.getText(file) === name);
+    assert.ok(attribute?.initializer);
+    if (ts.isStringLiteral(attribute.initializer)) return JSON.stringify(attribute.initializer.text);
+    assert.ok(ts.isJsxExpression(attribute.initializer) && attribute.initializer.expression);
+    return attribute.initializer.expression.getText(file);
+  };
+  const source = { host: "www.omg.org", url: "https://www.omg.org/spec/UML/2.5.1/PDF" };
+  for (const node of texts) {
+    const evaluate = (name: string, fontScale: number) => new Function("t", "source", "windowWidth", "fontScale", "windowScale", "textMeasurementKey", `return (${expression(node, name)});`)((s: string) => s, source, 328, fontScale, 3, textMeasurementKey);
+    const text = evaluate("text", 1);
+    assert.equal(evaluate("contextKey", 1), textMeasurementKey(text, 328, 1, 3));
+    assert.notEqual(evaluate("contextKey", 1), evaluate("contextKey", 3.571));
+    assert.equal(evaluate("physicalScale", 1), 3);
+  }
+  assert.ok(link);
+  const evaluateLink = (name: string) => new Function("t", "source", "itemId", "index", `return (${expression(link!, name)});`)((s: string) => s, source, "item", 0);
+  assert.equal(evaluateLink("accessibilityRole"), "link");
+  assert.equal(evaluateLink("accessibilityLabel"), "Open source www.omg.org");
+  assert.equal(evaluateLink("testID"), "question-source-link-item-0");
+  const changes: boolean[] = [];
+  const opened: string[] = [];
+  const onPress = new Function("source", "setSourceError", "openCanonicalSourceLink", "openSource", `return (${expression(link, "onPress")});`)(source, (value: boolean) => changes.push(value), async (linkSource: typeof source, open: (url: string) => Promise<void>) => { await open(linkSource.url); return "opened"; }, async (url: string) => { opened.push(url); });
+  onPress();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.deepEqual(opened, [source.url]);
+  assert.deepEqual(changes, [false, false]);
 });

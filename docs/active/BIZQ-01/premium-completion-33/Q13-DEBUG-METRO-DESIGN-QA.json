@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "bizq01-q13-debug-metro-design-qa-v1",
+  "reviewer": "runtime33_design",
+  "model": "gpt-6-luna",
+  "effort": "high",
+  "verdict": "PASS_WITH_GAPS",
+  "scope": "Independent design review of the Debug/Metro package-level Q13 method; no tool implementation, runtime, private checkout, or device acceptance.",
+  "scores": {
+    "objectiveArchitectureFit": 0.95,
+    "simplicity": 0.86,
+    "risk": 0.82,
+    "maintainability": 0.85,
+    "minimum": 0.82,
+    "threshold": 0.8
+  },
+  "findings": {
+    "runtimeConstraint": "Release has __DEV__ false, so the existing smoke Auth Emulator configuration is intentionally unavailable. Debug/Metro smoke mode uses the existing supported local Auth Emulator and API readiness checks without relaxing product guards.",
+    "q13Equivalence": "Exact OOD23 source creates and cold-resumes a persisted unanswered session; exact OOD24 Metro source then invokes the existing exact resolver and must fail closed while preserving session order and zero-answer facts. A fresh nonce receipt proves the selected instrumented JavaScript executed. This verifies content-package mismatch/resume, not an OS-binary update.",
+    "sidecarContract": "The Metro-only sidecar must bind unchanged source-binding hash/nonce, content identity, actual Metro PID/CWD/port, existing Debug app identity, and the matching runtime receipt. It must be explicitly Metro mode and must not create build hashes or call the packaged comparator.",
+    "preservationCondition": "If ordinary SDK auth changes active profile from Guest to the existing account, compare the account's own 18-record/21-key baseline after selection and before Q13 UI. Guest's 81-record/84-key baseline alone does not cover account data.",
+    "processOwnership": "For restoring current Debug and baseline cleanup, verify and reuse the reported healthy current Metro listener when its PID/CWD matches the expected source. Sidecar acceptance gates OOD23/OOD24-dependent UI, not independent restoration/cleanup.",
+    "failureBoundary": "The previous Release entry receipt does not diagnose SecureStore/Keychain. A repeated profile gate failure stops without retry, repair, bypass, or bootstrap; successful startup does not prove the prior cause.",
+    "stateSafety": "One existing iPhone 17, sequential source-bound Metro processes, no app-data clear/uninstall, no new account, no Guest transfer/discard, no RevenueCat, and no Firestore/API writes are appropriate constraints."
+  },
+  "notClaimed": [
+    "iOS binary update or unmodified Release execution",
+    "Release smoke authentication works",
+    "prior signing caused local logout-control failure",
+    "Metro source binding proves packaged app build identity",
+    "Q13 runtime acceptance or completion"
+  ],
+  "implementationRuntimePrivateCheckoutDeviceOrBuildAction": false
+}

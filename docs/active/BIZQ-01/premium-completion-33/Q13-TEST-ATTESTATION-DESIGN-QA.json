@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "bizq01-q13-test-attestation-design-qa-v1",
+  "verdict": "PASS_WITH_GAPS",
+  "scope": "Independent source-based feasibility review of test-build JS entry nonce and exact-resume error attestation; no code, build, install, simulator, account, or app-storage action.",
+  "scores": {
+    "objectiveArchitectureFit": 0.94,
+    "simplicity": 0.86,
+    "risk": 0.82,
+    "maintainability": 0.85,
+    "minimum": 0.82,
+    "threshold": 0.8
+  },
+  "reviewedBriefing": "docs/active/BIZQ-01/premium-completion-33/Q13-TEST-ATTESTATION-BRIEFING.md",
+  "sourceFindings": [
+    {
+      "path": "package.json",
+      "lines": "62",
+      "fact": "expo-file-system ~57.0.6 is already an installed application dependency."
+    },
+    {
+      "path": "src/content/runtime/nodePackageStorage.ts",
+      "lines": "106-118",
+      "fact": "The app already uses Expo File, Directory, create, write, and delete methods. This adapter uses Paths.document; Paths.cache runtime behavior is not yet probed."
+    },
+    {
+      "path": "node_modules/expo-file-system/src/Paths.ts",
+      "fact": "The installed public API exposes Paths.cache as a Directory."
+    },
+    {
+      "path": "node_modules/expo-file-system/src/internal/NativeFileSystem.types.ts",
+      "fact": "The installed native API exposes directory/file create and file write/read/delete operations."
+    },
+    {
+      "path": "App.tsx",
+      "lines": "1-18",
+      "fact": "The Expo app root imports application modules and can carry a test-only side-effect entry attestation import."
+    },
+    {
+      "path": "src/application/trainingLifecycle/TrainingLifecycleUseCases.ts",
+      "lines": "429-445, 566-578, 631-632",
+      "fact": "resumeActiveSession calls resolveRuntimeForSession using the exact persisted session pin. The nested run wrapper preserves TrainingApplicationFailure and wraps the exact resolver's original error as cause."
+    },
+    {
+      "path": "src/application/contentPackageRuntimeOwner.ts",
+      "lines": "60-79",
+      "fact": "resolveExactArtifact has no latest-version fallback and throws a fixed error when the exact bundle/retained package identity is unavailable."
+    },
+    {
+      "path": "src/application/bootstrap/applicationBootstrap.ts",
+      "lines": "84-110",
+      "fact": "Bundled content verification precedes the callback that resumes the active session."
+    },
+    {
+      "path": "src/content/generated/canonical-content/content-lock.json",
+      "fact": "The current v24 OOD public identity is version object-oriented-design-interview-authoring-v2026.10.05-bizq01-24 and SHA256 9df476e414158da0f33e118c06ed7fbc476b53bc8f0a115a470f61f9c1bf1ea3; v23 identity exists at the admitted historical ref."
+    }
+  ],
+  "requiredPatchContract": {
+    "versionedToolPath": "scripts/q13-test-attestation/",
+    "isolatedExactRefs": [
+      "ea4f3d61b39bab6b9f12ace73b34721d0d6e717a",
+      "fa95d027076e970d71dacf0d1fd7976fa0ba8f60"
+    ],
+    "appEntryHook": "App.tsx side-effect import writes a nonce-named Paths.cache receipt at actual JS bundle entry.",
+    "resumeHook": "TrainingLifecycleUseCases.resumeActiveSession wraps only resolveRuntimeForSession(session), preserving the exact returned value or rethrowing the identical error object.",
+    "mismatchPredicate": "Only the exact OOD v23 session track/version/hash plus TrainingApplicationFailure code resume_unavailable plus the exact current resolver no-match Error cause writes identity_mismatch.",
+    "receiptFieldsOnly": [
+      "nonce",
+      "contentVersion",
+      "artifactSha256",
+      "stage"
+    ],
+    "stages": [
+      "js_bundle_entry",
+      "exact_resume_success",
+      "identity_mismatch"
+    ],
+    "externalPrivateBinding": "Map fresh nonce to base ref, patch/helper hash, app bundle tree hash, embedded JS hash, and expected content identity outside the receipt; do not embed final build hash into itself or upload the instrumented bundle."
+  },
+  "otaResolution": "A cached update cannot create a fresh post-build CSPRNG nonce receipt unless it contains that nonce. The test tool must never upload the instrumented bundle. Missing or stale nonce receipt is inconclusive and fails closed.",
+  "gates": [
+    "Before patching exact refs or building Release apps, run a bounded current-Debug Paths.cache create/write/read/delete probe against one dedicated own file using the existing approved JS console; validate exact receipt keys/value and delete only that file.",
+    "No source-backed evidence identified the current approved JS console mechanism; its availability remains an operational prerequisite to confirm before the probe.",
+    "Patch diff may alter only test helper, App.tsx entry import, and resumeActiveSession wrapper; do not change product config, native project, dependencies, schema, generated content, lock, scoring, selection, storage contracts, or current app source.",
+    "Focused tests must prove receipt allowlist/stages, exact mismatch predicate, no false mismatch for other failures, and original value/error identity preservation.",
+    "At actual v24 run require fresh v24 entry receipt and exact v23 mismatch receipt; UI remains fail-closed with unanswered session unchanged. Any missing/stale/unexpected receipt is inconclusive.",
+    "Verify v23 old session via ordinary UI, same app identity install, Guest preservation categories, own-session cleanup, current-app restoration, and required SDK/OS/API state."
+  ],
+  "runtimeEvidence": {
+    "filesystemProbe": false,
+    "buildOrInstall": false,
+    "simulatorAction": false,
+    "nativeGetterRead": false,
+    "q13Acceptance": false
+  },
+  "limitations": [
+    "Cache can be evicted; absence must fail closed and only exact nonce paths may be read or deleted.",
+    "Instrumented test builds add tiny synchronous I/O. The outcome cannot be represented as an unmodified-release test.",
+    "Actual cache capability and the available approved JS console were not established in this review."
+  ]
+}

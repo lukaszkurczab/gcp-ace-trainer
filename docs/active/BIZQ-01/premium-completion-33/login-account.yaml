@@ -1,0 +1,55 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 ordinary sign-in to owned local account
+---
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible:
+      id: main-tab-bar-settings
+    timeout: 60000
+- assertVisible:
+    id: main-tab-bar-settings
+- tapOn:
+    id: main-tab-bar-settings
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: settings-account-entry
+    direction: UP
+- tapOn:
+    id: settings-account-entry
+- runFlow:
+    when:
+      visible:
+        id: account-binding-sign-in
+    commands:
+      - tapOn:
+          id: account-binding-sign-in
+- runFlow:
+    when:
+      visible:
+        id: account-sign-in
+    commands:
+      - tapOn:
+          id: account-sign-in
+- assertVisible:
+    id: account-email
+- tapOn:
+    id: account-email
+- inputText: ${MAESTRO_BIZQ33_EMAIL}
+- tapOn:
+    id: account-password
+- inputText: ${MAESTRO_BIZQ33_PASSWORD}
+- tapOn:
+    id: account-sign-in-submit
+- extendedWaitUntil:
+    notVisible:
+      id: account-email
+    timeout: 60000
+- assertNotVisible:
+    id: account-adoption-transfer
+- takeScreenshot: authenticated-result

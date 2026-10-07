@@ -13,7 +13,11 @@ test("source links expose exact targets and unavailable has no press handler", (
   assert.match(source, /openCanonicalSourceLink\(source, openSource\)/);
   assert.match(source, /openSource = \(url\) => Linking\.openURL\(url\)/);
   assert.match(source, /source\.host/);
-  assert.match(source, /: <Text maxFontSizeMultiplier=\{2\} style=\{styles\.sourceUnavailable\}>\{t\("Source unavailable"\)\}<\/Text>/);
+  const unavailable = source.match(/: <FeedbackText ([^>]+) \/>/)?.[1];
+  assert.ok(unavailable, "unavailable source remains a non-pressable feedback text");
+  assert.match(unavailable, /style=\{styles\.sourceUnavailable\}/);
+  assert.match(unavailable, /text=\{t\("Source unavailable"\)\}/);
+  assert.doesNotMatch(unavailable, /onPress|accessibilityRole="link"/);
   assert.doesNotMatch(source, /canOpenURL|google\.com\/search|fallback/i);
 });
 

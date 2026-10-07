@@ -1,0 +1,86 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 saved Q2 max text source clipped label probe
+---
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- swipe:
+    start: "50%,70%"
+    end: "50%,35%"
+    duration: 300
+- takeScreenshot: q2-max-source-bottom-stable
+- assertVisible:
+    id: patternly:session:continue:ood-n01-b02-i018

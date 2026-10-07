@@ -1,0 +1,18 @@
+{
+  "status": "private_entry_pass_profile_gate_still_blocked",
+  "bindingSha256": "2adaf0b95e0f9f8ce9717bc8d2736c982b522ddf85a341cea189887e512c4cfe",
+  "entryReceiptSha256": "91eb806133cafae9b7f5e354c50a2e2b835ff74b080159c2e24efccca05c535b",
+  "stage": "js_bundle_entry",
+  "entryNonceMatches": true,
+  "metroPid": 70603,
+  "metroPort": 8081,
+  "sourceRef": "ea4f3d61b39bab6b9f12ace73b34721d0d6e717a",
+  "privateEntryTopologyVerified": true,
+  "moduleUniquenessAttested": true,
+  "ui": "Profile storage unavailable / LOCAL_OPERATION_FAILED",
+  "snapshotFailure": "encrypted_storage_not_initialized",
+  "newTrial": false,
+  "q13Accepted": false,
+  "next": "reviewed single safe exception diagnostic; no retry or bypass",
+  "snapshotLimit": "Published canonical client unavailable; this does not prove native MMKV was never opened or identify the preparation exception stage."
+}

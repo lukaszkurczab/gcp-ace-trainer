@@ -1,0 +1,68 @@
+{
+  "question": {
+    "answer": {
+      "optionId": "issue_account_credit",
+      "type": "choice_single"
+    },
+    "difficulty": "foundational",
+    "feedback": {
+      "details": {
+        "boundaryOrTradeoff": "If both actions later became one legally and operationally identical outcome, the distinction could be reconsidered; the stated separate reporting rules make that false here.",
+        "errorCorrection": "The nearest tempting alternative is call both refund. The prompt distinguishes balance value from money returned to the card; a shared word would make reports and command intent ambiguous.",
+        "mechanismOrProperty": "The event name distinguishes outcomes with different reporting meaning; this prompt defines the destination of value as the discriminator.",
+        "scenarioApplication": "A command named \u2018issue account credit\u2019 matches the ledger outcome; the payment report can continue to count card refunds separately.",
+        "transfer": "If a neighboring finance workflow uses the same word for a different result, check the recorded business outcome before standardizing names."
+      },
+      "messages": [
+        {
+          "kind": "wrong_option",
+          "targetId": "call_both_refund",
+          "text": "The prompt distinguishes balance value from money returned to the card; a shared word would make reports and command intent ambiguous."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "use_ledger_adjustment",
+          "text": "A storage label says where data moves, not which of the two business outcomes occurred."
+        },
+        {
+          "kind": "wrong_option",
+          "targetId": "rename_refund_globally",
+          "text": "That would erase the payment team's distinct card-return meaning instead of aligning each term with its own outcome."
+        }
+      ],
+      "reason": "The decisive distinction is the destination of value: a balance change is an account credit, while a card return is a refund.",
+      "type": "choice_single"
+    },
+    "interaction": {
+      "options": [
+        {
+          "optionId": "call_both_refund",
+          "text": "Name both operations \u2018refund\u2019 because they help the customer recover value."
+        },
+        {
+          "optionId": "issue_account_credit",
+          "text": "Name a balance correction \u2018AccountCredit\u2019; reserve \u2018Refund\u2019 for money returned to its original payment method."
+        },
+        {
+          "optionId": "use_ledger_adjustment",
+          "text": "Expose the storage term \u2018ledger adjustment\u2019 as the customer-facing business action."
+        },
+        {
+          "optionId": "rename_refund_globally",
+          "text": "Replace \u2018refund\u2019 everywhere with \u2018credit\u2019 to establish one term across finance and payments."
+        }
+      ],
+      "scoringMethod": "exact_selected_set",
+      "type": "choice_single"
+    },
+    "mentalUnitId": "OOD-N01-B05",
+    "nodeId": "requirements_use_cases_domain_vocabulary_and_model_boundaries",
+    "prompt": "In the invoice desk, finance calls an account-balance credit a \u2018refund\u2019, while the payment team uses \u2018refund\u2019 for money returned to a card. The ledger stores the two as different outcomes and reports them separately. Which vocabulary should the command and event use for a balance-only correction?",
+    "questionId": "ood-n01-b05-i018",
+    "sourceRefs": [
+      "https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/ddd-oriented-microservice"
+    ],
+    "trackId": "object-oriented-design-interview"
+  },
+  "selection": "actual current session index4; representative repaired wrong answer"
+}

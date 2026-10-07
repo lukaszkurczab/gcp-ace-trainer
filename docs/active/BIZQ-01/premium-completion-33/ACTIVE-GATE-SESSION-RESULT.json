@@ -1,0 +1,27 @@
+{
+  "sessionId": "object-oriented-design-interview:design-interview-tradeoff-practice:1",
+  "modeId": "design-interview-tradeoff-practice",
+  "requestedLength": 10,
+  "actualLength": 10,
+  "currentItemIndex": 0,
+  "contentVersion": "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24",
+  "artifactSha256": "9df476e414158da0f33e118c06ed7fbc476b53bc8f0a115a470f61f9c1bf1ea3",
+  "status": "active",
+  "firstQuestionId": "ood-n01-b01-i018",
+  "fences": {
+    "activeTrainingSessionPresent": true,
+    "activeDraftPresent": false,
+    "activeMutationJournalPresent": false,
+    "accountSyncUnsettled": true,
+    "accountSignOutStatePresent": false,
+    "accountDeletionStatePresent": false
+  },
+  "notifications": {
+    "permission": "undetermined",
+    "totalScheduled": 0,
+    "appScheduledCount": 0
+  },
+  "selection": "ordinary application selector, no forced seed or question pool mutation",
+  "entitlementInput": "active local smoke process synthetic",
+  "notProviderPurchaseProof": true
+}

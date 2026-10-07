@@ -1,0 +1,34 @@
+{
+  "verdict": "PASS bounded actual correct PDF opening and ordinary return",
+  "session": "object-oriented-design-interview:design-interview-tradeoff-practice:1",
+  "questionId": "ood-n01-b02-i018",
+  "sourceIndex": 0,
+  "sourceTapCount": 1,
+  "expectedUrl": "https://www.omg.org/spec/UML/2.5.1/PDF",
+  "observedAddressBarHost": "omg.org",
+  "observedFullUrl": "not_attested",
+  "loadedDocument": {
+    "title": "OMG Unified Modeling Language (OMG UML)",
+    "version": "2.5.1",
+    "documentNumber": "formal/2017-12-05",
+    "date": "December 2017"
+  },
+  "urlTyped": false,
+  "ordinaryIosReturn": true,
+  "returnedOrdinal": 2,
+  "newSubmitOrNext": false,
+  "limits": [
+    "Deep PDF hierarchy read failed/timed out; not a link-opening defect.",
+    "Address-bar tap completed but did not expose full URL; no exact observed-URL claim."
+  ],
+  "privateImages": [
+    {
+      "path": "/private/tmp/bizq33-resume-2026-10-07/q2-material-loaded.png",
+      "sha256": "9f2b3e3c453da6f51e9be69bc81bb7386575ff5650f3565d6a51d2440a450e90"
+    },
+    {
+      "path": "/private/tmp/bizq33-resume-2026-10-07/q2-material-return/2026-10-07_103841/BIZQ33 actual Q2 PDF ordinary return/takeScreenshot/q2-ordinary-return-same-source.png",
+      "sha256": "8bc13d104774ecdc2c67671b555961d0589e5ea492d8c63b94cefe497e10d471"
+    }
+  ]
+}

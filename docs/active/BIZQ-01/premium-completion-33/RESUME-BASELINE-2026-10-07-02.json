@@ -1,0 +1,21 @@
+{
+  "schema": "bizq01-resume-baseline-v1",
+  "profileExact": true,
+  "inventoryExact": true,
+  "fencesExact": true,
+  "notificationsExact": true,
+  "oldRecords": 18,
+  "newRecords": 18,
+  "rawRecordsExact": true,
+  "differences": [
+    {
+      "category": "account-lifecycle-redacted",
+      "changedFields": [
+        "revision"
+      ]
+    }
+  ],
+  "baselineSha256": "4d88ab0666ed1a9edb6f3ff992a1814ee2d1c0e45d2036c9730972c797475623",
+  "currentSha256": "197a8581f704c2a623f81ccd4f37346a45652eb9fcf07ad6f3ab5d06d4535a22",
+  "wholeStoreClaim": false
+}

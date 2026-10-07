@@ -1,0 +1,12 @@
+{
+  "schema": "bizq01-capability-attempt-v1",
+  "status": "UNAVAILABLE",
+  "stage": "inspector_connect_failed",
+  "probeSha256": "ec8b8946915dbf31c7f8e8a20d3d271ff241744c6d716775c6aee2a003d03724",
+  "breakpointArmed": false,
+  "diagnosticReloadExecuted": false,
+  "trialCreated": false,
+  "answerSubmitted": false,
+  "profileDiagnosisEstablished": false,
+  "nextAction": "restore main Metro and finish bounded preservation; Q13 remains open"
+}

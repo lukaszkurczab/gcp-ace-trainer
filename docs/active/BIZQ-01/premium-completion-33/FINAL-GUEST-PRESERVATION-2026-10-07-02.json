@@ -1,0 +1,92 @@
+{
+  "schema": "bizq01-final-guest-preservation-v1",
+  "status": "PASS for bounded original Guest preservation",
+  "fieldsEqual": {
+    "schema": true,
+    "deviceTarget": true,
+    "profile": true,
+    "keyInventory": true,
+    "records": true,
+    "fences": true,
+    "notifications": true
+  },
+  "records": 81,
+  "keys": 84,
+  "metadataValuesUnread": 3,
+  "profileIdentitiesExact": true,
+  "originalGuestSelected": true,
+  "unrelatedPendingPairsPreserved": true,
+  "newPendingPairCount": 1,
+  "newPendingUidMatchesOwnedAuthUid": true,
+  "blockedPairAbsent": true,
+  "registryGenerationDelta": 1,
+  "guestMarker": {
+    "bindingState": "guest",
+    "accountBound": false,
+    "installationIdSha256": "498a8a5cbc36ed6331567374098786cc922f8133a4afceb7471ca0d77b4de760",
+    "localDatasetIdSha256": "b880a3a8d1530601f6f1ed2f244078468f09f51f9d68ba5f6d3cec95cfa5e52d"
+  },
+  "os": {
+    "appearance": "dark",
+    "contentSize": "large"
+  },
+  "api": {
+    "entitlementInput": "expired",
+    "ready": {
+      "database": true,
+      "authentication": true,
+      "providerReader": true
+    }
+  },
+  "ordinaryFlow": "observed centered Settings Sign out \u2192 empty Sign in \u2192 Continue without an account \u2192 original GCP Home",
+  "automationLimits": [
+    "first tab tap did not leave Home; no sign-out",
+    "second uncentered sign-out matcher navigated to Progress; account snapshot unchanged",
+    "decimal percentage rejected before tap",
+    "centered integer-percentage sign-out and ordinary Guest continuation completed"
+  ],
+  "privateEvidence": [
+    {
+      "path": "/private/tmp/bizq33-after-repair.json",
+      "sha256": "d80eb02faf3b29638b0d1abc54da2e2f2aed6111ec6a608829c33c10d901ebb8"
+    },
+    {
+      "path": "/private/tmp/bizq33-resume-2026-10-07/resume02-final-guest.json",
+      "sha256": "07824ed727ff697088c64a513ff979cbba41ba1deffbc109fe76602b62b12311"
+    },
+    {
+      "path": "/private/tmp/bizq33-resume-2026-10-07/resume02-signout-centered.png",
+      "sha256": "66ae84760637a1ce314cc247d61d6a55c4c4d3866b099a9f81701ccf5ccf701a"
+    },
+    {
+      "path": "/private/tmp/bizq33-resume-2026-10-07/resume02-signout-result.png",
+      "sha256": "a017df0fcdfce5b8bb4ab702dd55f3d2240639ef26b35f0af351f302fdac25e1"
+    },
+    {
+      "path": "/private/tmp/bizq33-resume-2026-10-07/resume02-final-guest-home.png",
+      "sha256": "e1b0a7c592f0346305e6f554e9e2885da616e838356d84b8ade4ab8ce521cabe"
+    }
+  ],
+  "wholeStoreClaim": false,
+  "q13Accepted": false,
+  "fullBizq01Accepted": false,
+  "releaseAccepted": false,
+  "nonsecretControlEvidence": [
+    {
+      "path": "docs/active/BIZQ-01/premium-completion-33/RESUME-ACCOUNT-ATTESTATION-2026-10-07-02.json",
+      "sha256": "1d339cf295e279d70520dd3d814bfa28003402359260eadecda906d498d0f577"
+    },
+    {
+      "path": "docs/active/BIZQ-01/premium-native-path-31/PUBLIC-FINAL33-GUEST-2026-10-07-02.json",
+      "sha256": "fce7cf8e03a1b90344a5dbf2fb994a1e2c79070115007f1337ee49d5603f4c23"
+    },
+    {
+      "path": "docs/active/BIZQ-01/premium-native-path-31/probe-runtime.mjs",
+      "sha256": "60ebcc1ada000fc929335fa49331dcca4f5554eabb920620352b404f6d48c41d"
+    }
+  ],
+  "runtimeRestorationEvidence": {
+    "path": "docs/active/BIZQ-01/premium-completion-33/FINAL-RUNTIME-RESTORATION-2026-10-07-02.json",
+    "sha256": "3470a3de67e4bb131bf0331f188bbd22ec8e57175efa66ab409e732dedc66025"
+  }
+}

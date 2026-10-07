@@ -1,0 +1,11 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 ordinary resume same saved Q1 after cold launch
+---
+- tapOn:
+    point: "92%,93%"
+- tapOn: Resume session
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:question:ood-n01-b01-i018
+    timeout: 30000
+- takeScreenshot: same-saved-q1-after-resume

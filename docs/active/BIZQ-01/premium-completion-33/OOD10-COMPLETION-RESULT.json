@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "sessionId": "object-oriented-design-interview:design-interview-tradeoff-practice:1",
+  "persistedStatus": "completed",
+  "attemptCount": 10,
+  "results": {
+    "correct": 9,
+    "incorrect": 1,
+    "partial": 0
+  },
+  "unanswered": 0,
+  "pendingSessionOrDraftOrJournal": false,
+  "noNewGuestWrites": true,
+  "notifications": {
+    "permission": "undetermined",
+    "totalScheduled": 0,
+    "appScheduledCount": 0
+  },
+  "flow": "finish-q5-through-q10.yaml",
+  "flowSha256": "751988cd20d0e8d05ebf79024472111ae8c0825faf17fa2100dc10615db16674",
+  "privateSnapshotSha256": "162b4e5ae82d83dc43fa0e5b56fa6b45a198e2aeb7262a36c9af3fce6c87da25",
+  "privateImages": [
+    {
+      "name": "owned-ood10-summary.png",
+      "sha256": "c5b09039a630e0b1705ab09940c3ea9e9808d75fa54f2e7c5dfd3fe7d82cc631"
+    },
+    {
+      "name": "ood-n01-b06-i018-correct.png",
+      "sha256": "b43d8a73ce1ab15d22cc2203714ab2d73c92ce137afd9f8a531bc34563ede841"
+    },
+    {
+      "name": "ood-n01-b08-i018-correct.png",
+      "sha256": "535836c68ae9346bcf06a3553387095297b70a67c786f47a5f700b0c848eb272"
+    },
+    {
+      "name": "ood-n01-b01-i019-correct.png",
+      "sha256": "4ae83f30d8c8d49fa2beffb2dbff497ed93af4acb05dd09b1de2c02f51ea7dc0"
+    },
+    {
+      "name": "ood-n01-b07-i018-correct.png",
+      "sha256": "02f1a0c0dedcf904056d53e4993a8e813c1f63cc4c97f77dd8cfcb58a638e1d0"
+    },
+    {
+      "name": "ood-n01-b02-i019-correct.png",
+      "sha256": "df7cc4fcc1529bdd28b6ebca643e6c48298ae7bf3fd81b63081afafba1d13b77"
+    }
+  ],
+  "summaryRootPersonallyViewed": true,
+  "summaryActiveTimeIsNotLearningCostOrEffectiveness": true,
+  "continuation": {
+    "summaryToPractice": "PASS",
+    "practiceToHome": "actual Home rendered; root selector assertion failed because not rendered by source",
+    "failedMatcher": "patternly:home:root",
+    "correction": "use actual OOD track-card selector; no repeated summary or answers",
+    "homeActualTrackCardAttestation": "PASS: attest-home.log, no additional navigation"
+  },
+  "fences": {
+    "activeTrainingSessionPresent": false,
+    "activeDraftPresent": false,
+    "activeMutationJournalPresent": false,
+    "accountSyncUnsettled": true,
+    "accountSignOutStatePresent": false,
+    "accountDeletionStatePresent": false
+  }
+}

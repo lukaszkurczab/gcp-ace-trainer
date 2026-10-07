@@ -1,0 +1,39 @@
+{
+  "reviewer": "runtime33_design",
+  "model": "gpt-6-luna",
+  "effort": "high",
+  "verdict": "PASS WITH GAPS",
+  "scores": {
+    "fit": 0.94,
+    "simplicity": 0.92,
+    "risk": 0.82,
+    "maintainability": 0.9
+  },
+  "minimum": 0.82,
+  "findings": [
+    {
+      "severity": "gap",
+      "evidence": "AppController.isInitialized() is a safe singleton guard; sharedInstance asserts if read before initialization. EnabledAppController.embeddedUpdateId loads and caches the embedded manifest, while the source path does not write persistent app/profile storage.",
+      "condition": "Check initialized state before singleton access, guard controller type, invoke only the permitted UUID getters, and stop on unexpected type or access failure."
+    },
+    {
+      "severity": "gap",
+      "evidence": "DevLauncherAppController returns no embedded update in module constants; EnabledAppController uses a different configured path. app.config.js disables Expo Updates in release runtime mode.",
+      "condition": "Treat Debug UUIDs as capability diagnostics only. For the Release proof, use a recorded Xcode Release build with the existing smoke runtime profile and require the EnabledAppController guard to pass. Do not override configuration."
+    },
+    {
+      "severity": "gap",
+      "evidence": "Native isEmbeddedLaunch is true only when an embedded update exists and its UUID equals the launched update UUID. The embedded getter can fatal on missing or malformed bundled manifest.",
+      "condition": "Require both UUIDs non-null and equal; bind that embedded UUID to the exact built app's embedded manifest and JS bundle hash. Run only after normal launch; abort on uncertain LLDB detach or app resumption."
+    }
+  ],
+  "conditions": [
+    "Wait until max-text UI work is complete before LLDB attach.",
+    "Use a finally cleanup path that detaches on success and failure; confirm detach and app resumption; stop if LLDB crashes or detach is ambiguous.",
+    "No build/install before Debug capability is proven and this design review passes.",
+    "No getConstants, manifest/headers/environment/path/storage inspection, product logging/configuration change, or profile mutation.",
+    "UUID equality alone is not source revision, content hash, session pin, or Q13 runtime acceptance."
+  ],
+  "actions_performed": [],
+  "notRuntimeAcceptance": true
+}

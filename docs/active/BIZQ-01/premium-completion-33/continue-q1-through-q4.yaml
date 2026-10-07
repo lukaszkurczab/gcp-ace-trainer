@@ -1,0 +1,81 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 normal single continuation Q1 through Q4
+---
+- assertVisible:
+    id: patternly:session:continue:ood-n01-b01-i018
+- tapOn:
+    id: patternly:session:continue:ood-n01-b01-i018
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:question:ood-n01-b02-i018
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b02-i018:b02_i018_a
+    direction: DOWN
+- tapOn:
+    id: patternly:session:option:ood-n01-b02-i018:b02_i018_a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:submit:ood-n01-b02-i018
+    direction: DOWN
+- tapOn:
+    id: patternly:session:submit:ood-n01-b02-i018
+- scrollUntilVisible:
+    element:
+      id: patternly:session:result:ood-n01-b02-i018:correct
+    direction: DOWN
+- takeScreenshot: ood-n01-b02-i018-correct
+- tapOn:
+    id: patternly:session:continue:ood-n01-b02-i018
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:question:ood-n01-b03-i018
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b03-i018:b03_i018_a
+    direction: DOWN
+- tapOn:
+    id: patternly:session:option:ood-n01-b03-i018:b03_i018_a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:submit:ood-n01-b03-i018
+    direction: DOWN
+- tapOn:
+    id: patternly:session:submit:ood-n01-b03-i018
+- scrollUntilVisible:
+    element:
+      id: patternly:session:result:ood-n01-b03-i018:correct
+    direction: DOWN
+- takeScreenshot: ood-n01-b03-i018-correct
+- tapOn:
+    id: patternly:session:continue:ood-n01-b03-i018
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:question:ood-n01-b04-i018
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b04-i018:b04_i018_a
+    direction: DOWN
+- tapOn:
+    id: patternly:session:option:ood-n01-b04-i018:b04_i018_a
+- scrollUntilVisible:
+    element:
+      id: patternly:session:submit:ood-n01-b04-i018
+    direction: DOWN
+- tapOn:
+    id: patternly:session:submit:ood-n01-b04-i018
+- scrollUntilVisible:
+    element:
+      id: patternly:session:result:ood-n01-b04-i018:correct
+    direction: DOWN
+- takeScreenshot: ood-n01-b04-i018-correct
+- tapOn:
+    id: patternly:session:continue:ood-n01-b04-i018
+- extendedWaitUntil:
+    visible:
+      id: patternly:session:question:ood-n01-b05-i018
+    timeout: 30000
+- takeScreenshot: q5-before-answer

@@ -1,0 +1,22 @@
+{
+  "reviewer": "runtime33_design",
+  "model": "gpt-6-luna",
+  "effort": "high",
+  "verdict": "PASS WITH GAPS",
+  "mode": "NO-TOOLS proposal review",
+  "supersededVerdict": "FAIL resolved by exactsource condition: only adoption_pending entersGuestadoption",
+  "scores": {
+    "fit": 0.95,
+    "simplicity": 0.91,
+    "risk": 0.85,
+    "maintainability": 0.88
+  },
+  "minimum": 0.85,
+  "conditions": [
+    "Guard original unboundGuestIDs/pending before singlecall",
+    "Verify only marker delta; learning snapshot/publicprojection exact",
+    "Standalone provision avoids AppRegistration marker rewrite"
+  ],
+  "rootDecision": "accepted before single controlled fixture correction",
+  "notProductCancelFeature": true
+}

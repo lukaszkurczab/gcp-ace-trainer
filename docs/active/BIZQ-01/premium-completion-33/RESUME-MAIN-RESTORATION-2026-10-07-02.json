@@ -1,0 +1,33 @@
+{
+  "schema": "bizq01-main-account-restoration-v1",
+  "fieldsEqual": {
+    "schema": true,
+    "deviceTarget": true,
+    "profile": true,
+    "keyInventory": true,
+    "fences": true,
+    "notifications": true
+  },
+  "recordCount": 18,
+  "keyCount": 21,
+  "rawRecordsExact": true,
+  "limitedProjectionDifferences": [
+    {
+      "category": "account-lifecycle-redacted",
+      "changedFields": [
+        "revision"
+      ]
+    }
+  ],
+  "privateSnapshots": [
+    {
+      "path": "/private/tmp/bizq01-resume-account-ready-20261007-02.json",
+      "sha256": "197a8581f704c2a623f81ccd4f37346a45652eb9fcf07ad6f3ab5d06d4535a22"
+    },
+    {
+      "path": "/private/tmp/bizq33-resume-2026-10-07/resume02-main-account-final.json",
+      "sha256": "e0944ab7702ee133a0423960d25f9f37ed9768ac49c0a60d5630bcb1197ad404"
+    }
+  ],
+  "wholeStoreClaim": false
+}

@@ -1,0 +1,22 @@
+{
+  "model": "gpt-6-luna",
+  "reasoning": "high",
+  "kind": "briefing-only",
+  "verdict": "PASS WITH CONDITIONS",
+  "scores": {
+    "fit": 0.94,
+    "simplicity": 0.84,
+    "risk": 0.82,
+    "maintainability": 0.86,
+    "minimum": 0.82
+  },
+  "oneExternalOrdinaryReloadMaximum": 1,
+  "conditions": [
+    "actual source/nonce/app/device binding",
+    "independent tool QA before probe",
+    "minimal capability first",
+    "every cleanup action attempted",
+    "unknown/null/ambiguous stop and restore main"
+  ],
+  "runtimeAcceptance": false
+}

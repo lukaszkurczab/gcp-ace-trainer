@@ -1,0 +1,24 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 repaired Q5 single wrong submit
+---
+- assertVisible:
+    id: patternly:session:question:ood-n01-b05-i018
+- assertNotVisible:
+    id: patternly:session:reason:ood-n01-b05-i018
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b05-i018:call_both_refund
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- tapOn:
+    id: patternly:session:option:ood-n01-b05-i018:call_both_refund
+- scrollUntilVisible:
+    element:
+      id: patternly:session:submit:ood-n01-b05-i018
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- tapOn:
+    id: patternly:session:submit:ood-n01-b05-i018
+- takeScreenshot: q5-after-single-wrong-submit

@@ -1,0 +1,49 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 saved wrong Q5 expanded authored message and Details
+---
+- tapOn:
+    id: patternly:session:details-toggle:ood-n01-b05-i018
+- scrollUntilVisible:
+    element:
+      text: "The\\ prompt\\ distinguishes\\ balance\\ value\\ from\\ money\\ returned\\ to\\ the\\ card;\\ a\\ shared\\ word\\ would\\ make\\ reports\\ and\\ command\\ intent\\ ambiguous\\."
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q5-wrong-details-authored-message
+- scrollUntilVisible:
+    element:
+      text: "If\\ both\\ actions\\ later\\ became\\ one\\ legally\\ and\\ operationally\\ identical\\ outcome,\\ the\\ distinction\\ could\\ be\\ reconsidered;\\ the\\ stated\\ separate\\ reporting\\ rules\\ make\\ that\\ false\\ here\\."
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q5-wrong-details-boundaryOrTradeoff
+- scrollUntilVisible:
+    element:
+      text: "The\\ nearest\\ tempting\\ alternative\\ is\\ call\\ both\\ refund\\.\\ The\\ prompt\\ distinguishes\\ balance\\ value\\ from\\ money\\ returned\\ to\\ the\\ card;\\ a\\ shared\\ word\\ would\\ make\\ reports\\ and\\ command\\ intent\\ ambiguous\\."
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q5-wrong-details-errorCorrection
+- scrollUntilVisible:
+    element:
+      text: "The\\ event\\ name\\ distinguishes\\ outcomes\\ with\\ different\\ reporting\\ meaning;\\ this\\ prompt\\ defines\\ the\\ destination\\ of\\ value\\ as\\ the\\ discriminator\\."
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q5-wrong-details-mechanismOrProperty
+- scrollUntilVisible:
+    element:
+      text: "A\\ command\\ named\\ ‘issue\\ account\\ credit’\\ matches\\ the\\ ledger\\ outcome;\\ the\\ payment\\ report\\ can\\ continue\\ to\\ count\\ card\\ refunds\\ separately\\."
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q5-wrong-details-scenarioApplication
+- scrollUntilVisible:
+    element:
+      text: "If\\ a\\ neighboring\\ finance\\ workflow\\ uses\\ the\\ same\\ word\\ for\\ a\\ different\\ result,\\ check\\ the\\ recorded\\ business\\ outcome\\ before\\ standardizing\\ names\\."
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q5-wrong-details-transfer
+- assertVisible:
+    id: patternly:session:continue:ood-n01-b05-i018

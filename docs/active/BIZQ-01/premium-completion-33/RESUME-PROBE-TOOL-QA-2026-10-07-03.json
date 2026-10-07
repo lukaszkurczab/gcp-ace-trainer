@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "bizq01-q13-profile-gate-tool-qa-v1",
+  "model": "gpt-6-luna",
+  "reasoning": "high",
+  "verdict": "PASS_WITH_ISSUES",
+  "scope": "corrected actual-tool source review and pure tests; capability not run",
+  "reviewedSources": {
+    "probeSha256": "ec8b8946915dbf31c7f8e8a20d3d271ff241744c6d716775c6aee2a003d03724"
+  },
+  "verification": {
+    "offlinePrivateBindingEntryCheckout": "PASS",
+    "privateHostContextHashesNonceRefAppDeviceLoopbackSingleTarget": "PASS",
+    "actualOldTargetKindAndIdentity": "PASS from operator observation; no Inspector connection by reviewer",
+    "privateInputModes": "0600",
+    "focusedProbeTests": "PASS 11/11",
+    "nodeCheck": "PASS",
+    "inspectorCapability": "NOT RUN",
+    "observeOrReload": "NOT RUN"
+  },
+  "scores": {
+    "fit": 0.94,
+    "simplicity": 0.88,
+    "risk": 0.84,
+    "maintainability": 0.82,
+    "minimum": 0.82,
+    "floor": 0.8
+  },
+  "resolvedSinceHistoricalReview02": [
+    "Narrow target selection accepts the observed unique node target on IPv6 loopback only.",
+    "Receipt creation occurs only after Inspector operation and close complete successfully.",
+    "Resume ACK must be a fresh event after the pre-resume event index."
+  ],
+  "issues": [
+    {
+      "id": "probe-source-not-in-runtime-binding-map",
+      "severity": "non_blocking_for_single_reviewed_capability",
+      "evidence": "The current binding map hashes sibling tool sources but omits probe-profile-gate.mjs; this QA records the exact reviewed probe SHA-256.",
+      "mitigation": "Check the exact reviewed probe SHA-256 immediately before capability. Bind the probe source through versioned tooling on a future package revision."
+    }
+  ],
+  "conditions": [
+    "Run capability only on the exact reviewed probe hash and while the observed target identity is still current.",
+    "Capability performs no reload or wait; any later observation is separately authorized by the documented one-ordinary-reload limit.",
+    "Stop on any binding/target refusal, incomplete cleanup, inconclusive result, or changed runtime identity."
+  ],
+  "limitations": [
+    "Pure tests and operator target observation do not prove real breakpoint set/remove behavior; that is the purpose of the permitted capability step.",
+    "No runtime probe, Metro action, reload, profile/account/storage mutation, Q13 acceptance, Guest preservation, release, or educational-effectiveness claim."
+  ]
+}

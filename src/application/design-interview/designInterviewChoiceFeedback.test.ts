@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime";
 import { prepareCanonicalOptionOrder } from "../canonical/canonicalOptionOrder";
-import { projectCanonicalChoiceFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
+import { projectCanonicalChoiceFeedbackControls, projectCanonicalChoiceFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
 import { composeTrainingLifecycleUseCases } from "../bootstrap/trainingLifecycleComposition";
 import {
   getDesignInterviewPracticeProjection,
@@ -114,6 +114,10 @@ test("all three actual Design pools deliver exact authored wrong-option feedback
       assert.deepEqual(after.feedback.messages, expected);
       assert.equal(Object.isFrozen(after.feedback.messages), true);
       assert.equal(after.feedback.result, correct ? "correct" : "incorrect");
+      assert.deepEqual(after.feedback.controls, projectCanonicalChoiceFeedbackControls(after.question, response));
+      assert.deepEqual(after.feedback.controls.map(({ id }) => id), after.question.interaction.type === "choice_single" ? after.question.interaction.options.map(({ optionId }) => optionId) : []);
+      assert.equal(after.feedback.controls.find(({ id }) => id === (response as { optionId: string }).optionId)?.state, correct ? "correct" : "incorrect");
+      assert.equal(Object.isFrozen(after.feedback.controls), true);
     }
   }
 });
@@ -160,6 +164,7 @@ test("Design choice diagnostics stay hidden for a failed journal write and commi
     const recovered = await getDesignInterviewPracticeProjection();
     const expected = projectCanonicalChoiceFeedbackMessages(question, response) ?? Object.freeze([]);
     assert.deepEqual(recovered.feedback?.messages, expected);
+    assert.deepEqual(recovered.feedback?.controls, projectCanonicalChoiceFeedbackControls(recovered.question, response));
     assert.equal(Object.isFrozen(recovered.feedback?.messages), true);
     assert.equal((await getTrainingAttempts()).value.length, 1);
     assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false);

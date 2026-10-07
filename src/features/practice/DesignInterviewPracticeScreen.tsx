@@ -179,7 +179,12 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
   const responseForProjection = localResponse?.sessionId === projection.session.id && localResponse.occurrenceId === projection.occurrenceId
     ? localResponse.response
     : null;
-  const responseControl = buildPracticeResponseControl({ localResponse: responseForProjection, renderer });
+  const responseControl = buildPracticeResponseControl({
+    choiceSelectionMode: projection.question.interaction.type === "choice_multiple" ? "multiple" : "single",
+    feedbackControls: projection.feedback?.controls,
+    localResponse: responseForProjection,
+    renderer,
+  });
   const effectiveResponse = resolvePracticeLocalResponse(responseForProjection, responseControl);
   const renderedCompletionOperation = completionFailure?.kind === "retry_completion" || completionFailure?.kind === "recover_completion" ? completionFailure.operation : completionOperation;
   const phase: PracticeSurfacePhase = exitFailure === "retry_abandon" || exitFailure === "retry_checkpoint"

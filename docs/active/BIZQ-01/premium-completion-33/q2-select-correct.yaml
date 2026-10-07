@@ -1,0 +1,6 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 current Q2 select correct unobscured option
+---
+- tapOn:
+    id: patternly:session:option:ood-n01-b02-i018:b02_i018_a
+- takeScreenshot: q2-correct-selected-before-submit

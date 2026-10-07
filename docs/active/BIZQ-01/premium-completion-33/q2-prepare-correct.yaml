@@ -1,0 +1,11 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 current Q2 correct option unobscured preparation
+---
+- assertVisible:
+    id: patternly:session:question:ood-n01-b02-i018
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b02-i018:b02_i018_a
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: q2-correct-option-before-tap

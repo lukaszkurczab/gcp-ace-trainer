@@ -1,0 +1,14 @@
+{
+  "task": "BIZQ-01",
+  "source": "Direct user instruction in current chat",
+  "decision": "zmieniam decyzję, możesz zmienić guest i wykonać prace potrzebne do zakończenia bizq-01",
+  "supersedes": "Prior ARCH03 owner-only Guest restriction",
+  "allowed": "Necessary bounded Guest/account work for BIZQ01, with reviewed plan and preservation",
+  "unchangedConstraints": [
+    "Preserve existing learning/goals/acceptedplans/settings",
+    "No deploy/serviceconfig/productionpurchase",
+    "One iPhone17 and app identity",
+    "Screens/rawlogs/hierarchy/snapshots private; receipts/flows only",
+    "No stash/reset/clean/force or unrelated ownership takeover"
+  ]
+}

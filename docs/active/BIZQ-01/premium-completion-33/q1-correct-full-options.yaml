@@ -1,0 +1,59 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 actual OOD Q1 full options and correct feedback
+---
+- assertVisible:
+    id: patternly:session:question:ood-n01-b01-i018
+- assertNotVisible:
+    id: patternly:session:reason:ood-n01-b01-i018
+- assertNotVisible:
+    id: patternly:session:details:ood-n01-b01-i018
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b01-i018:operator_requests_reservation
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-option-operator_requests_reservation
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b01-i018:overlap_checker_actor
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-option-overlap_checker_actor
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b01-i018:meter_actor
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-option-meter_actor
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b01-i018:relay_actor
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-option-relay_actor
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b01-i018:storage_subject
+    direction: DOWN
+    visibilityPercentage: 100
+    centerElement: true
+- takeScreenshot: q1-option-storage_subject
+- scrollUntilVisible:
+    element:
+      id: patternly:session:option:ood-n01-b01-i018:operator_requests_reservation
+    direction: UP
+    visibilityPercentage: 100
+    centerElement: true
+- tapOn:
+    id: patternly:session:option:ood-n01-b01-i018:operator_requests_reservation
+- tapOn:
+    id: patternly:session:submit:ood-n01-b01-i018
+- scrollUntilVisible:
+    element:
+      id: patternly:session:result:ood-n01-b01-i018:correct
+    direction: DOWN
+- takeScreenshot: q1-correct-feedback

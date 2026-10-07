@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "bizq01-q13-preservation-receipt-tool-qa-v1",
+  "reviewer": "runtime33_design",
+  "model": "gpt-6-luna",
+  "effort": "high",
+  "verdict": "PASS_WITH_GAPS",
+  "scope": "Independent source and focused-test review of Q13 preservation receipt v2 tooling; no runtime/device/build/install acceptance.",
+  "scores": {
+    "objectiveArchitectureFit": 0.95,
+    "simplicity": 0.87,
+    "risk": 0.85,
+    "maintainability": 0.87,
+    "minimum": 0.85,
+    "threshold": 0.8
+  },
+  "findings": {
+    "readOnlyBoundary": "The snapshot reads only published profile state and KeyValueStorage.getAllKeys/getString after profile/transition guards; no storage initialization or mutation path is present.",
+    "semanticProjection": "The versioned projection retains all nonvolatile payload fields and omits only envelope revision, named active timer fields, and training-session activeForegroundMs. Ordered item/option digests preserve occurrence association.",
+    "privacy": "Snapshots retain safe facts and hashes, not raw keys, IDs, answers, or stored values. Comparator output is status/category only and evidence files must be private.",
+    "resumeSemantics": "The hook brackets the existing exact resolver; observer failures do not replace the original resolver result/error. It does not claim the later draft/runtime-validation portion of resume.",
+    "regeneration": "Prior v1 ref/content/source hashes and exact four-file patch scope are checked before restoring only App.tsx and lifecycle source from HEAD and removing the two owned generated files. Fresh v2 patch/binding is then applied.",
+    "historicalToolMapCompatibility": "Accepts exactly the three-key historical v1 toolSourceSha256 map with either attestation-runtime.template.ts or attestation-runtime.template.txt, validating every SHA-256 format. Extra, missing, or mixed keys fail exact-map validation; source/content identity and four-file byte-hash guards remain intact.",
+    "noInstallOutcomes": "completed_bound requires app-tree and embedded-JS hashes. failed_no_install and unbuilt_no_install require null buildBinding and make no execution claim. The selected outcome is a documented operator input, so the caller must establish the build has stopped and no installable artifact exists.",
+    "runtimeGap": "No Release preservation receipts or Q13 runtime acceptance were established in this review; cache survival and actual instrumented resolver execution remain pending."
+  },
+  "verification": {
+    "focusedTests": "node --import tsx --test 'docs/active/BIZQ-01/premium-completion-33/q13-test-attestation/*.test.*'",
+    "focusedTestsResult": "20 passed, 0 failed",
+    "generatorTestsAfterHistoricalMapCorrection": "9 passed, 0 failed; exercises .ts and .txt historical tool map shapes",
+    "generatorSyntax": "node --check docs/active/BIZQ-01/premium-completion-33/q13-test-attestation/generate.mjs: passed",
+    "typecheck": "npm run typecheck: passed",
+    "buildInstallDeviceOrRuntimeAction": false,
+    "productSourceMutation": false
+  },
+  "notClaimed": [
+    "Release cache read/write success",
+    "old and new runtime receipts exist",
+    "Q13 device update acceptance",
+    "complete resume UI acceptance",
+    "unmodified Release binary execution",
+    "install identity or Expo Updates selection",
+    "purchase or RevenueCat entitlement"
+  ],
+  "reviewedSourceSha256": {
+    "generate.mjs": "a0a2d0351c84f913f36a6cf5edf61494a358ec9e67c0bd1ed4a9c1e66f483c8d",
+    "generate.test.mjs": "5a1c6bd8e8be381e7a93be4e8687df0cbf5ac119e710d76cd1f8a8613cf2cf43",
+    "README.md": "8de51c870339c1888437cccdc64475d31d8b9db28c73341a5954fc956d60d1a0",
+    "preservation.ts": "04e26362d0ded75aa200592c2a6c27b09b41b924773022105b29cf7a6f4340a0",
+    "attestation-policy.ts": "2910d41513b8d560734edc73c4c164a441f2c74152b5503f27604cd6a1c84124",
+    "attestation-runtime.template.txt": "7aaf0b1b3d6bc8a88caad1365c109f60e1bf81766bef56516ec388ce6c6a3b20"
+  }
+}

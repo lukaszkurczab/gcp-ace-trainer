@@ -1,0 +1,46 @@
+{
+  "reviewer": "runtime33_design",
+  "model": "gpt-6-luna",
+  "effort": "high",
+  "verdict": "PASS WITH GAPS",
+  "scores": {
+    "fit": 0.94,
+    "simplicity": 0.9,
+    "risk": 0.84,
+    "maintainability": 0.88
+  },
+  "minimum": 0.84,
+  "fixture": {
+    "present": true,
+    "mode": "0600",
+    "contentsRead": false
+  },
+  "findings": [
+    {
+      "severity": "condition",
+      "evidence": "Firebase Admin SDK captures FIREBASE_AUTH_EMULATOR_HOST when its Auth request handler is constructed; Admin getUser/createUser support exact UID, email, and password.",
+      "condition": "Set and validate the loopback Auth emulator host and exact sandbox project before Admin app/Auth initialization. Only auth/user-not-found means absent; all other errors stop."
+    },
+    {
+      "severity": "condition",
+      "evidence": "The previous provisioning helper generates a random UID through REST sign-up and performs backend account registration; the server Admin abstraction does not expose getUser/createUser.",
+      "condition": "Use a dedicated local Admin SDK operation bound to the prior provision receipt. Existing user: match email and enabled state with no mutation. Missing user: create once with exact UID/email/password; stop on conflict or uncertain result, without retry."
+    },
+    {
+      "severity": "gap",
+      "evidence": "Firebase Auth Emulator refresh-token validation checks the embedded project ID then looks up the user by embedded local ID. Exact UID/project restoration supports refresh but cannot establish that the app still has a usable refresh token.",
+      "condition": "Require ordinary app boot to prove the same account and exact active Q1 session/options/progress before dependent UI; stop on mismatch and verify original Guest state after returning to Guest."
+    },
+    {
+      "severity": "condition",
+      "evidence": "Backend smoke configuration uses patternly-app-sandbox and Auth 127.0.0.1:19099 while retaining Firestore at 127.0.0.1:18081; dev:admin is a separate project/environment.",
+      "condition": "Start/reuse Auth only; preserve the existing Firestore process/data; do not use dev:admin, API registration, client sign-in, token revocation, emulator import, or global reset."
+    }
+  ],
+  "actionsPerformed": [
+    "Read task briefing and implementation/configuration sources.",
+    "Checked private fixture existence and mode only; did not read its contents."
+  ],
+  "mutationsPerformed": [],
+  "notRuntimeAcceptance": true
+}

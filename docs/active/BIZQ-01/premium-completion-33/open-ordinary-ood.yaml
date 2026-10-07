@@ -1,0 +1,8 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 ordinary OOD start path
+---
+- assertVisible:
+    id: patternly:home:track-card:object-oriented-design-interview
+- tapOn:
+    id: patternly:home:primary-action
+- takeScreenshot: ordinary-ood-gate-result

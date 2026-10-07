@@ -1,0 +1,22 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 ordinary sign-in to owned local account
+---
+- assertVisible:
+    id: account-email
+- tapOn:
+    id: account-email
+- eraseText
+- inputText: ${MAESTRO_BIZQ33_EMAIL}
+- tapOn:
+    id: account-password
+- eraseText
+- inputText: ${MAESTRO_BIZQ33_PASSWORD}
+- tapOn:
+    id: account-sign-in-submit
+- extendedWaitUntil:
+    notVisible:
+      id: account-email
+    timeout: 60000
+- assertNotVisible:
+    id: account-adoption-transfer
+- takeScreenshot: authenticated-result

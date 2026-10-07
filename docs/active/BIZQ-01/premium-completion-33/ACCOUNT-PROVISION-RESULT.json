@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "created": true,
+  "accountIdSha256": "2152b8bc1f0fb9ebed4eb77d5ef0a7b8119a3e8c6d1be981b5aca2314850ca4a",
+  "uidSha256": "da65100f3a8361b68209115e06fe67f7b0a7263c9298eb684219cdf0fbfa58b7",
+  "distinctFromExistingAccounts": true,
+  "noSDKAuthTransition": true,
+  "noGuestStorageWrites": true
+}

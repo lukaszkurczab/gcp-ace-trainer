@@ -1,0 +1,18 @@
+{
+  "schema": "bizq01-q13-old-runtime-attempt-v1",
+  "result": "actual_old_entry_profile_gate_unavailable",
+  "sourceRef": "ea4f3d61b39bab6b9f12ace73b34721d0d6e717a",
+  "bindingSha256": "09a402173d97dec30038bb08c99387a2f92adb11aeb99a2a3b578f5537ad947e",
+  "entrySha256": "167e1e1866639d100e7dd0414f937cacf52884328089e8bb3cb586b5acf8e6d9",
+  "entryNonceMatches": true,
+  "privateScreenshotSha256": "6a8fac6574e039cb659cce6f71448eaf32f14a04b43abcd69f8d6caaabd33e44",
+  "ui": "Profile storage unavailable / LOCAL_OPERATION_FAILED",
+  "snapshotCategory": "encrypted_storage_not_initialized",
+  "metroPid": 84841,
+  "newTrial": false,
+  "answers": 0,
+  "manualRetry": false,
+  "profileRecreation": false,
+  "q13Accepted": false,
+  "cause": "unresolved; main ordinary login and account baseline succeeded, no data corruption inferred"
+}

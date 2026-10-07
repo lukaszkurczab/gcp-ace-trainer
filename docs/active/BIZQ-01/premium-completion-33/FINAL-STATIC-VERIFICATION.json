@@ -1,0 +1,43 @@
+{
+  "status": "PASS",
+  "command": "npm run qa:static",
+  "requiredEnvironment": {
+    "historicalContentRef": "cc3efca88be7e01137f10ac69a0643f06b61a350",
+    "currentContentRef": "cf119c3f8e8ebfce3e5bdbcd3d5f4e4c7c5dd509",
+    "historicalCheckout": "private detached exact ref",
+    "currentCheckout": "existing content repository; foreign files untouched"
+  },
+  "checks": {
+    "recovery": "PASS",
+    "typecheck": "PASS",
+    "tests": {
+      "total": 1903,
+      "pass": 1899,
+      "fail": 0,
+      "existingSkip": 4
+    },
+    "contentBoundary": "PASS",
+    "runtimePrivacyBoundary": "PASS"
+  },
+  "privateLogSha256": "744f7b7860f556502b0d0be9adfe569e5e8c61179f7d94dc6a259950c96f8ec3",
+  "sourceBindings": {
+    "src/application/design-interview/designInterviewSessionFacade.ts": "cc602d963dc93665fb3da1fa482451f19c46fb8596a836d490d4a4d8e4b72185",
+    "src/features/practice/DesignInterviewPracticeScreen.tsx": "b91a4760ae5a38ba0af22ba817205ddf4aae2d80a858da5c321da7ae8a438d68",
+    "src/features/practice/PracticeFeedbackBlock.tsx": "8fec265fa786c8557afc478e777d3aa37d7459be6e904203786ee1fa3c9abad7",
+    "src/application/design-interview/designInterviewChoiceFeedback.test.ts": "01d6ec64b0b6057261a1bc50f61ba78df33515745e31b505074c493fa8e9d332",
+    "src/features/practice/practiceFeedbackDelivery.test.ts": "34c605a0302dbcc708ae0a3d9bf5521bf65d6ee368abcdbc30a694dd6cc56298",
+    "src/features/practice/feedbackTextHeight.test.ts": "2c0c9855bec4c7c10039eaeb8057ecb42392156d78e0e8e9b6a7f1f2cbf29f23",
+    "src/features/practice/questionSourceSurface.test.ts": "8488aee2bfe01837a1158521eabffcccd369359dea1f4525037cc4fb173de9e2"
+  },
+  "priorAttempts": [
+    {
+      "log": "qa-static.log",
+      "result": "FAIL: docs template imports intended generated location, packaging renamed .txt without suppressing typecheck"
+    },
+    {
+      "log": "qa-static-02.log",
+      "result": "FAIL4: missing existing required historical/current crossrepo environment3, outdated unavailable Text wrapper matcher1; updated matcher preserves nohandler requirement, environment correct"
+    }
+  ],
+  "notRuntimeUpdateAcceptance": true
+}

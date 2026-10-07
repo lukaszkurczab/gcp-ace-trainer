@@ -1,0 +1,10 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 select OOD in owned account
+---
+- assertVisible:
+    id: patternly:home:select-track:root
+- tapOn:
+    id: patternly:home:select-track:object-oriented-design-interview
+- tapOn:
+    id: patternly:home:select-track:continue
+- takeScreenshot: owned-ood-next-screen

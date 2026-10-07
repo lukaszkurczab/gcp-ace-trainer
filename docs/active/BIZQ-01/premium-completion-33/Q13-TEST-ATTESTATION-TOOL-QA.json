@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "bizq01-q13-test-attestation-tool-qa-v1",
+  "verdict": "PASS_WITH_GAPS",
+  "scope": "Independent acceptance review of the test-only patch generator and nonce receipt contract; not Q13 runtime acceptance or an unmodified-release test.",
+  "scores": {
+    "objectiveArchitectureFit": 0.96,
+    "simplicity": 0.89,
+    "risk": 0.84,
+    "maintainability": 0.87,
+    "minimum": 0.84,
+    "threshold": 0.8
+  },
+  "findings": {
+    "exactRefAndSourceBinding": "Generator pins the admitted refs, owned-file hashes and content identities; requires a clean detached checkout; validates exact changed paths, preserves the generated lock, and writes a mode-0600 external binding with source/tool/patch hashes.",
+    "runtimeMismatchAttestation": "Entry receipt uses a fresh nonce and public lock identity. The resume hook wraps only resolveRuntimeForSession(session); exact OOD v23 session pin plus v24 identity plus the expected TrainingApplicationFailure cause is required for identity_mismatch.",
+    "resultAndErrorPreservation": "Receipt failures are caught; policy returns the identical operation result or rethrows the identical operation error.",
+    "otaAndBinaryClaim": "A cached OTA without the fresh nonce cannot create the expected receipt. Documentation prohibits upload and explicitly limits evidence to disclosed instrumented test builds.",
+    "successStageScope": "exact_resume_success is emitted after the resolver returns, before draft retrieval and validation; it attests exact resolution only, not complete session restoration.",
+    "buildBindingScope": "bind-build hashes a caller-selected in-app JS file and .app tree, but does not identify the executable's configured bundle path or verify bundle identifier.",
+    "nonceReuse": "Caller-supplied nonce is supported and reuse is prohibited by documentation but not tracked by the generator. Same-nonce receipt files are not overwritten, creating stale-receipt risk if a build is reused."
+  },
+  "verification": {
+    "command": "node --import tsx --test 'docs/active/BIZQ-01/premium-completion-33/q13-test-attestation/*.test.*'",
+    "passed": 10,
+    "failed": 0,
+    "sourceRefsInspected": [
+      "ea4f3d61b39bab6b9f12ace73b34721d0d6e717a",
+      "fa95d027076e970d71dacf0d1fd7976fa0ba8f60"
+    ],
+    "sourceBoundary": "TrainingLifecycleUseCases.resumeActiveSession and resolveRuntimeForSession match at both refs; exact resolver failure is wrapped as resume_unavailable with original cause.",
+    "debugCacheProbe": "PASS for current initialized Debug Paths.cache create/write/read/delete only; no canonical store writes.",
+    "actionsByReviewer": {
+      "detachedPatch": false,
+      "build": false,
+      "install": false,
+      "simulator": false,
+      "accountOrAppStorage": false
+    }
+  },
+  "requiredExecutionConditions": [
+    "Treat exact_resume_success as exact resolver success only; require separate ordinary UI and unanswered-session preservation evidence.",
+    "Before install, verify the supplied embedded JS path is the app's actual embedded bundle and independently confirm the existing app bundle identity.",
+    "Generate a fresh nonce by omitting --nonce for every device run; verify its receipt paths are absent before the run and use a new instrumented build for reruns.",
+    "Finish the currently owned OOD10 session before installs and run content-release integrity checks on both exact refs.",
+    "Require fresh entry and exact mismatch receipts, fail-closed UI, no answer/occurrence substitution, post-run session and Guest preservation checks, and restoration of the current app/environment."
+  ],
+  "evidence": {
+    "briefing": "docs/active/BIZQ-01/premium-completion-33/Q13-TEST-ATTESTATION-BRIEFING.md",
+    "generator": "docs/active/BIZQ-01/premium-completion-33/q13-test-attestation/generate.mjs",
+    "policy": "docs/active/BIZQ-01/premium-completion-33/q13-test-attestation/attestation-policy.ts",
+    "runtimeTemplate": "docs/active/BIZQ-01/premium-completion-33/q13-test-attestation/attestation-runtime.template.ts",
+    "tests": [
+      "docs/active/BIZQ-01/premium-completion-33/q13-test-attestation/attestation-policy.test.ts",
+      "docs/active/BIZQ-01/premium-completion-33/q13-test-attestation/generate.test.mjs"
+    ],
+    "debugCacheCapability": "docs/active/BIZQ-01/premium-completion-33/Q13-CACHE-CAPABILITY-2026-10-07-03.json",
+    "cachePreservation": "docs/active/BIZQ-01/premium-completion-33/Q13-CACHE-CAPABILITY-PRESERVATION.json"
+  }
+}

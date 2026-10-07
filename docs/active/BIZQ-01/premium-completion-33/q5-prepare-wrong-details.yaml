@@ -1,0 +1,17 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 saved wrong Q5 prepare unobscured Details
+---
+- scrollUntilVisible:
+    element:
+      id: patternly:session:reason:ood-n01-b05-i018
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: patternly:session:result:ood-n01-b05-i018:incorrect
+- takeScreenshot: q5-wrong-reason
+- scrollUntilVisible:
+    element:
+      id: patternly:session:details-toggle:ood-n01-b05-i018
+    direction: DOWN
+    centerElement: true
+- takeScreenshot: q5-details-before-tap

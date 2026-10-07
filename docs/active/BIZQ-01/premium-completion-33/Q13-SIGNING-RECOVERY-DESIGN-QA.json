@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "bizq01-q13-signing-recovery-design-qa-v1",
+  "reviewer": "runtime33_design",
+  "model": "gpt-6-luna",
+  "effort": "high",
+  "verdict": "PASS_WITH_GAPS",
+  "scope": "Independent design review of simulator ad-hoc signing and guarded Q13 v2 regeneration proposal; no implementation or runtime acceptance.",
+  "scores": {
+    "objectiveArchitectureFit": 0.94,
+    "simplicity": 0.84,
+    "risk": 0.82,
+    "maintainability": 0.86,
+    "minimum": 0.82,
+    "threshold": 0.8
+  },
+  "findings": {
+    "priorFailure": "The observed Release startup stopped at the first local logout-control read before profile storage preparation or Q13 resume. The source-supported categories are corrupt and unavailable; neither category was established by the UI receipt.",
+    "signingDecision": "Correcting CODE_SIGNING_ALLOWED=NO to normal simulator ad-hoc Xcode signing is justified by the reported signature Identifier mismatch and linker-signed flags as an artifact-fidelity correction. This does not prove signing caused the logout-control failure.",
+    "artifactGate": "Before install require CFBundleIdentifier and signature Identifier equal the configured bundle ID, ad-hoc Xcode signing without linker-signed flags, and codesign --verify --deep --strict success.",
+    "regeneration": "A separate v2-to-v2 recovery must bind the prior exact five-path patch/build, reject changed or extra paths before mutation, preserve the prior binding, and issue a distinct fresh nonce/new private binding.",
+    "statePreservation": "Same simulator/app identity and ordinary install without app-data clearing preserve the intended same-app test condition. No product configuration, entitlement, Keychain, storage, or learning-state mutation is justified.",
+    "repeatFailure": "If the local logout gate fails again, stop without retry, clearing, removal, or bypass. A separately reviewed one-read probe may distinguish corrupt from unavailable without profile bootstrap if further diagnosis is needed.",
+    "releaseGap": "The plan does not yet establish corrected artifact validity or any downstream Q13 behavior. Acceptance still needs real old-success/new-mismatch receipts, preservation comparison, and ordinary UI evidence."
+  },
+  "notClaimed": [
+    "Signing was the cause of the prior SecureStore/Keychain read failure",
+    "Corrected signing will make local logout control available",
+    "MMKV or account-provider failure",
+    "Q13 resume reached in the prior Release run",
+    "Q13 completion"
+  ],
+  "implementationBuildInstallOrRuntimeAction": false
+}

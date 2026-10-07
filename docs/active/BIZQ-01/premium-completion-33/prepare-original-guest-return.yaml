@@ -1,0 +1,16 @@
+appId: com.lkurczab.patternly
+name: BIZQ33 prepare ordinary Settings sign-out
+---
+- tapOn:
+    id: main-tab-bar-settings
+- extendedWaitUntil:
+    visible:
+      id: settings-screen
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: settings-sign-out
+    direction: DOWN
+    centerElement: true
+    timeout: 30000
+- takeScreenshot: signout-centered
