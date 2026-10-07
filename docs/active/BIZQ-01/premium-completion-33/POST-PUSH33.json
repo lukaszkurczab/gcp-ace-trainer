@@ -1,0 +1,18 @@
+{
+  "task": "BIZQ-01",
+  "commit": "fcf0963bff6c54a19357fd56947168f32d5fad5f",
+  "remoteMain": "fcf0963bff6c54a19357fd56947168f32d5fad5f",
+  "publicationFiles": 221,
+  "implementationFiles": 7,
+  "boundedAcceptance": "PASS WITH ISSUES",
+  "publicationAcceptance": "PASS WITH GAPS",
+  "q13Accepted": false,
+  "fullBizq01Accepted": false,
+  "releaseAccepted": false,
+  "privateImagesOrRawLogsPublished": false,
+  "foreignFooterSha256": "760755e99ac2e9b6e28fbdf54fa527ec0406d13b45cd094f53f738dc85c4657d",
+  "queueScope": "row19a only; foreign working appendix remains unstaged",
+  "ciRun": 37621197871,
+  "ciStatus": "SUCCESS",
+  "metadataOnlyFollowupPush": false
+}

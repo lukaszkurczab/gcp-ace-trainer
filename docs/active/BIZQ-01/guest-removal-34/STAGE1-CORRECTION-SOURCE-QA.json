@@ -1,0 +1,26 @@
+{
+  "status": "PASS WITH CONDITIONS",
+  "reviewer": "q13_review / qa_luna / gpt-6-luna high",
+  "sourceSha256": {
+    "mmkvClient.ts": "81284569b1718047643d7a01b1622d503eb3ba205ada3c52326ede1acfb3e18c",
+    "profileStorageRouter.ts": "4c942d8fd9774986c423d4415cf64ac7241763811f693fe6067760967c151b86",
+    "run-canary.mjs": "b112d6fd813f34b449fe896106f5161de6f397c9ab8b646be28d0a9458ee9e57",
+    "run-canary.test.mjs": "3313980ce85f31c941bf3c935d4bc7b651cedb2f32c9798c7b6764ed70e5f6bb"
+  },
+  "independentTests": "9/9 CLI PASS; exactsource/tool/guarddiff reviewed",
+  "workerChecks": "38/38 focused PASS; syntax/typecheck/scopedDiff PASS",
+  "conditions": [
+    "Ordinary same-install cold launch and fresh exact Metro CWD/target context",
+    "Read-only reconciliation requires barrierfalse, exactGuest/no work, zero canary-family leftovers, Guest81records84keys3metadata,9account/registry/logout baseline match",
+    "Only then one synchronous canary with fsynced private intent beforecommand",
+    "Actual nativePASS does not accept Stage2/deletion/Q13/fullBIZQ/release"
+  ],
+  "runtimeEffectsByReviewer": false,
+  "recordedBy": "controller from independent reviewer messages",
+  "historical": true,
+  "supersededByCurrentSourceAndNativeEvidence": [
+    "STAGE1-NATIVE-RECONCILIATION.json",
+    "STAGE1-NATIVE-CANARY.json",
+    "STAGE1-NATIVE-QA.json"
+  ]
+}

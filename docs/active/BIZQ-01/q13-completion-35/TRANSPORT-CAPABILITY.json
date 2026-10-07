@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "scope": "minimal actual ws+approvedloopbackOrigin handshake and cleanclose on currentmain target; zeroCDPcommands/noDebuggerenable/noappreload/noappdataoperation",
+  "appId": "com.lkurczab.patternly",
+  "device": "iPhone 17",
+  "nodeTargetUnique": true,
+  "origin": "http://127.0.0.1:8081",
+  "serverSource": "@react-native/dev-middleware/dist/inspector-proxy/InspectorProxy.js verifyClient requiresmatching/allowedOrigin",
+  "priorGlobalWebSocketOrigin": "absent; actualpriorconnectfailed",
+  "q13Accepted": false,
+  "privateReceiptSha256": "325e148fbf9c2e9aea2c6790cad26ebddbbb74ed48d5b73355e6d3695ba14e72",
+  "probeSourceSha256": "d67c4ed31711b217fa72ab428383925771154e1fa2f75e059da1cc44f862a631"
+}

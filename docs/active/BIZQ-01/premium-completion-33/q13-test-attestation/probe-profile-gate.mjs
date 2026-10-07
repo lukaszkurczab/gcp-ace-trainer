@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import WebSocket from "ws";
 import { lstatSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
@@ -246,7 +247,7 @@ async function openTarget() {
 }
 
 async function withInspector(url, callback) {
-  const socket = new WebSocket(url);
+  const socket = new WebSocket(url, { origin: "http://127.0.0.1:8081" });
   await new Promise((resolvePromise, reject) => {
     const timeout = setTimeout(() => { try { socket.close(); } catch { /* best effort */ } reject(new Error("inspector_connect_timeout")); }, 5000);
     socket.addEventListener("open", () => { clearTimeout(timeout); resolvePromise(); }, { once: true });

@@ -1,0 +1,43 @@
+{
+  "status": "FAIL: input/setup mismatch; not accepted static gate",
+  "command": "npm run qa:static",
+  "results": {
+    "tests": 1909,
+    "pass": 1888,
+    "fail": 17,
+    "existingSkip": 4
+  },
+  "privateLogSha256": "4b12e85865ee30098914bb67d40f311d7f62cbb76f8be9ba01b0d492400e8a6f",
+  "independentReviewer": "q13_review / qa_luna / gpt-6-luna high",
+  "attribution": {
+    "releaseManifestFixture": {
+      "failures": 13,
+      "cause": "dirty foreign producer binary diff exceeds default execFileSync maxBuffer; shared before hook ENOBUFS"
+    },
+    "learningPlanProducer": {
+      "failures": 1,
+      "cause": "dirty newer Claude artifact mismatches app committed300-question pin"
+    },
+    "crossRepo": {
+      "failures": 3,
+      "cause": "missing historical/current expected-ref environment"
+    }
+  },
+  "sourceCorrectionNeeded": false,
+  "safeRerun": "clean private snapshot of owned app patch + pinned consumed current/historical producer refs and explicit environment; distinguish snapshot proof from newest producer HEAD compatibility",
+  "latestProducerHeadObserved": "4b0f1ff115be65bcb986080dff8328b0f0fb6d5c",
+  "consumedProducerRef": "cf119c3f8e8ebfce3e5bdbcd3d5f4e4c7c5dd509",
+  "foreignTreesModified": false,
+  "fullStaticPass": false,
+  "inputSetupRecheck": {
+    "status": "PASS",
+    "tests": 36,
+    "pass": 36,
+    "fail": 0,
+    "sourceScope": "clean private app HEADfcf0963 baseline; new Stage1/Stage2 patch NOT applied; this validates test input setup, not new implementation",
+    "producerRef": "cf119c3f8e8ebfce3e5bdbcd3d5f4e4c7c5dd509",
+    "historicalProducerRef": "cc3efca88be7e01137f10ac69a0643f06b61a350",
+    "dependencies": "read-only symlinks to restored installed npm trees; app package-lock bytes matchHEAD",
+    "privateLogSha256": "b153b14b72d41a773691488fe86e582e6aa82e92a061bfba6f5ccb8f33a944a1"
+  }
+}

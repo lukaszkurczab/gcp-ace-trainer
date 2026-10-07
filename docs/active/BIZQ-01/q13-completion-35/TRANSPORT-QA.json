@@ -1,0 +1,22 @@
+{
+  "status": "PASS WITH CONDITIONS",
+  "reviewer": "q13_review / qa_luna / gpt-6-luna high",
+  "scope": "transport correction only; independent review, no runtime action",
+  "probeSha256": "d67c4ed31711b217fa72ab428383925771154e1fa2f75e059da1cc44f862a631",
+  "privateHandshakeSha256": "325e148fbf9c2e9aea2c6790cad26ebddbbb74ed48d5b73355e6d3695ba14e72",
+  "verification": {
+    "syntax": "PASS",
+    "focusedTests": "11/11 PASS",
+    "actualHandshake": "previous root receipt independently hash-verified; zero CDP commands"
+  },
+  "conditions": [
+    "After Guest removal obtain fresh exact old binding, entry nonce and actual sole Metro/app/device/node target context.",
+    "Capability only; failure stops the attempt.",
+    "Observe and ordinary reload require separate satisfied conditions."
+  ],
+  "limitations": [
+    "Not Q13 acceptance",
+    "Not profile diagnosis"
+  ],
+  "recordedBy": "controller from independent reviewer message"
+}

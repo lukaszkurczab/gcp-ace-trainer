@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "bizq01-guest-removal-design-qa-v1",
+  "reviewer": "resume_design",
+  "model": "gpt-6-luna",
+  "effort": "high",
+  "verdict": "PASS WITH CONDITIONS",
+  "scope": "design review for one-time exact original modern Guest profile and local-data removal; no runtime or destructive effects",
+  "userDecision": "explicit removal of the original Guest supersedes prior Guest-preservation instruction",
+  "protectedScope": [
+    "all nine account profiles and their data",
+    "all unrelated logout-control pairs",
+    "app-global MMKV entries and encrypted-store manifests/keys",
+    "Auth, backend, Firestore, and other external account state"
+  ],
+  "sourceFindings": {
+    "profileRegistrySlots": ["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"],
+    "profilePhysicalPrefix": "patternly:profile:v1:<id>:",
+    "routerHasProfileDelete": false,
+    "selectGuestCanCreateReplacementWhileOriginalGuestExists": false,
+    "localHistoryResetPreservesGuestIdentity": true,
+    "removeUnavailableEncryptedStorageIsWholeStoreDestructive": true,
+    "originalGuestDatasetIdSha256": "b880a3a8d1530601f6f1ed2f244078468f09f51f9d68ba5f6d3cec95cfa5e52d",
+    "originalGuestInstallationIdSha256": "498a8a5cbc36ed6331567374098786cc922f8133a4afceb7471ca0d77b4de760"
+  },
+  "decision": {
+    "approach": "temporary canonical router operation; no general profile-delete UI/API",
+    "requiredGuards": [
+      "exact target ID hash match and modern guest kind",
+      "guest marker matches installation hash, is unbound, and is not account-bound",
+      "both SecureStore registry slots valid before mutation",
+      "global transition barrier and no pending local mutation journal",
+      "fail closed for legacy_guest or any mismatch"
+    ],
+    "requiredOrdering": [
+      "capture categorized protected baseline",
+      "persist and verify a durable removal journal",
+      "create and verify a fresh guest scope",
+      "commit registry excluding old guest and selecting fresh guest",
+      "commit a second generation so both slots exclude old guest",
+      "remove only exact old modern-profile prefix keys",
+      "verify target absent, fresh guest valid, and all protected hashes unchanged",
+      "clear journal after verified completion"
+    ],
+    "recovery": "block ordinary profile publication while journal is pending; resume the exact recorded operation idempotently",
+    "prohibitedMethods": [
+      "clearAll or whole app data reset",
+      "removeUnavailableEncryptedStorage",
+      "uninstall or reinstall",
+      "direct unscoped deletion outside the canonical router",
+      "delete legacy root keys or any non-target profile prefix"
+    ]
+  },
+  "capabilityProbe": {
+    "requiredBeforeDestructiveOperation": true,
+    "method": "temporary infrastructure-owned one-shot probe (no general raw-base accessor/UI); one nonce-bearing canary in an unregistered random profile namespace using the initialized native adapter; enumerate/read/remove/readback; compare protected hashes; cleanup failure stops",
+    "runtimeProbePerformedByReviewer": false,
+    "mockTestsAloneSufficient": false
+  },
+  "scores": {
+    "fit": 0.96,
+    "simplicity": 0.82,
+    "risk": 0.80,
+    "maintainability": 0.84,
+    "minimum": 0.80,
+    "scoreCondition": "scores apply only with both-slot cleanup, durable journal, and fail-closed startup recovery"
+  },
+  "implementationOrDeletionAccepted": false,
+  "limitations": [
+    "No implementation or runtime readiness is established by this review.",
+    "Fresh runtime registry kind, raw target ID hash, category baseline, and native remove capability still require verification before deletion.",
+    "The design is rejected if it updates only one registry slot or lacks journaled recovery across SecureStore/MMKV boundaries."
+  ]
+}

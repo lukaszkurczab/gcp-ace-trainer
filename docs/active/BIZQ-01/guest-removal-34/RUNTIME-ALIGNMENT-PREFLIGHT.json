@@ -1,0 +1,29 @@
+{
+  "stage": "matching dependencies restored",
+  "actualCanaryRun": true,
+  "guestDeleted": false,
+  "dependencyChange": "foreign pnpm tree observed 2026-10-07 15:12; files preserved",
+  "javascriptVersions": {
+    "expo": "57.0.27",
+    "reactNative": "0.86.3",
+    "mmkv": "4.3.2",
+    "nitro": "0.36.5"
+  },
+  "existingNativeNitro": "0.36.1",
+  "oldInstalledCandidatesAvailable": false,
+  "ownedMetroRestart": "PASS after permitted Watchman access; current main checkout",
+  "ordinaryApp": "original Guest Home visible; native version mismatch warning present",
+  "activeInstallOrNativeBuildObserved": false,
+  "pending": "revised Stage1 source/tool QA then ordinary cold/read-only reconciliation before any future write",
+  "limitations": "No native canary/storage mutation/removal acceptance. Read-only snapshot attempted before bundle readiness had no Inspector target; it produced no private snapshot and no app data effect.",
+  "resolution": "foreign owner npm ci completed0; generated pnpm configs quarantined by owner; package.json/package-lock bytes equalHEAD",
+  "restoredVersions": {
+    "expo": "57.0.17",
+    "reactNative": "0.86.3",
+    "mmkv": "4.3.2",
+    "nitro": "0.36.1"
+  },
+  "nativeVersionWarningAbsentAfterColdLaunch": true,
+  "nativeBuildOrInstallPerformed": false,
+  "actualCanaryResult": "unknown: canary_result_invalid; Promise transport mismatch; transitionActive true"
+}

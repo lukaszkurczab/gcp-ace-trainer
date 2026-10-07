@@ -15,15 +15,74 @@ const ACCOUNT_ID = "owner-account-1";
 class MemoryControlStore implements StorageManifestStore {
   readonly values = new Map<string, string>();
   failNextSet = false;
+  failSetKeyOnce: string | null = null;
+  failGetKeyOccurrence: { key: string; occurrence: number } | null = null;
+  failNextRemove = false;
+  private readonly getCounts = new Map<string, number>();
   private assertValidKey(key: string) { assert.match(key, /^[\w.-]+$/u, "SecureStore keys may only contain alphanumeric characters, '.', '-', and '_'"); }
-  async get(key: string) { this.assertValidKey(key); return this.values.get(key) ?? null; }
-  async set(key: string, value: string) { this.assertValidKey(key); if (this.failNextSet) { this.failNextSet = false; throw new Error("injected_control_commit_failure"); } this.values.set(key, value); }
-  async remove(key: string) { this.assertValidKey(key); this.values.delete(key); }
+  async get(key: string) { this.assertValidKey(key); const count = (this.getCounts.get(key) ?? 0) + 1; this.getCounts.set(key, count); if (this.failGetKeyOccurrence?.key === key && this.failGetKeyOccurrence.occurrence === count) { this.failGetKeyOccurrence = null; throw new Error("injected_control_read_failure"); } return this.values.get(key) ?? null; }
+  getCount(key: string) { return this.getCounts.get(key) ?? 0; }
+  async set(key: string, value: string) { this.assertValidKey(key); if (this.failNextSet || this.failSetKeyOnce === key) { this.failNextSet = false; this.failSetKeyOnce = null; throw new Error("injected_control_commit_failure"); } this.values.set(key, value); }
+  async remove(key: string) { this.assertValidKey(key); if (this.failNextRemove) { this.failNextRemove = false; throw new Error("injected_control_remove_failure"); } this.values.delete(key); }
 }
 
 function identitySequence(...ids: string[]) {
   let index = 0;
   return { async create() { const id = ids[index++]!; return { installationId: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`, localDatasetId: id }; } };
+}
+
+function uuidAt(number: number): string { return `00000000-0000-4000-8000-${String(number).padStart(12, "0")}`; }
+function hashedEntries(base: MemoryKeyValueStorage, keys: readonly string[]): string {
+  return sha256Utf8(JSON.stringify([...keys].sort().map((key) => [sha256Utf8(key), sha256Utf8(base.getString(key)!)])));
+}
+function profileInventory(profiles: readonly { id: string; kind: string; accountId: string | null }[]): string {
+  const identities = profiles.map((profile) => ({ idSha256: sha256Utf8(profile.id), kind: profile.kind, accountIdSha256: profile.accountId === null ? null : sha256Utf8(profile.accountId) }))
+    .sort((left, right) => left.idSha256.localeCompare(right.idSha256));
+  return sha256Utf8(JSON.stringify(identities));
+}
+
+async function guestRemovalFixture() {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  const accountProfileIds = Array.from({ length: 9 }, (_, index) => uuidAt(100 + index));
+  const replacementId = uuidAt(200);
+  const identity = identitySequence(GUEST_ID, uuidAt(99), ...accountProfileIds, replacementId);
+  let router = await openProfileStorageRouter(base, control, { identity });
+  await router.selectExistingGuest(GUEST_ID);
+  for (let index = 0; index < accountProfileIds.length; index += 1) {
+    router = await openProfileStorageRouter(base, control, { identity });
+    await router.selectAccount(`protected-account-${index + 1}`);
+  }
+  router = await openProfileStorageRouter(base, control, { identity });
+  await router.selectExistingGuest(GUEST_ID);
+  let transitionActive = false;
+  router = await openProfileStorageRouter(base, control, { identity, isTransitionActive: () => transitionActive, onBeforeProfileCommit: () => { transitionActive = true; } });
+  const accountProfiles = router.registry.profiles.filter((profile) => profile.kind === "account");
+  for (let index = 0; index < accountProfiles.length; index += 1) {
+    base.setString(`patternly:profile:v1:${accountProfiles[index]!.id}:${encodeURIComponent(STORAGE_KEYS.SETTINGS)}`, `account-data-${index + 1}`);
+  }
+  router.storage.setString(STORAGE_KEYS.ACTIVE_TRACK, "original-guest-track");
+  base.setString("patternly:global:removal-test", "global-control");
+  const pairs = Array.from({ length: 6 }, (_, index) => ({ uid: `logout-uid-${index + 1}`, operationId: `logout-operation-${index + 1}` }));
+  const logoutRaw = JSON.stringify({ version: 2, blocked: null, pending: pairs, completed: [] });
+  control.values.set("patternly.local-logout-control.v2", logoutRaw);
+  const profiles = router.registry.profiles;
+  const allKeys = base.getAllKeys();
+  const accountPrefixes = accountProfiles.map((profile) => `patternly:profile:v1:${profile.id}:`);
+  const accountKeys = allKeys.filter((key) => accountPrefixes.some((prefix) => key.startsWith(prefix)));
+  const globalKeys = allKeys.filter((key) => !key.startsWith("patternly:profile:v1:"));
+  const targetPrefix = `patternly:profile:v1:${GUEST_ID}:`;
+  const expected = {
+    datasetIdSha256: sha256Utf8(GUEST_ID),
+    installationIdSha256: sha256Utf8(uuidAt(2)),
+    profileIdentityInventorySha256: profileInventory(profiles),
+    accountStateSha256: hashedEntries(base, accountKeys),
+    globalStateSha256: hashedEntries(base, globalKeys),
+    pendingPairInventorySha256: sha256Utf8(JSON.stringify(pairs.map((pair) => sha256Utf8(JSON.stringify(pair))).sort())),
+    pendingUidInventorySha256: sha256Utf8(JSON.stringify(pairs.map((pair) => sha256Utf8(pair.uid)).sort())),
+    guestKeyCount: allKeys.filter((key) => key.startsWith(targetPrefix)).length,
+  };
+  return { base, control, router, expected, transitionActive: () => transitionActive, replacementId, targetPrefix, accountKeys, globalKeys, logoutRaw };
 }
 
 function addRegisteredGuest(control: MemoryControlStore, id: string): void {
@@ -95,6 +154,29 @@ test("explicit selection of the initial guest provisions its unbound access mark
   assert.equal(router.hasValidGuestAccess(GUEST_ID), true);
   assert.equal(base.getString(`patternly:profile:v1:${GUEST_ID}:${encodeURIComponent(STORAGE_KEYS.GUEST_INSTALLATION)}`) !== undefined, true);
   assert.equal(base.getString(`patternly:profile:v1:${GUEST_ID}:${encodeURIComponent(STORAGE_KEYS.GUEST_ACCESS)}`) !== undefined, true);
+});
+
+test("exact modern-guest preflight requires selected registered identity, exact hashes, and an unbound guest marker", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  const router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID) });
+  await router.selectExistingGuest(GUEST_ID);
+  const before = base.snapshot();
+  const installationHash = sha256Utf8("00000000-0000-4000-8000-000000000002");
+  const datasetHash = sha256Utf8(GUEST_ID);
+
+  assert.equal(router.hasExactUnboundModernGuest(GUEST_ID, installationHash, datasetHash), true);
+  assert.equal(router.hasExactUnboundModernGuest(GUEST_ID, "0".repeat(64), datasetHash), false);
+  assert.equal(router.hasExactUnboundModernGuest(GUEST_ID, installationHash, "0".repeat(64)), false);
+  assert.equal(router.hasExactUnboundModernGuest("00000000-0000-4000-8000-000000000099", installationHash, datasetHash), false);
+  assert.deepEqual(base.snapshot(), before);
+
+  base.setString(`patternly:profile:v1:${GUEST_ID}:${encodeURIComponent(STORAGE_KEYS.GUEST_INSTALLATION)}`, JSON.stringify({
+    schemaIdentity: "patternly:canonical:v1", revision: 2,
+    payload: { installationId: OWNER_ID, localDatasetId: GUEST_ID, bindingState: "adoption_pending", accountId: null },
+  }));
+  const pending = await openProfileStorageRouter(base, control);
+  assert.equal(pending.hasExactUnboundModernGuest(GUEST_ID, installationHash, datasetHash), false);
 });
 
 test("a selected modern guest keeps its earlier independent dataset identity and scoped data", async () => {
@@ -475,4 +557,169 @@ test("failed existing guest registry commit leaves the current scope closed", as
   assert.throws(() => reselector.storage.getString(STORAGE_KEYS.METADATA), ProfileTransitionActiveError);
   const unchanged = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
   assert.notEqual(unchanged.profile.id, guest.id);
+});
+
+test("Guest removal replaces only the exact modern Guest, commits both registry slots, and preserves account/global/logout state", async () => {
+  const fixture = await guestRemovalFixture();
+  const accountBefore = fixture.accountKeys.map((key) => [key, fixture.base.getString(key)]);
+  const globalBefore = fixture.globalKeys.map((key) => [key, fixture.base.getString(key)]);
+  const slots = ["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"];
+
+  const receipt = await fixture.router.removeOriginalGuest34(fixture.expected);
+
+  assert.equal(receipt.result, "passed");
+  assert.equal(receipt.stage, "complete");
+  assert.equal(receipt.removedProfileIdSha256, fixture.expected.datasetIdSha256);
+  assert.equal(receipt.replacementProfileIdSha256, sha256Utf8(fixture.replacementId));
+  assert.equal(receipt.protectedAccountStateSha256, fixture.expected.accountStateSha256);
+  assert.equal(receipt.protectedGlobalStateSha256, fixture.expected.globalStateSha256);
+  assert.equal(receipt.logoutControlSha256, sha256Utf8(fixture.logoutRaw));
+  assert.equal(receipt.removedKeyCount, fixture.expected.guestKeyCount);
+  assert.equal(JSON.stringify(receipt).includes(GUEST_ID), false);
+  assert.equal(JSON.stringify(receipt).includes(fixture.replacementId), false);
+  assert.equal(fixture.transitionActive(), true);
+  assert.equal(fixture.base.getAllKeys().some((key) => key.startsWith(fixture.targetPrefix)), false);
+  assert.deepEqual(fixture.control.values.has("patternly.profile-removal.v1"), false);
+  for (const key of slots) {
+    const registry = JSON.parse(fixture.control.values.get(key)!) as { profiles: { id: string }[]; selectedProfileId: string };
+    assert.equal(registry.profiles.some((profile) => profile.id === GUEST_ID), false);
+    assert.equal(registry.profiles.some((profile) => profile.id === fixture.replacementId), true);
+    assert.equal(registry.selectedProfileId, fixture.replacementId);
+  }
+  assert.deepEqual(fixture.accountKeys.map((key) => [key, fixture.base.getString(key)]), accountBefore);
+  assert.deepEqual(fixture.globalKeys.map((key) => [key, fixture.base.getString(key)]), globalBefore);
+  assert.equal(fixture.control.values.get("patternly.local-logout-control.v2"), fixture.logoutRaw);
+
+  const reopened = await openProfileStorageRouter(fixture.base, fixture.control, { identity: identitySequence(uuidAt(300)) });
+  assert.equal(reopened.profile.id, fixture.replacementId);
+  assert.equal(reopened.profile.kind, "guest");
+  assert.equal(reopened.hasValidGuestAccess(fixture.replacementId), true);
+  assert.equal(reopened.registry.profiles.filter((profile) => profile.kind === "account").length, 9);
+});
+
+test("Guest removal refuses a wrong dataset hash and active learning work without mutation", async () => {
+  const fixture = await guestRemovalFixture();
+  const before = fixture.base.snapshot();
+  const registries = ["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"].map((key) => fixture.control.values.get(key));
+  const wrong = await fixture.router.removeOriginalGuest34({ ...fixture.expected, datasetIdSha256: "0".repeat(64) });
+  assert.equal(wrong.result, "failed");
+  assert.equal(fixture.transitionActive(), false);
+  assert.deepEqual(fixture.base.snapshot(), before);
+  assert.deepEqual(["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"].map((key) => fixture.control.values.get(key)), registries);
+
+  fixture.router.storage.setString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, "active-session");
+  const activeBefore = fixture.base.snapshot();
+  const active = await fixture.router.removeOriginalGuest34({ ...fixture.expected, guestKeyCount: fixture.expected.guestKeyCount + 1 });
+  assert.equal(active.result, "failed");
+  assert.equal(active.stage, "active_learning_work_present");
+  assert.equal(fixture.transitionActive(), false);
+  assert.deepEqual(fixture.base.snapshot(), activeBefore);
+  assert.deepEqual(["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"].map((key) => fixture.control.values.get(key)), registries);
+});
+
+test("Guest removal recovers the same journal after marker, either registry-slot, or prefix-removal failure", async () => {
+  for (const failureBoundary of ["marker", "first-registry", "second-registry", "prefix-remove"] as const) {
+    const fixture = await guestRemovalFixture();
+    const rootKeys = ["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"];
+    const parsed = rootKeys.map((key) => ({ key, value: JSON.parse(fixture.control.values.get(key)!) as { generation: number } }));
+    const latest = [...parsed].sort((left, right) => right.value.generation - left.value.generation)[0]!;
+    const stale = parsed.find((slot) => slot.key !== latest.key)!;
+    if (failureBoundary === "marker") fixture.base.setFailurePlan({ kind: "fail_on_key_write", key: `patternly:profile:v1:${fixture.replacementId}:${encodeURIComponent(STORAGE_KEYS.GUEST_INSTALLATION)}` });
+    if (failureBoundary === "first-registry") fixture.control.failSetKeyOnce = stale.key;
+    if (failureBoundary === "second-registry") fixture.control.failSetKeyOnce = latest.key;
+    if (failureBoundary === "prefix-remove") fixture.base.setFailurePlan({ kind: "fail_on_remove_number", removeNumber: 1 });
+
+    const first = await fixture.router.removeOriginalGuest34(fixture.expected);
+    assert.equal(first.result, "failed", failureBoundary);
+    assert.equal(fixture.control.values.has("patternly.profile-removal.v1"), true, failureBoundary);
+    fixture.base.setFailurePlan(null);
+
+    const recovered = await openProfileStorageRouter(fixture.base, fixture.control, { identity: identitySequence(uuidAt(300)) });
+    assert.equal(recovered.profile.id, fixture.replacementId, failureBoundary);
+    assert.equal(fixture.base.getAllKeys().some((key) => key.startsWith(fixture.targetPrefix)), false, failureBoundary);
+    assert.equal(fixture.control.values.has("patternly.profile-removal.v1"), false, failureBoundary);
+    for (const key of rootKeys) {
+      const registry = JSON.parse(fixture.control.values.get(key)!) as { profiles: { id: string }[]; selectedProfileId: string };
+      assert.equal(registry.profiles.some((profile) => profile.id === GUEST_ID), false, failureBoundary);
+      assert.equal(registry.selectedProfileId, fixture.replacementId, failureBoundary);
+    }
+  }
+});
+
+test("Guest removal keeps a durable journal and blocks router publication if journal clearing fails", async () => {
+  const fixture = await guestRemovalFixture();
+  fixture.control.failNextRemove = true;
+  const failed = await fixture.router.removeOriginalGuest34(fixture.expected);
+  assert.equal(failed.result, "failed");
+  assert.equal(fixture.control.values.has("patternly.profile-removal.v1"), true);
+  assert.equal(fixture.base.getAllKeys().some((key) => key.startsWith(fixture.targetPrefix)), false);
+  const recovered = await openProfileStorageRouter(fixture.base, fixture.control, { identity: identitySequence(uuidAt(300)) });
+  assert.equal(recovered.profile.id, fixture.replacementId);
+  assert.equal(fixture.control.values.has("patternly.profile-removal.v1"), false);
+});
+
+test("Guest removal refuses a checksummed journal with a malformed retained profile before publishing or mutating", async () => {
+  const fixture = await guestRemovalFixture();
+  fixture.base.setFailurePlan({ kind: "fail_on_key_write", key: `patternly:profile:v1:${fixture.replacementId}:${encodeURIComponent(STORAGE_KEYS.GUEST_INSTALLATION)}` });
+  const interrupted = await fixture.router.removeOriginalGuest34(fixture.expected);
+  assert.equal(interrupted.result, "failed");
+  const journalKey = "patternly.profile-removal.v1";
+  const journal = JSON.parse(fixture.control.values.get(journalKey)!) as { checksum: string; retainedProfiles: { id: string; kind: string; accountId: string | null }[]; [key: string]: unknown };
+  journal.retainedProfiles[0]!.kind = "legacy_owner";
+  const body = Object.fromEntries(Object.entries(journal).filter(([key]) => key !== "checksum"));
+  journal.checksum = sha256Utf8(JSON.stringify(body));
+  fixture.control.values.set(journalKey, JSON.stringify(journal));
+  const storageBefore = fixture.base.snapshot();
+
+  await assert.rejects(openProfileStorageRouter(fixture.base, fixture.control, { identity: identitySequence(uuidAt(300)) }),
+    (error) => error instanceof ProfileStorageError && error.code === "profile_removal_recovery_required");
+
+  assert.deepEqual(fixture.base.snapshot(), storageBefore);
+  assert.equal(fixture.control.values.has(journalKey), true);
+});
+
+test("Guest removal keeps cleanup monotonic across repeated interruption after old markers are deleted", async () => {
+  const fixture = await guestRemovalFixture();
+  const rootKeys = ["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"];
+  const assertReplacementSelected = () => {
+    for (const key of rootKeys) {
+      const registry = JSON.parse(fixture.control.values.get(key)!) as { profiles: { id: string }[]; selectedProfileId: string };
+      assert.equal(registry.profiles.some((profile) => profile.id === GUEST_ID), false);
+      assert.equal(registry.profiles.some((profile) => profile.id === fixture.replacementId), true);
+      assert.equal(registry.selectedProfileId, fixture.replacementId);
+    }
+  };
+  const targetInstallationKey = `${fixture.targetPrefix}${encodeURIComponent(STORAGE_KEYS.GUEST_INSTALLATION)}`;
+  const targetAccessKey = `${fixture.targetPrefix}${encodeURIComponent(STORAGE_KEYS.GUEST_ACCESS)}`;
+  const accountBefore = fixture.accountKeys.map((key) => [key, fixture.base.getString(key)]);
+  const globalBefore = fixture.globalKeys.map((key) => [key, fixture.base.getString(key)]);
+  const logoutBefore = fixture.control.values.get("patternly.local-logout-control.v2");
+  fixture.base.resetCounters();
+  fixture.base.setFailurePlan({ kind: "fail_on_remove_number", removeNumber: 3 });
+
+  const first = await fixture.router.removeOriginalGuest34(fixture.expected);
+  assert.equal(first.result, "failed");
+  assert.equal(fixture.base.getString(targetInstallationKey), undefined);
+  assert.equal(fixture.base.getString(targetAccessKey), undefined);
+  assert.equal(JSON.parse(fixture.control.values.get("patternly.profile-removal.v1")!).stage, "cleanup");
+  assertReplacementSelected();
+
+  fixture.base.setFailurePlan(null);
+  const rootA = "patternly.profile-root.v1.a";
+  fixture.control.failGetKeyOccurrence = { key: rootA, occurrence: fixture.control.getCount(rootA) + 2 };
+  await assert.rejects(openProfileStorageRouter(fixture.base, fixture.control, { identity: identitySequence(uuidAt(300)) }),
+    (error) => error instanceof ProfileStorageError && error.code === "profile_removal_recovery_required");
+  assert.equal(JSON.parse(fixture.control.values.get("patternly.profile-removal.v1")!).stage, "cleanup");
+  assert.deepEqual(fixture.base.getAllKeys().some((key) => key.startsWith(fixture.targetPrefix)), true);
+  assertReplacementSelected();
+
+  const recovered = await openProfileStorageRouter(fixture.base, fixture.control, { identity: identitySequence(uuidAt(300)) });
+  assert.equal(recovered.profile.id, fixture.replacementId);
+  assert.equal(fixture.base.getAllKeys().some((key) => key.startsWith(fixture.targetPrefix)), false);
+  assert.equal(fixture.control.values.has("patternly.profile-removal.v1"), false);
+  assertReplacementSelected();
+  assert.deepEqual(fixture.accountKeys.map((key) => [key, fixture.base.getString(key)]), accountBefore);
+  assert.deepEqual(fixture.globalKeys.map((key) => [key, fixture.base.getString(key)]), globalBefore);
+  assert.equal(fixture.control.values.get("patternly.local-logout-control.v2"), logoutBefore);
+  assert.equal(first.stage, "recovery_failed");
 });

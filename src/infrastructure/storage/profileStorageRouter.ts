@@ -5,6 +5,8 @@ import { installationIdentity, type GuestInstallationIdentityPort } from "../ide
 import { sha256Utf8 } from "../identity/sha256";
 
 const ROOT_KEYS = Object.freeze(["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"] as const);
+const GUEST_REMOVAL_JOURNAL_KEY = "patternly.profile-removal.v1";
+const LOCAL_LOGOUT_CONTROL_KEY = "patternly.local-logout-control.v2";
 const ROOT_VERSION = 1 as const;
 const PROFILE_PREFIX = "patternly:profile:v1:";
 const CANONICAL_ENVELOPE = "patternly:canonical:v1";
@@ -20,8 +22,56 @@ export type ProfileRegistry = Readonly<{
   checksum: string;
 }>;
 
+export type GuestRemoval34Receipt = Readonly<{
+  schemaVersion: "bizq01-guest-removal-34-v1";
+  result: "passed" | "failed";
+  stage: string;
+  replacementProfileIdSha256?: string;
+  removedProfileIdSha256?: string;
+  protectedAccountStateSha256?: string;
+  protectedGlobalStateSha256?: string;
+  logoutControlSha256?: string;
+  removedKeyCount?: number;
+}>;
+
+export type GuestRemoval34ExpectedState = Readonly<{
+  datasetIdSha256: string;
+  installationIdSha256: string;
+  profileIdentityInventorySha256: string;
+  accountStateSha256: string;
+  globalStateSha256: string;
+  pendingPairInventorySha256: string;
+  pendingUidInventorySha256: string;
+  guestKeyCount: number;
+}>;
+
+type GuestRemoval34Journal = Readonly<{
+  schemaVersion: "bizq01-guest-removal-34-journal-v1";
+  stage: "intent" | "replacement_markers" | "registry_first" | "registry_both" | "cleanup";
+  targetProfileId: string;
+  targetInstallationId: string;
+  replacementProfileId: string;
+  replacementInstallationId: string;
+  expectedDatasetIdSha256: string;
+  expectedInstallationIdSha256: string;
+  expectedProfileIdentityInventorySha256: string;
+  expectedAccountStateSha256: string;
+  expectedGlobalStateSha256: string;
+  expectedPendingPairInventorySha256: string;
+  expectedPendingUidInventorySha256: string;
+  originalRegistryGeneration: number;
+  originalRegistryChecksum: string;
+  targetKeyCount: number;
+  retainedProfiles: readonly StorageProfile[];
+  accountStateSha256: string;
+  globalStateSha256: string;
+  otherProfileStateSha256: string;
+  logoutControlSha256: string;
+  checksum: string;
+}>;
+
 export class ProfileStorageError extends Error {
-  public constructor(public readonly code: "profile_registry_corrupt" | "legacy_profile_unidentified" | "profile_scope_unavailable" | "profile_transition_cancelled" | "prepared_guest_choice_required") {
+  public constructor(public readonly code: "profile_registry_corrupt" | "legacy_profile_unidentified" | "profile_scope_unavailable" | "profile_transition_cancelled" | "prepared_guest_choice_required" | "profile_removal_recovery_required") {
     super(code);
     this.name = "ProfileStorageError";
   }
@@ -106,6 +156,357 @@ function physicalKey(profileId: string, key: string, legacy: boolean): string {
   return legacy ? key : `${PROFILE_PREFIX}${profileId}:${encodeURIComponent(key)}`;
 }
 
+function signRemovalJournal(body: Omit<GuestRemoval34Journal, "checksum">): GuestRemoval34Journal {
+  return Object.freeze({ ...body, checksum: sha256Utf8(JSON.stringify(body)) });
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isDigest(value: unknown): value is string {
+  return typeof value === "string" && /^[a-f0-9]{64}$/u.test(value);
+}
+
+function areDigestFields<T extends Record<string, unknown>>(value: T): value is T & { [K in keyof T]: string } {
+  return Object.values(value).every(isDigest);
+}
+
+function isRemovalStage(value: unknown): value is GuestRemoval34Journal["stage"] {
+  return value === "intent" || value === "replacement_markers" || value === "registry_first" || value === "registry_both" || value === "cleanup";
+}
+
+function isRetainedAccountProfile(value: unknown): value is StorageProfile {
+  if (!isRecord(value) || Object.keys(value).sort().join(",") !== "accountId,id,kind") return false;
+  return value.kind === "account" && uuid(value.id) && typeof value.accountId === "string" && value.accountId.trim().length > 0;
+}
+
+function parseRemovalJournal(raw: string | null): GuestRemoval34Journal | null {
+  if (raw === null) return null;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!isRecord(parsed)) return null;
+    const value = parsed;
+    const keys = ["accountStateSha256","checksum","expectedAccountStateSha256","expectedDatasetIdSha256","expectedGlobalStateSha256","expectedInstallationIdSha256","expectedPendingPairInventorySha256","expectedPendingUidInventorySha256","expectedProfileIdentityInventorySha256","globalStateSha256","logoutControlSha256","originalRegistryChecksum","originalRegistryGeneration","otherProfileStateSha256","replacementInstallationId","replacementProfileId","retainedProfiles","schemaVersion","stage","targetInstallationId","targetKeyCount","targetProfileId"];
+    if (Object.keys(value).sort().join(",") !== [...keys].sort().join(",") || value.schemaVersion !== "bizq01-guest-removal-34-journal-v1"
+      || !isRemovalStage(value.stage) || !uuid(value.targetProfileId) || !uuid(value.targetInstallationId)
+      || !uuid(value.replacementProfileId) || !uuid(value.replacementInstallationId)
+      || typeof value.originalRegistryGeneration !== "number" || !Number.isSafeInteger(value.originalRegistryGeneration) || value.originalRegistryGeneration < 1
+      || typeof value.targetKeyCount !== "number" || !Number.isSafeInteger(value.targetKeyCount) || value.targetKeyCount < 1
+      || !Array.isArray(value.retainedProfiles) || value.retainedProfiles.length !== 9) return null;
+    const targetProfileId = value.targetProfileId;
+    const targetInstallationId = value.targetInstallationId;
+    const replacementProfileId = value.replacementProfileId;
+    const replacementInstallationId = value.replacementInstallationId;
+    const stage = value.stage;
+    const originalRegistryGeneration = value.originalRegistryGeneration;
+    const targetKeyCount = value.targetKeyCount;
+    const retainedProfiles: StorageProfile[] = [];
+    for (const profile of value.retainedProfiles) {
+      if (!isRetainedAccountProfile(profile)) return null;
+      retainedProfiles.push(profile);
+    }
+    const hashes = {
+      expectedDatasetIdSha256: value.expectedDatasetIdSha256, expectedInstallationIdSha256: value.expectedInstallationIdSha256,
+      expectedProfileIdentityInventorySha256: value.expectedProfileIdentityInventorySha256, expectedAccountStateSha256: value.expectedAccountStateSha256,
+      expectedGlobalStateSha256: value.expectedGlobalStateSha256, expectedPendingPairInventorySha256: value.expectedPendingPairInventorySha256,
+      expectedPendingUidInventorySha256: value.expectedPendingUidInventorySha256, originalRegistryChecksum: value.originalRegistryChecksum,
+      accountStateSha256: value.accountStateSha256, globalStateSha256: value.globalStateSha256,
+      otherProfileStateSha256: value.otherProfileStateSha256, logoutControlSha256: value.logoutControlSha256, checksum: value.checksum,
+    };
+    if (!areDigestFields(hashes)
+      || targetProfileId === replacementProfileId || targetProfileId === targetInstallationId || replacementProfileId === replacementInstallationId
+      || new Set(retainedProfiles.map((profile) => profile.id)).size !== retainedProfiles.length
+      || retainedProfiles.some((profile) => profile.id === targetProfileId || profile.id === replacementProfileId || profile.id === replacementInstallationId)
+      || sha256Utf8(targetProfileId) !== hashes.expectedDatasetIdSha256 || sha256Utf8(targetInstallationId) !== hashes.expectedInstallationIdSha256
+      || hashes.expectedAccountStateSha256 !== hashes.accountStateSha256 || hashes.expectedGlobalStateSha256 !== hashes.globalStateSha256
+      || profileIdentityInventory([...retainedProfiles, { id: targetProfileId, kind: "guest", accountId: null }]) !== hashes.expectedProfileIdentityInventorySha256) return null;
+    const body: Omit<GuestRemoval34Journal, "checksum"> = {
+      schemaVersion: "bizq01-guest-removal-34-journal-v1", stage, targetProfileId, targetInstallationId,
+      replacementProfileId, replacementInstallationId, expectedDatasetIdSha256: hashes.expectedDatasetIdSha256,
+      expectedInstallationIdSha256: hashes.expectedInstallationIdSha256, expectedProfileIdentityInventorySha256: hashes.expectedProfileIdentityInventorySha256,
+      expectedAccountStateSha256: hashes.expectedAccountStateSha256, expectedGlobalStateSha256: hashes.expectedGlobalStateSha256,
+      expectedPendingPairInventorySha256: hashes.expectedPendingPairInventorySha256, expectedPendingUidInventorySha256: hashes.expectedPendingUidInventorySha256,
+      originalRegistryGeneration, originalRegistryChecksum: hashes.originalRegistryChecksum, targetKeyCount,
+      retainedProfiles: Object.freeze(retainedProfiles.map((profile) => Object.freeze({ ...profile }))),
+      accountStateSha256: hashes.accountStateSha256, globalStateSha256: hashes.globalStateSha256,
+      otherProfileStateSha256: hashes.otherProfileStateSha256, logoutControlSha256: hashes.logoutControlSha256,
+    };
+    if (hashes.checksum !== sha256Utf8(JSON.stringify(body))) return null;
+    return Object.freeze({ ...body, checksum: hashes.checksum });
+  } catch { return null; }
+}
+
+function profileIdentityInventory(profiles: readonly StorageProfile[]): string {
+  const identities = profiles.map((profile) => ({ idSha256: sha256Utf8(profile.id), kind: profile.kind, accountIdSha256: profile.accountId === null ? null : sha256Utf8(profile.accountId) }))
+    .sort((left, right) => left.idSha256.localeCompare(right.idSha256));
+  return sha256Utf8(JSON.stringify(identities));
+}
+
+function hashPhysicalEntries(base: KeyValueStorage, keys: readonly string[]): string {
+  const entries = [...keys].sort().map((key) => {
+    const value = base.getString(key);
+    if (value === undefined) throw new ProfileStorageError("profile_removal_recovery_required");
+    return [sha256Utf8(key), sha256Utf8(value)];
+  });
+  return sha256Utf8(JSON.stringify(entries));
+}
+
+type GuestRemovalProtectedSnapshot = Readonly<{
+  accountStateSha256: string;
+  globalStateSha256: string;
+  otherProfileStateSha256: string;
+  logoutControlSha256: string;
+}>;
+
+function pendingLogoutInventories(raw: string | null): Readonly<{ valueSha256: string; pairsSha256: string; uidsSha256: string }> | null {
+  if (raw === null) return null;
+  try {
+    const value = JSON.parse(raw) as Record<string, unknown>;
+    if (Object.keys(value).sort().join(",") !== "blocked,completed,pending,version" || value.version !== 2 || value.blocked !== null
+      || !Array.isArray(value.pending) || !Array.isArray(value.completed) || value.completed.length !== 0) return null;
+    const pairHashes = value.pending.map((pair) => {
+      if (!pair || typeof pair !== "object" || Array.isArray(pair)) throw new Error();
+      const item = pair as Record<string, unknown>;
+      if (Object.keys(item).sort().join(",") !== "operationId,uid" || typeof item.uid !== "string" || typeof item.operationId !== "string") throw new Error();
+      return sha256Utf8(JSON.stringify({ uid: item.uid, operationId: item.operationId }));
+    }).sort();
+    const uidHashes = value.pending.map((pair) => sha256Utf8((pair as { uid: string }).uid)).sort();
+    return Object.freeze({ valueSha256: sha256Utf8(raw), pairsSha256: sha256Utf8(JSON.stringify(pairHashes)), uidsSha256: sha256Utf8(JSON.stringify(uidHashes)) });
+  } catch { return null; }
+}
+
+function guestRemovalProtectedSnapshot(base: KeyValueStorage, profiles: readonly StorageProfile[], targetProfileId: string, replacementProfileId: string, logoutRaw: string | null): GuestRemovalProtectedSnapshot {
+  const keys = [...base.getAllKeys()];
+  if (keys.some((key) => typeof key !== "string") || new Set(keys).size !== keys.length) throw new ProfileStorageError("profile_removal_recovery_required");
+  const accountPrefixes = profiles.filter((profile) => profile.kind === "account").map((profile) => `${PROFILE_PREFIX}${profile.id}:`);
+  const targetPrefix = `${PROFILE_PREFIX}${targetProfileId}:`;
+  const replacementPrefix = `${PROFILE_PREFIX}${replacementProfileId}:`;
+  const accountKeys = keys.filter((key) => accountPrefixes.some((prefix) => key.startsWith(prefix)));
+  const globalKeys = keys.filter((key) => !key.startsWith(PROFILE_PREFIX));
+  const otherProfileKeys = keys.filter((key) => key.startsWith(PROFILE_PREFIX) && !key.startsWith(targetPrefix) && !key.startsWith(replacementPrefix)
+    && !accountPrefixes.some((prefix) => key.startsWith(prefix)));
+  const logout = pendingLogoutInventories(logoutRaw);
+  if (!logout) throw new ProfileStorageError("profile_removal_recovery_required");
+  return Object.freeze({
+    accountStateSha256: hashPhysicalEntries(base, accountKeys),
+    globalStateSha256: hashPhysicalEntries(base, globalKeys),
+    otherProfileStateSha256: hashPhysicalEntries(base, otherProfileKeys),
+    logoutControlSha256: logout.valueSha256,
+  });
+}
+
+async function storeRemovalJournal(control: StorageManifestStore, body: Omit<GuestRemoval34Journal, "checksum">): Promise<GuestRemoval34Journal> {
+  const journal = signRemovalJournal(body);
+  const raw = JSON.stringify(journal);
+  await control.set(GUEST_REMOVAL_JOURNAL_KEY, raw);
+  if (await control.get(GUEST_REMOVAL_JOURNAL_KEY) !== raw || !parseRemovalJournal(raw)) throw new ProfileStorageError("profile_removal_recovery_required");
+  return journal;
+}
+
+async function updateRemovalJournal(control: StorageManifestStore, journal: GuestRemoval34Journal, stage: GuestRemoval34Journal["stage"]): Promise<GuestRemoval34Journal> {
+  const { checksum: _checksum, ...body } = journal;
+  return storeRemovalJournal(control, { ...body, stage });
+}
+
+const REMOVAL_STAGE_ORDER: readonly GuestRemoval34Journal["stage"][] = Object.freeze(["intent", "replacement_markers", "registry_first", "registry_both", "cleanup"]);
+
+async function advanceRemovalJournal(control: StorageManifestStore, journal: GuestRemoval34Journal, next: GuestRemoval34Journal["stage"]): Promise<GuestRemoval34Journal> {
+  const currentIndex = REMOVAL_STAGE_ORDER.indexOf(journal.stage);
+  const nextIndex = REMOVAL_STAGE_ORDER.indexOf(next);
+  if (currentIndex < 0 || nextIndex < 0) throw new ProfileStorageError("profile_removal_recovery_required");
+  return nextIndex <= currentIndex ? journal : updateRemovalJournal(control, journal, next);
+}
+
+async function readRegistrySlots(control: StorageManifestStore): Promise<readonly [ProfileRegistry, ProfileRegistry]> {
+  const raw = await Promise.all(ROOT_KEYS.map((key) => control.get(key)));
+  const parsed = raw.map(parseRegistry);
+  if (parsed.some((registry) => registry === null) || parsed[0]!.generation === parsed[1]!.generation) throw new ProfileStorageError("profile_registry_corrupt");
+  return parsed as [ProfileRegistry, ProfileRegistry];
+}
+
+function assertRemovalRegistryMatches(journal: GuestRemoval34Journal, registry: ProfileRegistry): readonly StorageProfile[] {
+  const profiles = registry.profiles;
+  const target = profiles.find((profile) => profile.id === journal.targetProfileId);
+  const replacement = profiles.find((profile) => profile.id === journal.replacementProfileId);
+  const retained = profiles.filter((profile) => profile.id !== journal.targetProfileId && profile.id !== journal.replacementProfileId);
+  if (registry.legacyProfileId !== null || (target && (registry.generation > journal.originalRegistryGeneration
+      || (registry.generation === journal.originalRegistryGeneration && (registry.selectedProfileId !== target.id || registry.checksum !== journal.originalRegistryChecksum))))
+    || (replacement && registry.selectedProfileId !== replacement.id)
+    || profiles.some((profile) => profile.kind === "legacy_guest" || profile.kind === "legacy_owner")
+    || retained.length !== journal.retainedProfiles.length
+    || sha256Utf8(JSON.stringify(retained)) !== sha256Utf8(JSON.stringify(journal.retainedProfiles))
+    || (target && (target.kind !== "guest" || target.accountId !== null))
+    || (replacement && (replacement.kind !== "guest" || replacement.accountId !== null))
+    || Boolean(target) === Boolean(replacement)) throw new ProfileStorageError("profile_removal_recovery_required");
+  return Object.freeze([...journal.retainedProfiles, Object.freeze({ id: journal.replacementProfileId, kind: "guest" as const, accountId: null })]);
+}
+
+function writeExactValue(base: KeyValueStorage, key: string, value: string): void {
+  const current = base.getString(key);
+  if (current !== undefined && current !== value) throw new ProfileStorageError("profile_removal_recovery_required");
+  if (current === undefined) base.setString(key, value);
+  if (base.getString(key) !== value) throw new ProfileStorageError("profile_removal_recovery_required");
+}
+
+function createRemovalGuestMarkers(base: KeyValueStorage, journal: GuestRemoval34Journal): void {
+  const profile: StorageProfile = Object.freeze({ id: journal.replacementProfileId, kind: "guest", accountId: null });
+  const installation = JSON.stringify({ schemaIdentity: CANONICAL_ENVELOPE, revision: 1, payload: { installationId: journal.replacementInstallationId, localDatasetId: journal.replacementProfileId, bindingState: "guest", accountId: null } });
+  const access = JSON.stringify({ schemaIdentity: CANONICAL_ENVELOPE, revision: 1, payload: { mode: "guest" } });
+  writeExactValue(base, physicalKey(profile.id, STORAGE_KEYS.GUEST_INSTALLATION, false), installation);
+  writeExactValue(base, physicalKey(profile.id, STORAGE_KEYS.GUEST_ACCESS, false), access);
+}
+
+async function commitDesiredRemovalRegistry(control: StorageManifestStore, journal: GuestRemoval34Journal, onFirstCommit: () => Promise<void>): Promise<void> {
+  const slots = await readRegistrySlots(control);
+  const latest = [...slots].sort((left, right) => right.generation - left.generation)[0]!;
+  const desiredProfiles = assertRemovalRegistryMatches(journal, latest);
+  const replacement = latest.profiles.some((profile) => profile.id === journal.replacementProfileId);
+  if (!replacement) {
+    const next = withChecksum({ version: ROOT_VERSION, generation: latest.generation + 1, profiles: desiredProfiles, legacyProfileId: null, selectedProfileId: journal.replacementProfileId });
+    await commitRegistry(control, latest, next);
+    await onFirstCommit();
+  }
+  const afterFirst = await readRegistrySlots(control);
+  const current = [...afterFirst].sort((left, right) => right.generation - left.generation)[0]!;
+  assertRemovalRegistryMatches(journal, current);
+  if (current.profiles.some((profile) => profile.id === journal.targetProfileId) || current.selectedProfileId !== journal.replacementProfileId) throw new ProfileStorageError("profile_removal_recovery_required");
+  const stale = afterFirst.find((registry) => registry.profiles.some((profile) => profile.id === journal.targetProfileId));
+  if (stale) {
+    const next = withChecksum({ version: ROOT_VERSION, generation: current.generation + 1, profiles: desiredProfiles, legacyProfileId: null, selectedProfileId: journal.replacementProfileId });
+    await commitRegistry(control, current, next);
+  }
+  const finalSlots = await readRegistrySlots(control);
+  for (const registry of finalSlots) {
+    assertRemovalRegistryMatches(journal, registry);
+    if (registry.profiles.some((profile) => profile.id === journal.targetProfileId) || registry.selectedProfileId !== journal.replacementProfileId) throw new ProfileStorageError("profile_removal_recovery_required");
+  }
+}
+
+async function resumeGuestRemoval34(base: KeyValueStorage, control: StorageManifestStore): Promise<GuestRemoval34Receipt | null> {
+  const raw = await control.get(GUEST_REMOVAL_JOURNAL_KEY);
+  if (raw === null) return null;
+  const journal = parseRemovalJournal(raw);
+  if (!journal) throw new ProfileStorageError("profile_removal_recovery_required");
+  const logoutRaw = await control.get(LOCAL_LOGOUT_CONTROL_KEY);
+  const logout = pendingLogoutInventories(logoutRaw);
+  if (!logout || logout.pairsSha256 !== journal.expectedPendingPairInventorySha256 || logout.uidsSha256 !== journal.expectedPendingUidInventorySha256) throw new ProfileStorageError("profile_removal_recovery_required");
+  let protectedState = guestRemovalProtectedSnapshot(base, [...journal.retainedProfiles, { id: journal.targetProfileId, kind: "guest", accountId: null }], journal.targetProfileId, journal.replacementProfileId, logoutRaw);
+  if (protectedState.accountStateSha256 !== journal.accountStateSha256 || protectedState.globalStateSha256 !== journal.globalStateSha256
+    || protectedState.otherProfileStateSha256 !== journal.otherProfileStateSha256 || protectedState.logoutControlSha256 !== journal.logoutControlSha256) throw new ProfileStorageError("profile_removal_recovery_required");
+  const slotsBefore = await readRegistrySlots(control);
+  for (const registry of slotsBefore) assertRemovalRegistryMatches(journal, registry);
+  const targetInstallationRaw = base.getString(physicalKey(journal.targetProfileId, STORAGE_KEYS.GUEST_INSTALLATION, false));
+  const targetInstallation = storedGuestInstallation(createProfileScopedStorage(base, { id: journal.targetProfileId, kind: "guest", accountId: null }));
+  const targetAccessRaw = base.getString(physicalKey(journal.targetProfileId, STORAGE_KEYS.GUEST_ACCESS, false));
+  if ((targetInstallationRaw === undefined || !targetInstallation || targetInstallation.installationId !== journal.targetInstallationId || targetInstallation.localDatasetId !== journal.targetProfileId || targetInstallation.bindingState !== "guest" || targetInstallation.accountId !== null)
+    && journal.stage !== "cleanup") throw new ProfileStorageError("profile_removal_recovery_required");
+  if ((targetAccessRaw === undefined || !validGuestAccess(targetAccessRaw)) && journal.stage !== "cleanup") throw new ProfileStorageError("profile_removal_recovery_required");
+  if (targetInstallationRaw !== undefined && (!targetInstallation || targetInstallation.installationId !== journal.targetInstallationId || targetInstallation.localDatasetId !== journal.targetProfileId || targetInstallation.bindingState !== "guest" || targetInstallation.accountId !== null)) throw new ProfileStorageError("profile_removal_recovery_required");
+  if (targetAccessRaw !== undefined && !validGuestAccess(targetAccessRaw)) throw new ProfileStorageError("profile_removal_recovery_required");
+  createRemovalGuestMarkers(base, journal);
+  let progress = await advanceRemovalJournal(control, journal, "replacement_markers");
+  await commitDesiredRemovalRegistry(control, progress, async () => { progress = await advanceRemovalJournal(control, progress, "registry_first"); });
+  progress = await advanceRemovalJournal(control, progress, "registry_both");
+  const marked = await advanceRemovalJournal(control, progress, "cleanup");
+  const targetPrefix = `${PROFILE_PREFIX}${journal.targetProfileId}:`;
+  const targetKeys = base.getAllKeys().filter((key) => key.startsWith(targetPrefix));
+  if (targetKeys.length > marked.targetKeyCount) throw new ProfileStorageError("profile_removal_recovery_required");
+  for (const key of targetKeys) {
+    if (!key.startsWith(targetPrefix)) throw new ProfileStorageError("profile_removal_recovery_required");
+    base.remove(key);
+  }
+  if (base.getAllKeys().some((key) => key.startsWith(targetPrefix))) throw new ProfileStorageError("profile_removal_recovery_required");
+  const finalLogoutRaw = await control.get(LOCAL_LOGOUT_CONTROL_KEY);
+  protectedState = guestRemovalProtectedSnapshot(base, [...marked.retainedProfiles, { id: marked.replacementProfileId, kind: "guest", accountId: null }], marked.targetProfileId, marked.replacementProfileId, finalLogoutRaw);
+  if (protectedState.accountStateSha256 !== marked.accountStateSha256 || protectedState.globalStateSha256 !== marked.globalStateSha256
+    || protectedState.otherProfileStateSha256 !== marked.otherProfileStateSha256 || protectedState.logoutControlSha256 !== marked.logoutControlSha256) throw new ProfileStorageError("profile_removal_recovery_required");
+  const finalSlots = await readRegistrySlots(control);
+  for (const registry of finalSlots) {
+    if (registry.profiles.some((profile) => profile.id === marked.targetProfileId) || !registry.profiles.some((profile) => profile.id === marked.replacementProfileId)) throw new ProfileStorageError("profile_removal_recovery_required");
+  }
+  await control.remove(GUEST_REMOVAL_JOURNAL_KEY);
+  if (await control.get(GUEST_REMOVAL_JOURNAL_KEY) !== null) throw new ProfileStorageError("profile_removal_recovery_required");
+  return Object.freeze({
+    schemaVersion: "bizq01-guest-removal-34-v1",
+    result: "passed",
+    stage: "complete",
+    replacementProfileIdSha256: sha256Utf8(marked.replacementProfileId),
+    removedProfileIdSha256: sha256Utf8(marked.targetProfileId),
+    protectedAccountStateSha256: marked.accountStateSha256,
+    protectedGlobalStateSha256: marked.globalStateSha256,
+    logoutControlSha256: marked.logoutControlSha256,
+    removedKeyCount: marked.targetKeyCount,
+  });
+}
+
+async function startGuestRemoval34(
+  base: KeyValueStorage,
+  control: StorageManifestStore,
+  registry: ProfileRegistry,
+  profile: StorageProfile,
+  identity: GuestInstallationIdentityPort,
+  expected: GuestRemoval34ExpectedState,
+  claimTransition: () => void,
+): Promise<GuestRemoval34Receipt> {
+  let stage = "preflight";
+  const failed = (): GuestRemoval34Receipt => Object.freeze({ schemaVersion: "bizq01-guest-removal-34-v1", result: "failed", stage });
+  try {
+    const hashes = [expected.datasetIdSha256, expected.installationIdSha256, expected.profileIdentityInventorySha256, expected.accountStateSha256,
+      expected.globalStateSha256, expected.pendingPairInventorySha256, expected.pendingUidInventorySha256];
+    if (hashes.some((hash) => !/^[a-f0-9]{64}$/u.test(hash)) || !Number.isSafeInteger(expected.guestKeyCount) || expected.guestKeyCount < 1) return failed();
+    if (profile.kind !== "guest" || profile.accountId !== null || profile.id !== registry.selectedProfileId || sha256Utf8(profile.id) !== expected.datasetIdSha256
+      || registry.legacyProfileId !== null || registry.profiles.length !== 10 || registry.profiles.filter((candidate) => candidate.kind === "account").length !== 9
+      || registry.profiles.filter((candidate) => candidate.kind === "guest").length !== 1 || profileIdentityInventory(registry.profiles) !== expected.profileIdentityInventorySha256) return failed();
+    const targetMarker = storedGuestInstallation(createProfileScopedStorage(base, profile));
+    if (!targetMarker || targetMarker.installationId === profile.id || targetMarker.localDatasetId !== profile.id || targetMarker.bindingState !== "guest"
+      || targetMarker.accountId !== null || sha256Utf8(targetMarker.installationId) !== expected.installationIdSha256
+      || !validGuestAccess(base.getString(physicalKey(profile.id, STORAGE_KEYS.GUEST_ACCESS, false)))) return failed();
+    const activeKeys = [STORAGE_KEYS.ACTIVE_TRAINING_SESSION, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER, STORAGE_KEYS.ACTIVE_JOURNAL];
+    if (activeKeys.some((key) => base.getString(physicalKey(profile.id, key, false)) !== undefined)) { stage = "active_learning_work_present"; return failed(); }
+    const currentPrefix = `${PROFILE_PREFIX}${profile.id}:`;
+    const targetKeyCount = base.getAllKeys().filter((key) => key.startsWith(currentPrefix)).length;
+    if (targetKeyCount !== expected.guestKeyCount) { stage = "guest_baseline_mismatch"; return failed(); }
+    claimTransition();
+    if (await control.get(GUEST_REMOVAL_JOURNAL_KEY) !== null) { stage = "pending_journal"; return failed(); }
+    stage = "registry_preflight";
+    const slots = await readRegistrySlots(control);
+    const latest = [...slots].sort((left, right) => right.generation - left.generation)[0]!;
+    if (slots.some((entry) => entry.legacyProfileId !== null || profileIdentityInventory(entry.profiles) !== expected.profileIdentityInventorySha256)
+      || latest.selectedProfileId !== profile.id || latest.generation !== registry.generation || latest.checksum !== registry.checksum) return failed();
+    const logoutRaw = await control.get(LOCAL_LOGOUT_CONTROL_KEY);
+    const logout = pendingLogoutInventories(logoutRaw);
+    if (!logout || logout.pairsSha256 !== expected.pendingPairInventorySha256 || logout.uidsSha256 !== expected.pendingUidInventorySha256) { stage = "logout_baseline_mismatch"; return failed(); }
+    const replacementIdentity = await identity.create();
+    if (!uuid(replacementIdentity.installationId) || !uuid(replacementIdentity.localDatasetId) || replacementIdentity.installationId === replacementIdentity.localDatasetId
+      || registry.profiles.some((candidate) => candidate.id === replacementIdentity.localDatasetId || candidate.id === replacementIdentity.installationId)
+      || replacementIdentity.installationId === profile.id
+      || base.getAllKeys().some((key) => key.startsWith(`${PROFILE_PREFIX}${replacementIdentity.localDatasetId}:`))) { stage = "replacement_identity_invalid"; return failed(); }
+    const retainedProfiles = registry.profiles.filter((candidate) => candidate.id !== profile.id);
+    const protectedState = guestRemovalProtectedSnapshot(base, registry.profiles, profile.id, replacementIdentity.localDatasetId, logoutRaw);
+    if (protectedState.accountStateSha256 !== expected.accountStateSha256 || protectedState.globalStateSha256 !== expected.globalStateSha256) { stage = "protected_baseline_mismatch"; return failed(); }
+    const body: Omit<GuestRemoval34Journal, "checksum"> = {
+      schemaVersion: "bizq01-guest-removal-34-journal-v1", stage: "intent", targetProfileId: profile.id, targetInstallationId: targetMarker.installationId,
+      replacementProfileId: replacementIdentity.localDatasetId, replacementInstallationId: replacementIdentity.installationId,
+      expectedDatasetIdSha256: expected.datasetIdSha256, expectedInstallationIdSha256: expected.installationIdSha256,
+      expectedProfileIdentityInventorySha256: expected.profileIdentityInventorySha256, expectedAccountStateSha256: expected.accountStateSha256,
+      expectedGlobalStateSha256: expected.globalStateSha256, expectedPendingPairInventorySha256: expected.pendingPairInventorySha256,
+      expectedPendingUidInventorySha256: expected.pendingUidInventorySha256, originalRegistryGeneration: latest.generation, originalRegistryChecksum: latest.checksum,
+      targetKeyCount, retainedProfiles: Object.freeze(retainedProfiles.map((candidate) => Object.freeze({ ...candidate }))),
+      accountStateSha256: protectedState.accountStateSha256, globalStateSha256: protectedState.globalStateSha256,
+      otherProfileStateSha256: protectedState.otherProfileStateSha256, logoutControlSha256: protectedState.logoutControlSha256,
+    };
+    stage = "journal_persist_failed";
+    await storeRemovalJournal(control, body);
+    stage = "recovery_failed";
+    const receipt = await resumeGuestRemoval34(base, control);
+    if (!receipt || receipt.result !== "passed") return failed();
+    return receipt;
+  } catch {
+    return failed();
+  }
+}
+
 function validGuestAccess(raw: string | undefined): boolean {
   if (!raw) return false;
   try {
@@ -186,6 +587,8 @@ export type ProfileStorageRouter = Readonly<{
   promoteSelectedBoundGuest(accountId: string, canContinue?: () => boolean): Promise<StorageProfile | null>;
   selectAccount(accountId: string, canContinue?: () => boolean): Promise<StorageProfile>;
   hasValidGuestAccess(profileId: string): boolean;
+  hasExactUnboundModernGuest(profileId: string, installationIdSha256: string, datasetIdSha256: string): boolean;
+  removeOriginalGuest34(expected: GuestRemoval34ExpectedState): Promise<GuestRemoval34Receipt>;
 }>;
 
 export async function openProfileStorageRouter(
@@ -194,6 +597,8 @@ export async function openProfileStorageRouter(
   dependencies: Readonly<{ identity?: GuestInstallationIdentityPort; isTransitionActive?: () => boolean; onBeforeProfileCommit?: () => void }> = {},
 ): Promise<ProfileStorageRouter> {
   const identity = dependencies.identity ?? installationIdentity;
+  try { await resumeGuestRemoval34(base, control); }
+  catch { throw new ProfileStorageError("profile_removal_recovery_required"); }
   const readSlots = async () => Promise.all(ROOT_KEYS.map((key) => control.get(key)));
   const raw = await readSlots();
   const parsed = raw.map(parseRegistry);
@@ -262,6 +667,23 @@ export async function openProfileStorageRouter(
         && guestInstallation !== null
         && guestInstallation.accountId === null
         && (guestInstallation.bindingState === "guest" || guestInstallation.bindingState === "adoption_pending");
+    },
+    hasExactUnboundModernGuest(profileId, installationIdSha256, datasetIdSha256) {
+      if (registry.selectedProfileId !== profileId) return false;
+      const candidate = registry.profiles.find((entry) => entry.id === profileId && entry.kind === "guest" && entry.accountId === null);
+      if (!candidate) return false;
+      const scoped = createProfileScopedStorage(base, candidate);
+      const guestInstallation = storedGuestInstallation(scoped);
+      return guestInstallation !== null
+        && guestInstallation.bindingState === "guest"
+        && guestInstallation.accountId === null
+        && guestInstallation.localDatasetId === candidate.id
+        && sha256Utf8(guestInstallation.installationId) === installationIdSha256
+        && sha256Utf8(guestInstallation.localDatasetId) === datasetIdSha256
+        && validGuestAccess(base.getString(physicalKey(candidate.id, STORAGE_KEYS.GUEST_ACCESS, false)));
+    },
+    async removeOriginalGuest34(expected) {
+      return startGuestRemoval34(base, control, registry, profile, identity, expected, claimTransition);
     },
     async selectGuest(canContinue: () => boolean = () => true) {
       if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");

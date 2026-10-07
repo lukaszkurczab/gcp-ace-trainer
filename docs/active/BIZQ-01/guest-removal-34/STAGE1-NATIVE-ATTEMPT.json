@@ -1,0 +1,28 @@
+{
+  "status": "UNKNOWN; not accepted capability",
+  "sourceSha256": "1be83f5e0d9bca81b0ce0081da9323d8c14e32ea9af1b731b04e86d589f330a2",
+  "runnerSha256": "bf44add530155857d1dfba3bb6d0a562b1646ce55a88c288803e4e880575fb1f",
+  "contextSha256": "3362674c1b4d7f7f19b8f7c13622a5ad0db275b417f65a0658cb69ffcf2f21de",
+  "coldGuestSnapshotSha256": "ada4360a920ef972f5a168545e87b9acadd331e1aef6a0831fb07d2a65a070c5",
+  "readOnlyDiagnosticSha256": "8f192d25b6d4a3cec63a6b63bcff8f1057a094f78aaafb075275171c68bf6de4",
+  "receiptWritten": false,
+  "failureCategory": "canary_result_invalid",
+  "actualFacts": {
+    "matchingLockedDependencies": true,
+    "ordinaryColdGuestRecords": 81,
+    "ordinaryColdGuestKeys": 84,
+    "guestRecordsSha256": "1a65e6a09ecd71e259eb1ca95054a4624b2c12d1ea21ee0b720e9031638f9667",
+    "fixedPromiseReturnedByValue": false,
+    "diagnosticCDPError": false,
+    "diagnosticException": false,
+    "afterAttemptActiveProfileKind": "guest",
+    "afterAttemptTransitionActive": true,
+    "readOnlyDiagnosticCleanClose": true
+  },
+  "uncertainty": "Body entered transition; synchronous adapter effect/result unavailable. First nonce not persisted. No successful adapter receipt/protected-state claim.",
+  "precedingInputRefusal": "Nested receipt directory rejected before connection; corrected to CLI-admitted direct /private/tmp path; no tool change.",
+  "temporaryDiagnostic": "One fixed-Promise/public-getter experiment; superseded by versioned read-only reconciliation tool under implementation, not a delivered acceptance runner.",
+  "next": "Reviewed correction, source/tool QA, ordinary cold/read-only reconciliation; no blind retry or Guest deletion",
+  "guestDeleted": false,
+  "stage2Executed": false
+}

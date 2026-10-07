@@ -1,0 +1,21 @@
+{
+  "reviewer": "q13_review / qa_luna / gpt-6-luna high",
+  "status": "PASS WITH ISSUES",
+  "scope": "staged-index bounded Guest34 coherent implementation/native/UI package publication",
+  "stagedFilesReviewed": 47,
+  "cachedDiffCheck": "PASS",
+  "sourceHashesMatchAccepted": true,
+  "nativeReceiptsAlign": true,
+  "UIAcceptance": "separate bounded PASS",
+  "Q13": "not accepted / historical pre-trial storage unavailable / next reviewed canonical pair method",
+  "foreignFooterSha256": "760755e99ac2e9b6e28fbdf54fa527ec0406d13b45cd094f53f738dc85c4657d",
+  "canonicalQueueChange": "exactly row19a; all other HEAD queue bytes preserved; foreign appendix excluded from index",
+  "privacyScan": "no staged binaries/raw images/logs/snapshots/hierarchy/credential-pattern matches",
+  "caveats": [
+    "publish current index only; worktree plan contains unrelated unstaged appendix",
+    "untracked SECURITY-PRIVACY-AUDIT preserved",
+    "fullBIZQ/Q13/release remain open"
+  ],
+  "runtimeEffectsByReviewer": false,
+  "receiptRecordedByRootFromIndependentReview": true
+}

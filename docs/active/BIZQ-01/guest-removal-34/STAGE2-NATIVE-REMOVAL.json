@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "bizq01-guest-removal-34-evidence-v1",
+  "result": "passed",
+  "stage": "complete",
+  "appId": "com.lkurczab.patternly",
+  "deviceName": "iPhone 17",
+  "sourceRef": "fcf0963bff6c54a19357fd56947168f32d5fad5f",
+  "sourceSha256": "edb086afb36bd123bce9ea1bd095dcea79ba63c8c565f4a98f644341f2b8c384",
+  "toolSha256": "6487240e7ef6b982e2b077eaf610ed5e413f17de5ada7d4db5df4c811c0674b5",
+  "baselineSha256": "ccf40c00d17a0e9aa290a557b85cd1ddd5e0653fd561062b372c8be428d3ab7a",
+  "operationNonceSha256": "38b9bb535e0e0688addd9c0ce6eec7ba70079ad0bdd627df1284f90baba7e339",
+  "capturedAt": "2026-10-07T14:55:44.890Z",
+  "replacementProfileIdSha256": "9713fdb2e895fdefbd4f304e3617151f55dfe9b286a226340c2824e1fd2ab6e3",
+  "removedProfileIdSha256": "b880a3a8d1530601f6f1ed2f244078468f09f51f9d68ba5f6d3cec95cfa5e52d",
+  "protectedAccountStateSha256": "59e93b2d6c39efd79b1d644283d7ab7f4423239ee1fd535fe00a0a97255a73fb",
+  "protectedGlobalStateSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "logoutControlSha256": "8720a388e07dd9810fdfd5d4f9965cebaac56c94df7e4ca57198f9914e56abeb",
+  "removedKeyCount": 84
+}
