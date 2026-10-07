@@ -1,6 +1,6 @@
 # FCA — backend-system-design-interview
 
-Status i kolejność: [plan główny](../../../PATTERNLY-WORKING-PLAN.md). Wspólne AC i procedura: [utrzymanie banków](../content-maintenance.md). Zakres przeliczono z całych zachowanych review records, nie ze starego summary. Każdy poniższy problem nadal dotyczy dokładnie tego samego question object i taksonomii w źródle07.10.
+Status i kolejność: [plan główny](../../../PATTERNLY-WORKING-PLAN.md). Wspólne AC i procedura: [utrzymanie banków](../content-maintenance.md). Zakres przeliczono z pełnych zachowanych rekordów ocen, a nie z dawnego podsumowania. Każdy opisany problem nadal dotyczy identycznej treści pytania i tej samej taksonomii w źródłach z 07.10.
 
 ## FCA-EDIT-9915a7705c — backend-system-design-interview/api_contracts_service_boundaries_and_request_flows/BESD-N02-B02
 

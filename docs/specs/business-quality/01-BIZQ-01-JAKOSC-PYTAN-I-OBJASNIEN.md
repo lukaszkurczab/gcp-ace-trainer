@@ -5,11 +5,11 @@
 **Zależności:** brak implementacyjnych; obowiązuje [plan zbiorczy](00-PATTERNLY-BIZQ-PLAN-ROBOCZY.md)  
 **Rezultat biznesowy:** wynik sesji ma wynikać z rozumowania, a objaśnienie ma umożliwiać poprawne rozwiązanie następnego, zmienionego problemu.
 
-## 1. Bieżący zakres po porównaniu07.10.2026
+## 1. Bieżący zakres po porównaniu z 07.10.2026
 
-Prace OOD N01–N09, source→migration/admission→app, scorer, zapis kolejności opcji, authored feedback i presentation do pakietu33 są wdrożone. Dwa dawne problematyczne BESD cohorts zostały zastąpione34accepted questions; nie edytować usuniętych `besd-n02-b01-i001..016` ani `besd-n04-b01-i001..018`. Claude845 ma własny exact-hash odbiór07.10. Pełne utrzymanie pozostałych banków pozostaje odroczone według planu głównego.
+Wdrożono pytania OOD N01–N09, ich migrację i dopuszczenie do aplikacji, punktację, zapis kolejności opcji oraz objaśnienia i prezentację do pakietu 33. Dwie problematyczne partie BESD zastąpiono 34 odebranymi pytaniami. Nie edytuj usuniętych `besd-n02-b01-i001..016` ani `besd-n04-b01-i001..018`. Przegląd z 07.10 obejmuje dokładną treść 845 pytań Claude. Status pozostałych napraw banków określa plan główny.
 
-Pozostałym wynikiem bieżącego BIZQ-01 jest rzeczywiste Q13 — update z active session, exact old pin/resume albo jawny mismatch, bez podmiany pytań/odpowiedzi. [Pakiet wykonawczy Q13](../engineering/q13-package-update.md) podaje bieżące owners, granice testu i pierwszy probe. Weryfikacja może wymagać celowanego odtworzenia runtime; nie reaktywować starych katalogów raportów.
+Do odbioru bieżącego BIZQ-01 pozostaje Q13: rzeczywista aktualizacja katalogu podczas aktywnej sesji. Sesja musi wznowić się na przypiętej starej wersji albo jawnie zgłosić niezgodność, bez podmiany pytań i odpowiedzi. [Specyfikacja Q13](../engineering/q13-package-update.md) wskazuje odpowiedzialne moduły, granice testu i pierwszy mały test dostępności środowiska. Weryfikacja może wymagać odtworzenia konkretnego środowiska uruchomieniowego; nie przywracaj starych katalogów raportów.
 
 Źródła wymagań: normatywne `docs/07-content-guidelines.md`, `docs/17-training-runtime-and-interaction-spec.md`, aktualny README contentu i decyzje PO zachowane w planie głównym.
 
@@ -25,7 +25,7 @@ Nie maskuj błędu flagą `draft`, listą wykluczeń w aplikacji ani „tymczaso
 
 ## 3. Dokładny zakres przyszłej zmiany treści
 
-Kanoniczny ingress: `content/<trackId>/<nodeId>/<mentalUnitId>.json`, tablica pytań. Gotowe130 odroczonych zakresów, obecne1697 ID i aktualne file hashes są w [utrzymaniu banków](../engineering/content-maintenance.md). Nie odtwarzać dawnego audytu ani próby24/track jako warunku obecnego Q13.
+Kanoniczny ingress: `content/<trackId>/<nodeId>/<mentalUnitId>.json`, tablica pytań. 158 zachowanych zakresów napraw, 2 129 aktualnych identyfikatorów pytań i skróty plików znajdują się w [utrzymaniu banków](../engineering/content-maintenance.md). Nie odtwarzaj dawnego audytu ani próby 24 pytań na ścieżkę jako warunku obecnego Q13.
 
 Dla rzeczywiście zmienianego batcha utrzymać manifest `trackId | source path | itemId | mentalUnitId | defect | intended decision | answer change? | ID action | source evidence | reviewer/admission authority`. Przejrzeć całe zmienione pytania i rozszerzyć zakres tylko dla wykazanego wspólnego defektu. Source schema/scoring/builder sprawdzać proporcjonalnie do zmiany; shared contract wymaga checks konsumentów.
 

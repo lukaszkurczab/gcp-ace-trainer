@@ -1,33 +1,55 @@
 # FCA-AUDIT-COMPLETE — dokończenie oceny każdego pytania
 
-Status i kolejność wyłącznie w [planie głównym](../../PATTERNLY-WORKING-PLAN.md). To zachowane niewykonane zadanie AUDIT3, odrębne od napraw już wykrytych problemów i od przyszłego narzędzia EPIC-09. Cleanup nie wykonuje audytu.
+Status i kolejność prac określa wyłącznie [plan główny](../../PATTERNLY-WORKING-PLAN.md). To niewykonany zakres AUDIT 3. Obejmuje dokończenie oceny wszystkich pytań; naprawy już wykrytych problemów oraz narzędzie EPIC-09 są osobnymi zadaniami. Porządkowanie dokumentacji nie stanowi wykonania audytu.
 
-## Utrwalony stan i punkt rozpoczęcia
+## Zachowane wyniki i punkt rozpoczęcia
 
-Odzyskano trwałe wejścia `patternly-content/evidence/business-quality/full-content-audit-2026-10-02/`: immutable inventory/manifest/rubric, komplet individual reviews, invalidation i verification/aggregation tooling. Baseline16077pytań pochodzi z przypiętego source02.10. Odczyt całych rekordów dał4236 ocen i11841PENDING, zero błędów strukturalnych; stare generated summary3703 było nieaktualne. Weryfikacja rekordów nie jest ponownym przeglądem semantyki.
+Dane audytu znajdują się w repozytorium contentu, w `evidence/business-quality/full-content-audit-2026-10-02/`. Zachowano spis pytań, manifest, kryteria oceny, indywidualne recenzje, rekordy unieważnionych ocen oraz narzędzia weryfikacji i agregacji.
 
-Bieżący canonical source07.10 ma16622 pytań. `scripts/content-audit/reconcile.mjs` używa istniejącego inventory oraz zweryfikowanego ledgeru:2752 bieżące obiekty mają exact prior source review;13870 wymagają current reconciliation. Pełna lista wszystkich itemów/hashów/path/taxonomy i odniesień do starego wyniku jest w `current-source-binding.json`. Exact source match nie dowodzi aktualnych vendor facts ani niezmienionego runtime scoring.
+Audyt z 02.10 obejmował 16 077 pytań. Weryfikator odczytał 4 236 poprawnych rekordów ocen; 11 841 pytań nadal ma status `PENDING`. Nie wykrył błędów strukturalnych. Dawne podsumowanie wskazujące 3 703 oceny było nieaktualne. Sprawdzenie struktury rekordów nie jest ponowną oceną merytoryczną pytań.
 
-**Pierwsza praca:** potwierdzić brak nowej delty źródła; użyć obecnego source binding; uzgodnić indywidualne current records z istniejących późniejszych odbiorów OOD24, Claude845 i BESD replacements, zanim rozpocznie się nowy review. Claude source-first ledger jest w content Git `4b0f1ff:docs/evidence/content-audits/2026-10-07-claude-current-review.jsonl`;943wiersze nie oznaczają943 lub845 automatycznie zaliczonych aktualnych pytań. Przyjąć tylko właściwy exact hash/subset z pełną rubryką. Nie wznawiać zamkniętych OOD remediation ani osobnego oglądania1413pytań bez wykazanego brakującego kryterium; istniejący odbiór ma zostać uzgodniony z wymaganiem audytu, nie mechanicznie zastąpiony PASS. BESD34 starych ID nie przenosi werdyktu na replacement ID.
+Źródła z 07.10 zawierają 16 622 pytania. Narzędzie `scripts/content-audit/reconcile.mjs` ustaliło, że 2 752 z nich mają identyczną treść źródłową jak pytania z wcześniejszą oceną. Pozostałe 13 870 wymaga przypisania właściwych ocen albo nowego przeglądu. Plik `current-source-binding.json` zawiera pełny spis z identyfikatorami, skrótami treści, ścieżkami, taksonomią i odniesieniami do dawnych wyników. Zgodność treści nie potwierdza aktualności faktów o usługach dostawcy ani poprawności obecnego mechanizmu punktacji.
 
-## Wymagana indywidualna ocena
+Najpierw sprawdź, czy źródła zmieniły się od tego porównania. Następnie przypisz do aktualnych pytań pasujące indywidualne oceny z późniejszych odbiorów OOD 24, Claude i zastępstw BESD. Dopiero potem rozpocznij ocenę brakujących pytań.
 
-Każdy item osobno: learning objective; prompt/constraints/ambiguity; technical/factual correctness; answer/partial/zero/order/complexity/alias contract; każdy distractor; Reason; Details/mechanism; explanation każdego błędnego option ID; transfer; difficulty/cognitive load; semantic duplicate peers; originality/legal provenance; family-specific quality. Schemat i pola nie są PASS.
+Rejestr oceny Claude można odzyskać z Git: `4b0f1ff:docs/evidence/content-audits/2026-10-07-claude-current-review.jsonl`. Zawiera 943 wiersze; obecny bank ma 845 pytań. Żadna z tych liczb sama nie potwierdza pełnego odbioru. Uwzględnij wyłącznie rekordy pasujące do aktualnej treści i spełniające pełne kryteria audytu. Nie otwieraj ponownie zamkniętych napraw OOD ani nie oceniaj mechanicznie od nowa 1 413 pytań bez wykazania brakującego kryterium. Uzgodnij istniejący odbiór z wymaganiami audytu. Werdykty 34 dawnych pytań BESD nie przechodzą na ich zastępstwa o nowych identyfikatorach.
 
-Certification/vendor facts wymagają aktualnych oficjalnych source URL, daty, konkretnego claim/result. Coding wymaga poprawnych invariants, applicability, granic, complexity i transfer. Nieczytane pytanie pozostaje PENDING; nie staje się BLOCKED_FACT_CHECK. Werdykty: PASS/FIX_MINOR/FIX_MAJOR/REMOVE/BLOCKED_FACT_CHECK, dokładnie jeden po pełnej ocenie.
+## Indywidualna ocena — 13 wymiarów
 
-## Ledger i zadania naprawcze
+Każde pytanie wymaga osobnej oceny:
 
-Current record wiąże track/family/contentVersion/node/unit/itemId/file/question hash, wszystkie13 wymiarów z konkretnym evidence, każdy distractor, scoring/interaction review, fact checks, duplicate peers, reviewer/date. Stare review pozostaje przy starej wersji; nowe binding przechowuje jego tożsamość i exact-hash match. Changed/missing/mismatched rekordy nie odzyskują coverage przez label lub batch.
+1. Cel nauki i zgodność z deklarowaną umiejętnością.
+2. Treść zadania: kompletność warunków, jednoznaczność i brak podpowiedzi odpowiedzi.
+3. Poprawność techniczna i faktograficzna.
+4. Kontrakt odpowiedzi i punktacji: odpowiedź zaakceptowana, częściowa, zerowa, kolejność, złożoność i aliasy.
+5. Jakość każdej błędnej opcji odpowiedzi oraz błąd rozumowania, który reprezentuje.
+6. Pole `Reason`: konkretny warunek rozstrzygający i uzasadnienie odpowiedzi.
+7. Pole `Details`: mechanizm, zastosowanie do zadania i granice rozwiązania.
+8. Objaśnienie każdej aktywnej błędnej opcji, powiązane z jej identyfikatorem.
+9. Możliwość zastosowania wiedzy w innym problemie.
+10. Trudność i obciążenie poznawcze.
+11. Duplikaty i bliskie parafrazy, ze wskazaniem porównywanych pytań.
+12. Oryginalność i pochodzenie materiału.
+13. Jakość właściwa dla danej rodziny treści.
 
-Kontynuować deterministycznie pozostałe itemy i odświeżać machine-readable liczniki per track/verdict/defect. Brak samplingu, batch PASS, dziedziczenia werdyktu, regex-only oceny i mechanicznej akceptacji z validatora. Nowe findingi grupować według track/node/unit/defect ze wszystkimi exact ID; rozszerzać istniejący task zamiast tworzyć drugą kolejkę. Obecne [FCA zakresy](content-maintenance.md) zawierają158grup/2129 niezmienionych itemów z authored findingami.
+Fakty dotyczące certyfikacji i usług dostawców sprawdzaj w aktualnych oficjalnych źródłach. Zapisz URL, datę, sprawdzane twierdzenie i wynik. W zadaniach algorytmicznych sprawdź niezmienniki, warunki stosowalności, przypadki graniczne, wyprowadzenie złożoności i możliwość przeniesienia wiedzy.
 
-Każda naprawa ma exact IDs/categories/problem/evidence/correction, official fact-check wymagania, forbidden changes, validation, ponowny item-level review, human-review handoff i version/manifest/admission/app-lock zależności. Nie naprawiać contentu podczas samego audytu; nie mass-rewrite, nie ukrywać słabych pytań i nie zmieniać runtime schema. Model verdict nie jest human editorial sign-off.
+Nieprzeczytane pytanie pozostaje `PENDING`; nie otrzymuje `BLOCKED_FACT_CHECK`. Po pełnej ocenie przypisz dokładnie jeden werdykt: `PASS`, `FIX_MINOR`, `FIX_MAJOR`, `REMOVE` albo `BLOCKED_FACT_CHECK`. Sam poprawny schemat danych nie uzasadnia `PASS`.
 
-## Weryfikacja i AC
+## Rejestr ocen i zadania naprawcze
 
-W content repo: `node evidence/business-quality/full-content-audit-2026-10-02/verify.mjs` odtwarza ignored baseline ledger/summary; `--require-complete` musi zwrócić2 dopóki baseline coverage jest nierówne. `aggregate.mjs` uruchamiać wyłącznie na tymczasowej kopii starego planu, bo jego baseline zawiera już rozwiązane findingi. Nigdy nie nadpisywać nim aktualnego planu.
+Aktualny rekord oceny musi wskazywać ścieżkę nauki, rodzinę, `contentVersion`, węzeł, jednostkę umiejętności, `itemId`, plik i skrót treści pytania. Musi zawierać ocenę wszystkich 13 wymiarów wraz z dowodami, przegląd każdej opcji i punktacji, sprawdzone fakty, porównywane duplikaty, autora oceny i datę. Dawna ocena pozostaje przypisana do dawnej wersji; powiązanie z nową wersją musi zachować jej tożsamość i wynik porównania treści.
 
-`node scripts/content-audit/reconcile.mjs <output.json>` odtwarza source match/pending każdego bieżącego itemu. Po aktualizacji source/rubric/runtime/facts nowe potrzebne review nie może korzystać z niepasującego dowodu. Current coverage validator ma odrzucać duplicate/foreign/stale/partial-rubric records i błędne source identity oraz jawnie failować przy niepełnej coverage; istniejący baseline verifier jest wzorcem, nie dowodem aktualnej kompletności.
+Oceniaj pozostałe pytania w ustalonej kolejności i aktualizuj maszynowo czytelne liczniki według ścieżki nauki, werdyktu i rodzaju problemu. Nie stosuj próbkowania, zbiorczego `PASS`, automatycznego dziedziczenia werdyktów ani oceny wyłącznie przez wyrażenia regularne lub walidator schematu. Nowe problemy grupuj według ścieżki, węzła, jednostki umiejętności lub wspólnego defektu, zawsze z pełną listą identyfikatorów. Rozszerzaj właściwe istniejące zadania; nie twórz drugiej kolejki.
 
-Końcowy odbiór: inventory i auditedCount dla uzgodnionego bieżącego zakresu są równe; zero PENDING/identity/validation errors; każdy item ma pełny wynik, per-track/per-verdict agregację i aktualne fact checks, wszystkie non-PASS przypisane do konkretnych remediation tasks. Wynik podaje source SHA/version, zakres, rzeczywiste liczniki i ograniczenie human sign-off. Brak aktualnego pełnego ledgeru nie może być zamknięty starym summary, zatwierdzeniem batcha, schema PASS ani usunięciem evidence.
+[Zachowane zadania naprawcze](content-maintenance.md) obejmują 158 grup i 2 129 pytań z potwierdzonymi problemami w treści. Każde zadanie musi podać identyfikatory, kategorie problemów, dowody, wymagane poprawki, źródła do sprawdzenia, zabronione zmiany, walidację, ponowną ocenę każdego pytania i przekazanie do przeglądu redakcyjnego przez człowieka. Należy też określić zależności od wersji treści, manifestu, dopuszczenia pakietu i przypięcia go w aplikacji.
+
+Podczas audytu nie poprawiaj treści. Nie przepisuj całych banków, nie ukrywaj słabych pytań i nie zmieniaj schematu wykonania. Ocena modelu nie zastępuje zatwierdzenia redakcyjnego przez człowieka.
+
+## Weryfikacja i kryteria odbioru
+
+W repozytorium contentu polecenie `node evidence/business-quality/full-content-audit-2026-10-02/verify.mjs` odtwarza nieśledzony rejestr i podsumowanie dawnego audytu. Opcja `--require-complete` musi zwracać kod 2, dopóki ten audyt pozostaje niepełny. Narzędzie `aggregate.mjs` uruchamiaj wyłącznie na tymczasowej kopii starego planu: dawny zakres zawiera już rozwiązane problemy. Nie nadpisuj nim aktualnego planu.
+
+Polecenie `node scripts/content-audit/reconcile.mjs <output.json>` odtwarza porównanie aktualnych pytań z dawnymi ocenami. Po zmianie źródeł, kryteriów, mechanizmu punktacji lub faktów dowód musi nadal pasować do ocenianego zakresu. Walidator aktualnej kompletności musi odrzucać rekordy powielone, obce, nieaktualne, z niepełną oceną oraz błędną tożsamością źródła. Ma jawnie zgłaszać niepełny audyt. Dawny weryfikator stanowi wzorzec, ale nie potwierdza kompletności obecnego banku.
+
+Audyt można odebrać dopiero, gdy liczba ocenionych pytań jest równa liczbie pytań w uzgodnionym aktualnym zakresie. Nie może pozostać żadne `PENDING` ani błąd tożsamości lub walidacji. Każde pytanie musi mieć pełną ocenę i aktualne sprawdzenie wymaganych faktów; każdy wynik inny niż `PASS` musi wskazywać konkretne zadanie naprawcze. Raport podaje SHA źródeł, wersję, zakres, rzeczywiste liczniki według ścieżki i werdyktu oraz ograniczenie dotyczące zatwierdzenia przez człowieka. Stare podsumowanie, odbiór całej partii, walidacja schematu ani usunięcie dowodów nie zamykają tego zadania.
