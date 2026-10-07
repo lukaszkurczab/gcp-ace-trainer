@@ -9,7 +9,7 @@
 
 Porównanie 07.10:  PublicPage i DemoQuestion renderują dokładnie2 kanoniczne ordinary-Free przykłady Coding/AWS z app export; feedback/Details/reset/unavailable już istnieją. Poprzedni przykład SQL nie jest bieżącym punktem pracy. CTA prowadzą do sekcji demo/katalogu, nie do zatwierdzonego distribution destination.
 
-Po decyzji PO o istniejącym destination podłączyć page-specific CTA i domknąć W01–W18, w tym rzeczywiście brakujący UI/theme/large-text zakres. Zachować kanoniczne źródło dwóch przykładów i Premium boundary. Nie dodawać Design preview, nowych usług, endpointów ani claimów skuteczności/konwersji bez właściwego zakresu i dowodu.
+Właściciel zatwierdził 07.10 docelowe przejście do App Store. Przed publikacją strona informuje o przyszłej dostępności i nie pokazuje aktywnego przycisku pobrania. Po potwierdzeniu właściwej strony aplikacji podłączyć przyciski dla poszczególnych stron i domknąć W01–W18, w tym brakujący zakres interfejsu, motywów i dużego tekstu. Zachować kanoniczne źródło dwóch przykładów i Premium boundary. Nie dodawać Design preview, nowych usług, endpointów ani claimów skuteczności/konwersji bez właściwego zakresu i dowodu.
 
 Publikacja ma osobną procedurę R02. BIZQ-06 kończy się działającym lokalnym flow, prawdziwą następną akcją i wymaganym odbiorem, nie deploymentem. Zakres nie obejmuje rebrandingu, CMS, kampanii, mailingu ani sprzedaży webowej.
 
@@ -85,6 +85,8 @@ Zmiana przykładu czy reset nie może pozostawić feedbacku z poprzedniego pytan
 Każda próbka ma widoczną tożsamość celu/tracka, ale nie zdradza szukanego wzorca przez nagłówek, jeżeli jego rozpoznanie jest częścią zadania. Demo nie jest diagnozą całego tracka.
 
 ## 6. Następna akcja — wyłącznie prawdziwa
+
+**Decyzja właściciela z 07.10.2026:** docelowym kanałem dostępu po demo jest App Store. Przed publikacją pokazywać informację o przyszłej dostępności, bez aktywnego przycisku pobrania. Włączyć przejście do sklepu dopiero po sprawdzeniu, że link wskazuje właściwą aplikację dostępną w obsługiwanym regionie. Nie tworzyć w tym zadaniu listy zainteresowanych ani zaproszenia TestFlight. Zatwierdzenie kanału nie jest zatwierdzeniem konkretnego URL, wdrożenia web ani publikacji aplikacji.
 
 Zbadaj istniejący mechanizm dystrybucji. Nie wpisuj linku App Store, TestFlight lub waitlisty z pamięci. Weryfikacja celu linku musi dotyczyć konkretnej aplikacji, nie tylko odpowiedzi HTTP 200.
 

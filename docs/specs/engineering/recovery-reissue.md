@@ -8,7 +8,7 @@ Cel: utrata odpowiedzi, restart lub awaria providera nie mogą bezpowrotnie zuż
 
 Retencja recovery/reissue 30 dni od trwałego ACK/supersession jest zatwierdzona i wdrożona lokalnie. Powtórny ACK nie wydłuża retencji; aktywne niezakończone operacje nie mają TTL. Krótki termin szyfrogramu jest osobną granicą. Cloud index/TTL application pozostaje osobnym zadaniem providerowym. SEC-07 dotyczy innej kolekcji terminal revocation metadata.
 
-**Nierozstrzygnięta decyzja PO:** która rodzina maila podlega consume/reissue? Opcje: guest privacy verification (kod/resend; wcześniejsza rekomendacja), purchase receipt (bez kodu) albo legal/admin mail. Brak odpowiedzi nie wybiera rodziny. Blokuje odpowiadający SMTP/UI/B4 slice, nie niezależny odbiór istniejących operacji recovery.
+**Decyzja właściciela z 07.10.2026 — zakres SMTP:** polityka zużycia i ponownego wydania obejmuje kod potwierdzający adres Gościa przy zgłoszeniu dotyczącym jego danych w aplikacji (`guest privacy verification`). Jawne „Wyślij ponownie” tworzy nową identyfikowalną próbę i nowy kod; nowa generacja unieważnia poprzedni kod. Niepewny wynik wysyłki nie powoduje automatycznego ponowienia. Potwierdzenia zakupów oraz wiadomości prawne i administracyjne zachowują osobne procesy. Ich istniejące obowiązki i odbiór ODK-E2E-086 pozostają w zakresie planu. Decyzja określa granicę tego zadania, a nie potwierdza implementacji lub odbioru SMTP/UI/B4.
 
 **Zatwierdzona semantyka po SMTP accepted i awarii przed utrwaleniem:**
 
@@ -24,7 +24,7 @@ Zidentyfikować każdą granicę przed/po zewnętrznym skutku, durable intent/re
 
 Odebrane historyczne lokalne HTTP/SDK slices: ISSUE/consume response loss, storage rejection, replacement, revoke, deletion, same-ID concurrency i canonical log redaction. Ich usunięte raporty są w Git `74d8439c9801448c6b536d2f72eb4bd18811482d:docs/active/AUD-08/`. Ponownie wykonać przypadek tylko dla zmienionego źródła/zależności lub konkretnego niepokrytego ryzyka. Nie przywracać historycznych blockerów retencji po wdrożeniu 30 dni.
 
-Pozostały native consume/persistence/restart, pełna macierz oraz SMTP scope nie są odebrane. Historyczne fixture cleanup/password rotation, restoration Auth i exceptional timeout/hang teardown były niepotwierdzone; zweryfikować ich aktualny stan przed użyciem istniejącego testowego konta, zamiast wykonywać dawny retry lub reset. Brak dawnego runtime nie dowodzi uszkodzenia danych. Politykę generation mismatch skonfrontować z aktualnym kontraktem; bez guessed ACK, retain/forget lub replay.
+Pozostały natywny odbiór zużycia kodu, trwałości i restartu, pełna macierz oraz implementacja i odbiór zatwierdzonego zakresu SMTP nie są zakończone. Historyczne fixture cleanup/password rotation, restoration Auth i exceptional timeout/hang teardown były niepotwierdzone; zweryfikować ich aktualny stan przed użyciem istniejącego testowego konta, zamiast wykonywać dawny retry lub reset. Brak dawnego runtime nie dowodzi uszkodzenia danych. Politykę generation mismatch skonfrontować z aktualnym kontraktem; bez guessed ACK, retain/forget lub replay.
 
 Pliki rozpoczęcia: app `src/application/account/AccountSessionProvider.tsx`, account recovery coordinators i `scripts/aud02dMatrix.mjs`; backend `src/modules/users/` recovery/reissue store/service, `src/api/app.ts`, `config/firestore-{indexes,ttl}.json`, required recovery/emulator runners. Faktyczne ścieżki i wymagane flagi ustalić z obecnych package scripts przed uruchomieniem.
 
@@ -32,4 +32,4 @@ Pliki rozpoczęcia: app `src/application/account/AccountSessionProvider.tsx`, ac
 
 **Weryfikacja:** backend unit/isolated emulator, rzeczywisty HTTP/Admin/Firebase SDK, mobile persistence/restart/concurrency, negative access/generation/expiry/corruption oraz sanitized log assertions; potrzebne native przypadki na jednym istniejącym iPhone17. Publiczne UI i trwałe dane mają osobne dowody. Brak App Check/provider proof jest przypisany do wydania, nie zastępowany fixture.
 
-Poza zakresem: deploy, cloud TTL/index apply, nowe SMTP kontrakty bez decyzji, zakupy, odtwarzanie starych kont bez autoryzacji, reset danych i ponowna implementacja zaakceptowanego protokołu.
+Poza zakresem: deploy, cloud TTL/index apply, rozszerzenie polityki SMTP na inne rodziny wiadomości bez decyzji, zakupy, odtwarzanie starych kont bez autoryzacji, reset danych i ponowna implementacja zaakceptowanego protokołu.

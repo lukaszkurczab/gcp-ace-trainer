@@ -32,6 +32,8 @@ Nie wprowadzaj osobnych liczników „progress for Home” i „progress for pla
 
 ### 2.1. Stan ukończenia
 
+**Decyzja właściciela z 07.10.2026 — dobór progów:** określać je osobno dla każdej ścieżki nauki, w wersjonowanej regule jej rzeczywistego pakietu. Przygotować do zatwierdzenia minimum kwalifikujących prób, rozmiar ruchomego okna i wymagany odsetek poprawnych odpowiedzi, z uzasadnieniem wynikającym z zakresu i charakteru materiału. Nie stosować jednego wspólnego zestawu liczb ani parametrów z danych testowych. Decyzja zatwierdza sposób doboru progów, a nie konkretne wartości. Do ich zatwierdzenia pakiet bez reguły zachowuje `unknown`. Ukończenie pakietu nie jest gwarancją zdania egzaminu lub rozmowy.
+
 - Reguła istnieje i jest poprawna: uruchom kanoniczny evaluator na właściwych dowodach.
 - Reguła nie istnieje: `unknown`, z prawdziwym powodem; nie domyślny próg.
 - Reguła albo artefakt są niepoprawne: jawny błąd kontraktu, nie „brak postępu”.

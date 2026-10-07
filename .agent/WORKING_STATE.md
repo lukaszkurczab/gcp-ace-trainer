@@ -40,6 +40,18 @@ Niezależny odbiór poprzednich porządków potwierdził zachowanie zakresu zada
 
 Sprawdzono dokładnie dwie tabele, obecność zachowanych grup zadań i identyfikatorów wydania, uzgodniony zakres po wydaniu oraz odnośniki w zmienionych dokumentach. Niezależny przegląd różnic potwierdził zachowanie zakresu, zależności i kryteriów bez dodawania nowej ogólnej bramki publikacji. Ta korekta dotyczy dokumentacji; nie zmienia kodu aplikacji ani treści pytań.
 
+## Zapisane decyzje właściciela z 07.10
+
+- BIZQ-03: jedna diagnoza na początku, potem praktyka, dla ścieżek obsługujących diagnozę.
+- BIZQ-02: osobne progi ukończenia dla każdej ścieżki. Minimum prób, rozmiar ruchomego okna i próg poprawności wymagają przygotowania i zatwierdzenia; wartości testowe nie są domyślne.
+- BIZQ-04: 7 × 24 godziny od pierwszego kwalifikowanego sukcesu do następnego sprawdzenia, liczone od `answeredAt`. Pozostałe proponowane odstępy nadal wymagają rozstrzygnięcia.
+- BIZQ-06: docelowo App Store. Przed publikacją zapowiedź bez aktywnego przycisku pobrania; przejście do sklepu dopiero po potwierdzeniu właściwego linku i dostępności.
+- AUD-08: kod potwierdzający adres Gościa przy zgłoszeniu dotyczącym jego danych. Jawne ponowienie tworzy nową próbę i kod oraz unieważnia poprzedni; brak automatycznego ponowienia niepewnej wysyłki. Maile zakupowe, prawne i administracyjne pozostają w osobnych procesach.
+- PERSIST-11: maksymalnie 5 sekund utraty aktywnego czasu po nagłym zamknięciu i wznowieniu. Limit wymaga implementacji i pomiaru; nie zmienia absolutnego terminu egzaminu.
+- SEC-07: 30 × 24 godziny metadanych potwierdzonego zakończenia, od niezmiennego czasu zakończenia, bez przedłużania przez ponowienia. Aktywne i nadal ponawialne operacje nie wygasają arbitralnie. Projekt musi chronić przed ponownym wykonaniem starego żądania po usunięciu historii; obecny UUID i samo TTL nie zapewniają tej ochrony.
+
+Ustalenia zapisano przy zadaniach w planie i specyfikacjach. Niezależny przegląd pierwszych sześciu decyzji potwierdził ich zgodność z odpowiedziami właściciela. Przegląd SEC-07 wykazał wymaganą ochronę starych żądań, włączoną jawnie do zakresu zadania. Jest to przegląd decyzji i dokumentacji, a nie odbiór implementacji. Nie zatwierdzono wdrożeń ani wydania. Końcowy przegląd zapisu SEC-07 potwierdził zachowanie tych ograniczeń. Sprawdzono odnośniki w dziewięciu zmienionych dokumentach, dwie tabele planu i obecność zachowanych grup zadań. Ocena tej aktualizacji: zgodność z celem i architekturą 0,95; prostota 0,90; kontrola ryzyka 0,85; utrzymywalność 0,90; minimum 0,85. Ryzyko SEC-07 pozostaje jawnie przypisane do wymaganego projektu ochrony starych żądań; decyzja o retencji nie zastępuje tego projektu. Pozostają konkretne liczby progów oraz pozostałe proponowane parametry harmonogramu.
+
 ## Następny krok
 
 Dokończyć Q13 według planu i jego specyfikacji. Nie przywracać dawnej infrastruktury testowej bez sprawdzenia wymaganych wejść. Pozostałe zadania kontynuować w przypisanej kolejce; przeniesienie po wydaniu nie oznacza ich wykonania.

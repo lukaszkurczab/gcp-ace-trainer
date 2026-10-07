@@ -10,7 +10,7 @@
 
 Porównanie 07.10:  `CanonicalTrainingRuntime.submitPractice/finalizeSimulation` już używa recorded answeredAt, exact source i kwalifikacji due; completed result projections i source fail-closed zostały poprawione. Nie przywracać historical-miss fallback ani alternatywnego ownera kolejki.
 
-W istniejących correct review transitions pierwszy kwalifikowany sukces nadal zwiększa consecutiveAfterDueSuccesses i lastReviewedAt bez nowego dueAt, a drugi usuwa wpis. Pełny family contract correct-first scheduling i maintenance nie jest domknięty. Najpierw decyzja PO o dodatnim interwale;7dni to propozycja. Potem spójne przejścia due/maintenance oraz R01–R21 przez istniejący family/lifecycle/journal, z verified completed-session context z ARCH-01/02.
+W istniejących correct review transitions pierwszy kwalifikowany sukces nadal zwiększa consecutiveAfterDueSuccesses i lastReviewedAt bez nowego dueAt, a drugi usuwa wpis. Pełny family contract correct-first scheduling i maintenance nie jest domknięty. Właściciel zatwierdził 07.10 odstęp 7 × 24 godziny po pierwszym kwalifikowanym sukcesie. Do wykonania pozostają spójne przejścia terminów i utrwalania oraz R01–R21 przez istniejących właścicieli rodziny, cyklu sesji i dziennika zmian, ze zweryfikowanym kontekstem ukończonej sesji z ARCH-01/02.
 
 Natychmiastowa poprawa naprawia rozumowanie, a późniejsze odtworzenie dostarcza osobnego dowodu po czasie. Nie wprowadzać progression gate, mastery ani nowej kolejki.
 
@@ -45,16 +45,18 @@ Nie rób warunku `trackId === ...` w shared kernel. Polityka należy do rodziny/
 
 Najpierw wykorzystaj istniejące poprawne, wersjonowane wartości. Nie zamieniaj bez uzasadnienia wszystkich harmonogramów na nowe stałe. Brakujący odstęp po pierwszym sukcesie uzupełnij w jawnej polityce rodziny, z walidacją dodatniej wartości i testem.
 
-Proponowana polityka startowa dla brakujących definicji:
+**Decyzja właściciela z 07.10.2026:** odstęp po pierwszym kwalifikowanym sukcesie w zaplanowanej powtórce wynosi 7 × 24 godziny. Nowy termin wylicza się od kanonicznego `answeredAt` tej odpowiedzi. Natychmiastowa korekta błędu nie jest takim sukcesem. Właściciel zatwierdził ten odstęp; nie zatwierdził tym samym pozostałych proponowanych terminów poniżej. Decyzja wymaga zapisania w wersjonowanej polityce i testach; nie jest dowodem wdrożenia.
 
-| Parametr | Proponowana wartość | Znaczenie |
+Polityka dla brakujących definicji — jeden odstęp zatwierdzony, pozostałe proponowane:
+
+| Parametr | Wartość i status | Znaczenie |
 | --- | --- | --- |
 | Pierwsze odroczone sprawdzenie błędu | 24 godziny | Natychmiastowa naprawa jest dostępna osobno, lecz nie stanowi sukcesu po tym terminie. |
 | Pierwsze maintenance po nowej poprawnej pracy | 7 × 24 godziny | Nowe poprawne odpowiedzi nie wypadają całkowicie z utrwalania. |
-| Odstęp po pierwszym kwalifikowanym persistent success | 7 × 24 godziny | Drugi kwalifikowany sukces wymaga nowego terminu. |
+| Odstęp po pierwszym kwalifikowanym persistent success | 7 × 24 godziny — zatwierdzone 07.10 | Drugi kwalifikowany sukces wymaga nowego terminu. |
 | Następne maintenance po poprawnym retrieval | 14, następnie 28 × 24 godziny | Prosta, jawna sekwencja; dalszy horyzont nie wymaga rozbudowanego modelu. |
 
-To propozycje operacyjne BIZQ, nie wartości naukowo optymalne. Zapisz je w zatwierdzanej wersji polityki, nie jako ukryty fallback. Jeśli bieżąca zatwierdzona polityka ma inne sensowne wartości, zachowaj je i wyjaśnij, jak spełniają wymagane rozdzielenie zdarzeń. Nie przywracaj globalnego time-spread gate.
+Poza zatwierdzonym odstępem po pierwszym sukcesie wartości pozostają propozycjami operacyjnymi BIZQ. Nie są deklaracją naukowo optymalnego harmonogramu. Zapisz je w zatwierdzanej wersji polityki, nie jako ukryty fallback. Jeśli bieżąca zatwierdzona polityka ma inne sensowne wartości, zachowaj je i wyjaśnij, jak spełniają wymagane rozdzielenie zdarzeń. Nie przywracaj globalnego time-spread gate.
 
 `dueAt` oznacza tu instant; „24 godziny” nie oznacza następnej lokalnej daty o północy. Sukces o 23:59 nie uprawnia do drugiego o 00:01. Powiadomienie może być planowane lokalnie, ale nie zmienia momentu kwalifikacji review.
 

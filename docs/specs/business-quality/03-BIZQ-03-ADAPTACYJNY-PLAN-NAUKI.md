@@ -189,6 +189,8 @@ Do obliczeń nie potrzeba wyboru wszystkich konkretnych pytań na kilka miesięc
 
 ### 7.2. Priorytety
 
+**Decyzja właściciela z 07.10.2026 — rozpoczęcie planu:** jedna diagnoza na początku, potem praktyka, dla ścieżek obsługujących diagnozę. Jej wynik zasila dobór zakresu dalszych ćwiczeń. Nie wybieraj diagnozy jako domyślnej powtarzanej sesji planu. Nie dodawaj trybu diagnostycznego do ścieżki, która go nie obsługuje, ani nie omijaj kontroli dostępu. Ta decyzja określa sposób rozpoczęcia planu; nie ustanawia nowych progów ukończenia i nie potwierdza wdrożenia.
+
 Wykorzystaj family policy: aktywna sesja, pilne due/remediation i powtarzalne błędy, brakujące etapy w ważnym zakresie, a następnie odpowiednie checks. Tie-break ma być stabilny, np. due date, istniejący priorytet celu, niższe pokrycie, stabilny ID.
 
 Nie wybieraj automatycznie pierwszego noda ani `modes[0]`. Priorytety mają być zależne od celu i danych, ale bez branchy po konkretnym trackId w shared kernel.
