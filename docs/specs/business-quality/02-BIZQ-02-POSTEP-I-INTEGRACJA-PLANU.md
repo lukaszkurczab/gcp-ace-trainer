@@ -9,7 +9,7 @@
 
 Porównanie 07.10:  `learningEvidenceProjection.ts` kwalifikuje exact package attempts, deduplikuje, odrzuca conflicting/future evidence i wywołuje `evaluatePackageCompletion`. HomePlanSnapshotReader i ProposalCoordinator konsumują tę projekcję, forecast i freshness/profile fences; Progress ma już actual activity/completion presentation. Stały unknown niezależny od dowodów został zastąpiony. Nie wykonywać tych etapów od nowa.
 
-`PackageCompletionRuleV1` i source→artifact transport istnieją, lecz bieżące9 aktywnych pakietów nie ma zatwierdzonych rules. Ich honest unknown jest poprawnym wynikiem. Tryb nadal wybiera modes[0]; recurring mode/time model należy do BIZQ-03.
+`PackageCompletionRuleV1` i transport reguły ze źródła do artefaktu istnieją. Właściciel zatwierdził 07.10 konkretne progi dziewięciu ścieżek opisane poniżej, lecz nie zapisano ich jeszcze w aktywnych pakietach. Do dostarczenia rzeczywistej reguły wynik `unknown` pozostaje poprawny. Wybór powtarzanej sesji i szacowanie czasu należą do BIZQ-03.
 
 Pozostałe zadanie to pełny odbiór P01–P20 na istniejących owners: identity/offline/restart, stale accept, submit→Home→proposal→restart, active-session conflict, reminders i Premium. Nie przedstawiać synthetic-rule testu jako realnego ukończenia pakietu ani snapshotu po ACK jako interrupted recovery. Zakres wymaganej brakującej implementacji wynika wyłącznie z nieprzechodzącego kontraktu tej macierzy.
 
@@ -32,7 +32,27 @@ Nie wprowadzaj osobnych liczników „progress for Home” i „progress for pla
 
 ### 2.1. Stan ukończenia
 
-**Decyzja właściciela z 07.10.2026 — dobór progów:** określać je osobno dla każdej ścieżki nauki, w wersjonowanej regule jej rzeczywistego pakietu. Przygotować do zatwierdzenia minimum kwalifikujących prób, rozmiar ruchomego okna i wymagany odsetek poprawnych odpowiedzi, z uzasadnieniem wynikającym z zakresu i charakteru materiału. Nie stosować jednego wspólnego zestawu liczb ani parametrów z danych testowych. Decyzja zatwierdza sposób doboru progów, a nie konkretne wartości. Do ich zatwierdzenia pakiet bez reguły zachowuje `unknown`. Ukończenie pakietu nie jest gwarancją zdania egzaminu lub rozmowy.
+**Decyzja właściciela z 07.10.2026 — zatwierdzone progi startowe:** każda ścieżka otrzymuje własną wersjonowaną regułę z poniższym minimum prób oraz `rollingWindowSize=40`, `qualityThreshold=0.8`. Ukończenie wymaga osiągnięcia minimum i co najmniej 32 wyników `correct` w ostatnich 40 kwalifikujących próbach. Wynik `partial` nie liczy się jako poprawny. To decyzja o polityce produktu; nie jest dowodem wdrożenia ani skuteczności nauki.
+
+| Ścieżka (`trackId`) | Jednostki umiejętności w obecnym źródle | Zatwierdzone minimum prób | Wersja pakietu stanowiąca podstawę decyzji |
+| --- | ---: | ---: | --- |
+| AWS (`aws-certified-solutions-architect-associate`) | 145 | 580 | `aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096` |
+| GCP (`google-cloud-associate-cloud-engineer`) | 152 | 620 | `google-cloud-associate-cloud-engineer-authoring-v2026.08.11` |
+| Azure AZ-104 (`microsoft-azure-administrator-associate-az-104`) | 75 | 300 | `microsoft-azure-administrator-associate-az-104-authoring-v2026.08.15` |
+| Azure AI-901 (`microsoft-azure-ai-fundamentals-ai-901`) | 64 | 260 | `microsoft-azure-ai-fundamentals-ai-901-authoring-v2026.08.15` |
+| Claude (`claude-certified-architect-professional-certification`) | 38 | 160 | `ccarp-2026.10.07` |
+| Coding Interview (`coding-interview-dsa-problem-solving`) | 213 | 860 | `coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04` |
+| Backend System Design (`backend-system-design-interview`) | 89 | 360 | `backend-system-design-interview-authoring-v2026.10.03-bizq01-14` |
+| Frontend System Design (`frontend-system-design-interview`) | 88 | 360 | `frontend-system-design-interview-candidate-v2026.08.15` |
+| Object-Oriented Design (`object-oriented-design-interview`) | 79 | 320 | `object-oriented-design-interview-authoring-v2026.10.05-bizq01-24` |
+
+Podstawa propozycji: czterokrotność liczby jednostek umiejętności, zaokrąglona w górę do 20. Liczby jednostek i wersje odczytano z walidowanych źródeł dziewięciu aktywnych ścieżek przez `patternly-content/scripts/model-evaluation/inventory.mjs`, bez zapisu nowego raportu. Ten przelicznik służy wyłącznie do uzasadnienia zatwierdzonych minimów. Nie jest automatycznym algorytmem zmiany progów po rozbudowie banku ani wymogiem czterech odpowiedzi w każdej jednostce.
+
+Właściciel zatwierdził propozycję po ujawnieniu, że powtórzenia są dopuszczone, a wąski zestaw pytań może spełnić regułę. Ukończenie nie potwierdza pokrycia wszystkich tematów, opanowania materiału ani gotowości do egzaminu lub rozmowy. Progi są polityką startową, nie wartościami skalibrowanymi na wynikach użytkowników. Nie dodawać ukrytej bramki pokrycia ani zmieniać punktacji.
+
+Do wykonania w BIZQ-02: zapisać zatwierdzone reguły w kanonicznym źródle każdej ścieżki i dostarczyć je przez istniejący proces budowania, wersjonowania, dopuszczenia pakietu, przypięcia w aplikacji i odczytu profilu. Zachować dokładne przypisanie prób do wersji i skrótu artefaktu; nie zmieniać już przypiętego pakietu w miejscu ani wpisywać progów w Home. Do dostarczenia reguły pakiet zachowuje `unknown`.
+
+Weryfikacja dostarczenia: dla każdej ścieżki odczytana reguła ma zgadzać się z tabelą oraz wartościami 40/0,8. Sprawdzić minimum minus jedna próba, osiągnięte minimum z wynikiem 31/40 oraz osiągnięte minimum z wynikiem 32/40. Powtórzenia liczą się zgodnie z obecnym kontraktem, duplikat tego samego ID nie liczy się drugi raz, `partial` i próby innego pakietu nie zwiększają liczby poprawnych odpowiedzi. Wykorzystać istniejące testy transportu i oceny reguły oraz macierz P01–P20. Zmiana dokumentacji sama nie spełnia tych kryteriów.
 
 - Reguła istnieje i jest poprawna: uruchom kanoniczny evaluator na właściwych dowodach.
 - Reguła nie istnieje: `unknown`, z prawdziwym powodem; nie domyślny próg.
