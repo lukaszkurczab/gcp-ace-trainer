@@ -18,8 +18,10 @@ Guest34 usunął84klucze oryginalnego Gościa, zachował9kont/registry/logout, u
 
 Content canonical200/200PASS; app targeted128/128PASS; typecheck/recoverybaseline/contentboundary/runtimeprivacyboundaryPASS;9Free-package bindingsPASS. Recovery inventory453sources/321testfiles/1801cases. Wszystkie38fixtures zachowały bytes/hashes. Sourcehashes158FCAgroups i links specs potwierdzone niezależnie. Audit verifier --require-complete poprawnie zwraca2, bez fałszywegoCOMPLETE.
 
-Pierwszy full app run:1904PASS/13FAIL/4SKIP z1921testów. Wszystkie13FAIL były hook ENOBUFS w releaseManifest fixture buforującej duży git diff HEAD --binary; nie ustanowiono product regression. Te13cases wymagają clean-tree rerunu po commitachcleanup. Nie wykonano native/provider/store/deploy/publish odbioru. Odbiór cleanup i końcowe Git checks jeszcze trwają.
+Full app run miał1904PASS/13fixtureFAIL/4SKIP z1921testów;13ENOBUFS wynikało z buforowanego dużego binary diff. Clean-tree rerun wszystkich13releaseManifest cases:13/13PASS,0SKIP. Łącznie odpowiedni zakres1917PASS/4dedicatedSKIP bez nierozwiązanej porażki cleanup. Cross-repo3/3PASS z pełnym current-content SHA (pierwsza próba ze skróconymSHA poprawnie odrzucona). Candidate release gate/migration16622PASS; actual runtime admission regenerowane dla bieżącego appHEAD, candidate/content hashes bez zmian. Nowy audit source-binding tool: realny pełny run byte-identyczny przy powtórzeniu, untracked-source negative probe rejected przed output.
+
+Niezależne QA zachowania scope i dokumentacji:PASS; minimum revised approach .85. Własne lokalne cleanup commity; backend bez zmiany źródła. Staged whitespace sprawdzone po normalizacji końcowych pustych linii i whitespace poza JSONL rekordami (parsed judgments identyczne). Nie wykonano native/provider/store/deploy/publish odbioru. Szczegółowe per-run logi są tymczasowe, nie drugim planem.
 
 ## Następny krok
 
-Domknąć cleanup commits, fresh actual runtime-admission receipt i clean-tree releaseManifest/cross-repo checks; potem wrócić do Q13 według planu. Nie wznawiać starej infrastruktury i nie pomijać unresolved audit tasks.
+Porządki zapisane; po końcowym clean-tree/admission check wrócić do Q13 według planu. Nie wznawiać starej infrastruktury i nie pomijać unresolved audit tasks.
