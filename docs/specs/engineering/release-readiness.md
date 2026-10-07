@@ -4,6 +4,8 @@ Status: BLOCKING wydanie; praca lokalna UI/backend może trwać. Kanoniczny zapi
 
 Realny przykład: użytkownik otwiera Settings → Legal information → Terms i musi znaleźć rzeczywistego sprzedawcę, kontakt reklamacyjny/odstąpienia oraz cenę i odnowienie Premium. Brak tych danych blokuje release config/build i produkcyjny eksport prawny WWW.
 
+Domena i działająca firmowa skrzynka są wynikiem [DOMAIN-MAIL-01](company-domain-mail.md). R01 wykorzystuje odebrane kontakty i docelowe adresy witryny; nie uznaje wpisania samego adresu za utworzenie poczty. [R02](web-release.md) publikuje następnie witrynę pod zatwierdzonym adresem.
+
 ## Dane do uzupełnienia i potwierdzenia
 
 | Grupa | Dokładne pola kanonicznego źródła |
