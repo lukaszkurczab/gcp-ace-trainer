@@ -9,7 +9,7 @@
 
 Porównanie 07.10:  `learningEvidenceProjection.ts` kwalifikuje exact package attempts, deduplikuje, odrzuca conflicting/future evidence i wywołuje `evaluatePackageCompletion`. HomePlanSnapshotReader i ProposalCoordinator konsumują tę projekcję, forecast i freshness/profile fences; Progress ma już actual activity/completion presentation. Stały unknown niezależny od dowodów został zastąpiony. Nie wykonywać tych etapów od nowa.
 
-`PackageCompletionRuleV1` i transport reguły ze źródła do artefaktu istnieją wyłącznie na poziomie całej ścieżki. Nie ma zatwierdzonych liczbowych reguł ukończenia rozdziałów ani oceny ścieżki jako wyniku wszystkich rozdziałów. Korekta właściciela z 07.10 wymaga tego modelu. Wcześniej zatwierdzone globalne minima nie zostały wdrożone i nie są już docelową regułą ukończenia. Do dostarczenia właściwej reguły wynik `unknown` pozostaje poprawny. Wybór powtarzanej sesji i szacowanie czasu należą do BIZQ-03.
+`PackageCompletionRuleV1` i transport reguły ze źródła do artefaktu istnieją wyłącznie na poziomie całej ścieżki. Zatwierdzono już liczbowe reguły ukończenia rozdziałów, lecz nie zostały dostarczone do pakietów ani wdrożone w ocenie ścieżki jako wyniku wszystkich rozdziałów. Korekta właściciela z 07.10 wymaga tego modelu. Wcześniej zatwierdzone globalne minima nie zostały wdrożone i nie są już docelową regułą ukończenia. Do dostarczenia właściwej reguły wynik `unknown` pozostaje poprawny. Wybór powtarzanej sesji i szacowanie czasu należą do BIZQ-03.
 
 Pozostałe zadanie to pełny odbiór P01–P20 na istniejących owners: identity/offline/restart, stale accept, submit→Home→proposal→restart, active-session conflict, reminders i Premium. Nie przedstawiać synthetic-rule testu jako realnego ukończenia pakietu ani snapshotu po ACK jako interrupted recovery. Ponadto wdrożyć nowy model ukończenia rozdziałów i agregacji ścieżki opisany poniżej; obecna globalna reguła go nie realizuje.
 
@@ -36,9 +36,11 @@ Nie wprowadzaj osobnych liczników „progress for Home” i „progress for pla
 
 Rozdział oznacza istniejący węzeł materiału (`nodeId`) z wersjonowanego zakresu ścieżki. W obecnym inventory jest 117 takich węzłów w dziewięciu ścieżkach. Wynik ścieżki uwzględnia pełną, jawną listę wymaganych rozdziałów tego pakietu. Nie budować listy wyłącznie z odpowiedzi użytkownika, załadowanych plików lub aktualnych uprawnień. Ukończony rozdział Free pozostaje ukończonym rozdziałem, lecz blokada Premium nie usuwa pozostałych rozdziałów z zakresu całej ścieżki. Korekta nie zmienia uprawnień ani nie odblokowuje materiału.
 
-**Propozycja liczb dla rozdziałów — jeszcze niezatwierdzona:** minimum prób rozdziału to czterokrotność liczby jego jednostek umiejętności, zaokrąglona w górę do 20; dla niepustego rozdziału minimum wynosi co najmniej 20. Jakość oceniać w ostatnich 20 kwalifikujących odpowiedziach wyłącznie tego rozdziału: wymagane 16 wyników `correct` (80%). Przykłady: 3–5 jednostek → 20 prób; 6–10 → 40; 11–15 → 60; 16 → 80. Okno 20 jest nową propozycją dla mniejszych rozdziałów; nie wynika automatycznie z dawnej zgody na globalne okno 40. Nie wpisywać tych liczb do produkcyjnych pakietów przed decyzją właściciela.
+**Decyzja właściciela z 07.10.2026 — zatwierdzone progi rozdziałów:** minimum prób rozdziału to czterokrotność liczby jego jednostek umiejętności, zaokrąglona w górę do wielokrotności 20; dla niepustego rozdziału minimum wynosi co najmniej 20. Jakość oceniać w ostatnich 20 kwalifikujących odpowiedziach wyłącznie tego rozdziału: wymagane 16 wyników `correct` (80%). Przykłady: 3–5 jednostek → 20 prób; 6–10 → 40; 11–15 → 60; 16 → 80. Właściciel osobno zatwierdził to okno 20 dla rozdziałów; zastępuje ono dawne globalne okno 40. Zgoda dotyczy polityki produktu, nie potwierdza implementacji.
 
-Po zatwierdzeniu przygotować pełną listę 117 rozdziałów: trackId, nodeId, źródłowa wersja i skrót, liczba jednostek, minimum, okno i próg. Powtórzenia pozostają dopuszczone, a `partial` nie liczy się jako poprawna odpowiedź. Warunek wszystkich rozdziałów nie jest wymaganiem rozwiązania każdego pytania ani gwarancją pokrycia każdej jednostki, opanowania materiału lub zdania egzaminu. Propozycja pozostaje polityką startową bez kalibracji empirycznej.
+[Zatwierdzony spis 117 rozdziałów](02-BIZQ-02-CHAPTER-COMPLETION.csv) zawiera trackId, nodeId, bazową wersję i skrót artefaktu, liczbę jednostek, minimum, okno i próg. Przygotowano go z walidowanych źródeł przez istniejące `patternly-content/scripts/model-evaluation/inventory.mjs`; wersje, skróty oraz przypisania i treść wszystkich pytań po przekształceniu przez kanoniczny mechanizm budowania porównano z dziewięcioma bieżącymi artefaktami. Dotyczy to również istniejącego przypisania pytań GCP do domen egzaminacyjnych. Spis jest wejściem zadania BIZQ-02, a nie produkcyjną konfiguracją lub dowodem wdrożenia. Bazowe skróty opisują materiał w chwili decyzji; pakiet z dostarczonymi regułami będzie miał nową tożsamość. Przed wykonaniem sprawdzić aktualność źródeł; zmiany zakresu wymagają jawnie wersjonowanego zapisu reguł, bez zmiany zainstalowanego pakietu w miejscu.
+
+Powtórzenia pozostają dopuszczone, a `partial` nie liczy się jako poprawna odpowiedź. Warunek wszystkich rozdziałów nie jest wymaganiem rozwiązania każdego pytania ani gwarancją pokrycia każdej jednostki, opanowania materiału lub zdania egzaminu. Progi są zatwierdzoną polityką startową bez kalibracji empirycznej.
 
 #### Wymagana zmiana kontraktu i właściciele
 
@@ -58,7 +60,7 @@ Próby ze starej wersji lub innego skrótu nie kwalifikują się automatycznie d
 
 Dodatkowy przypadek odbioru P20: użytkownik Free ukończył wszystkie dostępne mu rozdziały, a wymagany rozdział Premium pozostaje zablokowany. Dostępne rozdziały zachowują swój wynik, ścieżka nie jest ukończona, Home/Progress i prognoza wskazują rzeczywistą przeszkodę dostępu, a test potwierdza brak obejścia uprawnień.
 
-Free, Premium, Home, Progress i prognoza zachowują ten sam zakres ukończenia. Sam brak prawa do Premium nie jest błędem odczytu; ma wskazywać rzeczywisty stan dostępu. Nie tworzyć drugiego magazynu postępu ani samodzielnej bramki backendowej. Testy progów liczbowych dodać po ich zatwierdzeniu; zmiana dokumentacji nie potwierdza implementacji.
+Free, Premium, Home, Progress i prognoza zachowują ten sam zakres ukończenia. Sam brak prawa do Premium nie jest błędem odczytu; ma wskazywać rzeczywisty stan dostępu. Nie tworzyć drugiego magazynu postępu ani samodzielnej bramki backendowej. Testy progów liczbowych muszą weryfikować zgodność każdej z 117 reguł ze spisem, minimum minus jedna próba oraz wyniki 15/20 i 16/20 przy osiągniętym minimum. Zmiana dokumentacji nie potwierdza implementacji.
 
 - Reguła istnieje i jest poprawna: uruchom kanoniczny evaluator na właściwych dowodach.
 - Reguła lub definicja pełnego zakresu rozdziałów nie została opublikowana: `unknown`, z prawdziwym powodem; nie domyślny próg. Zadeklarowany, lecz niepełny lub sprzeczny zakres jest błędem kontraktu, nie `unknown`.
@@ -82,11 +84,11 @@ Powtarzanie poprawnie kwalifikujących się pytań pozostaje dopuszczone. Jawny 
 
 ### 2.3. Szczególnie ważny przypadek: minimum osiągnięte, jakość nie
 
-Przykład wyłącznie dla danych testu pojedynczego rozdziału: reguła `minimumAttemptCount=20`, `rollingWindowSize=10`, `qualityThreshold=0.8`; użytkownik ma 25 kwalifikujących prób tego rozdziału, a w ostatnich 10 poprawnych jest 5. Evaluator musi nadal zwracać `in_progress`.
+Przykład pojedynczego rozdziału z 8 jednostkami: reguła `minimumAttemptCount=40`, `rollingWindowSize=20`, `qualityThreshold=0.8`; użytkownik ma 45 kwalifikujących prób tego rozdziału, a w ostatnich 20 poprawnych jest 10. Evaluator musi nadal zwracać `in_progress`.
 
-`max(0, 20 - 25) = 0` mówi tylko, że nie brakuje wolumenu. Nie oznacza, że praca się skończyła. Prognoza oparta wyłącznie na wymaganej liczbie prób nie może zwrócić dzisiejszej daty ukończenia, `completed` ani pozytywnego komunikatu gotowości. Wyświetl jawny stan „minimum prób osiągnięte, potrzebna dalsza praca nad wynikami” albo odpowiedni obecny wzorzec. Dodatkowej liczby prób potrzebnych do jakości nie da się ustalić jako gwarancji.
+`max(0, 40 - 45) = 0` mówi tylko, że nie brakuje wolumenu. Nie oznacza, że praca się skończyła. Prognoza oparta wyłącznie na wymaganej liczbie prób nie może zwrócić dzisiejszej daty ukończenia, `completed` ani pozytywnego komunikatu gotowości. Wyświetl jawny stan „minimum prób osiągnięte, potrzebna dalsza praca nad wynikami” albo odpowiedni obecny wzorzec. Dodatkowej liczby prób potrzebnych do jakości nie da się ustalić jako gwarancji.
 
-Liczby w tym przykładzie są wyłącznie danymi testu. Nie wdrażaj ich jako progów dla tracków.
+Minimum 40 odpowiada w tym przykładzie rozdziałowi z 8 jednostkami; nie jest wspólnym minimum wszystkich rozdziałów. Okno 20 i próg 80% wynikają z zatwierdzonej polityki. Nie przywracać globalnego progu ścieżki.
 
 ## 3. Dokładny zakres odczytu
 
