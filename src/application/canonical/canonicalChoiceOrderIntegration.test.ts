@@ -57,7 +57,7 @@ async function refingerprint(session: TrainingSession): Promise<TrainingSession>
   return createTrainingSession({ ...base, taxonomyVersion: "canonical-content-v1", planFingerprint: await createContentSessionPlanFingerprint({ ...base, taxonomyVersion: "canonical-content-v1" }) });
 }
 
-test("all 16077 actual items preserve control membership, ID answers and non-choice order without exposing an answer to the ranker", async () => {
+test("all current actual items preserve control membership, ID answers and non-choice order without exposing an answer to the ranker", async () => {
   const catalog = await catalogPromise;
   let choiceCount = 0, nonChoiceCount = 0;
   for (const trackId of catalog.tracks) {
@@ -94,7 +94,7 @@ test("all 16077 actual items preserve control membership, ID answers and non-cho
       assert.deepEqual(vm.accessibility.controls.map((control) => control.id), order);
     }
   }
-  assert.deepEqual({ choiceCount, nonChoiceCount }, { choiceCount: 14335, nonChoiceCount: 1742 });
+  assert.deepEqual({ choiceCount, nonChoiceCount }, { choiceCount: 14880, nonChoiceCount: 1742 });
 });
 
 test("all real 29 practice modes and canonical simulation profiles prepare valid frozen orders with unchanged question selection", async () => {

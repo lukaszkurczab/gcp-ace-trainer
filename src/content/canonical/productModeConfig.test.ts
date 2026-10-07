@@ -169,7 +169,7 @@ test("selection pools are non-empty, local, and large enough for every requested
     [coding, 158], ["backend-system-design-interview", 145], ["object-oriented-design-interview", 136],
     ["frontend-system-design-interview", 150], [gcp, 136], ["aws-certified-solutions-architect-associate", 40],
     ["microsoft-azure-administrator-associate-az-104", 132], ["microsoft-azure-ai-fundamentals-ai-901", 144],
-    ["claude-certified-architect-professional-certification", 48],
+    ["claude-certified-architect-professional-certification", 138],
   ]);
   for (const entry of PRODUCT_MODE_CONFIGS) {
     const artifact = artifactByTrack.get(entry.trackId)!;

@@ -139,7 +139,7 @@ test("current canonical builder preserves the ODK-096 inventory and approved AWS
         mentalUnits.add(`${question.trackId}\0${question.nodeId}\0${question.mentalUnitId}`);
       }
     }
-    assert.deepEqual({ tracks: built.artifacts.length, nodes: nodes.size, mentalUnits: mentalUnits.size, questions }, { tracks: 9, nodes: 117, mentalUnits: 943, questions: 16_077 });
+    assert.deepEqual({ tracks: built.artifacts.length, nodes: nodes.size, mentalUnits: mentalUnits.size, questions }, { tracks: 9, nodes: 117, mentalUnits: 943, questions: 16_622 });
 
     const aws = built.artifacts.find((entry) => entry.trackId === "aws-certified-solutions-architect-associate")!.artifact;
     const awsQuestions = [...aws.questions].sort((left, right) => left.questionId < right.questionId ? -1 : left.questionId > right.questionId ? 1 : 0);

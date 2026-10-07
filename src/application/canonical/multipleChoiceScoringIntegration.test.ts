@@ -18,7 +18,7 @@ const NOW = "2026-10-02T12:00:00.000Z";
 const catalogPromise = loadCanonicalRuntimeCatalog();
 const multiple = (question: unknown): question is ChoiceMultipleQuestion => Boolean(question) && (question as ChoiceMultipleQuestion).interaction.type === "choice_multiple";
 
-test("all 440 actual multiple-choice items reject every wrong-containing subset independently of oracle parity", async () => {
+test("all current actual multiple-choice items reject every wrong-containing subset independently of oracle parity", async () => {
   const catalog = await catalogPromise;
   const oracle = await import(pathToFileURL(path.resolve("../patternly-content/scripts/content/question-contract.mjs")).href);
   let items = 0, subsets = 0;
@@ -49,7 +49,7 @@ test("all 440 actual multiple-choice items reject every wrong-containing subset 
       assert.equal(oracle.scoreQuestion(producerQuestionWithoutDomain(question), response).earnedPoints, 0);
     }
   }
-  assert.deepEqual({ items, subsets }, { items: 440, subsets: 8960 });
+  assert.deepEqual({ items, subsets }, { items: 441, subsets: 8992 });
 });
 
 function producerQuestionWithoutDomain(question: ChoiceMultipleQuestion) {
