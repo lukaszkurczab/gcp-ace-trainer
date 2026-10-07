@@ -45,18 +45,18 @@ Nie rób warunku `trackId === ...` w shared kernel. Polityka należy do rodziny/
 
 Najpierw wykorzystaj istniejące poprawne, wersjonowane wartości. Nie zamieniaj bez uzasadnienia wszystkich harmonogramów na nowe stałe. Brakujący odstęp po pierwszym sukcesie uzupełnij w jawnej polityce rodziny, z walidacją dodatniej wartości i testem.
 
-**Decyzja właściciela z 07.10.2026:** odstęp po pierwszym kwalifikowanym sukcesie w zaplanowanej powtórce wynosi 7 × 24 godziny. Nowy termin wylicza się od kanonicznego `answeredAt` tej odpowiedzi. Natychmiastowa korekta błędu nie jest takim sukcesem. Właściciel zatwierdził ten odstęp; nie zatwierdził tym samym pozostałych proponowanych terminów poniżej. Decyzja wymaga zapisania w wersjonowanej polityce i testach; nie jest dowodem wdrożenia.
+**Decyzja właściciela z 07.10.2026:** odstęp po pierwszym kwalifikowanym sukcesie w zaplanowanej powtórce wynosi 7 × 24 godziny. Nowy termin wylicza się od kanonicznego `answeredAt` tej odpowiedzi. Natychmiastowa korekta błędu nie jest takim sukcesem. Właściciel osobno zatwierdził też pozostałe wartości w tabeli jako politykę startową tam, gdzie pakiet nie ma już zatwierdzonej polityki. Zachować istniejące zatwierdzone polityki; nie zastępować ich globalnymi stałymi. Decyzja wymaga zapisania w wersjonowanej polityce i testach; nie jest dowodem wdrożenia.
 
-Polityka dla brakujących definicji — jeden odstęp zatwierdzony, pozostałe proponowane:
+Polityka startowa dla brakujących definicji — wartości zatwierdzone 07.10:
 
 | Parametr | Wartość i status | Znaczenie |
 | --- | --- | --- |
-| Pierwsze odroczone sprawdzenie błędu | 24 godziny | Natychmiastowa naprawa jest dostępna osobno, lecz nie stanowi sukcesu po tym terminie. |
-| Pierwsze maintenance po nowej poprawnej pracy | 7 × 24 godziny | Nowe poprawne odpowiedzi nie wypadają całkowicie z utrwalania. |
-| Odstęp po pierwszym kwalifikowanym persistent success | 7 × 24 godziny — zatwierdzone 07.10 | Drugi kwalifikowany sukces wymaga nowego terminu. |
-| Następne maintenance po poprawnym retrieval | 14, następnie 28 × 24 godziny | Prosta, jawna sekwencja; dalszy horyzont nie wymaga rozbudowanego modelu. |
+| Pierwsze odroczone sprawdzenie błędu | 24 godziny — zatwierdzone 07.10 | Natychmiastowa naprawa jest dostępna osobno, lecz nie stanowi sukcesu po tym terminie. |
+| Pierwsze utrwalanie po nowej poprawnej pracy | 7 × 24 godziny — zatwierdzone 07.10 | Nowe poprawne odpowiedzi nie wypadają całkowicie z utrwalania. |
+| Odstęp po pierwszym kwalifikowanym sukcesie w zaplanowanej powtórce | 7 × 24 godziny — zatwierdzone 07.10 | Drugi kwalifikowany sukces wymaga nowego terminu. |
+| Dalsze utrwalanie po poprawnej odpowiedzi | 14, następnie 28 × 24 godziny — zatwierdzone 07.10 | Prosta, jawna sekwencja; dalszy horyzont nie wymaga rozbudowanego modelu. |
 
-Poza zatwierdzonym odstępem po pierwszym sukcesie wartości pozostają propozycjami operacyjnymi BIZQ. Nie są deklaracją naukowo optymalnego harmonogramu. Zapisz je w zatwierdzanej wersji polityki, nie jako ukryty fallback. Jeśli bieżąca zatwierdzona polityka ma inne sensowne wartości, zachowaj je i wyjaśnij, jak spełniają wymagane rozdzielenie zdarzeń. Nie przywracaj globalnego time-spread gate.
+Wartości są zatwierdzoną polityką startową produktu, a nie deklaracją naukowo optymalnego harmonogramu. Dalszy odstęp po 28 dniach nie został tą decyzją określony; nie dopisywać go jako rzekomo zatwierdzonej wartości. Zapisz je w zatwierdzanej wersji polityki, nie jako ukryty fallback. Jeśli bieżąca zatwierdzona polityka ma inne sensowne wartości, zachowaj je i wyjaśnij, jak spełniają wymagane rozdzielenie zdarzeń. Nie przywracaj globalnego time-spread gate.
 
 `dueAt` oznacza tu instant; „24 godziny” nie oznacza następnej lokalnej daty o północy. Sukces o 23:59 nie uprawnia do drugiego o 00:01. Powiadomienie może być planowane lokalnie, ale nie zmienia momentu kwalifikacji review.
 
