@@ -10,7 +10,7 @@
 
 Docelowy planner nie ma odpowiedzieć „ile pytań mieści się do daty”, ale „jaką pracę warto wykonać w dostępnym czasie i czy założony zakres jest realistyczny”. Jest deterministyczny, działa offline i podaje powód rekomendacji.
 
-Nie buduj systemu ML, modelu mastery, codziennego LLM coacha ani probabilistycznego przewidywania zdawalności. Nie zmieniaj istniejącej reguły ukończenia pakietu. Nie licz całego banku pytań jako obowiązkowego programu. Nie twórz nowego centralnego silnika sesji ani drugiego harmonogramu reminders.
+Nie buduj systemu ML, modelu mastery, codziennego LLM coacha ani probabilistycznego przewidywania zdawalności. Konsumuj docelową regułę wszystkich rozdziałów z BIZQ-02; nie twórz własnej reguły ukończenia. Nie licz całego banku pytań jako obowiązkowego programu. Nie twórz nowego centralnego silnika sesji ani drugiego harmonogramu reminders.
 
 **Wszystkie reguły planowania poniżej są docelową zmianą BIZQ.** Obecny kod i parametry muszą zostać odczytane przed implementacją. Nową semantykę wpisz do właściwego kanonicznego kontraktu i jego testów, nie tylko do komentarzy w generatorze.
 
@@ -20,7 +20,7 @@ Nie buduj systemu ML, modelu mastery, codziennego LLM coacha ani probabilistyczn
 | --- | --- |
 | Cel | Typ przygotowania, wybrany zakres, termin lub own pace. |
 | Dostępność | Dni i minuty, które użytkownik rzeczywiście przeznacza na ten plan. |
-| Stan ukończenia pakietu | Istniejący evaluator minimum prób + ruchomego okna; nie jest nową definicją wiedzy. |
+| Stan ukończenia pakietu | Wspólna ocena rozdziałów i agregacja ścieżki z BIZQ-02; nie jest nową definicją wiedzy. |
 | Dowody edukacyjne | Z BIZQ-02/04/05: próby, etapy, pokrycie, błędy, due review, nowe przykłady. |
 | Propozycja planu | Nowa, niezaakceptowana wersja rekomendowanej pracy i wykonalności. |
 | Zaakceptowany plan | Stan zapisany i synchronizowany atomowo z celem. |
@@ -109,7 +109,7 @@ Szacunki autorskie są hipotezami do kalibracji, nie gwarancją czasu rozwiązan
 
 Najpierw zweryfikuj semantykę istniejącego zegara. Nie dziel wall-clock od startu do końca sesji przez liczbę pytań; pobyt w tle lub wielogodzinna przerwa nie jest nauką.
 
-Dla porównywalnych sesji użyj odpornej statystyki, np. mediany czasu foreground na rozwiązaną occurrence. W pierwszej wersji można przyjąć politykę: minimum 5 porównywalnych zakończonych sesji i 20 rozwiązań; okno maksymalnie 10 ostatnich takich sesji. To proponowane parametry startowe produktu, wymagające zapisania w polityce i testach, nie wiedza o optymalnej liczbie obserwacji.
+**Decyzja właściciela z 07.10.2026 — kalibracja czasu:** początkowo używać szacunków autorskich właściwych dla rodzaju zadania. Tempo użytkownika stosować po co najmniej 5 porównywalnych ukończonych sesjach i 20 odpowiedziach, uwzględniając najwyżej 10 ostatnich takich sesji. Użyć mediany aktywnego czasu na odpowiedź, obejmującego również błędne odpowiedzi i czytanie objaśnień; czas w tle nie jest czasem nauki. Nie przenosić tempa pomiędzy nieporównywalnymi rodzajami zadań. To zatwierdzona polityka startowa do zapisania w wersjonowanej polityce i testach; nie jest dowodem wdrożenia ani optymalnego doboru liczb. Szacunek pozostaje przybliżeniem. Przed implementacją uzgodnić właściwy zapis kanonicznego kontraktu 01 z tą zatwierdzoną polityką; dawne ogólne określenie liczb jako propozycji nie wycofuje decyzji właściciela.
 
 Nie kalibruj osobno na samych poprawnych lub najszybszych odpowiedziach — zaniżyłoby to koszt nauki. Nie przenoś tempa prostego trybu certyfikacyjnego na Design Interview. Dla mieszanego materiału stosuj istniejące szczegółowe dane czasu albo pozostaw klasową estymatę autorską z niepewnością; nie przypisuj całego kosztu wszystkim itemom jednocześnie.
 

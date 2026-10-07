@@ -3,15 +3,15 @@
 **Priorytet:** P0  
 **Główne repo:** aplikacja; content, jeżeli reguła nie dociera przez istniejący kontrakt; backend tylko dla rzeczywistej zmiany atomowej pary cel/plan  
 **Zależności:** wspólny [plan BIZQ](00-PATTERNLY-BIZQ-PLAN-ROBOCZY.md); można rozpocząć niezależnie od redakcji BIZQ-01  
-**Cel:** istniejący plan i Home mają wykorzystywać rzeczywiste dowody oraz właściwą regułę ukończenia, z jawnym `unknown` wyłącznie dla faktycznie brakującej reguły.
+**Cel:** istniejący plan i Home mają wykorzystywać rzeczywiste dowody oraz właściwą regułę ukończenia, z jawnym `unknown` dla nieopublikowanej reguły lub definicji pełnego zakresu rozdziałów, a błędem dla uszkodzonego lub sprzecznego kontraktu.
 
 ## 1. Bieżący stan i pozostały odbiór
 
 Porównanie 07.10:  `learningEvidenceProjection.ts` kwalifikuje exact package attempts, deduplikuje, odrzuca conflicting/future evidence i wywołuje `evaluatePackageCompletion`. HomePlanSnapshotReader i ProposalCoordinator konsumują tę projekcję, forecast i freshness/profile fences; Progress ma już actual activity/completion presentation. Stały unknown niezależny od dowodów został zastąpiony. Nie wykonywać tych etapów od nowa.
 
-`PackageCompletionRuleV1` i transport reguły ze źródła do artefaktu istnieją. Właściciel zatwierdził 07.10 konkretne progi dziewięciu ścieżek opisane poniżej, lecz nie zapisano ich jeszcze w aktywnych pakietach. Do dostarczenia rzeczywistej reguły wynik `unknown` pozostaje poprawny. Wybór powtarzanej sesji i szacowanie czasu należą do BIZQ-03.
+`PackageCompletionRuleV1` i transport reguły ze źródła do artefaktu istnieją wyłącznie na poziomie całej ścieżki. Nie ma zatwierdzonych liczbowych reguł ukończenia rozdziałów ani oceny ścieżki jako wyniku wszystkich rozdziałów. Korekta właściciela z 07.10 wymaga tego modelu. Wcześniej zatwierdzone globalne minima nie zostały wdrożone i nie są już docelową regułą ukończenia. Do dostarczenia właściwej reguły wynik `unknown` pozostaje poprawny. Wybór powtarzanej sesji i szacowanie czasu należą do BIZQ-03.
 
-Pozostałe zadanie to pełny odbiór P01–P20 na istniejących owners: identity/offline/restart, stale accept, submit→Home→proposal→restart, active-session conflict, reminders i Premium. Nie przedstawiać synthetic-rule testu jako realnego ukończenia pakietu ani snapshotu po ACK jako interrupted recovery. Zakres wymaganej brakującej implementacji wynika wyłącznie z nieprzechodzącego kontraktu tej macierzy.
+Pozostałe zadanie to pełny odbiór P01–P20 na istniejących owners: identity/offline/restart, stale accept, submit→Home→proposal→restart, active-session conflict, reminders i Premium. Nie przedstawiać synthetic-rule testu jako realnego ukończenia pakietu ani snapshotu po ACK jako interrupted recovery. Ponadto wdrożyć nowy model ukończenia rozdziałów i agregacji ścieżki opisany poniżej; obecna globalna reguła go nie realizuje.
 
 To integracja postępu, nie nowy planner adaptacyjny. Zachować istniejącą shared projection i policy, bez nowego źródła prawdy.
 
@@ -32,30 +32,36 @@ Nie wprowadzaj osobnych liczników „progress for Home” i „progress for pla
 
 ### 2.1. Stan ukończenia
 
-**Decyzja właściciela z 07.10.2026 — zatwierdzone progi startowe:** każda ścieżka otrzymuje własną wersjonowaną regułę z poniższym minimum prób oraz `rollingWindowSize=40`, `qualityThreshold=0.8`. Ukończenie wymaga osiągnięcia minimum i co najmniej 32 wyników `correct` w ostatnich 40 kwalifikujących próbach. Wynik `partial` nie liczy się jako poprawny. To decyzja o polityce produktu; nie jest dowodem wdrożenia ani skuteczności nauki.
+**Nadrzędna korekta właściciela z 07.10.2026:** ukończenie wszystkich rozdziałów oznacza ukończenie ścieżki. Każdy wymagany rozdział ma własną regułę i wynik, a ścieżka jest ich agregacją. Duża liczba poprawnych odpowiedzi w jednym rozdziale nie zastępuje pracy w innym. Wcześniejsza zgoda na globalne minima dziewięciu ścieżek i globalne okno 40 odpowiedzi została zastąpiona tą korektą; nie wdrażać dawnej tabeli jako docelowego warunku. Jej historyczny zapis jest w Git `2ce70ec4`.
 
-| Ścieżka (`trackId`) | Jednostki umiejętności w obecnym źródle | Zatwierdzone minimum prób | Wersja pakietu stanowiąca podstawę decyzji |
-| --- | ---: | ---: | --- |
-| AWS (`aws-certified-solutions-architect-associate`) | 145 | 580 | `aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096` |
-| GCP (`google-cloud-associate-cloud-engineer`) | 152 | 620 | `google-cloud-associate-cloud-engineer-authoring-v2026.08.11` |
-| Azure AZ-104 (`microsoft-azure-administrator-associate-az-104`) | 75 | 300 | `microsoft-azure-administrator-associate-az-104-authoring-v2026.08.15` |
-| Azure AI-901 (`microsoft-azure-ai-fundamentals-ai-901`) | 64 | 260 | `microsoft-azure-ai-fundamentals-ai-901-authoring-v2026.08.15` |
-| Claude (`claude-certified-architect-professional-certification`) | 38 | 160 | `ccarp-2026.10.07` |
-| Coding Interview (`coding-interview-dsa-problem-solving`) | 213 | 860 | `coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04` |
-| Backend System Design (`backend-system-design-interview`) | 89 | 360 | `backend-system-design-interview-authoring-v2026.10.03-bizq01-14` |
-| Frontend System Design (`frontend-system-design-interview`) | 88 | 360 | `frontend-system-design-interview-candidate-v2026.08.15` |
-| Object-Oriented Design (`object-oriented-design-interview`) | 79 | 320 | `object-oriented-design-interview-authoring-v2026.10.05-bizq01-24` |
+Rozdział oznacza istniejący węzeł materiału (`nodeId`) z wersjonowanego zakresu ścieżki. W obecnym inventory jest 117 takich węzłów w dziewięciu ścieżkach. Wynik ścieżki uwzględnia pełną, jawną listę wymaganych rozdziałów tego pakietu. Nie budować listy wyłącznie z odpowiedzi użytkownika, załadowanych plików lub aktualnych uprawnień. Ukończony rozdział Free pozostaje ukończonym rozdziałem, lecz blokada Premium nie usuwa pozostałych rozdziałów z zakresu całej ścieżki. Korekta nie zmienia uprawnień ani nie odblokowuje materiału.
 
-Podstawa propozycji: czterokrotność liczby jednostek umiejętności, zaokrąglona w górę do 20. Liczby jednostek i wersje odczytano z walidowanych źródeł dziewięciu aktywnych ścieżek przez `patternly-content/scripts/model-evaluation/inventory.mjs`, bez zapisu nowego raportu. Ten przelicznik służy wyłącznie do uzasadnienia zatwierdzonych minimów. Nie jest automatycznym algorytmem zmiany progów po rozbudowie banku ani wymogiem czterech odpowiedzi w każdej jednostce.
+**Propozycja liczb dla rozdziałów — jeszcze niezatwierdzona:** minimum prób rozdziału to czterokrotność liczby jego jednostek umiejętności, zaokrąglona w górę do 20; dla niepustego rozdziału minimum wynosi co najmniej 20. Jakość oceniać w ostatnich 20 kwalifikujących odpowiedziach wyłącznie tego rozdziału: wymagane 16 wyników `correct` (80%). Przykłady: 3–5 jednostek → 20 prób; 6–10 → 40; 11–15 → 60; 16 → 80. Okno 20 jest nową propozycją dla mniejszych rozdziałów; nie wynika automatycznie z dawnej zgody na globalne okno 40. Nie wpisywać tych liczb do produkcyjnych pakietów przed decyzją właściciela.
 
-Właściciel zatwierdził propozycję po ujawnieniu, że powtórzenia są dopuszczone, a wąski zestaw pytań może spełnić regułę. Ukończenie nie potwierdza pokrycia wszystkich tematów, opanowania materiału ani gotowości do egzaminu lub rozmowy. Progi są polityką startową, nie wartościami skalibrowanymi na wynikach użytkowników. Nie dodawać ukrytej bramki pokrycia ani zmieniać punktacji.
+Po zatwierdzeniu przygotować pełną listę 117 rozdziałów: trackId, nodeId, źródłowa wersja i skrót, liczba jednostek, minimum, okno i próg. Powtórzenia pozostają dopuszczone, a `partial` nie liczy się jako poprawna odpowiedź. Warunek wszystkich rozdziałów nie jest wymaganiem rozwiązania każdego pytania ani gwarancją pokrycia każdej jednostki, opanowania materiału lub zdania egzaminu. Propozycja pozostaje polityką startową bez kalibracji empirycznej.
 
-Do wykonania w BIZQ-02: zapisać zatwierdzone reguły w kanonicznym źródle każdej ścieżki i dostarczyć je przez istniejący proces budowania, wersjonowania, dopuszczenia pakietu, przypięcia w aplikacji i odczytu profilu. Zachować dokładne przypisanie prób do wersji i skrótu artefaktu; nie zmieniać już przypiętego pakietu w miejscu ani wpisywać progów w Home. Do dostarczenia reguły pakiet zachowuje `unknown`.
+#### Wymagana zmiana kontraktu i właściciele
 
-Weryfikacja dostarczenia: dla każdej ścieżki odczytana reguła ma zgadzać się z tabelą oraz wartościami 40/0,8. Sprawdzić minimum minus jedna próba, osiągnięte minimum z wynikiem 31/40 oraz osiągnięte minimum z wynikiem 32/40. Powtórzenia liczą się zgodnie z obecnym kontraktem, duplikat tego samego ID nie liczy się drugi raz, `partial` i próby innego pakietu nie zwiększają liczby poprawnych odpowiedzi. Wykorzystać istniejące testy transportu i oceny reguły oraz macierz P01–P20. Zmiana dokumentacji sama nie spełnia tych kryteriów.
+Kanoniczny dokument workspace `docs/04-data-model.md` opisuje obecny globalny `PackageCompletionRuleV1`; nie obsługuje jeszcze korekty właściciela. Przed kodem zaktualizować właściwe kanoniczne kontrakty 01/04 oraz wersjonowany kontrakt źródła i artefaktu. Nie rozszerzać po cichu kształtu v1 ani zachowywać równoległego globalnego warunku jako dodatkowej bramki ukończenia.
+
+- Content: `patternly-content/content/catalog.json`, `scripts/content/question-contract.mjs`, `scripts/build.mjs` i właściwe schematy mają dostarczać kompletny wersjonowany zakres rozdziałów i ich reguły. Walidacja sprawdza brakujące, obce i powtórzone IDs oraz spójność źródła z artefaktem. Szczegółowy kształt nowego kontraktu wymaga projektu przed implementacją.
+- Aplikacja: `src/content/canonical/questionTypes.ts`, `questionCatalog.ts`, `runtimeCatalog.ts`, `src/domain/learning/packageCompletionRule.ts` i `src/application/learningPlan/learningEvidenceProjection.ts` mają rozwiązywać reguły, kwalifikować próby rozdziału i agregować wynik ścieżki w jednym istniejącym źródle interpretacji. Repozytoria odczytują dane; UI nie ocenia progów.
+- Przypisanie próby do rozdziału pochodzi z pytania znalezionego w dokładnie przypiętym artefakcie: `questionId` → `nodeId`. `ResolvedContentRef` obecnie ma tylko trackId, questionId, contentVersion i artifactSha256. Nie dopisywać mu pola ani migrować trwałej historii bez potrzeby; nie zgadywać rozdziału z formatu ID lub z pomocniczych referencji taksonomii.
+- Home, Progress, propozycja i prognoza mają konsumować tę samą agregację. Pozostały nakład jest związany z nieukończonymi rozdziałami; nie używać globalnego odejmowania minimum i sumy wszystkich prób, które pozwalałoby ukryć braki jednego rozdziału. BIZQ-03 dobiera rzeczywistą pracę z tych potrzeb, bez drugiego oceniającego mechanizmu.
+- Zachować kwalifikację według profilu, tracku, contentVersion i skrótu artefaktu, deduplikację, kontrolę spójności odczytu, wersjonowanie pakietów i istniejącą procedurę przypięcia. Nie zmieniać zainstalowanego artefaktu w miejscu. Zastąpione globalne wyliczenia, testy i opisy usunąć w tej samej zmianie; historyczne dane użytkownika zachować.
+
+#### Odbiór nowego modelu
+
+Rozszerzyć istniejące testy transportu reguł, `packageCompletionRule.test.ts`, `learningPlanProjectionIntegration.test.mjs` oraz macierz P01–P20. Wymagane przypadki: wszystkie rozdziały spełniają reguły → ścieżka ukończona; jeden rozdział bez prób, poniżej minimum albo poniżej jakości → ścieżka nieukończona, niezależnie od nadwyżki innych rozdziałów; sesja z pytaniami z kilku rozdziałów rozdziela wkład poprawnie. Osobno sprawdzić brak reguły, pustą lub niepełną listę rozdziałów, obcy/nieznany node, brak pytania w przypiętym artefakcie, duplikat próby, `partial`, obcy profil i inną wersję pakietu. Uszkodzenie kontraktu nie staje się pustą listą dającą ukończenie.
+
+Próby ze starej wersji lub innego skrótu nie kwalifikują się automatycznie do aktualnej oceny. Zachować je w historii i odróżnić historyczny wynik od bieżącego stanu rozdziałów; nie obiecywać przeniesienia ukończenia między pakietami bez zatwierdzonego kontraktu.
+
+Dodatkowy przypadek odbioru P20: użytkownik Free ukończył wszystkie dostępne mu rozdziały, a wymagany rozdział Premium pozostaje zablokowany. Dostępne rozdziały zachowują swój wynik, ścieżka nie jest ukończona, Home/Progress i prognoza wskazują rzeczywistą przeszkodę dostępu, a test potwierdza brak obejścia uprawnień.
+
+Free, Premium, Home, Progress i prognoza zachowują ten sam zakres ukończenia. Sam brak prawa do Premium nie jest błędem odczytu; ma wskazywać rzeczywisty stan dostępu. Nie tworzyć drugiego magazynu postępu ani samodzielnej bramki backendowej. Testy progów liczbowych dodać po ich zatwierdzeniu; zmiana dokumentacji nie potwierdza implementacji.
 
 - Reguła istnieje i jest poprawna: uruchom kanoniczny evaluator na właściwych dowodach.
-- Reguła nie istnieje: `unknown`, z prawdziwym powodem; nie domyślny próg.
+- Reguła lub definicja pełnego zakresu rozdziałów nie została opublikowana: `unknown`, z prawdziwym powodem; nie domyślny próg. Zadeklarowany, lecz niepełny lub sprzeczny zakres jest błędem kontraktu, nie `unknown`.
 - Reguła albo artefakt są niepoprawne: jawny błąd kontraktu, nie „brak postępu”.
 - Historia poprawnie pusta: zero kwalifikujących prób i `in_progress`, jeżeli reguła istnieje.
 - Repozytorium nie dało się odczytać: failure/unavailable, nie pusta historia.
@@ -72,11 +78,11 @@ Zachowaj aktualną semantykę regresji po kolejnych błędnych wynikach: ustal, 
 | Pokrycie mental units/obszarów | Gdzie istnieją dowody określonego typu | Mastery; pełne pokrycie nie gwarantuje wyniku. |
 | Package completion | Wynik aktualnej wersjonowanej reguły | Gwarantowanego ukończenia przygotowania w realnym świecie. |
 
-Powtarzanie poprawnie kwalifikujących się pytań pozostaje dopuszczone przez obecną regułę. Nowe pola pokrycia nie mogą wprowadzić ukrytego warunku ukończenia ani odblokowania.
+Powtarzanie poprawnie kwalifikujących się pytań pozostaje dopuszczone. Jawny warunek ukończenia wszystkich rozdziałów wynika z korekty właściciela. Nie rozszerzać go bez decyzji na każde unikalne pytanie lub każdą jednostkę umiejętności; nie zmienia uprawnień ani zasad odblokowania.
 
 ### 2.3. Szczególnie ważny przypadek: minimum osiągnięte, jakość nie
 
-Przykład fixture: reguła `minimumAttemptCount=20`, `rollingWindowSize=10`, `qualityThreshold=0.8`; użytkownik ma 25 kwalifikujących prób, a w ostatnich 10 poprawnych jest 5. Evaluator musi nadal zwracać `in_progress`.
+Przykład wyłącznie dla danych testu pojedynczego rozdziału: reguła `minimumAttemptCount=20`, `rollingWindowSize=10`, `qualityThreshold=0.8`; użytkownik ma 25 kwalifikujących prób tego rozdziału, a w ostatnich 10 poprawnych jest 5. Evaluator musi nadal zwracać `in_progress`.
 
 `max(0, 20 - 25) = 0` mówi tylko, że nie brakuje wolumenu. Nie oznacza, że praca się skończyła. Prognoza oparta wyłącznie na wymaganej liczbie prób nie może zwrócić dzisiejszej daty ukończenia, `completed` ani pozytywnego komunikatu gotowości. Wyświetl jawny stan „minimum prób osiągnięte, potrzebna dalsza praca nad wynikami” albo odpowiedni obecny wzorzec. Dodatkowej liczby prób potrzebnych do jakości nie da się ustalić jako gwarancji.
 
@@ -103,7 +109,7 @@ Liczby w tym przykładzie są wyłącznie danymi testu. Nie wdrażaj ich jako pr
 
 Zbuduj w raporcie tabelę: każdy aktualny track, źródło reguły, jej wersja, miejsce walidacji, pole w artefakcie, resolved profile oraz tożsamość danych. Brak reguły to ważny wynik, nie polecenie wstawienia minimum 10 czy 120.
 
-Jeżeli zatwierdzona reguła istnieje w źródle, lecz ginie w builderze/projekcji, napraw istniejącą ścieżkę producent–konsument. Jeżeli nie ma zatwierdzonej reguły, zachowaj `unknown` i wskaż precyzyjny brak kontraktu. Nie wolno ogłosić działającej prognozy ukończenia dla tracka, który nie ma semantyki ukończenia. Można nadal pokazywać faktyczną aktywność/pokrycie i plan pracy z odpowiednim ograniczeniem.
+Jeżeli zatwierdzona reguła istnieje w źródle, lecz ginie w builderze/projekcji, napraw istniejącą ścieżkę producent–konsument. Jeżeli nie opublikowano zatwierdzonej reguły rozdziałów lub definicji pełnego zakresu, zachowaj `unknown` i wskaż precyzyjny brak kontraktu. Zadeklarowaną, lecz niepełną lub sprzeczną definicję odrzucić jako błąd; nie pomijać brakujących rozdziałów. Nie wolno ogłosić działającej prognozy ukończenia dla tracka, który nie ma semantyki ukończenia. Można nadal pokazywać faktyczną aktywność/pokrycie i plan pracy z odpowiednim ograniczeniem.
 
 Wszelkie zmiany pola reguły przechodzą przez shared schema, walidator, builder, artefakt, app lock i consumer. Nie dodawaj hardcodowanego słownika progów w Home.
 
