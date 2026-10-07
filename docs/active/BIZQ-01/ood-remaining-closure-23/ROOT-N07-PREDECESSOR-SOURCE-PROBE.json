@@ -1,6 +1,0 @@
-{
-  "result": "FAILED_BEFORE_SOURCE_READ",
-  "stage": "resolve_manifest_sourcePath",
-  "cause": "Manifest paths are relative to content repository, initial probe resolved relative to workspace",
-  "correction": "Resolve under existing patternly-content root; no mutation/source effect"
-}

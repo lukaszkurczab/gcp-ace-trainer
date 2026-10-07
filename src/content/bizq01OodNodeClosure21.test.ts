@@ -13,7 +13,7 @@ import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { CanonicalFeedbackMessage, Question } from "./canonical/questionTypes";
 
-const PACKET = "docs/active/BIZQ-01/ood-remaining-closure-21";
+const PACKET = "src/content/__fixtures__/release-acceptance/ood-remaining-closure-21";
 const MAP_PATH = `${PACKET}/ROOT-N05-PRODUCER-MAP.json`;
 const MAP_SHA256 = "0d95dbf77a32f657197fa4789166a24fd68edad81cd367e9ea7b29c8578e6b70";
 const PROOF_PATH = "../patternly-content/evidence/business-quality/bizq-01-ood-node-closure-21.json";

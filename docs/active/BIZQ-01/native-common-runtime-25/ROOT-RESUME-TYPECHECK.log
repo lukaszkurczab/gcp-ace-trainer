@@ -1,6 +1,0 @@
-
-> patternly@0.1.0 typecheck
-> tsc --noEmit
-
-src/features/practice/practiceSessionConfig.test.ts(41,15): error TS7022: 'routeBuilder' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
-src/features/practice/practiceSessionConfig.test.ts(42,15): error TS7022: 'route' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.

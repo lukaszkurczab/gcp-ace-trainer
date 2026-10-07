@@ -1,7 +1,0 @@
-{
-  "scope": "Current read-only preflight477 exact raw/whole-object bindings only; not independent semantic certification or activation",
-  "preflightSha256": "b3b9d9c5bb9f29e1b17c1f98963477ac79bc70a880982a9a008e51e4175c860e",
-  "questionCount": 477,
-  "sourceFiles": 27,
-  "verdict": "PASS"
-}

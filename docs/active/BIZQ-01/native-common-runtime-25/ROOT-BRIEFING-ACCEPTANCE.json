@@ -1,9 +1,0 @@
-{
-  "result": "ACCEPTED_BOUNDED_DESIGN_WITH_RESTART_CLARIFICATION",
-  "proposalSha256": "3cee632f6be55d728e9b1dcdf09ddb1c9ea8523b2c05f59f089b66749e91dac1",
-  "reviewMdSha256": "26c6f3e8c104c3a753ded4c409297b6a42a87f69c54d5549babd56e7f91811a0",
-  "rootMinimumScore": 0.87,
-  "independentMinimumScore": 0.87,
-  "execution": "Pre-submit background/foreground only. Actual cold process restart only after own durable submit/ACK, then same session/committed option/order/feedback. Unsubmitted response draft not assumed persisted.",
-  "noNewProductGate": true
-}

@@ -14,7 +14,7 @@ import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { CanonicalFeedbackMessage, Question } from "./canonical/questionTypes";
 
-const PACKET = "docs/active/BIZQ-01/ood-remaining-closure-22";
+const PACKET = "src/content/__fixtures__/release-acceptance/ood-remaining-closure-22";
 const MAP_PATH = `${PACKET}/ROOT-N06-PRODUCER-MAP.json`;
 const MAP_SHA256 = "9369a886d8c091b4ee68bbb34818ec2001f1ff42698e59721548074729ef9e68";
 const PROOF_PATH = "../patternly-content/evidence/business-quality/bizq-01-ood-node-closure-22.json";

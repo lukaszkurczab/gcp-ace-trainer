@@ -1,8 +1,0 @@
-{
-  "path": "/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/17-training-runtime-and-interaction-spec.md",
-  "beforeSha256": "ed0f6a58983e335fbf090dfbf6ae3b377e6355861ab90c4393d2291c4dafb562",
-  "afterSha256": "4dba1566d581bacd5d6d4188273657f5327055a57cc7050b4034392c2399013f",
-  "scope": "Existing Design practice choice projection at unchanged materialized-attempt boundary; no other rule changes",
-  "outsideAllFourGitRepositories": true,
-  "observedAddedParagraph": "Design Interview practice uses this existing choice projector in its family projection. Retain its current materialized-attempt boundary: a pending journal response alone does not expose feedback. Keep the existing ordering branch and all other interaction owners unchanged."
-}

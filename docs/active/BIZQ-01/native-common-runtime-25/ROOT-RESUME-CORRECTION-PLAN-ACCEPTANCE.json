@@ -1,8 +1,0 @@
-{
-  "proposalSha256": "910897c89b6e6f22ef8a3603952b18e4bc21a628ef74f6b75d5134b70ee10588",
-  "independentVerdict": "PASS",
-  "independentMinimum": 0.91,
-  "rootMinimum": 0.88,
-  "decision": "accepted; current producer output only; reject any explicit navigation property; preserve other guards; no producer/persistence/migration/Premium changes",
-  "implementationPending": true
-}

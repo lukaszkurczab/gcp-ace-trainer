@@ -1,5 +1,0 @@
-
-> patternly@0.1.0 export:demo
-> node --import tsx scripts/exportPublicDemo.mjs --check
-
-{"status":"current","outputPath":"/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-web/src/generated/demoQuestions.json","questionIds":["alg-complexity-time-005","aws-saa-c03-architecture-001-odk096"]}

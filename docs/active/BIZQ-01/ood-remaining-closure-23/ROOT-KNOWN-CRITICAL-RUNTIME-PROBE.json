@@ -1,6 +1,0 @@
-{
-  "result": "FAIL",
-  "stage": "TSX module import before catalog observation",
-  "reason": "Importing producer CLI module through app CJS transform rejected its top-level await. No runtime/source/pool observation or external effect occurred.",
-  "nextAttemptDifference": "Use the existing app canonicalSerialize over validated JSON questions, asserting all46 exact prior whole-object fingerprints. Avoid importing CLI entrypoint; no serializer or production changes."
-}

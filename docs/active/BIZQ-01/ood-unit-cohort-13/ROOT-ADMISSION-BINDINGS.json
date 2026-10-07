@@ -1,7 +1,0 @@
-{
-  "result": "passed",
-  "candidateId": "15fd0a8d8f9a40d39e39c398f1896c6c425e8eb7f860382d3d9798033414549c",
-  "frontendCommit": "64636add08c891d1535ff0825d0e9ee66af90ecb",
-  "exactLockAndRuntimeHashes": true,
-  "boundary": "local_verified_artifacts_no_deployment"
-}

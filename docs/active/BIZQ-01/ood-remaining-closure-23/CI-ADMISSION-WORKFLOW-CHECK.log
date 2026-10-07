@@ -1,2 +1,0 @@
-.github/workflows/content-publishing.yml: YAML valid; content cwd/path valid; commit reader emitted 50a6811cde15b662e8c45f777fcc9c447a482d3a; app sibling checkout and npm ci are bound
-.github/workflows/real-content-release.yml: YAML valid; content cwd/path valid; commit reader emitted 50a6811cde15b662e8c45f777fcc9c447a482d3a; app sibling checkout and npm ci are bound

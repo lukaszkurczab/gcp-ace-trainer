@@ -3,23 +3,17 @@
 **Priorytet:** P0  
 **Główne repo:** aplikacja; content, jeżeli reguła nie dociera przez istniejący kontrakt; backend tylko dla rzeczywistej zmiany atomowej pary cel/plan  
 **Zależności:** wspólny [plan BIZQ](00-PATTERNLY-BIZQ-PLAN-ROBOCZY.md); można rozpocząć niezależnie od redakcji BIZQ-01  
-**Cel:** istniejący plan i Home mają wykorzystywać rzeczywiste dowody oraz właściwą regułę ukończenia, zamiast stale zwracać `unknown`.
+**Cel:** istniejący plan i Home mają wykorzystywać rzeczywiste dowody oraz właściwą regułę ukończenia, z jawnym `unknown` wyłącznie dla faktycznie brakującej reguły.
 
-## 1. Co jest potwierdzone i czego nie należy zakładać
+## 1. Bieżący stan i pozostały odbiór
 
-W odczytanym podczas przygotowania pakietu `src/application/learningPlan/LearningPlanProposalCoordinator.ts`:
+Porównanie 07.10:  `learningEvidenceProjection.ts` kwalifikuje exact package attempts, deduplikuje, odrzuca conflicting/future evidence i wywołuje `evaluatePackageCompletion`. HomePlanSnapshotReader i ProposalCoordinator konsumują tę projekcję, forecast i freshness/profile fences; Progress ma już actual activity/completion presentation. Stały unknown niezależny od dowodów został zastąpiony. Nie wykonywać tych etapów od nowa.
 
-- `loadAttempts()` pobiera próby, lecz nie są wykorzystywane do wyznaczenia `completionState`;
-- istnieje import `evaluatePackageCompletion`, ale `completionState` jest stałym `{ kind: "unknown" }`;
-- tryb jest wybierany przez `resolved.track.modes[0]`;
-- liczba pytań wynika z `primary.defaultRequestedLength`;
-- tożsamość propozycji obejmuje track, rewizję celu, content version, artifact hash i strefę czasową; trzeba sprawdzić, czy szerszy workflow zabezpiecza również profil i zmianę dowodów.
+`PackageCompletionRuleV1` i source→artifact transport istnieją, lecz bieżące9 aktywnych pakietów nie ma zatwierdzonych rules. Ich honest unknown jest poprawnym wynikiem. Tryb nadal wybiera modes[0]; recurring mode/time model należy do BIZQ-03.
 
-R5 potwierdza istniejącą regułę `PackageCompletionRuleV1`: `minimumAttemptCount`, `rollingWindowSize`, `qualityThreshold`. Evaluator odróżnia brak reguły od niespełnionego minimum albo progu jakości. Kwalifikuje próby po dokładnej tożsamości pakietu, deduplikuje po attempt ID i używa deterministycznej kolejności czasu/ID.
+Pozostałe zadanie to pełny odbiór P01–P20 na istniejących owners: identity/offline/restart, stale accept, submit→Home→proposal→restart, active-session conflict, reminders i Premium. Nie przedstawiać synthetic-rule testu jako realnego ukończenia pakietu ani snapshotu po ACK jako interrupted recovery. Zakres wymaganej brakującej implementacji wynika wyłącznie z nieprzechodzącego kontraktu tej macierzy.
 
-Audyt A1 wskazywał dodatkowo stałe `unknown` i `paceForecast.unavailable` w `src/application/homePlanSnapshotReader.ts` oraz istniejący `paceForecast.ts`. Te ścieżki ponownie odczytaj; nie zakładaj, że po audycie nic się nie zmieniło.
-
-**To jest naprawa integracji, nie wdrożenie pełnego planera adaptacyjnego.** W BIZQ-02 nie twórz nowych współczynników czasu, proporcji review ani polityki uczenia. Te elementy należą do BIZQ-03/04/05.
+To integracja postępu, nie nowy planner adaptacyjny. Zachować istniejącą shared projection i policy, bez nowego źródła prawdy.
 
 ## 2. Kontrakt docelowy
 
@@ -71,7 +65,7 @@ Liczby w tym przykładzie są wyłącznie danymi testu. Nie wdrażaj ich jako pr
 | Punkt wejścia | Co ustalić |
 | --- | --- |
 | `src/application/learningPlan/LearningPlanProposalCoordinator.ts` | Pochodzenie celu, historii, pakietu, modeId, capacity i identity; proces create/resolve/accept. |
-| `src/application/homePlanSnapshotReader.ts` | Snapshot consistency, stałe unknown, C3, prognoza i prawdziwa ścieżka renderowania. |
+| `src/application/homePlanSnapshotReader.ts` | Snapshot consistency, actual rule/no-rule, C3, prognoza i prawdziwa ścieżka renderowania. |
 | `src/domain/learning/packageCompletionRule.ts` i testy | Aktualny evaluator, walidacja, kwalifikacja dowodów i jakość. |
 | `paceForecast.ts`, generator `generateLearningPlanProposal` | Rzeczywiste parametry wymaganej i obserwowanej prędkości; blokady prognozy. |
 | `contentPackageRuntimeOwner`, resolved track/profile | Czy aktualna reguła faktycznie dociera z autorytatywnego źródła do aplikacji. |
@@ -81,7 +75,7 @@ Liczby w tym przykładzie są wyłącznie danymi testu. Nie wdrażaj ich jako pr
 
 Ścieżki spoza potwierdzonych powyżej są symbolami do zlokalizowania, nie poleceniem tworzenia nowego pliku o tej nazwie.
 
-## 4. Sposób implementacji
+## 4. Istniejący kontrakt do zachowania podczas odbioru
 
 ### Etap A — kontrakt source → consumer
 
@@ -109,13 +103,13 @@ Nie odrzucaj po cichu uszkodzonych rekordów, aby wynik się zgadzał. Użyj obe
 
 ### Etap C — uruchomienie evaluatorów
 
-Zastąp stałe `unknown` wywołaniem właściwego evaluatora przy zachowaniu `unknown` dla faktycznego braku reguły. Nie zmieniaj `evaluatePackageCompletion` na liczenie success-only ani unique-only, jeżeli obecny kontrakt tak nie stanowi.
+Istniejące wywołanie evaluatora zachowuje `unknown` dla faktycznego braku reguły. Nie zmieniaj `evaluatePackageCompletion` na liczenie success-only ani unique-only, jeżeli obecny kontrakt tak nie stanowi.
 
 Przypadki z tą samą tożsamością próby nie mogą liczyć się dwukrotnie przy sync/retry. Ten sam ID z różnymi payloadami pozostaje konfliktem. Kwalifikacja po content version i artifact hash musi być wspólna dla Home/proposal/forecast. Historyczne próby poza aktualnym pakietem nie mogą być arbitralnie zaliczone do bieżącego completion; jednocześnie nie usuwaj ich z historii.
 
 ### Etap D — prognoza i komunikacja niepewności
 
-Podłącz istniejący `paceForecast` w tych stanach, dla których jego model jest poprawny. Rozdziel:
+Zachowaj podłączony `paceForecast` w tych stanach, dla których jego model jest poprawny. Rozdziel:
 
 1. **Wymagane tempo wolumenu:** zależne od celu i pozostałego minimum; może być liczone bez historii zachowania.
 2. **Obserwowane tempo:** wymaga rzeczywistych kwalifikujących danych i odpowiedniego okna; brak wystarczających danych ma własny powód.
@@ -180,36 +174,3 @@ Minimalne dowody: ścieżka source→profile→evaluator→Home, lista tracków 
 W raporcie osobno podaj: działająca integracja, faktyczna dostępność reguł w aktywnych pakietach, ograniczenia forecast i elementy czekające na BIZQ-03. Nie ogłaszaj „adaptacyjnego planera” po samym usunięciu `unknown`.
 
 Zadanie zamyka się, gdy rzeczywiste ścieżki korzystają ze wspólnego poprawnego stanu i nie przedstawiają brakujących danych jako dowodu. Brak reguł dla części tracków musi zostać jawnie rozliczony jako ograniczenie pokrycia, nie schowany przez fixture. Gdy kryterium końcowe ma obejmować ukończenie danego tracka, ten brak pozostaje otwartą zależnością produktową.
-
-## 7. Prompt wykonawczy dla Codex
-
-```text
-Wykonaj BIZQ-02 zgodnie z tą specyfikacją i dokumentem 00. To naprawa
-rzeczywistej integracji postępu, nie jeszcze pełny planner adaptacyjny.
-
-Po preflight czterech repo i obowiązującym briefingu zbadaj
-LearningPlanProposalCoordinator, homePlanSnapshotReader,
-evaluatePackageCompletion, paceForecast oraz owner accept/sync planu.
-Potwierdź aktualne źródło i drogę reguły ukończenia dla każdego tracka.
-Nie dopisuj domyślnych progów, gdy pakiet nie ma reguły.
-
-Wykorzystaj jedną kanoniczną projekcję spójnego snapshotu profilu, celu,
-planu, pakietu, prób i review. Zastąp stałe unknown wywołaniem istniejących
-evaluatorów tam, gdzie istnieje poprawny kontrakt. Zachowaj prawdziwe
-unknown i typed failures. Nie zmieniaj progression/completion na unique
-questions, mastery lub wymóg czasu pomiędzy sesjami.
-
-Najpierw dodaj regresję: minimum prób osiągnięte, ale jakość ruchomego okna
-niespełniona. Nie wolno pokazać zero pozostałej pracy jako ukończenia.
-Oddziel wymagane tempo, tempo obserwowane i ograniczenia przewidywania jakości.
-
-Sprawdź tożsamość propozycji i ochronę stale accept również w mutation ownerze:
-profil, rewizje celu/planu/dowodów, pakiet i kalendarz. Nowa prognoza nie
-akceptuje planu ani nie zmienia reminders. Zachowaj atomową parę goal+plan,
-offline, konflikt sync, Premium i jedną aktywną sesję.
-
-Zaimplementuj, przetestuj wskazane scenariusze i usuń zastąpione duplikaty.
-Wymagany rzeczywisty flow iOS na istniejącym urządzeniu, bez VoiceOver.
-Raportuj konkretne SHA, commands, tests, source-consumer evidence, ograniczenia
-i niezależne QA. Nie zamykaj zadania z samym działającym helperem.
-```

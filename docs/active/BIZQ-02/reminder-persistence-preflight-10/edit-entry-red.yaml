@@ -1,7 +1,0 @@
-appId: com.lkurczab.patternly
-name: BIZQ-02 saved-plan editor entry after cold launch
----
-- assertVisible:
-    id: patternly:target-date-guidance:state:progress:open-ended
-- assertVisible:
-    id: patternly:progress-plan:edit-schedule

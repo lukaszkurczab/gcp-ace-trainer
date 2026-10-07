@@ -1,8 +1,0 @@
-{
-  "result": "PASS",
-  "beforeWebCommit": "a48a1a3626b85c0f71fb0329021bb97028b1cfd6",
-  "demoCount": 2,
-  "questionsFeedbackDetailsSchema": "exact parsed values; only existing provenance field allowed to differ",
-  "beforeSha256": "19e22fc3a33d37c31ed436b86a1fdb2f56c280ce0bf6177f526339a2b8311bc9",
-  "currentSha256": "1e4128eeb46983b7d22802424d50c6fffa15e106e986b3135cf31dd8b822540d"
-}

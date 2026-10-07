@@ -1,7 +1,0 @@
-
-> patternly@0.1.0 sync:content-release
-> node scripts/syncBundledContentRelease.mjs sync
-
-CANONICAL_CONTENT_SYNC=passed
-PATTERNLY_CONTENT_HEAD=93fd487a9d89e3b68bc8c8066c16a908677f03af
-CONTENT_INVENTORY=9/117/943/16077

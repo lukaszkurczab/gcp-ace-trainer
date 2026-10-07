@@ -1,9 +1,0 @@
-# Scoped reproduction
-
-Use only existing iPhone17 7F315654-3175-4F3C-BB24-B0263F59360C after checking no active device owner. No VoiceOver/install/data clear. Web/source/artifact hashes are in BUILD.json; reuse the existing locally verified build when matching. Start the listed loopback-only static preview, then open http://127.0.0.1:4173/ in Safari and use visible Try a question. Safari must be outside Reader; this is an explicit precondition, not a product debug route.
-
-Run `maestro test --device 7F315654-3175-4F3C-BB24-B0263F59360C --test-output-dir /private/tmp/patternly-bizq06-safari-repro-normal flow.yaml`. That executed final flow resets the current demo and centers each touched control. It finishes with correct answer selected.
-
-`size-probe-historical.yaml` records the actual first larger-A coordinate probe, valid only for the captured menu without Reader row. Do not use those old coordinates on a different menu. `size-probe.yaml` is a proposed corrected ID-based step (not executed in this packet); inspect its native Increment target in Safari hierarchy before using it. `enlarged.yaml` was executed after exactly one native larger-A step and checks explicit Details, reset and another wrong choice. No numeric percentage or text-only guarantee is inferred.
-
-`restore-final-ids.yaml` is the actual executed cleanup from the accidentally enabled Reader: HideReaderViewButton then PageFormatMenuButton/Decrement. `restore-size.yaml` is the separate proposed regular-page cleanup, not executed as a combined flow. Restore the same number of actual page-size increments, close the owned local server, and return existing Patternly to foreground; never shut down or reset a device whose prior boot ownership is unknown. This package does not prove store preservation or full W12/W13 acceptance.

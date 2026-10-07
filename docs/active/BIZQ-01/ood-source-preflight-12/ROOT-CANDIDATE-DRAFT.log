@@ -1,5 +1,0 @@
-
-> patternly-content@1.0.0 candidate:draft-v2
-> node scripts/review/candidate-draft-v2.mjs reports/candidate-reconciliation/AWS-02-DRAFT
-
-Draft 22b98e6c929f187e3afcd94183685b702cff6c72110d0882ea3e9b267c9c3f0f written to /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly-content/reports/candidate-reconciliation/AWS-02-DRAFT; status=draft_not_admitted; admission=not_granted

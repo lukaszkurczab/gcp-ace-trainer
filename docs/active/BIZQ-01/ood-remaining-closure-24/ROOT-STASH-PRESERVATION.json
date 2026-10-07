@@ -1,9 +1,0 @@
-{
-  "result": "PASS",
-  "scope": "Exact stash identity arrays all4 match accepted23 baseline; foreign state footer byte-exact vs50 andea4",
-  "baseline": "../ood-remaining-closure-23/ROOT-FOUR-REPO-PRESERVATION.json",
-  "preparationReceiptSha256": "e347f1d815d429343ecd45078dae72cde5a8cd45f2d857f53e41628f389d95ec",
-  "stateFooterIncludingMarkerSha256": "0a7de2e66bd1f03ce88d75bc6ba221fa2e895cfae7ef7b282e90b6cfbbfe1b1c",
-  "baselineFooterHashBoundary": "Bytes AFTER CH-04 marker, not including marker; reproduced exact3f0dc380 hash",
-  "initialReadComparison": "Assertion compared different footer hash boundaries; no writes occurred. Corrected using same boundary and independent git50/ea4 exact comparison."
-}

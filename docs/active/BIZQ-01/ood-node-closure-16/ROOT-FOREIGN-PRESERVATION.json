@@ -1,5 +1,0 @@
-{
-  "status": "PASS",
-  "foreignAppendixDiffBodySha256": "b80bfd45c75be76aa4a34c6da524a6ca716046db2dd994847a0149bb89be59d2",
-  "normalization": "includes literal diff + prefixes; initial assertion without prefixes used different representation, not mutation"
-}

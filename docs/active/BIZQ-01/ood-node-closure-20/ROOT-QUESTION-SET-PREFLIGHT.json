@@ -1,9 +1,0 @@
-{
-  "scope": "Read-only proposed track question-set using real build sha256; conditional on final semantic/identity review; no source activation",
-  "questionCount": 1413,
-  "unchangedNonN04Objects": 1251,
-  "beforeQuestionSetSha256": "6f493ddd0ebfbbd5fa7acf98e17de69420360925f498791a683aca5f1d7f1f53",
-  "proposedQuestionSetSha256": "f607074cde393e3d2ae71f4f79d054e8c4862befbc5df62748a4d8294955182b",
-  "sourceEncodingEvidence": "ROOT-SOURCE-BYTE-PREFLIGHT.json",
-  "inputBindings": "ROOT-FINAL-REVIEW-INPUTS.json"
-}

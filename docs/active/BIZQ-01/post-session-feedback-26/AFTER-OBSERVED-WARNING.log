@@ -1,9 +1,0 @@
-Running on iPhone 17 - iOS 26.4 - 7F315654-3175-4F3C-BB24-B0263F59360C
- > Flow BIZQ01 native26 dismiss screenshot-observed nonaccessible dev warning
-Assert that id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2 is visible... COMPLETED
-Tap on point (92%,93%)... COMPLETED
-Tap on id: patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-focus-practice:2... COMPLETED
-Assert that id: patternly:practice-review:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2:.* is visible... COMPLETED
-Assert that id: patternly:session:question:gcp-ace-gcpace-n01-b03-001 is visible... COMPLETED
-Assert that "Incorrect" is visible... COMPLETED
-Take screenshot native26-corrected-review-after-observed-warning-dismissed... COMPLETED

@@ -1,9 +1,0 @@
-{
-  "canonicalPath": "/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/05-design-system.md",
-  "sha256": "45b5f5b259ef1ec5ee2c2ed2070cd9c50964e15c133b81ae8d6b84419da09929",
-  "existingRequirement": "Focus, selected, submitted, correct, partial, incorrect, and disabled states must remain distinguishable at supported contrast and text-size settings.",
-  "changeRequired": false,
-  "reason": "Existing canonical distinguishable states / visible keyboard-focus contract covers the actual selected-label focus defect; no unrelated rule changed.",
-  "recordedUtc": "2026-10-03T12:56:05.204615+00:00",
-  "beforeProductionImplementation": true
-}

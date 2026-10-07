@@ -5,15 +5,13 @@
 **Zależności:** BIZQ-01 dla jakości demo; BIZQ-05 dla zakresu twierdzeń; BIZQ-03 tylko dla copy obiecującego adaptacyjny plan  
 **Podstawa:** [00 — plan BIZQ](00-PATTERNLY-BIZQ-PLAN-ROBOCZY.md).
 
-## 1. Cel i zakres pewności
+## 1. Bieżący flow i pierwsza zależność
 
-A1 opisywał publiczną stronę jako prezentację metody i katalogu, z przykładem SQL i głównymi akcjami prowadzącymi do przykładu/katalogu. Audyt nie potwierdził wyraźnego następnego kroku do aplikacji po wykonaniu zadania.
+Porównanie 07.10:  PublicPage i DemoQuestion renderują dokładnie2 kanoniczne ordinary-Free przykłady Coding/AWS z app export; feedback/Details/reset/unavailable już istnieją. Poprzedni przykład SQL nie jest bieżącym punktem pracy. CTA prowadzą do sekcji demo/katalogu, nie do zatwierdzonego distribution destination.
 
-Przed zmianą sprawdź aktualny `patternly-web`, routing, komponent przykładu, konfigurację dystrybucji i faktycznie istniejące linki. Jeśli CTA zostało już poprawione, zachowaj je i skup się na pozostałej luce. Nie zakładaj na podstawie wcześniejszej odpowiedzi, że aplikacja jest albo nie jest już opublikowana.
+Po decyzji PO o istniejącym destination podłączyć page-specific CTA i domknąć W01–W18, w tym rzeczywiście brakujący UI/theme/large-text zakres. Zachować kanoniczne źródło dwóch przykładów i Premium boundary. Nie dodawać Design preview, nowych usług, endpointów ani claimów skuteczności/konwersji bez właściwego zakresu i dowodu.
 
-**Cel biznesowy:** odwiedzający ma zobaczyć konkretny przykład ćwiczenia odpowiadający jego celowi, poznać wartość objaśnienia i dostać prawdziwy następny krok. Nie chodzi o większą liczbę sekcji, animacji i przymiotników.
-
-Poza zakresem: rebranding, nowa strategia cenowa, redesign całego serwisu, nowy blog/CMS, płatna kampania, nowy mailing provider, sprzedaż webowa, implementacja płatnych trybów jako darmowej aplikacji webowej, publikacja.
+Publikacja ma osobną procedurę R02. BIZQ-06 kończy się działającym lokalnym flow, prawdziwą następną akcją i wymaganym odbiorem, nie deploymentem. Zakres nie obejmuje rebrandingu, CMS, kampanii, mailingu ani sprzedaży webowej.
 
 ## 2. Pierwszy odczyt i ograniczony audyt przepływu
 
@@ -161,33 +159,3 @@ Raport zawiera: screenshoty before/after, mapę flow, source IDs i admission prz
 Zadanie jest odebrane w pełnym zakresie konwersji dopiero, gdy po przykładzie istnieje rzeczywista zatwierdzona ścieżka dalszego dostępu. Jeśli nie ma kanału dystrybucji, nie udawaj ukończenia: oddziel gotową implementację, lokalny odbiór demo i otwartą zależność kanału publikacji. Brak dystrybucji nie jest powodem do blokowania niezależnej naprawy pytań lub CTA.
 
 Nie wykazuj skuteczności biznesowej samym screenshotem. Nowy flow tworzy możliwość pomiaru; wzrost konwersji wymaga późniejszych realnych danych.
-
-## 11. Prompt wykonawczy dla Codex
-
-```text
-Wykonaj BIZQ-06 według tego dokumentu i dokumentu 00. Nie wykonuj rebrandingu,
-pełnego redesignu, kampanii ani publikacji. Po preflight i wymaganym briefingu
-sprawdź aktualny web flow, źródło demo, CTA, routing i realny kanał dystrybucji.
-Nie zakładaj, że luka z audytu A1 nadal istnieje bez jej odtworzenia.
-
-Zbuduj ograniczoną demonstrację dopasowaną do celu odwiedzającego: maksymalnie
-trzy zatwierdzone przykłady, jeden widoczny naraz, odpowiedź → Reason →
-opcjonalne Details → jedna jasna następna akcja. Content ma pochodzić z
-kanonicznego source/build, nie ręcznie skopiowanego banku w JSX. Nie bundluj
-całego płatnego katalogu. Zakres preview płatnych rodzin musi być dozwolony.
-
-Każdy przykład ma uczyć decyzji i wyjaśniać mechanizm oraz błąd. Scoring i
-feedback zachowują stable option IDs. Brak pełnej diagnozy, readiness score,
-fikcyjnego progresu i obietnic niepotwierdzonego adaptacyjnego planowania.
-
-CTA dobierz do prawdziwej konfiguracji: App Store, uprawniony TestFlight lub
-istniejąca zatwierdzona waitlista. Nie wymyślaj URL, providerów ani zapisów.
-Gdy kanału nie ma, zachowaj uczciwą blokadę tej części odbioru. Deep link nie
-obchodzi Premium ani nie udaje przeniesienia sesji, którego app nie wspiera.
-
-Użyj obecnych komponentów, brandu i locale. Analitykę rozszerzaj wyłącznie
-w istniejącym zatwierdzonym zakresie, bez danych odpowiedzi. Kliknięcie nie
-jest instalacją. Wykonaj W01–W18, screenshots i independent QA, bez VoiceOver
-tests oraz bez deploy. Raportuj source IDs, prawdziwe cele CTA, testy,
-ograniczenia dystrybucji i rozdziel implementację od wyniku biznesowego.
-```

@@ -1,7 +1,0 @@
-{
-  "baseline": "passed",
-  "changedFixture": "one copied GCP question plus its catalog contentVersion",
-  "verifierResult": "rejected",
-  "errorCode": "HASH_MISMATCH",
-  "errorMessage": "HASH_MISMATCH: evidence.items.google-cloud-associate-cloud-engineer.gcp-ace-gcpace-n01-b02-001.canonicalQuestionSha256 does not match the canonical question."
-}

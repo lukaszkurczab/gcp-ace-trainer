@@ -1,5 +1,0 @@
-
-> patternly-content@1.0.0 content:test
-> node scripts/build.mjs test --track object-oriented-design-interview
-
-Tested 1413 canonical answer(s) for object-oriented-design-interview

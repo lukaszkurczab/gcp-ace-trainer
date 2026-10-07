@@ -6,17 +6,17 @@
 **Konsument wyniku:** BIZQ-03 i BIZQ-05  
 **Reguły wspólne:** [00 — plan BIZQ](00-PATTERNLY-BIZQ-PLAN-ROBOCZY.md).
 
-## 1. Problem
+## 1. Potwierdzona pozostała praca
 
-Audyt A1 wskazał dwa mechanizmy do odtworzenia: zaplanowanie powtórki nowej poprawnej odpowiedzi tylko dla Coding Interview oraz brak przesunięcia `dueAt` po pierwszym poprawnym podejściu do persistent review. Ten drugi wzorzec może pozwolić na dwa sukcesy w krótkim odstępie i usunięcie pozycji bez nowego okresu oczekiwania.
+Porównanie 07.10:  `CanonicalTrainingRuntime.submitPractice/finalizeSimulation` już używa recorded answeredAt, exact source i kwalifikacji due; completed result projections i source fail-closed zostały poprawione. Nie przywracać historical-miss fallback ani alternatywnego ownera kolejki.
 
-Nie przyjmuj, że dwa udane testy jednostkowe już dowodzą tego zachowania w aplikacji. Sprawdź aktualny runtime, eligibility trybów, selektor, deduplikację i zapis kolejki. Może istnieć dodatkowa bramka poza wskazaną funkcją. Testuj pełną ścieżkę.
+W istniejących correct review transitions pierwszy kwalifikowany sukces nadal zwiększa consecutiveAfterDueSuccesses i lastReviewedAt bez nowego dueAt, a drugi usuwa wpis. Pełny family contract correct-first scheduling i maintenance nie jest domknięty. Najpierw decyzja PO o dodatnim interwale;7dni to propozycja. Potem spójne przejścia due/maintenance oraz R01–R21 przez istniejący family/lifecycle/journal, z verified completed-session context z ARCH-01/02.
 
-Cel produktu jest precyzyjny: **natychmiastowa poprawa ma naprawić rozumowanie, a późniejsze odtworzenie ma dostarczyć osobnego dowodu po czasie**. Nie wdrażamy nowej blokady kolejnego noda, mastery ani obowiązku czekania na odblokowanie tracka.
+Natychmiastowa poprawa naprawia rozumowanie, a późniejsze odtworzenie dostarcza osobnego dowodu po czasie. Nie wprowadzać progression gate, mastery ani nowej kolejki.
 
 ## 2. Stan istniejący i nowy kontrakt
 
-Starsze K2 mówią o dwóch poprawnych review attempts po terminie i braku rozwiązywania persistent review przez korektę w tej samej sesji. Nie wynika z tego automatycznie, jaki ma być odstęp między pierwszym i drugim sukcesem. Uzupełnienie tej luki jest **docelową zmianą BIZQ**, nie rzekomo zawsze istniejącym wymaganiem.
+Normatywne kontrakty produktu i runtime mówią o dwóch poprawnych review attempts po terminie i braku rozwiązywania persistent review przez korektę w tej samej sesji. Nie wynika z tego automatycznie, jaki ma być odstęp między pierwszym i drugim sukcesem. Uzupełnienie tej luki jest **docelową zmianą BIZQ**, nie rzekomo zawsze istniejącym wymaganiem.
 
 Zachowaj rozdzielenie:
 
@@ -160,35 +160,3 @@ Wymagane są: macierz rodzin/trybów, jawna polityka odstępów, rzeczywiste zda
 Raport pokazuje timeline jednej potrzeby: błąd → naprawa → due success 1 → próba zbyt wcześnie → due success 2 → dalsze maintenance. Dołącz scenariusz późniejszej porażki oraz dowód, że nie powstała nowa blokada progresji.
 
 Wynik nie jest dowodem naukowo optymalnego harmonogramu. To sprawdzona implementacja jawnej polityki odróżniającej natychmiastowe wykonanie od późniejszego odtworzenia.
-
-## 9. Prompt wykonawczy dla Codex
-
-```text
-Wykonaj BIZQ-04 zgodnie z tym dokumentem i dokumentem 00. Celem jest
-rozdzielenie remediation, due retrieval i persistent resolution w jednej
-kanonicznej kolejce, nie budowa nowego SRS ani time-spread gate.
-
-Po preflight i wymaganym briefingu odtwórz aktualne przejścia review we
-wszystkich rodzinach. Zweryfikuj dwa punkty A1: zaplanowanie poprawnych nowych
-odpowiedzi oraz dueAt po pierwszym sukcesie. Nie zakładaj braku dodatkowej
-bramki bez sprawdzenia pełnego runtime i selektora.
-
-Zachowaj prawidłowe wersjonowane polityki. Brakujące odstępy zapisz jawnie
-w family/package contract. Po pierwszym eligible after-due correct ustaw
-counter=1 i nowy przyszły dueAt w tej samej deterministycznej mutacji.
-Druga szybka poprawka, retry, merge, otwarcie Details ani upływ terminu
-nie tworzą kolejnego sukcesu. Partial/incorrect prowadzą do remediation.
-
-Poprawne nowe odpowiedzi uwzględniaj w jawnej maintenance policy, bez
-przypadkowego pomijania rodzin, duplikacji i odsuwania unresolved error.
-retentionPassedAt, jeśli istnieje, pochodzi wyłącznie z rzeczywistego
-kwalifikowanego zdarzenia. Nie zmieniaj reguły odblokowania kolejnego noda.
-
-Przejdź przez queue, provenance, revisions, journal, sync, selector i UI.
-Zachowaj aktywną sesję, profile isolation, Premium i bieżące tryby.
-Wykonaj R01–R21, failure injection i timeline na istniejącym iPhone 17,
-bez VoiceOver tests, publikacji i resetów współdzielonego środowiska.
-
-Raportuj wersję polityki, dokładny zakres zmian, testy, timeline, ograniczenia
-i independent QA. Nie nazywaj wdrożonego harmonogramu naukowo optymalnym.
-```

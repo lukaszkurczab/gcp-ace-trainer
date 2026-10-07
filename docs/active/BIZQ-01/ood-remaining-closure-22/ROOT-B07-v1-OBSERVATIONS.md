@@ -1,9 +1,0 @@
-# Root observations — frozen B07 v1
-
-Input `review-inputs/N06-B07-v1.json`, SHA-256 `74f202c79495c207fc32143bc17f9c5ca8fbddadca6c3174049080cd6e3ec8ef`. Root read all 18 complete current objects. Structure/scoring receipt is not semantic acceptance; independent review is queued.
-
-Concrete case-fidelity/editorial issues: all prompts join two sentences without a space. Options and feedback interpolate verb phrases or entire clauses into malformed sentences (for example i002 “Select a complete apply the reward strategy” and “omit the shared reward rules depend…”). The generic alternative includes validation/recording regardless of actual steps; i006 has no recording step. i010 transfer says preserve accounting before rendering-specific output, while the visible sequence creates the replacement before recording its link. i012 boundary places approved-data verification before formatting, while the visible sequence formats then verifies. These need explicit reconciliation rather than assuming generic wording fits.
-
-Review hypotheses requiring independent resolution: the 18 questions use nearly identical four alternatives and feedback mechanisms with substituted nouns/invariants. Check existing BIZQ authored depth and nearest plausible alternatives, without a numeric repetition quota. The fixed workflow with a variable calculation in i002/i004 resembles B01's interchangeable policy seam; judge the actual trained decision across units. The cited Microsoft description identifies an algorithm skeleton with some steps deferred to subclasses. Current keys mainly describe workflow separation, so check whether they exercise Template Method's skeleton/hook decision distinctly. Naming a pattern is not required, and inheritance is not a new product-wide mandate.
-
-Keep v1 and subsequent review reports immutable. Corrections remain within the accepted N06 approach and must receive review of the changed objects before source activation.

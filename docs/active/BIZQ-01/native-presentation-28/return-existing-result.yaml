@@ -1,9 +1,0 @@
-appId: com.lkurczab.patternly
-name: BIZQ01 return existing result after readonly frame probe
----
-- tapOn:
-    id: patternly:practice-review:result
-- extendedWaitUntil:
-    visible:
-      id: patternly:summary:root:google-cloud-associate-cloud-engineer:certification-focus-practice:2
-    timeout: 15000

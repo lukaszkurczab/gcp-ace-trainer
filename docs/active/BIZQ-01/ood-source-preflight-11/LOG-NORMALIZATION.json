@@ -1,8 +1,0 @@
-{
-  "path": "docs/active/BIZQ-01/ood-source-preflight-11/ROOT-CANONICAL-POST-CHECKPOINT.log",
-  "rawSha256": "e6c776e27684173c4ae2dfbc3ffc5a6d43a28e1b96155dffdfd7114f4d10ced7",
-  "versionedSha256": "f3d17f7bca01a67712dfaf1f75469ee3b14244d715d7fa587cd930b6d9171c98",
-  "operation": "Remove trailing whitespace from captured TAP failure formatting only; outcomes/error text unchanged",
-  "reason": "git diff --check rejects two whitespace-only TAP lines",
-  "privateRawCopy": "/private/tmp/bizq01-ood-source11-post-checkpoint-raw.log"
-}

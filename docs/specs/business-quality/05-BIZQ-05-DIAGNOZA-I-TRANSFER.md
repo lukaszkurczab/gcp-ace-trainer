@@ -6,15 +6,13 @@
 **Konsument:** BIZQ-03 dobiera dalszą pracę z tych dowodów  
 **Wspólna podstawa:** [00 — plan BIZQ](00-PATTERNLY-BIZQ-PLAN-ROBOCZY.md).
 
-## 1. Problem i zakres
+## 1. Potwierdzony punkt rozpoczęcia
 
-Audyt A1 wskazał, że konfiguracja diagnostyczna GCP wybierała 40 konkretnych pytań z pierwszego noda. Taka próbka może mówić coś o ćwiczonym fragmencie, ale nie uzasadnia oceny całego tracka. Ponadto dobry wynik na znanych albo podpowiadających pytaniach nie jest równoznaczny z rozwiązaniem nowego przykładu.
+Porównanie 07.10:  `productModeConfig.ts` definiuje GCP KnowledgeCheck40 jako exact ordered questions z Free N01 (B02=18/B03=20/B04=2). Wynik jest ograniczoną próbką; nie wykazano istniejącego false whole-track claim. Zachować bieżący mode, feedback i eligibility, nie zmieniać go w Exam ani nie przywracać wycofanej taxonomy.
 
-W tym zadaniu trzeba naprawić **zakres interpretacji wyniku**, **dobór materiału** oraz **dopływ tych dowodów do rekomendacji**. Nie wystarczy zmienić nazwę karty z „readiness” na „progress”.
+Pierwszy spójny pakiet: istniejący verified GCP result→pinned sample breakdown→rzeczywista rekomendowana sesja przez obecne certification projections, family/lifecycle i shared evidence. ARCH-05/06 określa boundary exact descriptors i summary; BIZQ-02/04 dostarcza kwalifikację dowodów i review. Następnie9 tracków mapping/pool readiness, blueprint/scope/transfer i D01–D20. Używać źródeł official dla faktycznie zmienianego mappingu, bez nowego scoring engine, LLM egzaminatora albo claimu zdania.
 
-Najpierw sprawdź aktualny rejestr trybów. `Diagnostic Baseline` i 40 pytań pochodzą z audytu/starszych specyfikacji; zachowaj faktycznie obowiązujący tryb, długość, feedback i uprawnienia. Nie przywracaj wycofanej taxonomy ani nie zastępuj `Exam` zwykłym Focus Practice. Jeżeli nazwa lub owner się zmieniły, udokumentuj aktualny odpowiednik.
-
-Nie buduj online judge, wolnotekstowego egzaminatora AI, modelu psychometrycznego, nowego scoring engine ani obietnicy zdania. Pytania mają nadal korzystać z kanonicznych interakcji i autorskich objaśnień.
+Nie wystarczy zmiana etykiety. Nowe przykłady i protokół pomiaru muszą dostarczyć realnego wyniku; dotychczasowe lokalne tests nie dowodzą efficacy.
 
 ## 2. Trzy różne zastosowania
 
@@ -186,35 +184,3 @@ Raport musi pokazać mapping i pool readiness dla aktualnych tracków, before/af
 Wymagany iOS flow: przygotowanie diagnozy → rzeczywista sesja → summary o prawdziwym zakresie → rekomendowana sesja na konkretną lukę. Dodatkowo test uprawnień oraz brak wycieku odpowiedzi. Motywy i duży tekst według aktualnego UI gate, bez testów VoiceOver.
 
 Samo dodanie `transfer=true` do pytania nie zamyka zadania. Potrzebne są znaczące różnice między przykładami, działający selector i poprawna interpretacja. Pełne przygotowanie do egzaminu/rozmowy nadal nie jest gwarantowane przez żaden wewnętrzny score.
-
-## 10. Prompt wykonawczy dla Codex
-
-```text
-Wykonaj BIZQ-05 zgodnie z tą specyfikacją i dokumentem 00. Najpierw odczytaj
-aktualne tryby, uprawnienia i blueprinty — nie przywracaj wycofanej taxonomy.
-Po preflight i wymaganym briefingu odtwórz zakres diagnostyki GCP z A1.
-
-Zmapuj zakres aktualnych tracków na rzeczywiste aktywne pule. Dla certyfikacji
-sprawdź aktualne oficjalne źródła zakresu/wag, bez exam dumps. Usuń sytuację,
-w której pierwszy node jest raportowany jako diagnoza całego tracka.
-Zachowaj legalną długość, timing feedbacku, timer i gate Premium.
-
-Wykorzystaj istniejące stage/archetype/variant metadata i selector do testów
-nowych przykładów. Nowy ID nie wystarcza jako dowód transferu. Kontroluj
-bliskie warianty, ekspozycję, nagłówki zdradzające wzorzec i małe próbki.
-Nowe lub zmienione pytania przeprowadzaj przez BIZQ-01 admission.
-
-Zwróć do istniejącego recommendation ownera fakty o zbadanym zakresie,
-brakujących dowodach, etapach i konkretnych błędach. Nie buduj nowego
-completion/mastery score ani blokady progresji. Planner ma faktycznie używać
-tego wyniku, nie tylko wyświetlać nową etykietę.
-
-Zdefiniuj mierzalne first-exposure transfer, due retrieval, powrót błędów
-i rzeczywisty koszt czasu. Bez nowej telemetrii lub kontaktu z uczestnikami.
-Przygotuj protokół późniejszego pilota, ale nie fabrykuj efektów edukacyjnych.
-
-Wykonaj D01–D20, realny flow iOS oraz independent QA. Bez VoiceOver tests,
-publikacji i obejścia paid modes. Raportuj source/pool/selector/summary
-powiązanie, testy, ograniczenia próbki i różnicę między sprawnością kodu
-a jeszcze niezmierzoną skutecznością nauki.
-```

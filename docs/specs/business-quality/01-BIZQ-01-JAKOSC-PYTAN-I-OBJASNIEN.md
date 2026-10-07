@@ -5,17 +5,13 @@
 **Zależności:** brak implementacyjnych; obowiązuje [plan zbiorczy](00-PATTERNLY-BIZQ-PLAN-ROBOCZY.md)  
 **Rezultat biznesowy:** wynik sesji ma wynikać z rozumowania, a objaśnienie ma umożliwiać poprawne rozwiązanie następnego, zmienionego problemu.
 
-## 1. Problem i zakres pewności
+## 1. Bieżący zakres po porównaniu07.10.2026
 
-Audyt A1 wskazał trzy różne klasy problemów, których nie wolno naprawić jednym mechanicznym „rewrite”:
+Prace OOD N01–N09, source→migration/admission→app, scorer, zapis kolejności opcji, authored feedback i presentation do pakietu33 są wdrożone. Dwa dawne problematyczne BESD cohorts zostały zastąpione34accepted questions; nie edytować usuniętych `besd-n02-b01-i001..016` ani `besd-n04-b01-i001..018`. Claude845 ma własny exact-hash odbiór07.10. Pełne utrzymanie pozostałych banków pozostaje odroczone według planu głównego.
 
-1. **Odpowiedź przed odpowiedzią:** pole `constraints` w próbkach Backend System Design zawierało wprost oczekiwany kierunek decyzji albo instrukcje autora. Według audytu trafiało do widoku pytania.
-2. **Pozorny wybór:** poprawna opcja była wyważona i konkretna, a alternatywy zawierały skrajności albo ignorowały wymagania. Rozwiązanie mogło wynikać ze stylu wypowiedzi, nie wiedzy.
-3. **Brak mechanizmu:** scenariusz, odpowiedź i Details nie tworzyły spójnego kontraktu. Przykład `besd-n04-b01-i002` łączył wymagania rekordu audytowego z ogólną odpowiedzią o cache.
+Pozostałym wynikiem bieżącego BIZQ-01 jest rzeczywiste Q13 — update z active session, exact old pin/resume albo jawny mismatch, bez podmiany pytań/odpowiedzi. [Pakiet wykonawczy Q13](../engineering/q13-package-update.md) podaje bieżące owners, granice testu i pierwszy probe. Weryfikacja może wymagać celowanego odtworzenia runtime; nie reaktywować starych katalogów raportów.
 
-Próbki Binary Search i Claude zostały ocenione korzystniej. Nie przepisuj ich profilaktycznie i nie zakładaj, że każdy element tych banków jest poprawny. W tym zadaniu odtwórz defekty na aktualnych źródłach. A1 nie jest statystycznym audytem całego katalogu.
-
-Źródła wymagań: A1, K1 oraz aktualny README contentu R6. Bieżące ścieżki i reguły aktywacji wynikają z repo, nie ze starego authoringu.
+Źródła wymagań: normatywne `docs/07-content-guidelines.md`, `docs/17-training-runtime-and-interaction-spec.md`, aktualny README contentu i decyzje PO zachowane w planie głównym.
 
 ## 2. Zakres i non-goals
 
@@ -27,39 +23,13 @@ Zachowaj aktualne bramki Premium również w testach naprawionych pytań: zmiana
 
 Nie maskuj błędu flagą `draft`, listą wykluczeń w aplikacji ani „tymczasowym” filtrem w selektorze. Usterka aktywnego pytania wymaga celowanej naprawy źródła i normalnego admission.
 
-## 3. Rozpoznanie dokładnego batcha przed edycją
+## 3. Dokładny zakres przyszłej zmiany treści
 
-Kanoniczny ingress to `content/<trackId>/<nodeId>/<mentalUnitId>.json`, a plik zawiera tablicę pytań. Ustal faktyczne ścieżki w lokalnym checkoutcie; nie kopiuj historycznych ścieżek bez sprawdzenia.
+Kanoniczny ingress: `content/<trackId>/<nodeId>/<mentalUnitId>.json`, tablica pytań. Gotowe130 odroczonych zakresów, obecne1697 ID i aktualne file hashes są w [utrzymaniu banków](../engineering/content-maintenance.md). Nie odtwarzać dawnego audytu ani próby24/track jako warunku obecnego Q13.
 
-### 3.1. Nasiona z audytu
+Dla rzeczywiście zmienianego batcha utrzymać manifest `trackId | source path | itemId | mentalUnitId | defect | intended decision | answer change? | ID action | source evidence | reviewer/admission authority`. Przejrzeć całe zmienione pytania i rozszerzyć zakres tylko dla wykazanego wspólnego defektu. Source schema/scoring/builder sprawdzać proporcjonalnie do zmiany; shared contract wymaga checks konsumentów.
 
-| Nasiono | Co znaleźć i sprawdzić |
-| --- | --- |
-| `BESD-N02-B01.json` | Wszystkie pytania z tego mental unit; wycieki w constraints, alternatywy, scenariusz IoT i gwarancje ponowienia. |
-| `BESD-N04-B01.json`, `besd-n04-b01-i002` | Związek wymagań rekordu audytowego z akceptowaną odpowiedzią i wyjaśnieniem. |
-| `GCPACE-N01-B02.json` | Pytania o strukturę zasobów; plausibility distractorów i wyjaśnienie błędnego założenia. |
-| `lower_and_upper_bound.json` | Próbka kontrolna: konkretny trace, zakresy i objaśnienie off-by-one; zachowaj dobre elementy. |
-| `CCARP-D03-O01.json` | Próbka kontrolna: decyzja zmieniana przez warunki; nie rozszerzaj wniosków na cały bank. |
-| `PracticeQuestionCard`, view model pytania | Jakie pola są pokazywane przed submit i po submit oraz w trybach end-feedback. |
-| `CanonicalTrainingRuntime` i przygotowanie sesji | Czy kolejność opcji jest losowana raz, zapisywana i odtwarzana bez wpływu na scoring. |
-
-Nazwy są locatorami A1, nie gwarancją obecności na obecnym HEAD. Gdy plik przeniesiono, znajdź aktualny owner przez manifest/ID. Brak źródła wpisz do raportu; nie twórz go na nowo z nazwy.
-
-### 3.2. Dwa poziomy przeglądu
-
-**Automatyczny przegląd całego aktualnego katalogu:** jedno uruchomienie dla wszystkich deklarowanych tracków, ponieważ ryzyko jest przekrojowe. Zapisz rzeczywisty mianownik: tracki, mental units, pytania i typy interakcji. Potem testuj pojedynczy dotknięty track zgodnie z KISS; wspólny schemat/builder wymaga testów wszystkich konsumentów.
-
-**Przegląd merytoryczny:** przejrzyj w całości trzy wskazane problematyczne mental units oraz minimalną warstwową próbkę pozostałych źródeł: do 24 różnych pytań na track, rozłożonych po nodach, etapach i interakcjach. Liczba 24 to budżet początkowego przeglądu, nie dowód reprezentatywności. Przy małym banku sprawdź wszystkie pytania. Wykrycie szablonowego defektu rozszerza przegląd na cały zbiór jego wystąpień, również poza próbką.
-
-Nie opieraj próby wyłącznie na pierwszych pytaniach pierwszego noda. Dobór ma być odtwarzalny: ustalony seed/hash ID + jawne nadpisania dla ryzyk z audytu. Raport odróżnia próbkę losowo-warstwową od celowo wybranych znanych błędów. Nie wyliczaj z tego „procentu złej bazy”.
-
-### 3.3. Manifest zmiany
-
-Przed przepisaniem treści zapisz w raporcie bieżącego zadania tabelę:
-
-`trackId | source path | itemId | primary mentalUnitId | defect | intended decision | answer change? | ID action | source evidence | reviewer/admission authority`.
-
-W każdym batchu wymagane są dokładne item IDs. Nie zaczynaj edycji z otwartym zakresem „popraw wszystkie słabe pytania”. Pierwsze batche odpowiadają wskazanym mental units; kolejne wynikają z wykrytych wspólnych wad. Nie tworzą osobnych zadań biznesowych ani drugiego planu.
+Exact OOD payloads i producer maps są regression fixtures w `src/content/__fixtures__/release-acceptance/`; obowiązujące hash checks i migration proofs nie zostały usunięte. To nie authoring ingress ani nowe propozycje.
 
 ## 4. Docelowy kontrakt jakości
 
@@ -144,7 +114,7 @@ W rendererze usuń wyłącznie nieuprawnione ujawnianie, nie prawdziwe wymagania
 
 ### Krok E — artefakty i konsumenci
 
-Uruchom rzeczywiste komendy po sprawdzeniu CLI i `package.json`. README R6 dokumentuje poniższy kształt; podstaw prawdziwy `TRACK_ID` i root zgodnie z aktualnym parserem:
+Uruchom rzeczywiste komendy po sprawdzeniu CLI i `package.json`. README contentu dokumentuje poniższy kształt; podstaw prawdziwy `TRACK_ID` i root zgodnie z aktualnym parserem:
 
 ```sh
 npm run content:validate -- --track "$TRACK_ID"
@@ -177,44 +147,10 @@ Testy contentu nie zastępują zobaczenia prawdziwej treści w rzeczywistym runn
 
 ## 7. Warunki odbioru
 
-Zgodnie z dyspozycją PO z 04.10.2026 ([jedyna kanoniczna kolejka, row19a](../../PATTERNLY-WORKING-PLAN.md)) bieżący odbiór BIZQ-01 obejmuje domknięcie i udokumentowany odbiór OOD N01–N09 oraz pozostałe wymagane wspólne prace runtime, renderer, scoring, feedback i weryfikację aplikacji. Potwierdzone krytyczne defekty OOD z A1 i rozszerzonego przeglądu mają naprawy, dokładny inventory i zgodny artefakt; nowe semantyczne zmiany przechodzą właściwe admission; renderer nie zdradza odpowiedzi; scoring nie zależy od pozycji opcji; wszystkie istotne ostrzeżenia dotyczące zmienionych batchy są rozstrzygnięte. Macierz Q01–Q14 i wymagany odbiór rzeczywistego runnera/iOS pozostają w mocy.
+Zgodnie z dyspozycją PO z 04.10.2026 ([jedyna kanoniczna kolejka, BIZQ-01](../../PATTERNLY-WORKING-PLAN.md)) bieżący odbiór BIZQ-01 obejmuje domknięcie i udokumentowany odbiór OOD N01–N09 oraz pozostałe wymagane wspólne prace runtime, renderer, scoring, feedback i weryfikację aplikacji. Potwierdzone krytyczne defekty OOD z wcześniejszych przeglądów mają naprawy, dokładny inventory i zgodny artefakt; nowe semantyczne zmiany przechodzą właściwe admission; renderer nie zdradza odpowiedzi; scoring nie zależy od pozycji opcji; wszystkie istotne ostrzeżenia dotyczące zmienionych batchy są rozstrzygnięte. Macierz Q01–Q14 i wymagany odbiór rzeczywistego runnera/iOS pozostają w mocy.
 
 Dalszy przegląd i naprawy treści pozostałych ośmiu banków są odłożone do utrzymania, gdy aplikacja będzie gotowa do releasu. Sam brak pełnego przeglądu odłożonych banków nie stanowi bramki releasu ani wymogu ukończenia bieżącego zakresu BIZQ-01. Znane nierozwiązane krytyczne defekty pozostają jawne: raport wskazuje konkretny defekt, aktualne dowody i ocenę rzeczywistego ryzyka dla releasu; odłożenie nie oznacza ich naprawy lub odbioru jakościowego. Dotychczasowe naprawy i dowody zostają zachowane. BIZQ-02–06 realizować normalnie zgodnie z ich wymaganiami i zależnościami; bez nowej autoryzacji deployu, publikacji lub zmian usług.
 
 Raport podaje zakres faktycznie oceniony merytorycznie i zakres tylko automatycznie przeskanowany, a bieżący odbiór odnosi do powyższego zakresu. Nie wolno napisać „cały content wysokiej jakości” na podstawie próby 24/track ani uznać niesprawdzonych banków za odebrane.
 
 W raporcie pokaż przynajmniej trzy konkretne before/after: wyciek odpowiedzi, pozorny distractor i niespójność mechanizmu. Wskaż, czego użytkownik może się nauczyć po poprawce, czego nie mógł ustalić z wcześniejszej wersji.
-
-## 8. Prompt wykonawczy dla Codex
-
-```text
-Wykonaj BIZQ-01 według tego dokumentu oraz 00-PATTERNLY-BIZQ-PLAN-ROBOCZY.md.
-Nie wykonuj hurtowego generowania ani pełnego refaktoru banku.
-
-Odczytaj aktualne AGENTS.md, kanoniczny plan i WORKING_STATE. Sprawdź cztery
-repozytoria i bieżące zmiany. Zlokalizuj kanoniczne źródła mental units
-BESD-N02-B01, BESD-N04-B01, GCPACE-N01-B02 oraz item besd-n04-b01-i002.
-Sprawdź realną projekcję constraints do widoku. Ustalenia poprzedniego audytu
-najpierw odtwórz; nie naprawiaj ponownie już poprawionego kodu.
-
-Przygotuj dokładny manifest pierwszego batcha: pliki, item IDs, decision,
-defekt, answer contract, potrzebne źródła i obowiązująca authority admission.
-Zastosuj wymagany briefing Cel/Ustalenia/Podejście i niezależną walidację.
-
-Wykonaj automatyczny przegląd wszystkich aktualnych tracków i określony
-przegląd semantyczny; rozszerzaj zakres tylko na wykazane wspólne defekty.
-Napraw pytania w kanonicznym źródle. Reason ma wskazać warunek rozstrzygający,
-Details wyjaśnić mechanizm, konkretny przypadek, błąd i granicę transferu.
-Nie stosuj fillerów, nowych runtime flag ani generowanego feedbacku.
-
-Sprawdź i w razie potrzeby napraw jednorazowe mieszanie dozwolonych opcji
-ze stabilnym option-ID scoring i persisted occurrence order. Testuj restart,
-partial, wybrany distractor oraz granicę ujawniania odpowiedzi. Zachowaj
-aktualny format contentu, builder, lock, uprawnienia i zasady admission.
-
-Po każdym batchu wykonaj source→validator→artifact→app consumer QA oraz
-odpowiedni odbiór iOS. Bez testów VoiceOver, bez deploy ani publikacji.
-Kończ raportem exact diff/IDs, before-after, sources, tests, admission,
-independent QA i uczciwym zakresem przeglądu. Nie traktuj zielonego schematu
-jako dowodu jakości dydaktycznej.
-```

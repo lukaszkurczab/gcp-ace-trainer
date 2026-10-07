@@ -1,9 +1,0 @@
-# Independent bounded app consumer acceptance
-
-Reviewer `/root/bizq_qa`, gpt-6-luna/high, 2026-10-03. **PASS WITH ISSUES** for this consumer boundary; no correctness defect found. Runtime admission/release gate, web projection and final delivery are outside this verdict.
-
-Independent actual checks: new consumer test1/1; versioned runtime-acceptance.ts exit0 with correct+three wrong answers, exact authored Reason/Details/message after durable submit/rebind, correct answer without wrong-message, retired i002 absent, i019 eligible in existing N01 pool, stale source11 version/artifact/i002 pin rejected. Existing check:content-release passed at producer HEAD a689400592c88286bae37279fe79bb89e2816d94 (inventory9/117/943/16077). Current-only cross-repo builder cases2/2 with explicit expected current SHAa689400; Premium product-mode policy1/1; exact app candidate release lock check passed.
-
-Reviewer independently hashed all nine checked-in generated artifacts against content-lock and matched all. Eight unrelated artifact hashes/versions/counts equal ROOT-BUILD-PRESERVATION.json; only OOD source12 changes, count1,413 and SHA25600a6bf06a885e4b54c633297348d402c39732b8906b4ac844578d6276236c1bd. No app runtime implementation changes: generated artifact/locks, exact candidate identity assertion and consumer test only.
-
-Limits: memory repositories and explicit allowed Premium stub do not prove native/provider durability or authorization. Direct fixture pinning of an eligible question proves existing pool membership and runtime handling, not normal random selection. Root separately checked full historical+current cross-repo3/3 with valid inputs. Interim static failures remain documented in INTERIM-STATIC-FAILURES.md; final static checks must follow the exact runtime admission and web projection update.

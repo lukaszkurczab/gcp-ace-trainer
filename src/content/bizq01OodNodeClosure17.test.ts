@@ -14,7 +14,7 @@ import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { CanonicalFeedbackMessage, Question } from "./canonical/questionTypes";
 
-const PACKET = "docs/active/BIZQ-01/ood-node-closure-17";
+const PACKET = "src/content/__fixtures__/release-acceptance/ood-node-closure-17";
 const TRACK = "object-oriented-design-interview";
 const NODE = "objects_responsibilities_encapsulation_and_invariants";
 const MODES = [

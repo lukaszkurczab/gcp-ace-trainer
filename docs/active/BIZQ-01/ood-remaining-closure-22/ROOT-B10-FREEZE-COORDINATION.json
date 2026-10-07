@@ -1,8 +1,0 @@
-{
-  "result": "PASS",
-  "scope": "Actual final ready/frozen/scoring/notes byte bindings; no semantic acceptance",
-  "actualFrozenProposalSha256": "e28bbec531913c2015a2ee18bbd219670bb848db5aa2e3505634a31b3b7fd690",
-  "notesSha256": "d6de3cdbe2a120652b551540e8d747d8e5e9279de3ffaa5e2295ec30daa60935",
-  "sourceNotesSha256": "5e3ec3ef6b3955cde4899743d4ac0faf2c5a21c2dc6e671a23166d4c1f253202",
-  "initialPrecheck": "Earlier author reported1191 SHA failed the precheck because the author final self-review arrived before freeze. Actual immutable v2 and actual checker bind e28b; no1191 frozen input, no source activation and no historical rewrite."
-}

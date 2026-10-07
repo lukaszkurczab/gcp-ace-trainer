@@ -1,8 +1,0 @@
-{
-  "scope": "Real filesystem probe of corrected exact-input freeze helper only",
-  "helperSha256": "9b0179710a490754af2c049b3ea060c381c218e5f69bf33407eb46a98fa4c2d5",
-  "positive": "Explicit additive N08-B02-v2.json matched expected hash and existing exact frozen18 bytes",
-  "negative": "Mismatched declared hash rejected before creation of N08-B02-v99.json; target absent before and after",
-  "sourceWrites": false,
-  "semanticAcceptance": false
-}

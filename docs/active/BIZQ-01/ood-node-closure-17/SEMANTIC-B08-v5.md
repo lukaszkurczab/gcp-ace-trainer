@@ -1,9 +1,0 @@
-# Independent semantic review — OOD-N02-B08 v5 final distractor correction
-
-**Verdict: PASS for the bounded correction and B08’s reviewed semantic set.** Reviewed `REVIEWED-B08-v5.json`, SHA-256 `d0e6d4dce12cbb74caf50d7fc41d7637abd4f133e6fe22016a0555c355a17169`. The v5 change removes only `b08_i034_local2` and its matching wrong-option message from the prior v4 object. I checked the resulting complete option/message set and confirm the deletion resolves the prior redundant-misconception finding without changing the key or prompt.
-
-In the current i034 object, the remaining distractors express distinct errors: treating an empty filtered page as completion, deriving a cursor from a missing visible item, or restarting rather than continuing the same search. Each remaining wrong-option message is mapped to its own option and diagnoses that error. The key continues to use the returned opaque cursor, even when the current page has no visible items, and finishes only when the cursor is absent. Four choices are sufficient here; the review imposes no fixed option count.
-
-The nearest B08 decisions remain distinct: i020 distinguishes a normal absent single-record lookup from an operation failure; i022 distinguishes a successful schedule search with no matching window from a failed read; i033 distinguishes an empty notice collection from unknown route or read failure. i034 instead separates page contents from search progress. Its cursor policy is an authored premise in the question, not a guarantee inferred from the cited general references.
-
-The other 18 objects reuse prior whole-object semantic conclusions: i026 passes in v4, while the other 17 were unchanged from v3. This closes the bounded B08 semantic review only; it does not by itself assert final cross-unit review, source activation, consumer/runtime readiness, or native eligibility.

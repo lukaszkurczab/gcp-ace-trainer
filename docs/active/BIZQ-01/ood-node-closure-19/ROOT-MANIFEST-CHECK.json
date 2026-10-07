@@ -1,9 +1,0 @@
-{
-  "verdict": "PASS",
-  "scope": "162 current object fingerprints, nine file hashes, exact old identities and collision-free conditional candidate IDs; not semantic or identity approval",
-  "contentHead": "90a1d83859c2be83c5266ffe981f487d3c29aeeb",
-  "manifestSha256": "c344367f12072c110761664825bd95c6f40334eea89296cb56e9787ab847fe73",
-  "checked": 162,
-  "files": 9,
-  "activeOODObjects": 1413
-}

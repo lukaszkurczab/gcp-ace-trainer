@@ -1,7 +1,0 @@
-
-> patternly@0.1.0 validate:runtime-privacy-boundary
-> node scripts/validateRuntimePrivacyBoundary.mjs
-
-RUNTIME_PRIVACY_BOUNDARY_CHECK=passed
-
-EXIT_CODE=0

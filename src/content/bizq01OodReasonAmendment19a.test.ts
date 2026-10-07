@@ -13,7 +13,7 @@ import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { Question } from "./canonical/questionTypes";
 
-const PACKET = "docs/active/BIZQ-01/ood-node-closure-19";
+const PACKET = "src/content/__fixtures__/release-acceptance/ood-node-closure-19";
 const AMENDMENT_PATH = `${PACKET}/reason-amendment-19a/PROPOSED-REASONS.json`;
 const AMENDMENT_SHA256 = "76fd88c540bd1b6ffe83eb2034cbf565b2ac030454e80511e56a341555edfa15";
 const TRACK = "object-oriented-design-interview";

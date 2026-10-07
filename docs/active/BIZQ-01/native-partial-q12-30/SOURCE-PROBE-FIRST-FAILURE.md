@@ -1,1 +1,0 @@
-First probe stopped before link click: question block was above the viewport after optionA probe. No product defect or opening claim. Corrected guard checks saved review root; subsequent scroll and disclosure require exact q3 IDs.

@@ -1,9 +1,0 @@
-{
-  "result": "PASS_ACTUAL_WRITE",
-  "scope": "Root actual saved v4\u2192v5 diagnostic delta only; independent semantic review pending",
-  "actuallyChangedWrongOptionTexts": 72,
-  "mechanicalEvidence": "ROOT-N07-B06-v5-MECHANICAL.json",
-  "frozenInput": "review-inputs/N07-B06-v5.json",
-  "sourceActivation": false,
-  "semanticAcceptance": false
-}

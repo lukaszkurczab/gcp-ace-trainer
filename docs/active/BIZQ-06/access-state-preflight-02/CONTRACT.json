@@ -1,9 +1,0 @@
-{
-  "canonicalPath": "/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/01-product-definition.md",
-  "sha256": "6f780d44868b4ef920e8d15d20c0f638a9e4b7c2d9c93cd2fc3c1d5b02db225e",
-  "existingRequirement": "Missing distribution is explicit; no fabricated store link, waitlist success, installation/purchase metric or unverified planner claim.",
-  "changeRequired": false,
-  "reason": "Existing canonical BIZQ06 requirement covers the selected-response page-specific unavailable state; no rule or authorization changes.",
-  "beforeProductionImplementation": true,
-  "recordedUtc": "2026-10-03T12:40:07.040768+00:00"
-}

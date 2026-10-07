@@ -1,5 +1,0 @@
-
-> patternly@0.1.0 typecheck
-> tsc --noEmit
-
-src/content/bizq01BesdSeedCohort14.test.ts(458,15): error TS7022: 'authored' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.

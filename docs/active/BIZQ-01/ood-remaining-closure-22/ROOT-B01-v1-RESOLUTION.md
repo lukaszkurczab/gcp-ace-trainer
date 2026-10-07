@@ -1,9 +1,0 @@
-# Root resolution of B01 v1 observations
-
-Root read the complete current objects, the independent semantic report and separate identity clarification, and re-read full original i001/i002/i017 objects. Actual hash/whole-object bindings are recorded in `ROOT-B01-v1-REVIEW-BINDINGS.json`.
-
-The old operation/invariant facts are not preserved literally. The reviewer explicitly acknowledges that and identifies the operative old instructional decision in prompt, accepted option and Reason: selecting/injecting independently variable behavior inside a stable workflow. The original sealing/idempotency/access explanations did not establish a mechanism linking those case facts to that keyed decision. Under the existing correction-of-ambiguity/application clause, root accepts the bounded interpretation that the new visible algorithm variation repairs the existing Strategy decision rather than inventing a different primary skill. The common unit label alone would not suffice. New option IDs correctly prevent case-specific answers from reusing old option meaning.
-
-B01 v1 therefore has accepted proposal-level semantics and 18 preserve-question-ID actions, subject to final whole-N06 cross-unit comparison. This judgment does not authorize source activation before the other units and actual migration review. The repeated alternative families were independently considered under existing authored content criteria; no quota or broader precedent has been added. All root observations and original report remain as historical evidence.
-
-Documentation link correction: the identity clarification's relative guideline link has one too few parent levels. The controlling file actually read is `/Users/lukaszkurczab/Desktop/Projects/Patternly/docs/07-content-guidelines.md`. Preserve the already hash-bound clarification; use this explicit path correction instead of rewriting its bytes.

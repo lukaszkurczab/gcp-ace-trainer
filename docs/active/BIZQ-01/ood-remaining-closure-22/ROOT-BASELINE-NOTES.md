@@ -1,7 +1,0 @@
-# Root N06 baseline capture
-
-Actual Node22 `capture-n06-baseline.mjs` validates the current source with the existing canonical parser and compares all1413 questions to the current app artifact. PASS:180 N06,1233 preserved other OOD,765 accepted N01–N05, eight other track artifact hashes, current/historical lock and web demo hashes, thirteen tracked business-quality proof/evidence hashes (twelve top-level proofs plus the existing nested source-copy receipt) and943 untouched content-file hashes, four HEAD/upstream/stash identities. This is a baseline, not acceptance of new content.
-
-The initial capture stopped at `9 !== 8`: a directory-wide JSON inventory had included `content-lock.json` among track artifacts. Inspection identified its actual canonical-content path. The corrected capture excludes that manifest from the eight unchanged artifacts and binds its hash separately. No source/runtime/test rule changed. The initial failed capture wrote no receipt. The second inventory also expanded the initial nine OOD-only proofs to the twelve existing top-level business-quality proofs, preserving their distinct provenance.
-
-Final pre-implementation baseline inventory includes all13 tracked proof/evidence JSON paths, not only12 top-level proof files. Git inventory additionally binds943 untouched content files and the current catalog object. Foreign untracked audit/dist are excluded and preserved readonly. No accepted proposal input or semantic report was modified by this baseline inventory correction.

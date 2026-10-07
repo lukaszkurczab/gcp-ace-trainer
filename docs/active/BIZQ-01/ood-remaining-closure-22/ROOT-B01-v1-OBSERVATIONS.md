@@ -1,9 +1,0 @@
-# Root B01 v1 focused observations
-
-Not an independent acceptance verdict. Current input is frozen `review-inputs/N06-B01-v1.json`, SHA259cc143512849ffc408879253d4ee622494938a9b8172ee9b59917d1ce890eb. Root actual mechanical check PASS18/90 options; read all18 current objects in separate chunks after the first broad read was truncated. Author notes are hypotheses, not identity acceptance.
-
-Concrete identity question: old i001 is notarization/sealing an exact immutable revision; current i001 is district-specific utility rate calculation. Old i002 is idempotent payout for a settled order; current i002 is regional claim eligibility. Old i017 is revocation visible before door access; current i017 is labor estimation for repair contracts. Repeated author explanations reference the generic old policy key/unit label, without accounting for the changed case operation/invariant/archetype. BIZQ-01§5C and the accepted N06 contract require genuine primary-decision/meaning/archetype comparison, not unit equivalence alone. The reviewer must determine each action independently.
-
-Semantic question: many current items follow stable workflow + independent algorithm and repeat branch/whole-workflow subtype/caller copy/data or mutable-global alternatives. Inspect whether each is a concrete distinct decision and whether the nearest alternatives are genuinely adequate under a changed condition, rather than made false by forced duplication or explicit contradiction. BIZQ-01§4.1–4.3 and the briefing's cross-unit/concrete-decision requirements are the basis; no new similarity percentage, prose quota, fixed option count or identity quota is proposed.
-
-Root sent these focused observations to the independent reviewer and cautioned both authors before subsequent units. Frozen B01 and historical inputs remain intact; canonical source is unchanged. Corrections and migration shape depend on actual semantic/identity conclusions.

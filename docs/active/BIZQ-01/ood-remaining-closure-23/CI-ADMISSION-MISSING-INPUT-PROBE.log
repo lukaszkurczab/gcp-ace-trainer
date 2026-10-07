@@ -1,1 +1,0 @@
-{"result":"EXPECTED_REJECTION","code":"ENOENT","stage":"missing sibling app release lock","noReceiptWritten":true,"scope":"Actual existing admission API with deliberately absent consumer, reproducing CI checkout condition; no production/service effect"}

@@ -1,9 +1,0 @@
-{
-  "result": "PASS",
-  "scope": "Only324 N08/N09 sourcePath locators normalized from content-relative to producer-repository-relative; no semantic finding/hash/ID changes",
-  "beforeLedgerSha256": "7558155435b3f526a31ed7479272fb1a41a56cee77048cf68a08ca1046b9683c",
-  "currentLedgerSha256": "c72dddc00be6072b6efd06aa308a413f280e050dc889452767713f8cb4ed4d20",
-  "normalizedRecords": 324,
-  "preservedOtherRecords": 477,
-  "onlyChangedField": "sourcePath"
-}

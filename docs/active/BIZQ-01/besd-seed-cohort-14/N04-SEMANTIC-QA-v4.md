@@ -1,7 +1,0 @@
-# Independent N04 targeted v4 review
-
-closure02, gpt-6-luna high, frozenSHA341f292475f3f224451af8cd085fb6884db5008be2bb0a79b4f01caffabf01e6 andnotesSHA238068e55d3735d8a4e8e2be34a00398a8f1ae65985482e1b13c811d56eac12a verified. REVISE twoanswer-level defects; other15N04 evidence reusable.
-
-021revision fence nowguardslatefills but must becomevisible toreadpath beforeACK, otherwise delayednotification allowsstale postACKreads. 028keyedanswer mustreturngraphreleaseID+closureobservationtimestamp, notboth timestamps. Rootindependentlyfoundsameactualgaps.
-
-02945scomputationversus2sresponse and030currentreleasealiaspremise resolvepriorambiguity;028wrongoption/diagnostic nowrealprovenancefailure. Reasonable reinforcedversionedtopology+dynamicclosures versusmodel/buildcapabilities+livestateislegal. SourceRFC9111supports freshness, notapplicationACK/fence/eventsequence guarantees. No newdistributed-proofgate or source/runtime/native/fullBIZQ readiness claim.

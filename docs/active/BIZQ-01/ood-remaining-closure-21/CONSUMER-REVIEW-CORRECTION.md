@@ -1,3 +1,0 @@
-# N05 consumer review correction
-
-Independent review identified a cohort-wide option-ID uniqueness assertion in the new focused test. The approved producer contract requires option IDs to be unique within each question, not across questions. Root removed the three lines accumulating/asserting global uniqueness; per-question uniqueness, accepted/wrong option bindings, exact frozen objects, scoring/order reversal and feedback assertions remain. The 612 unique IDs remain a descriptive source-map fact, not a new consumer gate. No runtime, question or schema change. The pre-sync RED evidence predates this narrow correction; post-sync root GREEN will test the corrected file.

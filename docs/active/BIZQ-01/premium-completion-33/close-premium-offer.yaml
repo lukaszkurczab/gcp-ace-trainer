@@ -1,8 +1,0 @@
-appId: com.lkurczab.patternly
-name: BIZQ33 return from offer without purchase
----
-- assertVisible:
-    id: premium-offer-summary
-- tapOn: "Go back"
-- assertVisible:
-    id: patternly:practice:hub:root

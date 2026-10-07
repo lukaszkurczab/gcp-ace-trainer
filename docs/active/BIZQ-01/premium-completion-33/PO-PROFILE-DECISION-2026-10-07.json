@@ -1,6 +1,0 @@
-{
-  "decision": "jeśli problem jest z profilem mozesz je bezpiecznie usuwać i tworzyć nowe",
-  "executionScope": "own test profiles only if concrete diagnosis warrants; preserve original Guest and unrelated profiles, learning, goals and plans",
-  "currentAction": "no deletion; safe caught-error diagnostic pending",
-  "notAcceptance": "authorization does not prove profile corruption or Q13 pass"
-}

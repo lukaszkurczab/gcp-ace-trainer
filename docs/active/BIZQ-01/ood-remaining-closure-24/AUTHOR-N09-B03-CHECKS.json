@@ -1,9 +1,0 @@
-{
-  "proposalSha256": "184713fc55a2484453eec47e84f513b0f3cf0e88d0a96656d82e17e14764f8c8",
-  "questionCount": 18,
-  "validQuestions": 18,
-  "scorerCases": 180,
-  "correctKeyCases": 36,
-  "wrongOptionRejectedCases": 144,
-  "errors": []
-}

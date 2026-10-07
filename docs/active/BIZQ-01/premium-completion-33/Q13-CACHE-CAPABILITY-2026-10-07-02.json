@@ -1,9 +1,0 @@
-{
-  "ok": false,
-  "stage": "initialized_filesystem",
-  "readEqual": false,
-  "cleanup": false,
-  "canonicalStoreWrites": false,
-  "nonce": "60724d83-ce54-4b95-bb56-67979b607832",
-  "scope": "Debug SDK capability only; not Release/Q13 acceptance"
-}

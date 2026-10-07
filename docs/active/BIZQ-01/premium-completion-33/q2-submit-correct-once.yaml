@@ -1,8 +1,0 @@
-appId: com.lkurczab.patternly
-name: BIZQ33 Q2 single correct submit
----
-- assertVisible:
-    id: patternly:session:submit:ood-n01-b02-i018
-- tapOn:
-    id: patternly:session:submit:ood-n01-b02-i018
-- takeScreenshot: q2-after-single-submit

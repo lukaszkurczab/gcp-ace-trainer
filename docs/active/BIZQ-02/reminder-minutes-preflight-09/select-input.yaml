@@ -1,6 +1,0 @@
-appId: com.lkurczab.patternly
-name: BIZQ-02 minutes09 inspect actual text selection
----
-- longPressOn:
-    id: patternly:learning-plan:editor:time:mon
-- takeScreenshot: bizq02-minutes09-selection-menu

@@ -1,6 +1,0 @@
-appId: com.apple.mobilesafari
-name: BIZQ06 Safari visible page settings probe
----
-- tapOn:
-    id: PageFormatMenuButton
-- takeScreenshot: 01-page-menu

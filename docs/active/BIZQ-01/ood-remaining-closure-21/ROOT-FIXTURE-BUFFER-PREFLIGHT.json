@@ -1,9 +1,0 @@
-{
-  "result": "REPRODUCED",
-  "stage": "test working-tree fixture diff capture",
-  "code": "ENOBUFS",
-  "signal": "SIGTERM",
-  "actualDiffBytes": 1144892,
-  "source": "Preserved foreign plan/state diff after own local checkpoint",
-  "scopeCorrection": "This probe measured the app diff, but makeWorkingTreeFixture only clones backend and content. It is not the actual failing fixture input; retained as an abandoned diagnostic."
-}

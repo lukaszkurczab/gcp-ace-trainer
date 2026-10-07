@@ -34,7 +34,7 @@ Nazwa wyniku generatora `ready` oznacza poprawną propozycję techniczną, nie �
 
 ### 3.1. Fakty od użytkownika
 
-Użyj obecnego modelu celu. Zachowaj rodzaje dat opisane w aktualnym planie R1: wydarzenie dla egzaminu/rozmowy, termin dla foundations, checkpoint dla refresh, brak daty dla own pace.
+Użyj obecnego modelu celu. Zachowaj rodzaje dat opisane w aktualnym planie głównym: wydarzenie dla egzaminu/rozmowy, termin dla foundations, checkpoint dla refresh, brak daty dla own pace.
 
 Plan wymaga jawnych dni nauki i dostępnych minut. Jeżeli dotychczasowy ekran zapisuje jedynie długość sesji lub „light/regular/intensive”, nie traktuj tego jak potwierdzonej liczby minut. Rozszerz istniejący flow minimalnym, zgodnym z brandem wyborem dostępności i pokaż założenie przed akceptacją. Nie twórz drugiego onboardingu celu.
 
@@ -285,37 +285,3 @@ Odbiór wymaga co najmniej dwóch rzeczywistych rodzin materiału o odmiennym ch
 Pokaż na iOS trzy wersje planu dla tego samego tracka: nowy użytkownik, powracający z review oraz bliski niewykonalny termin. Każdy plan musi prowadzić do rzeczywistej zgodnej sesji, nie karty z fixture. Syntetyczne profile są dopuszczalne jako dane testu, ale używają prawdziwego runtime i zatwierdzonego contentu.
 
 Raport zawiera algorytm i wersję polityki, pochodzenie kosztów, listę braków metadata, różnice planów, testy, identity/sync evidence i ograniczenia prognozy. Brak danych od użytkowników oznacza, że trafność estymat nie została jeszcze empirycznie potwierdzona; nie blokuje technicznego odbioru, ale blokuje claim o udowodnionej skuteczności.
-
-## 12. Prompt wykonawczy dla Codex
-
-```text
-Wykonaj BIZQ-03 zgodnie z tą specyfikacją i dokumentem 00. Nie buduj nowego
-runtime, modelu mastery ani LLM planera. Przed kodem odczytaj realny obecny
-kontrakt celu, planu, completion, uprawnień, sync i reminders.
-
-Po preflight i wymaganym briefingu ustal minimalny data contract planowania.
-Wykorzystaj wyniki BIZQ-02/04/05. Nie zastępuj ich fixture w odbiorze końcowym.
-Nowy model ma planować pracę nad decyzjami/mental units i realne powtórki,
-a nie dzielić wszystkich niewidzianych pytań przez dni do terminu.
-
-Rozdziel znany nakład, estymatę i niepewną dalszą pracę. Zachowaj aktualną
-regułę completion; minimum prób przy niespełnionej jakości nie oznacza końca.
-Czas szacuj z jawnego blueprintu, potem z porównywalnego foreground time,
-bez traktowania szybkości jako kompetencji i bez podwójnego kosztu feedbacku.
-
-Generuj plan z lokalnego kalendarza i potwierdzonych minut. Zachowaj dueAt,
-dołącz rzeczywiste review i checks, unikaj podwójnego liczenia. Dobieraj
-wyłącznie legalne tryby/długości. Pokaż shortfall, kiedy pracy nie da się
-zmieścić; nie przyspieszaj retention ani nie zmieniaj samowolnie dostępności.
-Own pace nie ma daty. Płatne tryby pozostają płatne.
-
-Przeliczenie forecast nie nadpisuje zaakceptowanego planu. Materialna zmiana
-ma przejść przez propozycję, stale check i atomowe goal+plan accept/sync.
-Reminders pozostają lokalne; aktywna sesja nie zmienia planu occurrence.
-
-Wdrażaj etapami z testami A01–A24, następnie prawdziwym iOS flow. Używaj
-aktualnego brandu i komponentów; bez VoiceOver tests, deploy i publikacji.
-Raportuj dokładne polityki, źródła estymat, testy, ograniczenia, realne
-różnice planów oraz niezależny odbiór. Nie deklaruj skuteczności edukacyjnej
-ani gotowości egzaminacyjnej na podstawie symulowanych danych.
-```

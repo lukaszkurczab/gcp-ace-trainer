@@ -1,7 +1,0 @@
-{
-  "ok": true,
-  "singleCanonicalCall": true,
-  "allowedDelta": "adoption_pending -> guest",
-  "identityPreserved": true,
-  "accountBound": false
-}

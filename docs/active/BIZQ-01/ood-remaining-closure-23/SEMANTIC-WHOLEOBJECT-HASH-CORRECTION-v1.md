@@ -1,9 +1,0 @@
-# Whole-object hash representation clarification — N07 v1/v2 reviews
-
-This note supplements the referenced semantic QA reports and does not change their verdicts or re-review their content. The reports recorded whole-object hashes using insertion-order `JSON.stringify(question)`. For comparison with source-verifier and producer receipts, this correction adds hashes from Patternly’s existing `canonicalJson(question)` implementation (recursively sorted object keys), followed by the same SHA-256. Both encodings are calculated from the exact frozen question bytes after JSON parse; the differing digests are encoding differences, not different question contents.
-
-The verification found that all 18 original recorded item hashes in each listed report equal the insertion-order encoding for its exact frozen proposal. The following report-to-input bindings were checked: B01 v2 report SHA `4da84ceae4c65f476a6e36aec2b10d990e5a1026778e2b200580414591c5c8af` / proposal SHA `aebc7f8cc71f8203d0e53e0eda80118878758608a8cc447aad4dc45bb22f524a`; B02 v1 report SHA `389c9777ed8be19530092e68e0dd35150b1cec78cb70a836a5db7e5295a78000` / proposal SHA `57f9a6ed2c5342ec697025254d1a1bb56dd6ef82c089f42fc4a9474274ef6796`; B02 v2 report SHA `fb67163235ca1d3de62df8c41be9632f37bda37d73e3a5a82224676ced6c7d2b` / proposal SHA `2d46dedd0f1e7fcc882a803c6a7192c15ac8705cded9b2ba965b54279ef90e9d`.
-
-B05 v1 was also checked: its 18 current hashes match both encodings on the actual proposal bytes, so it needs no hash correction.
-
-Canonical per-item mappings are in `SEMANTIC-WHOLEOBJECT-HASH-CORRECTION-v1.json`, SHA-256 `04691f7cca0eb6fe9a2d82624397b97a888295a7d0ec62acf02ef0c64af5db85`. That receipt names the two hash methods and preserves all original report files unchanged. This is a metadata/binding clarification only; no semantic conclusions, source files, proposals, or acceptance scope changed.

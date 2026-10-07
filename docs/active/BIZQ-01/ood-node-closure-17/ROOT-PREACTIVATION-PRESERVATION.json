@@ -1,9 +1,0 @@
-{
-  "result": "PASS",
-  "meaning": "Current production source/artifact/proof bytes unchanged during proposal corrections",
-  "groups": {
-    "sources": 954,
-    "artifacts": 10,
-    "immutableProofs": 7
-  }
-}

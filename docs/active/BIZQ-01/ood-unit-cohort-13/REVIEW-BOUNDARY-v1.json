@@ -1,7 +1,0 @@
-{
-  "reviewedProposalSha256": "8545db0756d07894c8881119a429a174be934891fb997356c3f5c1437ccbfa00",
-  "reviewedFile": "REVIEWED-PROPOSAL-v1.json",
-  "structuralResult": "producer validator15/15, scorer60/60",
-  "semanticResult": "independent preliminary blockers confirmed; final verdict pending",
-  "sourceImplementation": "not started; active source12 untouched"
-}

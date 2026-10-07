@@ -1,3 +1,0 @@
-# Metric erratum: N09-B01 v1
-
-This erratum supplements the original N09-B01 v1 semantic report; it does not change its verdict or semantic findings. I re-counted the accepted-choice length using the frozen file `review-inputs/N09-B01-v1.json` (SHA-256 `70a812eab3ddbcd0b20dc99eec741e08d04268b7546f9bc5ff68706c37884831`) and resolved each answer by `answer.optionId`. All 18 keyed choices are strictly longer by character count than every distractor in their item. The original report’s 18/18 figure was correct. The 17/18 count belongs to N08-B01 v1, not N09-B01 v1. The N09-B01 §4.3 REVISE finding is unchanged.

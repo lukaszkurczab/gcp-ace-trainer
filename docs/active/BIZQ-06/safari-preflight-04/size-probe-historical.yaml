@@ -1,6 +1,0 @@
-appId: com.apple.mobilesafari
-name: BIZQ06 Safari page enlargement probe
----
-- tapOn:
-    point: "65%,95%"
-- takeScreenshot: 01-size-step

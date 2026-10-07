@@ -14,7 +14,7 @@ import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { Question } from "./canonical/questionTypes";
 
-const PACKET = "docs/active/BIZQ-01/ood-node-closure-20";
+const PACKET = "src/content/__fixtures__/release-acceptance/ood-node-closure-20";
 const TRACK = "object-oriented-design-interview";
 const NODE = "interfaces_polymorphism_substitution_and_extensibility";
 const N01_NODE = "requirements_use_cases_domain_vocabulary_and_model_boundaries";

@@ -1,5 +1,0 @@
-
-> patternly-content@1.0.0 candidate:admission-v3
-> node scripts/review/candidate-admission-v3.mjs BIZQ-01/ADMISSION
-
-ADMISSION_READY candidateId=daa6d34ea79a893e8c9481be8884719d32b1372aace46fd692d580a8abd1854f; boundary=local_verified_artifacts_no_deployment

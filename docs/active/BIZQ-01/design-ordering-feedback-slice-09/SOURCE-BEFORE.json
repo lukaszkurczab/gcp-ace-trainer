@@ -1,9 +1,0 @@
-{
-  "src/application/canonical/canonicalInteractionPresentation.ts": "e1f7c74bc05d20b26bba34591cf39cabe8df15e0dc021d7624f37a33f67d6014",
-  "src/application/design-interview/designInterviewSessionFacade.ts": "39a40ed1abbc1e3f49deab2704afedd7ad24591d1ccf6e8a3438a60b5ab8697a",
-  "src/features/practice/DesignInterviewPracticeScreen.tsx": "7ed55c1b4ad2b402ca3c19ff70a463ebf032d80d2106e9e824c5507f68ea5567",
-  "src/features/practice/PracticeFeedbackBlock.tsx": "a0cd2b14e08d63260808727ac2fc775588f52b9e7101ce41e78cc604febbede5",
-  "src/features/practice/PracticeSessionSurface.tsx": "5262a0c2a1e4be5c6d68fc707b90de60b82435f15aef08263800c05674f03a1e",
-  "src/features/practice/practiceSessionPresentation.ts": "9f415ca46ac12a09df54cdbb9df4e45592f3bfe87504deea360308e6870f9f99",
-  "src/content/canonical/questionScoring.ts": "7dd7d4282b7b2a18f65d655155569ed5d7ca58986bfc5b3ae46f5a8c0c7ec0ae"
-}

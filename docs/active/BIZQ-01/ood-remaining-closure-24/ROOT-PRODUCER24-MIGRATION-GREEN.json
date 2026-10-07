@@ -1,9 +1,0 @@
-{
-  "result": "PASS_ACTUAL_MIGRATION",
-  "scope": "Producer current v24 migration GREEN only; independently reviewed design; implementation QA and consumer/admission pending",
-  "migrationLogSha256": "2ce9af03505ff28b01f874f5bebe575384de6b6a7aca50d327ef75b672f5ff66",
-  "verifierSha256": "c641acd70ae2fa074c4de350e491c193762d702f6df92a01cf0126fe477a5501",
-  "proofSha256": "3c2636ac2d98c7eb0179281bf3bb30aa89934e5a11846e79f69ba35d36e0c1c9",
-  "cumulativeReplacements": 664,
-  "cumulativeSameId": 749
-}

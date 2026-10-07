@@ -1,1 +1,0 @@
-PASS: baseline GCP2981 validates; proposed one-item/new-version fixture reproduces ARCH-03/F-18 exact attribution failure. No source/config/artifact mutation in real repos.

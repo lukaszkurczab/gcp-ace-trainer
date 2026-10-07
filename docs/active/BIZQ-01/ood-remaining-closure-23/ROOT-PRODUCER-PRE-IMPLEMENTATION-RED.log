@@ -1,5 +1,0 @@
-
-> patternly-content@1.0.0 verify:migration
-> node scripts/content/verify-migration.mjs --content-root content
-
-EVIDENCE_VALUE: OOD contentVersion object-oriented-design-interview-authoring-v2026.10.05-bizq01-23 has a fixed semantic proof for a different version.
