@@ -196,6 +196,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     route.params?.reviewBehaviorEnabled ?? false,
   );
   const [focusTopicId, setFocusTopicId] = useState<string | null>(() => isCloudTopicId(route.params?.topicId ?? "") ? route.params!.topicId! : null);
+  const [focusMentalUnitId, setFocusMentalUnitId] = useState<string | null>(() => route.params?.mentalUnitId ?? null);
   const [setupError, setSetupError] = useState<string | null>(null);
   const [premiumOfferError, setPremiumOfferError] = useState<string | null>(null);
   const [premiumOfferErrorHasFreeAlternative, setPremiumOfferErrorHasFreeAlternative] = useState(false);
@@ -208,6 +209,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     setFeedbackMode(route.params?.feedbackMode ?? DEFAULT_FEEDBACK_MODE);
     setReviewBehaviorEnabled(route.params?.reviewBehaviorEnabled ?? false);
     setFocusTopicId(isCloudTopicId(route.params?.topicId ?? "") ? route.params!.topicId! : null);
+    setFocusMentalUnitId(route.params?.mentalUnitId ?? null);
     setSetupError(null);
   }, [activeFormIdentity]);
 
@@ -261,6 +263,10 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     (expectedArtifactSha256 !== undefined && expectedArtifactSha256 !== canonicalTrack.artifactSha256)) {
     return renderUnavailable(t("This learning plan uses a different content package. Review the plan before starting."));
   }
+  if (route.params?.mentalUnitId !== undefined && (route.params.mode !== "certification-focus-practice" ||
+    !route.params.mentalUnitId.trim() || route.params.expectedContentVersion !== canonicalTrack.contentVersion || route.params.expectedArtifactSha256 !== canonicalTrack.artifactSha256)) {
+    return renderUnavailable(t("This recommended practice scope is no longer available for the current content package."));
+  }
   const canonicalNodeMode = canonicalTrack.modes.find((mode) => mode.selection.kind === "node");
   const canonicalNodeId = canonicalNodeMode?.selection.kind === "node"
     ? canonicalNodeMode.selection.nodeId
@@ -284,6 +290,21 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const certificationTrack = activeTrack.familyId === "certification";
   const diagnosticBaseline = certificationTrack && selectedMode === "certification-diagnostic-baseline";
   const focusPractice = certificationTrack && selectedMode === "certification-focus-practice";
+  let recommendedFocusUnitNumber: number | null = null;
+  if (route.params?.mentalUnitId !== undefined) {
+    const focusMode = canonicalTrack.getMode("certification-focus-practice");
+    const exactFocusPool = focusMode.selection.kind === "node"
+      ? canonicalTrack.getPool(focusMode.modeId).filter((question) => question.nodeId === canonicalNodeId)
+      : [];
+    const scopedPool = exactFocusPool.filter((question) => question.mentalUnitId === route.params!.mentalUnitId);
+    const orderedUnits = [...new Set(exactFocusPool.map((question) => question.mentalUnitId))];
+    const unitIndex = orderedUnits.indexOf(route.params.mentalUnitId);
+    if (!focusPractice || focusMode.selection.kind !== "node" || scopedPool.length < focusMode.minimumActualLength) {
+      return renderUnavailable(t("This recommended practice scope does not have enough available questions."));
+    }
+    if (unitIndex < 0) return renderUnavailable(t("This recommended learning unit is unavailable in the current content package."));
+    recommendedFocusUnitNumber = unitIndex + 1;
+  }
   const weakAreaReview = certificationTrack && selectedMode === "certification-weak-area-review";
   const quickReview = certificationTrack && selectedMode === "certification-quick-review";
   const algorithmMode = activeTrack.id === CODING_INTERVIEW_TRACK_ID
@@ -327,7 +348,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               reviewSource: route.params?.reviewSource,
               sessionLength: configuredSessionLength,
             }
-            : diagnosticBaseline ? {} : quickReview ? { reviewSource: route.params?.reviewSource } : focusPractice ? { sessionLength: configuredSessionLength, ...(selectableFeedback ? { feedbackMode } : {}) } : weakAreaReview ? { sessionLength: configuredSessionLength, reviewSource: route.params?.reviewSource } : designMode ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
+              : diagnosticBaseline ? {} : quickReview ? { reviewSource: route.params?.reviewSource } : focusPractice ? { sessionLength: configuredSessionLength, ...(selectableFeedback ? { feedbackMode } : {}), ...(focusMentalUnitId ? { mentalUnitId: focusMentalUnitId, expectedContentVersion: route.params?.expectedContentVersion, expectedArtifactSha256: route.params?.expectedArtifactSha256 } : {}) } : weakAreaReview ? { sessionLength: configuredSessionLength, reviewSource: route.params?.reviewSource } : designMode ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
         mode,
         source: "practiceSetup",
         topicId: diagnosticBaseline ? canonicalNodeId : focusPractice ? selectedFocusTopicId! : weakAreaReview || quickReview ? "" : topic.id,
@@ -401,6 +422,8 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </Text>
         </View> : null}
 
+        {focusPractice && focusMentalUnitId && recommendedFocusUnitNumber !== null ? <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text key={`practice-setup-focused-unit-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t("Recommended learning unit")}</Text><Text key={`practice-setup-focused-unit-detail-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("This session is limited to learning unit {{number}} in this chapter.", { number: recommendedFocusUnitNumber })}</Text></View></Card> : null}
+
         {premiumOffers.map((offer) => <Card key={offer.offerId} style={[styles.reviewCard, styles.premiumOfferCard]}>
           <View style={styles.reviewCopy}>
             <Text key={`premium-offer-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t(offer.source === "local_smoke_fixture" ? "Local package installation test" : "Premium")}</Text>
@@ -413,7 +436,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
 
         {focusPractice ? <View style={styles.section}>
           <SectionHeader title={t("Topic")} subtitle={t("Choose a topic for this session.")} tight />
-          {focusTopics.map((focusTopic) => <SelectablePanel key={focusTopic.id} disabled={focusTopic.status === "locked"} detail={focusTopic.status === "locked" ? `${t("Unavailable")}. ${formatPracticeTopicDetail(focusTopic.detail, t)}` : formatPracticeTopicDetail(focusTopic.detail, t)} label={focusTopic.title} onPress={() => { setFocusTopicId(focusTopic.id); setSetupError(null); }} selected={selectedFocusTopicId === focusTopic.id} testID={runtimeSelectors.practice.focusTopic(focusTopic.id)} />)}
+          {focusTopics.map((focusTopic) => <SelectablePanel key={focusTopic.id} disabled={focusTopic.status === "locked"} detail={focusTopic.status === "locked" ? `${t("Unavailable")}. ${formatPracticeTopicDetail(focusTopic.detail, t)}` : formatPracticeTopicDetail(focusTopic.detail, t)} label={focusTopic.title} onPress={() => { if (focusTopic.id !== selectedFocusTopicId) setFocusMentalUnitId(null); setFocusTopicId(focusTopic.id); setSetupError(null); }} selected={selectedFocusTopicId === focusTopic.id} testID={runtimeSelectors.practice.focusTopic(focusTopic.id)} />)}
         </View> : null}
 
         {quickReview ? <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text key={`practice-setup-quick-title-${fontScale}`} maxFontSizeMultiplier={2} style={styles.reviewTitle}>{t("Quick Review")}</Text><Text key={`practice-setup-quick-subtitle-${fontScale}`} maxFontSizeMultiplier={2} style={styles.subtitle}>{t("Review questions that are ready to revisit.")}</Text></View></Card> : !diagnosticBaseline ? <View style={[styles.section, compactCodingPractice ? styles.compactSection : null]}>

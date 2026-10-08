@@ -12,6 +12,7 @@ import designModesModule from "../../tracks/design-interview/designModes.ts";
 import questionScoringModule from "../../content/canonical/questionScoring.ts";
 import certificationPracticeFixtureModule from "../../testing/certificationPracticeAnswerFixture.ts";
 import sessionResultPresentationModule from "./sessionResultPresentation.ts";
+import profileReadFenceModule from "../../application/profileReadFence.ts";
 
 const { loadCanonicalRuntimeCatalog } = runtimeCatalogModule;
 const { isCertificationPracticeModeId } = certificationModesModule;
@@ -19,6 +20,8 @@ const { isDesignInterviewModeId } = designModesModule;
 const { scoreCanonicalQuestion } = questionScoringModule;
 const { createCertificationPracticeAnswerFixture } = certificationPracticeFixtureModule;
 const { normalizeSessionResultDetails } = sessionResultPresentationModule;
+const { ProfileReadFenceChangedError } = profileReadFenceModule;
+export { ProfileReadFenceChangedError };
 
 const require = createRequire(import.meta.url);
 const jsxRuntime = require("react/jsx-runtime");
@@ -77,13 +80,34 @@ function createOverview({ locale = "en" } = {}) {
   return Overview;
 }
 
-export async function runActualResultScreen({ projectionFails = false, genericMode = false } = {}) {
+export async function runActualResultScreen({ projectionFails = false, projectionError = null, genericMode = false, diagnosticReport = null } = {}) {
   const catalog = await loadCanonicalRuntimeCatalog();
   let fixture;
   let track;
   let session;
   let result;
-  if (genericMode) {
+  if (diagnosticReport) {
+    track = catalog.getTrack("google-cloud-associate-cloud-engineer");
+    const diagnosticMode = track.getMode("certification-diagnostic-baseline");
+    assert.equal(diagnosticMode.selection.kind, "exact_ordered_questions");
+    const items = diagnosticMode.selection.questionIds.map((questionId, index) => ({
+      occurrenceId: "gcp-diagnostic-presentation:occurrence:" + index,
+      item: { trackId: track.trackId, questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 },
+    }));
+    const points = diagnosticMode.selection.questionIds.reduce((sum, questionId) => sum + scoreCanonicalQuestion(track.getQuestion(questionId), track.getQuestion(questionId).answer).earnedPoints, 0);
+    const maxPoints = diagnosticMode.selection.questionIds.reduce((sum, questionId) => sum + scoreCanonicalQuestion(track.getQuestion(questionId), track.getQuestion(questionId).answer).maxPoints, 0);
+    session = {
+      id: "gcp-diagnostic-presentation", trackId: track.trackId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256,
+      modeId: diagnosticMode.modeId, status: "completed", completedAt: "2026-10-08T10:00:00.000Z", activeForegroundMs: 20_000,
+      actualLength: items.length, requestedLength: items.length, itemOrder: items,
+      configurationSnapshot: { kind: "practice", feedbackMode: "afterEachAnswer", answerChanges: "none", submission: "perItem", timer: "elapsedForeground", reinsertEnabled: false },
+    };
+    result = {
+      sessionId: session.id, trackId: track.trackId, completedAt: session.completedAt, totalOccurrences: items.length,
+      answeredOccurrenceIds: items.map((item) => item.occurrenceId), unansweredOccurrenceIds: [],
+      evidence: { familyId: "certification", details: { activeForegroundMs: 20_000, correctCount: items.length, partialCount: 0, incorrectCount: 0, pointsEarned: points, maxPoints } },
+    };
+  } else if (genericMode) {
     track = catalog.getTrack("object-oriented-design-interview");
     const sessionId = "generic-history-points-consumer-test";
     const correctQuestion = track.questions.find((question) => scoreCanonicalQuestion(question, question.answer).kind === "correct");
@@ -121,10 +145,10 @@ export async function runActualResultScreen({ projectionFails = false, genericMo
   let effectStarted = false;
   const overview = createOverview();
   const Routes = { PRACTICE_HUB: "practice-hub", EXAM_REVIEW: "exam-review", DESIGN_INTERVIEW_SIMULATION_RESULT: "design-simulation-result" };
-  const Result = compileFunction("./ResultScreen.tsx", ["ResultScreen", "formatMode"], {
+  const Result = compileFunction("./ResultScreen.tsx", ["ResultScreen", "formatMode", "CloudDiagnosticReportCard"], {
     useState: (initial) => [state ?? (state = initial), (next) => { state = next; }],
     useEffect: (callback) => { if (!effectStarted) { effectStarted = true; callback(); } },
-    useTranslation: () => ({ t: (key) => key }),
+    useTranslation: () => ({ t: (key, parameters) => key.replace(/{{(\w+)}}/g, (_match, name) => String(parameters?.[name] ?? "")) }),
     formatMode: (modeId) => modeId,
     getTrainingLifecycleUseCases: () => ({
       loadSummary: async () => result,
@@ -132,13 +156,16 @@ export async function runActualResultScreen({ projectionFails = false, genericMo
     }),
     describeOperationalFailure: (_error, fallback) => fallback,
     Screen: "Screen", EmptyState: "EmptyState", SkeletonShape: "SkeletonShape", SessionResultOverview: overview,
+    Text: "Text", View: "View", Card: "Card", Button: "Button",
+    createStyles: () => ({}),
     ExamResultLoadingSkeleton: "ExamResultLoadingSkeleton", useThemedStyles: () => ({}), useSkeletonGlassMotion: () => ({}),
-    ROUTES: Routes,
+    ROUTES: { ...Routes, PRACTICE_SETUP: "practice-setup" },
     getTrackDisplay: () => ({ title: "Cloud certification" }),
-    runtimeSelectors: { summary: { backToPractice: () => "back", configuration: () => "configuration", reviewAnswers: () => "review", root: () => "result" } },
-    formatSessionTopic: () => "topic",
+    runtimeSelectors: { summary: { backToPractice: () => "back", configuration: () => "configuration", diagnosticReport: () => "diagnostic-report", diagnosticRecommendation: () => "diagnostic-recommendation", reviewAnswers: () => "review", root: () => "result" } },
+    formatSessionTopic: (_trackId, value) => value === "organization_projects_policies_services_quotas_and_assets" ? "Organization, projects, policies, services, quotas and assets" : "Unavailable",
     formatElapsed: () => "00:30",
     normalizeSessionResultDetails,
+    ProfileReadFenceChangedError,
     contentPackageRuntimeOwner: {
       resolveExactArtifact: async ({ trackId, contentVersion, artifactSha256 }) => {
         assert.equal(trackId, track.trackId);
@@ -154,14 +181,17 @@ export async function runActualResultScreen({ projectionFails = false, genericMo
     getCertificationExamReviewProjection: async () => null,
     getCertificationPracticeReviewProjection: async () => {
       if (projectionFails) throw new Error("optional exact-points projection unavailable");
+      if (projectionError) throw projectionError;
+      if (diagnosticReport) return { overallPointsEarned: result.evidence.details.pointsEarned, diagnosticReport };
       return { overallPointsEarned: fixture.projection.overallPointsEarned };
     },
     formatDomains: () => "domains",
   });
 
-  const props = { route: { params: { sessionId } }, navigation: { navigate: () => undefined, replace: () => undefined } };
+  const navigationCalls = [];
+  const props = { route: { params: { sessionId } }, navigation: { navigate: (...args) => navigationCalls.push(args), replace: (...args) => navigationCalls.push(args) } };
   Result(props);
   for (let attempt = 0; attempt < 20 && state?.kind !== "ready" && state?.kind !== "unavailable"; attempt += 1) await new Promise((resolve) => setTimeout(resolve, 0));
   const screen = Result(props);
-  return renderTree(screen);
+  return { ...renderTree(screen), navigationCalls, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 };
 }

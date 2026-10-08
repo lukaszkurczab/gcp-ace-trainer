@@ -11,7 +11,8 @@ test("result screens render validated overall credit rather than raw diagnostic 
   assert.match(resultScreen, /points=\{displayedPoints\}/);
   assert.match(resultScreen, /summary\.certificationExam\.overallPointsEarned/);
   assert.match(resultScreen, /summary\.certificationPracticeOverallPoints/);
-  assert.match(resultScreen, /try\s*\{\s*const practiceReview = await getCertificationPracticeReviewProjection[\s\S]*?catch\s*\{[\s\S]*?optional exact-points projection is unavailable/);
+  assert.match(resultScreen, /const practiceReview = await getCertificationPracticeReviewProjection\(capturedRequestKey\)/);
+  assert.match(resultScreen, /certificationPracticeOverallPoints = practiceReview\.overallPointsEarned/);
   assert.doesNotMatch(resultScreen, /certificationPractice && \([^)]*certificationPracticeOverallPoints/);
 
   assert.match(codingPractice, /earned: result\.overallPointsEarned/);

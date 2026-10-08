@@ -1,0 +1,244 @@
+appId: com.lkurczab.patternly
+name: Patternly BIZQ05 complete resumed scoped Focus with exact pool checks
+---
+- assertVisible: "Question 1 of 10"
+- assertVisible:
+    id: "patternly:session:counter:google-cloud-associate-cloud-engineer:certification-focus-practice:4:ordinal:1:length:10"
+- assertVisible:
+    id: "patternly:session:question:(gcp\\-ace\\-gcpace\\-n01\\-b03\\-001|gcp\\-ace\\-gcpace\\-n01\\-b03\\-002|gcp\\-ace\\-gcpace\\-n01\\-b03\\-003|gcp\\-ace\\-gcpace\\-n01\\-b03\\-004|gcp\\-ace\\-gcpace\\-n01\\-b03\\-005|gcp\\-ace\\-gcpace\\-n01\\-b03\\-006|gcp\\-ace\\-gcpace\\-n01\\-b03\\-007|gcp\\-ace\\-gcpace\\-n01\\-b03\\-008|gcp\\-ace\\-gcpace\\-n01\\-b03\\-009|gcp\\-ace\\-gcpace\\-n01\\-b03\\-010|gcp\\-ace\\-gcpace\\-n01\\-b03\\-011|gcp\\-ace\\-gcpace\\-n01\\-b03\\-012|gcp\\-ace\\-gcpace\\-n01\\-b03\\-013|gcp\\-ace\\-gcpace\\-n01\\-b03\\-014|gcp\\-ace\\-gcpace\\-n01\\-b03\\-015|gcp\\-ace\\-gcpace\\-n01\\-b03\\-016|gcp\\-ace\\-gcpace\\-n01\\-b03\\-017|gcp\\-ace\\-gcpace\\-n01\\-b03\\-018|gcp\\-ace\\-gcpace\\-n01\\-b03\\-019|gcp\\-ace\\-gcpace\\-n01\\-b03\\-020)"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 2 of 10"
+    timeout: 30000
+- assertVisible: "Question 2 of 10"
+- assertVisible:
+    id: "patternly:session:counter:google-cloud-associate-cloud-engineer:certification-focus-practice:4:ordinal:2:length:10"
+- assertVisible:
+    id: "patternly:session:question:(gcp\\-ace\\-gcpace\\-n01\\-b03\\-001|gcp\\-ace\\-gcpace\\-n01\\-b03\\-002|gcp\\-ace\\-gcpace\\-n01\\-b03\\-003|gcp\\-ace\\-gcpace\\-n01\\-b03\\-004|gcp\\-ace\\-gcpace\\-n01\\-b03\\-005|gcp\\-ace\\-gcpace\\-n01\\-b03\\-006|gcp\\-ace\\-gcpace\\-n01\\-b03\\-007|gcp\\-ace\\-gcpace\\-n01\\-b03\\-008|gcp\\-ace\\-gcpace\\-n01\\-b03\\-009|gcp\\-ace\\-gcpace\\-n01\\-b03\\-010|gcp\\-ace\\-gcpace\\-n01\\-b03\\-011|gcp\\-ace\\-gcpace\\-n01\\-b03\\-012|gcp\\-ace\\-gcpace\\-n01\\-b03\\-013|gcp\\-ace\\-gcpace\\-n01\\-b03\\-014|gcp\\-ace\\-gcpace\\-n01\\-b03\\-015|gcp\\-ace\\-gcpace\\-n01\\-b03\\-016|gcp\\-ace\\-gcpace\\-n01\\-b03\\-017|gcp\\-ace\\-gcpace\\-n01\\-b03\\-018|gcp\\-ace\\-gcpace\\-n01\\-b03\\-019|gcp\\-ace\\-gcpace\\-n01\\-b03\\-020)"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 3 of 10"
+    timeout: 30000
+- assertVisible: "Question 3 of 10"
+- assertVisible:
+    id: "patternly:session:counter:google-cloud-associate-cloud-engineer:certification-focus-practice:4:ordinal:3:length:10"
+- assertVisible:
+    id: "patternly:session:question:(gcp\\-ace\\-gcpace\\-n01\\-b03\\-001|gcp\\-ace\\-gcpace\\-n01\\-b03\\-002|gcp\\-ace\\-gcpace\\-n01\\-b03\\-003|gcp\\-ace\\-gcpace\\-n01\\-b03\\-004|gcp\\-ace\\-gcpace\\-n01\\-b03\\-005|gcp\\-ace\\-gcpace\\-n01\\-b03\\-006|gcp\\-ace\\-gcpace\\-n01\\-b03\\-007|gcp\\-ace\\-gcpace\\-n01\\-b03\\-008|gcp\\-ace\\-gcpace\\-n01\\-b03\\-009|gcp\\-ace\\-gcpace\\-n01\\-b03\\-010|gcp\\-ace\\-gcpace\\-n01\\-b03\\-011|gcp\\-ace\\-gcpace\\-n01\\-b03\\-012|gcp\\-ace\\-gcpace\\-n01\\-b03\\-013|gcp\\-ace\\-gcpace\\-n01\\-b03\\-014|gcp\\-ace\\-gcpace\\-n01\\-b03\\-015|gcp\\-ace\\-gcpace\\-n01\\-b03\\-016|gcp\\-ace\\-gcpace\\-n01\\-b03\\-017|gcp\\-ace\\-gcpace\\-n01\\-b03\\-018|gcp\\-ace\\-gcpace\\-n01\\-b03\\-019|gcp\\-ace\\-gcpace\\-n01\\-b03\\-020)"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 4 of 10"
+    timeout: 30000
+- assertVisible: "Question 4 of 10"
+- assertVisible:
+    id: "patternly:session:counter:google-cloud-associate-cloud-engineer:certification-focus-practice:4:ordinal:4:length:10"
+- assertVisible:
+    id: "patternly:session:question:(gcp\\-ace\\-gcpace\\-n01\\-b03\\-001|gcp\\-ace\\-gcpace\\-n01\\-b03\\-002|gcp\\-ace\\-gcpace\\-n01\\-b03\\-003|gcp\\-ace\\-gcpace\\-n01\\-b03\\-004|gcp\\-ace\\-gcpace\\-n01\\-b03\\-005|gcp\\-ace\\-gcpace\\-n01\\-b03\\-006|gcp\\-ace\\-gcpace\\-n01\\-b03\\-007|gcp\\-ace\\-gcpace\\-n01\\-b03\\-008|gcp\\-ace\\-gcpace\\-n01\\-b03\\-009|gcp\\-ace\\-gcpace\\-n01\\-b03\\-010|gcp\\-ace\\-gcpace\\-n01\\-b03\\-011|gcp\\-ace\\-gcpace\\-n01\\-b03\\-012|gcp\\-ace\\-gcpace\\-n01\\-b03\\-013|gcp\\-ace\\-gcpace\\-n01\\-b03\\-014|gcp\\-ace\\-gcpace\\-n01\\-b03\\-015|gcp\\-ace\\-gcpace\\-n01\\-b03\\-016|gcp\\-ace\\-gcpace\\-n01\\-b03\\-017|gcp\\-ace\\-gcpace\\-n01\\-b03\\-018|gcp\\-ace\\-gcpace\\-n01\\-b03\\-019|gcp\\-ace\\-gcpace\\-n01\\-b03\\-020)"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 5 of 10"
+    timeout: 30000
+- assertVisible: "Question 5 of 10"
+- assertVisible:
+    id: "patternly:session:counter:google-cloud-associate-cloud-engineer:certification-focus-practice:4:ordinal:5:length:10"
+- assertVisible:
+    id: "patternly:session:question:(gcp\\-ace\\-gcpace\\-n01\\-b03\\-001|gcp\\-ace\\-gcpace\\-n01\\-b03\\-002|gcp\\-ace\\-gcpace\\-n01\\-b03\\-003|gcp\\-ace\\-gcpace\\-n01\\-b03\\-004|gcp\\-ace\\-gcpace\\-n01\\-b03\\-005|gcp\\-ace\\-gcpace\\-n01\\-b03\\-006|gcp\\-ace\\-gcpace\\-n01\\-b03\\-007|gcp\\-ace\\-gcpace\\-n01\\-b03\\-008|gcp\\-ace\\-gcpace\\-n01\\-b03\\-009|gcp\\-ace\\-gcpace\\-n01\\-b03\\-010|gcp\\-ace\\-gcpace\\-n01\\-b03\\-011|gcp\\-ace\\-gcpace\\-n01\\-b03\\-012|gcp\\-ace\\-gcpace\\-n01\\-b03\\-013|gcp\\-ace\\-gcpace\\-n01\\-b03\\-014|gcp\\-ace\\-gcpace\\-n01\\-b03\\-015|gcp\\-ace\\-gcpace\\-n01\\-b03\\-016|gcp\\-ace\\-gcpace\\-n01\\-b03\\-017|gcp\\-ace\\-gcpace\\-n01\\-b03\\-018|gcp\\-ace\\-gcpace\\-n01\\-b03\\-019|gcp\\-ace\\-gcpace\\-n01\\-b03\\-020)"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 6 of 10"
+    timeout: 30000
+- assertVisible: "Question 6 of 10"
+- assertVisible:
+    id: "patternly:session:counter:google-cloud-associate-cloud-engineer:certification-focus-practice:4:ordinal:6:length:10"
+- assertVisible:
+    id: "patternly:session:question:(gcp\\-ace\\-gcpace\\-n01\\-b03\\-001|gcp\\-ace\\-gcpace\\-n01\\-b03\\-002|gcp\\-ace\\-gcpace\\-n01\\-b03\\-003|gcp\\-ace\\-gcpace\\-n01\\-b03\\-004|gcp\\-ace\\-gcpace\\-n01\\-b03\\-005|gcp\\-ace\\-gcpace\\-n01\\-b03\\-006|gcp\\-ace\\-gcpace\\-n01\\-b03\\-007|gcp\\-ace\\-gcpace\\-n01\\-b03\\-008|gcp\\-ace\\-gcpace\\-n01\\-b03\\-009|gcp\\-ace\\-gcpace\\-n01\\-b03\\-010|gcp\\-ace\\-gcpace\\-n01\\-b03\\-011|gcp\\-ace\\-gcpace\\-n01\\-b03\\-012|gcp\\-ace\\-gcpace\\-n01\\-b03\\-013|gcp\\-ace\\-gcpace\\-n01\\-b03\\-014|gcp\\-ace\\-gcpace\\-n01\\-b03\\-015|gcp\\-ace\\-gcpace\\-n01\\-b03\\-016|gcp\\-ace\\-gcpace\\-n01\\-b03\\-017|gcp\\-ace\\-gcpace\\-n01\\-b03\\-018|gcp\\-ace\\-gcpace\\-n01\\-b03\\-019|gcp\\-ace\\-gcpace\\-n01\\-b03\\-020)"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 7 of 10"
+    timeout: 30000
+- assertVisible: "Question 7 of 10"
+- assertVisible:
+    id: "patternly:session:counter:google-cloud-associate-cloud-engineer:certification-focus-practice:4:ordinal:7:length:10"
+- assertVisible:
+    id: "patternly:session:question:(gcp\\-ace\\-gcpace\\-n01\\-b03\\-001|gcp\\-ace\\-gcpace\\-n01\\-b03\\-002|gcp\\-ace\\-gcpace\\-n01\\-b03\\-003|gcp\\-ace\\-gcpace\\-n01\\-b03\\-004|gcp\\-ace\\-gcpace\\-n01\\-b03\\-005|gcp\\-ace\\-gcpace\\-n01\\-b03\\-006|gcp\\-ace\\-gcpace\\-n01\\-b03\\-007|gcp\\-ace\\-gcpace\\-n01\\-b03\\-008|gcp\\-ace\\-gcpace\\-n01\\-b03\\-009|gcp\\-ace\\-gcpace\\-n01\\-b03\\-010|gcp\\-ace\\-gcpace\\-n01\\-b03\\-011|gcp\\-ace\\-gcpace\\-n01\\-b03\\-012|gcp\\-ace\\-gcpace\\-n01\\-b03\\-013|gcp\\-ace\\-gcpace\\-n01\\-b03\\-014|gcp\\-ace\\-gcpace\\-n01\\-b03\\-015|gcp\\-ace\\-gcpace\\-n01\\-b03\\-016|gcp\\-ace\\-gcpace\\-n01\\-b03\\-017|gcp\\-ace\\-gcpace\\-n01\\-b03\\-018|gcp\\-ace\\-gcpace\\-n01\\-b03\\-019|gcp\\-ace\\-gcpace\\-n01\\-b03\\-020)"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 8 of 10"
+    timeout: 30000
+- assertVisible: "Question 8 of 10"
+- assertVisible:
+    id: "patternly:session:counter:google-cloud-associate-cloud-engineer:certification-focus-practice:4:ordinal:8:length:10"
+- assertVisible:
+    id: "patternly:session:question:(gcp\\-ace\\-gcpace\\-n01\\-b03\\-001|gcp\\-ace\\-gcpace\\-n01\\-b03\\-002|gcp\\-ace\\-gcpace\\-n01\\-b03\\-003|gcp\\-ace\\-gcpace\\-n01\\-b03\\-004|gcp\\-ace\\-gcpace\\-n01\\-b03\\-005|gcp\\-ace\\-gcpace\\-n01\\-b03\\-006|gcp\\-ace\\-gcpace\\-n01\\-b03\\-007|gcp\\-ace\\-gcpace\\-n01\\-b03\\-008|gcp\\-ace\\-gcpace\\-n01\\-b03\\-009|gcp\\-ace\\-gcpace\\-n01\\-b03\\-010|gcp\\-ace\\-gcpace\\-n01\\-b03\\-011|gcp\\-ace\\-gcpace\\-n01\\-b03\\-012|gcp\\-ace\\-gcpace\\-n01\\-b03\\-013|gcp\\-ace\\-gcpace\\-n01\\-b03\\-014|gcp\\-ace\\-gcpace\\-n01\\-b03\\-015|gcp\\-ace\\-gcpace\\-n01\\-b03\\-016|gcp\\-ace\\-gcpace\\-n01\\-b03\\-017|gcp\\-ace\\-gcpace\\-n01\\-b03\\-018|gcp\\-ace\\-gcpace\\-n01\\-b03\\-019|gcp\\-ace\\-gcpace\\-n01\\-b03\\-020)"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 9 of 10"
+    timeout: 30000
+- assertVisible: "Question 9 of 10"
+- assertVisible:
+    id: "patternly:session:counter:google-cloud-associate-cloud-engineer:certification-focus-practice:4:ordinal:9:length:10"
+- assertVisible:
+    id: "patternly:session:question:(gcp\\-ace\\-gcpace\\-n01\\-b03\\-001|gcp\\-ace\\-gcpace\\-n01\\-b03\\-002|gcp\\-ace\\-gcpace\\-n01\\-b03\\-003|gcp\\-ace\\-gcpace\\-n01\\-b03\\-004|gcp\\-ace\\-gcpace\\-n01\\-b03\\-005|gcp\\-ace\\-gcpace\\-n01\\-b03\\-006|gcp\\-ace\\-gcpace\\-n01\\-b03\\-007|gcp\\-ace\\-gcpace\\-n01\\-b03\\-008|gcp\\-ace\\-gcpace\\-n01\\-b03\\-009|gcp\\-ace\\-gcpace\\-n01\\-b03\\-010|gcp\\-ace\\-gcpace\\-n01\\-b03\\-011|gcp\\-ace\\-gcpace\\-n01\\-b03\\-012|gcp\\-ace\\-gcpace\\-n01\\-b03\\-013|gcp\\-ace\\-gcpace\\-n01\\-b03\\-014|gcp\\-ace\\-gcpace\\-n01\\-b03\\-015|gcp\\-ace\\-gcpace\\-n01\\-b03\\-016|gcp\\-ace\\-gcpace\\-n01\\-b03\\-017|gcp\\-ace\\-gcpace\\-n01\\-b03\\-018|gcp\\-ace\\-gcpace\\-n01\\-b03\\-019|gcp\\-ace\\-gcpace\\-n01\\-b03\\-020)"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 10 of 10"
+    timeout: 30000
+- assertVisible: "Question 10 of 10"
+- assertVisible:
+    id: "patternly:session:counter:google-cloud-associate-cloud-engineer:certification-focus-practice:4:ordinal:10:length:10"
+- assertVisible:
+    id: "patternly:session:question:(gcp\\-ace\\-gcpace\\-n01\\-b03\\-001|gcp\\-ace\\-gcpace\\-n01\\-b03\\-002|gcp\\-ace\\-gcpace\\-n01\\-b03\\-003|gcp\\-ace\\-gcpace\\-n01\\-b03\\-004|gcp\\-ace\\-gcpace\\-n01\\-b03\\-005|gcp\\-ace\\-gcpace\\-n01\\-b03\\-006|gcp\\-ace\\-gcpace\\-n01\\-b03\\-007|gcp\\-ace\\-gcpace\\-n01\\-b03\\-008|gcp\\-ace\\-gcpace\\-n01\\-b03\\-009|gcp\\-ace\\-gcpace\\-n01\\-b03\\-010|gcp\\-ace\\-gcpace\\-n01\\-b03\\-011|gcp\\-ace\\-gcpace\\-n01\\-b03\\-012|gcp\\-ace\\-gcpace\\-n01\\-b03\\-013|gcp\\-ace\\-gcpace\\-n01\\-b03\\-014|gcp\\-ace\\-gcpace\\-n01\\-b03\\-015|gcp\\-ace\\-gcpace\\-n01\\-b03\\-016|gcp\\-ace\\-gcpace\\-n01\\-b03\\-017|gcp\\-ace\\-gcpace\\-n01\\-b03\\-018|gcp\\-ace\\-gcpace\\-n01\\-b03\\-019|gcp\\-ace\\-gcpace\\-n01\\-b03\\-020)"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Session complete"
+    timeout: 30000
+- takeScreenshot: bizq05-real-scoped-focus-completed-result

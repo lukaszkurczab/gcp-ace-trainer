@@ -31,6 +31,56 @@ test("real loader prepares all 29 modes across nine tracks", async () => {
   assert.equal(modes, 29);
 });
 
+test("diagnostic recommendation prepares a pinned single-unit Focus pool and refuses out-of-scope resume", async () => {
+  const catalog = await catalogPromise;
+  const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
+  const mode = track.getMode("certification-focus-practice");
+  assert.equal(mode.selection.kind, "node");
+  const nodeId = mode.selection.nodeId;
+  const eligibleUnits = [...new Set(track.getPool(mode.modeId).filter((question) => question.nodeId === nodeId).map((question) => question.mentalUnitId))]
+    .filter((mentalUnitId) => track.getPool(mode.modeId).filter((question) => question.nodeId === nodeId && question.mentalUnitId === mentalUnitId).length >= mode.requestedLengths[0]!);
+  assert.ok(eligibleUnits.length >= 2, "the verified Focus pool must have at least two independently selectable units");
+  const runtime = new CanonicalTrainingRuntime(track);
+  const prepare = (mentalUnitId: string) => runtime.prepare({
+    trackId: track.trackId,
+    modeId: mode.modeId,
+    request: { sessionId: `diagnostic-target:${mentalUnitId}`, requestedLength: mode.requestedLengths[0]!, mentalUnitId, expectedContentVersion: track.contentVersion, expectedArtifactSha256: track.artifactSha256 },
+    attempts: [],
+    reviews: [],
+    now: NOW,
+  });
+  const first = await prepare(eligibleUnits[0]!);
+  const second = await prepare(eligibleUnits[1]!);
+  for (const [mentalUnitId, prepared] of [[eligibleUnits[0]!, first], [eligibleUnits[1]!, second]] as const) {
+    assert.equal(prepared.session.configurationSnapshot.mentalUnitId, mentalUnitId);
+    assert.ok(prepared.session.itemOrder.length >= mode.minimumActualLength);
+    assert.ok(prepared.session.itemOrder.every((occurrence) => {
+      const question = track.getQuestion(occurrence.item.questionId);
+      return occurrence.item.contentVersion === track.contentVersion && occurrence.item.artifactSha256 === track.artifactSha256 && question?.nodeId === nodeId && question.mentalUnitId === mentalUnitId;
+    }));
+    await runtime.validateResume({ session: prepared.session, draft: null });
+  }
+  assert.notDeepEqual(first.session.itemOrder.map((entry) => entry.item.questionId), second.session.itemOrder.map((entry) => entry.item.questionId));
+  assert.notEqual(first.session.planFingerprint, second.session.planFingerprint);
+  await assert.rejects(prepare("not-an-eligible-mental-unit"), /insufficient eligible content/i);
+  await assert.rejects(runtime.prepare({
+    trackId: track.trackId,
+    modeId: mode.modeId,
+    request: { sessionId: "diagnostic-target-stale-pin", requestedLength: mode.requestedLengths[0]!, mentalUnitId: eligibleUnits[0], expectedContentVersion: "stale", expectedArtifactSha256: track.artifactSha256 },
+    attempts: [], reviews: [], now: NOW,
+  }), /content identity is unavailable/i);
+
+  const otherUnitQuestion = track.getPool(mode.modeId).find((question) => question.nodeId === nodeId && question.mentalUnitId === eligibleUnits[1])!;
+  const original = first.session;
+  const occurrence = original.itemOrder[0]!;
+  const changedOrder = [{ ...occurrence, item: itemRef(track, otherUnitQuestion.questionId) }, ...original.itemOrder.slice(1)];
+  const changedOptions = { ...original.optionOrderByOccurrence, [occurrence.occurrenceId]: otherUnitQuestion.interaction.type === "choice_single" || otherUnitQuestion.interaction.type === "choice_multiple" ? otherUnitQuestion.interaction.options.map((option) => option.optionId) : [] };
+  const tamperedBase = createTrainingSession({ ...original, itemOrder: changedOrder, optionOrderByOccurrence: changedOptions, planFingerprint: undefined, taxonomyVersion: undefined });
+  const fingerprint = await createContentSessionPlanFingerprint({ ...tamperedBase, taxonomyVersion: "canonical-content-v1" });
+  const tampered = createTrainingSession({ ...tamperedBase, taxonomyVersion: "canonical-content-v1", planFingerprint: fingerprint });
+  await assert.rejects(runtime.validateResume({ session: tampered, draft: null }), /session item reference is unavailable/i);
+});
+
 test("canonical dashboard independently counts due and future manual review entries", async () => {
   const track = (await catalogPromise).getTrack("frontend-system-design-interview");
   const dueQuestion = track.questions[1]!;

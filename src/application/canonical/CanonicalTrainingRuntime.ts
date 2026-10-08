@@ -37,9 +37,22 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
       const evidenceSource = req.reviewSource === "session_misses" ? "committed_session_misses" : req.reviewSource === "manual_request" ? "due_queue" : req.reviewSource;
       if (evidenceSource && !mode.selection.evidenceSources.includes(evidenceSource)) throw new Error("Canonical reviewSource is unavailable for this mode.");
     } else if (req.reviewSource) throw new Error("Canonical reviewSource requires an evidence-conditioned mode.");
+    if (req.mentalUnitId !== undefined && (mode.modeId !== "certification-focus-practice" || mode.selection.kind !== "node")) {
+      throw new Error("Canonical mentalUnitId scope is available only for Certification Focus Practice.");
+    }
+    if (req.expectedContentVersion !== undefined || req.expectedArtifactSha256 !== undefined) {
+      if (mode.modeId !== "certification-focus-practice" || req.mentalUnitId === undefined ||
+        req.expectedContentVersion !== this.catalog.contentVersion || req.expectedArtifactSha256 !== this.catalog.artifactSha256) {
+        throw new Error("Canonical focused practice content identity is unavailable.");
+      }
+    }
     if (req.reviewSource === "session_misses") throw new Error("Canonical session_misses is unavailable without verified completed-session evidence.");
     const effectiveReviewSource = req.reviewSource ?? (mode.selection.kind === "evidence_conditioned" && mode.selection.evidenceSources.length === 1 && mode.selection.evidenceSources[0] === "due_queue" ? "due_queue" : undefined);
-    const source = mode.selection.kind === "evidence_conditioned" ? eligibleEvidence(this.catalog, mode, input.reviews, input.now, effectiveReviewSource) : this.catalog.getPool(mode.modeId);
+    const baseSource = mode.selection.kind === "evidence_conditioned" ? eligibleEvidence(this.catalog, mode, input.reviews, input.now, effectiveReviewSource) : this.catalog.getPool(mode.modeId);
+    const selectedNodeId = mode.selection.kind === "node" ? mode.selection.nodeId : undefined;
+    const source = req.mentalUnitId === undefined ? baseSource : selectedNodeId
+      ? Object.freeze(baseSource.filter((question) => question.nodeId === selectedNodeId && question.mentalUnitId === req.mentalUnitId))
+      : (() => { throw new Error("Canonical mental unit scope requires a node-selected mode."); })();
     const count = Math.min(req.requestedLength, source.length); if (count === 0 || (mode.selection.kind !== "evidence_conditioned" && count < mode.minimumActualLength)) throw new Error("Canonical mode has insufficient eligible content.");
     const questions = mode.selection.kind === "node"
       ? selectPracticeQuestions(source, input.attempts, { trackId: this.catalog.trackId, contentVersion: this.catalog.contentVersion, artifactSha256: this.catalog.artifactSha256 }, count)
@@ -57,7 +70,7 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
       };
     });
     const optionOrderByOccurrence = Object.fromEntries(items.map((o, i) => [o.occurrenceId, prepareCanonicalOptionOrder(questions[i]!, o.occurrenceId, o.item)]));
-    const base = { id: requestSessionId(input.request), trackId: this.catalog.trackId, modeId: mode.modeId, configurationSnapshot: { kind: "practice", timer: "elapsedForeground", feedbackMode: feedback, answerChanges: "none", submission: "perItem", reinsertEnabled: mode.reinsertPolicy === "conditional_after_incorrect" }, requestedLength: req.requestedLength, actualLength: count, currentItemIndex: 0, itemOrder: items, optionOrderByOccurrence, conditionalReinsertSlots: reinsertionSlots(mode, items, optionOrderByOccurrence), activeForegroundMs: 0, contentVersion: this.catalog.contentVersion, artifactSha256: this.catalog.artifactSha256, taxonomyVersion: RELEASE, status: "active" as const, startedAt: input.now };
+    const base = { id: requestSessionId(input.request), trackId: this.catalog.trackId, modeId: mode.modeId, configurationSnapshot: { kind: "practice", timer: "elapsedForeground", feedbackMode: feedback, answerChanges: "none", submission: "perItem", reinsertEnabled: mode.reinsertPolicy === "conditional_after_incorrect", ...(req.mentalUnitId === undefined ? {} : { mentalUnitId: req.mentalUnitId }) }, requestedLength: req.requestedLength, actualLength: count, currentItemIndex: 0, itemOrder: items, optionOrderByOccurrence, conditionalReinsertSlots: reinsertionSlots(mode, items, optionOrderByOccurrence), activeForegroundMs: 0, contentVersion: this.catalog.contentVersion, artifactSha256: this.catalog.artifactSha256, taxonomyVersion: RELEASE, status: "active" as const, startedAt: input.now };
     const session = createTrainingSession({ ...base, planFingerprint: await createContentSessionPlanFingerprint(base as TrainingSession & { taxonomyVersion: string }) });
     return Object.freeze({ session, firstOccurrence: items[0]!.item, draft: null });
   }
@@ -70,9 +83,12 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
     const feedbackMode = input.session.configurationSnapshot.feedbackMode;
     const allowedFeedbackModes = mode.feedbackTiming.kind === "fixed" ? ["afterEachAnswer"] : ["afterEachAnswer", "atSessionEnd"];
     if (!allowedFeedbackModes.includes(String(feedbackMode))) throw new Error("Canonical session feedback timing is invalid.");
-    const expectedSnapshot = { kind: "practice", timer: "elapsedForeground", feedbackMode, answerChanges: "none", submission: "perItem", reinsertEnabled: mode.reinsertPolicy === "conditional_after_incorrect" };
+    const mentalUnitId = input.session.configurationSnapshot.mentalUnitId;
+    const selectedNodeId = mode.selection.kind === "node" ? mode.selection.nodeId : undefined;
+    if (mentalUnitId !== undefined && (input.session.modeId !== "certification-focus-practice" || !selectedNodeId || typeof mentalUnitId !== "string" || !mentalUnitId.trim())) throw new Error("Canonical focused practice scope is invalid.");
+    const expectedSnapshot = { kind: "practice", timer: "elapsedForeground", feedbackMode, answerChanges: "none", submission: "perItem", reinsertEnabled: mode.reinsertPolicy === "conditional_after_incorrect", ...(mentalUnitId === undefined ? {} : { mentalUnitId }) };
     if (JSON.stringify(input.session.configurationSnapshot) !== JSON.stringify(expectedSnapshot)) throw new Error("Canonical session configuration snapshot is invalid.");
-    if (input.session.actualLength !== input.session.itemOrder.length || input.session.actualLength > input.session.requestedLength || input.session.itemOrder.some((o) => o.item.trackId !== this.catalog.trackId || o.item.questionId !== this.catalog.getQuestion(o.item.questionId)?.questionId || o.item.contentVersion !== this.catalog.contentVersion || o.item.artifactSha256 !== this.catalog.artifactSha256 || !this.catalog.getQuestion(o.item.questionId))) throw new Error("Canonical session item reference is unavailable.");
+    if (input.session.actualLength !== input.session.itemOrder.length || input.session.actualLength > input.session.requestedLength || input.session.itemOrder.some((o) => { const question = this.catalog.getQuestion(o.item.questionId); return o.item.trackId !== this.catalog.trackId || o.item.questionId !== question?.questionId || o.item.contentVersion !== this.catalog.contentVersion || o.item.artifactSha256 !== this.catalog.artifactSha256 || !question || (mentalUnitId !== undefined && (question.nodeId !== selectedNodeId || question.mentalUnitId !== mentalUnitId)); })) throw new Error("Canonical session item reference is unavailable.");
     if (mode.selection.kind === "exact_ordered_questions" && JSON.stringify(input.session.itemOrder.map((entry) => entry.item.questionId)) !== JSON.stringify(mode.selection.questionIds.slice(0, input.session.actualLength))) throw new Error("Canonical exact-order session plan is invalid.");
     if (!hasValidPreparedOrders(input.session, this.catalog)) throw new Error("Canonical session option order is invalid.");
     if (await createContentSessionPlanFingerprint(input.session as TrainingSession & { taxonomyVersion: string }) !== input.session.planFingerprint) throw new Error("Canonical session plan fingerprint is invalid.");
@@ -341,14 +357,17 @@ function requestSimulationProfileId(value: unknown): string | undefined {
   return typeof scope.simulationProfileId === "string" ? scope.simulationProfileId : undefined;
 }
 
-function requestOf(value: unknown, fallback: number): { requestedLength: number; feedbackTiming?: string; reviewSource?: "due_queue" | "manual_request" | "session_misses" } {
+function requestOf(value: unknown, fallback: number): { requestedLength: number; feedbackTiming?: string; reviewSource?: "due_queue" | "manual_request" | "session_misses"; mentalUnitId?: string; expectedContentVersion?: string; expectedArtifactSha256?: string } {
   const r = value && typeof value === "object" ? value as Record<string, unknown> : {};
   if (r.requestedLength !== undefined && (!Number.isSafeInteger(r.requestedLength) || Number(r.requestedLength) <= 0)) throw new Error("Canonical requestedLength is invalid.");
   if (r.feedbackTiming !== undefined && r.feedbackTiming !== "after_each_durable_submit" && r.feedbackTiming !== "after_session_completion") throw new Error("Canonical feedbackTiming is invalid.");
   const reviewSource = r.reviewSource;
   if (reviewSource !== undefined && reviewSource !== "due_queue" && reviewSource !== "manual_request" && reviewSource !== "session_misses") throw new Error("Canonical reviewSource is invalid.");
   if (r.reviewItemRefs !== undefined && reviewSource !== "session_misses") throw new Error("Canonical review item refs require session_misses source.");
-  return { requestedLength: typeof r.requestedLength === "number" ? r.requestedLength : fallback, feedbackTiming: typeof r.feedbackTiming === "string" ? r.feedbackTiming : undefined, reviewSource };
+  if ("mentalUnitId" in r && (typeof r.mentalUnitId !== "string" || !r.mentalUnitId.trim())) throw new Error("Canonical mentalUnitId is invalid.");
+  if ("expectedContentVersion" in r && (typeof r.expectedContentVersion !== "string" || !r.expectedContentVersion.trim())) throw new Error("Canonical expected contentVersion is invalid.");
+  if ("expectedArtifactSha256" in r && (typeof r.expectedArtifactSha256 !== "string" || !/^[a-f0-9]{64}$/i.test(r.expectedArtifactSha256))) throw new Error("Canonical expected artifact checksum is invalid.");
+  return { requestedLength: typeof r.requestedLength === "number" ? r.requestedLength : fallback, feedbackTiming: typeof r.feedbackTiming === "string" ? r.feedbackTiming : undefined, reviewSource, mentalUnitId: typeof r.mentalUnitId === "string" ? r.mentalUnitId : undefined, expectedContentVersion: typeof r.expectedContentVersion === "string" ? r.expectedContentVersion : undefined, expectedArtifactSha256: typeof r.expectedArtifactSha256 === "string" ? r.expectedArtifactSha256 : undefined };
 }
 
 function reviewSnapshotMatches(snapshot: ReviewSourceSnapshot, entry: ReviewQueueEntry): boolean {

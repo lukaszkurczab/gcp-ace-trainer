@@ -157,6 +157,8 @@ export const runtimeSelectors = Object.freeze({
     root: (sessionId: string) => selector("summary", "root", sessionId),
     backToPractice: (sessionId: string) => selector("summary", "back-to-practice", sessionId),
     reviewAnswers: (sessionId: string) => selector("summary", "review-answers", sessionId),
+    diagnosticReport: () => selector("summary", "diagnostic-report"),
+    diagnosticRecommendation: () => selector("summary", "diagnostic-recommendation"),
     configuration: (sessionId: string, length: number, feedbackTiming: AlgorithmFeedbackMode) => selector("summary", "configuration", sessionId, String(length), feedbackTimingSegment(feedbackTiming)),
     feedbackItem: (sessionId: string, occurrenceId: string) => selector("summary", "feedback-item", sessionId, occurrenceId),
   }),

@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical";
-import type { Question } from "../../content/canonical";
-import { type CompletedTrainingSession, type TrainingAttempt, type TrainingSessionResult } from "../../domain";
+import type { CanonicalQuestionResponse, Question } from "../../content/canonical";
+import { createTrainingSession, type CompletedTrainingSession, type TrainingAttempt, type TrainingSessionResult } from "../../domain";
+import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { createCertificationPracticeAnswerFixture } from "../../testing/certificationPracticeAnswerFixture";
+import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime";
 import { projectCertificationPracticeReview } from "./certificationPracticeReviewProjection";
 
 const fixturePromise = createCertificationPracticeAnswerFixture();
@@ -111,3 +113,152 @@ test("practice review rejects altered identity, coverage, attempts, score, and r
     session: fixture.session,
   }), /immutable session plan/i);
 });
+
+test("verified GCP diagnostic evidence recommends only an observed weak unit and keeps all-correct results neutral", async () => {
+  const catalog = await loadCanonicalRuntimeCatalog();
+  const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
+  const diagnostic = track.getMode("certification-diagnostic-baseline");
+  const focus = track.getMode("certification-focus-practice");
+  assert.equal(diagnostic.selection.kind, "exact_ordered_questions");
+  assert.equal(focus.selection.kind, "node");
+  const questionIds = diagnostic.selection.questionIds;
+  const focusPool = track.getPool(focus.modeId);
+  const nodeId = focus.selection.nodeId;
+  const eligibleUnits = [...new Set(focusPool.filter((question) => question.nodeId === nodeId && questionIds.some((id) => track.getQuestion(id)?.mentalUnitId === question.mentalUnitId)).map((question) => question.mentalUnitId))]
+    .filter((unitId) => focusPool.filter((question) => question.nodeId === nodeId && question.mentalUnitId === unitId).length >= focus.minimumActualLength);
+  assert.ok(eligibleUnits.length >= 2);
+  const runtime = new CanonicalTrainingRuntime(track);
+  const run = async (sessionId: string, weakUnitId?: string, hour = 0, priorAttempts: readonly TrainingAttempt<unknown>[] = []) => {
+    const hourText = String(hour).padStart(2, "0");
+    const prepared = await runtime.prepare({ trackId: track.trackId, modeId: diagnostic.modeId, request: { sessionId, requestedLength: questionIds.length }, attempts: priorAttempts, reviews: [], now: "2026-02-01T" + hourText + ":00:00.000Z" });
+    const attempts: TrainingAttempt<unknown>[] = [];
+    const sessionAt = async (index: number) => {
+      const base = createTrainingSession({ ...prepared.session, currentItemIndex: index, planFingerprint: undefined, taxonomyVersion: undefined });
+      const taxonomyVersion = "canonical-content-v1";
+      const planFingerprint = await createContentSessionPlanFingerprint({ ...base, taxonomyVersion });
+      return createTrainingSession({ ...base, taxonomyVersion, planFingerprint });
+    };
+    for (let index = 0; index < prepared.session.itemOrder.length; index += 1) {
+      const session = await sessionAt(index);
+      const occurrence = session.itemOrder[index]!;
+      const question = track.getQuestion(occurrence.item.questionId)!;
+      const response = weakUnitId && question.mentalUnitId === weakUnitId
+        ? incorrectResponse(question)
+        : question.answer as CanonicalQuestionResponse;
+      const minute = String(Math.floor(index / 60)).padStart(2, "0");
+      const second = String(index % 60).padStart(2, "0");
+      const submission = await runtime.submitPractice({ session, response, attempts: [...priorAttempts, ...attempts], reviews: [], now: "2026-02-01T" + hourText + ":" + minute + ":" + second + ".000Z" });
+      attempts.push(submission.attempt);
+    }
+    const finalized = await runtime.finalizePractice({ session: await sessionAt(prepared.session.actualLength - 1), attempts, now: "2026-02-01T" + String(hour + 1).padStart(2, "0") + ":00:00.000Z" });
+    assert.equal(finalized.session.status, "completed");
+    const projection = await projectCertificationPracticeReview({
+      attempts: [...priorAttempts, ...attempts],
+      diagnosticContext: { focusPool, focusMinimumActualLength: focus.minimumActualLength, diagnosticQuestionIds: questionIds, exposureHistoryAvailable: true },
+      resolveQuestion: async (item) => {
+        assert.equal(item.contentVersion, track.contentVersion);
+        assert.equal(item.artifactSha256, track.artifactSha256);
+        return track.getQuestion(item.questionId)!;
+      },
+      result: finalized.result,
+      session: finalized.session as CompletedTrainingSession,
+    });
+    return { attempts, projection, result: finalized.result, session: finalized.session as CompletedTrainingSession };
+  };
+
+  for (const expectedUnit of eligibleUnits.slice(0, 2)) {
+    const { projection } = await run("gcp-diagnostic-gap-" + expectedUnit, expectedUnit);
+    const report = projection.diagnosticReport;
+    assert.ok(report);
+    assert.equal(report.answeredCount, questionIds.length);
+    assert.equal(report.unansweredCount, 0);
+    assert.equal(report.exposureHistory, "available");
+    assert.equal(report.recommendation.kind, "observed_gap");
+    if (report.recommendation.kind === "observed_gap") assert.equal(report.recommendation.mentalUnitId, expectedUnit);
+    assert.equal(report.units.find((unit) => unit.mentalUnitId === expectedUnit)?.incorrectCount, questionIds.filter((id) => track.getQuestion(id)?.mentalUnitId === expectedUnit).length);
+  }
+  const first = await run("gcp-diagnostic-first-exposure", eligibleUnits[0]);
+  const repeated = await run("gcp-diagnostic-repeat-exposure", undefined, 2, first.attempts);
+  const repeatedReport = repeated.projection.diagnosticReport;
+  assert.ok(repeatedReport);
+  assert.equal(repeatedReport.exposureHistory, "available");
+  assert.ok(repeatedReport.units.every((unit) => unit.repeatExposureCount === unit.questionCount && unit.firstRecordedExposureCount === 0));
+
+  const tieAttempt = { ...first.attempts[0]!, id: "prior-tied-diagnostic-attempt", sessionId: "prior-tied-diagnostic-session", answeredAt: repeated.attempts[0]!.answeredAt };
+  const tied = await projectCertificationPracticeReview({
+    attempts: [...first.attempts, ...repeated.attempts, tieAttempt],
+    diagnosticContext: { focusPool, focusMinimumActualLength: focus.minimumActualLength, diagnosticQuestionIds: questionIds, exposureHistoryAvailable: true },
+    resolveQuestion: async (item) => track.getQuestion(item.questionId)!,
+    result: repeated.result,
+    session: repeated.session,
+  });
+  assert.equal(tied.diagnosticReport?.exposureHistory, "unknown");
+  assert.equal(tied.diagnosticReport?.units.find((unit) => unit.mentalUnitId === track.getQuestion(repeated.attempts[0]!.item.questionId)!.mentalUnitId)?.firstRecordedExposureCount, null);
+
+  const allCorrect = await run("gcp-diagnostic-neutral");
+  const report = allCorrect.projection.diagnosticReport;
+  assert.ok(report);
+  assert.equal(report.correctCount, questionIds.length);
+  assert.equal(report.incorrectCount, 0);
+  assert.equal(report.unansweredCount, 0);
+  assert.ok(report.units.every((unit) => unit.unansweredCount === 0 && unit.unitNumber > 0));
+  assert.equal(report.recommendation.kind, "neutral_practice");
+  if (report.recommendation.kind === "neutral_practice") assert.ok(!report.sampledMentalUnitIds.includes(report.recommendation.mentalUnitId));
+});
+
+test("diagnostic report is unavailable when a sampled item is foreign to the exact pinned Focus pool", async () => {
+  const catalog = await loadCanonicalRuntimeCatalog();
+  const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
+  const diagnostic = track.getMode("certification-diagnostic-baseline");
+  const focus = track.getMode("certification-focus-practice");
+  const sample = await (async () => {
+    const runtime = new CanonicalTrainingRuntime(track);
+    const prepared = await runtime.prepare({ trackId: track.trackId, modeId: diagnostic.modeId, request: { sessionId: "gcp-diagnostic-foreign-focus-membership", requestedLength: diagnostic.requestedLengths[0]! }, attempts: [], reviews: [], now: "2026-02-02T00:00:00.000Z" });
+    let session = prepared.session;
+    const attempts: TrainingAttempt<unknown>[] = [];
+    const sessionAt = async (index: number) => {
+      const base = createTrainingSession({ ...prepared.session, currentItemIndex: index, planFingerprint: undefined, taxonomyVersion: undefined });
+      const taxonomyVersion = "canonical-content-v1";
+      const planFingerprint = await createContentSessionPlanFingerprint({ ...base, taxonomyVersion });
+      return createTrainingSession({ ...base, taxonomyVersion, planFingerprint });
+    };
+    for (let index = 0; index < session.itemOrder.length; index += 1) {
+      session = await sessionAt(index);
+      const occurrence = session.itemOrder[index]!;
+      const question = track.getQuestion(occurrence.item.questionId)!;
+      const submitted = await runtime.submitPractice({ session, response: incorrectResponse(question), attempts, reviews: [], now: "2026-02-02T00:00:00.000Z" });
+      session = submitted.session;
+      attempts.push(submitted.attempt);
+    }
+    const finalized = await runtime.finalizePractice({ session: await sessionAt(session.actualLength - 1), attempts, now: "2026-02-02T01:00:00.000Z" });
+    return { session: finalized.session as CompletedTrainingSession, result: finalized.result, attempts };
+  })();
+  const firstSampledQuestion = track.getQuestion(sample.session.itemOrder[0]!.item.questionId)!;
+  const focusPool = track.getPool(focus.modeId).map((question) => question.questionId === firstSampledQuestion.questionId
+    ? { ...question, nodeId: "foreign-node-with-colliding-unit-id" }
+    : question);
+  const projection = await projectCertificationPracticeReview({
+    attempts: sample.attempts,
+    diagnosticContext: { focusPool, focusMinimumActualLength: focus.minimumActualLength, diagnosticQuestionIds: diagnostic.selection.kind === "exact_ordered_questions" ? diagnostic.selection.questionIds : [], exposureHistoryAvailable: true },
+    resolveQuestion: async (item) => track.getQuestion(item.questionId)!,
+    result: sample.result,
+    session: sample.session,
+  });
+  assert.equal(projection.items.length, 40, "verified saved feedback remains readable");
+  assert.equal(projection.diagnosticReport, undefined, "foreign sample membership cannot produce a weak-unit recommendation");
+});
+
+function incorrectResponse(question: Question): CanonicalQuestionResponse {
+  if (question.interaction.type === "choice_single" && question.answer.type === "choice_single") {
+    const options = question.interaction.options;
+    const correctOptionId = question.answer.optionId;
+    return { type: "choice_single", optionId: options.find((option) => option.optionId !== correctOptionId)!.optionId };
+  }
+  if (question.interaction.type === "choice_multiple" && question.answer.type === "choice_multiple") {
+    const options = question.interaction.options;
+    const correctOptionIds = question.answer.optionIds;
+    const wrong = options.find((option) => !correctOptionIds.includes(option.optionId));
+    return wrong ? { type: "choice_multiple", optionIds: [wrong.optionId] } : { type: "choice_multiple", optionIds: [correctOptionIds[0]!] };
+  }
+  throw new Error("The GCP diagnostic fixture must use a supported choice question.");
+}

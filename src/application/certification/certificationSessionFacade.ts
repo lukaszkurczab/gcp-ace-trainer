@@ -22,10 +22,11 @@ import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canoni
 import { projectCanonicalQuestionInSessionOrder } from "../canonical/canonicalOptionOrder";
 import { projectCertificationExamReview, type CertificationExamReviewProjection } from "./certificationExamReviewProjection";
 import { projectCertificationPracticeReview, type CertificationPracticeReviewProjection } from "./certificationPracticeReviewProjection";
+import { captureProfileReadFence } from "../profileReadFence";
 export { certificationReviewEvidenceMatches } from "./certificationPracticeReviewProjection";
-export type { CertificationPracticeReviewItem, CertificationPracticeReviewProjection } from "./certificationPracticeReviewProjection";
+export type { CertificationDiagnosticReport, CertificationPracticeReviewItem, CertificationPracticeReviewProjection } from "./certificationPracticeReviewProjection";
 
-export type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; nodeId?: string; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; reviewSource?: "due_queue" | "manual_request"; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
+export type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; nodeId?: string; mentalUnitId?: string; expectedContentVersion?: string; expectedArtifactSha256?: string; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; reviewSource?: "due_queue" | "manual_request"; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
 export type CertificationPracticeOpenResult = Readonly<{ kind: "ready"; projection: CertificationPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type CertificationExamResumeResult = Readonly<{ kind: "ready"; projection: CertificationExamProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type CertificationAbandonmentResult =
@@ -155,6 +156,7 @@ export async function submitCertificationPracticeResponse(response: CanonicalQue
 
 /** Reads complete, exact evidence only after verified Certification Practice completion. */
 export async function getCertificationPracticeReviewProjection(sessionId: string): Promise<CertificationPracticeReviewProjection> {
+  const assertCurrentProfile = captureProfileReadFence();
   const lifecycle = getTrainingLifecycleUseCases();
   const [result, session, attemptsRecord] = await Promise.all([
     lifecycle.loadSummary(sessionId),
@@ -164,7 +166,37 @@ export async function getCertificationPracticeReviewProjection(sessionId: string
   if (session.id !== sessionId) {
     throw new TrainingApplicationFailure("summary_unavailable", "Answer review requires one verified completed Certification Practice session.");
   }
-  return projectCertificationPracticeReview({ attempts: attemptsRecord.value, resolveQuestion: (item) => contentPackageRuntimeOwner.resolveItem(item), result, session: session as CompletedTrainingSession });
+  assertCurrentProfile();
+  let diagnosticContext: Parameters<typeof projectCertificationPracticeReview>[0]["diagnosticContext"];
+  if (session.modeId === "certification-diagnostic-baseline" && session.trackId === "google-cloud-associate-cloud-engineer") {
+    const exact = await contentPackageRuntimeOwner.resolveExactArtifact({ trackId: session.trackId, contentVersion: session.contentVersion, artifactSha256: session.artifactSha256 });
+    assertCurrentProfile();
+    const diagnosticMode = exact.track.getMode("certification-diagnostic-baseline");
+    const focusMode = exact.track.getMode("certification-focus-practice");
+    if (diagnosticMode.selection.kind !== "exact_ordered_questions" || focusMode.selection.kind !== "node") {
+      throw new TrainingApplicationFailure("summary_unavailable", "The verified diagnostic package has no matching Focus practice scope.");
+    }
+    diagnosticContext = {
+      diagnosticQuestionIds: diagnosticMode.selection.questionIds,
+      exposureHistoryAvailable: (attemptsRecord.issues?.length ?? 0) === 0,
+      focusPool: exact.track.getPool(focusMode.modeId),
+      focusMinimumActualLength: focusMode.minimumActualLength,
+    };
+  }
+  const projection = await projectCertificationPracticeReview({
+    attempts: attemptsRecord.value,
+    ...(diagnosticContext ? { diagnosticContext } : {}),
+    resolveQuestion: async (item) => {
+      assertCurrentProfile();
+      const question = await contentPackageRuntimeOwner.resolveItem(item);
+      assertCurrentProfile();
+      return question;
+    },
+    result,
+    session: session as CompletedTrainingSession,
+  });
+  assertCurrentProfile();
+  return projection;
 }
 
 /** Reads and validates the complete immutable 50-item Certification Exam result and review. */

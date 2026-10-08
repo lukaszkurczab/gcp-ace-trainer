@@ -14,6 +14,7 @@ web-build/
 !.maestro/rc-certification-exam-timeout-result.yaml
 !.maestro/q13-readonly-scroll.yaml
 !.maestro/bizq04-manual-review-native.yaml
+!.maestro/bizq05-scoped-focus-native.yaml
 docs/qa/
 
 npm-debug.log*

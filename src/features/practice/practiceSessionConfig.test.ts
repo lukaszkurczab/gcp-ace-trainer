@@ -60,6 +60,29 @@ test("actual canonical practice producer resumes through routes and Home without
   }
   assert.equal(checked, 12);
 });
+
+test("verified diagnostic Focus target survives prepare and exact resume with the same content pin", async () => {
+  const catalog = await loadCanonicalRuntimeCatalog();
+  const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
+  const mode = track.getMode("certification-focus-practice");
+  assert.equal(mode.selection.kind, "node");
+  const mentalUnitId = [...new Set(track.getPool(mode.modeId).map((question) => question.mentalUnitId))]
+    .find((unitId) => track.getPool(mode.modeId).filter((question) => question.mentalUnitId === unitId).length >= mode.requestedLengths[0]!);
+  assert.ok(mentalUnitId);
+  const runtime = new CanonicalTrainingRuntime(track);
+  const prepared = await runtime.prepare({
+    trackId: track.trackId,
+    modeId: mode.modeId,
+    request: { sessionId: "gcp-focused-diagnostic-resume", requestedLength: mode.requestedLengths[0]!, mentalUnitId, expectedContentVersion: track.contentVersion, expectedArtifactSha256: track.artifactSha256 },
+    attempts: [], reviews: [], now: "2026-10-08T12:00:00.000Z",
+  });
+  const route = buildCertificationPracticeResumeRoute(prepared.session);
+  assert.equal(route.mentalUnitId, mentalUnitId);
+  assert.equal(route.expectedContentVersion, track.contentVersion);
+  assert.equal(route.expectedArtifactSha256, track.artifactSha256);
+  assert.equal(route.topicId, mode.selection.nodeId);
+  await runtime.validateResume({ session: prepared.session, draft: null });
+});
 const GCP_FREE_NODE_ID = "organization_projects_policies_services_quotas_and_assets";
 const CLAUDE_FREE_NODE_ID = "solution_design_and_architecture";
 

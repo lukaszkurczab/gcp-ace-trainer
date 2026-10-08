@@ -2,10 +2,10 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { StyleSheet, View, useWindowDimensions } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { getTrainingLifecycleUseCases, simulationHasReviewConflict } from "../../application/trainingLifecycle";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { EmptyState, Screen, SessionResultOverview, SkeletonShape, useSkeletonGlassMotion } from "../../components";
+import { Button, Card, EmptyState, Screen, SessionResultOverview, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants";
 import { getTrackDisplay } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
@@ -19,13 +19,16 @@ import { isCertificationPracticeModeId } from "../../tracks/certification";
 import { scoreCanonicalQuestion } from "../../content/canonical";
 import { getCertificationExamReviewProjection, getCertificationPracticeReviewProjection } from "../../application/certification";
 import { ReviewCycleConflictNotice } from "../practice/ReviewCycleConflictNotice";
+import { ProfileReadFenceChangedError } from "../../application/profileReadFence";
 import type { CertificationExamReviewProjection } from "../../application/certification/certificationExamReviewProjection";
+import type { CertificationPracticeReviewProjection } from "../../application/certification/certificationPracticeReviewProjection";
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.RESULT>;
 export type Summary = Readonly<{
   certificationMaxPoints: number | null;
   certificationExam: CertificationExamReviewProjection | null;
   reviewConflict?: true;
   certificationPracticeOverallPoints?: number | null;
+  certificationPracticeReview?: CertificationPracticeReviewProjection | null;
   certificationTopicId: string | null;
   designTopicId: string | null;
   result: Awaited<ReturnType<ReturnType<typeof getTrainingLifecycleUseCases>["loadSummary"]>>;
@@ -58,11 +61,14 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
       const simulationOperation = certificationExam ? await useCases.getSimulationOperationState(session) : null;
       const reviewConflict = simulationOperation ? simulationHasReviewConflict(simulationOperation) : false;
       let certificationPracticeOverallPoints: number | null = null;
+      let certificationPracticeReview: CertificationPracticeReviewProjection | null = null;
       if (!certificationExam && isCertificationPracticeModeId(session.modeId)) {
         try {
           const practiceReview = await getCertificationPracticeReviewProjection(capturedRequestKey);
+          certificationPracticeReview = practiceReview;
           certificationPracticeOverallPoints = practiceReview.overallPointsEarned;
-        } catch {
+        } catch (cause) {
+          if (cause instanceof ProfileReadFenceChangedError) throw cause;
           // The practice count summary remains available when this optional exact-points projection is unavailable.
         }
       }
@@ -81,7 +87,7 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
       const certificationMaxPoints = certificationExam?.maxPoints ?? (certificationQuestions.length === session.actualLength && certificationQuestions.every((question) => question !== undefined)
         ? certificationQuestions.reduce((sum, question) => sum + scoreCanonicalQuestion(question, question.answer).maxPoints, 0)
         : null);
-      return { result, session, designTopicId, certificationTopicId, certificationMaxPoints, certificationExam, ...(reviewConflict ? { reviewConflict: true as const } : {}), certificationPracticeOverallPoints };
+      return { result, session, designTopicId, certificationTopicId, certificationMaxPoints, certificationExam, ...(reviewConflict ? { reviewConflict: true as const } : {}), certificationPracticeOverallPoints, certificationPracticeReview };
     })()
       .then((summary) => { if (live && summary) setReadState({ kind: "ready", requestKey: capturedRequestKey, summary }); })
       .catch((cause) => { if (live) setReadState({ kind: "unavailable", requestKey: capturedRequestKey, reason: describeOperationalFailure(cause, t("We couldn’t load the session result.")) }); });
@@ -151,8 +157,53 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
         totalOccurrences={actualCount}
         unansweredCount={unansweredCount}
       />
+      {session.trackId === "google-cloud-associate-cloud-engineer" && session.modeId === "certification-diagnostic-baseline"
+        ? <CloudDiagnosticReportCard
+            report={summary.certificationPracticeReview?.diagnosticReport ?? null}
+            onRecommend={(target) => navigation.navigate(ROUTES.PRACTICE_SETUP, {
+              expectedArtifactSha256: session.artifactSha256,
+              expectedContentVersion: session.contentVersion,
+              mentalUnitId: target.mentalUnitId,
+              mode: "certification-focus-practice",
+              source: "practiceHub",
+              topicId: target.nodeId,
+              trackId: session.trackId,
+            })}
+          />
+        : null}
     </Screen>
   );
+}
+
+function CloudDiagnosticReportCard({ report, onRecommend }: Readonly<{
+  report: CertificationPracticeReviewProjection["diagnosticReport"] | null;
+  onRecommend: (target: Readonly<{ mentalUnitId: string; nodeId: string }>) => void;
+}>) {
+  const { t } = useTranslation("common");
+  const styles = useThemedStyles(createStyles);
+  if (!report) return <Card style={styles.diagnosticCard} testID={runtimeSelectors.summary.diagnosticReport()}>
+    <Text style={styles.diagnosticTitle}>{t("Diagnostic report unavailable")}</Text>
+    <Text style={styles.diagnosticBody}>{t("The saved result is available, but its exact diagnostic sample could not be verified.")}</Text>
+  </Card>;
+  const recommendation = report.recommendation;
+  const target = recommendation.kind === "unavailable" ? null : { mentalUnitId: recommendation.mentalUnitId, nodeId: recommendation.nodeId };
+  return <Card style={styles.diagnosticCard} testID={runtimeSelectors.summary.diagnosticReport()}>
+    <Text style={styles.diagnosticTitle}>{t("Diagnostic sample")}</Text>
+    <Text style={styles.diagnosticBody}>{t("{{correct}} correct, {{partial}} partly correct, {{incorrect}} incorrect, and {{unanswered}} unanswered out of {{total}} questions.", { correct: report.correctCount, partial: report.partialCount, incorrect: report.incorrectCount, unanswered: report.unansweredCount, total: report.totalCount })}</Text>
+    <Text style={styles.diagnosticBody}>{t("This report covers only the learning units sampled by this diagnostic. It does not establish transfer to unseen questions.")}</Text>
+    <Text style={styles.diagnosticBody}>{t("Feedback was available after each answer, but this report cannot confirm it was read.")}</Text>
+    <Text style={styles.diagnosticBody}>{report.exposureHistory === "available"
+      ? t("Recorded exposures: {{first}} first recorded and {{repeat}} repeat questions.", { first: report.units.reduce((sum, unit) => sum + (unit.firstRecordedExposureCount ?? 0), 0), repeat: report.units.reduce((sum, unit) => sum + (unit.repeatExposureCount ?? 0), 0) })
+      : t("Prior exposure history is unavailable, so first versus repeat is unknown.")}</Text>
+    {report.units.map((unit) => <Text key={unit.mentalUnitId} style={styles.diagnosticBody}>
+      {formatSessionTopic("google-cloud-associate-cloud-engineer", unit.nodeId, t)} — {t("Learning unit {{number}}", { number: unit.unitNumber })}: {t("{{correct}} correct, {{partial}} partly correct, {{incorrect}} incorrect, and {{unanswered}} unanswered from {{sampled}} sampled questions.", { correct: unit.correctCount, partial: unit.partialCount, incorrect: unit.incorrectCount, unanswered: unit.unansweredCount, sampled: unit.questionCount })}
+    </Text>)}
+    {report.unsampledMentalUnitCount > 0 ? <Text style={styles.diagnosticBody}>{t("{{count}} learning units were not sampled and have insufficient evidence.", { count: report.unsampledMentalUnitCount })}</Text> : null}
+    {recommendation.kind === "observed_gap" ? <Text style={styles.diagnosticBody}>{t("Next practice: {{topic}} — learning unit {{number}}. This diagnostic sampled {{sampled}} of {{eligible}} Focus questions for this unit, with {{partial}} partly correct and {{incorrect}} incorrect answers.", { topic: formatSessionTopic("google-cloud-associate-cloud-engineer", recommendation.nodeId, t), number: recommendation.unitNumber, sampled: recommendation.sampledQuestionCount, eligible: recommendation.eligibleQuestionCount, partial: recommendation.partialCount, incorrect: recommendation.incorrectCount })}</Text>
+      : recommendation.kind === "neutral_practice" ? <Text style={styles.diagnosticBody}>{t("All sampled answers were correct. Practice an unsampled unit as neutral practice; this is not a transfer or mastery claim.")}</Text>
+        : <Text accessibilityRole="alert" style={styles.diagnosticBody}>{t(recommendation.reason === "unit_pool_below_minimum" ? "The recommended unit does not have enough questions for the existing Focus minimum." : "No eligible unsampled unit is available for neutral practice.")}</Text>}
+    {target ? <Button onPress={() => onRecommend(target)} testID={runtimeSelectors.summary.diagnosticRecommendation()}>{t(recommendation.kind === "observed_gap" ? "Practice this learning unit" : "Practice an unsampled learning unit")}</Button> : null}
+  </Card>;
 }
 
 export function ExamResultLoadingSkeleton() {
@@ -249,6 +300,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   examResultLoadingReview: { gap: spacing.md },
   examResultLoadingReviewHint: { width: "88%" },
   examResultLoadingAction: { backgroundColor: palette.progress.loadingTrack, borderRadius: radius.button, width: "100%" },
+  diagnosticCard: { gap: spacing.md, width: "100%" },
+  diagnosticTitle: { color: palette.textPrimary, fontSize: 18, fontWeight: "700" },
+  diagnosticBody: { color: palette.textSecondary, fontSize: 15, lineHeight: 22 },
 });
 
 function formatElapsed(milliseconds: number): string {

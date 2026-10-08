@@ -47,6 +47,7 @@ export type PracticeSessionRouteParams = {
   competencyId?: string;
   feedbackMode: PracticeFeedbackMode;
   mode: PracticeSessionMode;
+  mentalUnitId?: string;
   nodeId?: string;
   reviewBehaviorEnabled: boolean;
   reviewItemRefs?: readonly ResolvedContentRef[];
@@ -55,6 +56,8 @@ export type PracticeSessionRouteParams = {
   source: PracticeSessionSource;
   topicId: string;
   trackId: TrackId;
+  expectedContentVersion?: string;
+  expectedArtifactSha256?: string;
   expectedSessionId?: string;
 };
 
@@ -87,6 +90,10 @@ const certificationPracticeModes: readonly CertificationPracticeSessionMode[] = 
 export function buildPracticeSessionConfig(
   input: PracticeSessionConfigInput,
 ): PracticeSessionRouteParams {
+  if ((input.mentalUnitId !== undefined && input.mode !== "certification-focus-practice") ||
+    ((input.expectedContentVersion !== undefined || input.expectedArtifactSha256 !== undefined) && (input.mode !== "certification-focus-practice" || input.mentalUnitId === undefined))) {
+    throw new Error("A scoped mental unit is available only for pinned Certification Focus Practice.");
+  }
   if (input.trackId === CODING_INTERVIEW_TRACK_ID) {
     const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(input.trackId).track;
     const primaryMode = packageProfile.modes[0];
@@ -155,16 +162,22 @@ export function buildPracticeSessionConfig(
 
   const packageMode = packageProfile.getMode(mode);
   if (mode === "certification-diagnostic-baseline") {
-    if (input.sessionLength !== undefined || input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined) throw new Error("Certification Diagnostic Baseline does not render or accept optional setup controls.");
+    if (input.sessionLength !== undefined || input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined || input.mentalUnitId !== undefined || input.expectedContentVersion !== undefined || input.expectedArtifactSha256 !== undefined) throw new Error("Certification Diagnostic Baseline does not render or accept optional setup controls.");
     return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength: 40, source: input.source ?? "practiceHub", topicId: input.topicId, trackId: input.trackId };
   }
   if (mode === "certification-focus-practice") {
     if (!isCloudTopicId(input.topicId) && !packageProfile.questions.some((question) => question.nodeId === input.topicId)) throw new Error("Certification Focus Practice requires an explicitly selected installed topic.");
-    if (input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined) throw new Error("Certification Focus Practice does not render or accept undeclared setup controls.");
+    if (input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined || input.competencyId !== undefined) throw new Error("Certification Focus Practice does not render or accept undeclared setup controls.");
+    if (input.mentalUnitId !== undefined) {
+      const focusMode = packageProfile.getMode(mode);
+      if (focusMode.selection.kind !== "node" || !input.mentalUnitId.trim() || !packageProfile.getPool(mode).some((question) => question.nodeId === input.topicId && question.mentalUnitId === input.mentalUnitId)) throw new Error("Certification Focus Practice target mental unit is unavailable for this topic.");
+      if ((input.expectedContentVersion === undefined) !== (input.expectedArtifactSha256 === undefined)) throw new Error("Certification Focus Practice target requires a complete content pin.");
+      if (input.expectedContentVersion !== undefined && (input.expectedContentVersion !== packageProfile.contentVersion || input.expectedArtifactSha256 !== packageProfile.artifactSha256)) throw new Error("Certification Focus Practice target uses a different content package.");
+    } else if (input.expectedContentVersion !== undefined || input.expectedArtifactSha256 !== undefined) throw new Error("Certification Focus Practice content pins require a mental unit target.");
     const feedbackMode = resolveCertificationFeedbackMode(packageMode, input.feedbackMode);
     const sessionLength = input.sessionLength ?? packageMode.defaultRequestedLength as PracticeSessionLength;
     if (!sessionLength || !packageMode.requestedLengths.includes(sessionLength)) throw new Error("Certification Focus Practice length is unavailable in this package.");
-    return { feedbackMode, mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: input.topicId, trackId: input.trackId };
+    return { feedbackMode, mode, ...(input.mentalUnitId === undefined ? {} : { mentalUnitId: input.mentalUnitId }), reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: input.topicId, trackId: input.trackId, ...(input.expectedContentVersion === undefined ? {} : { expectedContentVersion: input.expectedContentVersion }), ...(input.expectedArtifactSha256 === undefined ? {} : { expectedArtifactSha256: input.expectedArtifactSha256 }) };
   }
   if (mode === "certification-scenario-practice") {
     if (!input.competencyId?.trim()) throw new Error("Certification Scenario Practice requires an explicitly selected competency.");
@@ -235,7 +248,12 @@ export function buildCertificationPracticeResumeRoute(session: TrainingSession):
     if (packageMode.selection.kind !== "node" || !packageMode.selection.nodeId.trim()) {
       throw new Error("Certification Focus Practice resume requires its immutable topic and length.");
     }
-    return exact({ feedbackMode, mode: session.modeId, reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: packageMode.selection.nodeId, trackId: session.trackId });
+    const focusNodeId = packageMode.selection.nodeId;
+    const mentalUnitId = session.configurationSnapshot.mentalUnitId;
+    if (mentalUnitId !== undefined && (typeof mentalUnitId !== "string" || !mentalUnitId.trim() || !packageProfile.getPool(session.modeId).some((question) => question.nodeId === focusNodeId && question.mentalUnitId === mentalUnitId) || session.itemOrder.some((occurrence) => !packageProfile.getPool(session.modeId).some((question) => question.questionId === occurrence.item.questionId && question.mentalUnitId === mentalUnitId)))) {
+      throw new Error("Certification Focus Practice resume requires its exact mental unit and prepared questions.");
+    }
+    return exact({ feedbackMode, mode: session.modeId, ...(typeof mentalUnitId === "string" ? { mentalUnitId } : {}), reviewBehaviorEnabled: false, sessionLength: session.requestedLength, source: "home", topicId: focusNodeId, trackId: session.trackId, ...(typeof mentalUnitId === "string" ? { expectedContentVersion: session.contentVersion, expectedArtifactSha256: session.artifactSha256 } : {}) });
   }
 
   if (session.modeId === "certification-scenario-practice") {
