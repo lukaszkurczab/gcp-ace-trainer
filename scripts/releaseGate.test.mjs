@@ -240,7 +240,7 @@ test("launch readiness report is deterministic and exposes the unresolved releas
   }
 });
 
-test("current 9e draft cannot inherit the immutable historical 946d admission", () => {
+test("current 9112 draft cannot inherit the immutable historical 946d admission", () => {
   const sourceContentRoot = join(root, "..", "patternly-content");
   const contentRoot = createRepositoryAt("content-current-draft", sourceContentRoot);
   const applicationRoot = createCurrentLockApplicationRoot();
@@ -250,7 +250,7 @@ test("current 9e draft cannot inherit the immutable historical 946d admission", 
     assert.equal(result.status, 0);
     const report = JSON.parse(result.output);
     assert.equal(report.contentReadiness, null);
-    assert.equal(currentCandidate.candidateId, "9e05819c21304ff4b8f6ea4239efd5044a1b434749b736bbd32c771ba2d56697");
+    assert.equal(currentCandidate.candidateId, "9112efcc6fd1d0a170a6a6c298291796be1bd650ac8c03a02328dc899c336b6e");
     assert.equal(report.contentReleaseLock.status, "valid");
     assert.ok(report.blockers.some((blocker) => blocker.kind === "invalid_content_readiness_report"));
     assert.notEqual(currentCandidate.candidateId, HISTORICAL_CANDIDATE_ID);
