@@ -19,6 +19,13 @@ jobs:
         with:
           path: app
           fetch-depth: 0
+      - name: Checkout current content producer
+        uses: actions/checkout@v4
+        with:
+          repository: lukaszkurczab/patternly-content
+          ref: master
+          path: patternly-content
+          fetch-depth: 0
       - id: content-lock
         name: Read immutable content lock
         working-directory: app
@@ -33,13 +40,6 @@ jobs:
           repository: lukaszkurczab/patternly-content
           ref: ${{ steps.content-lock.outputs.historical-commit }}
           path: patternly-content-historical
-          fetch-depth: 0
-      - name: Checkout current content producer
-        uses: actions/checkout@v4
-        with:
-          repository: lukaszkurczab/patternly-content
-          ref: master
-          path: patternly-content
           fetch-depth: 0
       - id: current-content
         name: Record exact current and historical content inputs
@@ -136,6 +136,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: app
+      - name: Checkout current content producer
+        uses: actions/checkout@v4
+        with:
+          repository: lukaszkurczab/patternly-content
+          ref: master
+          path: patternly-content
+          fetch-depth: 0
       - id: content-lock
         name: Read immutable content lock
         working-directory: app
@@ -150,13 +157,6 @@ jobs:
           repository: lukaszkurczab/patternly-content
           ref: ${{ steps.content-lock.outputs.historical-commit }}
           path: patternly-content-historical
-          fetch-depth: 0
-      - name: Checkout current content producer
-        uses: actions/checkout@v4
-        with:
-          repository: lukaszkurczab/patternly-content
-          ref: master
-          path: patternly-content
           fetch-depth: 0
       - id: current-content
         name: Record exact current and historical content inputs

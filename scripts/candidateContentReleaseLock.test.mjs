@@ -83,7 +83,14 @@ test("CI bootstrap rejects valid-shaped metadata that disagrees with actual bund
 
 test("both QA jobs share the strict pin reader and retain mandatory candidate and actual checkout identity gates", async () => {
   const workflow = await readFile(path.join(appRoot, ".github/workflows/qa.yml"), "utf8");
-  for (const job of workflow.split(/\n  (?:qa-static|content-release-cross-repository-contract):\n/).slice(1)) {
+  const jobs = workflow.split(/\n  (?:qa-static|content-release-cross-repository-contract):\n/).slice(1);
+  assert.equal(jobs.length, 2);
+  for (const job of jobs) {
+    const applicationCheckoutIndex = job.indexOf("- name: Checkout application");
+    const currentProducerCheckoutIndex = job.indexOf("- name: Checkout current content producer");
+    const immutableLockReadIndex = job.indexOf("name: Read immutable content lock");
+    assert.ok(applicationCheckoutIndex >= 0 && applicationCheckoutIndex < currentProducerCheckoutIndex, "application checkout must precede current producer checkout");
+    assert.ok(currentProducerCheckoutIndex < immutableLockReadIndex, "current producer checkout must precede immutable lock pin reads");
     assert.match(job, /node scripts\/candidateContentReleaseLock\.mjs producer-pin/);
     assert.match(job, /ref: \$\{\{ steps\.content-lock\.outputs\.historical-commit \}\}/);
     assert.match(job, /node scripts\/candidateContentReleaseLock\.mjs historical-producer-pin/);
