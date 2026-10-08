@@ -16,6 +16,7 @@ import { PracticeResultLoadingSkeleton } from "../practice/AlgorithmsPracticeSum
 import { buildPracticeResponseControl } from "../practice/practiceSessionPresentation";
 import { SessionShell } from "../coding-interview/session/SessionShell";
 import { useSimulationResultRead } from "./simulationResultRead";
+import { ReviewCycleConflictNotice } from "../practice/ReviewCycleConflictNotice";
 
 type SummaryProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY>;
 type ReviewProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW>;
@@ -34,6 +35,7 @@ export function AlgorithmsInterviewSimulationSummaryScreen({ navigation, route }
   const answeredCount = result.answeredOccurrenceIds.length;
   return (
     <Screen>
+      {result.reviewConflict ? <ReviewCycleConflictNotice /> : null}
       <SessionResultOverview
         activeTime={formatElapsed(result.elapsedForegroundMs)}
         answeredCount={answeredCount}

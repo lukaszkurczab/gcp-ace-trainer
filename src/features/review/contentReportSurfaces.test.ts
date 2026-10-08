@@ -7,11 +7,11 @@ const source = (path: string) => readFileSync(path, "utf8");
 test("content reports are reachable from canonical practice details", () => {
   const practice = source("src/features/practice/PracticeFeedbackBlock.tsx");
   const session = source("src/features/practice/PracticeSessionSurface.tsx");
-  const answerReview = source("src/features/review/AnswerReviewScreen.tsx");
+  const examReview = source("src/features/exam/ExamReviewScreen.tsx");
 
   assert.match(practice, /<ContentReportSheet item=\{item\} surface=\{reportSurface\} \/>/);
   assert.match(session, /modeRoute: "practice_feedback_details"/);
-  assert.match(answerReview, /unavailable|No attempt found/i);
+  assert.match(examReview, /reportSurface=\{\{ modeRoute: "answer_review", trackNode: null \}\}/);
 });
 
 test("report affordance uses the canonical bounded button without changing its open-only action", () => {

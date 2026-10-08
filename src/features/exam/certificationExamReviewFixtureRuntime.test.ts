@@ -16,7 +16,7 @@ const rootNavigatorSource = readFileSync("src/navigation/RootNavigator.tsx", "ut
 test("fixture readers are optional screen seams and production readers remain the default", () => {
   assert.match(resultScreenSource, /if \(readSummary\) return readSummary\(capturedRequestKey\)/);
   assert.match(resultScreenSource, /const useCases = getTrainingLifecycleUseCases\(\)/);
-  assert.match(resultScreenSource, /<Screen>\s*\{fixtureNotice\}\s*<SessionResultOverview/);
+  assert.match(resultScreenSource, /<Screen>[\s\S]*?\{fixtureNotice\}[\s\S]*?<SessionResultOverview/);
   assert.match(resultScreenSource, /onFixtureExit \? onFixtureExit\(\) : navigation\.navigate\(ROUTES\.PRACTICE_HUB\)/);
   assert.match(reviewScreenSource, /if \(readReview\) return readReview\(capturedRequestKey\)/);
   assert.match(reviewScreenSource, /getCertificationExamReviewProjection\(capturedRequestKey\)/);

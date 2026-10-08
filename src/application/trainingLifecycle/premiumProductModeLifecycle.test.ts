@@ -10,7 +10,7 @@ const TRACK_ID = "coding-interview-dsa-problem-solving" as TrackId;
 const PROFILE_ID = "algorithms-interview-simulation-v1";
 const NOW = "2026-09-27T00:00:00.000Z";
 
-async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing" = "allowed", requestedTrackId: TrackId = TRACK_ID) {
+async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing" = "allowed", requestedTrackId: TrackId = TRACK_ID, finalizedReviewConflict = false) {
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(requestedTrackId);
   const isDesign = track.trackId !== TRACK_ID;
   const modeId = isDesign ? "design-interview-simulation" : "coding-interview-simulation";
@@ -83,7 +83,7 @@ async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing
     },
     mutations: {
       start: async () => { events.push("start"); startCount += 1; active = session; },
-      finalize: async () => { events.push("finalize"); active = null; },
+      finalize: async () => { events.push("finalize"); active = null; return finalizedReviewConflict; },
     },
     ...(decision === "missing" ? {} : { premiumSessionAdmission: { authorize: async () => { events.push("authorize"); return decision; } } }),
   } as unknown as TrainingLifecyclePorts;
@@ -130,6 +130,18 @@ test("Coding Mock resume, draft save, and finalization each authorize once befor
   setup.events.length = 0;
   await setup.lifecycle.finalizeSimulation();
   assert.deepEqual(setup.events, ["authorize", "resolve-exact", "finalize-runtime", "finalize"]);
+});
+
+test("completed simulation operation exposes the canonical finalization review conflict", async () => {
+  const setup = await fixture("allowed", TRACK_ID, true);
+  await setup.lifecycle.startSession({ trackId: TRACK_ID, modeId: "coding-interview-simulation", request: { scope: { simulationProfileId: PROFILE_ID } } });
+  await setup.lifecycle.finalizeSimulation();
+
+  assert.deepEqual(await setup.lifecycle.getSimulationOperationState(setup.session), {
+    family: "simulation",
+    kind: "completed",
+    reviewConflict: true,
+  });
 });
 
 test("expired Coding Mock draft-save boundary aborts before package resolution or draft persistence", async () => {

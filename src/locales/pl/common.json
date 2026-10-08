@@ -202,6 +202,9 @@
   "Switch filters to review the full attempt.": "Zmień filtr, aby przejrzeć całe podejście.",
   "Review data could not be loaded locally.": "Nie udało się wczytać lokalnych danych przeglądu.",
   "The review mark could not be saved locally.": "Nie udało się zapisać lokalnie oznaczenia do powtórki.",
+  "Checking review status": "Sprawdzanie oznaczenia do powtórki…",
+  "Review status could not be loaded": "Nie udało się wczytać stanu oznaczenia.",
+  "Manual review is unavailable for this answer": "Nie można oznaczyć tej odpowiedzi do powtórki.",
   "correct": "poprawnych",
   "Focus overview": "Przegląd postępów",
   "Review what needs attention and track recent local practice.": "Sprawdź, co wymaga uwagi, i śledź ostatnie lokalne ćwiczenia.",
@@ -254,6 +257,10 @@
   "unavailable": "niedostępnych",
   "Due now": "Do powtórki teraz",
   "Upcoming": "Nadchodzące",
+  "Manual request": "Ręczna prośba",
+  "ready now": "gotowe teraz",
+  "Available now": "Dostępne teraz",
+  "Overdue and due items from the review queue, plus manual requests ready now.": "Zaległe i zaplanowane powtórki oraz ręczne prośby dostępne od razu.",
   "Overdue and due items from the review queue.": "Zaległe i bieżące elementy z kolejki powtórek.",
   "No due items right now. Upcoming items are listed for visibility.": "Nie ma teraz elementów do powtórki. Poniżej pokazujemy nadchodzące.",
   "Review item": "Element powtórki",
@@ -742,5 +749,8 @@
   "home.week.answersRecorded_few": "{{count}} zapisane odpowiedzi",
   "home.week.answersRecorded_many": "{{count}} zapisanych odpowiedzi",
   "home.week.answersRecorded_other": "{{count}} zapisanych odpowiedzi",
-  "home.week.unavailable": "Aktywność w tym tygodniu jest niedostępna."
+  "home.week.unavailable": "Aktywność w tym tygodniu jest niedostępna.",
+  "home.review.manualReady": "Gotowe ręczne prośby o powtórkę: {{count}}",
+  "home.review.dueAndManual": "Do powtórki: {{dueCount}} · Ręczne prośby gotowe teraz: {{manualCount}}",
+  "Your answer is saved, but no review credit was applied because the review cycle changed.": "Twoja odpowiedź jest zapisana, ale nie zaliczono powtórki, ponieważ cykl utrwalania zmienił się w międzyczasie."
 }

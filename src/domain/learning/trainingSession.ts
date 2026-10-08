@@ -2,6 +2,7 @@ import { createArtifactSha256 } from "./contentItemRef";
 import { InvalidTrainingSessionError } from "./errors";
 import { createResolvedContentRef, resolvedContentRefsEqual, type ResolvedContentRef } from "./resolvedContentRef";
 import type { TrackId } from "./trackIdentity";
+import { isManualRequestId, type ReviewSourceSnapshot } from "./reviewQueueEntry";
 
 export type TrainingSessionStatus = "active" | "completed" | "abandoned";
 export type TrainingSessionConfigurationValue = string | number | boolean | readonly string[];
@@ -9,6 +10,7 @@ export type TrainingSessionConfigurationSnapshot = Readonly<Record<string, Train
 export type TrainingSessionItemOccurrence = Readonly<{
   occurrenceId: string;
   item: ResolvedContentRef;
+  reviewSourceSnapshot?: ReviewSourceSnapshot;
 }>;
 
 /** A branch is prepared with the session, never created while a session runs. */
@@ -108,7 +110,8 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
       if (item.trackId !== session.trackId || item.contentVersion !== session.contentVersion || item.artifactSha256 !== artifactSha256) {
         throw new Error("mismatched identity");
       }
-      return Object.freeze({ occurrenceId: occurrence.occurrenceId, item });
+      if (occurrence.reviewSourceSnapshot !== undefined && !isReviewSourceSnapshot(occurrence.reviewSourceSnapshot)) throw new Error("invalid review source snapshot");
+      return Object.freeze({ occurrenceId: occurrence.occurrenceId, item, ...(occurrence.reviewSourceSnapshot ? { reviewSourceSnapshot: Object.freeze({ ...occurrence.reviewSourceSnapshot }) } : {}) });
     });
   } catch {
     throw new InvalidTrainingSessionError("Every item reference must match the session track, content version, and artifact.");
@@ -184,6 +187,22 @@ function isConfigurationSnapshot(value: unknown): value is TrainingSessionConfig
     (typeof entry === "number" && Number.isFinite(entry)) ||
     (Array.isArray(entry) && entry.every((item) => typeof item === "string"))
   ));
+}
+
+function isReviewSourceSnapshot(value: unknown): value is ReviewSourceSnapshot {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const snapshot = value as Record<string, unknown>;
+  const keys = Object.keys(snapshot).sort();
+  const expected = ["dueAt", "policyVersion", "reviewEntryId", "source", "sourceAttemptId", "stage", ...(Object.hasOwn(snapshot, "manualRequestId") ? ["manualRequestId"] : [])].sort();
+  return keys.length === expected.length && keys.every((key, index) => key === expected[index]) &&
+    (snapshot.source === "due_queue" || snapshot.source === "manual_request") &&
+    (snapshot.source !== "manual_request" || isManualRequestId(snapshot.manualRequestId)) &&
+    (snapshot.manualRequestId === undefined || isManualRequestId(snapshot.manualRequestId)) &&
+    typeof snapshot.reviewEntryId === "string" && snapshot.reviewEntryId.trim().length > 0 &&
+    typeof snapshot.sourceAttemptId === "string" && snapshot.sourceAttemptId.trim().length > 0 &&
+    typeof snapshot.policyVersion === "string" && snapshot.policyVersion.trim().length > 0 &&
+    typeof snapshot.stage === "string" && ["repair24", "repair7", "manual_requested", "retention7", "retention14", "retention28", "legacy_active_unqualified"].includes(snapshot.stage) &&
+    typeof snapshot.dueAt === "string" && !Number.isNaN(Date.parse(snapshot.dueAt));
 }
 
 function freezeConfigurationSnapshot(snapshot: TrainingSessionConfigurationSnapshot): TrainingSessionConfigurationSnapshot {
@@ -266,7 +285,8 @@ function assertBranchMatchesSession(
 }
 
 function sameOccurrence(left: TrainingSessionItemOccurrence, right: TrainingSessionItemOccurrence): boolean {
-  return left.occurrenceId === right.occurrenceId && sameContentItem(left.item, right.item);
+  return left.occurrenceId === right.occurrenceId && sameContentItem(left.item, right.item) &&
+    JSON.stringify(left.reviewSourceSnapshot ?? null) === JSON.stringify(right.reviewSourceSnapshot ?? null);
 }
 
 function sameContentItem(left: ResolvedContentRef, right: ResolvedContentRef): boolean {

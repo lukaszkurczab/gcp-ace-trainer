@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { createTrainingSession } from "../../domain";
-import { clearMutationJournal, getActiveMutationJournal, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, persistMutationJournal, saveTrainingSession, updateMutationJournalPhase } from "../../storage";
+import { clearMutationJournal, getActiveMutationJournal, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, persistMutationJournal, saveTrainingSession, updateMutationJournalPhase, addReviewQueueItems } from "../../storage";
+import { writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { buildMutationJournal, commitTrainingOutcome, recoverPendingMutation } from "./";
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
@@ -75,6 +76,55 @@ test("practice submission recovers identically after every durable write boundar
     assert.deepEqual((await getReviewQueueItems()).value, [review], boundary.key);
     assert.deepEqual((await getTrainingSessions()).value, [session], boundary.key);
   }
+});
+
+test("a review revision race preserves the graded attempt and leaves the concurrent cycle untouched", async () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  const prior = { id: "review-race", trackId: attempt.trackId, sourceAttemptId: "older-attempt", sourceSessionId: "older-session", sourceItem: attempt.item, taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs, reasons: ["incorrect"] as const, dueAt: session.startedAt, createdAt: session.startedAt, consecutiveAfterDueSuccesses: 0, persistent: true };
+  const proposed = { ...prior, dueAt: "2026-07-22T10:00:00.000Z", lastReviewedAt: session.startedAt };
+  const concurrent = { ...prior, dueAt: "2026-07-23T10:00:00.000Z", lastReviewedAt: "2026-07-16T10:00:00.000Z" };
+  await saveTrainingSession(session);
+  await addReviewQueueItems([prior]);
+  const read = storage.getString.bind(storage);
+  let raced = false;
+  storage.getString = (key: string) => {
+    if (!raced && key === STORAGE_KEYS.ACTIVE_JOURNAL) {
+      raced = true;
+      writeCanonicalJson(STORAGE_KEYS.reviewEntry(prior.id), concurrent);
+    }
+    return read(key);
+  };
+  const conflict = await commitTrainingOutcome({ attempt, session: { ...session, activeForegroundMs: 1 }, reviews: [proposed], reviewBaseline: [prior], createdAt: session.startedAt });
+  assert.equal(raced, true, "the test changes the review after the journal preflight read and before its CAS");
+  assert.equal(conflict, true, "the durable answer reports that review credit was not applied");
+  assert.deepEqual((await getTrainingAttempts()).value, [attempt]);
+  assert.deepEqual((await getReviewQueueItems()).value, [concurrent]);
+  assert.equal((await getTrainingSessions()).value[0]?.activeForegroundMs, 1);
+  assert.equal(await getActiveMutationJournal(), null);
+});
+
+test("a non-review revision conflict is not converted into a review-credit conflict", async () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  const prior = { id: "review-session-race", trackId: attempt.trackId, sourceAttemptId: "older-attempt", sourceSessionId: "older-session", sourceItem: attempt.item, taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs, reasons: ["incorrect"] as const, dueAt: session.startedAt, createdAt: session.startedAt, consecutiveAfterDueSuccesses: 0, persistent: true };
+  const proposed = { ...prior, dueAt: "2026-07-22T10:00:00.000Z", lastReviewedAt: session.startedAt };
+  await saveTrainingSession(session);
+  await addReviewQueueItems([prior]);
+  const read = storage.getString.bind(storage);
+  let raced = false;
+  storage.getString = (key: string) => {
+    if (!raced && key === STORAGE_KEYS.ACTIVE_JOURNAL) {
+      raced = true;
+      writeCanonicalJson(STORAGE_KEYS.trainingSession(session.id), { ...session, activeForegroundMs: 2 });
+    }
+    return read(key);
+  };
+  await assert.rejects(commitTrainingOutcome({ attempt, session: { ...session, activeForegroundMs: 1 }, reviews: [proposed], reviewBaseline: [prior], createdAt: session.startedAt }));
+  assert.deepEqual((await getTrainingAttempts()).value, [], "the attempt remains recoverable and is not written without its session CAS");
+  assert.deepEqual((await getReviewQueueItems()).value, [prior]);
+  assert.equal((await getTrainingSessions()).value[0]?.activeForegroundMs, 2);
+  assert.equal(await getActiveMutationJournal(), null, "the stale CAS failed before a durable journal existed");
 });
 test("concurrent conflicting journal persists use one CAS winner and ownership-checked clear", async () => {
   const make = (identity: string) => buildMutationJournal({ operation: "submit_training_outcome" as const, sessionId: "s", trackId: "coding-interview-dsa-problem-solving", identity, writes: [{ kind: "put_attempt" as const, record: attempt }, { kind: "put_session" as const, record: session }], createdAt: session.startedAt });

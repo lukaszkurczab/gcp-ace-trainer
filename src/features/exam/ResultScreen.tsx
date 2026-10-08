@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { StyleSheet, View, useWindowDimensions } from "react-native";
-import { getTrainingLifecycleUseCases } from "../../application/trainingLifecycle";
+import { getTrainingLifecycleUseCases, simulationHasReviewConflict } from "../../application/trainingLifecycle";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { EmptyState, Screen, SessionResultOverview, SkeletonShape, useSkeletonGlassMotion } from "../../components";
 import { ROUTES } from "../../constants";
@@ -18,11 +18,13 @@ import { getDesignModeTitle, isDesignInterviewModeId } from "../../tracks/design
 import { isCertificationPracticeModeId } from "../../tracks/certification";
 import { scoreCanonicalQuestion } from "../../content/canonical";
 import { getCertificationExamReviewProjection, getCertificationPracticeReviewProjection } from "../../application/certification";
+import { ReviewCycleConflictNotice } from "../practice/ReviewCycleConflictNotice";
 import type { CertificationExamReviewProjection } from "../../application/certification/certificationExamReviewProjection";
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.RESULT>;
 export type Summary = Readonly<{
   certificationMaxPoints: number | null;
   certificationExam: CertificationExamReviewProjection | null;
+  reviewConflict?: true;
   certificationPracticeOverallPoints?: number | null;
   certificationTopicId: string | null;
   designTopicId: string | null;
@@ -53,6 +55,8 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
       const certificationExam = session.modeId === "certification-exam-simulation"
         ? await getCertificationExamReviewProjection(capturedRequestKey)
         : null;
+      const simulationOperation = certificationExam ? await useCases.getSimulationOperationState(session) : null;
+      const reviewConflict = simulationOperation ? simulationHasReviewConflict(simulationOperation) : false;
       let certificationPracticeOverallPoints: number | null = null;
       if (!certificationExam && isCertificationPracticeModeId(session.modeId)) {
         try {
@@ -77,7 +81,7 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
       const certificationMaxPoints = certificationExam?.maxPoints ?? (certificationQuestions.length === session.actualLength && certificationQuestions.every((question) => question !== undefined)
         ? certificationQuestions.reduce((sum, question) => sum + scoreCanonicalQuestion(question, question.answer).maxPoints, 0)
         : null);
-      return { result, session, designTopicId, certificationTopicId, certificationMaxPoints, certificationExam, certificationPracticeOverallPoints };
+      return { result, session, designTopicId, certificationTopicId, certificationMaxPoints, certificationExam, ...(reviewConflict ? { reviewConflict: true as const } : {}), certificationPracticeOverallPoints };
     })()
       .then((summary) => { if (live && summary) setReadState({ kind: "ready", requestKey: capturedRequestKey, summary }); })
       .catch((cause) => { if (live) setReadState({ kind: "unavailable", requestKey: capturedRequestKey, reason: describeOperationalFailure(cause, t("We couldn’t load the session result.")) }); });
@@ -127,6 +131,7 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
   return (
     <Screen>
       {fixtureNotice}
+      {summary.reviewConflict ? <ReviewCycleConflictNotice /> : null}
       <SessionResultOverview
         activeTime={formatElapsed(session.activeForegroundMs)}
         answeredCount={answeredCount}

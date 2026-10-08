@@ -4,7 +4,7 @@ import test from "node:test";
 
 const answerOptionSource = readFileSync(new URL("../../components/AnswerOption.tsx", import.meta.url), "utf8");
 const controlsSource = readFileSync(new URL("./PracticeResponseControls.tsx", import.meta.url), "utf8");
-const reviewSource = readFileSync(new URL("../review/AnswerReviewScreen.tsx", import.meta.url), "utf8");
+const reviewSource = readFileSync(new URL("../exam/ExamReviewScreen.tsx", import.meta.url), "utf8");
 
 test("answer cards show state through the card and letter without a redundant status row", () => {
   assert.doesNotMatch(answerOptionSource, /statusLabel|statusBadge|statusIcon|statusText|statusCorrect|statusIncorrect|statusNeutral|statusSelected/u);
@@ -20,8 +20,6 @@ test("practice and review keep correctness and selection in accessibility semant
   assert.match(controlsSource, /accessibilityState=\{\{ checked: selected, disabled: !editable \}\}/u);
   assert.match(controlsSource, /accessibilityValue=\{correctness \? \{ text: t\(correctness\) \} : undefined\}/u);
   assert.doesNotMatch(controlsSource, /statusLabel/u);
-  assert.match(reviewSource, /accessibilityLabel=\{`\$\{option\.text\}\. \$\{t\(status\)\}`\}/u);
-  assert.match(reviewSource, /accessibilityState=\{\{ checked: selected\.has\(option\.optionId\), disabled: true \}\}/u);
-  assert.match(reviewSource, /accessibilityValue=\{\{ text: t\(status\) \}\}/u);
+  assert.match(reviewSource, /<PracticeResponseControls control=\{buildCertificationReviewControl\(item\)\} editable=\{false\}/u);
   assert.doesNotMatch(reviewSource, /statusLabel/u);
 });

@@ -506,7 +506,7 @@ test("an uncertain server deletion failure resolves through the bound operation 
 });
 
 // The discard path uses the real repositories and injected durable storage faults.
-import { acceptedTargetFromGoal, completeTrainingSession, createDefaultGoal, createFamilyEnvelope, createLearningPlan, createLearningPlanSlotId, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult } from "../../domain";
+import { abandonTrainingSession, acceptedTargetFromGoal, completeTrainingSession, createDefaultGoal, createFamilyEnvelope, createLearningPlan, createLearningPlanSlotId, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult } from "../../domain";
 import { commitSessionCompletion } from "../learningMutations/commitSessionLifecycle";
 import { commitTrainingSessionStart } from "../learningMutations/commitTrainingSessionStart";
 import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
@@ -526,6 +526,11 @@ import { getGoalSnapshot, readGoalSnapshot, saveGoal, saveGoalSnapshot } from ".
 import { getLearningPlanSnapshot, saveLearningPlanAtomically } from "../../storage/repositories/learningPlanRepository";
 import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
 import { attempt as journalAttempt, journal as makeJournal, session as journalSession } from "../../testing/journalTestSupport";
+import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime";
+import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
+import type { Question } from "../../content/canonical/questionTypes";
+import { commitSessionAbandonment, commitTrainingOutcome } from "../learningMutations";
+import { getReviewQueueItems } from "../../storage/repositories/reviewQueueRepository";
 
 const guestTrack = "coding-interview-dsa-problem-solving" as const;
 async function prepareGuest() {
@@ -1051,6 +1056,138 @@ test("bound sync keeps session, goal, and plan commits made during GET and carri
   const planEntry = nextPlan.outbox.find((entry) => entry.recordType === "learning_plan" && entry.trackId === guestTrack);
   assert.equal(goalEntry?.expectedVersion, 1);
   assert.equal(planEntry?.expectedVersion, 1);
+});
+
+test("a stale sync GET preserves a terminal review cycle and a new repair, then retries the full snapshot without reviving history", async () => {
+  await prepareBoundSyncedAccount();
+  const catalog = await loadCanonicalRuntimeCatalog();
+  const track = catalog.getTrack(guestTrack);
+  const runtime = new CanonicalTrainingRuntime(track);
+
+  function wrongResponse(question: Question) {
+    const { answer, interaction } = question;
+    if (answer.type === "choice_single" && interaction.type === "choice_single") return { type: "choice_single" as const, optionId: interaction.options.find((option) => option.optionId !== answer.optionId)!.optionId };
+    if (answer.type === "choice_multiple" && interaction.type === "choice_multiple") return { type: "choice_multiple" as const, optionIds: [interaction.options.find((option) => !answer.optionIds.includes(option.optionId))!.optionId] };
+    if (answer.type === "ordering" && interaction.type === "ordering") return { type: "ordering" as const, orderedElementIds: [...answer.orderedElementIds].reverse() };
+    if ((answer.type === "complexity" || answer.type === "decision_matrix") && (interaction.type === "complexity" || interaction.type === "decision_matrix")) {
+      return { type: answer.type, selectedValueIdsByDimension: Object.fromEntries(interaction.dimensions.map((dimension) => [dimension.dimensionId, [dimension.values[0]!.valueId]])) };
+    }
+    throw new Error("The selected canonical question requires a supported answer interaction.");
+  }
+
+  async function answer({ id, at, review, incorrect = false }: { id: string; at: string; review?: Awaited<ReturnType<typeof getReviewQueueItems>>["value"][number]; incorrect?: boolean }) {
+    const reviews = (await getReviewQueueItems()).value;
+    const attempts = (await getTrainingAttempts()).value;
+    const mode = track.getMode(review ? "coding-interview-weak-area-review" : "coding-interview-learn-approach");
+    const prepared = await runtime.prepare({
+      trackId: guestTrack,
+      modeId: mode.modeId,
+      request: { sessionId: id, requestedLength: mode.requestedLengths[0]!, ...(review ? { reviewSource: "due_queue" } : {}) },
+      attempts,
+      reviews,
+      now: at,
+    });
+    const occurrence = prepared.session.itemOrder[0]!;
+    const question = track.getQuestion(occurrence.item.questionId)!;
+    await commitTrainingSessionStart({ session: prepared.session, draft: null, createdAt: at });
+    const outcome = await runtime.submitPractice({
+      session: prepared.session,
+      response: incorrect ? wrongResponse(question) : question.answer,
+      attempts: (await getTrainingAttempts()).value,
+      reviews,
+      now: at,
+    });
+    await commitTrainingOutcome({
+      attempt: outcome.attempt,
+      session: outcome.session,
+      reviews: outcome.reviewMutations.filter((mutation) => mutation.kind === "upsert").map((mutation) => mutation.entry),
+      resolvedReviews: outcome.reviewMutations.filter((mutation) => mutation.kind === "remove").map((mutation) => mutation.entry),
+      reviewBaseline: outcome.reviewBaseline,
+      reviewSnapshotConflict: outcome.reviewSnapshotConflict,
+      createdAt: at,
+    });
+    await commitSessionAbandonment(abandonTrainingSession(outcome.session, at), at);
+    return outcome;
+  }
+
+  const start = "2026-10-01T12:00:00.000Z";
+  let outcome = await answer({ id: "r27-cycle-error", at: start, incorrect: true });
+  let review = (await getReviewQueueItems()).value[0]!;
+  for (const [index, at] of ["2026-10-02T12:00:00.000Z", "2026-10-09T12:00:00.000Z", "2026-10-23T12:00:00.000Z", "2026-11-20T12:00:00.000Z"].entries()) {
+    outcome = await answer({ id: `r27-cycle-due-${index}`, at, review });
+    review = (await getReviewQueueItems()).value.find((entry) => entry.id === review.id)!;
+  }
+  assert.equal(review.status, "completed", "A is a terminal record produced by real canonical due answers and durable commits");
+  const terminalA = review;
+  await ensureAccountOutboxFromLocalDataset();
+  saveAccountSyncState({ ...await getAccountSyncState(), status: "offlinePending" });
+  const baseline = await buildAccountDataSnapshot();
+
+  let releaseGet!: () => void;
+  let signalGet!: () => void;
+  const getGate = new Promise<void>((resolve) => { releaseGet = resolve; });
+  const getStarted = new Promise<void>((resolve) => { signalGet = resolve; });
+  let uploaded: ProgressRecordDto[] = [];
+  let uploadCount = 0;
+  let readCount = 0;
+  const staleClient = api({
+    syncProgress: async (input) => {
+      uploadCount++;
+      uploaded = makeAppliedRecords(input.mutations);
+      return { accountRevision: input.expectedAccountRevision + uploaded.length, applied: uploaded, duplicates: [], conflicts: [] };
+    },
+    getProgress: async () => {
+      readCount++;
+      signalGet();
+      await getGate;
+      const byKey = new Map(uploaded.map((record) => [`${record.recordType}\u0000${record.trackId}\u0000${record.targetId}`, record]));
+      const records = remoteRecords(baseline).map((record) => byKey.get(`${record.recordType}\u0000${record.trackId}\u0000${record.targetId}`) ?? record);
+      return { accountRevision: 7, records };
+    },
+  });
+
+  const staleSync = retryPendingAccountDataSync(staleClient, accountId);
+  await getStarted;
+  assert.ok(uploaded.length > 0, "the sync uploads A and its terminal cycle before the full-state read");
+  const newError = await answer({ id: "r27-new-error-during-get", at: "2026-11-21T12:00:00.000Z", incorrect: true });
+  const repairB = newError.reviewMutations.find((mutation) => mutation.kind === "upsert")?.entry;
+  assert.ok(repairB, "a new canonical incorrect answer starts cycle B during the GET barrier");
+  assert.notEqual(repairB.id, terminalA.id);
+  releaseGet();
+
+  const staleResult = await staleSync;
+  assert.equal(staleResult?.status, "offlinePending");
+  assert.equal(staleResult?.lastFailureCode, "local_dataset_changed_during_sync");
+  assert.equal(uploadCount, 1);
+  assert.equal(readCount, 1);
+  assert.deepEqual((await getReviewQueueItems()).value.find((entry) => entry.id === terminalA.id), terminalA);
+  assert.deepEqual((await getReviewQueueItems()).value.find((entry) => entry.id === repairB.id), repairB);
+  assert.ok((await getAccountSyncState()).outbox.length > 0, "the stale GET cannot clear the exact outbox containing B");
+
+  let retryApplied: ProgressRecordDto[] = [];
+  const retryResult = await retryPendingAccountDataSync(api({
+    syncProgress: async (input) => {
+      uploadCount++;
+      retryApplied = makeAppliedRecords(input.mutations);
+      return { accountRevision: input.expectedAccountRevision + retryApplied.length, applied: retryApplied, duplicates: [], conflicts: [] };
+    },
+    getProgress: async () => {
+      readCount++;
+      const local = await buildAccountDataSnapshot();
+      const byKey = new Map(retryApplied.map((record) => [`${record.recordType}\u0000${record.trackId}\u0000${record.targetId}`, record]));
+      const records = remoteRecords(local).map((record) => byKey.get(`${record.recordType}\u0000${record.trackId}\u0000${record.targetId}`) ?? record);
+      return { accountRevision: 7 + retryApplied.length, records };
+    },
+  }), accountId);
+
+  assert.equal(retryResult?.status, "synced");
+  assert.equal(uploadCount, 2);
+  assert.equal(readCount, 2);
+  assert.equal((await getAccountSyncState()).outbox.length, 0);
+  const finalReviews = (await getReviewQueueItems()).value;
+  assert.deepEqual(finalReviews.find((entry) => entry.id === terminalA.id), terminalA, "sync roundtrip cannot revive or rewrite terminal history A");
+  assert.deepEqual(finalReviews.find((entry) => entry.id === repairB.id), repairB, "sync roundtrip preserves the distinct active repair B");
+  assert.equal(finalReviews.filter((entry) => entry.trackId === guestTrack).length, 2);
 });
 
 test("bound sync does not materialize into a replacement storage profile after GET", async () => {

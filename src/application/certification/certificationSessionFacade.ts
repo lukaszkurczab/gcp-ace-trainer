@@ -25,7 +25,7 @@ import { projectCertificationPracticeReview, type CertificationPracticeReviewPro
 export { certificationReviewEvidenceMatches } from "./certificationPracticeReviewProjection";
 export type { CertificationPracticeReviewItem, CertificationPracticeReviewProjection } from "./certificationPracticeReviewProjection";
 
-export type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; nodeId?: string; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
+export type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: CertificationDomain; nodeId?: string; competency?: string; feedbackMode?: "afterEachAnswer" | "atSessionEnd"; reviewSource?: "due_queue" | "manual_request"; source?: string; expectedSessionId?: string; trackId?: TrackId }>;
 export type CertificationPracticeOpenResult = Readonly<{ kind: "ready"; projection: CertificationPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type CertificationExamResumeResult = Readonly<{ kind: "ready"; projection: CertificationExamProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
 export type CertificationAbandonmentResult =

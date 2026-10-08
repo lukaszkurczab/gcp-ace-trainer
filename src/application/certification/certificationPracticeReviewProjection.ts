@@ -21,6 +21,7 @@ export type CertificationPracticeReviewItem = Readonly<{
   reason: string;
   result: AttemptResultKind;
   selectedOptionIds: readonly string[];
+  sourceAttemptId: string;
   selectionMode: "single" | "multiple";
 }>;
 export type CertificationPracticeReviewProjection = Readonly<{
@@ -93,6 +94,7 @@ export async function projectCertificationPracticeReview(input: Readonly<{
       reason: question.feedback.reason,
       result: attempt.result.kind,
       selectedOptionIds: Object.freeze([...selectedOptionIds]),
+      sourceAttemptId: attempt.id,
       selectionMode: question.interaction.type === "choice_multiple" ? "multiple" : "single",
     });
   }));

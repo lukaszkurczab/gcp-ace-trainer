@@ -1,5 +1,5 @@
 import { createAttemptId } from "../learningMutations/identity";
-import { createTrainingAttempt, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult, completeTrainingSession, createFamilyEnvelope, type ReviewMutationCommand, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession, type TrainingSessionDraft, type TrackFamilyId } from "../../domain";
+import { createTrainingAttempt, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult, completeTrainingSession, createFamilyEnvelope, REVIEW_CYCLE_POLICY_VERSION, isActiveReviewQueueEntry, isLegacyUnqualifiedReviewEntry, createReviewSourceSnapshot, matchesReviewSourceSnapshot, manualRequestIdForEntry, type ReviewCycleStage, type ReviewMutationCommand, type ReviewQueueEntry, type ReviewSourceSnapshot, type TrainingAttempt, type TrainingSession, type TrainingSessionDraft, type TrackFamilyId } from "../../domain";
 import type { PreparedSession, PracticeFinalization, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime } from "../trainingLifecycle";
 import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
 import { isCanonicalResponseComplete, scoreCanonicalQuestion } from "../../content/canonical/questionScoring";
@@ -34,17 +34,28 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
     if (!mode.requestedLengths.includes(req.requestedLength)) throw new Error("Requested length is unavailable for this canonical mode.");
     if (mode.selection.kind === "evidence_conditioned") {
       if (mode.selection.evidenceSources.length > 1 && !req.reviewSource) throw new Error("Canonical multi-source review requires an explicit reviewSource.");
-      const evidenceSource = req.reviewSource === "session_misses" ? "committed_session_misses" : req.reviewSource;
+      const evidenceSource = req.reviewSource === "session_misses" ? "committed_session_misses" : req.reviewSource === "manual_request" ? "due_queue" : req.reviewSource;
       if (evidenceSource && !mode.selection.evidenceSources.includes(evidenceSource)) throw new Error("Canonical reviewSource is unavailable for this mode.");
     } else if (req.reviewSource) throw new Error("Canonical reviewSource requires an evidence-conditioned mode.");
     if (req.reviewSource === "session_misses") throw new Error("Canonical session_misses is unavailable without verified completed-session evidence.");
-    const source = mode.selection.kind === "evidence_conditioned" ? eligibleEvidence(this.catalog, mode, input.reviews, input.now) : this.catalog.getPool(mode.modeId);
+    const effectiveReviewSource = req.reviewSource ?? (mode.selection.kind === "evidence_conditioned" && mode.selection.evidenceSources.length === 1 && mode.selection.evidenceSources[0] === "due_queue" ? "due_queue" : undefined);
+    const source = mode.selection.kind === "evidence_conditioned" ? eligibleEvidence(this.catalog, mode, input.reviews, input.now, effectiveReviewSource) : this.catalog.getPool(mode.modeId);
     const count = Math.min(req.requestedLength, source.length); if (count === 0 || (mode.selection.kind !== "evidence_conditioned" && count < mode.minimumActualLength)) throw new Error("Canonical mode has insufficient eligible content.");
     const questions = mode.selection.kind === "node"
       ? selectPracticeQuestions(source, input.attempts, { trackId: this.catalog.trackId, contentVersion: this.catalog.contentVersion, artifactSha256: this.catalog.artifactSha256 }, count)
       : source.slice(0, count);
     const feedback = feedbackValue(mode.feedbackTiming, req.feedbackTiming);
-    const items = questions.map((q, i) => ({ occurrenceId: `${input.request instanceof Object && "sessionId" in input.request ? String(input.request.sessionId) : "session"}:occurrence:${i}`, item: ref(this.catalog, q) }));
+    const usesReviewQueue = mode.selection.kind === "evidence_conditioned" && (effectiveReviewSource === "due_queue" || effectiveReviewSource === "manual_request");
+    const items = questions.map((q, i) => {
+      const item = ref(this.catalog, q);
+      const review = usesReviewQueue ? input.reviews.find((entry) => isSelectedReviewEntry(entry, effectiveReviewSource!, input.now) && resolvedContentRefsEqual(entry.sourceItem, item)) : undefined;
+      if (usesReviewQueue && !review) throw new Error("Canonical review selection lost its exact source before the session snapshot was created.");
+      return {
+        occurrenceId: `${input.request instanceof Object && "sessionId" in input.request ? String(input.request.sessionId) : "session"}:occurrence:${i}`,
+        item,
+        ...(review ? { reviewSourceSnapshot: createReviewSourceSnapshot(review, effectiveReviewSource!, input.now) } : {}),
+      };
+    });
     const optionOrderByOccurrence = Object.fromEntries(items.map((o, i) => [o.occurrenceId, prepareCanonicalOptionOrder(questions[i]!, o.occurrenceId, o.item)]));
     const base = { id: requestSessionId(input.request), trackId: this.catalog.trackId, modeId: mode.modeId, configurationSnapshot: { kind: "practice", timer: "elapsedForeground", feedbackMode: feedback, answerChanges: "none", submission: "perItem", reinsertEnabled: mode.reinsertPolicy === "conditional_after_incorrect" }, requestedLength: req.requestedLength, actualLength: count, currentItemIndex: 0, itemOrder: items, optionOrderByOccurrence, conditionalReinsertSlots: reinsertionSlots(mode, items, optionOrderByOccurrence), activeForegroundMs: 0, contentVersion: this.catalog.contentVersion, artifactSha256: this.catalog.artifactSha256, taxonomyVersion: RELEASE, status: "active" as const, startedAt: input.now };
     const session = createTrainingSession({ ...base, planFingerprint: await createContentSessionPlanFingerprint(base as TrainingSession & { taxonomyVersion: string }) });
@@ -71,14 +82,33 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
     await this.validateResume({ session: input.session, draft: null }); const occurrence = input.session.itemOrder[input.session.currentItemIndex]!; const question = this.catalog.getQuestion(occurrence.item.questionId)!;
     if (!isCanonicalResponseComplete(question, input.response)) throw new Error("Canonical response is incomplete or invalid.");
     const result = scoreCanonicalQuestion(question, input.response); const attempt = createTrainingAttempt({ id: await createAttemptId(input.session.id, occurrence.occurrenceId, input.response), sessionId: input.session.id, trackId: input.session.trackId, modeId: input.session.modeId, occurrenceId: occurrence.occurrenceId, item: occurrence.item, response: input.response, result, reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [{ axisId: "node", nodeId: question.nodeId, role: "primary" }, { axisId: "mental_unit", nodeId: question.mentalUnitId, role: "primary" }] }, answeredAt: input.now, committedAt: input.now });
-    const review: ReviewQueueEntry = { id: `review:${attempt.id}`, trackId: input.session.trackId, sourceAttemptId: attempt.id, sourceSessionId: input.session.id, sourceItem: occurrence.item, taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs, reasons: [result.kind === "partial" ? "partial" : "incorrect"], dueAt: new Date(Date.parse(input.now) + 86400000).toISOString(), createdAt: input.now, consecutiveAfterDueSuccesses: 0, persistent: true };
-    const prior = input.reviews.find((r) => r.trackId === input.session.trackId && resolvedContentRefsEqual(r.sourceItem, occurrence.item)); const due = prior !== undefined && input.now >= prior.dueAt; const sameSessionCorrection = prior !== undefined && prior.persistent && prior.sourceSessionId === attempt.sessionId;
+    const matchingReviews = input.reviews.filter((entry) => entry.trackId === input.session.trackId && resolvedContentRefsEqual(entry.sourceItem, occurrence.item));
+    const prior = matchingReviews.find(isActiveReviewQueueEntry);
+    const completed = matchingReviews.some((entry) => entry.status === "completed");
+    const dueSnapshot = occurrence.reviewSourceSnapshot;
+    const usesDueQueue = isDueQueueReviewMode(this.familyId, input.session.modeId);
+    const snapshotMatches = dueSnapshot !== undefined && prior !== undefined && reviewSnapshotMatches(dueSnapshot, prior);
+    const snapshotSourceExpired = result.kind === "correct" && dueSnapshot?.source === "manual_request" && prior?.dueAt !== undefined && Date.parse(attempt.answeredAt) >= Date.parse(prior.dueAt);
+    const reviewSnapshotConflict = usesDueQueue && (!dueSnapshot || !snapshotMatches || snapshotSourceExpired);
     let mutations: readonly ReviewMutationCommand[] = [];
-    if (result.kind !== "correct") { const candidate = prior ? { ...prior, dueAt: addDaysIso(input.now, 1), lastReviewedAt: input.now, persistent: true, reasons: [result.kind] as const, consecutiveAfterDueSuccesses: 0 } : review; mutations = [{ kind: "upsert", entry: prior ? retainReviewQueueEntryIdentity(prior, candidate) : candidate, transitionAttemptId: attempt.id }]; }
-    else if (prior && due && !sameSessionCorrection) { const successes = prior.consecutiveAfterDueSuccesses + 1; mutations = successes >= 2 ? [{ kind: "remove", entry: prior, transitionAttemptId: attempt.id }] : [{ kind: "upsert", entry: retainReviewQueueEntryIdentity(prior, { ...prior, consecutiveAfterDueSuccesses: successes, lastReviewedAt: input.now }), transitionAttemptId: attempt.id }]; }
-    else if (!prior && this.familyId === "coding_interview") { mutations = [{ kind: "upsert", entry: { ...review, dueAt: addDaysIso(input.now, 7), persistent: false, reasons: ["scheduled_retrieval"] }, transitionAttemptId: attempt.id }]; }
+    if (reviewSnapshotConflict) {
+      mutations = [];
+    } else if (result.kind !== "correct") {
+      const matchedManualIntent = Boolean(
+        prior && dueSnapshot?.manualRequestId && snapshotMatches &&
+        (dueSnapshot.source === "due_queue" || dueSnapshot.source === "manual_request"),
+      );
+      const next = createOrUpdateErrorCycle(prior, attempt, matchedManualIntent);
+      mutations = [{ kind: "upsert", entry: next, transitionAttemptId: attempt.id }];
+    } else if (usesDueQueue && dueSnapshot && snapshotMatches && prior && prior.dueAt && Date.parse(attempt.answeredAt) >= Date.parse(prior.dueAt)) {
+      mutations = [{ kind: "upsert", entry: transitionQualifiedSuccess(prior, attempt), transitionAttemptId: attempt.id }];
+    } else if (usesDueQueue && dueSnapshot?.source === "manual_request" && snapshotMatches && prior && result.kind === "correct") {
+      mutations = [{ kind: "upsert", entry: consumeManualRequest(prior), transitionAttemptId: attempt.id }];
+    } else if (!prior && !completed && !reviewSnapshotConflict) {
+      mutations = [{ kind: "upsert", entry: createMaintenanceCycle(attempt), transitionAttemptId: attempt.id }];
+    }
     const session = await resolveCanonicalReinsertions(input.session, [...input.attempts, attempt]);
-    return Object.freeze({ attempt, session, reviewMutations: mutations });
+    return Object.freeze({ attempt, session, reviewMutations: mutations, reviewBaseline: input.reviews, ...(reviewSnapshotConflict ? { reviewSnapshotConflict: true } : {}) });
   }
 
   async finalizePractice(input: Readonly<{ session: TrainingSession; attempts: readonly TrainingAttempt<unknown>[]; now: string }>): Promise<PracticeFinalization> {
@@ -110,18 +140,11 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
         answeredAt: input.draft.updatedAt, committedAt: input.now,
       });
       attempts.push(attempt);
-      const existing = input.reviews.find((review) => review.trackId === input.session.trackId && resolvedContentRefsEqual(review.sourceItem, occurrence.item));
-      if (result.kind !== "correct") {
-        const entry: ReviewQueueEntry = existing
-          ? retainReviewQueueEntryIdentity(existing, { ...existing, dueAt: addDaysIso(input.now, 1), lastReviewedAt: input.now, persistent: true, reasons: [result.kind], consecutiveAfterDueSuccesses: 0, sourceAttemptId: attempt.id, sourceSessionId: attempt.sessionId })
-          : { id: `review:${attempt.id}`, trackId: input.session.trackId, sourceAttemptId: attempt.id, sourceSessionId: input.session.id, sourceItem: occurrence.item, taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs, reasons: [result.kind], dueAt: addDaysIso(input.now, 1), createdAt: input.now, consecutiveAfterDueSuccesses: 0, persistent: true };
-        reviewMutations.push({ kind: "upsert", entry, transitionAttemptId: attempt.id });
-      } else if (existing && Date.parse(attempt.answeredAt) >= Date.parse(existing.dueAt) && !(existing.persistent && existing.sourceSessionId === attempt.sessionId)) {
-        const successes = existing.consecutiveAfterDueSuccesses + 1;
-        reviewMutations.push(successes >= 2
-          ? { kind: "remove", entry: existing, transitionAttemptId: attempt.id }
-          : { kind: "upsert", entry: retainReviewQueueEntryIdentity(existing, { ...existing, consecutiveAfterDueSuccesses: successes, lastReviewedAt: attempt.answeredAt }), transitionAttemptId: attempt.id });
-      }
+      const matchingReviews = input.reviews.filter((entry) => entry.trackId === input.session.trackId && resolvedContentRefsEqual(entry.sourceItem, occurrence.item));
+      const existing = matchingReviews.find(isActiveReviewQueueEntry);
+      const completed = matchingReviews.some((entry) => entry.status === "completed");
+      if (result.kind !== "correct") reviewMutations.push({ kind: "upsert", entry: createOrUpdateErrorCycle(existing, attempt), transitionAttemptId: attempt.id });
+      else if (!existing && !completed) reviewMutations.push({ kind: "upsert", entry: createMaintenanceCycle(attempt), transitionAttemptId: attempt.id });
     }
     const answeredOccurrenceIds = attempts.map((attempt) => attempt.occurrenceId);
     const answered = new Set(answeredOccurrenceIds);
@@ -140,7 +163,7 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
         maxPoints: attempts.reduce((total, attempt) => total + attempt.result.maxPoints, 0),
       } }),
     });
-    return Object.freeze({ session, result, attempts: Object.freeze(attempts), reviewMutations: Object.freeze(reviewMutations), frozenDraft: input.draft });
+    return Object.freeze({ session, result, attempts: Object.freeze(attempts), reviewMutations: Object.freeze(reviewMutations), frozenDraft: input.draft, reviewBaseline: input.reviews });
   }
 
   private finalizeDesignSimulation(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft; now: string }>): SimulationFinalization {
@@ -223,9 +246,9 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
       if (!isCanonicalResponseComplete(this.catalog.getQuestion(occurrence.item.questionId)!, response)) throw new Error("Canonical simulation draft contains an incomplete or noncanonical response.");
     }
   }
-  async queryDashboard(input: Readonly<{ activeSession: TrainingSession | null; trackId: string; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); const reviews = scopedReviews(input.reviews, this.catalog); return Object.freeze({ trackId: input.trackId, activeSessionId: input.activeSession?.trackId === input.trackId && input.activeSession.artifactSha256 === this.catalog.artifactSha256 ? input.activeSession.id : undefined, attemptCount: scopedAttempts(input.attempts, this.catalog).length, dueReviewCount: reviews.filter((r) => r.dueAt <= input.now).length }); }
-  async queryProgress(input: Readonly<{ trackId: string; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); const reviews = scopedReviews(input.reviews, this.catalog); return Object.freeze({ trackId: input.trackId, attemptCount: scopedAttempts(input.attempts, this.catalog).length, dueReviewCount: reviews.filter((r) => r.dueAt <= input.now).length }); }
-  async queryReview(input: Readonly<{ trackId: string; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); return Object.freeze({ trackId: input.trackId, due: Object.freeze(scopedReviews(input.reviews, this.catalog).filter((r) => r.dueAt <= input.now)) }); }
+  async queryDashboard(input: Readonly<{ activeSession: TrainingSession | null; trackId: string; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); const reviews = scopedReviews(input.reviews, this.catalog); const due = reviews.filter((r) => isSelectedReviewEntry(r, "due_queue", input.now)).length; const manual = reviews.filter((r) => isSelectedReviewEntry(r, "manual_request", input.now)).length; return Object.freeze({ trackId: input.trackId, activeSessionId: input.activeSession?.trackId === input.trackId && input.activeSession.artifactSha256 === this.catalog.artifactSha256 ? input.activeSession.id : undefined, attemptCount: scopedAttempts(input.attempts, this.catalog).length, dueReviewCount: due, manualReviewCount: manual }); }
+  async queryProgress(input: Readonly<{ trackId: string; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); const reviews = scopedReviews(input.reviews, this.catalog); return Object.freeze({ trackId: input.trackId, attemptCount: scopedAttempts(input.attempts, this.catalog).length, dueReviewCount: reviews.filter((r) => isSelectedReviewEntry(r, "due_queue", input.now)).length, manualReviewCount: reviews.filter((r) => isSelectedReviewEntry(r, "manual_request", input.now)).length }); }
+  async queryReview(input: Readonly<{ trackId: string; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown> { assertTrack(input.trackId, this.catalog.trackId); return Object.freeze({ trackId: input.trackId, due: Object.freeze(scopedReviews(input.reviews, this.catalog).filter((r) => isActiveReviewQueueEntry(r) && r.dueAt !== undefined && r.dueAt <= input.now)) }); }
 }
 
 function selectSimulationQuestions(catalog: CanonicalTrackRuntime, profile: CanonicalProductSimulationProfile): readonly Question[] {
@@ -318,14 +341,81 @@ function requestSimulationProfileId(value: unknown): string | undefined {
   return typeof scope.simulationProfileId === "string" ? scope.simulationProfileId : undefined;
 }
 
-function requestOf(value: unknown, fallback: number): { requestedLength: number; feedbackTiming?: string; reviewSource?: "due_queue" | "session_misses" } {
+function requestOf(value: unknown, fallback: number): { requestedLength: number; feedbackTiming?: string; reviewSource?: "due_queue" | "manual_request" | "session_misses" } {
   const r = value && typeof value === "object" ? value as Record<string, unknown> : {};
   if (r.requestedLength !== undefined && (!Number.isSafeInteger(r.requestedLength) || Number(r.requestedLength) <= 0)) throw new Error("Canonical requestedLength is invalid.");
   if (r.feedbackTiming !== undefined && r.feedbackTiming !== "after_each_durable_submit" && r.feedbackTiming !== "after_session_completion") throw new Error("Canonical feedbackTiming is invalid.");
   const reviewSource = r.reviewSource;
-  if (reviewSource !== undefined && reviewSource !== "due_queue" && reviewSource !== "session_misses") throw new Error("Canonical reviewSource is invalid.");
+  if (reviewSource !== undefined && reviewSource !== "due_queue" && reviewSource !== "manual_request" && reviewSource !== "session_misses") throw new Error("Canonical reviewSource is invalid.");
   if (r.reviewItemRefs !== undefined && reviewSource !== "session_misses") throw new Error("Canonical review item refs require session_misses source.");
   return { requestedLength: typeof r.requestedLength === "number" ? r.requestedLength : fallback, feedbackTiming: typeof r.feedbackTiming === "string" ? r.feedbackTiming : undefined, reviewSource };
+}
+
+function reviewSnapshotMatches(snapshot: ReviewSourceSnapshot, entry: ReviewQueueEntry): boolean {
+  return matchesReviewSourceSnapshot(snapshot, entry);
+}
+
+function isDueQueueReviewMode(family: TrackFamilyId, modeId: string): boolean {
+  if (family === "certification") return modeId === "certification-weak-area-review" || modeId === "certification-quick-review";
+  return modeId === `${family === "coding_interview" ? "coding-interview" : "design-interview"}-weak-area-review`;
+}
+
+function createOrUpdateErrorCycle(existing: ReviewQueueEntry | undefined, attempt: TrainingAttempt<unknown>, consumeMatchedManualIntent = false): ReviewQueueEntry {
+  const errorReason = attempt.result.kind === "partial" ? "partial" : "incorrect";
+  const fields = { dueAt: addDaysIso(attempt.answeredAt, 1), lastReviewedAt: attempt.answeredAt, persistent: true,
+    reasons: [errorReason] as readonly ("incorrect" | "partial" | "manual_mark")[], consecutiveAfterDueSuccesses: 0,
+    policyVersion: REVIEW_CYCLE_POLICY_VERSION, stage: "repair24" as const, status: "active" as const };
+  if (existing) {
+    const preserveManualIntent = existing.reasons.includes("manual_mark") && !consumeMatchedManualIntent;
+    const manualRequestId = preserveManualIntent ? manualRequestIdForEntry(existing) : undefined;
+    if (preserveManualIntent && !manualRequestId) throw new Error("An unbound manual review request cannot be carried into a new repair cycle.");
+    const reasons = preserveManualIntent ? [errorReason, "manual_mark"] as const : [errorReason] as const;
+    const { manualRequestId: _previousManualRequestId, ...withoutManualRequestId } = existing;
+    return retainReviewQueueEntryIdentity(existing, { ...withoutManualRequestId, ...fields, reasons,
+      ...(manualRequestId ? { manualRequestId } : {}) });
+  }
+  return { id: `review:${attempt.id}`, trackId: attempt.trackId, sourceAttemptId: attempt.id, sourceSessionId: attempt.sessionId,
+    sourceItem: attempt.item, taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs, createdAt: attempt.answeredAt, ...fields };
+}
+
+function createMaintenanceCycle(attempt: TrainingAttempt<unknown>): ReviewQueueEntry {
+  return { id: `review:${attempt.id}`, trackId: attempt.trackId, sourceAttemptId: attempt.id, sourceSessionId: attempt.sessionId,
+    sourceItem: attempt.item, taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs, reasons: ["scheduled_retrieval"],
+    dueAt: addDaysIso(attempt.answeredAt, 7), createdAt: attempt.answeredAt, consecutiveAfterDueSuccesses: 0, persistent: false,
+    policyVersion: REVIEW_CYCLE_POLICY_VERSION, stage: "retention7", status: "active" };
+}
+
+function transitionQualifiedSuccess(existing: ReviewQueueEntry, attempt: TrainingAttempt<unknown>): ReviewQueueEntry {
+  if (!existing.dueAt || Date.parse(attempt.answeredAt) < Date.parse(existing.dueAt)) throw new Error("A review cycle can advance only after its due instant.");
+  let stage: ReviewCycleStage;
+  let intervalDays: number;
+  let persistent = false;
+  let reasons: ReviewQueueEntry["reasons"] = ["scheduled_retrieval"];
+  let successes = 0;
+  if (isLegacyUnqualifiedReviewEntry(existing)) {
+    if (existing.persistent && existing.reasons.some((reason) => reason === "incorrect" || reason === "partial")) { stage = "repair7"; intervalDays = 7; persistent = true; reasons = existing.reasons.filter((reason) => reason !== "manual_mark"); successes = 1; }
+    else if (existing.persistent) { stage = "retention7"; intervalDays = 7; }
+    else { stage = "retention14"; intervalDays = 14; }
+  } else {
+    switch (existing.stage) {
+      case "repair24": stage = "repair7"; intervalDays = 7; persistent = true; reasons = existing.reasons.filter((reason) => reason !== "manual_mark"); successes = 1; break;
+      case "repair7": stage = "retention14"; intervalDays = 14; break;
+      case "manual_requested": stage = "retention7"; intervalDays = 7; break;
+      case "retention7": stage = "retention14"; intervalDays = 14; break;
+      case "retention14": stage = "retention28"; intervalDays = 28; break;
+      case "retention28": {
+        const { dueAt: _dueAt, ...withoutDue } = existing;
+        const { manualRequestId: _manualRequestId, ...withoutManualRequestId } = withoutDue;
+        return retainReviewQueueEntryIdentity(existing, { ...withoutManualRequestId, policyVersion: REVIEW_CYCLE_POLICY_VERSION, stage: "retention28", status: "completed",
+          completedAt: attempt.answeredAt, completedByAttemptId: attempt.id, lastReviewedAt: attempt.answeredAt,
+          reasons: ["scheduled_retrieval"], persistent: false, consecutiveAfterDueSuccesses: 0 });
+      }
+      default: throw new Error("An unknown legacy review record cannot receive qualified credit.");
+    }
+  }
+  const { manualRequestId: _manualRequestId, ...withoutManualRequestId } = existing;
+  return retainReviewQueueEntryIdentity(existing, { ...withoutManualRequestId, dueAt: addDaysIso(attempt.answeredAt, intervalDays), lastReviewedAt: attempt.answeredAt,
+    policyVersion: REVIEW_CYCLE_POLICY_VERSION, stage, status: "active", persistent, reasons, consecutiveAfterDueSuccesses: successes });
 }
 function requestSessionId(value: unknown): string { const r = value && typeof value === "object" ? value as Record<string, unknown> : {}; if (typeof r.sessionId !== "string" || !r.sessionId.trim()) throw new Error("Canonical preparation requires sessionId."); return r.sessionId; }
 function ref(catalog: CanonicalTrackRuntime, question: Question): ResolvedContentRef { return createResolvedContentRef({ trackId: catalog.trackId, questionId: question.questionId, contentVersion: catalog.contentVersion, artifactSha256: catalog.artifactSha256 }); }
@@ -345,12 +435,27 @@ function hasValidPreparedOrders(session: TrainingSession, catalog: CanonicalTrac
   return true;
 }
 function feedbackValue(policy: ProductFeedbackTiming, requested?: string): string { if (policy.kind === "fixed") { if (requested && requested !== "after_each_durable_submit") throw new Error("This mode has fixed feedback timing."); return "afterEachAnswer"; } return requested === "after_session_completion" ? "atSessionEnd" : "afterEachAnswer"; }
-function eligibleEvidence(catalog: CanonicalTrackRuntime, mode: ProductModeConfig, reviews: readonly ReviewQueueEntry[], now: string): readonly Question[] {
+function eligibleEvidence(catalog: CanonicalTrackRuntime, mode: ProductModeConfig, reviews: readonly ReviewQueueEntry[], now: string, source: "due_queue" | "manual_request" | "session_misses" | undefined): readonly Question[] {
   const selection = mode.selection;
   if (selection.kind !== "evidence_conditioned") return catalog.getPool(mode.modeId);
   const ids = new Set<string>();
-  if (selection.evidenceSources.includes("due_queue")) scopedReviews(reviews, catalog).filter((r) => r.dueAt <= now).forEach((r) => ids.add(r.sourceItem.questionId));
+  if (source === "due_queue") scopedReviews(reviews, catalog).filter((entry) => isSelectedReviewEntry(entry, source, now)).forEach((entry) => ids.add(entry.sourceItem.questionId));
+  if (source === "manual_request") scopedReviews(reviews, catalog).filter((entry) => isSelectedReviewEntry(entry, source, now)).forEach((entry) => ids.add(entry.sourceItem.questionId));
   return catalog.getPool(mode.modeId).filter((q) => ids.has(q.questionId));
+}
+function isSelectedReviewEntry(entry: ReviewQueueEntry, source: "due_queue" | "manual_request" | "session_misses", now: string): boolean {
+  if (!isActiveReviewQueueEntry(entry) || !entry.dueAt) return false;
+  const due = Date.parse(entry.dueAt);
+  if (!Number.isFinite(due) || !Number.isFinite(Date.parse(now))) return false;
+  if (source === "due_queue") return due <= Date.parse(now);
+  return source === "manual_request" && due > Date.parse(now) && entry.reasons.includes("manual_mark") && manualRequestIdForEntry(entry) !== undefined;
+}
+function consumeManualRequest(existing: ReviewQueueEntry): ReviewQueueEntry {
+  if (!existing.reasons.includes("manual_mark") || !manualRequestIdForEntry(existing)) throw new Error("A matched manual request is unavailable.");
+  const reasons = existing.reasons.filter((reason) => reason !== "manual_mark");
+  if (!reasons.length) throw new Error("A manual request cannot consume its only active review reason before its due time.");
+  const { manualRequestId: _manualRequestId, ...withoutManualRequestId } = existing;
+  return retainReviewQueueEntryIdentity(existing, { ...withoutManualRequestId, reasons });
 }
 function reinsertionSlots(mode: ProductModeConfig, items: readonly { occurrenceId: string; item: ResolvedContentRef }[], orders: Readonly<Record<string, readonly string[]>>) { if (mode.reinsertPolicy !== "conditional_after_incorrect") return []; return items.slice(0, Math.max(0, items.length - 4)).map((source, i) => { const ordinary = items[i + 4]!; return { slotId: `${source.occurrenceId}:conditional:${i + 4}`, sourceOccurrenceId: source.occurrenceId, ordinaryBranch: { occurrence: ordinary, optionOrder: orders[ordinary.occurrenceId] ?? [] }, exactSourceBranch: { occurrence: { occurrenceId: `${source.occurrenceId}:conditional:${i + 4}:exact`, item: source.item }, optionOrder: orders[source.occurrenceId] ?? [] }, resolutionRule: "incorrect_or_partial_after_three_materialized_submissions" as const }; }); }
 function addDaysIso(value: string, days: number): string { const d = new Date(value); d.setUTCDate(d.getUTCDate() + days); return d.toISOString(); }

@@ -33,6 +33,13 @@ function wrongResponse(question: Question): CanonicalQuestionResponse {
   return { type: question.interaction.type, selectedValueIdsByDimension: Object.fromEntries(question.interaction.dimensions.map((dimension) => [dimension.dimensionId, [dimension.values[0]!.valueId]])) };
 }
 
+function correctResponse(question: Question): CanonicalQuestionResponse {
+  if (question.answer.type === "choice_single") return { type: "choice_single", optionId: question.answer.optionId };
+  if (question.answer.type === "choice_multiple") return { type: "choice_multiple", optionIds: [...question.answer.optionIds] };
+  if (question.answer.type === "ordering") return { type: "ordering", orderedElementIds: [...question.answer.orderedElementIds] };
+  return { type: question.answer.type, selectedValueIdsByDimension: Object.fromEntries(Object.entries(question.answer.selectedValueIdsByDimension).map(([dimensionId, valueIds]) => [dimensionId, [...valueIds]])) };
+}
+
 function historicalMiss(track: CanonicalTrackRuntime, question: Question, suffix: string, attemptId = `historical-miss-${suffix}`) {
   const item = { trackId: track.trackId, questionId: question.questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 };
   const response = wrongResponse(question);
@@ -141,6 +148,55 @@ test("actual lifecycle persists only due current refs, shortens to available due
   assert.equal((await getTrainingAttempts()).value.length, 4, "preparation does not rewrite historical attempts");
   assert.equal((await getActiveTrainingSession())?.id, "coding-due-review-start");
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false, "the real journal-backed start mutation has completed");
+});
+
+test("actual lifecycle prepares and consumes one future manual request without changing its automatic cycle", async () => {
+  installMemoryStorage();
+  const catalog = await catalogPromise;
+  const track = catalog.getTrack(TRACK_ID);
+  const mode = track.getMode("coding-interview-weak-area-review");
+  const question = track.getPool(mode.modeId)[0]!;
+  const original = {
+    ...dueReview(track, question, "manual-overlay", "2026-10-12T12:00:00.000Z"),
+    reasons: ["scheduled_retrieval", "manual_mark"] as const,
+    manualRequestId: `manual:${"e".repeat(64)}`,
+    persistent: false,
+    policyVersion: "bizq04-v1",
+    stage: "retention7" as const,
+    status: "active" as const,
+  };
+  await addReviewQueueItems([original]);
+
+  const lifecycle = await actualLifecycle("coding-manual-request-start");
+  const prepared = await lifecycle.startSession({
+    trackId: TRACK_ID,
+    modeId: mode.modeId,
+    source: "practiceHub",
+    request: { requestedLength: 10, reviewSource: "manual_request" },
+  });
+  assert.equal(prepared.session.actualLength, 1);
+  assert.equal(prepared.session.itemOrder[0]?.item.questionId, question.questionId);
+  assert.deepEqual(prepared.session.itemOrder[0]?.reviewSourceSnapshot, {
+    source: "manual_request",
+    reviewEntryId: original.id,
+    sourceAttemptId: original.sourceAttemptId,
+    manualRequestId: original.manualRequestId,
+    dueAt: original.dueAt,
+    policyVersion: original.policyVersion,
+    stage: original.stage,
+  });
+
+  await lifecycle.submitPracticeResponse(correctResponse(question));
+  const stored = (await getReviewQueueItems()).value;
+  assert.equal(stored.length, 1);
+  assert.equal(stored[0]?.id, original.id);
+  assert.deepEqual(stored[0]?.reasons, ["scheduled_retrieval"]);
+  assert.equal(stored[0]?.manualRequestId, undefined);
+  assert.equal(stored[0]?.dueAt, original.dueAt);
+  assert.equal(stored[0]?.stage, original.stage);
+  assert.equal(stored[0]?.consecutiveAfterDueSuccesses, original.consecutiveAfterDueSuccesses);
+  assert.equal(stored[0]?.persistent, original.persistent);
+  assert.equal((await getTrainingAttempts()).value.length, 1);
 });
 
 test("actual lifecycle rejects empty due evidence with no session write and preserves the historical attempt", async () => {

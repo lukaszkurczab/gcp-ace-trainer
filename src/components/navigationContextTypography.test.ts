@@ -13,7 +13,6 @@ test("shared and goal headers preserve long context at 200 percent text", () => 
   const files = [
     "src/components/ScreenHeader.tsx",
     "src/components/AppShellHeader.tsx",
-    "src/components/ReviewShell.tsx",
     "src/components/ReviewLoadingSkeleton.tsx",
     "src/features/home/GoalCadenceScreen.tsx",
   ].map(source);
@@ -37,14 +36,11 @@ test("back controls keep a 44 point target while context can reflow", () => {
 });
 
 test("approved exceptions remain local and tab typography stays out of scope", () => {
-  const review = source("src/components/ReviewShell.tsx");
   const session = source("src/features/coding-interview/session/SessionShell.tsx");
   const practice = source("src/features/practice/PracticeSessionSurface.tsx");
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
   const tabs = source("src/components/BottomTabBar.tsx");
 
-  assert.match(review, /contextText:\s*\{[^}]*fontSize:\s*13[^}]*fontWeight:\s*"500"[^}]*lineHeight:\s*18/);
-  assert.match(review, /accessibilityLabel=\{contextLabel\}[^>]*ellipsizeMode="clip"[^>]*numberOfLines=\{2\}/);
   assert.match(session, /modeText:\s*\{[^}]*fontSize:\s*14[^}]*fontWeight:\s*"600"[^}]*lineHeight:\s*20/);
   assert.match(session, /topTextLargeSimulation:\s*\{[^}]*fontSize:\s*13[^}]*fontWeight:\s*"600"[^}]*lineHeight:\s*16/);
   assert.match(practice, /sessionActionLabel:\s*\{\s*fontSize:\s*13,\s*fontWeight:\s*"600",\s*lineHeight:\s*16\s*\}/);

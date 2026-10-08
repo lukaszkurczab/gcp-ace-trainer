@@ -210,8 +210,8 @@ export class TrainingLifecycleUseCases {
     }
     if (outcome.session.id !== session.id) throw new TrainingApplicationFailure("persistence_failure", "Practice outcome changed its active session identity.");
     try {
-      await this.ports.mutations.submitPractice(outcome);
-      this.operationStates.set(session.id, practice("feedback"));
+      const reviewConflict = await this.ports.mutations.submitPractice(outcome);
+      this.operationStates.set(session.id, practice("feedback", undefined, reviewConflict || outcome.reviewSnapshotConflict === true));
     } catch (error) {
       const state = practiceStateForMutationFailure(error);
       this.operationStates.set(session.id, state);
@@ -418,9 +418,9 @@ export class TrainingLifecycleUseCases {
     if (outcome.session.id !== session.id) throw new TrainingApplicationFailure("persistence_failure", "Simulation finalization changed session identity.");
     try {
       this.operationStates.set(session.id, simulation("finalization_journal_pending", operationError("simulation_finalization", "not_durable", "retry_same_command")));
-      await this.ports.mutations.finalize(outcome);
+      const reviewConflict = await this.ports.mutations.finalize(outcome);
       await this.requireVerifiedSummary(session.id);
-      this.operationStates.set(session.id, simulation("completed"));
+      this.operationStates.set(session.id, simulation("completed", undefined, reviewConflict));
     } catch (error) {
       const state = simulationStateForMutationFailure(error);
       this.operationStates.set(session.id, state);
@@ -732,11 +732,11 @@ function sameSessionContentIdentity(left: TrainingSession, right: TrainingSessio
   return left.id === right.id && left.trackId === right.trackId && left.contentVersion === right.contentVersion && left.artifactSha256 === right.artifactSha256;
 }
 
-function practice<K extends PracticeDurableOperationState["kind"]>(kind: K, error?: DurableOperationError): Extract<PracticeDurableOperationState, { kind: K }> {
-  return Object.freeze(error ? { family: "practice", kind, error } : { family: "practice", kind }) as Extract<PracticeDurableOperationState, { kind: K }>;
+function practice<K extends PracticeDurableOperationState["kind"]>(kind: K, error?: DurableOperationError, reviewConflict = false): Extract<PracticeDurableOperationState, { kind: K }> {
+  return Object.freeze({ family: "practice", kind, ...(error ? { error } : {}), ...(reviewConflict ? { reviewConflict: true as const } : {}) }) as Extract<PracticeDurableOperationState, { kind: K }>;
 }
-function simulation<K extends SimulationDurableOperationState["kind"]>(kind: K, error?: DurableOperationError): Extract<SimulationDurableOperationState, { kind: K }> {
-  return Object.freeze(error ? { family: "simulation", kind, error } : { family: "simulation", kind }) as Extract<SimulationDurableOperationState, { kind: K }>;
+function simulation<K extends SimulationDurableOperationState["kind"]>(kind: K, error?: DurableOperationError, reviewConflict = false): Extract<SimulationDurableOperationState, { kind: K }> {
+  return Object.freeze({ family: "simulation", kind, ...(error ? { error } : {}), ...(reviewConflict ? { reviewConflict: true as const } : {}) }) as Extract<SimulationDurableOperationState, { kind: K }>;
 }
 
 function operationError(operation: DurableOperationError["operation"], durableState: DurableOperationError["durableState"], allowedAction: DurableOperationError["allowedAction"]): DurableOperationError {

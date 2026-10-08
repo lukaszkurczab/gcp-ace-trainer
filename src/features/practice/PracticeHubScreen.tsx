@@ -264,11 +264,13 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       return;
     }
     if (activeTrack.familyId === "certification" && (resolvedMode === "certification-focus-practice" || resolvedMode === "certification-scenario-practice" || resolvedMode === "certification-weak-area-review" || resolvedMode === "certification-mixed-practice")) {
-      navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, source: "modeShortcut", topicId: topic.id, trackId: activeTrack.id });
+      navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, source: "modeShortcut", topicId: topic.id, trackId: activeTrack.id,
+        ...(resolvedMode === "certification-weak-area-review" && readState.kind === "ready" && readState.reviewSource ? { reviewSource: readState.reviewSource } : {}) });
       return;
     }
     if (activeTrack.familyId === "certification" && resolvedMode === "certification-quick-review") {
-      navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: resolvedMode, source: "modeShortcut", topicId: "", trackId: activeTrack.id }));
+      navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: resolvedMode, source: "modeShortcut", topicId: "", trackId: activeTrack.id,
+        ...(readState.kind === "ready" && readState.reviewSource ? { reviewSource: readState.reviewSource } : {}) }));
       return;
     }
     if (activeTrack.familyId === "certification" && resolvedMode === "certification-exam-simulation") {
@@ -330,7 +332,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       ROUTES.PRACTICE_SESSION,
       buildPracticeSessionConfig({
         mode: practiceMode,
-        reviewSource: getGeneralPracticeReviewSource(practiceMode),
+        reviewSource: (readState.kind === "ready" ? readState.reviewSource : undefined) ?? getGeneralPracticeReviewSource(practiceMode),
         source,
         topicId: topic.id,
         trackId: activeTrack.id,

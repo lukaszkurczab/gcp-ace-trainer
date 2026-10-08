@@ -1,5 +1,5 @@
-import { randomUUID } from "node:crypto";
+import { createIdentityNonce } from "./identityNonce";
 
 export function createContentReportSubmissionId(): string {
-  return randomUUID();
+  return createIdentityNonce();
 }

@@ -25,7 +25,6 @@ export const ROUTES = {
   EXAM: "Exam",
   EXAM_REVIEW: "ExamReview",
   RESULT: "Result",
-  ANSWER_REVIEW: "AnswerReview",
   PRACTICE_SETUP: "PracticeSetup",
   PRACTICE_SESSION: "PracticeSession",
   ALGORITHMS_PRACTICE_REVIEW: "AlgorithmsPracticeReview",

@@ -169,6 +169,11 @@ function buildAlgorithmsRecommendations(input: BuildHomeTabModelInput, currentNo
     detail: `${dashboard.dueReviewCount} question${dashboard.dueReviewCount === 1 ? " is" : "s are"} due for review in this track.`,
     enabled: true, icon: "cpu", label: "Due review", primaryLabel: "Start review", title: "Weak Area Review", tone: "primary",
   }];
+  if (dashboard.manualReviewCount > 0) return [{
+    action: { kind: "start_supported_mode", trackId: input.activeTrack.id, modeId: ALGORITHM_MODE_IDS.weakAreaReview, evidenceSources: ["due_queue"], reviewSource: "manual_request" },
+    detail: `${dashboard.manualReviewCount} question${dashboard.manualReviewCount === 1 ? " is" : "s are"} ready for a manual review request before its scheduled date.`,
+    enabled: true, icon: "cpu", label: "Review now", primaryLabel: "Start review", title: "Requested review", tone: "primary",
+  }];
   return [{
     action: { kind: "start_supported_mode", trackId: input.activeTrack.id, modeId: ALGORITHM_MODE_IDS.guidedPractice, nodeId: currentNodeId },
     detail: "Practice the track's current mental units with guided feedback.",

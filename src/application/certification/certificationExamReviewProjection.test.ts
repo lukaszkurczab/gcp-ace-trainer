@@ -9,6 +9,8 @@ import { projectCertificationExamReview } from "./certificationExamReviewProject
 test("completed exam review projects answered and unanswered items across the complete fixed plan", async () => {
   const { attempts, projection } = await createCertificationExamReviewFixture({ correctIndices: [0], incorrectIndices: [1] });
   assert.equal(projection.items.length, 50);
+  assert.equal(projection.items[0]?.sourceAttemptId, attempts.find((attempt) => attempt.occurrenceId === projection.items[0]?.occurrenceId)?.id);
+  assert.equal(projection.items[2]?.sourceAttemptId, undefined, "unanswered occurrences do not receive fabricated attempt identities");
   assert.equal(projection.answeredCount, 2);
   assert.equal(projection.unansweredCount, 48);
   assert.equal(projection.items[0]?.answerState, "answered");

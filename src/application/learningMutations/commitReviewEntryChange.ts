@@ -1,14 +1,34 @@
 import type { ReviewQueueEntry } from "../../domain";
+import type { MutationExpectedRevision } from "../../storage/repositories/mutationJournalRepository";
 import { buildMutationJournal } from "./mutationJournalBuilder";
-import { commitMutation } from "./commitMutation";
+import { commitMutationAfterPreflight } from "./commitMutation";
 
-export async function commitReviewEntryChange(input: { record: ReviewQueueEntry; isUpdate: boolean; transitionId: string; createdAt: string }): Promise<void> {
-  const write = input.isUpdate
-    ? { kind: "update_review_entry" as const, record: input.record, transitionId: input.transitionId }
-    : { kind: "put_review_entry" as const, record: input.record };
-  await commitMutation(await buildMutationJournal({ operation: "set_review_entry", sessionId: input.record.sourceSessionId, trackId: input.record.trackId, identity: [input.record.id, input.transitionId, input.record.reasons, input.record.dueAt], writes: [write], createdAt: input.createdAt }));
-}
+export type ReviewEntryMutation = Readonly<{
+  action: "put" | "update" | "delete";
+  createdAt: string;
+  record: ReviewQueueEntry;
+  expectedRevisionOverrides: readonly MutationExpectedRevision[];
+  transitionId: string;
+}>;
 
-export async function commitReviewEntryRemoval(record: ReviewQueueEntry, createdAt: string): Promise<void> {
-  await commitMutation(await buildMutationJournal({ operation: "remove_review_entry", sessionId: record.sourceSessionId, trackId: record.trackId, identity: record.id, writes: [{ kind: "delete_review_entry", record }], createdAt }));
+/** Resolves a review change and journals it inside the shared local-write lane. */
+export async function commitReviewEntryChange(resolve: () => Promise<ReviewEntryMutation | null>, revalidate: () => void): Promise<void> {
+  await commitMutationAfterPreflight(async () => {
+    const input = await resolve();
+    if (!input) return null;
+    const write = input.action === "delete"
+      ? { kind: "delete_review_entry" as const, record: input.record }
+      : input.action === "put"
+        ? { kind: "put_review_entry" as const, record: input.record }
+        : { kind: "update_review_entry" as const, record: input.record, transitionId: input.transitionId };
+    return buildMutationJournal({
+      operation: input.action === "delete" ? "remove_review_entry" : "set_review_entry",
+      sessionId: input.record.sourceSessionId,
+      trackId: input.record.trackId,
+      identity: [input.record.id, input.transitionId, input.action, input.record],
+      writes: [write],
+      createdAt: input.createdAt,
+      expectedRevisionOverrides: input.expectedRevisionOverrides,
+    });
+  }, revalidate);
 }

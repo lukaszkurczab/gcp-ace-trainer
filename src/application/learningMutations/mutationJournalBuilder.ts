@@ -5,13 +5,14 @@ import {
   type MutationJournalPlan,
   type MutationJournalRecord,
   type MutationOperation,
+  type MutationExpectedRevision,
 } from "../../storage/repositories/mutationJournalRepository";
 import { createIdentityFingerprint } from "./identity";
 import { isArtifactSha256 } from "../../domain";
 
 export type { MutationOperation };
 
-export async function buildMutationJournal(input: { operation: MutationOperation; sessionId: string; trackId: string; identity: unknown; writes: readonly JournalWrite[]; createdAt: string }): Promise<MutationJournalRecord> {
+export async function buildMutationJournal(input: { operation: MutationOperation; sessionId: string; trackId: string; identity: unknown; writes: readonly JournalWrite[]; createdAt: string; expectedRevisionOverrides?: readonly MutationExpectedRevision[] }): Promise<MutationJournalRecord> {
   const artifactSha256Values = input.writes.flatMap((write): string[] => {
     if (write.kind === "put_session") return [write.record.artifactSha256];
     if (write.kind === "put_attempt") return [write.record.item.artifactSha256];
@@ -30,7 +31,7 @@ export async function buildMutationJournal(input: { operation: MutationOperation
     trackId: input.trackId,
     artifactSha256,
     commandIdentity: { version: 1, fingerprint: commandFingerprint },
-    expectedRevisions: captureMutationExpectedRevisions(input.writes),
+    expectedRevisions: captureMutationExpectedRevisions(input.writes, input.expectedRevisionOverrides),
     writes: input.writes,
   };
   return {

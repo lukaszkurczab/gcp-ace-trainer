@@ -4,6 +4,7 @@ import test from "node:test";
 
 const review = readFileSync("src/features/exam/ExamReviewScreen.tsx", "utf8");
 const navigator = readFileSync("src/navigation/RootNavigator.tsx", "utf8");
+const resultScreenSource = readFileSync("src/features/exam/ResultScreen.tsx", "utf8");
 const feedback = readFileSync("src/features/practice/PracticeFeedbackBlock.tsx", "utf8");
 
 test("Exam Review has one local header owner and returns to the exact result session", () => {
@@ -16,8 +17,8 @@ test("Exam Review has one local header owner and returns to the exact result ses
 });
 
 test("Previous and Next preserve their question navigation and boundary disabling", () => {
-  assert.match(review, /disabled=\{!previous\}[\s\S]*?previous && setCurrentOccurrenceId\(previous\.occurrenceId\)[\s\S]*?t\("Previous"\)/);
-  assert.match(review, /disabled=\{!next\}[\s\S]*?next && setCurrentOccurrenceId\(next\.occurrenceId\)[\s\S]*?t\("Next"\)/);
+  assert.match(review, /disabled=\{!previous\}[\s\S]*?previous && selectOccurrence\(previous\.occurrenceId\)[\s\S]*?t\("Previous"\)/);
+  assert.match(review, /disabled=\{!next\}[\s\S]*?next && selectOccurrence\(next\.occurrenceId\)[\s\S]*?t\("Next"\)/);
   assert.doesNotMatch(review, /t\("Back"\)/);
 });
 
@@ -29,4 +30,21 @@ test("Unanswered uses shared feedback with complete details expanded and reporti
   assert.match(feedback, /showReport = true/);
   assert.match(feedback, /useState\(initiallyExpanded\)/);
   assert.match(feedback, /showReport \? <ContentReportSheet/);
+});
+
+test("manual review marking uses verified result identity and cannot turn an unavailable queue into an unmarked state", () => {
+  assert.match(review, /loadReviewQueueItems\(\)[\s\S]*?setReviewMarkState\(\{ kind: "unavailable"/);
+  assert.match(review, /item\.result !== "unanswered" && item\.sourceAttemptId !== undefined && item\.item\.trackId === "google-cloud-associate-cloud-engineer"/);
+  assert.match(review, /setQuestionNeedsReview\(\{ sourceAttemptId: item\.sourceAttemptId!?[, ]+sourceItem: item\.item, sourceSessionId: projection\.sessionId \}, !isMarkedForReview\)/);
+  assert.match(review, /resolvedContentRefsEqual\(entry\.sourceItem, item\.item\)/);
+  assert.match(review, /accessibilityState=\{\{ selected: isMarkedForReview \}\}/);
+  assert.match(review, /loading=\{isMarkPending\}/);
+  assert.match(review, /t\("Review status could not be loaded"\)/);
+  assert.match(review, /t\("Manual review is unavailable for this answer"\)/);
+  assert.match(review, /commitManualReviewAndReadback\(\{[\s\S]*?onCommitted: \(\) => \{ if \(isCurrent\(\)\) setReviewMarkState\(\{ kind: "pending"/);
+  assert.match(review, /result\.kind === "stale"[\s\S]*?setReviewMarkState\(\{ kind: "unavailable"/);
+  assert.match(review, /captureProfileReadFence\(\)/);
+  assert.match(review, /disabled=\{pendingMarkOccurrenceId !== null\}/);
+  assert.doesNotMatch(review, /questionSnapshot|sourceAttemptId: item\.occurrenceId/);
+  assert.match(resultScreenSource, /navigation\.navigate\(ROUTES\.EXAM_REVIEW, \{ sessionId: route\.params\.sessionId \}\)/);
 });

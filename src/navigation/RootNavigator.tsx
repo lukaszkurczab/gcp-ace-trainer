@@ -7,7 +7,6 @@ import { Linking, StyleSheet } from "react-native";
 import { AppShellHeader, LoadingState, Screen } from "../components";
 import { usePatternlyAccount } from "../application/account/AccountSessionProvider";
 import { ROUTES } from "../constants/routes";
-import { AnswerReviewScreen } from "../features/review/AnswerReviewScreen";
 import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
 import { CertificationExamReviewFixtureNavigator } from "../features/exam/certificationExamReviewFixtureNavigator";
 import { createCertificationExamReviewFixtureRuntime } from "../features/exam/certificationExamReviewFixtureRuntime";
@@ -267,11 +266,6 @@ export function RootNavigator() {
             name={ROUTES.RESULT}
             component={ResultScreen}
             options={{ title: t("Result") }}
-          />
-          <Stack.Screen
-            name={ROUTES.ANSWER_REVIEW}
-            component={AnswerReviewScreen}
-            options={{ headerShown: false, title: t("Answer Review") }}
           />
           <Stack.Screen
             name={ROUTES.PRACTICE_SETUP}

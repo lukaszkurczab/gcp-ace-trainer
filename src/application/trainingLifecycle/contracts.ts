@@ -67,6 +67,8 @@ export type PracticeSubmission = Readonly<{
   attempt: TrainingAttempt<unknown>;
   session: TrainingSession;
   reviewMutations: readonly ReviewMutationCommand[];
+  reviewBaseline?: readonly ReviewQueueEntry[];
+  reviewSnapshotConflict?: boolean;
 }>;
 
 export type SimulationFinalization = Readonly<{
@@ -75,6 +77,7 @@ export type SimulationFinalization = Readonly<{
   attempts: readonly TrainingAttempt<unknown>[];
   reviewMutations: readonly ReviewMutationCommand[];
   frozenDraft: TrainingSessionDraft;
+  reviewBaseline?: readonly ReviewQueueEntry[];
 }>;
 
 export type PracticeFinalization = Readonly<{
@@ -151,10 +154,10 @@ export type PendingMutationProjection = Readonly<{
 /** The only application dependency allowed to mutate canonical records. */
 export interface TrainingMutationCoordinatorPort {
   start(input: PreparedSession): Promise<void>;
-  submitPractice(input: PracticeSubmission): Promise<void>;
+  submitPractice(input: PracticeSubmission): Promise<boolean>;
   advance(session: TrainingSession): Promise<void>;
   completeWithResult(input: PracticeFinalization): Promise<void>;
-  finalize(input: SimulationFinalization): Promise<void>;
+  finalize(input: SimulationFinalization): Promise<boolean>;
   abandon(session: TrainingSession, preflight?: () => Promise<void>): Promise<void>;
   recover(): Promise<void>;
   reset(): Promise<void>;

@@ -1,5 +1,6 @@
 import {
   REVIEW_REASONS,
+  isManualRequestId,
   createAttemptResult,
   createTrainingSession,
   createTrainingSessionDraft,
@@ -9,6 +10,7 @@ import {
   isRegisteredTrackId,
   isArtifactSha256,
   isResolvedContentRef,
+  REVIEW_CYCLE_STAGES,
   type ResolvedContentRef,
   type EvidenceRef,
   type ReviewQueueEntry,
@@ -159,14 +161,62 @@ export function isTrainingAttempt(value: unknown): value is TrainingAttempt<unkn
 
 export function isReviewQueueEntry(value: unknown): value is ReviewQueueEntry {
   return isRecord(value) && !("kind" in value) && !("priority" in value) && !("retentionPassedAt" in value) &&
-    hasOnlyKeys(value, ["id", "trackId", "sourceAttemptId", "sourceSessionId", "sourceItem", "taxonomyOrSkillRefs", "reasons", "dueAt", "createdAt", "consecutiveAfterDueSuccesses", "persistent", "lastReviewedAt"]) &&
+    hasOnlyKeys(value, ["id", "trackId", "sourceAttemptId", "sourceSessionId", "sourceItem", "taxonomyOrSkillRefs", "reasons", "dueAt", "createdAt", "consecutiveAfterDueSuccesses", "persistent", "lastReviewedAt", "policyVersion", "stage", "manualRequestId", "status", "completedAt", "completedByAttemptId"]) &&
     isNonEmptyString(value.id) && typeof value.trackId === "string" &&
     isRegisteredTrackId(value.trackId) && isNonEmptyString(value.sourceAttemptId) && isNonEmptyString(value.sourceSessionId) &&
     isReviewEvidence(value) && Array.isArray(value.reasons) && value.reasons.every((reason) =>
       typeof reason === "string" && (REVIEW_REASONS as readonly string[]).includes(reason)) &&
-    isTimestamp(value.dueAt) && isTimestamp(value.createdAt) &&
+    isTimestamp(value.createdAt) &&
     Number.isInteger(value.consecutiveAfterDueSuccesses) && Number(value.consecutiveAfterDueSuccesses) >= 0 &&
-    typeof value.persistent === "boolean" && (value.lastReviewedAt === undefined || isTimestamp(value.lastReviewedAt));
+    typeof value.persistent === "boolean" && (value.lastReviewedAt === undefined || isTimestamp(value.lastReviewedAt)) &&
+    isValidReviewCycleState(value);
+}
+
+function isValidReviewCycleState(value: Record<string, unknown>): boolean {
+  if (!Array.isArray(value.reasons)) return false;
+  const reasons = value.reasons;
+  const hasPolicy = Object.hasOwn(value, "policyVersion");
+  const hasStage = Object.hasOwn(value, "stage");
+  const hasStatus = Object.hasOwn(value, "status");
+  const hasCompletion = Object.hasOwn(value, "completedAt") || Object.hasOwn(value, "completedByAttemptId");
+  const hasManualRequestId = Object.hasOwn(value, "manualRequestId");
+  if (hasManualRequestId && (!isManualRequestId(value.manualRequestId) || !reasons.includes("manual_mark"))) return false;
+  if (!hasPolicy && !hasStage && !hasStatus && !hasCompletion) {
+    return isTimestamp(value.dueAt) && Number(value.consecutiveAfterDueSuccesses) <= 1 &&
+      ((value.persistent === true && reasons.length === 1 && (reasons[0] === "incorrect" || reasons[0] === "partial")) ||
+        (value.persistent === true && reasons.length === 1 && reasons[0] === "manual_mark") ||
+        (value.persistent === true && reasons.length === 2 && reasons.includes("manual_mark") && reasons.some((reason) => reason === "incorrect" || reason === "partial" || reason === "scheduled_retrieval")) ||
+        (value.persistent === false && hasManualRequestId && reasons.length === 2 && reasons.includes("manual_mark") && reasons.includes("scheduled_retrieval")) ||
+        (value.persistent === false && reasons.length === 1 && reasons[0] === "scheduled_retrieval"));
+  }
+  if (!hasPolicy || !hasStage || !hasStatus || value.policyVersion !== "bizq04-v1" || !REVIEW_CYCLE_STAGES.includes(value.stage as (typeof REVIEW_CYCLE_STAGES)[number])) return false;
+  const reasonSet = new Set(reasons);
+  if (reasonSet.size !== reasons.length) return false;
+  const exactly = (...expected: string[]) => reasons.length === expected.length && expected.every((reason) => reasonSet.has(reason));
+  const hasManualReason = reasonSet.has("manual_mark");
+  if (hasManualRequestId !== hasManualReason) return false;
+  if (value.status === "active") {
+    if (hasCompletion || !isTimestamp(value.dueAt)) return false;
+    switch (value.stage) {
+      case "repair24":
+        return value.persistent === true && value.consecutiveAfterDueSuccesses === 0 &&
+          (exactly("incorrect") || exactly("partial") || (hasManualReason && (exactly("incorrect", "manual_mark") || exactly("partial", "manual_mark"))));
+      case "repair7":
+        return value.persistent === true && value.consecutiveAfterDueSuccesses === 1 &&
+          (exactly("incorrect") || exactly("partial") || (hasManualReason && (exactly("incorrect", "manual_mark") || exactly("partial", "manual_mark"))));
+      case "manual_requested":
+        return value.persistent === true && value.consecutiveAfterDueSuccesses === 0 && exactly("manual_mark") && hasManualRequestId;
+      case "retention7":
+      case "retention14":
+      case "retention28":
+        return value.persistent === false && value.consecutiveAfterDueSuccesses === 0 &&
+          (exactly("scheduled_retrieval") || (hasManualReason && exactly("scheduled_retrieval", "manual_mark")));
+    }
+  }
+  if (value.status === "completed") return !Object.hasOwn(value, "dueAt") && isTimestamp(value.completedAt) &&
+    isNonEmptyString(value.completedByAttemptId) && value.stage === "retention28" && value.persistent === false &&
+    value.consecutiveAfterDueSuccesses === 0 && !hasManualRequestId && exactly("scheduled_retrieval");
+  return false;
 }
 
 function isExactReviewEvidence(value: unknown): value is { sourceItem: ResolvedContentRef; taxonomyOrSkillRefs: EvidenceRef[] } {
@@ -184,7 +234,19 @@ function isEvidenceRef(value: unknown): value is EvidenceRef {
 }
 
 function isSessionItemOccurrence(value: unknown): value is { occurrenceId: string; item: ResolvedContentRef } {
-  return isRecord(value) && hasOnlyKeys(value, ["occurrenceId", "item"]) && isNonEmptyString(value.occurrenceId) && isResolvedContentRef(value.item);
+  return isRecord(value) && hasOnlyKeys(value, ["occurrenceId", "item", "reviewSourceSnapshot"]) && isNonEmptyString(value.occurrenceId) && isResolvedContentRef(value.item) &&
+    (value.reviewSourceSnapshot === undefined || isReviewSourceSnapshot(value.reviewSourceSnapshot));
+}
+
+function isReviewSourceSnapshot(value: unknown): boolean {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["source", "reviewEntryId", "sourceAttemptId", "manualRequestId", "dueAt", "policyVersion", "stage"])) return false;
+  const exactKeys = ["source", "reviewEntryId", "sourceAttemptId", "dueAt", "policyVersion", "stage", ...(Object.hasOwn(value, "manualRequestId") ? ["manualRequestId"] : [])].sort();
+  if (Object.keys(value).sort().join("\0") !== exactKeys.join("\0")) return false;
+  return (value.source === "due_queue" || value.source === "manual_request") &&
+    (value.source !== "manual_request" || isManualRequestId(value.manualRequestId)) &&
+    (value.manualRequestId === undefined || isManualRequestId(value.manualRequestId)) && isNonEmptyString(value.reviewEntryId) && isNonEmptyString(value.sourceAttemptId) &&
+    isTimestamp(value.dueAt) && isNonEmptyString(value.policyVersion) &&
+    ["repair24", "repair7", "manual_requested", "retention7", "retention14", "retention28", "legacy_active_unqualified"].includes(String(value.stage));
 }
 
 function isConditionalReinsertSlot(value: unknown): boolean {

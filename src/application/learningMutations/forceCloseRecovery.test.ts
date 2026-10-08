@@ -3,7 +3,6 @@ import test from "node:test";
 import { commitMutation } from "./commitMutation";
 import { materializeMutation } from "./mutationMaterializer";
 import { recoverPendingMutation } from "./recoverPendingMutation";
-import { commitReviewEntryChange, commitReviewEntryRemoval } from "./";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { getActiveMutationJournal, persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
 import { addReviewQueueItems, addTrainingAttempt, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, saveTrainingSession } from "../../storage/repositories";
@@ -44,19 +43,5 @@ test("resolved review deletion recovers when its index update fails", async () =
   storage.setFailurePlan(null);
   await recoverPendingMutation();
   assert.equal(storage.contains(STORAGE_KEYS.reviewEntry(resolved.id)), false);
-  assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false);
-});
-test("manual review removal recovers after index switch but before physical deletion", async () => {
-  const storage = installMemoryStorage();
-  const manual = { ...review("manual-review", "manual-attempt"), sourceSessionId: "manual-session", reasons: ["manual_mark" as const] };
-  await commitReviewEntryChange({ record: manual, isUpdate: false, transitionId: "manual-transition", createdAt: manual.createdAt });
-  storage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.reviewEntry(manual.id) });
-  await assert.rejects(() => commitReviewEntryRemoval(manual, manual.createdAt));
-  assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), true);
-  assert.equal(storage.contains(STORAGE_KEYS.reviewEntry(manual.id)), true);
-  storage.setFailurePlan(null);
-  await recoverPendingMutation();
-  assert.equal(storage.contains(STORAGE_KEYS.reviewEntry(manual.id)), false);
-  assert.equal((await getReviewQueueItems()).value.length, 0);
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false);
 });

@@ -165,6 +165,7 @@ export const runtimeSelectors = Object.freeze({
     previous: () => selector("practice-review", "previous"),
     next: () => selector("practice-review", "next"),
     result: () => selector("practice-review", "result"),
+    manualMark: (sessionId: string, occurrenceId: string) => selector("practice-review", "manual-mark", sessionId, occurrenceId),
   }),
   progress: Object.freeze({
     root: () => selector("progress", "root"),

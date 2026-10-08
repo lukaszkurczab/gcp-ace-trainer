@@ -202,6 +202,9 @@
   "Switch filters to review the full attempt.": "Ändere die Filter, um den gesamten Versuch anzusehen.",
   "Review data could not be loaded locally.": "Die Wiederholungsdaten konnten nicht lokal geladen werden.",
   "The review mark could not be saved locally.": "Die Markierung zur Wiederholung konnte nicht lokal gespeichert werden.",
+  "Checking review status": "Wiederholungsstatus wird geprüft…",
+  "Review status could not be loaded": "Der Wiederholungsstatus konnte nicht geladen werden.",
+  "Manual review is unavailable for this answer": "Diese Antwort kann nicht für eine Wiederholung markiert werden.",
   "correct": "richtig",
   "Focus overview": "Lernfortschritt im Überblick",
   "Review what needs attention and track recent local practice.": "Sieh dir an, was Aufmerksamkeit braucht, und verfolge deine letzten lokalen Übungen.",
@@ -254,6 +257,10 @@
   "unavailable": "nicht verfügbar",
   "Due now": "Jetzt fällig",
   "Upcoming": "Demnächst fällig",
+  "Manual request": "Manuelle Anfrage",
+  "ready now": "Jetzt verfügbar",
+  "Available now": "Sofort verfügbar",
+  "Overdue and due items from the review queue, plus manual requests ready now.": "Überfällige und fällige Wiederholungen sowie jetzt verfügbare manuelle Anfragen.",
   "Overdue and due items from the review queue.": "Überfällige und fällige Inhalte aus der Wiederholungsliste.",
   "No due items right now. Upcoming items are listed for visibility.": "Derzeit sind keine Inhalte fällig. Die demnächst fälligen Inhalte werden hier zur Übersicht angezeigt.",
   "Review item": "Inhalt wiederholen",
@@ -741,5 +748,8 @@
   "home.week.answersRecorded_few": "{{count}} gespeicherte Antworten",
   "home.week.answersRecorded_many": "{{count}} gespeicherte Antworten",
   "home.week.answersRecorded_other": "{{count}} gespeicherte Antworten",
-  "home.week.unavailable": "Die Aktivität dieser Woche ist nicht verfügbar."
+  "home.week.unavailable": "Die Aktivität dieser Woche ist nicht verfügbar.",
+  "home.review.manualReady": "Manuelle Wiederholungsanfragen jetzt bereit: {{count}}",
+  "home.review.dueAndManual": "Fällige Wiederholungen: {{dueCount}} · Manuelle Anfragen jetzt bereit: {{manualCount}}",
+  "Your answer is saved, but no review credit was applied because the review cycle changed.": "Deine Antwort ist gespeichert, aber die Wiederholung wurde nicht angerechnet, weil sich der Wiederholungszyklus geändert hat."
 }

@@ -327,7 +327,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               reviewSource: route.params?.reviewSource,
               sessionLength: configuredSessionLength,
             }
-            : diagnosticBaseline || quickReview ? {} : focusPractice ? { sessionLength: configuredSessionLength, ...(selectableFeedback ? { feedbackMode } : {}) } : weakAreaReview || designMode ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
+            : diagnosticBaseline ? {} : quickReview ? { reviewSource: route.params?.reviewSource } : focusPractice ? { sessionLength: configuredSessionLength, ...(selectableFeedback ? { feedbackMode } : {}) } : weakAreaReview ? { sessionLength: configuredSessionLength, reviewSource: route.params?.reviewSource } : designMode ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
         mode,
         source: "practiceSetup",
         topicId: diagnosticBaseline ? canonicalNodeId : focusPractice ? selectedFocusTopicId! : weakAreaReview || quickReview ? "" : topic.id,

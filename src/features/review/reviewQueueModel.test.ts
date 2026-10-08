@@ -47,3 +47,35 @@ test("review screen keeps unavailable rows out of due and upcoming sections", ()
   assert.equal(model.unavailableRows[0]?.unavailableReason, "unknown_artifact_hash");
   assert.equal(model.unavailableRows[0]?.promptPreview, "Content metadata is unavailable for this review item.");
 });
+
+test("manual requests appear in available-now rows with a distinct requested status", () => {
+  const model = buildReviewQueueScreenModel({
+    degraded: false,
+    dueItems: [{
+      dueAt: "2026-10-09T12:00:00.000Z",
+      id: "manual-review",
+      isDue: false,
+      isManualRequest: true,
+      isOverdue: false,
+      kind: "available",
+      questionId: "question-manual",
+      mistakeTypeRefs: [],
+      prompt: "Available on request",
+      reasons: ["manual_mark"],
+      sourceAttemptId: "attempt-manual",
+      taxonomyRefs: [],
+    }],
+    issues: [],
+    ok: true,
+    overdueItems: [],
+    totalItems: 1,
+    trackTitle: "Cloud Engineering",
+    unavailableItems: [],
+    upcomingItems: [],
+  });
+
+  assert.equal(model.dueRows.length, 1);
+  assert.equal(model.dueRows[0]?.id, "manual-review");
+  assert.equal(model.dueRows[0]?.status, "requested");
+  assert.deepEqual(model.upcomingRows, []);
+});

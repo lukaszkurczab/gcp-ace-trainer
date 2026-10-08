@@ -31,6 +31,40 @@ test("real loader prepares all 29 modes across nine tracks", async () => {
   assert.equal(modes, 29);
 });
 
+test("canonical dashboard independently counts due and future manual review entries", async () => {
+  const track = (await catalogPromise).getTrack("frontend-system-design-interview");
+  const dueQuestion = track.questions[1]!;
+  const manualQuestion = track.questions[0]!;
+  const due: ReviewQueueEntry = {
+    ...reviewFor(itemRef(track, dueQuestion.questionId), "2025-12-31T00:00:00.000Z"),
+    id: "review:dashboard-mixed-due",
+    reasons: ["scheduled_retrieval"],
+    stage: "retention7",
+    policyVersion: "bizq04-v1",
+    status: "active",
+  };
+  const manual: ReviewQueueEntry = {
+    ...reviewFor(itemRef(track, manualQuestion.questionId), "2026-01-08T00:00:00.000Z"),
+    id: "review:dashboard-mixed-manual",
+    reasons: ["scheduled_retrieval", "manual_mark"],
+    stage: "retention7",
+    policyVersion: "bizq04-v1",
+    manualRequestId: `manual:${"c".repeat(64)}`,
+    status: "active",
+  };
+  const dashboard = await new CanonicalTrainingRuntime(track).queryDashboard({
+    activeSession: null,
+    trackId: track.trackId,
+    attempts: [],
+    reviews: [due, manual],
+    now: NOW,
+  }) as { dueReviewCount: number; manualReviewCount: number };
+  assert.deepEqual(
+    { dueReviewCount: dashboard.dueReviewCount, manualReviewCount: dashboard.manualReviewCount },
+    { dueReviewCount: 1, manualReviewCount: 1 },
+  );
+});
+
 test("real canonical questions submit and score all five interaction types", async () => {
   const catalog = await catalogPromise; const seen = new Set<string>();
   for (const trackId of catalog.tracks) { const track = catalog.getTrack(trackId);
@@ -81,11 +115,330 @@ test("evidence permits one item and multi-source Coding review requires an expli
   await assert.rejects(new CanonicalTrainingRuntime(coding).prepare({ trackId: coding.trackId, modeId: codingMode.modeId, request: { sessionId: "coding-evidence", requestedLength: 20 }, attempts: [miss], reviews: [], now: NOW }), /explicit reviewSource/);
 });
 
-test("coding review preserves identity and resolves after two due successes", async () => {
+test("coding due review binds the exact cycle snapshot and advances one policy interval per qualified answer", async () => {
   const catalog = await catalogPromise; const track = catalog.getTrack("coding-interview-dsa-problem-solving"); const runtime = new CanonicalTrainingRuntime(track); const mode = track.getMode("coding-interview-learn-approach"); const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "review", requestedLength: 10 }, attempts: [], reviews: [], now: NOW }); const question = track.getQuestion(prepared.session.itemOrder[0]!.item.questionId)!;
-  const bad = await runtime.submitPractice({ session: prepared.session, response: wrongResponse(question), attempts: [], reviews: [], now: NOW }); assert.notEqual(bad.attempt.result.kind, "correct"); assert.equal(bad.reviewMutations[0]?.kind, "upsert"); if (bad.reviewMutations[0]?.kind !== "upsert") return; assert.equal(bad.reviewMutations[0].entry.dueAt, "2026-01-02T00:00:00.000Z");
-  const priorDue = { ...bad.reviewMutations[0].entry, sourceSessionId: "older-session", dueAt: NOW }; const first = await runtime.submitPractice({ session: prepared.session, response: responseFor(question), attempts: [], reviews: [priorDue], now: "2026-01-02T00:00:00.000Z" }); assert.equal(first.reviewMutations[0]?.kind, "upsert"); if (first.reviewMutations[0]?.kind !== "upsert") return; assert.equal(first.reviewMutations[0].entry.id, priorDue.id);
-  const second = await runtime.submitPractice({ session: prepared.session, response: responseFor(question), attempts: [], reviews: [first.reviewMutations[0].entry], now: "2026-01-03T00:00:00.000Z" }); assert.equal(second.reviewMutations[0]?.kind, "remove");
+  const bad = await runtime.submitPractice({ session: prepared.session, response: wrongResponse(question), attempts: [], reviews: [], now: NOW }); assert.notEqual(bad.attempt.result.kind, "correct"); assert.equal(bad.reviewMutations[0]?.kind, "upsert"); if (bad.reviewMutations[0]?.kind !== "upsert") return; assert.equal(bad.reviewMutations[0].entry.stage, "repair24"); assert.equal(bad.reviewMutations[0].entry.dueAt, "2026-01-02T00:00:00.000Z");
+  const priorDue = bad.reviewMutations[0].entry;
+  const dueMode = track.getMode("coding-interview-weak-area-review");
+  const dueSession = await runtime.prepare({ trackId: track.trackId, modeId: dueMode.modeId, request: { sessionId: "review-due", requestedLength: dueMode.requestedLengths[0]!, reviewSource: "due_queue" }, attempts: [], reviews: [priorDue], now: priorDue.dueAt! });
+  const dueOccurrence = dueSession.session.itemOrder[0]!;
+  assert.equal(dueOccurrence.reviewSourceSnapshot?.reviewEntryId, priorDue.id);
+  const first = await runtime.submitPractice({ session: dueSession.session, response: responseFor(question), attempts: [], reviews: [priorDue], now: "2026-01-02T00:00:00.000Z" });
+  assert.equal(first.reviewMutations[0]?.kind, "upsert"); if (first.reviewMutations[0]?.kind !== "upsert") return;
+  assert.equal(first.reviewMutations[0].entry.id, priorDue.id); assert.equal(first.reviewMutations[0].entry.stage, "repair7"); assert.equal(first.reviewMutations[0].entry.dueAt, "2026-01-09T00:00:00.000Z");
+  const stale = { ...first.reviewMutations[0].entry, dueAt: "2026-01-10T00:00:00.000Z" };
+  const staleAnswer = await runtime.submitPractice({ session: dueSession.session, response: responseFor(question), attempts: [], reviews: [stale], now: "2026-01-11T00:00:00.000Z" });
+  assert.deepEqual(staleAnswer.reviewMutations, [], "a changed due cycle cannot inherit credit from the frozen occurrence");
+  assert.equal(staleAnswer.reviewSnapshotConflict, true);
+});
+
+test("a standalone manual request starts retention at seven days and an incorrect result starts repair at 24 hours", async () => {
+  const track = (await catalogPromise).getTrack("frontend-system-design-interview");
+  const runtime = new CanonicalTrainingRuntime(track);
+  const mode = track.getMode("design-interview-weak-area-review");
+  const question = track.getPool(mode.modeId)[0]!;
+  const item = itemRef(track, question.questionId);
+  const manual: ReviewQueueEntry = {
+    ...reviewFor(item, NOW),
+    reasons: ["manual_mark"],
+    persistent: true,
+    policyVersion: "bizq04-v1",
+    stage: "manual_requested",
+    manualRequestId: `manual:${"a".repeat(64)}`,
+    status: "active",
+  };
+  const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "manual-review-correct", requestedLength: 1, reviewSource: "due_queue" }, attempts: [], reviews: [manual], now: NOW });
+  const correct = await runtime.submitPractice({ session: prepared.session, response: responseFor(question), attempts: [], reviews: [manual], now: NOW });
+  const correctMutation = correct.reviewMutations[0];
+  assert.equal(correctMutation?.kind, "upsert");
+  if (correctMutation?.kind !== "upsert") return;
+  assert.equal(correctMutation.entry.stage, "retention7");
+  assert.equal(correctMutation.entry.dueAt, "2026-01-08T00:00:00.000Z");
+  assert.deepEqual(correctMutation.entry.reasons, ["scheduled_retrieval"]);
+  assert.equal(correctMutation.entry.persistent, false);
+  assert.equal(correctMutation.entry.manualRequestId, undefined);
+
+  const wrongSession = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "manual-review-wrong", requestedLength: 1, reviewSource: "due_queue" }, attempts: [], reviews: [manual], now: NOW });
+  const incorrect = await runtime.submitPractice({ session: wrongSession.session, response: wrongResponse(question), attempts: [], reviews: [manual], now: NOW });
+  const incorrectMutation = incorrect.reviewMutations[0];
+  assert.equal(incorrectMutation?.kind, "upsert");
+  if (incorrectMutation?.kind !== "upsert") return;
+  assert.equal(incorrectMutation.entry.stage, "repair24");
+  assert.equal(incorrectMutation.entry.dueAt, "2026-01-02T00:00:00.000Z");
+  assert.deepEqual(incorrectMutation.entry.reasons, ["incorrect"]);
+});
+
+test("due-queue snapshots bind the identity of a manual request overlay", async () => {
+  const track = (await catalogPromise).getTrack("frontend-system-design-interview");
+  const mode = track.getMode("design-interview-weak-area-review");
+  const question = track.getPool(mode.modeId)[0]!;
+  const item = itemRef(track, question.questionId);
+  const manual: ReviewQueueEntry = {
+    ...reviewFor(item, NOW), reasons: ["manual_mark"], persistent: true, manualRequestId: `manual:${"b".repeat(64)}`,
+    policyVersion: "bizq04-v1", stage: "manual_requested", status: "active",
+  };
+  const prepared = await new CanonicalTrainingRuntime(track).prepare({
+    trackId: track.trackId,
+    modeId: mode.modeId,
+    request: { sessionId: "manual-review-source-snapshot", requestedLength: 1, reviewSource: "due_queue" },
+    attempts: [],
+    reviews: [manual],
+    now: NOW,
+  });
+  assert.deepEqual(prepared.session.itemOrder[0]?.reviewSourceSnapshot, {
+    source: "due_queue",
+    reviewEntryId: manual.id,
+    sourceAttemptId: manual.sourceAttemptId,
+    manualRequestId: manual.manualRequestId,
+    dueAt: manual.dueAt,
+    policyVersion: "bizq04-v1",
+    stage: "manual_requested",
+  });
+  await new CanonicalTrainingRuntime(track).validateResume({ session: prepared.session, draft: null });
+});
+
+test("ordinary wrong and partial work preserve an unrelated manual overlay", async () => {
+  const catalog = await catalogPromise;
+  const track = catalog.getTrack("coding-interview-dsa-problem-solving");
+  const runtime = new CanonicalTrainingRuntime(track);
+  const reviewMode = track.getMode("coding-interview-weak-area-review");
+  const question = track.getPool(reviewMode.modeId).find((entry) => entry.interaction.type === "choice_multiple" && entry.answer.type === "choice_multiple" && entry.answer.optionIds.length > 1)!;
+  if (question.interaction.type !== "choice_multiple" || question.answer.type !== "choice_multiple") throw new Error("Expected a multi-select question for a partial-scoring practice fixture.");
+  const mode = track.modes.find((entry) => entry.selection.kind !== "evidence_conditioned" && !entry.modeId.endsWith("-simulation") && track.getPool(entry.modeId).some((candidate) => candidate.questionId === question.questionId))!;
+  const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "manual-overlay-partial-ordinary", requestedLength: mode.requestedLengths[0]! }, attempts: [], reviews: [], now: NOW });
+  const first = prepared.session.itemOrder[0]!;
+  const item = itemRef(track, question.questionId);
+  const itemOrder = prepared.session.itemOrder.map((entry, index) => index === 0 ? { ...entry, item } : entry);
+  const optionOrderByOccurrence = { ...prepared.session.optionOrderByOccurrence, [first.occurrenceId]: prepareCanonicalOptionOrder(question, first.occurrenceId, item) };
+  const base = createTrainingSession({ ...prepared.session, itemOrder, optionOrderByOccurrence, planFingerprint: undefined, taxonomyVersion: undefined });
+  const session = createTrainingSession({ ...base, taxonomyVersion: "canonical-content-v1", planFingerprint: await createContentSessionPlanFingerprint({ ...base, taxonomyVersion: "canonical-content-v1" }) });
+  const response: CanonicalQuestionResponse = { type: "choice_multiple", optionIds: question.answer.optionIds.slice(0, -1) };
+  const occurrence = session.itemOrder[0]!;
+  assert.equal(occurrence.item.questionId, question.questionId);
+  const reviewItem = occurrence.item;
+  const manualOverlay: ReviewQueueEntry = {
+    ...reviewFor(reviewItem, NOW),
+    reasons: ["incorrect", "manual_mark"],
+    persistent: true,
+    consecutiveAfterDueSuccesses: 0,
+    manualRequestId: `manual:${"e".repeat(64)}`,
+    policyVersion: "bizq04-v1",
+    stage: "repair24",
+    status: "active",
+  };
+  const submitted = await runtime.submitPractice({ session, response, attempts: [], reviews: [manualOverlay], now: NOW });
+  assert.equal(submitted.attempt.result.kind, "partial");
+  const mutation = submitted.reviewMutations[0];
+  assert.equal(mutation?.kind, "upsert");
+  if (mutation?.kind !== "upsert") return;
+  assert.deepEqual(mutation.entry.reasons, ["partial", "manual_mark"]);
+  assert.equal(mutation.entry.manualRequestId, manualOverlay.manualRequestId);
+  assert.equal(mutation.entry.stage, "repair24");
+});
+
+test("a wrong answer from the exact due snapshot consumes only its captured manual overlay", async () => {
+  const track = (await catalogPromise).getTrack("frontend-system-design-interview");
+  const runtime = new CanonicalTrainingRuntime(track);
+  const mode = track.getMode("design-interview-weak-area-review");
+  const question = track.getPool(mode.modeId)[0]!;
+  const overlay: ReviewQueueEntry = {
+    ...reviewFor(itemRef(track, question.questionId), NOW),
+    reasons: ["incorrect", "manual_mark"],
+    persistent: true,
+    consecutiveAfterDueSuccesses: 1,
+    manualRequestId: `manual:${"f".repeat(64)}`,
+    policyVersion: "bizq04-v1",
+    stage: "repair7",
+    status: "active",
+  };
+  const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "due-wrong-consumes-exact-manual", requestedLength: 1, reviewSource: "due_queue" }, attempts: [], reviews: [overlay], now: NOW });
+  const submitted = await runtime.submitPractice({ session: prepared.session, response: wrongResponse(question), attempts: [], reviews: [overlay], now: NOW });
+  const mutation = submitted.reviewMutations[0];
+  assert.equal(mutation?.kind, "upsert");
+  if (mutation?.kind !== "upsert") return;
+  assert.deepEqual(mutation.entry.reasons, ["incorrect"]);
+  assert.equal(mutation.entry.manualRequestId, undefined);
+  assert.deepEqual([mutation.entry.stage, mutation.entry.dueAt, mutation.entry.consecutiveAfterDueSuccesses], ["repair24", "2026-01-02T00:00:00.000Z", 0]);
+});
+
+test("qualified due success promotes a manual-overlaid repair without carrying a ghost marker", async () => {
+  const track = (await catalogPromise).getTrack("coding-interview-dsa-problem-solving");
+  const runtime = new CanonicalTrainingRuntime(track);
+  const mode = track.getMode("coding-interview-weak-area-review");
+  const question = track.getPool(mode.modeId)[0]!;
+  const overlay: ReviewQueueEntry = {
+    ...reviewFor(itemRef(track, question.questionId), NOW),
+    reasons: ["incorrect", "manual_mark"],
+    persistent: true,
+    consecutiveAfterDueSuccesses: 0,
+    manualRequestId: `manual:${"9".repeat(64)}`,
+    policyVersion: "bizq04-v1",
+    stage: "repair24",
+    status: "active",
+  };
+  const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "due-success-consumes-repair-overlay", requestedLength: mode.requestedLengths[0]!, reviewSource: "due_queue" }, attempts: [], reviews: [overlay], now: NOW });
+  const submitted = await runtime.submitPractice({ session: prepared.session, response: responseFor(question), attempts: [], reviews: [overlay], now: NOW });
+  const mutation = submitted.reviewMutations[0];
+  assert.equal(mutation?.kind, "upsert");
+  if (mutation?.kind !== "upsert") return;
+  assert.deepEqual([mutation.entry.stage, mutation.entry.dueAt, mutation.entry.consecutiveAfterDueSuccesses, mutation.entry.persistent], ["repair7", "2026-01-08T00:00:00.000Z", 1, true]);
+  assert.deepEqual(mutation.entry.reasons, ["incorrect"]);
+  assert.equal(mutation.entry.manualRequestId, undefined);
+
+  const legacy: ReviewQueueEntry = {
+    ...reviewFor(itemRef(track, question.questionId), NOW),
+    id: "review:legacy-error-manual-overlay",
+    sourceAttemptId: "attempt:legacy-error-manual-overlay",
+    reasons: ["incorrect", "manual_mark"],
+    persistent: true,
+    consecutiveAfterDueSuccesses: 1,
+  };
+  const legacyPrepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "legacy-due-success-consumes-manual-overlay", requestedLength: mode.requestedLengths[0]!, reviewSource: "due_queue" }, attempts: [], reviews: [legacy], now: NOW });
+  assert.match(legacyPrepared.session.itemOrder[0]?.reviewSourceSnapshot?.manualRequestId ?? "", /^legacy-manual:/u);
+  const legacySubmitted = await runtime.submitPractice({ session: legacyPrepared.session, response: responseFor(question), attempts: [], reviews: [legacy], now: NOW });
+  const legacyMutation = legacySubmitted.reviewMutations[0];
+  assert.equal(legacyMutation?.kind, "upsert");
+  if (legacyMutation?.kind !== "upsert") return;
+  assert.deepEqual([legacyMutation.entry.stage, legacyMutation.entry.consecutiveAfterDueSuccesses, legacyMutation.entry.reasons, legacyMutation.entry.manualRequestId], ["repair7", 1, ["incorrect"], undefined]);
+});
+
+test("future manual request is selectable now and a correct answer consumes only the overlay", async () => {
+  const track = (await catalogPromise).getTrack("frontend-system-design-interview");
+  const runtime = new CanonicalTrainingRuntime(track);
+  const mode = track.getMode("design-interview-weak-area-review");
+  const question = track.getPool(mode.modeId)[0]!;
+  const item = itemRef(track, question.questionId);
+  const original: ReviewQueueEntry = {
+    ...reviewFor(item, "2026-01-08T00:00:00.000Z"),
+    reasons: ["scheduled_retrieval", "manual_mark"],
+    manualRequestId: `manual:${"c".repeat(64)}`,
+    persistent: false,
+    policyVersion: "bizq04-v1",
+    stage: "retention7",
+    status: "active",
+  };
+  const prepared = await runtime.prepare({
+    trackId: track.trackId,
+    modeId: mode.modeId,
+    request: { sessionId: "future-manual-request", requestedLength: 1, reviewSource: "manual_request" },
+    attempts: [], reviews: [original], now: NOW,
+  });
+  const snapshot = prepared.session.itemOrder[0]?.reviewSourceSnapshot;
+  assert.deepEqual(snapshot, {
+    source: "manual_request", reviewEntryId: original.id, sourceAttemptId: original.sourceAttemptId,
+    manualRequestId: original.manualRequestId, dueAt: original.dueAt, policyVersion: original.policyVersion, stage: original.stage,
+  });
+  const result = await runtime.submitPractice({ session: prepared.session, response: responseFor(question), attempts: [], reviews: [original], now: "2026-01-01T01:00:00.000Z" });
+  const mutation = result.reviewMutations[0];
+  assert.equal(mutation?.kind, "upsert");
+  if (mutation?.kind !== "upsert") return;
+  assert.deepEqual(mutation.entry.reasons, ["scheduled_retrieval"]);
+  assert.equal(mutation.entry.manualRequestId, undefined);
+  assert.equal(mutation.entry.dueAt, original.dueAt);
+  assert.equal(mutation.entry.stage, original.stage);
+  assert.equal(mutation.entry.consecutiveAfterDueSuccesses, original.consecutiveAfterDueSuccesses);
+  assert.equal(mutation.entry.persistent, original.persistent);
+});
+
+test("due queue wins after its date and stale off→on manual identity gets no credit", async () => {
+  const track = (await catalogPromise).getTrack("frontend-system-design-interview");
+  const runtime = new CanonicalTrainingRuntime(track);
+  const mode = track.getMode("design-interview-weak-area-review");
+  const question = track.getPool(mode.modeId)[0]!;
+  const item = itemRef(track, question.questionId);
+  const original: ReviewQueueEntry = {
+    ...reviewFor(item, "2026-01-08T00:00:00.000Z"),
+    reasons: ["scheduled_retrieval", "manual_mark"], manualRequestId: `manual:${"d".repeat(64)}`,
+    persistent: false, policyVersion: "bizq04-v1", stage: "retention7", status: "active",
+  };
+  const preparedManual = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "manual-before-due", requestedLength: 1, reviewSource: "manual_request" }, attempts: [], reviews: [original], now: NOW });
+  const changedRequest = { ...original, manualRequestId: `manual:${"e".repeat(64)}` };
+  const stale = await runtime.submitPractice({ session: preparedManual.session, response: responseFor(question), attempts: [], reviews: [changedRequest], now: "2026-01-01T01:00:00.000Z" });
+  assert.deepEqual(stale.reviewMutations, []);
+  assert.equal(stale.reviewSnapshotConflict, true);
+
+  const preparedDue = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId, request: { sessionId: "due-after-manual", requestedLength: 1, reviewSource: "due_queue" }, attempts: [], reviews: [original], now: original.dueAt! });
+  assert.equal(preparedDue.session.itemOrder[0]?.reviewSourceSnapshot?.source, "due_queue");
+  const due = await runtime.submitPractice({ session: preparedDue.session, response: responseFor(question), attempts: [], reviews: [original], now: original.dueAt! });
+  const mutation = due.reviewMutations[0];
+  assert.equal(mutation?.kind, "upsert");
+  if (mutation?.kind !== "upsert") return;
+  assert.equal(mutation.entry.stage, "retention14");
+  assert.equal(mutation.entry.manualRequestId, undefined);
+  assert.deepEqual(mutation.entry.reasons, ["scheduled_retrieval"]);
+});
+
+test("new correct per-item work seeds seven-day retention for every declared non-review mode", async () => {
+  const catalog = await catalogPromise;
+  let checked = 0;
+  for (const trackId of catalog.tracks) {
+    const track = catalog.getTrack(trackId);
+    const runtime = new CanonicalTrainingRuntime(track);
+    const perItemModes = track.modes.filter((mode) => mode.selection.kind !== "evidence_conditioned" && !mode.modeId.endsWith("-simulation"));
+    for (const mode of perItemModes) {
+      const prepared = await runtime.prepare({
+        trackId,
+        modeId: mode.modeId,
+        request: { sessionId: `retention-seed:${trackId}:${mode.modeId}`, requestedLength: mode.requestedLengths[0] },
+        attempts: [], reviews: [], now: NOW,
+      });
+      const question = track.getQuestion(prepared.session.itemOrder[0]!.item.questionId)!;
+      const submitted = await runtime.submitPractice({ session: prepared.session, response: responseFor(question), attempts: [], reviews: [], now: NOW });
+      assert.equal(submitted.attempt.result.kind, "correct", `${trackId}/${mode.modeId} fixture must be a graded correct answer`);
+      assert.equal(submitted.reviewMutations.length, 1, `${trackId}/${mode.modeId} correct work creates one maintenance cycle`);
+      const mutation = submitted.reviewMutations[0]!;
+      assert.equal(mutation.kind, "upsert");
+      if (mutation.kind !== "upsert") continue;
+      assert.equal(mutation.entry.sourceAttemptId, submitted.attempt.id);
+      assert.equal(mutation.entry.stage, "retention7");
+      assert.equal(mutation.entry.dueAt, "2026-01-08T00:00:00.000Z");
+      checked += 1;
+    }
+  }
+  const expectedModes = catalog.tracks.reduce((total, trackId) => total + catalog.getTrack(trackId).modes.filter((mode) => mode.selection.kind !== "evidence_conditioned" && !mode.modeId.endsWith("-simulation")).length, 0);
+  assert.equal(checked, expectedModes, "every declared per-item mode must apply the same initial-retention policy");
+});
+
+test("only declared due-queue modes can advance a scheduled cycle across all families", async () => {
+  const catalog = await catalogPromise;
+  const cases = [
+    ["google-cloud-associate-cloud-engineer", "certification-weak-area-review"],
+    ["google-cloud-associate-cloud-engineer", "certification-quick-review"],
+    ["coding-interview-dsa-problem-solving", "coding-interview-weak-area-review"],
+    ["backend-system-design-interview", "design-interview-weak-area-review"],
+    ["frontend-system-design-interview", "design-interview-weak-area-review"],
+    ["object-oriented-design-interview", "design-interview-weak-area-review"],
+  ] as const;
+
+  for (const [trackId, modeId] of cases) {
+    const track = catalog.getTrack(trackId);
+    const mode = track.getMode(modeId);
+    const runtime = new CanonicalTrainingRuntime(track);
+    const question = track.getPool(modeId)[0]!;
+    const sourceItem = itemRef(track, question.questionId);
+    const existing: ReviewQueueEntry = {
+      ...reviewFor(sourceItem, NOW), reasons: ["scheduled_retrieval"], persistent: false,
+      policyVersion: "bizq04-v1", stage: "retention7", status: "active",
+    };
+    const prepared = await runtime.prepare({
+      trackId, modeId,
+      request: { sessionId: `due-mode-matrix:${trackId}:${modeId}`, requestedLength: mode.requestedLengths[0], reviewSource: "due_queue" },
+      attempts: [], reviews: [existing], now: NOW,
+    });
+    assert.deepEqual(prepared.session.itemOrder[0]?.item, sourceItem, `${trackId}/${modeId} must select the exact due reference`);
+    assert.equal(prepared.session.itemOrder[0]?.reviewSourceSnapshot?.source, "due_queue");
+    const submitted = await runtime.submitPractice({ session: prepared.session, response: responseFor(question), attempts: [], reviews: [existing], now: NOW });
+    assert.equal(submitted.attempt.result.kind, "correct");
+    assert.equal(submitted.reviewMutations.length, 1);
+    const mutation = submitted.reviewMutations[0]!;
+    assert.equal(mutation.kind, "upsert");
+    if (mutation.kind === "upsert") {
+      assert.equal(mutation.entry.id, existing.id);
+      assert.equal(mutation.entry.stage, "retention14");
+      assert.equal(mutation.entry.dueAt, "2026-01-15T00:00:00.000Z");
+      assert.equal(mutation.entry.completedAt, undefined);
+    }
+  }
 });
 
 test("resume and query boundaries reject tampering, foreign attempts and old pins", async () => {
@@ -265,6 +618,11 @@ test("GCP simulation finalization scores only complete responses and partitions 
     assert.equal(finalized.reviewMutations[0].entry.id, priorReview.id);
     assert.deepEqual(finalized.reviewMutations[0].entry.reasons, [finalized.attempts[0]!.result.kind]);
   }
+  const correctAttempt = finalized.attempts.find((attempt) => attempt.result.kind === "correct")!;
+  const seededCorrectReview = finalized.reviewMutations.find((mutation) => mutation.kind === "upsert" && mutation.entry.sourceAttemptId === correctAttempt.id);
+  assert.ok(seededCorrectReview?.kind === "upsert");
+  assert.equal(seededCorrectReview.entry.stage, "retention7", "a correct item finalized from a graded simulation seeds maintenance");
+  assert.equal(seededCorrectReview.entry.dueAt, "2026-01-08T01:00:00.000Z");
   assert.equal(finalized.result.evidence.familyId, "certification");
   assert.equal((finalized.result.evidence.details as { profileId: string }).profileId, "google-cloud-associate-cloud-engineer-certification-exam-v1");
   assert.equal(finalized.frozenDraft, draft);
@@ -333,6 +691,24 @@ test("Coding Mock consumes its exact ordered 40-question profile with foreground
     session: { ...prepared.session, configurationSnapshot: { ...prepared.session.configurationSnapshot, simulationProfileId: "other-profile" } },
     draft: prepared.draft,
   }), /snapshot or deadline/);
+
+  const firstOccurrence = prepared.session.itemOrder[0]!;
+  const firstQuestion = track.getQuestion(firstOccurrence.item.questionId)!;
+  const completedDraft = createTrainingSessionDraft({
+    sessionId: prepared.session.id,
+    trackId: track.trackId,
+    familyId: "coding_interview",
+    revision: 1,
+    responsesByOccurrenceId: { [firstOccurrence.occurrenceId]: responseFor(firstQuestion) },
+    flaggedOccurrenceIds: [],
+    updatedAt: NOW,
+  });
+  const finalized = await runtime.finalizeSimulation({ session: prepared.session, draft: completedDraft, attempts: [], reviews: [], now: NOW });
+  assert.equal(finalized.attempts[0]?.result.kind, "correct");
+  const firstReview = finalized.reviewMutations.find((mutation) => mutation.kind === "upsert" && mutation.entry.sourceAttemptId === finalized.attempts[0]?.id);
+  assert.ok(firstReview?.kind === "upsert");
+  assert.equal(firstReview.entry.stage, "retention7", "a committed Coding simulation item seeds retention from its graded answer");
+  assert.equal(firstReview.entry.dueAt, "2026-01-08T00:00:00.000Z");
 });
 
 test("Design Interview Simulation uses each exact track profile, resumes durable stage text, and finalizes completeness only", async () => {

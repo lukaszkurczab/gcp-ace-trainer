@@ -1,5 +1,5 @@
 import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
-import type { ReviewQueueEntry, TrainingAttempt } from "../../domain";
+import { isActiveReviewQueueEntry, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import { createArtifactSha256 } from "../../domain/learning/contentItemRef";
 import {
   createPackageCompletionRuleV2, evaluatePackageCompletion, qualifyPackageAttempts,
@@ -43,6 +43,7 @@ export function projectLearningEvidence(input: Readonly<{
     entry.sourceItem.trackId === profile.trackId && entry.sourceItem.contentVersion === profile.contentVersion && entry.sourceItem.artifactSha256 === profile.artifactSha256));
   if (reviews.some(entry => !profile.getQuestion(entry.sourceItem.questionId))) throw new Error("Learning review item is absent from its verified package.");
   const dueReviews = Object.freeze(reviews.filter(entry => {
+    if (!isActiveReviewQueueEntry(entry) || entry.dueAt === undefined) return false;
     const dueMs = Date.parse(entry.dueAt);
     if (!Number.isFinite(dueMs)) throw new Error("Learning review due date is invalid.");
     return dueMs <= nowMs;

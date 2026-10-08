@@ -185,7 +185,7 @@ export function ProgressTab({
               <Text maxFontSizeMultiplier={2} style={styles.weekDetail}>{t("progress.week.selectedTrack")}</Text>
             </View>
           </View>
-          {model.reviewQueueCount > 0 ? <Text maxFontSizeMultiplier={2} style={styles.weekAction}>{t(`${model.reviewQueueCount} review items due`)}</Text> : null}
+          {model.reviewQueueCount > 0 ? <Text maxFontSizeMultiplier={2} style={styles.weekAction}>{t(model.reviewQueueCopy, model.reviewQueueCopyParams)}</Text> : null}
           {onOpenGoal ? <Pressable accessibilityRole="button" accessibilityLabel={t(goal ? "Manage learning goal" : "Set a learning goal")} onPress={onOpenGoal} style={({ pressed }) => [styles.weekGoalAction, pressed ? styles.pressed : null]} testID={runtimeSelectors.progress.goal()}><Text maxFontSizeMultiplier={2} style={styles.weekAction}>{t(goal ? "Manage goal" : "Set a goal")}</Text></Pressable> : null}
         </Card>
       </View>
@@ -265,9 +265,9 @@ export function ProgressTab({
                 <Card style={styles.attentionCard}>
                   <View style={styles.attentionTitleRow}>
                     <View style={styles.attentionDot} />
-                    <Text maxFontSizeMultiplier={2} style={styles.attentionTitle}>{t("Review due")}</Text>
+                    <Text maxFontSizeMultiplier={2} style={styles.attentionTitle}>{t("Review")}</Text>
                   </View>
-                  <Text maxFontSizeMultiplier={2} style={styles.attentionDetail}>{t(model.reviewQueueCopy)}</Text>
+                  <Text maxFontSizeMultiplier={2} style={styles.attentionDetail}>{t(model.reviewQueueCopy, model.reviewQueueCopyParams)}</Text>
                   {model.reviewAction && onProgressAction ? (
                     <Button labelStyle={styles.attentionActionLabel} onPress={() => onProgressAction(model.reviewAction!)} variant="ghost">
                       {t(model.reviewActionLabel)}

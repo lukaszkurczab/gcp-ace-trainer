@@ -55,19 +55,11 @@ test("all branded navigation headers use the one AppShellHeader path", () => {
   assert.doesNotMatch(rootNavigator, /headerTitleStyle|headerTintColor|headerStyle/);
 });
 
-test("answer review pending uses the shared review shell anatomy without fabricated values", () => {
-  const review = source("src/features/review/AnswerReviewScreen.tsx");
-  const skeleton = source("src/components/ReviewLoadingSkeleton.tsx");
-  const exports = source("src/components/index.ts");
-
-  assert.match(exports, /export \* from "\.\/ReviewLoadingSkeleton"/);
-  assert.match(review, /if \(!hasLoadedReviewData\) return <ReviewLoadingSkeleton onBack=\{\(\) => navigation\.goBack\(\)\} \/>/);
-  assert.match(skeleton, /export function ReviewLoadingSkeleton\(\{ onBack \}/);
-  assert.match(skeleton, /footerVariant="review"/);
-  assert.match(skeleton, /review-loading-filter/);
-  assert.match(skeleton, /review-loading-question/);
-  assert.match(skeleton, /review-loading-feedback/);
-  assert.doesNotMatch(skeleton, /totalOccurrences|missedCount|correct|incorrect|selectedOptionIds/);
+test("completed result review keeps a dedicated loading state and explicit unavailable state", () => {
+  const review = source("src/features/exam/ExamReviewScreen.tsx");
+  assert.match(review, /export function ExamReviewLoadingSkeleton/);
+  assert.match(review, /readState\.requestKey !== requestKey \|\| readState\.kind === "pending"/);
+  assert.match(review, /readState\.kind === "unavailable"/);
 });
 
 test("route coverage has one native or inline shell owner and preserves active-session specialization", () => {
@@ -90,8 +82,8 @@ test("route coverage has one native or inline shell owner and preserves active-s
     .filter((match) => /headerShown:\s*false/.test(match[2] ?? ""))
     .map((match) => match[1]);
 
-  assert.equal(routeIds.length, 39);
-  assert.equal(new Set(routeIds).size, 38);
+  assert.equal(routeIds.length, 38);
+  assert.equal(new Set(routeIds).size, 37);
   assert.deepEqual(headerlessRouteIds, [
     "LANGUAGE_SETTINGS",
     "HOME",
@@ -114,7 +106,6 @@ test("route coverage has one native or inline shell owner and preserves active-s
     "ALGORITHMS_SCOPE_SELECTION",
     "TOPIC_ROADMAP",
     "EXAM_REVIEW",
-    "ANSWER_REVIEW",
     "PRACTICE_SETUP",
     "PRACTICE_SESSION",
     "ALGORITHMS_PRACTICE_REVIEW",
@@ -368,8 +359,8 @@ test("simulation review remains explicitly unavailable", () => {
   assert.match(source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx"), /unavailable/i);
 });
 
-test("answer review keeps its explicit unavailable state", () => {
-  assert.match(source("src/features/review/AnswerReviewScreen.tsx"), /unavailable|No attempt found/i);
+test("completed result review keeps its explicit unavailable state", () => {
+  assert.match(source("src/features/exam/ExamReviewScreen.tsx"), /readState\.kind === "unavailable"/);
 });
 
 test("simulation active shell uses the Figma question and action-footer variant", () => {

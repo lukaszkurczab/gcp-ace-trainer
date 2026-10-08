@@ -27,7 +27,7 @@ export type PracticeSessionLength = number;
 
 export type PracticeFeedbackMode = "afterEachAnswer" | "atSessionEnd";
 
-export type PracticeReviewSource = "due_queue" | "session_misses";
+export type PracticeReviewSource = "due_queue" | "manual_request" | "session_misses";
 
 export function buildCodingInterviewSimulationResumeRoute(session: TrainingSession): Readonly<{
   name: typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION;
@@ -116,7 +116,7 @@ export function buildPracticeSessionConfig(
       throw new Error(`Algorithms review source requires mode ${ALGORITHM_MODE_IDS.weakAreaReview}.`);
     }
     if (mode === ALGORITHM_MODE_IDS.weakAreaReview && !input.reviewSource) {
-      throw new Error("Algorithms Weak Area Review requires due_queue or session_misses source.");
+      throw new Error("Algorithms Weak Area Review requires due_queue, manual_request, or session_misses source.");
     }
     if (input.reviewItemRefs && input.reviewSource !== "session_misses") {
       throw new Error("Algorithms review item refs require session_misses source.");
@@ -174,10 +174,10 @@ export function buildPracticeSessionConfig(
     return { competencyId: input.competencyId, feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: input.topicId, trackId: input.trackId };
   }
   if (mode === "certification-weak-area-review") {
-    if (input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined || input.competencyId !== undefined || input.topicId) throw new Error("Certification Weak Area Review does not render or accept undeclared setup controls.");
+    if (input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || (input.reviewSource !== undefined && input.reviewSource !== "due_queue" && input.reviewSource !== "manual_request") || input.algorithmScope !== undefined || input.competencyId !== undefined || input.topicId) throw new Error("Certification Weak Area Review does not render or accept undeclared setup controls.");
     const sessionLength = input.sessionLength ?? packageMode.defaultRequestedLength as PracticeSessionLength;
     if (!sessionLength || !packageMode.requestedLengths.includes(sessionLength)) throw new Error("Certification Weak Area Review length is unavailable in this package.");
-    return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: "", trackId: input.trackId };
+    return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, reviewSource: input.reviewSource, sessionLength, source: input.source ?? "practiceHub", topicId: "", trackId: input.trackId };
   }
   if (mode === "certification-mixed-practice") {
     if (input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined || input.competencyId !== undefined || input.topicId) throw new Error("Certification Mixed Practice does not render or accept undeclared setup controls.");
@@ -186,8 +186,8 @@ export function buildPracticeSessionConfig(
     return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: "", trackId: input.trackId };
   }
   if (mode === "certification-quick-review") {
-    if (input.sessionLength !== undefined || input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined || input.competencyId !== undefined || input.topicId) throw new Error("Certification Quick Review does not render or accept optional setup controls.");
-    return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength: packageMode.defaultRequestedLength, source: input.source ?? "practiceHub", topicId: "", trackId: input.trackId };
+    if (input.sessionLength !== undefined || input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || (input.reviewSource !== undefined && input.reviewSource !== "due_queue" && input.reviewSource !== "manual_request") || input.algorithmScope !== undefined || input.competencyId !== undefined || input.topicId) throw new Error("Certification Quick Review does not render or accept optional setup controls.");
+    return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, reviewSource: input.reviewSource, sessionLength: packageMode.defaultRequestedLength, source: input.source ?? "practiceHub", topicId: "", trackId: input.trackId };
   }
   throw new Error(`Certification mode ${mode} has no canonical setup configuration.`);
 }

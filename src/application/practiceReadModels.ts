@@ -4,7 +4,7 @@ import {
   loadTrainingAttempts,
 } from "./learningReadModels";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
-import { type ReviewQueueEntry, type TrackId, type TrainingAttempt } from "../domain";
+import { isActiveReviewQueueEntry, manualRequestIdForEntry, type ReviewQueueEntry, type TrackId, type TrainingAttempt } from "../domain";
 
 import { StorageReadError } from "../storage/errors";
 
@@ -14,6 +14,7 @@ export type PracticeRequestKey = TrackId | typeof STORED_TRACK_REQUEST_KEY;
 export type PracticeReadData = Readonly<{
   activeTrackId: TrackId | null;
   hasReviewEvidence: boolean;
+  reviewSource?: "due_queue" | "manual_request";
   trainingAttempts: readonly TrainingAttempt[];
 }>;
 
@@ -51,16 +52,20 @@ export async function loadPracticeReadData(
   assertReadable(trainingAttemptsResult, "training attempts");
   if (reviewResult) assertReadable(reviewResult, "review queue");
 
-  const artifactSha256 = activeTrackId && includeReviews
-    ? contentPackageRuntimeOwner.getPreparedDiscovery(activeTrackId).track.artifactSha256
-    : null;
+  const track = activeTrackId && includeReviews ? contentPackageRuntimeOwner.getPreparedDiscovery(activeTrackId).track : null;
   const now = input.now ?? Date.now();
 
+  const trackReviews = activeTrackId !== null && track !== null && reviewResult !== undefined
+    ? reviewResult.value.filter((entry) => entry.trackId === activeTrackId && entry.sourceItem.trackId === activeTrackId &&
+      entry.sourceItem.contentVersion === track.contentVersion && entry.sourceItem.artifactSha256 === track.artifactSha256 && isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined)
+    : [];
+  const dueReview = trackReviews.some((entry) => Date.parse(entry.dueAt!) <= now);
+  const manualRequest = !dueReview && trackReviews.some((entry) => Date.parse(entry.dueAt!) > now && entry.reasons.includes("manual_mark") && manualRequestIdForEntry(entry) !== undefined);
+  const reviewSource = dueReview ? "due_queue" : manualRequest ? "manual_request" : undefined;
   return {
     activeTrackId: activeTrackId ?? null,
-    hasReviewEvidence: activeTrackId !== null && artifactSha256 !== null && reviewResult !== undefined
-      ? reviewResult.value.some((entry) => isDueReviewForTrack(entry, activeTrackId, artifactSha256, now))
-      : false,
+    hasReviewEvidence: reviewSource !== undefined,
+    ...(reviewSource ? { reviewSource } : {}),
     trainingAttempts: trainingAttemptsResult.value,
   };
 }
@@ -69,15 +74,4 @@ function assertReadable<T>(result: { issues?: readonly { message: string }[]; va
   if (result.issues && result.issues.length > 0) {
     throw new StorageReadError(source, result.issues);
   }
-}
-
-function isDueReviewForTrack(
-  entry: ReviewQueueEntry,
-  activeTrackId: TrackId,
-  artifactSha256: string,
-  now: number,
-): boolean {
-  return entry.trackId === activeTrackId &&
-    entry.sourceItem.artifactSha256 === artifactSha256 &&
-    Date.parse(entry.dueAt) <= now;
 }

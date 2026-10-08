@@ -5,6 +5,9 @@ import {
   buildTrackReviewQueueViewModel,
   loadTrackReviewQueueViewModel,
 } from "./reviewQueueQueries";
+import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
+import { loadCanonicalRuntimeCatalog } from "../content/canonical/runtimeCatalog";
+import { createResolvedContentRef, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, type ReviewQueueEntry } from "../domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../infrastructure/storage/mmkvClient";
 import {
   createContentIdentityUnavailableReviewRecord,
@@ -49,6 +52,48 @@ test("stored unavailable reviews are readable without resolving content metadata
   assert.deepEqual(view.dueItems, []);
   assert.deepEqual(view.upcomingItems, []);
   assert.deepEqual(view.unavailableItems.map((item) => item.id), ["stored-review"]);
+});
+
+test("a future manual request is available in the real review queue without being labeled due", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const track = (await loadCanonicalRuntimeCatalog()).getTrack(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
+  const question = track.getPool("certification-focus-practice")[0]!;
+  const sourceItem = createResolvedContentRef({
+    trackId: track.trackId,
+    questionId: question.questionId,
+    contentVersion: track.contentVersion,
+    artifactSha256: track.artifactSha256,
+  });
+  const entry: ReviewQueueEntry = {
+    id: "review:manual-request-query",
+    trackId: track.trackId,
+    sourceAttemptId: "attempt:manual-request-query",
+    sourceSessionId: "session:manual-request-query",
+    sourceItem,
+    taxonomyOrSkillRefs: [{ axisId: "node", nodeId: question.nodeId, role: "primary" }],
+    reasons: ["manual_mark"],
+    manualRequestId: `manual:${"a".repeat(64)}`,
+    dueAt: "2026-10-09T12:00:00.000Z",
+    createdAt: "2026-10-08T12:00:00.000Z",
+    consecutiveAfterDueSuccesses: 0,
+    persistent: true,
+    policyVersion: "bizq04-v1",
+    stage: "manual_requested",
+    status: "active",
+  };
+
+  const view = await buildTrackReviewQueueViewModel({
+    now: "2026-10-08T12:00:00.000Z",
+    reviewQueueItems: [entry],
+    trackId: track.trackId,
+  });
+
+  assert.equal(view.dueItems.length, 1);
+  assert.equal(view.dueItems[0]?.id, entry.id);
+  assert.equal(view.dueItems[0]?.isDue, false);
+  assert.equal(view.dueItems[0]?.isManualRequest, true);
+  assert.equal(view.upcomingItems.length, 0);
+  assert.equal(view.dueItems[0]?.prompt, question.prompt);
 });
 
 function unavailableReview(reviewId: string): ContentIdentityUnavailableReviewRecord {

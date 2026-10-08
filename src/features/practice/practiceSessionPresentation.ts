@@ -4,6 +4,8 @@ import { describeOperationalFailure } from "../../application/operationalDiagnos
 import type { JsonValue } from "../../content/canonical";
 import type { CanonicalSourceLink } from "../../application/canonical/canonicalSourceLinks";
 
+export const REVIEW_CYCLE_CONFLICT_MESSAGE = "Your answer is saved, but no review credit was applied because the review cycle changed.";
+
 export function describeSessionPreparationFailure(error: unknown, translate: (message: string) => string, fallback: string): string {
   if (error instanceof TrainingApplicationFailure) {
     if (error.code === "premium_entitlement_denied") return translate("Choose a free topic to continue.");
@@ -138,6 +140,7 @@ export function formatPracticeElapsedTime(milliseconds: number): string {
 }
 
 export function noticeForPracticeOperation(operation: PracticeDurableOperationState): PracticeNotice | undefined {
+  if (operation.kind === "feedback" && operation.reviewConflict) return { tone: "error", message: REVIEW_CYCLE_CONFLICT_MESSAGE };
   if (operation.kind === "submitting_before_journal") return { tone: "neutral", message: "Saving your answer…" };
   if (operation.kind === "submit_journal_failed") return { tone: "error", message: "We couldn't save your response. Your current answer is still here." };
   if (operation.kind === "commit_pending" || operation.kind === "commit_materialization_failed" || operation.kind === "commit_verification_failed" || operation.kind === "verified_pending_clear") return { tone: "error", message: "Your answer is saved on this device. Restore this question to continue." };

@@ -35,7 +35,6 @@ export type RootStackParamList = {
   [ROUTES.EXAM]: { expectedSessionId?: string } | undefined;
   [ROUTES.EXAM_REVIEW]: { sessionId: string };
   [ROUTES.RESULT]: { sessionId: string };
-  [ROUTES.ANSWER_REVIEW]: { attemptId?: string; initialFilter?: "all" | "incorrect" } | undefined;
   [ROUTES.PRACTICE_SETUP]: (Partial<PracticeSessionRouteParams> & Readonly<{
     expectedArtifactSha256?: string;
     expectedContentVersion?: string;

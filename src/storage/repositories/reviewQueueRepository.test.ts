@@ -60,7 +60,7 @@ test("preserves durable identity conflicts for one resolved content reference", 
 
   await assert.rejects(
     () => addReviewQueueItems([{ ...first, id: "review:gcp:replacement", sourceAttemptId: "attempt:gcp:replacement" }]),
-    /retain its durable resolved content identity/,
+    /would create a second active cycle for its exact content reference/,
   );
   await assert.rejects(
     () => addReviewQueueItems([{ ...first, sourceAttemptId: "attempt:gcp:changed" }]),
@@ -123,6 +123,86 @@ test("rejects legacy identity fields, mixed records, tombstones, and non-lowerca
   await assert.rejects(() => addReviewQueueItems([tombstone as unknown as ReviewQueueEntry]), /invalid/);
   await assert.rejects(() => addReviewQueueItems([uppercase as unknown as ReviewQueueEntry]), /invalid/);
   assert.deepEqual((await getReviewQueueItems()).value, []);
+});
+
+test("accepts only explicitly identified new manual overlays on false-persistent schedules", async () => {
+  const scheduled = review("review:manual-scheduled", "attempt:manual-scheduled", "session:manual-scheduled", item(CURRENT_SHA256));
+  const falseScheduledManual = {
+    ...scheduled,
+    reasons: ["scheduled_retrieval", "manual_mark"],
+    persistent: false,
+    manualRequestId: `manual:${"c".repeat(64)}`,
+  } satisfies ReviewQueueEntry;
+
+  await addReviewQueueItems([falseScheduledManual]);
+  assert.deepEqual((await getReviewQueueItems()).value, [falseScheduledManual]);
+
+  await clearReviewQueueItems();
+  const ambiguousLegacy = { ...falseScheduledManual } as Record<string, unknown>;
+  delete ambiguousLegacy.manualRequestId;
+  await assert.rejects(() => addReviewQueueItems([ambiguousLegacy as unknown as ReviewQueueEntry]), /invalid/);
+  assert.deepEqual((await getReviewQueueItems()).value, []);
+});
+
+test("enforces the versioned review-cycle stage tuple without rewriting malformed records", async () => {
+  const base = review("review:tuple", "attempt:tuple", "session:tuple", item(CURRENT_SHA256));
+  const manualRequestId = `manual:${"d".repeat(64)}`;
+  const valid: ReviewQueueEntry[] = [
+    { ...base, reasons: ["incorrect"], persistent: true, consecutiveAfterDueSuccesses: 0, policyVersion: "bizq04-v1", stage: "repair24", status: "active" },
+    { ...base, reasons: ["partial", "manual_mark"], persistent: true, consecutiveAfterDueSuccesses: 1, manualRequestId, policyVersion: "bizq04-v1", stage: "repair7", status: "active" },
+    { ...base, reasons: ["manual_mark"], persistent: true, consecutiveAfterDueSuccesses: 0, manualRequestId, policyVersion: "bizq04-v1", stage: "manual_requested", status: "active" },
+    ...(["retention7", "retention14", "retention28"] as const).map((stage, index) => ({
+      ...base,
+      id: `review:retention:${stage}`,
+      sourceAttemptId: `attempt:retention:${stage}`,
+      reasons: index === 0 ? ["scheduled_retrieval", "manual_mark"] as const : ["scheduled_retrieval"] as const,
+      ...(index === 0 ? { manualRequestId } : {}),
+      persistent: false,
+      consecutiveAfterDueSuccesses: 0,
+      policyVersion: "bizq04-v1",
+      stage,
+      status: "active" as const,
+    })),
+  ];
+  for (const entry of valid) {
+    await addReviewQueueItems([entry]);
+    assert.deepEqual((await getReviewQueueItems()).value, [entry]);
+    await clearReviewQueueItems();
+  }
+  const terminal: ReviewQueueEntry = {
+    ...base,
+    reasons: ["scheduled_retrieval"],
+    dueAt: undefined,
+    persistent: false,
+    consecutiveAfterDueSuccesses: 0,
+    policyVersion: "bizq04-v1",
+    stage: "retention28",
+    status: "completed",
+    completedAt: TIMESTAMP,
+    completedByAttemptId: "attempt:completed",
+  };
+  const { dueAt: _omittedDueAt, ...validTerminal } = terminal;
+  await addReviewQueueItems([validTerminal]);
+  assert.deepEqual((await getReviewQueueItems()).value, [validTerminal]);
+  await clearReviewQueueItems();
+
+  const malformed: ReviewQueueEntry[] = [
+    { ...valid[0]!, reasons: ["scheduled_retrieval"] },
+    { ...valid[0]!, stage: "repair7" },
+    { ...valid[1]!, consecutiveAfterDueSuccesses: 0 },
+    { ...valid[2]!, manualRequestId: undefined },
+    { ...valid[2]!, reasons: ["incorrect", "manual_mark"] },
+    { ...valid[3]!, reasons: ["scheduled_retrieval"], manualRequestId: undefined },
+    { ...valid[4]!, persistent: true },
+    { ...valid[4]!, reasons: ["scheduled_retrieval", "manual_mark"], manualRequestId: undefined },
+    { ...validTerminal, reasons: ["scheduled_retrieval", "manual_mark"], manualRequestId },
+    { ...validTerminal, consecutiveAfterDueSuccesses: 1 },
+  ];
+  for (const [index, entry] of malformed.entries()) {
+    const malformedEntry = { ...entry, id: `review:malformed:${index}`, sourceAttemptId: `attempt:malformed:${index}` };
+    await assert.rejects(() => addReviewQueueItems([malformedEntry]), /invalid/u);
+    assert.deepEqual((await getReviewQueueItems()).value, []);
+  }
 });
 
 test("reads only strict canonical entries from durable storage", async () => {

@@ -127,19 +127,11 @@ test("C1 screens own local review and exam loading geometry", () => { assert.mat
   assert.match(algorithmsReview, /<SessionShell headerAction=\{headerAction\} modeLabel=\{t\("Answer review"\)\}/);
   assert.doesNotMatch(algorithmsReview, /LoadingState/);
 
-  const answerReview = source("src/features/review/AnswerReviewScreen.tsx");
-  const reviewSkeleton = source("src/components/ReviewLoadingSkeleton.tsx");
-  const exports = source("src/components/index.ts");
-  assert.match(exports, /export \* from "\.\/ReviewLoadingSkeleton"/);
-  assert.match(answerReview, /if \(!hasLoadedReviewData\) return <ReviewLoadingSkeleton onBack=\{\(\) => navigation\.goBack\(\)\} \/>/);
-  assert.match(reviewSkeleton, /export function ReviewLoadingSkeleton\(\{ onBack \}/);
-  assert.match(reviewSkeleton, /accessibilityLabel=\{t\("Loading review…"\)\}/);
-  assert.match(reviewSkeleton, /review-loading-header/);
-  assert.match(reviewSkeleton, /review-loading-filter/);
-  assert.match(reviewSkeleton, /review-loading-question/);
-  assert.match(reviewSkeleton, /review-loading-feedback/);
-  assert.match(reviewSkeleton, /footerVariant="review"/);
-  assert.doesNotMatch(answerReview, /LoadingState/);
+  const examReview = source("src/features/exam/ExamReviewScreen.tsx");
+  assert.match(examReview, /if \(readState\.requestKey !== requestKey \|\| readState\.kind === "pending"\) return <ExamReviewLoadingSkeleton onBack=\{backToResult\} \/>/);
+  assert.match(examReview, /accessibilityLabel=\{t\("Loading session result"\)\}/);
+  assert.match(examReview, /readState\.kind === "unavailable"/);
+  assert.doesNotMatch(examReview, /LoadingState/);
 });
 
 test("bootstrap, roadmap, and setup own their phase or screen loading geometry", () => {
@@ -351,16 +343,6 @@ test("pending data is distinct from true empty and onboarding outcomes", () => {
   assert.match(practiceReadModel, /setReadState\(\{ kind: "pending", requestKey: capturedRequestKey \}\)/);
   assert.match(practiceReadModel, /setReadState\(\{ kind: "ready", requestKey: capturedRequestKey/);
   assert.match(practiceReadModel, /kind: "unavailable",\s*reason:/);
-
-  for (const [path, loadedState, emptyBoundary] of [
-    ["src/features/review/AnswerReviewScreen.tsx", "hasLoadedReviewData", "if (!attempt) return"],
-  ] as const) {
-    const file = source(path);
-    assert.match(file, new RegExp(`useState\\(false\\)`), `${path} initializes ${loadedState}`);
-    assert.match(file, new RegExp(`set${loadedState[0]!.toUpperCase()}${loadedState.slice(1)}\\(false\\)`), `${path} starts pending`);
-    assert.match(file, new RegExp(`set${loadedState[0]!.toUpperCase()}${loadedState.slice(1)}\\(true\\)`), `${path} finishes pending`);
-    assert.ok(file.indexOf(`if (!${loadedState})`) < file.indexOf(emptyBoundary), `${path} resolves pending before empty/onboarding`);
-  }
 
   for (const [path, emptyBoundary] of [
     ["src/features/practice/PracticeHubScreen.tsx", "if (!activeTrackId)"],

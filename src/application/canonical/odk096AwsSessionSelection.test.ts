@@ -97,7 +97,7 @@ test("ODK-096 AWS evidence-conditioned review truthfully shortens to due evidenc
       dueAt: NOW,
       createdAt: NOW,
       consecutiveAfterDueSuccesses: 0,
-      persistent: true,
+      persistent: false,
     };
     const shortened = await runtime.prepare({
       trackId: AWS_TRACK_ID,

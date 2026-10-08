@@ -397,9 +397,9 @@ export function HomeTab({
       {!isFirstUse ? <View style={styles.overviewSection} testID="home-overview">
         <Text maxFontSizeMultiplier={2} style={styles.sectionLabel}>{t("Overview")}</Text>
         {overview.map((metric, index) => (
-          <View key={metric.label} style={[styles.overviewRow, largeText ? styles.overviewRowLargeText : null, index < overview.length - 1 ? styles.overviewRowDivider : null]} accessibilityLabel={`${t(metric.label)}: ${t(metric.value, { count: metric.count })}`}>
+          <View key={metric.label} style={[styles.overviewRow, largeText ? styles.overviewRowLargeText : null, index < overview.length - 1 ? styles.overviewRowDivider : null]} accessibilityLabel={`${t(metric.label)}: ${t(metric.value, { count: metric.count, dueCount: metric.dueCount, manualCount: metric.manualCount })}`}>
             <Text maxFontSizeMultiplier={2} style={[styles.overviewLabel, largeText ? styles.overviewLabelLargeText : null]}>{t(metric.label)}</Text>
-            <Text maxFontSizeMultiplier={2} style={[styles.overviewValue, largeText ? styles.overviewValueLargeText : null]}>{t(metric.value, { count: metric.count })}</Text>
+            <Text maxFontSizeMultiplier={2} style={[styles.overviewValue, largeText ? styles.overviewValueLargeText : null]}>{t(metric.value, { count: metric.count, dueCount: metric.dueCount, manualCount: metric.manualCount })}</Text>
           </View>
         ))}
       </View> : null}

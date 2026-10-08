@@ -100,6 +100,7 @@ test("Practice operation notice mapping remains one family-neutral interpretatio
     [{ family: "practice", kind: "advance_failed", error: { ...error("retry_same_command"), operation: "practice_advance" } }, { tone: "error", message: "Your answer is saved. Try opening the next question again." }],
     [{ family: "practice", kind: "verified_pending_clear", error: error("recover") }, { tone: "error", message: "Your answer is saved on this device. Restore this question to continue." }],
     [{ family: "practice", kind: "feedback" }, undefined],
+    [{ family: "practice", kind: "feedback", reviewConflict: true }, { tone: "error", message: "Your answer is saved, but no review credit was applied because the review cycle changed." }],
   ];
   for (const [operation, expected] of cases) assert.deepEqual(noticeForPracticeOperation(operation), expected, operation.kind);
 });

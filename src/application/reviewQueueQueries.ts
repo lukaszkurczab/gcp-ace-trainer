@@ -2,6 +2,8 @@ import {
   getTrackDisplay,
   type EvidenceRef,
   REVIEW_REASONS,
+  isActiveReviewQueueEntry,
+  manualRequestIdForEntry,
   type ReviewQueueEntry,
   type TrackId,
 } from "../domain";
@@ -9,7 +11,7 @@ import { getReviewQueueItems, getUnavailableReviewRecords, removeUnavailableRevi
 import type { StorageIssue } from "../storage/repositories/result";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 
-export type ReviewQueueViewItem = { dueAt: string; id: string; isDue: boolean; isOverdue: boolean; kind: "available" | "unavailable"; questionId: string; mistakeTypeRefs: EvidenceRef[]; prompt?: string; reasons: ReviewQueueEntry["reasons"] extends readonly (infer Reason)[] ? Reason[] : never[]; sourceAttemptId: string; taxonomyRefs: EvidenceRef[]; unavailableReason?: string };
+export type ReviewQueueViewItem = { dueAt: string; id: string; isDue: boolean; isManualRequest?: boolean; isOverdue: boolean; kind: "available" | "unavailable"; questionId: string; mistakeTypeRefs: EvidenceRef[]; prompt?: string; reasons: ReviewQueueEntry["reasons"] extends readonly (infer Reason)[] ? Reason[] : never[]; sourceAttemptId: string; taxonomyRefs: EvidenceRef[]; unavailableReason?: string };
 export type ReviewQueueViewModel = { degraded: boolean; dueItems: ReviewQueueViewItem[]; issues: StorageIssue[]; ok: boolean; overdueItems: ReviewQueueViewItem[]; totalItems: number; trackTitle: string; unavailableItems: ReviewQueueViewItem[]; upcomingItems: ReviewQueueViewItem[] };
 
 export async function loadTrackReviewQueueViewModel(input: { now?: string; trackId: TrackId }): Promise<ReviewQueueViewModel> {
@@ -25,17 +27,21 @@ export async function loadTrackReviewQueueViewModel(input: { now?: string; track
 
 export async function buildTrackReviewQueueViewModel(input: { issues?: readonly StorageIssue[]; now?: string; reviewQueueItems: readonly ReviewQueueEntry[]; trackId: TrackId; unavailableReviewRecords?: readonly ContentIdentityUnavailableReviewRecord[] }): Promise<ReviewQueueViewModel> {
   const now = input.now ?? new Date().toISOString();
-  const items = (await Promise.all(input.reviewQueueItems.filter((entry) => entry.trackId === input.trackId).map((entry) => buildReviewViewItem(entry, now))))
+  const items = (await Promise.all(input.reviewQueueItems.filter((entry) => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.trackId === input.trackId).map((entry) => buildReviewViewItem(entry, now))))
     .sort((left, right) => left.dueAt.localeCompare(right.dueAt) || left.id.localeCompare(right.id));
   const unavailableItems = (input.unavailableReviewRecords ?? [])
     .filter((record) => readString(record.review.trackId) === input.trackId)
     .map((record) => buildUnavailableReviewViewItem(record, now))
     .sort((left, right) => left.dueAt.localeCompare(right.dueAt) || left.id.localeCompare(right.id));
-  return { degraded: (input.issues ?? []).length > 0, dueItems: items.filter((item) => item.isDue), issues: [...(input.issues ?? [])], ok: (input.issues ?? []).length === 0, overdueItems: items.filter((item) => item.isOverdue), totalItems: items.length + unavailableItems.length, trackTitle: getTrackDisplay(input.trackId).title, unavailableItems, upcomingItems: items.filter((item) => !item.isDue) };
+  return { degraded: (input.issues ?? []).length > 0, dueItems: items.filter((item) => item.isDue || item.isManualRequest), issues: [...(input.issues ?? [])], ok: (input.issues ?? []).length === 0, overdueItems: items.filter((item) => item.isOverdue), totalItems: items.length + unavailableItems.length, trackTitle: getTrackDisplay(input.trackId).title, unavailableItems, upcomingItems: items.filter((item) => !item.isDue && !item.isManualRequest) };
 }
 
 async function buildReviewViewItem(entry: ReviewQueueEntry, now: string): Promise<ReviewQueueViewItem> {
-  return { dueAt: entry.dueAt, id: entry.id, isDue: entry.dueAt <= now, isOverdue: entry.dueAt < now, kind: "available", questionId: entry.sourceItem.questionId, mistakeTypeRefs: dedupeRefs(entry.taxonomyOrSkillRefs.filter((ref) => ref.axisId === "mistake_type")), prompt: await resolvePrompt(entry), reasons: [...entry.reasons], sourceAttemptId: entry.sourceAttemptId, taxonomyRefs: dedupeRefs(entry.taxonomyOrSkillRefs) };
+  const dueAt = entry.dueAt;
+  if (!dueAt) throw new Error("Active review entry is missing its due instant.");
+  const isDue = dueAt <= now;
+  const isManualRequest = !isDue && entry.reasons.includes("manual_mark") && manualRequestIdForEntry(entry) !== undefined;
+  return { dueAt, id: entry.id, isDue, isManualRequest, isOverdue: dueAt < now, kind: "available", questionId: entry.sourceItem.questionId, mistakeTypeRefs: dedupeRefs(entry.taxonomyOrSkillRefs.filter((ref) => ref.axisId === "mistake_type")), prompt: await resolvePrompt(entry), reasons: [...entry.reasons], sourceAttemptId: entry.sourceAttemptId, taxonomyRefs: dedupeRefs(entry.taxonomyOrSkillRefs) };
 }
 async function resolvePrompt(entry: ReviewQueueEntry): Promise<string> {
   const item = await contentPackageRuntimeOwner.resolveItem(entry.sourceItem);

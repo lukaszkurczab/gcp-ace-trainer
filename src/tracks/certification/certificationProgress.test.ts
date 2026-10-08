@@ -40,3 +40,15 @@ test("Certification progress ignores same-version evidence from another exact co
   assert.equal(progress.totalAttempts, 0);
   assert.equal(progress.dueReviewCount, 0);
 });
+
+test("Certification progress exposes only exact future manual requests as immediately ready", () => {
+  const futureManual: ReviewQueueEntry = {
+    ...review(), reasons: ["scheduled_retrieval", "manual_mark"], manualRequestId: `manual:${"a".repeat(64)}`,
+    dueAt: "2099-01-01T00:00:00.000Z", persistent: false,
+  };
+  const progress = buildCloudCertificationProgressViewModel({ attempts: [], artifactSha256, reviewQueueItems: [futureManual], now: "2026-01-02T00:00:00.000Z" });
+  assert.equal(progress.dueReviewCount, 0);
+  assert.equal(progress.manualReviewCount, 1);
+  const dueWins = buildCloudCertificationProgressViewModel({ attempts: [], artifactSha256, reviewQueueItems: [{ ...futureManual, dueAt: "2026-01-01T00:00:00.000Z" }], now: "2026-01-02T00:00:00.000Z" });
+  assert.equal(dueWins.manualReviewCount, 0);
+});

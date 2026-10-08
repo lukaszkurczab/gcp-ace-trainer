@@ -202,6 +202,9 @@
   "Switch filters to review the full attempt.": "Modifiez les filtres pour examiner toute la tentative.",
   "Review data could not be loaded locally.": "Impossible de charger localement les données de révision.",
   "The review mark could not be saved locally.": "Impossible d’enregistrer localement le marqueur de révision.",
+  "Checking review status": "Vérification du statut de révision…",
+  "Review status could not be loaded": "Le statut de révision n’a pas pu être chargé.",
+  "Manual review is unavailable for this answer": "Cette réponse ne peut pas être marquée pour révision.",
   "correct": "correct",
   "Focus overview": "Aperçu des priorités",
   "Review what needs attention and track recent local practice.": "Repérez les points à travailler et suivez vos entraînements locaux récents.",
@@ -254,6 +257,10 @@
   "unavailable": "indisponible",
   "Due now": "À réviser maintenant",
   "Upcoming": "À venir",
+  "Manual request": "Demande manuelle",
+  "ready now": "disponible maintenant",
+  "Available now": "Disponible maintenant",
+  "Overdue and due items from the review queue, plus manual requests ready now.": "Révisions en retard ou arrivées à échéance, ainsi que les demandes manuelles disponibles maintenant.",
   "Overdue and due items from the review queue.": "Éléments échus et à réviser dans la file de révision.",
   "No due items right now. Upcoming items are listed for visibility.": "Aucun élément à réviser pour le moment. Les éléments à venir sont affichés à titre indicatif.",
   "Review item": "Élément à réviser",
@@ -741,5 +748,8 @@
   "home.week.answersRecorded_few": "{{count}} réponses enregistrées",
   "home.week.answersRecorded_many": "{{count}} réponses enregistrées",
   "home.week.answersRecorded_other": "{{count}} réponses enregistrées",
-  "home.week.unavailable": "L’activité de cette semaine est indisponible."
+  "home.week.unavailable": "L’activité de cette semaine est indisponible.",
+  "home.review.manualReady": "Demandes de révision manuelle prêtes : {{count}}",
+  "home.review.dueAndManual": "Révisions dues : {{dueCount}} · Demandes manuelles prêtes : {{manualCount}}",
+  "Your answer is saved, but no review credit was applied because the review cycle changed.": "Votre réponse est enregistrée, mais la révision n’a pas été comptabilisée car le cycle a changé."
 }

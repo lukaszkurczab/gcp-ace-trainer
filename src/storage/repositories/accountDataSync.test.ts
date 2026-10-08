@@ -4,7 +4,7 @@ import test, { beforeEach } from "node:test";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { saveActiveTrackId, getActiveTrackId } from "./activeTrackRepository";
 import { clearActiveTrackId } from "./activeTrackRepository";
-import { createDefaultGoal, createLearningPlan, createLearningPlanSlotId } from "../../domain";
+import { createDefaultGoal, createLearningPlan, createLearningPlanSlotId, createResolvedContentRef, type ReviewQueueEntry } from "../../domain";
 import { saveGoalSnapshot, getGoalSnapshot } from "./goalRepository";
 import { saveLearningPlanAtomically, getLearningPlanSnapshot } from "./learningPlanRepository";
 import { bindGuestInstallationToAccount, provisionGuestInstallation } from "./guestInstallationRepository";
@@ -24,6 +24,7 @@ import {
 } from "./accountDataRepository";
 import { AccountDataFailure } from "../errors";
 import { GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID } from "../../domain";
+import { addReviewQueueItems, getReviewQueueItems } from "./reviewQueueRepository";
 
 const ACCOUNT_ID = "55555555-5555-4555-8555-555555555555";
 const INSTALLATION_ID = "66666666-6666-4666-8666-666666666666";
@@ -57,6 +58,64 @@ test("canonical account records round trip through remote materialization", asyn
   await applyRemoteAccountData(snapshot.records);
   assert.equal(await getActiveTrackId(), TRACK_ID);
   assert.equal(isCanonicalAccountSyncState(await getAccountSyncState()), true);
+});
+
+test("review cycle history and active obligations survive account snapshot materialization without advancing", async () => {
+  const item = createResolvedContentRef({ trackId: TRACK_ID, questionId: "sync-review-item", contentVersion: "sync-fixture-v1", artifactSha256: TEST_ARTIFACT_SHA256 });
+  const shared = {
+    trackId: TRACK_ID,
+    sourceSessionId: "sync-review-session",
+    sourceItem: item,
+    taxonomyOrSkillRefs: [{ axisId: "mental_unit", nodeId: "sync-unit", role: "primary" }],
+    createdAt: "2026-10-01T12:00:00.000Z",
+    consecutiveAfterDueSuccesses: 0,
+  } as const;
+  const active: ReviewQueueEntry = {
+    ...shared,
+    id: "review-sync-active",
+    sourceAttemptId: "attempt-sync-active",
+    reasons: ["incorrect"],
+    persistent: true,
+    dueAt: "2026-10-08T12:00:00.000Z",
+    policyVersion: "bizq04-v1",
+    stage: "repair24",
+    status: "active",
+  };
+  const completed: ReviewQueueEntry = {
+    ...shared,
+    id: "review-sync-completed",
+    sourceAttemptId: "attempt-sync-completed",
+    reasons: ["scheduled_retrieval"],
+    persistent: false,
+    policyVersion: "bizq04-v1",
+    stage: "retention28",
+    status: "completed",
+    completedAt: "2026-10-08T12:00:00.000Z",
+    completedByAttemptId: "attempt-sync-completed",
+  };
+  const priorCompleted: ReviewQueueEntry = {
+    ...completed,
+    id: "review-sync-completed-prior",
+    sourceAttemptId: "attempt-sync-completed-prior-source",
+    completedAt: "2026-10-01T12:00:00.000Z",
+    completedByAttemptId: "attempt-sync-completed-prior",
+  };
+  await addReviewQueueItems([active, priorCompleted, completed]);
+  const snapshot = await buildAccountDataSnapshot();
+  const reviewRecords = snapshot.records.filter((record) => record.recordType === "review_queue_entry");
+  assert.equal(reviewRecords.length, 3);
+  assertValidAccountDataRecords(reviewRecords);
+
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  await provisionGuestInstallation({ async create() { return { installationId: INSTALLATION_ID, localDatasetId: "88888888-8888-4888-8888-888888888888" }; } });
+  await applyRemoteAccountData(reviewRecords);
+
+  const restored = (await getReviewQueueItems()).value;
+  assert.deepEqual(restored, [active, priorCompleted, completed]);
+  assert.equal(restored.find((entry) => entry.id === completed.id)?.dueAt, undefined);
+  assert.equal(restored.find((entry) => entry.id === completed.id)?.completedByAttemptId, "attempt-sync-completed");
+  assert.equal(restored.find((entry) => entry.status === "active")?.dueAt, active.dueAt);
 });
 
 test("remote materialization keeps the newest active track independent of input order and acknowledges both records", async () => {

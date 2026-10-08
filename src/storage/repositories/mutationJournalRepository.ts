@@ -28,6 +28,9 @@ export type JournalWrite =
 export type MutationOperation = "start_training_session" | "advance_training_session" | "submit_training_outcome" | "complete_training_session" | "abandon_training_session" | "finalize_training_session" | "set_review_entry" | "remove_review_entry" | "reset_learning_state";
 export type MutationCommandIdentity = Readonly<{ version: 1; fingerprint: string }>;
 export type MutationExpectedRevision = Readonly<{ target: string; revision: number | null }>;
+export class StaleMutationRevisionError extends Error {
+  constructor(readonly target: string) { super("Mutation journal expected revisions are stale."); this.name = "StaleMutationRevisionError"; }
+}
 export type MutationJournalPlan = Readonly<{
   operation: MutationOperation;
   status: "journal_durable" | "materialized" | "verified_pending_clear";
@@ -142,12 +145,14 @@ function resetRecordTargets(): string[] {
 }
 
 /** Captures every mutable canonical record that the immutable plan can touch. */
-export function captureMutationExpectedRevisions(writes: readonly JournalWrite[]): readonly MutationExpectedRevision[] {
+export function captureMutationExpectedRevisions(writes: readonly JournalWrite[], overrides: readonly MutationExpectedRevision[] = []): readonly MutationExpectedRevision[] {
   const targets = writes.some((write) => write.kind === "clear_learning_state")
     ? [...RESET_STATIC_TARGETS, ...resetRecordTargets()]
     : writes.flatMap(writePreconditionTargets);
   const uniqueTargets = [...new Set(targets)].sort();
-  return uniqueTargets.map((target) => ({ target, revision: revisionForTarget(target) }));
+  const overrideByTarget = new Map(overrides.map((condition) => [condition.target, condition.revision]));
+  if (overrideByTarget.size !== overrides.length || overrides.some((condition) => !uniqueTargets.includes(condition.target))) throw new Error("Mutation revision overrides must target unique records in the write set.");
+  return uniqueTargets.map((target) => ({ target, revision: overrideByTarget.has(target) ? overrideByTarget.get(target)! : revisionForTarget(target) }));
 }
 
 function hasExpectedRevisionPlan(record: MutationJournalPlan): boolean {
@@ -314,8 +319,9 @@ export async function persistMutationJournal(record: MutationJournalRecord): Pro
     }
     const current = await getActiveMutationJournal();
     if (current && current.commandIdentity.fingerprint !== record.commandIdentity.fingerprint) throw new Error("A different mutation is already pending.");
-    if (!current && record.expectedRevisions.some((condition) => revisionForTarget(condition.target) !== condition.revision)) {
-      throw new Error("Mutation journal expected revisions are stale.");
+    if (!current) {
+      const staleTarget = record.expectedRevisions.find((condition) => revisionForTarget(condition.target) !== condition.revision)?.target;
+      if (staleTarget) throw new StaleMutationRevisionError(staleTarget);
     }
     if (record.operation === "start_training_session") {
       const activeSession = await getActiveTrainingSession();

@@ -202,6 +202,9 @@
   "Switch filters to review the full attempt.": "Switch filters to review the full attempt.",
   "Review data could not be loaded locally.": "Review data could not be loaded locally.",
   "The review mark could not be saved locally.": "The review mark could not be saved locally.",
+  "Checking review status": "Checking review status…",
+  "Review status could not be loaded": "Review status could not be loaded.",
+  "Manual review is unavailable for this answer": "Manual review is unavailable for this answer.",
   "correct": "correct",
   "Focus overview": "Focus overview",
   "Review what needs attention and track recent local practice.": "Review what needs attention and track recent local practice.",
@@ -254,6 +257,10 @@
   "unavailable": "unavailable",
   "Due now": "Due now",
   "Upcoming": "Upcoming",
+  "Manual request": "Manual request",
+  "ready now": "ready now",
+  "Available now": "Available now",
+  "Overdue and due items from the review queue, plus manual requests ready now.": "Overdue and due items from the review queue, plus manual requests ready now.",
   "Overdue and due items from the review queue.": "Overdue and due items from the review queue.",
   "No due items right now. Upcoming items are listed for visibility.": "No due items right now. Upcoming items are listed for visibility.",
   "Review item": "Review item",
@@ -742,5 +749,8 @@
   "home.week.answersRecorded_few": "{{count}} answers recorded",
   "home.week.answersRecorded_many": "{{count}} answers recorded",
   "home.week.answersRecorded_other": "{{count}} answers recorded",
-  "home.week.unavailable": "Weekly activity is unavailable."
+  "home.week.unavailable": "Weekly activity is unavailable.",
+  "home.review.manualReady": "Manual review requests ready: {{count}}",
+  "home.review.dueAndManual": "Due reviews: {{dueCount}} · Manual requests ready now: {{manualCount}}",
+  "Your answer is saved, but no review credit was applied because the review cycle changed.": "Your answer is saved, but no review credit was applied because the review cycle changed."
 }

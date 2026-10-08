@@ -362,7 +362,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         ROUTES.PRACTICE_SESSION,
         buildPracticeSessionConfig({
           mode: action.modeId,
-          reviewSource: action.kind === "start_supported_mode" && action.evidenceSources?.includes("due_queue") ? "due_queue" : undefined,
+          reviewSource: action.kind === "start_supported_mode" ? action.reviewSource ?? (action.evidenceSources?.includes("due_queue") ? "due_queue" : undefined) : undefined,
           source: "home",
           topicId: action.kind === "start_supported_mode" ? action.nodeId ?? "" : "",
           trackId: action.trackId,

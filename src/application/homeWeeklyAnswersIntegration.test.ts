@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 import { readFileSync } from "node:fs";
 import { createInstance } from "i18next";
-import { createTrainingAttempt, createTrainingSession, type TrainingAttempt } from "../domain";
+import { createTrainingAttempt, createTrainingSession, type ReviewQueueEntry, type TrainingAttempt } from "../domain";
 import { loadCanonicalRuntimeCatalog } from "../content/canonical/runtimeCatalog";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 import { loadActivitySessionRecords, projectWeeklyAnsweredActivity, projectWeeklySessionActivity } from "./activityReadModels";
@@ -54,6 +54,37 @@ test("all nine canonical tracks use the same activity count without turning it i
   assert.equal(catalog.tracks.length, 9);
   for (const trackId of catalog.tracks) await recordedAnswer(trackId, undefined, { trackId });
   for (const trackId of catalog.tracks) assert.equal((await weeklyMetric({ ...CONTEXT, trackId })).count, 1, trackId);
+});
+
+test("Home overview independently reports due and future manual review counts", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const track = contentPackageRuntimeOwner.getPreparedDiscovery(TRACK).track;
+  const dueQuestion = track.questions[1]!;
+  const manualQuestion = track.questions[0]!;
+  const base = (id: string, questionId: string, dueAt: string): ReviewQueueEntry => ({
+    id: `review:${id}`,
+    trackId: TRACK as ReviewQueueEntry["trackId"],
+    sourceAttemptId: `attempt:${id}`,
+    sourceSessionId: `session:${id}`,
+    sourceItem: { trackId: TRACK, questionId, contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 },
+    taxonomyOrSkillRefs: [],
+    reasons: ["scheduled_retrieval"],
+    dueAt,
+    createdAt: NOW,
+    consecutiveAfterDueSuccesses: 0,
+    persistent: false,
+    policyVersion: "bizq04-v1",
+    stage: "retention7",
+    status: "active",
+  });
+  const due = base("home-mixed-due", dueQuestion.questionId, "2026-10-02T11:00:00.000Z");
+  const manual = { ...base("home-mixed-manual", manualQuestion.questionId, "2026-10-09T12:00:00.000Z"), reasons: ["scheduled_retrieval", "manual_mark"], manualRequestId: `manual:${"d".repeat(64)}` } as ReviewQueueEntry;
+  const metrics = buildHomeOverviewMetrics({
+    ...CONTEXT,
+    reviewQueueItems: [due, manual],
+    trainingAttempts: [],
+  });
+  assert.deepEqual(metrics[1], { label: "Review", value: "home.review.dueAndManual", dueCount: 1, manualCount: 1 });
 });
 
 test("active exclusion, ended-early history and old package facts remain distinct from completed sessions", async () => {
@@ -125,6 +156,10 @@ test("weekly text and accessibility label share real translated plural values in
       assert.ok(text.includes(String(count)) && !text.includes("home.week") && !text.includes("{{"), `${locale}/${count}`);
     }
     assert.ok(!translator.t("home.week.unavailable").includes("home.week"));
+    const manualReady = translator.t("home.review.manualReady", { count: 1 });
+    assert.ok(manualReady.includes("1") && !manualReady.includes("home.review") && !manualReady.includes("{{"), `${locale}/manual`);
+    const mixedReview = translator.t("home.review.dueAndManual", { dueCount: 1, manualCount: 2 });
+    assert.ok(mixedReview.includes("1") && mixedReview.includes("2") && !mixedReview.includes("home.review") && !mixedReview.includes("{{"), `${locale}/mixed`);
     if (locale === "pl") {
       assert.equal(translator.t("home.week.answersRecorded", { count: 1 }), "1 zapisana odpowiedź");
       assert.equal(translator.t("home.week.answersRecorded", { count: 2 }), "2 zapisane odpowiedzi");
@@ -134,8 +169,8 @@ test("weekly text and accessibility label share real translated plural values in
   const home = readFileSync("src/features/home/tabs/HomeTab.tsx", "utf8");
   assert.doesNotMatch(home, /startOfUtcWeek|weekAttempts|function buildOverviewMetrics/);
   assert.match(home, /buildHomeOverviewMetrics\(\{/);
-  assert.match(home, /accessibilityLabel=\{`\$\{t\(metric.label\)\}: \$\{t\(metric.value, \{ count: metric.count \}\)\}`\}/);
-  assert.match(home, /maxFontSizeMultiplier=\{2\}[^\n]*\{t\(metric.value, \{ count: metric.count \}\)\}/);
+  assert.match(home, /accessibilityLabel=\{`\$\{t\(metric.label\)\}: \$\{t\(metric.value, \{ count: metric.count, dueCount: metric.dueCount, manualCount: metric.manualCount \}\)\}`\}/);
+  assert.match(home, /maxFontSizeMultiplier=\{2\}[^\n]*\{t\(metric.value, \{ count: metric.count, dueCount: metric.dueCount, manualCount: metric.manualCount \}\)\}/);
 });
 
 test("actual memory profile router separates A/B history and reconstructs A after storage reopening offline", async () => {

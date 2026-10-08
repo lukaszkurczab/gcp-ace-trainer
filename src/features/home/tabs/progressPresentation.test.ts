@@ -25,6 +25,20 @@ test("empty progress keeps practice as the primary action and exposes global act
   assert.match(emptyBranch, /t\("View all activity"\)/);
 });
 
+test("the This week review label uses the canonical due-versus-manual copy", () => {
+  assert.match(progress, /model\.reviewQueueCount > 0 \? <Text[^>]*style=\{styles\.weekAction\}>\{t\(model\.reviewQueueCopy, model\.reviewQueueCopyParams\)\}<\/Text>/);
+  assert.doesNotMatch(progress, /\$\{model\.reviewQueueCount\} review items due/);
+});
+
+test("review attention uses a neutral heading for manual-only and mixed queues", () => {
+  const attentionStart = progress.indexOf("{showNeedsAttention ?");
+  const reviewBranch = progress.indexOf("{model.reviewQueueCount > 0", attentionStart);
+  const attention = progress.slice(reviewBranch, progress.indexOf("</Card>", reviewBranch));
+  assert.match(attention, /style=\{styles\.attentionTitle\}>\{t\("Review"\)\}<\/Text>/);
+  assert.doesNotMatch(attention, /t\("Review due"\)/);
+  assert.match(attention, /t\(model\.reviewQueueCopy, model\.reviewQueueCopyParams\)/);
+});
+
 test("the shared Home shell opens the track-aware Practice Hub from empty Progress", () => {
   const home = readFileSync("src/features/home/HomeScreen.tsx", "utf8");
   assert.match(home, /<ProgressTab[\s\S]*?onOpenPractice=\{\(\) => navigation\.navigate\(ROUTES\.PRACTICE_HUB\)\}/);

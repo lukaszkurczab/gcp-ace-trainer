@@ -202,6 +202,9 @@
   "Switch filters to review the full attempt.": "Cambia los filtros para revisar el intento completo.",
   "Review data could not be loaded locally.": "No se pudieron cargar localmente los datos del repaso.",
   "The review mark could not be saved locally.": "No se pudo guardar localmente la marca de repaso.",
+  "Checking review status": "Comprobando el estado del repaso…",
+  "Review status could not be loaded": "No se pudo cargar el estado del repaso.",
+  "Manual review is unavailable for this answer": "No se puede marcar esta respuesta para repasar.",
   "correct": "correctas",
   "Focus overview": "Resumen de enfoque",
   "Review what needs attention and track recent local practice.": "Revisa qué requiere atención y sigue tu práctica local reciente.",
@@ -254,6 +257,10 @@
   "unavailable": "no disponibles",
   "Due now": "Pendientes ahora",
   "Upcoming": "Próximos",
+  "Manual request": "Solicitud manual",
+  "ready now": "disponibles ahora",
+  "Available now": "Disponibles ahora",
+  "Overdue and due items from the review queue, plus manual requests ready now.": "Revisiones vencidas y pendientes, además de solicitudes manuales disponibles ahora.",
   "Overdue and due items from the review queue.": "Elementos atrasados y pendientes de la cola de repaso.",
   "No due items right now. Upcoming items are listed for visibility.": "Ahora no hay elementos pendientes. Se muestran los próximos para que puedas consultarlos.",
   "Review item": "Elemento de repaso",
@@ -741,5 +748,8 @@
   "home.week.answersRecorded_few": "{{count}} respuestas registradas",
   "home.week.answersRecorded_many": "{{count}} respuestas registradas",
   "home.week.answersRecorded_other": "{{count}} respuestas registradas",
-  "home.week.unavailable": "La actividad de esta semana no está disponible."
+  "home.week.unavailable": "La actividad de esta semana no está disponible.",
+  "home.review.manualReady": "Solicitudes manuales de repaso listas: {{count}}",
+  "home.review.dueAndManual": "Revisiones pendientes: {{dueCount}} · Solicitudes manuales listas ahora: {{manualCount}}",
+  "Your answer is saved, but no review credit was applied because the review cycle changed.": "Tu respuesta está guardada, pero no se contabilizó la revisión porque el ciclo cambió."
 }

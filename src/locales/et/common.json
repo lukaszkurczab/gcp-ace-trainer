@@ -202,6 +202,9 @@
   "Switch filters to review the full attempt.": "Kogu katse ülevaatamiseks muuda filtreid.",
   "Review data could not be loaded locally.": "Kordamisandmeid ei saanud seadmest laadida.",
   "The review mark could not be saved locally.": "Kordamismärget ei saanud seadmesse salvestada.",
+  "Checking review status": "Ülevaatuse oleku kontrollimine…",
+  "Review status could not be loaded": "Ülevaatuse olekut ei saanud laadida.",
+  "Manual review is unavailable for this answer": "Seda vastust ei saa ülevaatuseks märkida.",
   "correct": "õige",
   "Focus overview": "Fookuse ülevaade",
   "Review what needs attention and track recent local practice.": "Vaata, mis vajab tähelepanu, ja jälgi hiljutist kohalikku harjutamist.",
@@ -254,6 +257,10 @@
   "unavailable": "pole saadaval",
   "Due now": "Vajavad kordamist nüüd",
   "Upcoming": "Eelseisvad",
+  "Manual request": "Käsitsi kordamise soov",
+  "ready now": "kohe saadaval",
+  "Available now": "Kohe saadaval",
+  "Overdue and due items from the review queue, plus manual requests ready now.": "Hilinenud ja tähtajaks saabunud kordamised ning kohe saadaval olevad käsitsi kordamise soovid.",
   "Overdue and due items from the review queue.": "Kordamisjärjekorra hilinenud ja nüüd kordamisele kuuluvad küsimused.",
   "No due items right now. Upcoming items are listed for visibility.": "Praegu pole ühtegi kordamisele kuuluvat küsimust. Eelseisvad küsimused on samuti loetletud.",
   "Review item": "Korda üksust",
@@ -741,5 +748,8 @@
   "home.week.answersRecorded_few": "{{count}} salvestatud vastust",
   "home.week.answersRecorded_many": "{{count}} salvestatud vastust",
   "home.week.answersRecorded_other": "{{count}} salvestatud vastust",
-  "home.week.unavailable": "Selle nädala tegevus pole saadaval."
+  "home.week.unavailable": "Selle nädala tegevus pole saadaval.",
+  "home.review.manualReady": "Käsitsi kordamise soovid on saadaval: {{count}}",
+  "home.review.dueAndManual": "Kordamise tähtaeg on käes: {{dueCount}} · Käsitsi kordamise soovid on saadaval: {{manualCount}}",
+  "Your answer is saved, but no review credit was applied because the review cycle changed.": "Sinu vastus on salvestatud, kuid kordamist ei arvestatud, sest kordamistsükkel muutus."
 }

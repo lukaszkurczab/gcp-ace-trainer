@@ -202,6 +202,9 @@
   "Switch filters to review the full attempt.": "Modifica i filtri per rivedere il tentativo completo.",
   "Review data could not be loaded locally.": "Impossibile caricare localmente i dati dei ripassi.",
   "The review mark could not be saved locally.": "Impossibile salvare localmente il contrassegno di ripasso.",
+  "Checking review status": "Verifica dello stato del ripasso…",
+  "Review status could not be loaded": "Non è stato possibile caricare lo stato del ripasso.",
+  "Manual review is unavailable for this answer": "Non è possibile contrassegnare questa risposta per il ripasso.",
   "correct": "corrette",
   "Focus overview": "Panoramica del focus",
   "Review what needs attention and track recent local practice.": "Controlla cosa richiede attenzione e segui le tue sessioni di pratica locali più recenti.",
@@ -254,6 +257,10 @@
   "unavailable": "non disponibili",
   "Due now": "In scadenza ora",
   "Upcoming": "In arrivo",
+  "Manual request": "Richiesta manuale",
+  "ready now": "disponibile ora",
+  "Available now": "Disponibile ora",
+  "Overdue and due items from the review queue, plus manual requests ready now.": "Ripassi scaduti e dovuti, oltre alle richieste manuali disponibili ora.",
   "Overdue and due items from the review queue.": "Elementi in ritardo e da ripassare nella coda dei ripassi.",
   "No due items right now. Upcoming items are listed for visibility.": "Al momento non ci sono elementi da ripassare. I prossimi elementi sono elencati per consultarli.",
   "Review item": "Elemento da ripassare",
@@ -741,5 +748,8 @@
   "home.week.answersRecorded_few": "{{count}} risposte registrate",
   "home.week.answersRecorded_many": "{{count}} risposte registrate",
   "home.week.answersRecorded_other": "{{count}} risposte registrate",
-  "home.week.unavailable": "L’attività di questa settimana non è disponibile."
+  "home.week.unavailable": "L’attività di questa settimana non è disponibile.",
+  "home.review.manualReady": "Richieste manuali di ripasso pronte: {{count}}",
+  "home.review.dueAndManual": "Ripassi dovuti: {{dueCount}} · Richieste manuali pronte ora: {{manualCount}}",
+  "Your answer is saved, but no review credit was applied because the review cycle changed.": "La tua risposta è salvata, ma la ripetizione non è stata conteggiata perché il ciclo è cambiato."
 }

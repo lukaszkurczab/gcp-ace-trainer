@@ -1,0 +1,85 @@
+appId: com.lkurczab.patternly
+name: Patternly BIZQ04 native UUID owner real manual roundtrip
+---
+- tapOn: "Progress"
+- scrollUntilVisible:
+    element:
+      id: "patternly:activity:row:google-cloud-associate-cloud-engineer:certification-quick-review:2"
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: "patternly:activity:row:google-cloud-associate-cloud-engineer:certification-quick-review:2"
+- extendedWaitUntil:
+    visible: "Session complete"
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: "patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-quick-review:2"
+    direction: DOWN
+    timeout: 15000
+- swipe:
+    start: "50%, 80%"
+    end: "50%, 60%"
+    duration: 500
+- tapOn:
+    id: "patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-quick-review:2"
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice-review:manual-mark:.*"
+    direction: DOWN
+    timeout: 20000
+- assertVisible: "Mark Needs Review"
+- tapOn:
+    id: "patternly:practice-review:manual-mark:.*"
+- extendedWaitUntil:
+    visible: "Marked Needs Review"
+    timeout: 20000
+- takeScreenshot: bizq04-nonce-native-mark-saved
+- tapOn:
+    id: "patternly:practice-review:result"
+- extendedWaitUntil:
+    visible: "Session complete"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-quick-review:2"
+    direction: DOWN
+    timeout: 15000
+- swipe:
+    start: "50%, 80%"
+    end: "50%, 60%"
+    duration: 500
+- tapOn:
+    id: "patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-quick-review:2"
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice-review:manual-mark:.*"
+    direction: DOWN
+    timeout: 20000
+- assertVisible: "Marked Needs Review"
+- takeScreenshot: bizq04-nonce-native-mark-durable-readback
+- tapOn:
+    id: "patternly:practice-review:manual-mark:.*"
+- extendedWaitUntil:
+    visible: "Mark Needs Review"
+    timeout: 20000
+- takeScreenshot: bizq04-nonce-native-unmark-saved
+- tapOn:
+    id: "patternly:practice-review:result"
+- extendedWaitUntil:
+    visible: "Session complete"
+    timeout: 15000
+- scrollUntilVisible:
+    element: "Back to practice"
+    direction: DOWN
+    timeout: 15000
+- swipe:
+    start: "50%, 80%"
+    end: "50%, 60%"
+    duration: 500
+- tapOn: "Back to practice"
+- tapOn: "Home"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:change-track"
+    timeout: 20000

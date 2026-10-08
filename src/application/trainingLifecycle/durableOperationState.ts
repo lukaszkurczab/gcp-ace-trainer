@@ -16,7 +16,7 @@ export type PracticeDurableOperationState =
   | Readonly<{ family: "practice"; kind: "commit_verification_failed"; error: DurableOperationError }>
   | Readonly<{ family: "practice"; kind: "verified_pending_clear"; error: DurableOperationError }>
   | Readonly<{ family: "practice"; kind: "recovery_required"; error: DurableOperationError }>
-  | Readonly<{ family: "practice"; kind: "feedback" }>
+  | Readonly<{ family: "practice"; kind: "feedback"; reviewConflict?: true }>
   | Readonly<{ family: "practice"; kind: "advancing" }>
   | Readonly<{ family: "practice"; kind: "advance_failed"; error: DurableOperationError }>
   | Readonly<{ family: "practice"; kind: "completing" }>
@@ -59,6 +59,11 @@ export type SimulationDurableOperationState =
   | Readonly<{ family: "simulation"; kind: "abandonment_failed_before_journal"; error: DurableOperationError }>
   | Readonly<{ family: "simulation"; kind: "abandonment_recovery_required"; error: DurableOperationError }>
   | Readonly<{ family: "simulation"; kind: "abandoned" }>
-  | Readonly<{ family: "simulation"; kind: "completed" }>;
+  | Readonly<{ family: "simulation"; kind: "completed"; reviewConflict?: true }>;
 
 export type DurableOperationState = PracticeDurableOperationState | SimulationDurableOperationState;
+
+/** Review-credit conflicts are visible only after the simulation result is durable. */
+export function simulationHasReviewConflict(operation: SimulationDurableOperationState): boolean {
+  return operation.kind === "completed" && operation.reviewConflict === true;
+}

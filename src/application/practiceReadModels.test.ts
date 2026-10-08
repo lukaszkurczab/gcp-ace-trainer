@@ -87,6 +87,28 @@ test("Hub review evidence is limited to due entries for the active track and exa
   const data = await loadPracticeReadData({ includeReviews: true, now: Date.parse("2026-01-02T00:00:00.000Z") }, ports);
 
   assert.equal(data.hasReviewEvidence, true);
+  assert.equal(data.reviewSource, "due_queue");
+});
+
+test("Hub exposes a future manual request immediately and prefers due_queue when both exist", async () => {
+  const resolution = contentPackageRuntimeOwner.getPreparedDiscovery(TRACK_ID);
+  const sourceItem = { trackId: TRACK_ID, questionId: "manual-question", contentVersion: resolution.track.contentVersion, artifactSha256: resolution.track.artifactSha256 };
+  const manual: ReviewQueueEntry = {
+    id: "review:manual", trackId: TRACK_ID, sourceAttemptId: "attempt:manual", sourceSessionId: "session:manual", sourceItem,
+    taxonomyOrSkillRefs: [], reasons: ["scheduled_retrieval", "manual_mark"], manualRequestId: `manual:${"f".repeat(64)}`,
+    dueAt: "2099-01-01T00:00:00.000Z", createdAt: "2026-01-01T00:00:00.000Z", consecutiveAfterDueSuccesses: 0,
+    persistent: false, policyVersion: "bizq04-v1", stage: "retention7", status: "active",
+  };
+  const ports: PracticeReadPorts = {
+    getActiveTrackId: async () => TRACK_ID,
+    getReviewQueueItems: async () => ({ ok: true, value: [manual] }),
+    getTrainingAttempts: async () => ({ ok: true, value: [] }),
+  };
+  const manualOnly = await loadPracticeReadData({ includeReviews: true, now: Date.parse("2026-01-02T00:00:00.000Z") }, ports);
+  assert.equal(manualOnly.hasReviewEvidence, true);
+  assert.equal(manualOnly.reviewSource, "manual_request");
+  const dueWins = await loadPracticeReadData({ includeReviews: true, now: Date.parse("2100-01-02T00:00:00.000Z") }, ports);
+  assert.equal(dueWins.reviewSource, "due_queue");
 });
 
 test("a missing stored track stays an explicit empty selection", async () => {

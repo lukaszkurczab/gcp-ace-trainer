@@ -11,8 +11,13 @@ export async function commitMutation(record: MutationJournalRecord): Promise<voi
 }
 
 /** Build an existing journal only after a guarded read inside the canonical learning-write lane. */
-export async function commitMutationAfterPreflight(build: () => Promise<MutationJournalRecord>): Promise<void> {
-  return withLocalLearningWriteOperation(async () => commitMutationUnlocked(await build()));
+export async function commitMutationAfterPreflight(build: () => Promise<MutationJournalRecord | null>, revalidate?: () => void): Promise<void> {
+  return withLocalLearningWriteOperation(async () => {
+    const record = await build();
+    if (!record) return;
+    revalidate?.();
+    await commitMutationUnlocked(record);
+  });
 }
 
 async function commitMutationUnlocked(record: MutationJournalRecord): Promise<void> {

@@ -16,7 +16,7 @@ import { resolvedContentRefsEqual, type ResolvedContentRef, type TrainingAttempt
 import { buildCanonicalInteractionViewModel, composeCanonicalFeedback, projectCanonicalChoiceFeedbackControls } from "../canonical/canonicalInteractionPresentation";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId, type AlgorithmResponse } from "../../tracks/coding-interview/domain";
 import type { AlgorithmsLifecyclePreparationRequest } from "./codingInterviewContracts";
-import type { PracticeDurableOperationState, SimulationDurableOperationState } from "../trainingLifecycle";
+import { simulationHasReviewConflict, type PracticeDurableOperationState, type SimulationDurableOperationState } from "../trainingLifecycle";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
 import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalQuestionResponse, type Question } from "../../content/canonical";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
@@ -71,6 +71,7 @@ export type AlgorithmsSimulationScreenProjection =
 export type AlgorithmsSessionResultProjection = Readonly<{
   modeId: string;
   completionKind: "abandoned" | "completed";
+  reviewConflict?: true;
   sessionId: string;
   totalOccurrences: number;
   answeredOccurrenceIds: readonly string[];
@@ -539,11 +540,11 @@ export function subscribeAlgorithmsPracticeProjectionRefresh(listener: (event: F
 }
 
 export async function getAlgorithmsPracticeResultProjection(sessionId: string): Promise<AlgorithmsSessionResultProjection> {
+  const lifecycle = getTrainingLifecycleUseCases();
   let session: TrainingSession;
   let result: TrainingSessionResult;
   let integrity: ValidatedCompletedResult;
   try {
-    const lifecycle = getTrainingLifecycleUseCases();
     const [loadedResult, history, attempts] = await Promise.all([
       lifecycle.loadSummary(sessionId),
       lifecycle.queryHistory(),
@@ -559,9 +560,14 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
     throw completedResultUnavailable(error);
   }
   const feedbackTiming = feedbackTimingFromSession(session);
+  const simulationOperation = session.status === "completed" && session.modeId === ALGORITHM_MODE_IDS.interviewSimulation
+    ? await lifecycle.getSimulationOperationState(session)
+    : null;
+  const reviewConflict = simulationOperation ? simulationHasReviewConflict(simulationOperation) : false;
   return Object.freeze({
     completionKind: "completed",
     modeId: session.modeId,
+    ...(reviewConflict ? { reviewConflict: true as const } : {}),
     sessionId: result.sessionId,
     totalOccurrences: result.totalOccurrences,
     answeredOccurrenceIds: Object.freeze([...result.answeredOccurrenceIds]),

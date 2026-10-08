@@ -94,6 +94,7 @@ export function MistakesReviewScreen() {
 
     return model.dueRows.length > 0 ? model.dueRows : model.upcomingRows;
   }, [model]);
+  const hasManualRequest = model?.dueRows.some((row) => row.status === "requested") ?? false;
 
   const selectedRow = [...visibleRows, ...(model?.unavailableRows ?? [])].find((row) => row.id === selectedRowId) ?? null;
 
@@ -128,7 +129,8 @@ export function MistakesReviewScreen() {
         {model ? (
           <View style={styles.summaryRow}>
             <Badge label={`${model.totalCount} ${t("total")}`} tone="info" />
-            <Badge label={`${model.dueRows.length} ${t("due")}`} tone="warning" />
+            <Badge label={`${model.dueRows.filter((row) => row.status !== "requested").length} ${t("due")}`} tone="warning" />
+            {hasManualRequest ? <Badge label={`${model.dueRows.filter((row) => row.status === "requested").length} ${t("ready now")}`} tone="primary" /> : null}
             <Badge label={`${model.upcomingRows.length} ${t("upcoming")}`} tone="neutral" />
             {model.unavailableRows.length > 0 ? <Badge label={`${model.unavailableRows.length} ${t("unavailable")}`} tone="neutral" /> : null}
           </View>
@@ -156,10 +158,10 @@ export function MistakesReviewScreen() {
       {!loading && !readError && hasActiveTrack && model && visibleRows.length > 0 ? (
         <View style={styles.list}>
           <SectionHeader
-            title={t(model.dueRows.length > 0 ? "Due now" : "Upcoming")}
+            title={t(hasManualRequest && !model.dueRows.some((row) => row.status === "due" || row.status === "overdue") ? "Available now" : model.dueRows.length > 0 ? "Due now" : "Upcoming")}
             subtitle={
               model.dueRows.length > 0
-                ? t("Overdue and due items from the review queue.")
+                ? t("Overdue and due items from the review queue, plus manual requests ready now.")
                 : t("No due items right now. Upcoming items are listed for visibility.")
             }
             tight
@@ -339,6 +341,8 @@ function formatStatus(status: ReviewQueueRow["status"]): string {
       return "Due";
     case "overdue":
       return "Overdue";
+    case "requested":
+      return "Manual request";
     case "unavailable":
       return "Unavailable";
     case "upcoming":
@@ -346,12 +350,14 @@ function formatStatus(status: ReviewQueueRow["status"]): string {
   }
 }
 
-function getStatusTone(status: ReviewQueueRow["status"]): "danger" | "info" | "neutral" | "warning" {
+function getStatusTone(status: ReviewQueueRow["status"]): "danger" | "info" | "neutral" | "primary" | "warning" {
   switch (status) {
     case "overdue":
       return "danger";
     case "due":
       return "warning";
+    case "requested":
+      return "primary";
     case "unavailable":
       return "neutral";
     case "upcoming":

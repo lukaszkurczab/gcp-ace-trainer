@@ -14,6 +14,7 @@ import { useThemedStyles } from "../../preferences";
 import { useHomeResumeUnavailable } from "../../content/application/ContentPreparationGate";
 import { spacing, typography, type AppColors } from "../../theme";
 import { DesignSimulationDraftDrain } from "./designSimulationDraftDrain";
+import { ReviewCycleConflictNotice } from "../practice/ReviewCycleConflictNotice";
 
 type RunnerProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.DESIGN_INTERVIEW_SIMULATION>;
 type ResultProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.DESIGN_INTERVIEW_SIMULATION_RESULT>;
@@ -140,6 +141,7 @@ export function DesignInterviewSimulationResultScreen({ navigation, route }: Res
   if (!result) return <Screen edges={["top", "bottom"]}><Text>{t("Loading result…")}</Text></Screen>;
   return <Screen scroll edges={["top", "bottom"]}>
     <Text style={styles.title} testID={runtimeSelectors.designSimulation.result(result.sessionId)}>{t("Simulation complete")}</Text>
+    {result.reviewConflict ? <ReviewCycleConflictNotice /> : null}
     <Text style={styles.brief}>{result.profile.familyConfig.title}</Text>
     {STAGES.map((stageId) => <View key={stageId} style={styles.resultRow}><Text style={styles.stageTitle}>{result.profile.familyConfig.stages.find((stage) => stage.stageId === stageId)?.title}</Text><Text style={styles.completeness}>{result.stageCompleteness[stageId] ? t("Complete") : t("Incomplete")}</Text></View>)}
     <Button onPress={() => navigation.navigate(ROUTES.DESIGN_INTERVIEW_SIMULATION_REVIEW, { sessionId: result.sessionId })}>{t("Review responses")}</Button>

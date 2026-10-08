@@ -78,5 +78,6 @@ function isCodingInterviewDashboard(value: unknown): value is CodingInterviewDas
   return dashboard.trackId === "coding-interview-dsa-problem-solving"
     && Number.isSafeInteger(dashboard.attemptCount) && Number(dashboard.attemptCount) >= 0
     && Number.isSafeInteger(dashboard.dueReviewCount) && Number(dashboard.dueReviewCount) >= 0
+    && Number.isSafeInteger(dashboard.manualReviewCount) && Number(dashboard.manualReviewCount) >= 0
     && (dashboard.activeSessionId === undefined || (typeof dashboard.activeSessionId === "string" && dashboard.activeSessionId.length > 0));
 }

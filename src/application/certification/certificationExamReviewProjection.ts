@@ -21,6 +21,7 @@ export type CertificationExamReviewItem = Readonly<{
   reason: string;
   result: AttemptResultKind | "unanswered";
   selectedOptionIds: readonly string[];
+  sourceAttemptId?: string;
   selectionMode: "single" | "multiple";
   sources: readonly CanonicalSourceLink[];
 }>;
@@ -161,6 +162,7 @@ export async function projectCertificationExamReview(input: Readonly<{
       reason: question.feedback.reason,
       result: resultKind,
       selectedOptionIds: Object.freeze([...selectedOptionIds]),
+      ...(attempt ? { sourceAttemptId: attempt.id } : {}),
       selectionMode: question.interaction.type === "choice_multiple" ? "multiple" : "single",
       sources: projectCanonicalSourceLinks(question),
     });

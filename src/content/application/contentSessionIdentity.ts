@@ -22,6 +22,7 @@ export async function createContentSessionPlanFingerprint(session: ContentSessio
     itemOrder: session.itemOrder.map((occurrence) => ({
       occurrenceId: occurrence.occurrenceId,
       item: contentRefPayload(occurrence.item),
+      ...(occurrence.reviewSourceSnapshot ? { reviewSourceSnapshot: occurrence.reviewSourceSnapshot } : {}),
     })),
     optionOrderByOccurrence: session.optionOrderByOccurrence,
     conditionalReinsertSlots: (session.conditionalReinsertSlots ?? []).map((slot) => ({

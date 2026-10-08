@@ -3,7 +3,7 @@ import test from "node:test";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { getTrackDisplay } from "../../domain";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
-import { buildPracticeModes, getCurrentPracticeTopic } from "./practiceFlowModel";
+import { buildPracticeModes, buildTopicRoadmapNodes, getCurrentPracticeTopic } from "./practiceFlowModel";
 test("practice selects a canonical pool",async()=>{const c=await loadCanonicalRuntimeCatalog();for(const id of c.tracks){const m=c.getTrack(id).modes[0]!;assert.ok(c.getPool(id,m.modeId).length>0);}});
 
 test("GCP practice topic comes from its node mode after the diagnostic-first mode", async () => {
@@ -12,11 +12,16 @@ test("GCP practice topic comes from its node mode after the diagnostic-first mod
   const track = catalog.getTrack(trackId);
   assert.equal(track.modes[0]?.modeId, "certification-diagnostic-baseline");
   assert.notEqual(track.modes[0]?.selection.kind, "node");
-  const nodeMode = track.modes.find((mode) => mode.selection.kind === "node");
+  const nodeMode = track.modes.find((mode) => mode.modeId === "certification-focus-practice");
   assert.ok(nodeMode && nodeMode.selection.kind === "node");
+  const freeNodeId = nodeMode.selection.nodeId;
 
   await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "certification");
-  assert.equal(getCurrentPracticeTopic(getTrackDisplay(trackId)).id, nodeMode.selection.nodeId);
+  assert.equal(getCurrentPracticeTopic(getTrackDisplay(trackId)).id, freeNodeId);
+  const topics = buildTopicRoadmapNodes({ activeTrackId: trackId, trainingAttempts: [] });
+  assert.equal(topics.filter((topic) => topic.status === "current").length, 1);
+  assert.equal(topics.find((topic) => topic.status === "current")?.id, freeNodeId);
+  assert.ok(topics.filter((topic) => topic.id !== freeNodeId).every((topic) => topic.status === "locked"));
 });
 
 test("Certification Exam Simulation is offered only for a validated prepared profile", async () => {

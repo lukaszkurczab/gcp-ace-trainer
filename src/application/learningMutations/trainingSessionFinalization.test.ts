@@ -201,6 +201,34 @@ test("finalization can resolve a review through an exact transition attempt", as
   assert.deepEqual((await getReviewQueueItems()).value, []);
 });
 
+test("simulation finalization reports a review race while preserving the exact graded attempt and result records", async () => {
+  installMemoryStorage();
+  const { active, completed, draft, attempt } = setup();
+  const baseline = { ...review("simulation-review-race", "older-attempt"), sourceSessionId: "older-session", sourceItem: attempt.item, taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs };
+  const concurrentlyChanged = { ...baseline, dueAt: "2026-07-16T10:00:00.000Z" };
+  const proposed = { ...baseline, sourceAttemptId: attempt.id, sourceSessionId: active.id, dueAt: "2026-07-22T10:00:00.000Z", lastReviewedAt: timestamp };
+  const result = { id: `${active.id}:result`, sessionId: active.id, trackId: active.trackId, totalOccurrences: active.actualLength, answeredOccurrenceIds: [attempt.occurrenceId], unansweredOccurrenceIds: ["occurrence-unanswered"], completedAt: timestamp, evidence: { familyId: "coding_interview", details: {} } } as const;
+  await saveTrainingSession(active);
+  await saveTrainingSessionDraft(draft);
+  await addReviewQueueItems([concurrentlyChanged]);
+
+  const reviewConflict = await commitTrainingSessionFinalization({
+    session: completed,
+    attempts: [attempt],
+    reviewMutations: [{ action: "update", record: proposed, transitionAttemptId: attempt.id }],
+    reviewBaseline: [baseline],
+    result,
+    cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [attempt.occurrenceId] },
+    createdAt: timestamp,
+  });
+
+  assert.equal(reviewConflict, true);
+  assert.deepEqual((await getTrainingAttempts()).value, [attempt], "the graded response remains durable");
+  assert.deepEqual((await getReviewQueueItems()).value, [concurrentlyChanged], "a concurrent review-cycle change is not overwritten");
+  assert.equal((await getTrainingSessions()).value[0]?.status, "completed");
+  assert.equal(await getActiveTrainingSessionDraft(), null);
+});
+
 test("journaled transition delete rejects a same-id review conflict before outcome writes and replays exact or absent identity", async () => {
   const storage = installMemoryStorage();
   const { active, completed, draft, attempt } = setup();

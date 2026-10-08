@@ -450,7 +450,7 @@ export function buildTopicRoadmapNodes(input: {
 
   switch (track.kind) {
     case "certification": {
-      const mode = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).track.modes[0];
+      const mode = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).track.modes.find((candidate) => candidate.modeId === "certification-focus-practice");
       const freeNodeId = mode?.selection.kind === "node" ? mode.selection.nodeId : "";
       const attempts = currentAttemptsForCanonicalTrack(input.trainingAttempts, input.activeTrackId);
       return getTrackRoadmapCatalog(input.activeTrackId).map((node) => {

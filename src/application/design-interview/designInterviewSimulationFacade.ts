@@ -1,7 +1,7 @@
 import type { TrackId, TrainingSession } from "../../domain";
 import { loadActiveTrainingSession, loadActiveTrainingSessionDraft, loadTrainingSession, loadTrainingSessionResult } from "../learningReadModels";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
-import { getTrainingLifecycleUseCases, startTrainingSession, type SimulationDurableOperationState } from "../trainingLifecycle";
+import { getTrainingLifecycleUseCases, simulationHasReviewConflict, startTrainingSession, type SimulationDurableOperationState } from "../trainingLifecycle";
 import { getProductSimulationModeConfig, ProductModeUnavailableError } from "../../content/canonical/productModeConfig";
 import type { CanonicalDesignInterviewSimulationProfile } from "../../content/canonical/questionTypes";
 
@@ -18,6 +18,7 @@ export type DesignSimulationProjection = Readonly<{
 export type DesignSimulationResultProjection = Readonly<{
   sessionId: string;
   trackId: TrackId;
+  reviewConflict?: true;
   profile: CanonicalDesignInterviewSimulationProfile;
   responsesByStage: Readonly<Record<DesignSimulationStage, string>>;
   stageCompleteness: Readonly<Record<DesignSimulationStage, boolean>>;
@@ -115,7 +116,9 @@ export async function getDesignInterviewSimulationResult(sessionId: string): Pro
   const responsesByStage = parseResponses(details.responsesByStage);
   const stageCompleteness = completeness(responsesByStage);
   if (JSON.stringify(details.stageCompleteness) !== JSON.stringify(stageCompleteness)) throw new Error("Completed Design Interview simulation completeness evidence is inconsistent.");
-  return Object.freeze({ sessionId, trackId: session.trackId, profile, responsesByStage, stageCompleteness, completedAt: result.completedAt });
+  const operation = await getTrainingLifecycleUseCases().getSimulationOperationState(session);
+  const reviewConflict = simulationHasReviewConflict(operation);
+  return Object.freeze({ sessionId, trackId: session.trackId, profile, responsesByStage, stageCompleteness, completedAt: result.completedAt, ...(reviewConflict ? { reviewConflict: true as const } : {}) });
 }
 
 async function requireActiveSimulation(): Promise<TrainingSession> {

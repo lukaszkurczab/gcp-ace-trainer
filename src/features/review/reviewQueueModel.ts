@@ -6,7 +6,7 @@ import type { StorageIssue } from "../../application/learningReadModels";
 import type { CertificationDomain } from "../../tracks/certification";
 import { getDomainLabel } from "../../utils";
 
-export type ReviewQueueRowStatus = "due" | "overdue" | "unavailable" | "upcoming";
+export type ReviewQueueRowStatus = "due" | "overdue" | "requested" | "unavailable" | "upcoming";
 
 export type ReviewTaxonomyLabel =
   | Readonly<{ kind: "authored"; value: string }>
@@ -43,6 +43,7 @@ export type ReviewQueueViewItem = {
   dueAt: string;
   id: string;
   isDue: boolean;
+  isManualRequest?: boolean;
   isOverdue: boolean;
   kind?: "available" | "unavailable";
   questionId: string;
@@ -109,6 +110,7 @@ function buildReviewQueueRow(
     dueAt: item.dueAt,
     id: item.id,
     kind: item.kind === "unavailable" ? "unavailable" : "available",
+    ...(item.isManualRequest ? { isManualRequest: true } : {}),
     questionId: item.questionId,
     mistakeTypeLabels: item.mistakeTypeRefs.map(formatTaxonomyNodeLabel),
     promptPreview:
@@ -150,6 +152,8 @@ function getRowStatus(item: ReviewQueueViewItem): ReviewQueueRowStatus {
     return "overdue";
   }
 
+  if (item.isManualRequest) return "requested";
+
   if (item.isDue) {
     return "due";
   }
@@ -164,6 +168,8 @@ function getStatusRank(item: ReviewQueueViewItem): number {
     case "overdue":
       return 0;
     case "due":
+      return 1;
+    case "requested":
       return 1;
     case "unavailable":
       return 2;

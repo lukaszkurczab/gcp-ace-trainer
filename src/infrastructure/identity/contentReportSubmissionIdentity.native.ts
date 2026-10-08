@@ -1,5 +1,5 @@
-import * as Crypto from "expo-crypto";
+import { createIdentityNonce } from "./identityNonce";
 
 export function createContentReportSubmissionId(): string {
-  return Crypto.randomUUID();
+  return createIdentityNonce();
 }

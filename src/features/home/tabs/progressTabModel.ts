@@ -3,6 +3,8 @@ import {
   CODING_INTERVIEW_TRACK_ID,
   GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   type TrackDisplay,
+  isActiveReviewQueueEntry,
+  manualRequestIdForEntry,
 } from "../../../domain";
 import type { ReviewQueueEntry, TrainingAttempt } from "../../../domain";
 import {
@@ -163,6 +165,7 @@ export type ProgressTabModel = {
   reviewActionLabel: string;
   reviewQueueCount: number;
   reviewQueueCopy: string;
+  reviewQueueCopyParams?: Readonly<{ count?: number; dueCount?: number; manualCount?: number }>;
   warning?: string;
 };
 
@@ -231,7 +234,8 @@ function buildInstalledPackageProgressTabModel(
     entry.sourceItem.artifactSha256 === packageResolution.track.artifactSha256 &&
     packageItemIds.has(entry.sourceItem.questionId),
   );
-  const dueReviewCount = currentReviews.filter((entry) => entry.dueAt <= now).length;
+  const dueReviewCount = currentReviews.filter((entry) => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.dueAt <= now).length;
+  const manualReviewCount = currentReviews.filter((entry) => isActiveReviewQueueEntry(entry) && entry.dueAt !== undefined && entry.dueAt > now && entry.reasons.includes("manual_mark") && manualRequestIdForEntry(entry) !== undefined).length;
   const scores = new Map<string, { correct: number; earned: number; max: number; total: number }>();
 
   for (const attempt of currentAttempts) {
@@ -257,6 +261,7 @@ function buildInstalledPackageProgressTabModel(
     metrics: [
       { label: "Answered", tone: "info", value: currentAttempts.length },
       { label: "Due review", tone: dueReviewCount > 0 ? "warning" : "neutral", value: dueReviewCount },
+      { label: "Manual review ready", tone: manualReviewCount > 0 ? "primary" : "neutral", value: manualReviewCount },
       { label: "Saved review", tone: "primary", value: currentReviews.length },
     ],
     performanceScores: [...scores.entries()].map(([nodeId, score]) => {
@@ -272,11 +277,13 @@ function buildInstalledPackageProgressTabModel(
       };
     }),
     performanceSectionTitle: "Performance areas",
-    reviewAction: dueReviewCount > 0 ? { kind: "canonicalReviewQueue" } : undefined,
-    reviewActionEnabled: dueReviewCount > 0,
+    reviewAction: dueReviewCount + manualReviewCount > 0 ? { kind: "canonicalReviewQueue" } : undefined,
+    reviewActionEnabled: dueReviewCount + manualReviewCount > 0,
     reviewActionLabel: "Open review queue",
-    reviewQueueCount: dueReviewCount,
-    reviewQueueCopy: formatCanonicalReviewQueueCopy(dueReviewCount, currentReviews.filter((entry) => entry.reasons.includes("repeated_mistake")).length, currentReviews.length),
+    reviewQueueCount: dueReviewCount + manualReviewCount,
+    reviewQueueCopy: formatCanonicalReviewQueueCopy(dueReviewCount, currentReviews.filter((entry) => entry.reasons.includes("repeated_mistake")).length, currentReviews.length, manualReviewCount),
+    ...(dueReviewCount > 0 && manualReviewCount > 0 ? { reviewQueueCopyParams: { dueCount: dueReviewCount, manualCount: manualReviewCount } } : {}),
+    ...(dueReviewCount === 0 && manualReviewCount > 0 ? { reviewQueueCopyParams: { count: manualReviewCount } } : {}),
   };
 }
 
@@ -299,6 +306,7 @@ function buildCloudProgressTabModel(
         tone: "primary",
         value: progress.practiceAttemptCount,
       },
+      { label: "Manual review ready", tone: progress.manualReviewCount > 0 ? "primary" : "neutral", value: progress.manualReviewCount },
       {
         label: "Exam answers",
         tone: "neutral",
@@ -319,15 +327,18 @@ function buildCloudProgressTabModel(
         };
       }),
     performanceSectionTitle: "Performance by domain",
-    reviewAction: progress.dueReviewCount > 0 ? { kind: "canonicalReviewQueue" } : undefined,
-    reviewActionEnabled: progress.dueReviewCount > 0,
+    reviewAction: progress.dueReviewCount + progress.manualReviewCount > 0 ? { kind: "canonicalReviewQueue" } : undefined,
+    reviewActionEnabled: progress.dueReviewCount + progress.manualReviewCount > 0,
     reviewActionLabel: "Open review queue",
-    reviewQueueCount: progress.dueReviewCount,
+    reviewQueueCount: progress.dueReviewCount + progress.manualReviewCount,
     reviewQueueCopy: formatCanonicalReviewQueueCopy(
       progress.dueReviewCount,
       progress.highPriorityReviewCount,
       progress.scheduledReviewCount,
+      progress.manualReviewCount,
     ),
+    ...(progress.dueReviewCount > 0 && progress.manualReviewCount > 0 ? { reviewQueueCopyParams: { dueCount: progress.dueReviewCount, manualCount: progress.manualReviewCount } } : {}),
+    ...(progress.dueReviewCount === 0 && progress.manualReviewCount > 0 ? { reviewQueueCopyParams: { count: progress.manualReviewCount } } : {}),
     warning: progress.degraded ? "Some local progress data may be incomplete." : undefined,
   };
 }
@@ -347,8 +358,9 @@ function buildAlgorithmsProgressTabModel(
     item.sourceItem.contentVersion === facts.contentVersion &&
     item.sourceItem.artifactSha256 === packageResolution.track.artifactSha256,
   );
-  const dueReviewItems = algorithmsReviewItems.filter((item) => item.dueAt <= now);
+  const dueReviewItems = algorithmsReviewItems.filter((item) => isActiveReviewQueueEntry(item) && item.dueAt !== undefined && item.dueAt <= now);
   const dueReviewCount = dueReviewItems.length;
+  const manualReviewCount = algorithmsReviewItems.filter((item) => isActiveReviewQueueEntry(item) && item.dueAt !== undefined && item.dueAt > now && item.reasons.includes("manual_mark") && manualRequestIdForEntry(item) !== undefined).length;
   const currentAttempts = trainingAttempts.filter((attempt) =>
     attempt.trackId === CODING_INTERVIEW_TRACK_ID &&
     attempt.item.trackId === CODING_INTERVIEW_TRACK_ID &&
@@ -370,22 +382,24 @@ function buildAlgorithmsProgressTabModel(
     metrics: [],
     performanceScores: [],
     performanceSectionTitle: "Roadmap nodes",
-    reviewAction: dueReviewCount > 0
+    reviewAction: dueReviewCount + manualReviewCount > 0
       ? {
           kind: "practiceSession",
           params: buildPracticeSessionConfig({
             mode: ALGORITHM_MODE_IDS.weakAreaReview,
-            reviewSource: "due_queue",
+            reviewSource: dueReviewCount > 0 ? "due_queue" : "manual_request",
             source: "modeShortcut",
             topicId: facts.activeRoadmapNode.id,
             trackId: CODING_INTERVIEW_TRACK_ID,
           }),
         }
       : undefined,
-    reviewActionEnabled: dueReviewCount > 0,
+    reviewActionEnabled: dueReviewCount + manualReviewCount > 0,
     reviewActionLabel: "Review weak areas",
-    reviewQueueCount: dueReviewCount,
-    reviewQueueCopy: formatAlgorithmsReviewQueueCopy(dueReviewCount, algorithmsReviewItems.length),
+    reviewQueueCount: dueReviewCount + manualReviewCount,
+    reviewQueueCopy: formatAlgorithmsReviewQueueCopy(dueReviewCount, algorithmsReviewItems.length, manualReviewCount),
+    ...(dueReviewCount > 0 && manualReviewCount > 0 ? { reviewQueueCopyParams: { dueCount: dueReviewCount, manualCount: manualReviewCount } } : {}),
+    ...(dueReviewCount === 0 && manualReviewCount > 0 ? { reviewQueueCopyParams: { count: manualReviewCount } } : {}),
   };
 }
 
@@ -429,7 +443,7 @@ function buildCanonicalProgressFacts(
   for (const question of questions) (byNode.get(question.nodeId) ?? (byNode.set(question.nodeId, []), byNode.get(question.nodeId)!)).push(question);
   const nodeProgress = [...byNode].map(([nodeId, nodeQuestions]) => {
     const practiced = nodeQuestions.filter((question) => latest.has(question.questionId)).length;
-    const due = reviews.filter((review) => review.dueAt <= now && review.sourceItem.artifactSha256 === artifactSha256 && nodeQuestions.some((question) => question.questionId === review.sourceItem.questionId)).length;
+    const due = reviews.filter((review) => isActiveReviewQueueEntry(review) && review.dueAt !== undefined && review.dueAt <= now && review.sourceItem.artifactSha256 === artifactSha256 && nodeQuestions.some((question) => question.questionId === review.sourceItem.questionId)).length;
     const status: CanonicalNodeProgress["status"] = due > 0 ? "review_due" : practiced > 0 ? "practicing" : "not_started";
     return { uniquePracticedItemCount: practiced, itemCount: nodeQuestions.length, label: nodeId, nodeId, status, itemCoveragePercent: nodeQuestions.length ? Math.round(practiced / nodeQuestions.length * 100) : 0, sampledCoreSkillAtomCount: 0, coreSkillAtomCount: 0, dueReviewCount: due, remediationDueCount: due, criticalRemediationDueCount: 0 };
   });
@@ -889,24 +903,29 @@ function capitalize(value: string): string {
   return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 }
 
-function formatAlgorithmsReviewQueueCopy(dueCount: number, totalCount: number): string {
+function formatAlgorithmsReviewQueueCopy(dueCount: number, totalCount: number, manualCount = 0): string {
   if (dueCount === 0 && totalCount === 0) {
     return "No Coding Interview review items right now.";
   }
 
   if (dueCount === 0) {
+    if (manualCount > 0) return "home.review.manualReady";
     return `${totalCount} scheduled Coding Interview ${totalCount === 1 ? "item is" : "items are"} not due yet.`;
   }
 
-  return `${dueCount} due Coding Interview ${dueCount === 1 ? "item needs" : "items need"} review.`;
+  const dueCopy = `${dueCount} due Coding Interview ${dueCount === 1 ? "item needs" : "items need"} review`;
+  if (manualCount > 0) return "home.review.dueAndManual";
+  return `${dueCopy}.`;
 }
 
 function formatCanonicalReviewQueueCopy(
   dueCount: number,
   highPriorityCount: number,
   scheduledCount: number,
+  manualCount = 0,
 ): string {
   if (dueCount === 0) {
+    if (manualCount > 0) return "home.review.manualReady";
     if (scheduledCount > 0) {
       return `${scheduledCount} scheduled ${scheduledCount === 1 ? "item is" : "items are"} not due yet.`;
     }
@@ -914,11 +933,11 @@ function formatCanonicalReviewQueueCopy(
     return "No due review items right now.";
   }
 
-  if (highPriorityCount > 0) {
-    return `${dueCount} due ${dueCount === 1 ? "item" : "items"}, ${highPriorityCount} high priority.`;
-  }
-
-  return `${dueCount} due review ${dueCount === 1 ? "item" : "items"}.`;
+  const dueCopy = highPriorityCount > 0
+    ? `${dueCount} due ${dueCount === 1 ? "item" : "items"}, ${highPriorityCount} high priority`
+    : `${dueCount} due review ${dueCount === 1 ? "item" : "items"}`;
+  if (manualCount > 0) return "home.review.dueAndManual";
+  return `${dueCopy}.`;
 }
 
 function resolveInstalledPackageDomainMetadata(trackId: TrackDisplay["id"], nodeId: string): Readonly<{ description?: string; title: string }> | null {

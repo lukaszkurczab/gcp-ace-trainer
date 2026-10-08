@@ -133,11 +133,11 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
       async submitPractice(input) {
         const reviews = input.reviewMutations.filter((mutation) => mutation.kind === "upsert").map((mutation) => mutation.entry);
         const resolvedReviews = input.reviewMutations.filter((mutation) => mutation.kind === "remove").map((mutation) => mutation.entry);
-        await commitTrainingOutcome({ attempt: input.attempt, session: input.session, reviews, resolvedReviews, createdAt: input.attempt.committedAt });
+        return commitTrainingOutcome({ attempt: input.attempt, session: input.session, reviews, resolvedReviews, reviewBaseline: input.reviewBaseline, reviewSnapshotConflict: input.reviewSnapshotConflict, createdAt: input.attempt.committedAt });
       },
       async advance(session) { await commitTrainingSessionAdvance(session, wallClock.now()); },
       async completeWithResult(input) { await commitSessionCompletion(input.session, input.result, input.session.completedAt ?? wallClock.now()); },
-      async finalize(input) { await commitFinalization(input, wallClock); },
+      async finalize(input) { return commitFinalization(input, wallClock); },
       async abandon(session, preflight) { await commitSessionAbandonment(session, session.completedAt ?? wallClock.now(), preflight); },
       async recover() { await recoverPendingMutation(); },
       async reset() { await commitLearningStateReset(wallClock.now()); },
@@ -187,9 +187,9 @@ const developmentAuditSessionIdentity: TrainingSessionIdentityPort = Object.free
   },
 });
 
-async function commitFinalization(input: SimulationFinalization, wallClock: WallClock): Promise<void> {
+async function commitFinalization(input: SimulationFinalization, wallClock: WallClock): Promise<boolean> {
   const existingById = new Map((await getReviewQueueItems()).value.map((review) => [review.id, review]));
-  await commitTrainingSessionFinalization({
+  return commitTrainingSessionFinalization({
     session: input.session,
     attempts: input.attempts,
     reviewMutations: input.reviewMutations.map((mutation) => ({
@@ -197,6 +197,7 @@ async function commitFinalization(input: SimulationFinalization, wallClock: Wall
       record: mutation.entry,
       transitionAttemptId: mutation.transitionAttemptId ?? mutation.entry.sourceAttemptId,
     })),
+    reviewBaseline: input.reviewBaseline,
     result: input.result,
     cleanup: { kind: "training_session_draft", draft: input.frozenDraft, submittedOccurrenceIds: input.attempts.map((attempt) => attempt.occurrenceId) },
     createdAt: input.session.completedAt ?? wallClock.now(),

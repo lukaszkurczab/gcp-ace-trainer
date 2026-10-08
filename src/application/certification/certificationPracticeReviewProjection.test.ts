@@ -11,6 +11,7 @@ const fixturePromise = createCertificationPracticeAnswerFixture();
 
 test("completed practice projector preserves the canonical five-state answer matrix", async () => {
   const fixture = await fixturePromise;
+  assert.deepEqual(fixture.projection.items.map((item) => item.sourceAttemptId), fixture.attempts.map((attempt) => attempt.id));
   assert.deepEqual(fixture.projection.items.slice(0, 5).map((item) => item.result), ["correct", "incorrect", "correct", "partial", "incorrect"]);
   assert.deepEqual(fixture.projection.items.slice(0, 5).map((item) => item.selectionMode), ["single", "single", "multiple", "multiple", "multiple"]);
   assert.equal(fixture.projection.total, 10);
