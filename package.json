@@ -22,6 +22,7 @@
     "qa:static": "npm run recovery:check && npm run typecheck && npm test && npm run validate:content-boundary && npm run validate:runtime-privacy-boundary",
     "recovery:check": "node scripts/checkRecoveryBaseline.mjs",
     "check:legal-variables": "node --import tsx scripts/checkLegalVariables.mjs",
+    "pool:readiness": "node --import tsx scripts/reportCanonicalPoolReadiness.mjs",
     "baseline:report": "node scripts/recoveryBaselineReport.mjs",
     "launch:readiness": "node scripts/releaseGate.mjs",
     "export:legal": "node --import tsx scripts/exportPublicLegal.mjs",
