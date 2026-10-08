@@ -10,6 +10,7 @@ import { createContentSessionPlanFingerprint } from "../../content/application/c
 import { createResolvedContentRef, resolvedContentRefsEqual, type ResolvedContentRef } from "../../domain/learning/resolvedContentRef";
 import { selectPracticeQuestions } from "./practiceQuestionSelector";
 import { isCanonicalOptionOrder, prepareCanonicalOptionOrder } from "./canonicalOptionOrder";
+import { allocateWeightedBlueprintQuotas } from "../../content/canonical/weightedBlueprintAllocation";
 
 const RELEASE = "canonical-content-v1";
 const families: Record<string, string> = {
@@ -283,11 +284,11 @@ function selectSimulationQuestions(catalog: CanonicalTrackRuntime, profile: Cano
   if (profile.familyId !== "certification" || profile.modeId !== "certification-exam-simulation") throw new ProductModeUnavailableError("Canonical simulation profile family and mode are unavailable.");
   const { blueprint, nodeDomainMap, questionCount } = profile.familyConfig;
   const targetCount = questionCount.minimum;
-  if (blueprint.kind !== "weighted_sections" || !Number.isSafeInteger(targetCount) || targetCount !== 50 || blueprint.sections.reduce((sum, section) => sum + section.weightPercent, 0) !== 100) throw new Error("Canonical simulation profile does not define the validated 50-item weighted blueprint.");
+  if (blueprint.kind !== "weighted_sections" || !Number.isSafeInteger(targetCount) || targetCount !== 50) throw new Error("Canonical simulation profile does not define the validated 50-item weighted blueprint.");
+  const quotas = allocateWeightedBlueprintQuotas(targetCount, blueprint.sections);
   const selected: Question[] = [];
-  for (const section of blueprint.sections) {
-    const exactCount = targetCount * section.weightPercent / 100;
-    if (!Number.isSafeInteger(exactCount)) throw new Error("Canonical simulation blueprint does not produce whole-item quotas.");
+  for (const section of quotas) {
+    const exactCount = section.questionCount;
     const pool = catalog.questions.filter((question) => question.contentDomainId === section.contentDomainId && nodeDomainMap[question.nodeId] === section.contentDomainId && (question.sourceRefs?.length ?? 0) > 0).slice().sort((left, right) => left.questionId < right.questionId ? -1 : left.questionId > right.questionId ? 1 : 0);
     if (pool.length < exactCount) throw new Error(`Canonical simulation source pool ${section.contentDomainId} requires ${exactCount} unique items but has ${pool.length}.`);
     selected.push(...pool.slice(0, exactCount));

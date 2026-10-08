@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { createCertificationExamReviewFixture } from "../../testing/certificationExamReviewFixture";
 import { createFamilyEnvelope, type TrainingAttempt, type TrainingSessionResult } from "../../domain";
-import type { Question } from "../../content/canonical";
+import type { CanonicalSimulationProfile, Question } from "../../content/canonical";
 import { projectCertificationExamReview } from "./certificationExamReviewProjection";
 
 test("completed exam review projects answered and unanswered items across the complete fixed plan", async () => {
@@ -91,4 +91,26 @@ test("exam result rejects tampered partition, attempt scores, and profile eviden
   await assert.rejects(project(foreignResult), /completed session and simulation profile/i);
   const tamperedSession = { ...session, itemOrder: [{ ...itemOrder[0]!, item: { ...itemOrder[0]!.item, artifactSha256: "f".repeat(64) } }, ...itemOrder.slice(1)] } as typeof session;
   await assert.rejects(project(result, attempts, tamperedSession), /fingerprint/i);
+});
+
+test("exam review rejects a committed plan whose domain counts do not match the weighted profile", async () => {
+  const fixture = await createCertificationExamReviewFixture({ correctIndices: [], incorrectIndices: [] });
+  const weights = [40, 20, 20, 20];
+  const profile = {
+    ...fixture.profile,
+    familyConfig: {
+      ...fixture.profile.familyConfig,
+      blueprint: {
+        ...fixture.profile.familyConfig.blueprint,
+        sections: fixture.profile.familyConfig.blueprint.sections.map((section, index) => ({ ...section, weightPercent: weights[index]! })),
+      },
+    },
+  } as CanonicalSimulationProfile;
+  await assert.rejects(projectCertificationExamReview({
+    attempts: fixture.attempts,
+    profile,
+    questionsById: fixture.questionsById,
+    result: fixture.result,
+    session: fixture.session,
+  }), /weighted profile quotas/);
 });

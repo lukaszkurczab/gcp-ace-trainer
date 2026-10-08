@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
-import type { CanonicalCodingInterviewSimulationProfile, CanonicalQuestionResponse, Question } from "../../content/canonical/questionTypes";
+import type { CanonicalCodingInterviewSimulationProfile, CanonicalQuestionResponse, CanonicalSimulationProfile, Question } from "../../content/canonical/questionTypes";
 import type { ReviewQueueEntry, TrainingAttempt } from "../../domain";
 import { createTrainingSession, createTrainingSessionDraft } from "../../domain";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
@@ -594,6 +594,7 @@ test("GCP simulation prepares the profile-weighted immutable 50-item plan and ex
   assert.equal(prepared.session.actualLength, 50);
   assert.deepEqual(prepared.session.itemOrder, repeated.session.itemOrder);
   assert.equal(prepared.session.planFingerprint, repeated.session.planFingerprint);
+  assert.equal(new Set(prepared.session.itemOrder.map((occurrence) => occurrence.item.questionId)).size, 50);
   assert.deepEqual(prepared.session.configurationSnapshot, {
     kind: "certificationSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", navigation: "free",
     submission: "manualOrForegroundTimeout", timer: "absoluteDeadline", timerDurationMs: 7_200_000,
@@ -607,16 +608,38 @@ test("GCP simulation prepares the profile-weighted immutable 50-item plan and ex
     counts.set(question.contentDomainId!, (counts.get(question.contentDomainId!) ?? 0) + 1);
   }
   assert.deepEqual([...counts.values()], [10, 15, 15, 10]);
+  const profile = track.simulationProfiles?.find((candidate): candidate is CanonicalSimulationProfile => candidate.profileId === "google-cloud-associate-cloud-engineer-certification-exam-v1");
+  assert.ok(profile);
+  if (!profile || profile.familyConfig.blueprint.kind !== "weighted_sections") throw new Error("Expected the canonical weighted GCP exam profile.");
+  const expectedQuestionIds = profile.familyConfig.blueprint.sections.flatMap((section) => track.questions
+    .filter((question) => question.contentDomainId === section.contentDomainId && profile.familyConfig.nodeDomainMap[question.nodeId] === section.contentDomainId && (question.sourceRefs?.length ?? 0) > 0)
+    .slice()
+    .sort((left, right) => left.questionId < right.questionId ? -1 : left.questionId > right.questionId ? 1 : 0)
+    .slice(0, counts.get(section.contentDomainId))
+    .map((question) => question.questionId));
+  assert.deepEqual(prepared.session.itemOrder.map((occurrence) => occurrence.item.questionId), expectedQuestionIds);
   assert.equal(prepared.draft?.revision, 1);
   assert.equal(Object.isFrozen(prepared.session.itemOrder), true);
   await runtime.validateResume({ session: prepared.session, draft: prepared.draft });
 
-  const undersizedTrack = { ...track, questions: track.questions.filter((question) => question.contentDomainId !== "gcp-ace-standard-domain-1") };
-  await assert.rejects(new CanonicalTrainingRuntime(undersizedTrack).prepare(input), /requires 10 unique items/);
-
   const badSnapshot = { ...prepared.session, configurationSnapshot: { ...prepared.session.configurationSnapshot, timerDeadlineAt: "2026-01-01T02:00:01.000Z" } };
   await assert.rejects(runtime.validateResume({ session: badSnapshot, draft: prepared.draft }), /snapshot or deadline/);
   await assert.rejects(new CanonicalTrainingRuntime({ ...track, simulationProfiles: [] }).prepare(input), /unavailable/);
+});
+
+test("GCP simulation fails explicitly for an undersized required domain instead of reallocating items", async () => {
+  const catalog = await catalogPromise;
+  const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
+  const undersizedTrack = { ...track, questions: track.questions.filter((question) => question.contentDomainId !== "gcp-ace-standard-domain-1") };
+  const runtime = new CanonicalTrainingRuntime(undersizedTrack);
+  await assert.rejects(runtime.prepare({
+    trackId: track.trackId,
+    modeId: "certification-exam-simulation",
+    request: { sessionId: "gcp-simulation-undersized-required-domain" },
+    attempts: [],
+    reviews: [],
+    now: NOW,
+  }), /Canonical simulation source pool gcp-ace-standard-domain-1 requires 10 unique items but has 0\./);
 });
 
 test("GCP simulation validates draft occurrence keys, completeness, flags, revision, and deadline", async () => {

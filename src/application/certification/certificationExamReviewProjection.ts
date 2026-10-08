@@ -1,6 +1,7 @@
 import { resolvedContentRefsEqual, type AttemptResultKind, type CompletedTrainingSession, type TrainingAttempt, type TrainingSessionResult } from "../../domain";
 import { isCanonicalResponseComplete, scoreCanonicalQuestion, type CanonicalFeedbackMessage, type CanonicalSimulationProfile, type Question } from "../../content/canonical";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
+import { allocateWeightedBlueprintQuotas } from "../../content/canonical/weightedBlueprintAllocation";
 import { projectCanonicalSourceLinks, type CanonicalSourceLink } from "../canonical/canonicalSourceLinks";
 import { projectCanonicalChoiceFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
 import { overallScoreCredit } from "../canonical/overallScoreCredit";
@@ -76,8 +77,14 @@ export async function projectCertificationExamReview(input: Readonly<{
   }
 
   const config = profile.familyConfig;
-  if (config.questionCount.minimum !== 50 || config.questionCount.maximum < 50 || config.blueprint.kind !== "weighted_sections" || config.blueprint.sections.reduce((total, section) => total + section.weightPercent, 0) !== 100) {
+  if (config.questionCount.minimum !== 50 || config.questionCount.maximum < 50 || config.blueprint.kind !== "weighted_sections") {
     return fail("Certification Exam profile does not describe its validated 50-item blueprint.");
+  }
+  let quotas: ReturnType<typeof allocateWeightedBlueprintQuotas>;
+  try {
+    quotas = allocateWeightedBlueprintQuotas(50, config.blueprint.sections);
+  } catch {
+    return fail("Certification Exam profile has invalid weighted quotas.");
   }
   const deadline = Date.parse(String(session.configurationSnapshot.timerDeadlineAt));
   if (session.configurationSnapshot.feedbackMode !== "atSessionEnd" || session.configurationSnapshot.answerChanges !== "untilFinalSubmission" || session.configurationSnapshot.navigation !== "free" ||
@@ -87,8 +94,7 @@ export async function projectCertificationExamReview(input: Readonly<{
     session.configurationSnapshot.navigator !== config.interactionPolicy.navigator || JSON.stringify(session.configurationSnapshot.sectionIds) !== JSON.stringify(config.blueprint.sections.map((section) => section.id))) {
     return fail("Certification Exam completed session configuration does not match its immutable profile policy.");
   }
-  const expectedDomainCounts = new Map(config.blueprint.sections.map((section) => [section.contentDomainId, 50 * section.weightPercent / 100]));
-  if ([...expectedDomainCounts.values()].some((count) => !Number.isSafeInteger(count))) return fail("Certification Exam profile quotas are not whole-item counts.");
+  const expectedDomainCounts = new Map(quotas.map((section) => [section.contentDomainId, section.questionCount]));
   const planQuestions = session.itemOrder.map((occurrence) => {
     if (occurrence.item.trackId !== session.trackId || occurrence.item.contentVersion !== session.contentVersion || occurrence.item.artifactSha256 !== session.artifactSha256) {
       return fail("Certification Exam plan contains a foreign content reference.");
@@ -103,7 +109,7 @@ export async function projectCertificationExamReview(input: Readonly<{
   const domainCounts = new Map<string, number>();
   for (const question of planQuestions) domainCounts.set(question.contentDomainId!, (domainCounts.get(question.contentDomainId!) ?? 0) + 1);
   if ([...expectedDomainCounts].some(([domain, count]) => domainCounts.get(domain) !== count)) return fail("Certification Exam plan does not match its weighted profile quotas.");
-  const expectedQuestionIds = config.blueprint.sections.flatMap((section) => [...questionsById.values()]
+  const expectedQuestionIds = quotas.flatMap((section) => [...questionsById.values()]
     .filter((question) => question.contentDomainId === section.contentDomainId && config.nodeDomainMap[question.nodeId] === section.contentDomainId && (question.sourceRefs?.length ?? 0) > 0)
     .sort((left, right) => left.questionId < right.questionId ? -1 : left.questionId > right.questionId ? 1 : 0)
     .slice(0, expectedDomainCounts.get(section.contentDomainId))

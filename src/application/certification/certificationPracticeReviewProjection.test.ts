@@ -114,7 +114,7 @@ test("practice review rejects altered identity, coverage, attempts, score, and r
   }), /immutable session plan/i);
 });
 
-test("verified GCP diagnostic evidence recommends only an observed weak unit and keeps all-correct results neutral", async () => {
+test("verified GCP diagnostics preserve readable counts for an undersized future Focus context and keep all-correct results neutral", async () => {
   const catalog = await loadCanonicalRuntimeCatalog();
   const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
   const diagnostic = track.getMode("certification-diagnostic-baseline");
@@ -128,7 +128,7 @@ test("verified GCP diagnostic evidence recommends only an observed weak unit and
     .filter((unitId) => focusPool.filter((question) => question.nodeId === nodeId && question.mentalUnitId === unitId).length >= focus.minimumActualLength);
   assert.ok(eligibleUnits.length >= 2);
   const runtime = new CanonicalTrainingRuntime(track);
-  const run = async (sessionId: string, weakUnitId?: string, hour = 0, priorAttempts: readonly TrainingAttempt<unknown>[] = []) => {
+  const run = async (sessionId: string, weakUnitId?: string, hour = 0, priorAttempts: readonly TrainingAttempt<unknown>[] = [], reviewFocusPool = focusPool) => {
     const hourText = String(hour).padStart(2, "0");
     const prepared = await runtime.prepare({ trackId: track.trackId, modeId: diagnostic.modeId, request: { sessionId, requestedLength: questionIds.length }, attempts: priorAttempts, reviews: [], now: "2026-02-01T" + hourText + ":00:00.000Z" });
     const attempts: TrainingAttempt<unknown>[] = [];
@@ -154,7 +154,7 @@ test("verified GCP diagnostic evidence recommends only an observed weak unit and
     assert.equal(finalized.session.status, "completed");
     const projection = await projectCertificationPracticeReview({
       attempts: [...priorAttempts, ...attempts],
-      diagnosticContext: { focusPool, focusMinimumActualLength: focus.minimumActualLength, diagnosticQuestionIds: questionIds, exposureHistoryAvailable: true },
+      diagnosticContext: { focusPool: reviewFocusPool, focusMinimumActualLength: focus.minimumActualLength, diagnosticQuestionIds: questionIds, exposureHistoryAvailable: true },
       resolveQuestion: async (item) => {
         assert.equal(item.contentVersion, track.contentVersion);
         assert.equal(item.artifactSha256, track.artifactSha256);
@@ -177,6 +177,22 @@ test("verified GCP diagnostic evidence recommends only an observed weak unit and
     if (report.recommendation.kind === "observed_gap") assert.equal(report.recommendation.mentalUnitId, expectedUnit);
     assert.equal(report.units.find((unit) => unit.mentalUnitId === expectedUnit)?.incorrectCount, questionIds.filter((id) => track.getQuestion(id)?.mentalUnitId === expectedUnit).length);
   }
+  const undersizedSampledUnit = [...new Set(questionIds.map((id) => track.getQuestion(id)!.mentalUnitId))]
+    .find((unitId) => questionIds.filter((id) => track.getQuestion(id)!.mentalUnitId === unitId).length < focus.minimumActualLength);
+  assert.ok(undersizedSampledUnit, "the pinned diagnostic sample has a unit smaller than Focus minimum");
+  // Exercise the projector's defensive short-pool branch with actual canonical questions and history.
+  // The current exact catalog pool is larger; this candidate models a future or inconsistent supplied pool.
+  const undersizedFocusCandidatePool = focusPool.filter((question) => question.mentalUnitId !== undersizedSampledUnit || questionIds.includes(question.questionId));
+  assert.ok(undersizedFocusCandidatePool.filter((question) => question.mentalUnitId === undersizedSampledUnit).length < focus.minimumActualLength);
+  assert.ok([...new Set(undersizedFocusCandidatePool.map((question) => question.mentalUnitId))].some((unitId) =>
+    unitId !== undersizedSampledUnit && undersizedFocusCandidatePool.filter((question) => question.nodeId === nodeId && question.mentalUnitId === unitId).length >= focus.minimumActualLength));
+  const unavailable = await run("gcp-diagnostic-undersized-focus-candidate", undersizedSampledUnit, 3, [], undersizedFocusCandidatePool);
+  const unavailableReport = unavailable.projection.diagnosticReport;
+  assert.ok(unavailableReport, "verified historical diagnostic counts remain readable");
+  assert.equal(unavailableReport.answeredCount, questionIds.length);
+  assert.equal(unavailableReport.incorrectCount, questionIds.filter((id) => track.getQuestion(id)?.mentalUnitId === undersizedSampledUnit).length);
+  assert.deepEqual(unavailableReport.recommendation, { kind: "unavailable", reason: "unit_pool_below_minimum" });
+
   const first = await run("gcp-diagnostic-first-exposure", eligibleUnits[0]);
   const repeated = await run("gcp-diagnostic-repeat-exposure", undefined, 2, first.attempts);
   const repeatedReport = repeated.projection.diagnosticReport;
