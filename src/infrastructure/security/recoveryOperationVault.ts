@@ -156,19 +156,26 @@ function parseSerializedRecord(serialized: string): RecoveryOperationVaultRecord
   }
 }
 
+export function createRecoveryOperationSecureStorePort(platform: string, module: Partial<RecoveryOperationSecureStore> & Readonly<{ WHEN_UNLOCKED_THIS_DEVICE_ONLY?: number }>): Readonly<{ store: RecoveryOperationSecureStore; options: Readonly<Record<string, unknown>> }> {
+  if ((platform !== "android" && platform !== "ios")
+    || typeof module.getItemAsync !== "function" || typeof module.setItemAsync !== "function" || typeof module.deleteItemAsync !== "function"
+    || (platform === "ios" && module.WHEN_UNLOCKED_THIS_DEVICE_ONLY === undefined)) {
+    throw new RecoveryOperationVaultError("recovery_operation_vault_unavailable");
+  }
+  return Object.freeze({
+    store: module as RecoveryOperationSecureStore,
+    options: Object.freeze({
+      ...(platform === "ios" ? { keychainAccessible: module.WHEN_UNLOCKED_THIS_DEVICE_ONLY } : {}),
+      keychainService: "com.lkurczab.patternly.recovery-operation",
+    }),
+  });
+}
+
 function secureStorePort(): Readonly<{ store: RecoveryOperationSecureStore; options: Readonly<Record<string, unknown>> }> {
   try {
     const module = require("expo-secure-store") as Partial<typeof import("expo-secure-store")>;
-    if (typeof module.getItemAsync !== "function" || typeof module.setItemAsync !== "function" || typeof module.deleteItemAsync !== "function" || module.WHEN_UNLOCKED_THIS_DEVICE_ONLY === undefined) {
-      throw new Error("secure_store_unavailable");
-    }
-    return Object.freeze({
-      store: module as RecoveryOperationSecureStore,
-      options: Object.freeze({
-        keychainAccessible: module.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-        keychainService: "com.lkurczab.patternly.recovery-operation",
-      }),
-    });
+    const { Platform } = require("react-native") as typeof import("react-native");
+    return createRecoveryOperationSecureStorePort(Platform.OS, module);
   } catch {
     throw new RecoveryOperationVaultError("recovery_operation_vault_unavailable");
   }

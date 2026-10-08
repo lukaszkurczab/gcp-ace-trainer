@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   createRecoveryOperationVault,
+  createRecoveryOperationSecureStorePort,
   inspectQ13RecoveryOperationVault,
   RECOVERY_OPERATION_VAULT_KEY,
   RecoveryOperationVaultError,
@@ -21,6 +22,33 @@ function memoryStore(initial: string | null = null) {
   };
   return { store, read: () => value };
 }
+
+test("native vault adapter reads Android storage without requiring iOS constants and retains its alias", async () => {
+  let reads = 0;
+  const module: RecoveryOperationSecureStore = {
+    getItemAsync: async (key, options) => {
+      reads += 1;
+      assert.equal(key, RECOVERY_OPERATION_VAULT_KEY);
+      assert.deepEqual(options, { keychainService: "com.lkurczab.patternly.recovery-operation" });
+      return null;
+    },
+    setItemAsync: async () => {},
+    deleteItemAsync: async () => {},
+  };
+  const port = createRecoveryOperationSecureStorePort("android", module);
+  assert.equal(await createRecoveryOperationVault(port.store, port.options).load(), null);
+  assert.equal(reads, 1);
+});
+
+test("native vault adapter retains iOS accessibility and rejects incomplete or unsupported ports", () => {
+  const module = memoryStore().store;
+  assert.deepEqual(createRecoveryOperationSecureStorePort("ios", { ...module, WHEN_UNLOCKED_THIS_DEVICE_ONLY: 6 }).options, {
+    keychainService: "com.lkurczab.patternly.recovery-operation", keychainAccessible: 6,
+  });
+  for (const [platform, candidate] of [["ios", module], ["web", module], ["android", { ...module, getItemAsync: undefined }]] as const) {
+    assert.throws(() => createRecoveryOperationSecureStorePort(platform, candidate), (error: unknown) => error instanceof RecoveryOperationVaultError && error.code === "recovery_operation_vault_unavailable");
+  }
+});
 
 test("vault round-trips only the versioned recovery record and clears it", async () => {
   const memory = memoryStore();
