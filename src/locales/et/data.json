@@ -64,6 +64,10 @@
       "title": "Sinu konto andmed",
       "body": "Õpiandmeid hoitakse selles seadmes. Toetatud kontokirjeid saab sünkroonida ka sinu konto pilvega ning pärast sisselogimist tuuakse need tavalise sünkroonimisega tagasi. Selle konto puhul kasuta allpool olevaid ekspordi-, üksikasjade ja privaatsustoiminguid."
     },
+    "localOffline": {
+      "title": "Kontoandmed selles seadmes",
+      "body": "Sinu salvestatud õpe jääb sellesse seadmesse. Loo uuesti ühendus, et kontrollida kontot enne muudatuste sünkroonimist või kontoandmete toimingute kasutamist."
+    },
     "guest": {
       "title": "Külalise andmed",
       "body": "Õpiandmeid hoitakse kohalikult selles seadmes. Patternlyt saab kasutada kontota. Kui vajad oma andmetega abi, kasuta selles rakenduses olevat privaatsusvormi."

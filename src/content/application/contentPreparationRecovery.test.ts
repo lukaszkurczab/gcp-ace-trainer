@@ -5,6 +5,11 @@ import test from "node:test";
 const source = readFileSync("src/content/application/ContentPreparationGate.tsx", "utf8");
 const preparationGate = readFileSync("src/application/account/ProfileStoragePreparationGate.tsx", "utf8");
 const surface = readFileSync("src/content/application/EncryptedStorageRecoverySurface.tsx", "utf8");
+const exactMissingActorFence = readFileSync("src/application/exactMissingActorFence.ts", "utf8");
+const accountProvider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+const homeScreen = readFileSync("src/features/home/HomeScreen.tsx", "utf8");
+const homeTab = readFileSync("src/features/home/tabs/HomeTab.tsx", "utf8");
+const simulationScreen = readFileSync("src/features/simulation/DesignInterviewSimulationScreens.tsx", "utf8");
 
 test("lost-key recovery uses the typed failure code and the canonical hold-to-remove operation", () => {
   assert.match(preparationGate, /storageFailureCode === "encrypted_storage_key_missing"/);
@@ -95,13 +100,45 @@ test("unavailable active content is a typed gate with explicit abandon and retry
   assert.doesNotMatch(source, /contentIdentityUnavailableRepository/);
 });
 
-test("bootstrap diagnostics are wired only through the development branch as one structural observer", () => {
-  assert.match(source, /__DEV__\s*\?\s*\{\s*diagnosticObserver:\s*recordDevelopmentBootstrapDiagnostic\s*\}\s*:\s*undefined/);
-  assert.equal((source.match(/diagnosticObserver:\s*recordDevelopmentBootstrapDiagnostic/g) ?? []).length, 1);
-  assert.equal((source.match(/clearDevelopmentBootstrapDiagnostic\(\)/g) ?? []).length, 2);
-  assert.match(source, /if \(__DEV__\) clearDevelopmentBootstrapDiagnostic\(\);[\s\S]*?return bootstrapApplication/);
-  assert.match(source, /if \(result\.kind === "ready"\) \{\s*if \(__DEV__\) clearDevelopmentBootstrapDiagnostic\(\);[\s\S]*?complete\(\{ kind: "ready" \}\)/);
-  assert.doesNotMatch(source, /console\.(?:log|debug|info|warn|error)\s*\(/);
+test("exact-missing abandonment fences both local Guest and authenticated account ownership", () => {
+  assert.match(source, /captureExactMissingActorAnchor\(\{[\s\S]*?profile: getActiveStorageProfileOrNull\(\)[\s\S]*?storage: getKeyValueStorage\(\)/u);
+  assert.match(source, /captureExactMissingActorFenceAtConfirmation\(\{[\s\S]*?captureCurrentAuthenticatedActorFence: accountRef\.current\.captureCurrentAuthenticatedActorFence/u);
+  assert.doesNotMatch(source, /inspectQ13ActorFence|exactMissingActorFence\.current/u);
+  assert.match(accountProvider, /captureCurrentAuthenticatedActorFence,/u);
+  assert.match(source, /readGuestInstallation: getGuestInstallation/u);
+  assert.match(source, /hasGuestAccess,/u);
+  assert.match(exactMissingActorFence, /\["guest", "legacy_guest"\]/u);
+  assert.match(exactMissingActorFence, /currentInstallation|current\.localDatasetId/u);
+  assert.match(exactMissingActorFence, /const actorAndScopeAreCurrent = \(\) => input\.currentActorKind\(\) === "guest"[\s\S]*?hasGuestAccess\(\)/u);
+  assert.match(exactMissingActorFence, /const current = await readInstallation\(\);\s*return actorAndScopeAreCurrent\(\) && current\?/u);
+  assert.match(exactMissingActorFence, /input\.currentActorKind\(\) === "authenticated"[\s\S]*?isCurrentAccountActor\(\)/u);
+  assert.doesNotMatch(source, /validatePreparedGuestAccess/u);
+});
+
+test("Premium resume denials keep the verified app shell available without bootstrap diagnostics", () => {
+  assert.match(source, /error instanceof TrainingApplicationFailure[\s\S]*?error\.code === "premium_entitlement_denied" \|\| error\.code === "premium_entitlement_unavailable"[\s\S]*?kind: "premium_resume_unavailable"/);
+  assert.match(source, /captureHomeResumeActorFence\(\)/);
+  assert.match(source, /resumeActorFence\?\.isCurrent\(\)/);
+  assert.match(source, /state\.actorFence\.isCurrent\(\)/);
+  assert.match(accountProvider, /captureHomeResumeActorFence = useCallback[\s\S]*?captureCurrentAuthenticatedActorFence\(\)[\s\S]*?isCurrentLocalOfflineActor\(current\)/);
+  assert.match(source, /kind: "home_ready_resume_unavailable"/);
+  assert.match(source, /clearAfterSuccessfulResume/);
+  assert.match(source, /clearIfSessionChanged/);
+  assert.doesNotMatch(source, /DevelopmentBootstrapDiagnostic|PatternlyBootstrap(Read|Resume)|resumeSubstage|console\.warn/);
+});
+
+test("the Premium resume notice stays bound to the exact active session and clears only after canonical resume", () => {
+  assert.match(homeScreen, /unavailableResumeSession = homeResumeContext\?\.unavailable\?\.sessionId === data\.activeSession\?\.id \? data\.activeSession : null/);
+  assert.match(homeScreen, /resumeUnavailableReason = homeResumeContext\?\.unavailable && homeResumeContext\.unavailable\.sessionId === homeActiveSession\?\.id[\s\S]*?homeResumeContext\.unavailable\.reason/);
+  assert.match(homeScreen, /resumeUnavailableReason=\{resumeUnavailableReason\}/);
+  assert.match(homeScreen, /const session = await resumeActiveTrainingSession\(\);[\s\S]*?homeResumeContext\?\.clearAfterSuccessfulResume\(session\.id\);[\s\S]*?navigation\.navigate/);
+  const simulationRetry = homeScreen.slice(homeScreen.indexOf('if (action.modeId === "design-interview-simulation")'), homeScreen.indexOf("const admission = await account.authorizePremiumSessionStart()"));
+  assert.match(simulationRetry, /homeResumeContext\?\.unavailable\?\.sessionId === action\.sessionId[\s\S]*?await resumeActiveTrainingSession\(\)[\s\S]*?buildDesignInterviewSimulationResumeRoute\(session\)/);
+  assert.doesNotMatch(simulationRetry, /clearAfterSuccessfulResume/);
+  assert.match(homeTab, /resumeUnavailableReason === "premium_entitlement_denied" \? "Premium access required" : "Premium access unavailable"/);
+  assert.match(homeTab, /decisionLabel = hasActiveSession[\s\S]*?"Resume session"/);
+  assert.match(simulationScreen, /openDesignInterviewSimulation\([\s\S]*?\.then\(\(next\) => \{[\s\S]*?route\.params\.expectedSessionId === next\.session\.id[\s\S]*?clearAfterSuccessfulResume\(next\.session\.id\)/);
+  assert.doesNotMatch(homeScreen, /clearAfterSuccessfulResume\([^\n]*\);\s*navigation\.navigate\(route\.name/);
 });
 
 test("the recovery presentation fixture is development-smoke only and never calls storage operations", () => {

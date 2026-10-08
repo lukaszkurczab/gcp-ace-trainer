@@ -64,6 +64,10 @@
       "title": "Your account data",
       "body": "Learning data is stored on this device. Supported account records can also sync to your account cloud and return through normal sync after you sign in. Use the export, details, and privacy actions below for this account."
     },
+    "localOffline": {
+      "title": "Account data on this device",
+      "body": "Your saved learning stays on this device. Reconnect to check your account before syncing changes or using account data actions."
+    },
     "guest": {
       "title": "Guest data",
       "body": "Learning data is stored locally on this device. You can use Patternly without an account. Use the privacy form in this app if you need help with your data."

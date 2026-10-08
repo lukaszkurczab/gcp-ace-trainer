@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { validatePackageCompletionRule } from "../../patternly-content/scripts/content/question-contract.mjs";
 
 export const EXPECTED_TRACK_IDS = Object.freeze([
   "aws-certified-solutions-architect-associate",
@@ -24,6 +25,7 @@ const LOCK_SCHEMA_VERSION = "patternly-content-lock-v1";
 const ARTIFACT_SCHEMA_VERSION = "patternly-content-artifact-v1";
 const HASH = /^[a-f0-9]{64}$/u;
 const TRACK_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+const SAFE_CONTENT_VERSION = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u;
 const CODING_TRACK_ID = "coding-interview-dsa-problem-solving";
 const CODING_PROFILE_ID = "algorithms-interview-simulation-v1";
 const DESIGN_TRACK_IDS = Object.freeze(["backend-system-design-interview", "frontend-system-design-interview", "object-oriented-design-interview"]);
@@ -85,7 +87,11 @@ function validateCertificationSimulationConfig(config, { trackId, contentVersion
   if (JSON.stringify(Object.entries(config.nodeDomainMap).sort()) !== JSON.stringify(Object.entries(sourceNodeDomainMap).sort())) fail(`${path}.nodeDomainMap differs from source-derived per-question domains`);
   const evidence = config.nodeDomainMapEvidence;
   requireExactKeys(evidence, ["artifactPath", "contentVersion", "itemCount", "nodeCount", "ambiguousNodeCount"], `${path}.nodeDomainMapEvidence`);
-  if (evidence.artifactPath !== `artifacts/tracks/${trackId}/${contentVersion}/track-artifact.json` || evidence.contentVersion !== contentVersion || evidence.itemCount !== questions.length || evidence.nodeCount !== nodeIds.length || evidence.ambiguousNodeCount !== 0) fail(`${path}.nodeDomainMapEvidence does not match the artifact identity or node coverage`);
+  if (typeof evidence.contentVersion !== "string" || !SAFE_CONTENT_VERSION.test(evidence.contentVersion) ||
+    evidence.artifactPath !== `artifacts/tracks/${trackId}/${evidence.contentVersion}/track-artifact.json` ||
+    evidence.itemCount !== questions.length || evidence.nodeCount !== nodeIds.length || evidence.ambiguousNodeCount !== 0) {
+    fail(`${path}.nodeDomainMapEvidence does not match its pinned artifact identity or node coverage`);
+  }
 }
 function validateCodingSimulationConfig(config, { questions }) {
   const label = "simulationProfiles.coding_interview.familyConfig";
@@ -258,9 +264,19 @@ export async function validateBuiltContent(directory, { expectedInventory = EXPE
     const artifactBytes = await inspectRegularFile(artifactPath, directory, "content artifact");
     if (sha256(artifactBytes) !== entry.sha256) fail(`SHA-256 mismatch for ${entry.trackId}`);
     const artifact = parseJson(artifactBytes, artifactPath);
-    if (!isRecord(artifact) || (!exactKeys(artifact, ["schemaVersion", "trackId", "contentVersion", "questions"]) && !exactKeys(artifact, ["schemaVersion", "trackId", "contentVersion", "questions", "simulationProfiles"]))) fail(`Invalid artifact shape for ${entry.trackId}`);
+    const artifactShapes = [
+      ["schemaVersion", "trackId", "contentVersion", "questions"],
+      ["schemaVersion", "trackId", "contentVersion", "questions", "simulationProfiles"],
+      ["schemaVersion", "trackId", "contentVersion", "questions", "completionRule"],
+      ["schemaVersion", "trackId", "contentVersion", "questions", "simulationProfiles", "completionRule"],
+    ];
+    if (!isRecord(artifact) || !artifactShapes.some((keys) => exactKeys(artifact, keys))) fail(`Invalid artifact shape for ${entry.trackId}`);
     if (artifact.schemaVersion !== ARTIFACT_SCHEMA_VERSION || artifact.trackId !== entry.trackId || artifact.contentVersion !== entry.contentVersion) fail(`Artifact identity mismatch for ${entry.trackId}`);
     if (!Array.isArray(artifact.questions) || artifact.questions.length !== entry.questionCount) fail(`Question count mismatch for ${entry.trackId}`);
+    if (Object.hasOwn(artifact, "completionRule")) {
+      const completion = validatePackageCompletionRule(artifact.completionRule, "completionRule", artifact.questions);
+      if (!completion.valid) fail(`Invalid chapter completion rule for ${entry.trackId}: ${completion.errors.join("; ")}`);
+    }
     const hasSimulationProfiles = Object.hasOwn(artifact, "simulationProfiles");
     const knownGcpDomains = new Set(["gcp-ace-standard-domain-1", "gcp-ace-standard-domain-2", "gcp-ace-standard-domain-3", "gcp-ace-standard-domain-4"]);
     for (const question of artifact.questions) {

@@ -1,4 +1,6 @@
 import { getTrainingLifecycleUseCases } from "../trainingLifecycle";
+import { ExactContentArtifactUnavailableError, TrainingApplicationFailure, type ExactArtifactIdentity } from "../trainingLifecycle/contracts";
+import type { TrainingSession } from "../../domain";
 import { recoverPendingMutation } from "../learningMutations";
 import { canPersistTrainingSessionDraft } from "../../domain";
 import {
@@ -24,8 +26,10 @@ import {
 
 export type ApplicationBootstrapState =
   | Readonly<{ kind: "ready"; activeSessionId: string | null }>
-  | Readonly<{ kind: "content_identity_unavailable"; sessionIds: readonly string[] }>
+  | Readonly<{ kind: "home_ready_resume_unavailable"; activeSessionId: string; reason: "premium_entitlement_denied" | "premium_entitlement_unavailable" }>
+  | Readonly<{ kind: "content_identity_unavailable"; sessionIds: readonly string[]; exactMissingIdentity?: ExactArtifactIdentity }>
   | Readonly<{ kind: "blocking"; reason: string; storageFailureCode?: EncryptedStorageFailureCode }>;
+export type ActiveSessionResumeOutcome = Readonly<{ kind: "premium_resume_unavailable"; reason: "premium_entitlement_denied" | "premium_entitlement_unavailable" }>;
 export type ApplicationBootstrapDependencies = Readonly<{
   repositories?: CanonicalRepositoryBootstrapDependencies;
   diagnosticObserver?: BootstrapDiagnosticObserver;
@@ -44,12 +48,13 @@ export async function abandonUnavailableActiveTrainingSession(sessionId: string)
  */
 export async function bootstrapApplication(
   prepareContentPackages: () => Promise<unknown>,
-  resolveActiveSession: (sessionId: string) => Promise<void>,
+  resolveActiveSession: (sessionId: string) => Promise<void | ActiveSessionResumeOutcome>,
   prepareLifecycle?: () => Promise<void>,
   dependencies: ApplicationBootstrapDependencies = {},
 ): Promise<ApplicationBootstrapState> {
   let stage = ApplicationBootstrapStage.OpeningStorage;
   let currentRepositoryStep: CanonicalRepositoryBootstrapStep | undefined;
+  let resumingSession: TrainingSession | null = null;
   try {
     const repositoryDependencies = dependencies.repositories;
     await openCanonicalRepositories({
@@ -74,9 +79,9 @@ export async function bootstrapApplication(
     if (prepareLifecycle) {
       await prepareLifecycle();
       const lifecycle = getTrainingLifecycleUseCases();
-      const beforeRecovery = await getActiveTrainingSession();
-      if (beforeRecovery) await lifecycle.reconstructOperationProjection(beforeRecovery);
       await lifecycle.recoverPendingJournal();
+      const activeAfterRecovery = await getActiveTrainingSession();
+      if (activeAfterRecovery) await lifecycle.reconstructOperationProjection(activeAfterRecovery);
     } else {
       // Test-only/headless bootstrap has no lifecycle composition to install.
       await recoverPendingMutation();
@@ -89,6 +94,7 @@ export async function bootstrapApplication(
     stage = ApplicationBootstrapStage.ValidatingActiveSession;
     if (prepareLifecycle) await getTrainingLifecycleUseCases().finalizeExpiredSimulationIfDue();
     const activeSession = await getActiveTrainingSession();
+    resumingSession = activeSession;
     const sessions = (await getTrainingSessions()).value;
     const activeRecords = sessions.filter((session) => session.status === "active");
     if (!activeSession && activeRecords.length > 0) {
@@ -106,9 +112,37 @@ export async function bootstrapApplication(
       throw new BootstrapInvariantError("active_session_draft_mismatch", "The canonical draft does not match the active session.");
     }
     stage = ApplicationBootstrapStage.ResumingSession;
-    await resolveActiveSession(activeSession.id);
+    const resumeOutcome = await resolveActiveSession(activeSession.id);
+    if (resumeOutcome?.kind === "premium_resume_unavailable") {
+      const [latestActiveSession, latestSessions, latestDraft] = await Promise.all([
+        getActiveTrainingSession(),
+        getTrainingSessions(),
+        getActiveTrainingSessionDraft(),
+      ]);
+      const latestActiveRecords = latestSessions.value.filter((session) => session.status === "active");
+      if (!sameJsonSnapshot(activeSession, latestActiveSession)
+        || latestActiveRecords.length !== 1 || latestActiveRecords[0]?.id !== activeSession.id
+        || !sameJsonSnapshot(draft, latestDraft)) {
+        throw new BootstrapInvariantError("active_session_changed_during_resume", "The active session changed while its Premium access was being checked.");
+      }
+      return { kind: "home_ready_resume_unavailable", activeSessionId: activeSession.id, reason: resumeOutcome.reason };
+    }
     return { kind: "ready", activeSessionId: activeSession.id };
   } catch (error) {
+    if (stage === ApplicationBootstrapStage.ResumingSession && resumingSession && error instanceof TrainingApplicationFailure
+      && error.code === "resume_unavailable" && error.cause instanceof ExactContentArtifactUnavailableError
+      && sameExactIdentity(error.cause.identity, resumingSession)) {
+      observeBootstrapFailure(dependencies.diagnosticObserver, stage, error, currentRepositoryStep);
+      return {
+        kind: "content_identity_unavailable",
+        sessionIds: Object.freeze([resumingSession.id]),
+        exactMissingIdentity: Object.freeze({
+          trackId: resumingSession.trackId,
+          contentVersion: resumingSession.contentVersion,
+          artifactSha256: resumingSession.artifactSha256,
+        }),
+      };
+    }
     const storageFailureCode = encryptedStorageFailureCode(error);
     const result: ApplicationBootstrapState = error instanceof StorageMetadataError
       ? { kind: "blocking", reason: error.code }
@@ -125,4 +159,13 @@ export async function bootstrapApplication(
     );
     return result;
   }
+}
+
+function sameExactIdentity(identity: ExactArtifactIdentity, session: TrainingSession): boolean {
+  return identity.trackId === session.trackId && identity.contentVersion === session.contentVersion && identity.artifactSha256 === session.artifactSha256;
+}
+
+function sameJsonSnapshot(left: unknown, right: unknown): boolean {
+  try { return JSON.stringify(left) === JSON.stringify(right); }
+  catch { return false; }
 }

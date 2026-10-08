@@ -39,6 +39,22 @@ export type ProfileStoragePreparationState = "loading" | "ready" | "unavailable"
 type ItemId = ResolvedContentRef["questionId"];
 
 export const runtimeSelectors = Object.freeze({
+  q13: Object.freeze({
+    receiptRoot: () => selector("q13", "receipt"),
+    storageReadiness: () => selector("q13", "storage-readiness"),
+    packageRootReadiness: () => selector("q13", "package-root-readiness"),
+    inventory: () => selector("q13", "inventory"),
+    profileInventory: (profileIdSha256: string) => selector("q13", "profile-inventory", profileIdSha256),
+    profileCategoryInventory: (profileIdSha256: string, category: string) => selector("q13", "profile-category-inventory", profileIdSha256, category),
+    unclassifiedKey: (index: number) => selector("q13", "unclassified-key", String(index)),
+    globalInventory: (category: string) => selector("q13", "global-inventory", category),
+    controlInventory: () => selector("q13", "control-inventory"),
+    secureControlInventory: () => selector("q13", "secure-control-inventory"),
+    packages: () => selector("q13", "packages"),
+    actor: () => selector("q13", "actor"),
+    secureStore: () => selector("q13", "secure-store"),
+    close: () => selector("q13", "close"),
+  }),
   profileStorage: Object.freeze({
     state: (state: ProfileStoragePreparationState) => selector("profile-storage", "state", state),
   }),
@@ -161,6 +177,7 @@ export const runtimeSelectors = Object.freeze({
     root: () => selector("progress-plan", "root"),
     editSchedule: () => selector("progress-plan", "edit-schedule"),
     completion: (state: ProgressPlanCompletionState) => selector("progress-plan", "completion", progressPlanCompletionStateSegment(state)),
+    chapterList: () => selector("progress-plan", "chapter-list"),
     day: (status: HomePlanDayStatus) => selector("progress-plan", "day", progressPlanDayStatusSegment(status)),
     session: () => selector("progress-plan", "session"),
     activeSession: () => selector("progress-plan", "active-session"),

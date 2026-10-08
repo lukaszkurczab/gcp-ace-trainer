@@ -12,10 +12,12 @@ import {
 } from "../../domain";
 import { projectTargetDateGuidance } from "../../application/learningPlan";
 import type { HomePlanReady, HomePlanSnapshot } from "../../application/homePlanSnapshotReader";
+import type { PackageCompletionState } from "../../domain";
 import { buildProgressPlanPresentationModel } from "./progressPlanPresentationModel";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving" as TrackId;
 const ARTIFACT_SHA256 = "a".repeat(64);
+const sampleChapter = { nodeId: "chapter", mentalUnitCount: 1, qualifyingAttemptCount: 8, requiredAttemptCount: 20, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: null, status: "in_progress" as const, reason: "minimum_attempts_unmet" as const };
 
 function plan(): LearningPlan {
   return normalizeLearningPlan({
@@ -52,7 +54,17 @@ function guidanceFor(currentGoal: GoalSnapshot | null, acceptedPlan: LearningPla
   });
 }
 
-function ready(completion: HomePlanReady["completion"] = { kind: "in_progress", qualifyingAttemptCount: 8, requiredAttemptCount: 10, rollingWindowSize: 10 }): HomePlanReady {
+function completionInProgress(qualifyingAttemptCount = 8, reason: "minimum_attempts_unmet" | "quality_unmet" = "minimum_attempts_unmet"): PackageCompletionState {
+  const chapter = { ...sampleChapter, qualifyingAttemptCount, quality: reason === "quality_unmet" ? 0.75 : null, reason };
+  return { kind: "in_progress", chapters: [chapter], completedChapterCount: 0, requiredChapterCount: 1, qualifyingAttemptCount, requiredAttemptCount: 20, remainingAttemptCount: Math.max(0, 20 - qualifyingAttemptCount) };
+}
+
+function completionCompleted(): PackageCompletionState {
+  const chapter = { nodeId: "chapter", mentalUnitCount: 1, qualifyingAttemptCount: 20, requiredAttemptCount: 20, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: 1, status: "completed" as const, reason: null };
+  return { kind: "completed", chapters: [chapter], completedChapterCount: 1, requiredChapterCount: 1, qualifyingAttemptCount: 20, requiredAttemptCount: 20, remainingAttemptCount: 0 };
+}
+
+function ready(completion: HomePlanReady["completion"] = completionInProgress()): HomePlanReady {
   const acceptedPlan = plan();
   const currentGoal = goal();
   return {
@@ -77,6 +89,7 @@ function ready(completion: HomePlanReady["completion"] = { kind: "in_progress", 
     dueReviewCount: 0,
     dueReviewIds: [],
     completion,
+    chapterAccess: [{ nodeId: "chapter", access: "unavailable" }],
     session: { modeId: "learn", topicId: "complexity_and_constraints", sessionLength: 10, areaLabel: "Complexity and constraints" },
     paceForecast: { kind: "unavailable", reason: "no_target" },
     guidance: guidanceFor(currentGoal, acceptedPlan, completion.kind === "completed" ? "completed" : "in_progress"),
@@ -89,7 +102,7 @@ test("Progress model preserves canonical guidance and completion without a volum
   if (model.kind !== "ready") return;
   assert.ok(model.completion.kind === "in_progress");
   assert.equal(model.completion.qualifyingAttemptCount, 8);
-  assert.equal(model.completion.requiredAttemptCount, 10);
+  assert.equal(model.completion.requiredAttemptCount, 20);
   assert.deepEqual(model.completion, ready().completion);
   assert.equal("ratio" in model.completion, false);
   assert.equal(model.guidance.facts.length, 4);
@@ -99,14 +112,14 @@ test("Progress model preserves canonical guidance and completion without a volum
 });
 
 test("Progress model never creates a self-link for completed guidance", () => {
-  const snapshot = ready({ kind: "completed", qualifyingAttemptCount: 12, rollingWindowSize: 10, quality: 1 });
+  const snapshot = ready(completionCompleted());
   const model = buildProgressPlanPresentationModel({ snapshot, activeTrackId: TRACK_ID, locale: "pl" });
   assert.equal(model.kind, "ready");
   if (model.kind !== "ready") return;
   assert.ok(model.completion.kind === "completed");
   assert.deepEqual(model.completion, snapshot.completion);
   assert.equal("ratio" in model.completion, false);
-  assert.equal(model.completion.qualifyingAttemptCount, 12);
+  assert.equal(model.completion.qualifyingAttemptCount, 20);
   assert.equal(model.primaryAction, null);
 });
 
@@ -223,15 +236,14 @@ test("Progress model fails closed for a foreign active track or unavailable snap
 
 test("Progress rejects invalid count, minimum, window and quality rather than presenting false completion", () => {
   const invalid = [
-    { kind: "in_progress", qualifyingAttemptCount: -1, requiredAttemptCount: 10, rollingWindowSize: 10 },
-    { kind: "in_progress", qualifyingAttemptCount: 0, requiredAttemptCount: 0, rollingWindowSize: 10 },
-    { kind: "in_progress", qualifyingAttemptCount: 0, requiredAttemptCount: 10, rollingWindowSize: 11 },
-    { kind: "in_progress", qualifyingAttemptCount: 0, requiredAttemptCount: 10, rollingWindowSize: 0 },
-    { kind: "completed", qualifyingAttemptCount: Number.NaN, rollingWindowSize: 10, quality: 1 },
-    { kind: "completed", qualifyingAttemptCount: 0, rollingWindowSize: 10, quality: 1 },
-    { kind: "completed", qualifyingAttemptCount: 20, rollingWindowSize: 0, quality: 1 },
-    { kind: "completed", qualifyingAttemptCount: 20, rollingWindowSize: 10, quality: Number.NaN },
-    { kind: "completed", qualifyingAttemptCount: 20, rollingWindowSize: 10, quality: 1.1 },
+    { ...completionInProgress(), qualifyingAttemptCount: -1 },
+    { ...completionInProgress(), requiredChapterCount: 0 },
+    { ...completionInProgress(), remainingAttemptCount: 0 },
+    { ...completionInProgress(), chapters: [{ ...sampleChapter, rollingWindowSize: 10 }] },
+    { ...completionCompleted(), qualifyingAttemptCount: Number.NaN },
+    { ...completionCompleted(), completedChapterCount: 0 },
+    { ...completionCompleted(), chapters: [{ nodeId: "chapter", mentalUnitCount: 1, qualifyingAttemptCount: 20, requiredAttemptCount: 20, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: Number.NaN, status: "completed" as const, reason: null }] },
+    { ...completionCompleted(), chapters: [{ nodeId: "chapter", mentalUnitCount: 1, qualifyingAttemptCount: 20, requiredAttemptCount: 20, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: 1.1, status: "completed" as const, reason: null }] },
   ] as const;
-  for (const completion of invalid) assert.deepEqual(buildProgressPlanPresentationModel({ snapshot: ready(completion), activeTrackId: TRACK_ID, locale: "en" }), { kind: "unavailable", trackId: TRACK_ID, reason: "calculation_error" });
+  for (const completion of invalid) assert.deepEqual(buildProgressPlanPresentationModel({ snapshot: ready(completion as unknown as PackageCompletionState), activeTrackId: TRACK_ID, locale: "en" }), { kind: "unavailable", trackId: TRACK_ID, reason: "calculation_error" });
 });

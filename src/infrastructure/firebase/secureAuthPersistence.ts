@@ -4,7 +4,7 @@ import { sha256Utf8 } from "../identity/sha256";
 const AUTH_USER_STORAGE_KEY = "patternly.auth.user";
 const AUTH_PERSISTENCE_STORAGE_PREFIX = "patternly.auth.persistence.";
 
-type SecureStoreLike = Readonly<{
+export type SecureAuthPersistenceStore = Readonly<{
   deleteItemAsync: (key: string) => Promise<void>;
   getItemAsync: (key: string) => Promise<string | null>;
   setItemAsync: (key: string, value: string) => Promise<void>;
@@ -12,12 +12,12 @@ type SecureStoreLike = Readonly<{
 
 type PersistedBlob = Record<string, unknown>;
 
-function getSecureStore(): SecureStoreLike {
-  const module = require("expo-secure-store") as Partial<SecureStoreLike>;
+function getSecureStore(): SecureAuthPersistenceStore {
+  const module = require("expo-secure-store") as Partial<SecureAuthPersistenceStore>;
   if (typeof module.getItemAsync !== "function" || typeof module.setItemAsync !== "function" || typeof module.deleteItemAsync !== "function") {
     throw new Error("secure_store_unavailable");
   }
-  return module as SecureStoreLike;
+  return module as SecureAuthPersistenceStore;
 }
 
 function isRecord(value: unknown): value is PersistedBlob {
@@ -82,7 +82,7 @@ type SecureAuthPersistenceConstructor = {
  * policy for the persisted Firebase user record.
  */
 export function createSecureAuthPersistence(
-  store: SecureStoreLike = getSecureStore(),
+  store: SecureAuthPersistenceStore = getSecureStore(),
 ): SecureAuthPersistenceConstructor {
   const isFirebaseAuthUserKey = (key: string): boolean => /^firebase:authUser(?::|$)/u.test(key);
   const storageKeyForFirebaseKey = (key: string): string => `${AUTH_PERSISTENCE_STORAGE_PREFIX}${sha256Utf8(key)}`;
@@ -170,9 +170,24 @@ export function createSecureAuthPersistence(
 }
 
 /** Removes the durable Firebase user record and verifies that it is gone. */
-export async function clearPersistedFirebaseAuthUser(store: SecureStoreLike = getSecureStore()): Promise<void> {
+export async function clearPersistedFirebaseAuthUser(store: SecureAuthPersistenceStore = getSecureStore()): Promise<void> {
   await store.deleteItemAsync(AUTH_USER_STORAGE_KEY);
   if (await store.getItemAsync(AUTH_USER_STORAGE_KEY) !== null) throw new Error("firebase_auth_persistence_clear_failed");
 }
 
 export { AUTH_USER_STORAGE_KEY };
+
+/** Reads only the owned Firebase user slot; the dynamic hashed Firebase namespace is not enumerable. */
+export async function inspectQ13SecureAuthPersistence(store?: SecureAuthPersistenceStore, isCurrentSdkUid?: (uid: string) => boolean): Promise<Readonly<{ kind: "observed"; userRecord: "absent" | "present"; userRecordSha256: string | null; userRecordAffinity: "not_checked" | "absent" | "matches_current_sdk_uid" | "different_or_unavailable"; dynamicFirebaseNamespace: "unavailable" } | { kind: "unavailable" }>> {
+  try {
+    const value = await (store ?? getSecureStore()).getItemAsync(AUTH_USER_STORAGE_KEY);
+    let affinity: "not_checked" | "absent" | "matches_current_sdk_uid" | "different_or_unavailable" = isCurrentSdkUid ? "absent" : "not_checked";
+    if (value !== null && isCurrentSdkUid) {
+      try {
+        const record: unknown = JSON.parse(value);
+        affinity = typeof record === "object" && record !== null && "uid" in record && typeof record.uid === "string" && isCurrentSdkUid(record.uid) ? "matches_current_sdk_uid" : "different_or_unavailable";
+      } catch { affinity = "different_or_unavailable"; }
+    }
+    return Object.freeze({ kind: "observed", userRecord: value === null ? "absent" : "present", userRecordSha256: value === null ? null : sha256Utf8(value), userRecordAffinity: affinity, dynamicFirebaseNamespace: "unavailable" });
+  } catch { return Object.freeze({ kind: "unavailable" }); }
+}

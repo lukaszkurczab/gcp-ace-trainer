@@ -41,7 +41,7 @@ async function runHome(
 ) {
   const outcome: { published: { trainingAttempts: readonly TrainingAttempt[] } | null; readError: string | null } = { published: null, readError: null };
   const context = {
-    isActive: true, accountRef: { current: { state: { kind: "guest" } } },
+    isActive: true, accountRef: { current: { state: { kind: "guest" }, readCurrentPremiumAccess: () => "denied" } },
     getActiveTrackId: reads.loadActiveTrackId, getAttempts: reads.loadExamSummaries, getPracticeHistory: reads.loadPracticeHistory,
     loadActiveTrainingSession: reads.loadActiveTrainingSession, loadCloudCertificationProgressViewModel: reads.loadCloudCertificationProgress,
     getReviewQueueItems: reads.loadReviewQueueItems, getTrainingAttempts: reads.loadTrainingAttempts,

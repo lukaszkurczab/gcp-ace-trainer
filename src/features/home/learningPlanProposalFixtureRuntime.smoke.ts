@@ -93,15 +93,23 @@ function createOutcome(scenario: LearningPlanProposalFixtureCase) {
     sessionCapacity: capacity,
     // Explicit presentation fixture only: actual production rules remain package-owned/absent.
     completionState: qualityUnmet
-      ? { kind: "in_progress" as const, qualifyingAttemptCount: 25, requiredAttemptCount: 20, rollingWindowSize: 10 }
+      ? fixtureCompletion(20, 0.75)
       : hasTarget
-      ? { kind: "in_progress" as const, qualifyingAttemptCount: 0, requiredAttemptCount: 1, rollingWindowSize: 1 }
+      ? fixtureCompletion(0)
       : { kind: "unknown" as const },
     dueReviewCount: 0,
     primaryScopeLabel: "UI11 fixture scope",
     localToday: "2026-09-30",
     timezone: "Europe/Warsaw",
   });
+}
+
+function fixtureCompletion(qualifyingAttemptCount: number, quality: number | null = null) {
+  const requiredAttemptCount = 20;
+  const completed = qualifyingAttemptCount >= requiredAttemptCount && quality !== null && quality >= 0.8;
+  const chapter = Object.freeze({ nodeId: "fixture-chapter", mentalUnitCount: 1, qualifyingAttemptCount, requiredAttemptCount, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality, status: completed ? "completed" as const : "in_progress" as const, reason: completed ? null : qualifyingAttemptCount >= requiredAttemptCount ? "quality_unmet" as const : "minimum_attempts_unmet" as const });
+  const common = { chapters: Object.freeze([chapter]), completedChapterCount: completed ? 1 : 0, requiredChapterCount: 1, qualifyingAttemptCount, requiredAttemptCount, remainingAttemptCount: Math.max(0, requiredAttemptCount - qualifyingAttemptCount) };
+  return completed ? Object.freeze({ kind: "completed" as const, ...common, remainingAttemptCount: 0 as const }) : Object.freeze({ kind: "in_progress" as const, ...common });
 }
 
 function delay(milliseconds: number): Promise<void> {

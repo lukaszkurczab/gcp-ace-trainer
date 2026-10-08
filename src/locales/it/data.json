@@ -64,6 +64,10 @@
       "title": "I dati del tuo account",
       "body": "I dati di apprendimento sono salvati su questo dispositivo. I record dell’account supportati possono essere sincronizzati anche con il cloud dell’account e ripristinati tramite la normale sincronizzazione dopo l’accesso. Usa le opzioni di esportazione, dettagli e privacy qui sotto per questo account."
     },
+    "localOffline": {
+      "title": "Dati dell’account su questo dispositivo",
+      "body": "I tuoi progressi salvati restano su questo dispositivo. Riconnettiti per verificare l’account prima di sincronizzare le modifiche o usare le azioni sui dati dell’account."
+    },
     "guest": {
       "title": "Dati ospite",
       "body": "I dati di apprendimento sono salvati localmente su questo dispositivo. Puoi usare Patternly senza un account. Se hai bisogno di assistenza per i tuoi dati, usa il modulo privacy nell’app."

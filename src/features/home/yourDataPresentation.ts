@@ -5,6 +5,7 @@ export type YourDataActionKind = "export" | "guestPrivacy" | "openAccount" | "re
 export type YourDataDetailsAudience = "account" | "guest" | "none";
 export type YourDataStateCopy =
   | "authenticated"
+  | "localOffline"
   | "guest"
   | "signedOut"
   | "guestAccessBlocked"
@@ -48,6 +49,8 @@ export function getYourDataPresentation(state: AccountState): YourDataPresentati
   switch (state.kind) {
     case "authenticated":
       return presentation("authenticated", "export", "database", "account-data-export", "account", true);
+    case "localOffline":
+      return presentation("localOffline", "none", "info-circle", undefined, "none", false);
     case "guest":
       return presentation("guest", "guestPrivacy", "mail", "data-privacy-request", "guest", false);
     case "signedOut":

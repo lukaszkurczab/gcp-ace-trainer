@@ -100,6 +100,8 @@ export type ProductModeArtifact = Readonly<{
   schemaVersion: string;
   trackId: string;
   contentVersion: string;
+  /** Canonical admission validates this field before product-mode projection. */
+  completionRule?: unknown;
   questions: readonly Readonly<{
     trackId: string;
     nodeId: string;
@@ -187,7 +189,8 @@ const CANDIDATE_CONFIGS: readonly ProductModeConfig[] = [
 
 const EXPECTED_CONFIG_BY_KEY = new Map(CANDIDATE_CONFIGS.map((entry) => [key(entry.trackId, entry.modeId), entry]));
 const CONFIG_KEYS = ["availability", "defaultRequestedLength", "feedbackTiming", "minimumActualLength", "modeId", "reinsertPolicy", "requestedLengths", "selection", "timer", "trackId"].sort();
-const ARTIFACT_KEYS = ["contentVersion", "questions", "schemaVersion", "trackId"].sort();
+const ARTIFACT_KEYS = ["completionRule", "contentVersion", "questions", "schemaVersion", "trackId"].sort();
+const ARTIFACT_KEYS_WITHOUT_COMPLETION_RULE = ["contentVersion", "questions", "schemaVersion", "trackId"].sort();
 const SUPPORTED_INTERACTIONS = new Set(["choice_single", "choice_multiple", "ordering", "complexity", "decision_matrix"]);
 
 export function validateProductModeConfigs(configs: readonly ProductModeConfig[]): readonly ProductModeConfig[] {
@@ -202,7 +205,12 @@ export function validateProductModeConfigsAgainstArtifacts(configs: readonly Pro
   const artifactByTrack = new Map<string, ProductModeArtifact>();
   for (const artifact of artifacts) {
     const artifactKeys = artifact && typeof artifact === "object" && !Array.isArray(artifact) ? Object.keys(artifact).sort().join("|") : "";
-    const allowedArtifactKeys = [ARTIFACT_KEYS.join("|"), [...ARTIFACT_KEYS, "simulationProfiles"].sort().join("|")];
+    const allowedArtifactKeys = [
+      ARTIFACT_KEYS.join("|"),
+      [...ARTIFACT_KEYS, "simulationProfiles"].sort().join("|"),
+      ARTIFACT_KEYS_WITHOUT_COMPLETION_RULE.join("|"),
+      [...ARTIFACT_KEYS_WITHOUT_COMPLETION_RULE, "simulationProfiles"].sort().join("|"),
+    ];
     if (!artifact || typeof artifact !== "object" || Array.isArray(artifact) || !allowedArtifactKeys.includes(artifactKeys) || (Object.hasOwn(artifact, "simulationProfiles") && !Array.isArray(artifact.simulationProfiles)) || artifact.schemaVersion !== "patternly-content-artifact-v1" || !isCanonicalSafeIdentity(artifact.trackId) || !isCanonicalSafeIdentity(artifact.contentVersion) || artifactByTrack.has(artifact.trackId) || !Array.isArray(artifact.questions) || artifact.questions.length === 0) throw new Error("Product mode artifacts must contain nine exact, unique, non-empty canonical tracks with safe identities.");
     artifactByTrack.set(artifact.trackId, artifact);
   }

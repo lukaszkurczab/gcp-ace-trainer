@@ -35,6 +35,8 @@ export type RecoveryOperationSnapshot =
       codes: readonly string[] | null;
       savedIntent: boolean;
       replacementPending: boolean;
+      /** Ephemeral lineage from the already-validated encrypted record; never persisted separately. */
+      previousIssueOperationId?: string;
       deferredFor: Readonly<{ firebaseUid: string; authorizationGeneration: number }> | null;
       accountResolution: "missing_generation" | "different_uid" | "different_generation" | null;
       needsAccountResolution: boolean;
@@ -52,7 +54,7 @@ export type RecoveryOperationSnapshot =
       failure: RecoveryOperationFailure | null;
       blocksProfilePreparation: true;
     }>
-  | Readonly<{ kind: "terminal"; operationId: string; status: "acknowledged" | "superseded" | "expired_or_invalid"; blocksProfilePreparation: false }>;
+  | Readonly<{ kind: "terminal"; operationId: string; status: "acknowledged" | "superseded" | "expired_or_invalid"; previousIssueOperationId?: string; blocksProfilePreparation: false }>;
 
 export type RecoveryIssueResponse = RecoveryCodeIssueResultDto;
 export type RecoveryConsumeResponse = RecoveryConsumeResultDto;
@@ -204,7 +206,7 @@ export function createRecoveryOperationCoordinator(dependencies: RecoveryOperati
 
   const unavailable = (reason: "vault_unavailable" | "vault_corrupt" | "operation_unavailable"): RecoveryOperationSnapshot => publish({ kind: "unavailable", reason, blocksProfilePreparation: true });
 
-  const issueSnapshot = (value: RecoveryIssueVaultRecord, needsAccountResolution: boolean, failure: RecoveryOperationFailure | null = null, accountResolution: Extract<RecoveryOperationSnapshot, { kind: "issue" }>["accountResolution"] = null): RecoveryOperationSnapshot => publish({
+  const issueSnapshot = (value: RecoveryIssueVaultRecord, needsAccountResolution: boolean, failure: RecoveryOperationFailure | null = null, accountResolution: Extract<RecoveryOperationSnapshot, { kind: "issue" }>["accountResolution"] = null, previousIssueOperationId?: string): RecoveryOperationSnapshot => publish({
     kind: "issue",
     operationId: value.operationId,
     status: value.status,
@@ -214,6 +216,7 @@ export function createRecoveryOperationCoordinator(dependencies: RecoveryOperati
     codes: needsAccountResolution || value.savedIntent || value.deferredFor ? null : immutableCodes(value.codes),
     savedIntent: value.savedIntent,
     replacementPending: value.previousIssue !== undefined,
+    ...(previousIssueOperationId ?? value.previousIssue?.operationId ? { previousIssueOperationId: previousIssueOperationId ?? value.previousIssue?.operationId } : {}),
     deferredFor: value.deferredFor ?? null,
     accountResolution,
     needsAccountResolution,
@@ -240,11 +243,11 @@ export function createRecoveryOperationCoordinator(dependencies: RecoveryOperati
     blocksProfilePreparation: true,
   });
 
-  const terminal = async (operationId: string, status: "acknowledged" | "superseded" | "expired_or_invalid"): Promise<RecoveryOperationSnapshot> => {
+  const terminal = async (operationId: string, status: "acknowledged" | "superseded" | "expired_or_invalid", previousIssueOperationId?: string): Promise<RecoveryOperationSnapshot> => {
     await dependencies.vault.clear();
     record = null;
     loaded = true;
-    return publish({ kind: "terminal", operationId, status, blocksProfilePreparation: false });
+    return publish({ kind: "terminal", operationId, status, ...(previousIssueOperationId ? { previousIssueOperationId } : {}), blocksProfilePreparation: false });
   };
 
   const loadInternal = async (): Promise<RecoveryOperationSnapshot> => {
@@ -277,7 +280,7 @@ export function createRecoveryOperationCoordinator(dependencies: RecoveryOperati
       if (current.previousIssue) {
         if (response.status === "acknowledged" || response.status === "superseded") {
           if (!(await hasIdentity({ firebaseUid: current.firebaseUid, authorizationGeneration: current.authorizationGeneration }))) return issueSnapshot(current, true, "conflict");
-          return terminal(current.operationId, response.status);
+          return terminal(current.operationId, response.status, current.previousIssue?.operationId);
         }
         const preserved = Object.freeze({ ...current, status: response.status });
         await dependencies.vault.save(preserved);
@@ -302,9 +305,9 @@ export function createRecoveryOperationCoordinator(dependencies: RecoveryOperati
     await dependencies.vault.save(durableNext);
     record = durableNext;
     if (!(await hasIdentity({ firebaseUid: durableNext.firebaseUid, authorizationGeneration: durableNext.authorizationGeneration }))) {
-      return issueSnapshot(durableNext, true, "conflict");
+      return issueSnapshot(durableNext, true, "conflict", null, current.previousIssue?.operationId);
     }
-    issueSnapshot(durableNext, false);
+    issueSnapshot(durableNext, false, null, null, current.previousIssue?.operationId);
     if (durableNext.savedIntent && durableNext.status === "result_available") return acknowledgeIssue(durableNext);
     return snapshot;
   };

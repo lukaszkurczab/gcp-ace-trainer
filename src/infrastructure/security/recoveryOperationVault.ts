@@ -1,3 +1,5 @@
+import { sha256Utf8 } from "../identity/sha256";
+
 export type RecoveryOperationStatus = "in_progress" | "result_available" | "acknowledged" | "delivery_unconfirmed" | "superseded" | "expired_or_invalid" | "provider_retryable";
 
 export type RecoveryIssueVaultBaseRecord = Readonly<{
@@ -204,4 +206,13 @@ export function createRecoveryOperationVault(store: RecoveryOperationSecureStore
 export function createSecureRecoveryOperationVault(): RecoveryOperationVault {
   const secureStore = secureStorePort();
   return createRecoveryOperationVault(secureStore.store, secureStore.options);
+}
+
+/** Reads and hashes the exact recovery-operation slot without parsing, clearing, or resuming it. */
+export async function inspectQ13RecoveryOperationVault(store?: RecoveryOperationSecureStore, options?: Readonly<Record<string, unknown>>): Promise<Readonly<{ kind: "observed"; record: "absent" | "present"; recordSha256: string | null } | { kind: "unavailable" }>> {
+  try {
+    const secureStore = store ? { store, options } : secureStorePort();
+    const raw = await secureStore.store.getItemAsync(RECOVERY_OPERATION_VAULT_KEY, secureStore.options);
+    return Object.freeze({ kind: "observed", record: raw === null ? "absent" : "present", recordSha256: raw === null ? null : sha256Utf8(raw) });
+  } catch { return Object.freeze({ kind: "unavailable" }); }
 }

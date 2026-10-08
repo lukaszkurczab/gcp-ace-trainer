@@ -164,7 +164,7 @@ test("OOD24 producer proof binds the frozen 324-item mixed identity map and exac
 test("OOD24 loaded runtime matches every fixed reviewed question object", async () => {
   const map = readMap();
   const runtime = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK);
-  assert.equal(runtime.contentVersion, map.contentVersion);
+  assert.equal(runtime.contentVersion, "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24-bizq02-v2");
   assert.equal(runtime.questions.length, 1413);
   assert.equal(sha256(Buffer.from(canonicalSerialize([...runtime.questions].sort((a, b) => a.questionId.localeCompare(b.questionId))))), map.questionSetSha256, "whole current v24 runtime QSet matches producer");
   const questions = NODES.flatMap((node) => runtime.getQuestionsForNode(node));

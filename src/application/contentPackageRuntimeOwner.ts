@@ -1,11 +1,13 @@
 import { CanonicalTrainingRuntime } from "./canonical/CanonicalTrainingRuntime";
-import { createCanonicalRuntimeCatalogOwner, type CanonicalTrackRuntime, type Question } from "../content/canonical";
+import { createCanonicalRuntimeCatalogOwner, isCanonicalSafeIdentity, type CanonicalTrackRuntime, type Question } from "../content/canonical";
 import { createResolvedContentRef, isArtifactSha256, type ResolvedContentRef, type TrackFamilyId, type TrackId } from "../domain";
 import type { VerifiedNodePackage } from "../content/runtime/nodeContentPackage";
 import { getProductSimulationModeConfig } from "../content/canonical/productModeConfig";
 import { getActiveNodePackageScopeKey, loadActiveProfileNodePackages } from "../content/application/nodePackageStoreComposition";
 import { findPremiumNodeOfferForIdentity } from "../content/application/premiumNodeOffers";
 import { getAvailablePremiumNodeOfferForMode } from "../content/application/premiumNodeOfferAccess";
+import { ExactContentArtifactUnavailableError } from "./trainingLifecycle/contracts";
+import { isRegisteredTrackId } from "../domain/tracks/trackRegistry";
 
 export type ResolvedPackageRuntime = Readonly<{ track: CanonicalTrackRuntime; runtime: CanonicalTrainingRuntime }>;
 type PackageOffer = ReturnType<typeof findPremiumNodeOfferForIdentity>;
@@ -59,23 +61,34 @@ export class ContentPackageRuntimeOwner {
   }
   async resolveExactArtifact(input: Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">): Promise<ResolvedPackageRuntime> {
     const scopeKey = this.syncInstalledScope();
-    if (!input.trackId.trim() || !input.contentVersion.trim() || !isArtifactSha256(input.artifactSha256)) {
+    if (!isRegisteredTrackId(input.trackId) || !isCanonicalSafeIdentity(input.contentVersion) || !isArtifactSha256(input.artifactSha256)) {
       throw new Error("Exact canonical artifact identity is invalid.");
     }
     const key = runtimeKey(input.trackId, input.contentVersion, input.artifactSha256);
     const installed = this.installedExact.get(key);
     if (installed) return installed;
-    try {
-      const track = (await this.catalogOwner.load()).getTrack(input.trackId);
-      if (track.trackId === input.trackId && track.contentVersion === input.contentVersion && track.artifactSha256 === input.artifactSha256) return this.materialize(track);
-    } catch { /* The exact ref may be a retained, installed node version. */ }
-    if (scopeKey) {
-      try { await this.hydrateInstalledPackages(scopeKey); }
-      catch { /* No active profile or a profile transition means no retained package can be claimed as available. */ }
+    // A missing exact ref is meaningful only after the canonical catalog has
+    // loaded and passed its lock/content checks. Catalog failure is an unknown
+    // state, not evidence that the requested version was removed.
+    const catalog = await this.catalogOwner.load();
+    if (catalog.tracks.includes(input.trackId)) {
+      const track = catalog.getTrack(input.trackId);
+      if (track.contentVersion === input.contentVersion && track.artifactSha256 === input.artifactSha256) return this.materialize(track);
     }
-    const retained = scopeKey && this.syncInstalledScope() === scopeKey ? this.installedExact.get(key) : undefined;
+    if (scopeKey) {
+      // A corrupt, unreadable, or changing retained-package inventory must
+      // remain an operational failure rather than becoming unavailable.
+      await this.hydrateInstalledPackages(scopeKey);
+    }
+    const currentScopeKey = this.syncInstalledScope();
+    if (currentScopeKey !== scopeKey) throw new Error("Exact content resolution crossed a profile storage transition.");
+    const retained = scopeKey ? this.installedExact.get(key) : undefined;
     if (retained) return retained;
-    throw new Error("Exact canonical artifact identity does not match the verified catalog or retained node packages.");
+    throw new ExactContentArtifactUnavailableError(Object.freeze({
+      trackId: input.trackId,
+      contentVersion: input.contentVersion,
+      artifactSha256: input.artifactSha256,
+    }));
   }
   /** Registers verified exact-only node data. It is intentionally absent from discovery and product-mode selection. */
   registerInstalledNodePackage(record: VerifiedNodePackage, scopeKey: string): void {

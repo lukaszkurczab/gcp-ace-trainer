@@ -50,6 +50,7 @@ import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerView
 import { type GoalRecord, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
 import type { CodingInterviewDashboard } from "../../application/coding-interview";
 import { resumeActiveTrainingSession } from "../../application/trainingLifecycle";
+import { TrainingApplicationFailure } from "../../application/trainingLifecycle/contracts";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
@@ -75,6 +76,7 @@ import { feedbackTimingFromDurableSession } from "./resumeFeedbackTiming";
 import { navigateToActivityResult } from "./activityNavigation";
 import { buildHomePlanPracticeSetupParams } from "./homePlanUiContract";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
+import { useHomeResumeUnavailable } from "../../content/application/ContentPreparationGate";
 
 
 type HomeScreenProps = NativeStackScreenProps<
@@ -106,10 +108,11 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const { t: tLearningPlan } = useTranslation("learningPlan");
   const { t: tAccount } = useTranslation("account");
   const account = usePatternlyAccount();
+  const homeResumeContext = useHomeResumeUnavailable();
   const accountRef = useRef(account);
   accountRef.current = account;
   const settingsAccount = getSettingsAccountPresentation(account.state);
-  const learningPlanRecovery = account.state.kind === "authenticated"
+  const learningPlanRecovery = account.state.kind === "authenticated" || account.state.kind === "localOffline"
     ? account.state.accountData.learningPlanRecovery
     : undefined;
   const [activeTab, setActiveTab] = useState<HomeShellTab>(route.params?.initialTab ?? "home");
@@ -188,7 +191,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             getReviewQueueItems(),
             trainingAttemptsRead,
             loadActivitySessionRecords({ getAttempts: () => trainingAttemptsRead }),
-            savedTrackId ? homePlanSnapshotReader.read({ trackId: savedTrackId, now: new Date() }) : Promise.resolve(null),
+            savedTrackId ? homePlanSnapshotReader.read({ trackId: savedTrackId, now: new Date(), premiumAccess: accountRef.current.readCurrentPremiumAccess() }) : Promise.resolve(null),
           ]);
           const goal = savedTrackId ? await loadGoal(savedTrackId) : null;
           let goalOnboardingDismissed = true;
@@ -239,6 +242,14 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       };
     }, [shellReload]),
   );
+
+  useEffect(() => {
+    const unavailable = homeResumeContext?.unavailable;
+    if (!hasLoadedActiveTrack || !unavailable) return;
+    if (data.activeSession?.id !== unavailable.sessionId) {
+      homeResumeContext.clearIfSessionChanged(data.activeSession?.id ?? null);
+    }
+  }, [data.activeSession?.id, hasLoadedActiveTrack, homeResumeContext]);
 
   const analytics = useMemo(
     () => buildAnalyticsData(data.attempts, data.practiceHistory),
@@ -300,11 +311,21 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         if (action.trackId && (session.id !== action.sessionId || session.trackId !== action.trackId || session.modeId !== action.modeId)) {
           throw new Error("The active Certification Practice session changed before it could be resumed.");
         }
+        homeResumeContext?.clearAfterSuccessfulResume(session.id);
         navigation.navigate(ROUTES.PRACTICE_SESSION, buildCertificationPracticeResumeRoute(session));
         return;
       }
       if (action.kind === "resume_design_interview") {
         if (action.modeId === "design-interview-simulation") {
+          if (homeResumeContext?.unavailable?.sessionId === action.sessionId) {
+            const session = await resumeActiveTrainingSession();
+            if (session.id !== action.sessionId || session.trackId !== activeTrackId || session.modeId !== action.modeId) {
+              throw new Error("The active Design Interview Simulation changed before it could be resumed.");
+            }
+            const route = buildDesignInterviewSimulationResumeRoute(session);
+            navigation.navigate(route.name, route.params);
+            return;
+          }
           const admission = await account.authorizePremiumSessionStart();
           const access = resolveCertificationExamAccess(admission);
           if (access === "purchasePremium") { navigation.navigate(ROUTES.PREMIUM_PURCHASE); return; }
@@ -319,6 +340,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         if (session.id !== action.sessionId || session.trackId !== activeTrackId || session.modeId !== action.modeId) {
           throw new Error("The active Design Interview session changed before it could be resumed.");
         }
+        homeResumeContext?.clearAfterSuccessfulResume(session.id);
         navigation.navigate(ROUTES.PRACTICE_SESSION, buildDesignInterviewPracticeResumeRoute(session));
         return;
       }
@@ -327,6 +349,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         if (session.id !== action.sessionId || session.trackId !== action.trackId || session.modeId !== action.modeId) {
           throw new Error("The active Coding Interview session changed before it could be resumed.");
         }
+        homeResumeContext?.clearAfterSuccessfulResume(session.id);
         if (session.modeId === "coding-interview-simulation") {
           const route = buildCodingInterviewSimulationResumeRoute(session);
           navigation.navigate(route.name, route.params);
@@ -346,6 +369,20 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         }),
       );
     } catch (error) {
+      const isResumeAction = action.kind === "resume_certification_practice"
+        || action.kind === "resume_design_interview"
+        || action.kind === "resume_active_practice";
+      if (isResumeAction && error instanceof TrainingApplicationFailure
+        && (error.code === "premium_entitlement_denied" || error.code === "premium_entitlement_unavailable")) {
+        const denied = error.code === "premium_entitlement_denied";
+        Alert.alert(
+          tLearningPlan(denied ? "Premium access required" : "Premium access unavailable"),
+          tLearningPlan(denied
+            ? "Your session and saved answers are preserved. Premium access is required to resume."
+            : "Your session and saved answers are preserved. Premium access could not be verified. Try again."),
+        );
+        return;
+      }
       Alert.alert("Recommendation unavailable", describeOperationalFailure(error, "The recommended session could not be opened."));
     }
   }
@@ -406,7 +443,12 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     Alert.alert(tLearningPlan("Recommendation unavailable"), tLearningPlan("The learning plan could not be opened. Try again."));
   }
 
-  const homeActiveSession = data.homePlan?.kind === "ready" ? data.homePlan.activeSession : data.homePlan?.kind === "unavailable" ? null : data.activeSession;
+  const plannedActiveSession = data.homePlan?.kind === "ready" ? data.homePlan.activeSession : data.homePlan?.kind === "unavailable" ? null : data.activeSession;
+  const unavailableResumeSession = homeResumeContext?.unavailable?.sessionId === data.activeSession?.id ? data.activeSession : null;
+  const homeActiveSession = unavailableResumeSession ?? plannedActiveSession;
+  const resumeUnavailableReason = homeResumeContext?.unavailable && homeResumeContext.unavailable.sessionId === homeActiveSession?.id
+    ? homeResumeContext.unavailable.reason
+    : undefined;
 
   return (
     <View style={styles.shell}>
@@ -437,6 +479,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             ) : null}
             <HomeTab
               activeSession={homeActiveSession}
+              resumeUnavailableReason={resumeUnavailableReason}
               activeTrack={activeTrack}
               analytics={analytics}
               algorithmsDashboard={data.algorithmsDashboard}

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import ts from "typescript";
 import test from "node:test";
 
 const root = process.cwd();
@@ -13,6 +14,41 @@ function files(path: string): string[] {
         ? []
         : [join(path, entry.name)],
   );
+}
+
+const FORBIDDEN_PERSISTENCE_IMPORT = /(?:^|\/)(?:storage\/repositories|infrastructure\/storage)(?:\/|$)|^react-native-mmkv$/u;
+const FORBIDDEN_PERSISTENCE_CALLS = new Set([
+  "commitMutation",
+  "saveActiveForegroundTimer",
+  "saveTrainingSession",
+  "saveTrainingSessionDraft",
+]);
+
+function persistenceBoundaryViolations(path: string, source: string): string[] {
+  const scriptKind = path.endsWith(".tsx") ? ts.ScriptKind.TSX : path.endsWith(".jsx") ? ts.ScriptKind.JSX : ts.ScriptKind.TS;
+  const parsed = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, scriptKind);
+  const violations: string[] = [];
+  const inspectModule = (moduleSpecifier: ts.Expression | undefined, declaration: string) => {
+    if (moduleSpecifier && ts.isStringLiteral(moduleSpecifier) && FORBIDDEN_PERSISTENCE_IMPORT.test(moduleSpecifier.text)) {
+      violations.push(`${declaration} ${moduleSpecifier.text}`);
+    }
+  };
+  const visit = (node: ts.Node): void => {
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+      inspectModule(node.moduleSpecifier, ts.isImportDeclaration(node) ? "import" : "export");
+    } else if (ts.isCallExpression(node)) {
+      const callee = ts.isIdentifier(node.expression)
+        ? node.expression.text
+        : ts.isPropertyAccessExpression(node.expression)
+          ? node.expression.name.text
+          : null;
+      if (callee && FORBIDDEN_PERSISTENCE_CALLS.has(callee)) violations.push(`call ${callee}`);
+      if (node.expression.kind === ts.SyntaxKind.ImportKeyword && node.arguments[0]) inspectModule(node.arguments[0], "dynamic import");
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(parsed);
+  return violations;
 }
 
 test("one journal contract, materializer, verifier, and coordinator remain", () => {
@@ -55,7 +91,14 @@ test("Algorithms runtime composition has no persistence binding", () => {
   assert.equal(existsSync(join(root, "src/application/coding-interview/createCodingInterviewRuntime.ts")), false);
   assert.doesNotMatch(runtime, /storage\/repositories|react-native-mmkv|from\s+["']react/);
   assert.doesNotMatch(runtime, /\b(commit|save|getActive|recover|materialize|verify)[A-Z]/);
-  assert.doesNotMatch(composition, /storage|repositories|saveTrainingSession|saveTrainingSessionDraft|getActiveTrainingSession|commitMutation/);
+  assert.deepEqual(persistenceBoundaryViolations("src/application/contentPackageRuntimeOwner.ts", composition), []);
+});
+
+test("persistence boundary checks imports and write calls rather than incidental wording", () => {
+  assert.deepEqual(persistenceBoundaryViolations("fixture.ts", 'throw new Error("Exact content resolution crossed a profile storage transition.");'), []);
+  assert.deepEqual(persistenceBoundaryViolations("fixture.ts", 'import { sessions } from "../storage/repositories/sessionRepository";'), ["import ../storage/repositories/sessionRepository"]);
+  assert.deepEqual(persistenceBoundaryViolations("fixture.ts", 'import { save } from "./safeReadModel"; saveTrainingSession(record);'), ["call saveTrainingSession"]);
+  assert.deepEqual(persistenceBoundaryViolations("fixture.ts", 'const writer = () => commitMutation(input);'), ["call commitMutation"]);
 });
 
 test("Coding Interview read projections do not create a barrel cycle through the session facade", () => {

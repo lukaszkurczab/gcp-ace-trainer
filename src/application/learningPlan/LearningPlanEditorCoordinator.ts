@@ -32,6 +32,7 @@ import { readGoalSnapshot, StaleGoalRevisionError } from "../../storage/reposito
 import { createLearningPlanSlotId } from "../../domain/learning/slotIdentity";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { getTrackRegistration } from "../../domain/tracks/trackRegistry";
+import { withLocalLearningWriteOperation } from "../learningMutations/localLearningWriteOperation";
 
 export type { LearningPlanSnapshot } from "../../storage/repositories";
 
@@ -385,23 +386,26 @@ export class LearningPlanEditorCoordinator {
 
     const plan = pending ?? this.buildPlan(session, goal, currentPlan);
     if (!plan) return stale("plan");
-    if (!this.isCurrentScope(session.storageScope)) return stale("identity");
-    // The final read/guard and existing CAS run in one synchronous turn.
-    try {
-      if (this.dependencies.readGoalSnapshot(trackId)?.revision !== goal.revision) return stale("goal");
-      if ((this.dependencies.loadLearningPlanSnapshot(trackId)?.revision ?? null) !== session.source.expectedPlanStorageRevision) return stale("plan");
-      if (session.source.kind === "proposal") {
-        const result = this.dependencies.proposalCoordinator.resolveForCommit(session.source.proposalId!, trackId);
-        if (result.kind === "generator_error") return frozen({ kind: "storage_error" });
-        if (!isEditableProposal(result) || !proposalIdentitiesEqual(result.proposal.outcome.identity, session.source.identity as ProposalIdentity)) return stale("proposal");
-      } else {
-        const context = this.dependencies.peekContentContext(trackId);
-        if (plan.contentVersion !== context.contentVersion || plan.artifactSha256 !== context.artifactSha256 || plan.timezone !== context.timezone) return stale("identity");
-      }
-    } catch { return frozen({ kind: "storage_error" }); }
-    if (!this.isCurrentScope(session.storageScope)) return stale("identity");
-    this.pendingPlans.set(editorId, plan);
-    return this.persistEditorPlan(session, plan, goal.revision, session.source.expectedPlanStorageRevision);
+    return withLocalLearningWriteOperation(async () => {
+      if (this.sessions.get(editorId) !== session || !this.isCurrentScope(session.storageScope)) return stale("identity");
+      // Recheck after acquiring the shared local-write lane: no goal/plan
+      // command or profile switch may slip between this CAS and materialization.
+      try {
+        if (this.dependencies.readGoalSnapshot(trackId)?.revision !== goal.revision) return stale("goal");
+        if ((this.dependencies.loadLearningPlanSnapshot(trackId)?.revision ?? null) !== session.source.expectedPlanStorageRevision) return stale("plan");
+        if (session.source.kind === "proposal") {
+          const result = this.dependencies.proposalCoordinator.resolveForCommit(session.source.proposalId!, trackId);
+          if (result.kind === "generator_error") return frozen({ kind: "storage_error" });
+          if (!isEditableProposal(result) || !proposalIdentitiesEqual(result.proposal.outcome.identity, session.source.identity as ProposalIdentity)) return stale("proposal");
+        } else {
+          const context = this.dependencies.peekContentContext(trackId);
+          if (plan.contentVersion !== context.contentVersion || plan.artifactSha256 !== context.artifactSha256 || plan.timezone !== context.timezone) return stale("identity");
+        }
+      } catch { return frozen({ kind: "storage_error" }); }
+      if (this.sessions.get(editorId) !== session || !this.isCurrentScope(session.storageScope)) return stale("identity");
+      this.pendingPlans.set(editorId, plan);
+      return this.persistEditorPlan(session, plan, goal.revision, session.source.expectedPlanStorageRevision);
+    });
   }
 
   commitEditor(editorId: string, trackId: TrackId): Promise<LearningPlanEditorCommitResult> {
@@ -480,20 +484,22 @@ export class LearningPlanEditorCoordinator {
       plan: this.buildProposalPlan(result.proposal.outcome, proposalPlanId(proposalId), proposalCommandId(proposalId), goal, currentPlan),
       expectedPlanStorageRevision: currentPlan?.revision ?? null,
     };
-    // No await after this guard: proposal evidence/calendar/package and the
-    // profile lease are checked immediately before the canonical goal+plan CAS.
-    try {
-      const final = this.dependencies.proposalCoordinator.resolveForCommit(proposalId, trackId);
-      if (final.kind === "generator_error") return frozen({ kind: "storage_error" });
-      if (!isEditableProposal(final) || !proposalIdentitiesEqual(final.proposal.outcome.identity, identity)) return stale("proposal");
-      if (this.dependencies.readGoalSnapshot(trackId)?.revision !== goal.revision) return stale("goal");
-      if ((this.dependencies.loadLearningPlanSnapshot(trackId)?.revision ?? null) !== command.expectedPlanStorageRevision) return stale("plan");
-    } catch { return frozen({ kind: "storage_error" }); }
-    if (!this.isCurrentScope(storageScope)) return stale("identity");
-    this.pendingProposalAccepts.set(key, command);
-    const saved = this.persistProposal(command.plan, goal.revision, command.expectedPlanStorageRevision);
-    if (saved.kind === "accepted") this.completeProposalAcceptance(proposalId, key);
-    return saved;
+    return withLocalLearningWriteOperation(async () => {
+      // All potentially asynchronous proposal resolution happened before the
+      // lane. Revalidate its identity and both CAS revisions after acquiring it.
+      try {
+        const final = this.dependencies.proposalCoordinator.resolveForCommit(proposalId, trackId);
+        if (final.kind === "generator_error") return frozen({ kind: "storage_error" });
+        if (!isEditableProposal(final) || !proposalIdentitiesEqual(final.proposal.outcome.identity, identity)) return stale("proposal");
+        if (this.dependencies.readGoalSnapshot(trackId)?.revision !== goal.revision) return stale("goal");
+        if ((this.dependencies.loadLearningPlanSnapshot(trackId)?.revision ?? null) !== command.expectedPlanStorageRevision) return stale("plan");
+      } catch { return frozen({ kind: "storage_error" }); }
+      if (!this.isCurrentScope(storageScope)) return stale("identity");
+      this.pendingProposalAccepts.set(key, command);
+      const saved = this.persistProposal(command.plan, goal.revision, command.expectedPlanStorageRevision);
+      if (saved.kind === "accepted") this.completeProposalAcceptance(proposalId, key);
+      return saved;
+    });
   }
 
   acceptPlan(proposalId: string, trackId: TrackId): Promise<LearningPlanAcceptResult> {

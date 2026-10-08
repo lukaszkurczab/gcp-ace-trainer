@@ -120,7 +120,7 @@ test("bundled canonical release matches the current producer builder", async () 
   }
 });
 
-test("current canonical builder preserves the ODK-096 inventory and approved AWS identity without repinning history", async () => {
+test("current canonical builder preserves ODK-096 questions and adds the approved chapter-rule version without repinning history", async () => {
   const appRoot = process.cwd();
   const currentContentRoot = contentRoot("PATTERNLY_CONTENT_CURRENT_ROOT");
   const expectedCurrentSha = expectedCurrentContentSha();
@@ -144,7 +144,8 @@ test("current canonical builder preserves the ODK-096 inventory and approved AWS
     const aws = built.artifacts.find((entry) => entry.trackId === "aws-certified-solutions-architect-associate")!.artifact;
     const awsQuestions = [...aws.questions].sort((left, right) => left.questionId < right.questionId ? -1 : left.questionId > right.questionId ? 1 : 0);
     const awsNodeQuestions = awsQuestions.filter((question) => question.nodeId === "aws_secure_architecture_foundations");
-    assert.equal(aws.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096");
+    assert.equal(aws.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096-bizq02-v2");
+    assert.equal((aws as unknown as { completionRule: { ruleVersion: number; chapters: readonly unknown[] } }).completionRule.ruleVersion, 2);
     assert.equal(awsNodeQuestions.length, 40);
     assert.equal(builder.sha256(builder.canonicalJson(awsNodeQuestions)), "8dd16df1d7c6741b373026547c35255aea97869542bbb8897a4f36c73730bc33");
     assert.equal(builder.sha256(builder.canonicalJson(awsQuestions)), "46697d0c4e395455084d5dc28206b83e9207109b6f803eb94a47d4b4b981ac45");

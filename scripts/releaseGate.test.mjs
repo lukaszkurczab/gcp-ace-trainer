@@ -7,6 +7,9 @@ import { tmpdir } from "node:os";
 import test from "node:test";
 
 const root = process.cwd();
+const HISTORICAL_APPLICATION_COMMIT = "e889b05d033d4cc4b7676d0ca3f224efc3fac115";
+const HISTORICAL_CONTENT_COMMIT = "8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03";
+const HISTORICAL_CANDIDATE_ID = "946d3589abf9bfb205b382e7ebb9205786c3e42e18fe733c3607ad836a6a80a4";
 
 function run(enforce = false) {
   try {
@@ -31,7 +34,7 @@ function runWithContentRoot(contentRoot, args = [], applicationRoot = root) {
   try {
     return {
       status: 0,
-      output: execFileSync("node", ["scripts/releaseGate.mjs", ...args], { cwd: root, encoding: "utf8", env: { ...process.env, PATTERNLY_CONTENT_ROOT: contentRoot, PATTERNLY_APPLICATION_ROOT: applicationRoot } }),
+      output: execFileSync("node", ["scripts/releaseGate.mjs", ...args], { cwd: root, encoding: "utf8", env: { ...process.env, PATTERNLY_CONTENT_ROOT: contentRoot, PATTERNLY_APPLICATION_ROOT: applicationRoot, PATTERNLY_RELEASE_LOCK_PATH: join(applicationRoot, "integration/contracts/content-release/release.lock.json") } }),
     };
   } catch (error) {
     return { status: error.status, output: error.stdout };
@@ -107,33 +110,51 @@ const requiredExternalEvidenceIds = [
   "product-owner-go",
 ];
 
-function createAdmittedContentRoot({ mutateReadiness = null, mutateCandidate = null, mutateAdmission = null } = {}) {
-  const contentRoot = mkdtempSync(join(tmpdir(), "patternly-release-gate-content-admitted-"));
+function createRepositoryAt(name, sourceRoot, revision = null) {
+  const temporaryRoot = mkdtempSync(join(tmpdir(), `patternly-release-gate-${name}-`));
+  rmSync(temporaryRoot, { recursive: true, force: true });
+  const repositoryRoot = temporaryRoot;
+  execFileSync("git", ["clone", "--quiet", "--shared", sourceRoot, repositoryRoot]);
+  if (revision) execFileSync("git", ["checkout", "--quiet", "--detach", revision], { cwd: repositoryRoot });
+  return repositoryRoot;
+}
+
+function createHistoricalAdmittedContentRoot({ mutateReadiness = null, mutateCandidate = null, mutateAdmission = null } = {}) {
   const sourceContentRoot = join(root, "..", "patternly-content");
-  execFileSync("git", ["init", "-q"], { cwd: contentRoot });
-  symlinkSync(join(sourceContentRoot, "scripts"), join(contentRoot, "scripts"));
-  symlinkSync(join(sourceContentRoot, "schemas"), join(contentRoot, "schemas"));
-  mkdirSync(join(contentRoot, "reports", "candidate-reconciliation", "AWS-02-DRAFT", "candidate"), { recursive: true });
-  mkdirSync(join(contentRoot, "reports", "candidate-reconciliation", "AWS-02-DRAFT", "release"), { recursive: true });
-  symlinkSync(join(sourceContentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json"), join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json"));
-  symlinkSync(join(sourceContentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts"), join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts"));
-  mkdirSync(join(contentRoot, "evidence", "candidate-decisions"), { recursive: true });
-  mkdirSync(join(contentRoot, "evidence", "admissions", "runtime"), { recursive: true });
-  mkdirSync(join(contentRoot, "evidence", "readiness"), { recursive: true });
-  const candidate = JSON.parse(readFileSync(join(sourceContentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"), "utf8"));
-  const readiness = JSON.parse(readFileSync(join(sourceContentRoot, "evidence/readiness/candidate-readiness-v2.json"), "utf8"));
-  const admission = JSON.parse(readFileSync(join(sourceContentRoot, "evidence/admissions/candidate-admission-v3.json"), "utf8"));
+  const contentRoot = createRepositoryAt("content-admitted", sourceContentRoot, HISTORICAL_CONTENT_COMMIT);
+  if (!mutateReadiness && !mutateCandidate && !mutateAdmission) return contentRoot;
+  const candidatePath = join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json");
+  const readinessPath = join(contentRoot, "evidence/readiness/candidate-readiness-v2.json");
+  const admissionPath = join(contentRoot, "evidence/admissions/candidate-admission-v3.json");
+  const candidate = JSON.parse(readFileSync(candidatePath, "utf8"));
+  const readiness = JSON.parse(readFileSync(readinessPath, "utf8"));
+  const admission = JSON.parse(readFileSync(admissionPath, "utf8"));
   mutateCandidate?.(candidate);
   mutateReadiness?.(readiness);
   mutateAdmission?.(admission);
-  writeFileSync(join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"), JSON.stringify(candidate));
-  writeFileSync(join(contentRoot, "evidence/readiness/candidate-readiness-v2.json"), JSON.stringify(readiness));
-  writeFileSync(join(contentRoot, "evidence/admissions/candidate-admission-v3.json"), JSON.stringify(admission));
-  writeFileSync(join(contentRoot, "evidence/candidate-decisions/aws-02-codex-decision-v2.json"), readFileSync(join(sourceContentRoot, "evidence/candidate-decisions/aws-02-codex-decision-v2.json")));
-  writeFileSync(join(contentRoot, admission.runtimeEvidence.path), readFileSync(join(sourceContentRoot, admission.runtimeEvidence.path)));
-  execFileSync("git", ["add", "."], { cwd: contentRoot });
-  execFileSync("git", ["-c", "user.name=release-gate-test", "-c", "user.email=release-gate-test@example.com", "commit", "-qm", "readiness"], { cwd: contentRoot });
+  const changedPaths = [];
+  if (mutateCandidate) { writeFileSync(candidatePath, JSON.stringify(candidate)); changedPaths.push("reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"); }
+  if (mutateReadiness) { writeFileSync(readinessPath, JSON.stringify(readiness)); changedPaths.push("evidence/readiness/candidate-readiness-v2.json"); }
+  if (mutateAdmission) { writeFileSync(admissionPath, JSON.stringify(admission)); changedPaths.push("evidence/admissions/candidate-admission-v3.json"); }
+  execFileSync("git", ["add", ...changedPaths], { cwd: contentRoot });
+  execFileSync("git", ["-c", "user.name=release-gate-test", "-c", "user.email=release-gate-test@example.com", "commit", "-qm", "negative admission fixture"], { cwd: contentRoot });
   return contentRoot;
+}
+
+function createCurrentLockApplicationRoot() {
+  const applicationRoot = mkdtempSync(join(tmpdir(), "patternly-release-gate-current-app-"));
+  execFileSync("git", ["init", "-q"], { cwd: applicationRoot });
+  const lockPath = "integration/contracts/content-release/release.lock.json";
+  const target = join(applicationRoot, lockPath);
+  mkdirSync(join(applicationRoot, "integration/contracts/content-release"), { recursive: true });
+  writeFileSync(target, readFileSync(join(root, lockPath)));
+  execFileSync("git", ["add", lockPath], { cwd: applicationRoot });
+  execFileSync("git", ["-c", "user.name=release-gate-test", "-c", "user.email=release-gate-test@example.com", "commit", "-qm", "current candidate lock"], { cwd: applicationRoot });
+  return applicationRoot;
+}
+
+function createHistoricalApplicationRoot() {
+  return createRepositoryAt("app-admitted", root, HISTORICAL_APPLICATION_COMMIT);
 }
 
 function createCleanApplicationRoot() {
@@ -168,10 +189,11 @@ function writeApplicationLegal(applicationRoot, contents) {
 }
 
 test("launch readiness report is deterministic and exposes the unresolved release blockers", () => {
-  const contentRoot = createAdmittedContentRoot();
+  const contentRoot = createHistoricalAdmittedContentRoot();
+  const applicationRoot = createHistoricalApplicationRoot();
   try {
-    const first = runWithContentRoot(contentRoot);
-    const second = runWithContentRoot(contentRoot);
+    const first = runWithContentRoot(contentRoot, [], applicationRoot);
+    const second = runWithContentRoot(contentRoot, [], applicationRoot);
     assert.equal(first.status, 0);
     assert.equal(first.output, second.output);
     const report = JSON.parse(first.output);
@@ -189,6 +211,10 @@ test("launch readiness report is deterministic and exposes the unresolved releas
     assert.ok(["clean", "dirty"].includes(report.applicationRepository.status));
     assert.match(report.applicationRepository.headCommit, /^[a-f0-9]{40}$/u);
     assert.match(report.contentReadiness.headCommit, /^[a-f0-9]{40}$/u);
+    assert.equal(report.applicationRepository.headCommit, HISTORICAL_APPLICATION_COMMIT);
+    assert.equal(report.contentReadiness.headCommit, HISTORICAL_CONTENT_COMMIT);
+    assert.equal(report.contentReadiness.candidateId, HISTORICAL_CANDIDATE_ID);
+    assert.equal(report.contentReleaseLock.bundleId, "patternly-app-candidate-946d3589abf9");
     assert.equal(report.blockers.every((blocker) => ["application_worktree_dirty", "external_release_evidence_missing", "public_legal_variables_incomplete", "release_manifest_missing"].includes(blocker.kind)), true);
     assert.ok(report.blockers.some((blocker) => blocker.kind === "release_manifest_missing"));
     assert.deepEqual(
@@ -210,6 +236,28 @@ test("launch readiness report is deterministic and exposes the unresolved releas
     assert.equal(first.output.includes(root), false);
   } finally {
     rmSync(contentRoot, { recursive: true, force: true });
+    rmSync(applicationRoot, { recursive: true, force: true });
+  }
+});
+
+test("current 9e draft cannot inherit the immutable historical 946d admission", () => {
+  const sourceContentRoot = join(root, "..", "patternly-content");
+  const contentRoot = createRepositoryAt("content-current-draft", sourceContentRoot);
+  const applicationRoot = createCurrentLockApplicationRoot();
+  try {
+    const currentCandidate = JSON.parse(readFileSync(join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"), "utf8"));
+    const result = runWithContentRoot(contentRoot, [], applicationRoot);
+    assert.equal(result.status, 0);
+    const report = JSON.parse(result.output);
+    assert.equal(report.contentReadiness, null);
+    assert.equal(currentCandidate.candidateId, "9e05819c21304ff4b8f6ea4239efd5044a1b434749b736bbd32c771ba2d56697");
+    assert.equal(report.contentReleaseLock.status, "valid");
+    assert.ok(report.blockers.some((blocker) => blocker.kind === "invalid_content_readiness_report"));
+    assert.notEqual(currentCandidate.candidateId, HISTORICAL_CANDIDATE_ID);
+    assert.equal(report.blockers.some((blocker) => blocker.kind === "content_readiness_artifact_mismatch"), false);
+  } finally {
+    rmSync(contentRoot, { recursive: true, force: true });
+    rmSync(applicationRoot, { recursive: true, force: true });
   }
 });
 
@@ -270,7 +318,7 @@ test("release readiness reports missing, malformed, and complete public legal co
 
 test("launch readiness rejects a forged runtime admission", () => {
   const trackId = "coding-interview-dsa-problem-solving";
-  const contentRoot = createAdmittedContentRoot({ mutateAdmission: (admission) => { admission.tracks.find((track) => track.trackId === trackId).runtimeAdmission = "not_granted"; } });
+  const contentRoot = createHistoricalAdmittedContentRoot({ mutateAdmission: (admission) => { admission.tracks.find((track) => track.trackId === trackId).runtimeAdmission = "not_granted"; } });
   try {
     const result = runWithContentRoot(contentRoot);
     assert.equal(result.status, 0);
@@ -319,8 +367,8 @@ test("launch readiness fails closed when the content evidence checkout is dirty"
 });
 
 test("explicit report output is written after inspection and does not dirty either worktree", () => {
-  const contentRoot = createAdmittedContentRoot();
-  const applicationRoot = createCleanApplicationRoot();
+  const contentRoot = createHistoricalAdmittedContentRoot();
+  const applicationRoot = createHistoricalApplicationRoot();
   const outputDirectory = mkdtempSync(join(tmpdir(), "patternly-release-report-"));
   const outputPath = join(outputDirectory, "report.json");
   try {
@@ -329,6 +377,8 @@ test("explicit report output is written after inspection and does not dirty eith
     assert.equal(readFileSync(outputPath, "utf8"), result.output);
     const report = JSON.parse(result.output);
     assert.equal(report.contentReadiness.repository, "clean");
+    assert.equal(report.applicationRepository.headCommit, HISTORICAL_APPLICATION_COMMIT);
+    assert.equal(report.contentReadiness.headCommit, HISTORICAL_CONTENT_COMMIT);
     assert.equal(execFileSync("git", ["status", "--porcelain"], { cwd: contentRoot, encoding: "utf8" }), "");
     assert.equal(execFileSync("git", ["status", "--porcelain"], { cwd: applicationRoot, encoding: "utf8" }), "");
     assert.ok(!report.blockers.some((blocker) => blocker.kind === "application_worktree_dirty"));
@@ -351,7 +401,7 @@ test("owning validator rejects stale identity and malformed readiness semantics"
     ["manifest identity", { mutateCandidate: (value) => { value.tracks[0].familyId = "wrong"; } }],
   ];
   for (const [name, mutations] of cases) {
-    const contentRoot = createAdmittedContentRoot(mutations);
+    const contentRoot = createHistoricalAdmittedContentRoot(mutations);
     try {
       const report = JSON.parse(runWithContentRoot(contentRoot).output);
       assert.equal(report.contentReadiness, null, name);
@@ -363,7 +413,7 @@ test("owning validator rejects stale identity and malformed readiness semantics"
 });
 
 test("enforced mode still writes a valid report before returning exit 1", () => {
-  const contentRoot = createAdmittedContentRoot();
+  const contentRoot = createHistoricalAdmittedContentRoot();
   const outputDirectory = mkdtempSync(join(tmpdir(), "patternly-release-report-"));
   const outputPath = join(outputDirectory, "report.json");
   try {

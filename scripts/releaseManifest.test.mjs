@@ -28,6 +28,9 @@ import { canonicalHash, validateRuntimeReceipt } from "./releaseEvidence.mjs";
 const root = process.cwd();
 const contentRoot = resolve(root, "../patternly-content");
 const backendRoot = resolve(root, "../patternly-backend");
+const HISTORICAL_APPLICATION_COMMIT = "e889b05d033d4cc4b7676d0ca3f224efc3fac115";
+const HISTORICAL_CONTENT_COMMIT = "8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03";
+const HISTORICAL_CANDIDATE_ID = "946d3589abf9bfb205b382e7ebb9205786c3e42e18fe733c3607ad836a6a80a4";
 let fixtureRoot;
 let applicationRoot;
 let backendFixtureRoot;
@@ -102,10 +105,11 @@ function makeGitRoot(name, files) {
   return repositoryRoot;
 }
 
-function makeWorkingTreeFixture(name, sourceRoot) {
+function makeWorkingTreeFixture(name, sourceRoot, revision = null) {
   const repositoryRoot = join(fixtureRoot, name);
   execFileSync("git", ["clone", "--quiet", "--shared", sourceRoot, repositoryRoot]);
-  const trackedDiff = execFileSync("git", ["diff", "HEAD", "--binary"], { cwd: sourceRoot });
+  if (revision) execFileSync("git", ["checkout", "--quiet", "--detach", revision], { cwd: repositoryRoot });
+  const trackedDiff = revision ? Buffer.alloc(0) : execFileSync("git", ["diff", "HEAD", "--binary"], { cwd: sourceRoot });
   if (trackedDiff.length > 0) {
     execFileSync("git", ["apply", "--binary", "-"], { cwd: repositoryRoot, input: trackedDiff });
     execFileSync("git", ["add", "-u"], { cwd: repositoryRoot });
@@ -150,10 +154,8 @@ before(async () => {
   outputRoot = join(fixtureRoot, "evidence-output");
   mkdirSync(outputRoot);
   backendFixtureRoot = makeWorkingTreeFixture("backend", backendRoot);
-  contentFixtureRoot = makeWorkingTreeFixture("content", contentRoot);
-  applicationRoot = makeGitRoot("application", {
-    "integration/contracts/content-release/release.lock.json": readFileSync(join(root, "integration/contracts/content-release/release.lock.json")),
-  });
+  contentFixtureRoot = makeWorkingTreeFixture("content", contentRoot, HISTORICAL_CONTENT_COMMIT);
+  applicationRoot = makeWorkingTreeFixture("application", root, HISTORICAL_APPLICATION_COMMIT);
   evidenceRoot = join(fixtureRoot, "release-evidence");
   mkdirSync(evidenceRoot);
   const applicationCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: applicationRoot, encoding: "utf8" }).trim();
@@ -182,10 +184,34 @@ test("creates deterministic portable identity with repositories, locks, build, c
   assert.equal(manifest.otaPolicy, "embedded-only");
   assert.deepEqual(manifest.evidence, [{ id: "signing-and-builds", sha256: signingEvidence(manifest.repositories[0].commit).evidenceSha256 }]);
   assert.equal(manifest.manifestId, manifestIdFor(manifest));
+  assert.equal(manifest.repositories.find(({ role }) => role === "application")?.commit, HISTORICAL_APPLICATION_COMMIT);
+  assert.equal(manifest.repositories.find(({ role }) => role === "content")?.commit, HISTORICAL_CONTENT_COMMIT);
+  assert.equal(manifest.candidateId, HISTORICAL_CANDIDATE_ID);
   const firstBytes = readFileSync(manifestPath, "utf8");
   const secondPath = join(outputRoot, "release-manifest-second.json");
   await createReleaseManifest({ roots: roots(), evidenceRoot, outputPath: secondPath });
   assert.equal(readFileSync(secondPath, "utf8"), firstBytes);
+});
+
+test("current 9e candidate draft is rejected while the immutable historical pair remains the admitted proof", async () => {
+  const currentContentFixture = makeWorkingTreeFixture("content-current-draft", contentRoot);
+  const currentApplicationFixture = makeGitRoot("application-current-draft", {
+    "integration/contracts/content-release/release.lock.json": readFileSync(join(root, "integration/contracts/content-release/release.lock.json")),
+  });
+  const currentCandidate = JSON.parse(readFileSync(join(currentContentFixture, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"), "utf8"));
+  const currentEvidenceRoot = join(fixtureRoot, "current-draft-evidence");
+  mkdirSync(currentEvidenceRoot);
+  const currentApplicationCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: currentApplicationFixture, encoding: "utf8" }).trim();
+  writeFileSync(join(currentEvidenceRoot, "signing-and-builds.json"), JSON.stringify(signingEvidence(currentApplicationCommit)));
+  assert.equal(currentCandidate.candidateId, "9e05819c21304ff4b8f6ea4239efd5044a1b434749b736bbd32c771ba2d56697");
+  await assert.rejects(
+    createReleaseManifest({
+      roots: { ...roots(), application: currentApplicationFixture, content: currentContentFixture },
+      evidenceRoot: currentEvidenceRoot,
+      outputPath: join(outputRoot, "current-draft-release-manifest.json"),
+    }),
+    /Candidate admission release binding is stale|Candidate.*admission|candidate admission validator rejected/u,
+  );
 });
 
 test("verifies exact HEADs, clean worktrees, hashes and current content/OpenAPI owning checks", async () => {

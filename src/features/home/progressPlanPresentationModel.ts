@@ -10,6 +10,7 @@ import type {
   HomePlanUnavailableReason,
 } from "../../application/homePlanSnapshotReader";
 import type { PackageCompletionState, TrackId } from "../../domain";
+import { minimumAttemptsForMentalUnits } from "../../domain/learning/packageCompletionRule";
 
 export type ProgressPlanCompletionPresentation = PackageCompletionState;
 
@@ -18,6 +19,7 @@ export type ProgressPlanReadyPresentation = Readonly<{
   trackId: TrackId;
   guidance: TargetDateGuidancePresentation;
   completion: ProgressPlanCompletionPresentation;
+  chapterAccess: HomePlanReady["chapterAccess"];
   day: HomePlanReady["day"];
   activeSession: HomePlanReady["activeSession"];
   session: HomePlanReady["session"];
@@ -97,6 +99,7 @@ export function buildProgressPlanPresentationModel(input: ProgressPlanPresentati
       trackId: input.activeTrackId,
       guidance,
       completion,
+      chapterAccess: input.snapshot.chapterAccess,
       day: input.snapshot.day,
       activeSession: input.snapshot.activeSession,
       session: input.snapshot.session,
@@ -140,11 +143,19 @@ function progressActions(primary: GuidanceAction, secondary: GuidanceAction | nu
 
 function presentCompletion(value: PackageCompletionState): ProgressPlanCompletionPresentation | null {
   if (value.kind === "unknown") return unknownCompletion();
+  if (!Array.isArray(value.chapters) || value.chapters.length === 0 || !isSafeNonNegativeInteger(value.qualifyingAttemptCount) ||
+    !isSafePositiveInteger(value.requiredAttemptCount) || !isSafePositiveInteger(value.requiredChapterCount) ||
+    !isSafeNonNegativeInteger(value.completedChapterCount) || value.requiredChapterCount !== value.chapters.length ||
+    value.qualifyingAttemptCount !== value.chapters.reduce((sum, chapter) => sum + chapter.qualifyingAttemptCount, 0) ||
+    value.requiredAttemptCount !== value.chapters.reduce((sum, chapter) => sum + chapter.requiredAttemptCount, 0) ||
+    value.completedChapterCount !== value.chapters.filter(chapter => chapter.status === "completed").length ||
+    new Set(value.chapters.map(chapter => chapter.nodeId)).size !== value.chapters.length ||
+    value.chapters.some(chapter => !chapter.nodeId.trim() || !isSafePositiveInteger(chapter.mentalUnitCount) || !isSafeNonNegativeInteger(chapter.qualifyingAttemptCount) || !isSafePositiveInteger(chapter.requiredAttemptCount) || chapter.requiredAttemptCount !== minimumAttemptsForMentalUnits(chapter.mentalUnitCount) || chapter.rollingWindowSize !== 20 || chapter.qualityThreshold !== 0.8 || !["in_progress", "completed"].includes(chapter.status) || ![null, "minimum_attempts_unmet", "quality_unmet"].includes(chapter.reason) || (chapter.quality !== null && (typeof chapter.quality !== "number" || !Number.isFinite(chapter.quality) || chapter.quality < 0 || chapter.quality > 1)) || (chapter.status === "completed" && (chapter.reason !== null || chapter.quality === null || chapter.qualifyingAttemptCount < chapter.requiredAttemptCount || chapter.quality < 0.8)) || (chapter.status === "in_progress" && chapter.reason === "minimum_attempts_unmet" && chapter.qualifyingAttemptCount >= chapter.requiredAttemptCount) || (chapter.status === "in_progress" && chapter.reason === "quality_unmet" && (chapter.qualifyingAttemptCount < chapter.requiredAttemptCount || chapter.quality === null || chapter.quality >= 0.8)))) return null;
   if (value.kind === "completed") {
-    if (!isSafeNonNegativeInteger(value.qualifyingAttemptCount) || !isSafePositiveInteger(value.rollingWindowSize) || value.qualifyingAttemptCount < value.rollingWindowSize || !Number.isFinite(value.quality) || value.quality < 0 || value.quality > 1) return null;
+    if (value.completedChapterCount !== value.requiredChapterCount || value.remainingAttemptCount !== 0 || value.chapters.some(chapter => chapter.status !== "completed" || chapter.reason !== null || chapter.quality === null || chapter.quality < 0.8)) return null;
     return Object.freeze({ ...value });
   }
-  if (!isSafeNonNegativeInteger(value.qualifyingAttemptCount) || !isSafePositiveInteger(value.requiredAttemptCount) || !isSafePositiveInteger(value.rollingWindowSize) || value.requiredAttemptCount < value.rollingWindowSize) return null;
+  if (value.completedChapterCount >= value.requiredChapterCount || !isSafeNonNegativeInteger(value.remainingAttemptCount) || value.remainingAttemptCount !== value.chapters.reduce((sum, chapter) => sum + Math.max(0, chapter.requiredAttemptCount - chapter.qualifyingAttemptCount), 0)) return null;
   return Object.freeze({ ...value });
 }
 

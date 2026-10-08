@@ -2,15 +2,19 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { accountSessionFailureState, AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isNonEnumeratingRecoveryError, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, requiresPasswordEmailVerification, type AccountState } from "./AccountSessionProvider";
+import { accountSessionFailureState, AUTH_INITIALIZATION_TIMEOUT_MS, canContinueAccountIdentityRefresh, classifyAccountFailure, classifyPrivacyRequestFailure, completeUnrecognizedPersistedAuthSignOut, createAccountSessionCoordinator, isAuthoritativeIdentityProofDenial, isNonEnumeratingRecoveryError, isTemporaryIdentityProofUnavailable, planPasswordVerificationCommand, publishRefreshedAuthenticatedState, recoveryOperationTransitionIsAllowed, requiresPasswordEmailVerification, revokeBindingForAuthoritativeIdentityDenial, runAccountIdentityProof, type AccountIdentityProofBarrierContext, type AccountState } from "./AccountSessionProvider";
 import { createSensitiveCommandLane } from "./accountCommandGuards";
 import { parseConfiguredPublicEnvironment } from "../../infrastructure/clients/publicEnvironment";
 import { PatternlyApiClientError } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { composePatternlyNativeAppCheck, configurePatternlyAppCheckTokenProvider, createPatternlyNativeAppCheckProviderConfiguration, getPatternlyAppCheckToken } from "../../infrastructure/clients/patternlyAppCheckToken";
 import { getFirebaseGoogleClientId, parseFirebaseClientConfiguration } from "../../infrastructure/firebase/publicConfig";
 import { AUTH_USER_STORAGE_KEY, createSecureAuthPersistence, redactPersistedAuthUser } from "../../infrastructure/firebase/secureAuthPersistence";
-import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
+import { activatePreparedProfile, captureActiveProfileStorageLease, closeActiveProfileStorage, isActiveProfileStorageLeaseCurrent, MemoryKeyValueStorage, prepareProfileStorage, setProfileStoragePreparationFactoryForTests, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
+import { openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
+import type { StorageManifestStore } from "../../infrastructure/storage/encryptedStorageBootstrap";
+import { beginAccountIdentityProofBarrier, readActiveAccountIdentityBinding, readPreparedAccountIdentityBinding, resolveAccountIdentityProofBarrier } from "../../storage/repositories/profileStorageRepository";
 import { requiresVerifiedPasswordIdentity } from "../../infrastructure/runtime/runtimeMode";
+import { claimLocalOfflineInitialRefresh } from "./accountReconnect";
 
 const publicEnvironment = {
   apiOrigin: "https://api.patternly.example",
@@ -194,7 +198,7 @@ test("account entry owns one terminal choice and keeps synced account controls s
   assert.match(provider, /confirmRecoveryCodesSaved: \(\) => runSensitiveWithAuth[\s\S]*coordinator\.confirmRecoveryCodesSaved\(\)/u);
   assert.match(provider, /discardGuestData: \(\) => runWithAuth/);
   assert.match(provider, /setGuestAdoptionChoice: \(choice\) => runWithAuth[\s\S]*?await saveGuestAdoptionChoice\(choice\)[\s\S]*?setState\(\{ \.\.\.state, accountData: \{ \.\.\.state\.accountData, guestAdoptionChoice: choice \} \}\)/u);
-  assert.match(provider, /coordinator\.startIssue\(\{ firebaseUid: user\.uid, authorizationGeneration \}\)/u);
+  assert.match(provider, /currentCoordinator\.startIssue\(\{ firebaseUid: user\.uid, authorizationGeneration \}\)[\s\S]*?acceptRecoveryOperation\(snapshot, \{ kind: "issueStart", firebaseUid: user\.uid, authorizationGeneration \}\)/u);
 });
 
 test("account recovery owns one status message, a truthful retry, and a sign-out exit", () => {
@@ -326,7 +330,7 @@ test("local sign-out persists its block before closing scope and never invokes r
   const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
   const signOut = provider.slice(provider.indexOf('signOut: () => runAuthMutationWithAuth'), provider.indexOf('changePassword: (credentials, newPassword)'));
   assert.match(signOut, /getAccountSignOutState\(\)/);
-  assert.match(signOut, /scopedSignOut\?\.accountId === current\.backendUser\.id[\s\S]*?scopedSignOut\.operationId[\s\S]*?beginAccountSignOut\(current\.backendUser\.id\)/);
+  assert.match(signOut, /const current = stateRef\.current;[\s\S]*?current\.kind === "authenticated" \|\| current\.kind === "localOffline"[\s\S]*?const accountId = current\.kind === "authenticated" \? current\.backendUser\.id : current\.accountId;[\s\S]*?scopedSignOut\?\.accountId === accountId[\s\S]*?beginAccountSignOut\(accountId\)/);
   assert.match(signOut, /logoutControl\.blockAndQueueRevoke\(user\.uid, operationId!\)/);
   assert.match(signOut, /performLocalAccountSignOut\([\s\S]*?publishLockedState:[\s\S]*?clearOwnedPremiumCache:[\s\S]*?closeProfileStorage: closeSignOutProfileStorage[\s\S]*?signOutFirebase:[\s\S]*?auth\.signOut\(\)/);
   assert.match(signOut, /retainAuthOnControlFailure: durableOperation/);
@@ -501,6 +505,13 @@ test("the foreground owner retries plan recovery at bootstrap, reconnect, foregr
   assert.match(sidecar, /refresh: async[\s\S]*refreshAccountIdentity[\s\S]*retryLearningPlanRecovery[\s\S]*AppState\.addEventListener\("change"/u);
   assert.match(sidecar, /setInterval[\s\S]*retryLearningPlanRecovery[\s\S]*30_000/u);
   assert.ok(sidecar.match(/retryLearningPlanRecovery/g)?.length === 4, "bootstrap, reconnect, foreground, and timer must be the only trigger owners");
+});
+
+test("local-offline initial reachability check is actor-scoped and is not rearmed by generation changes", () => {
+  const sidecar = readFileSync("src/application/account/AccountForegroundRefreshSidecar.tsx", "utf8");
+  assert.match(sidecar, /claimLocalOfflineInitialRefresh\(\{[\s\S]*?attemptedUid: localOfflineInitialRefreshUidRef\.current[\s\S]*?accountRef\.current\.refreshAccountIdentity\(\)/u);
+  assert.match(sidecar, /\}, \[account\.state\.kind, currentUid\]\);/u);
+  assert.doesNotMatch(sidecar, /account\.state\.kind === "localOffline" \? account\.state\.generation\.generation/u);
 });
 
 test("sign-in keeps guest access visible and uses the approved Google logo asset", () => {
@@ -778,13 +789,15 @@ test("startup waits for persisted auth resolution before choosing the entry scre
   assert.match(authClient, /onUserChanged: \(listener\) => onAuthStateChanged\(auth, \(user\) => \{\s*current = user;\s*listener\(user \? snapshot\(user\) : null\);/);
   assert.doesNotMatch(authClient, /onUserChanged:[^\n]*listener\(current \? snapshot\(current\) : null\)/);
   assert.match(rootNavigator, /state\.kind === "loading" \|\| state\.kind === "profilePreparing"[\s\S]*?<LoadingState[^>]*title=\{t\("Restoring session"\)\}/);
-  assert.match(rootNavigator, /applicationSessionReady = state\.kind === "guest" \|\| state\.kind === "signingOut" \|\| state\.kind === "deleting" \|\| \(state\.kind === "authenticated" && state\.accountData\.status === "synced"\)/);
+  assert.match(rootNavigator, /applicationSessionReady = state\.kind === "guest" \|\| state\.kind === "localOffline" \|\| state\.kind === "signingOut" \|\| state\.kind === "deleting" \|\| \(state\.kind === "authenticated" && state\.accountData\.status === "synced"\)/);
   assert.match(rootNavigator, /initialRouteName=\{applicationSessionReady \? ROUTES\.HOME : ROUTES\.ACCOUNT_ENTRY\}/);
   assert.match(rootNavigator, /key=\{applicationSessionReady \? "application" : "account"\}/);
   assert.match(rootNavigator, /applicationSessionReady \? \([\s\S]*?<Stack\.Group>[\s\S]*?name=\{ROUTES\.HOME\}[\s\S]*?<\/Stack\.Group>[\s\S]*?\) : null/);
   assert.match(rootNavigator, /name=\{ROUTES\.ACCOUNT_ENTRY\}[\s\S]*?initialParams=\{\{ initialMode: accountEntryMode === "login" \? "signIn" : "entry" \}\}/);
   assert.match(rootNavigator, /testID="account-session-restore-loading"/);
   assert.match(app, /<AppPreferencesProvider>[\s\S]*?<ProfileStoragePreparationGate>[\s\S]*?<PatternlyAccountProvider>[\s\S]*?<AppContent/);
+  assert.match(app, /const needsContent = [^;]*state\.kind === "localOffline"/);
+  assert.match(app, /const sessionKey = [^\n]*state\.kind === "localOffline"/);
   assert.match(app, /<ContentPreparationGate completeAccountPreparation=\{completeProfilePreparation\}><AppNavigation \/><\/ContentPreparationGate>/);
   assert.doesNotMatch(app, /AccountBootstrapCompletion/);
   assert.match(accountProvider, /createPatternlyApiClient\(\{ allowLocalHttpForSimulator:/);
@@ -881,6 +894,444 @@ test("account failures expose explicit provider, network, expiry, and revoked-se
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/user-not-found", message: "private provider detail" }), true);
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/invalid-credential", message: "private provider detail" }), true);
   assert.equal(isNonEnumeratingRecoveryError({ code: "auth/too-many-requests", message: "private provider detail" }), false);
+});
+
+test("only authoritative identity-proof errors tombstone a binding; App Check and local SDK metadata failures do not", () => {
+  for (const code of ["account_deleted", "authentication_required", "authorization_generation_invalid", "authorization_generation_required", "authorization_generation_stale", "firebase_authorization_generation_invalid"]) {
+    assert.equal(isAuthoritativeIdentityProofDenial(new PatternlyApiClientError("server_error", 401, code)), true, code);
+  }
+  assert.equal(isAuthoritativeIdentityProofDenial(new PatternlyApiClientError("server_error", 404, "user_not_found")), true);
+  assert.equal(isAuthoritativeIdentityProofDenial(new PatternlyApiClientError("server_error", 404, "account_not_found")), true);
+  for (const code of ["app_check_required", "app_check_invalid", "recent_reauthentication_required", "reauthentication_required", "account_not_found"]) {
+    assert.equal(isAuthoritativeIdentityProofDenial(new PatternlyApiClientError("server_error", 401, code)), false, code);
+  }
+  assert.equal(isAuthoritativeIdentityProofDenial(new PatternlyApiClientError("server_error", 503, "app_check_not_configured")), false);
+  assert.equal(isAuthoritativeIdentityProofDenial(new PatternlyApiClientError("server_error", 401, "account_not_found")), false);
+  for (const code of ["auth/invalid-user-token", "auth/user-disabled", "auth/user-not-found", "auth/user-token-expired"]) {
+    assert.equal(isAuthoritativeIdentityProofDenial({ code }), true, code);
+  }
+  assert.equal(isAuthoritativeIdentityProofDenial({ code: "auth/authorization-generation-invalid" }), false);
+  assert.equal(isAuthoritativeIdentityProofDenial(new PatternlyApiClientError("transport_failed")), false);
+
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  assert.match(provider, /async function invalidateAccountBindingAfterIdentityDenial[\s\S]*?readActiveAccountIdentityBinding\(lease\)[\s\S]*?readPreparedAccountIdentityBinding\(input\.profile\.id\)[\s\S]*?binding\.binding\.firebaseUid !== input\.uid[\s\S]*?invalidateActiveAccountIdentityBinding\(\{ lease[\s\S]*?invalidatePreparedAccountIdentityBinding\(\{ profileId: input\.profile\.id/u);
+  assert.match(provider, /getMe: async \(\) => \{[\s\S]*?getMeWithExchangedSession[\s\S]*?revokeBindingForAuthoritativeIdentityDenial\(error/u);
+  assert.match(provider, /const identityProof = await runAccountIdentityProof\([\s\S]*?request: \(\) => getMeWithExchangedSession[\s\S]*?revokeDeniedBinding: async \(error\) => \{ await revokeBindingForAuthoritativeIdentityDenial\(error/u);
+  assert.match(provider, /const identityDenied = isAuthoritativeIdentityProofDenial\(error\)[\s\S]*?revokeBindingForAuthoritativeIdentityDenial\(error[\s\S]*?verificationRevision: current\.bindingRevision[\s\S]*?accountSessionFailureState\(failure === "reauthenticationRequired" \? failure : "revokedSession"/u);
+});
+
+test("only exact current /me proof clears a persisted sync-denial marker before account sync loads", () => {
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const finalizeCurrent = provider.slice(provider.indexOf("const finalizeCurrent"), provider.indexOf("const startAuthenticatedProfilePreparation"));
+  assert.match(finalizeCurrent, /matchesProofSubject: \(response, barrier\) => response\.user\.id === barrier\.previousBinding\.accountId[\s\S]*?response\.user\.identity\.subject === user\.uid[\s\S]*?barrier\.previousBinding\.firebaseUid === user\.uid/u);
+  assert.match(finalizeCurrent, /if \(!pendingDeletion && response\.user\.identity\.subject === user\.uid/u);
+  const clearMarker = finalizeCurrent.indexOf("clearAccountIdentityDenialAfterProof(");
+  const loadAccountData = finalizeCurrent.indexOf("loadAccountDataSession(api, response.user.id");
+  assert.ok(clearMarker >= 0 && loadAccountData > clearMarker, "identity marker clear precedes local account loading and sync");
+  const clearBlock = finalizeCurrent.slice(clearMarker, loadAccountData);
+  assert.match(clearBlock, /sessionCoordinator\.isCurrent\(token\)[\s\S]*?auth\.getSnapshot\(\)\?\.uid !== token\.uid[\s\S]*?isActiveProfileStorageLeaseCurrent\(lease\)/u);
+  assert.match(clearBlock, /latest\.binding\.accountId === response\.user\.id[\s\S]*?latest\.binding\.firebaseUid === user\.uid[\s\S]*?latest\.binding\.checksum === verifiedBinding\.checksum[\s\S]*?latest\.binding\.verificationRevision === verifiedBinding\.verificationRevision/u);
+  assert.match(clearBlock, /if \(!cleared\) return \{ result: \{ kind: "failure", failure: "revokedSession" \}/u);
+  const preparation = provider.slice(provider.indexOf("const startAuthenticatedProfilePreparation"), provider.indexOf("const completeProfilePreparation"));
+  assert.ok(preparation.indexOf("beginIdentityProofBarrier(auth, user, generation, true)") < preparation.indexOf("guardRecoveryBeforePreparation(auth, { generation, barrier: proofBarrier })"), "startup barrier precedes recovery checks that read Auth generations or exchange tokens");
+  const explicitFinalize = provider.slice(provider.indexOf("const finalizeExplicitAuthentication"), provider.indexOf("// Firebase publishes a new credential"));
+  assert.doesNotMatch(explicitFinalize, /guardRecoveryBeforePreparation\(auth\)/u, "explicit login delegates proof ordering to the barrier-first profile preparation path");
+  const recoveryTransition = provider.slice(provider.indexOf("const completeExplicitRecoveryAccountTransition"), provider.indexOf("// Firebase publishes a new credential"));
+  assert.ok(recoveryTransition.indexOf("beginIdentityProofBarrier(auth, user, generation)") < recoveryTransition.indexOf("getMeWithExchangedSession("));
+  assert.match(recoveryTransition, /runAccountIdentityProof\([\s\S]*?resolveBarrier: \(barrier\) => resolveIdentityProofBarrier[\s\S]*?revokeDeniedBinding:/u);
+});
+
+test("recovery claim denials keep the durable barrier while local generation metadata failures remain nonauthoritative", () => {
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const guard = provider.slice(provider.indexOf("const guardRecoveryBeforePreparation"), provider.indexOf("const beginIdentityProofBarrier = useCallback"));
+  assert.match(guard, /const revokeDeniedIdentity = async \(error: unknown,[\s\S]*?isAuthoritativeIdentityProofDenial\(error\)[\s\S]*?revokeBindingForAuthoritativeIdentityDenial\(error,[\s\S]*?setState\(\{ kind: "revokedSession", user \}\)/u);
+  assert.match(guard, /catch \(error\) \{\s*proofScopeRef\.current\?\.assertCurrent\(\);\s*if \(await revokeDeniedIdentity\(error, user\)\) return false;/u);
+  assert.match(guard, /catch \(error\) \{\s*if \(await revokeDeniedIdentity\(error, auth\?\.getSnapshot\(\) \?\? null\)\) return false;/u);
+  assert.match(guard, /setState\(\{ kind: "backendUnavailable", user \}\);\s*return false;/u);
+  assert.doesNotMatch(guard, /auth\/authorization-generation-invalid" \? "revokedSession"/u);
+  const firstClaimRead = guard.indexOf("await auth.getAuthorizationGeneration()");
+  assert.ok(firstClaimRead > guard.indexOf("await ensureProofScope(user)"), "the prepared binding barrier precedes the first SDK claim read");
+  const signInExchange = guard.indexOf("await ensureRecoveryIssueSignInSession({");
+  assert.ok(signInExchange > guard.indexOf("scope.bindRecoveryOperation(pending)"));
+  assert.ok(signInExchange > guard.indexOf("const scope = await ensureProofScope(user)"), "the recovery session exchange uses the same barrier scope as the forced generation read");
+  assert.match(guard, /scope\.acceptRecoveryOperation\(replacement, \{\s*kind: "issueReplace",[\s\S]*?previousOperationId: pending\.operationId/u);
+  assert.match(guard, /scope\.acceptRecoveryOperation\(resumed, \{\s*kind: "issueResume",[\s\S]*?deferredFor: pending\.deferredFor/u);
+
+  const issueCodes = provider.slice(provider.indexOf("issueRecoveryCodes: (credentials) =>"), provider.indexOf("consumeRecoveryCode: (code) =>"));
+  assert.ok(issueCodes.indexOf("createRecoveryProofScopeRef.current(auth, user") < issueCodes.indexOf("await auth.getAuthorizationGeneration()"));
+  assert.ok(issueCodes.indexOf("proofScope.assertCurrent();", issueCodes.indexOf("await auth.getAuthorizationGeneration()")) > issueCodes.indexOf("await auth.getAuthorizationGeneration()"));
+  const replacementRequestStart = provider.lastIndexOf("requestRecoveryCodeReplacement: () =>");
+  const replacementRequest = provider.slice(replacementRequestStart, provider.indexOf("resumePendingRecovery: () =>", replacementRequestStart));
+  assert.ok(replacementRequest.indexOf("createRecoveryProofScopeRef.current(auth, current)") < replacementRequest.indexOf("await auth.getAuthorizationGeneration()"));
+  assert.ok(replacementRequest.indexOf("await auth.getAuthorizationGeneration()") < replacementRequest.indexOf("await auth.signOut()"));
+  const continueCurrentStart = provider.lastIndexOf("continueWithCurrentAccount: () =>");
+  const continueCurrent = provider.slice(continueCurrentStart, provider.indexOf("}), [", continueCurrentStart));
+  assert.ok(continueCurrent.indexOf("createRecoveryProofScopeRef.current(auth, current)") < continueCurrent.indexOf("await auth.getAuthorizationGeneration()"));
+  assert.match(continueCurrent, /proofScope\.assertCurrent\(\);[\s\S]*?await coordinator\.reconcilePending\([\s\S]*?proofScope\.acceptRecoveryOperation\(checked\)/u);
+
+  const scope = provider.slice(provider.indexOf("const createRecoveryProofScope = useCallback"), provider.indexOf("beginIdentityProofBarrierRef.current ="));
+  assert.match(scope, /const ownsBarrier = !owner\?\.barrier/u);
+  assert.match(scope, /(!activeLease \? capturePreparedProfileStorageLease\(\) : null)/u);
+  assert.match(scope, /const baseCurrent = \(\) => sessionCoordinator\.isCurrent\(generation\) && auth\.getSnapshot\(\)\?\.uid === user\.uid[\s\S]*?isActiveProfileStorageLeaseCurrent\(activeLease\)[\s\S]*?isPreparedProfileStorageLeaseCurrent\(preparedLease\)/u);
+  assert.match(scope, /if \(expectedRecoveryOperation !== null\)[\s\S]*?recoveryOperationIdentity\(current\) !== expectedRecoveryOperation/u);
+  assert.match(scope, /if \(!ownsBarrier \|\| !barrier \|\| isAuthoritativeIdentityProofDenial\(error\)\) return;\s*assertCurrent\(\)[\s\S]*?await resolveBarrier\(barrier, auth, user, generation\);\s*assertCurrent\(\)/u);
+  assert.match(guard, /if \(!auth \|\| user\.uid !== auth\.getSnapshot\(\)\?\.uid \|\| !createRecoveryProofScopeRef\.current\) throw new AccountSessionGenerationStaleError\(\)/u);
+
+  const transition = provider.slice(provider.indexOf("const completeExplicitRecoveryAccountTransition"), provider.indexOf("// Firebase publishes a new credential"));
+  assert.match(transition, /resolveOnSuccess: false/u);
+  const defer = transition.indexOf("await coordinator.deferIssueToIdentity(");
+  const secondGeneration = transition.indexOf("const afterGeneration = await auth.getAuthorizationGeneration()");
+  const resolve = transition.lastIndexOf("await restoreExactProofBinding()");
+  assert.ok(defer > 0 && secondGeneration > defer && resolve > secondGeneration, "an exact old binding is restored only after both generation reads and deferred identity verification");
+  assert.match(transition, /proofBarrier && !proofBarrierResolutionAttempted && !isAuthoritativeIdentityProofDenial\(error\)/u);
+  assert.match(transition, /if \(isAuthoritativeIdentityProofDenial\(error\) && canContinue\(\)\) setState\(\{ kind: "revokedSession", user \}\)/u);
+  const firstUse = provider.slice(provider.indexOf("const runProviderFirstUse"), provider.indexOf("const registerProviderIdentity"));
+  assert.match(firstUse, /const recoveryTransitionIntent = explicitRecoveryAccountTransitionRef\.current[\s\S]*?completeExplicitRecoveryAccountTransition\(auth, api, user\)/u);
+  const transitionReuse = firstUse.slice(firstUse.indexOf("if (recoveryTransition?.kind === \"success\")"), firstUse.indexOf("const generation = sessionCoordinator.restart(user.uid)"));
+  assert.match(transitionReuse, /pending\.operationId !== recoveryTransitionIntent\.operationId[\s\S]*?pending\.deferredFor\?\.firebaseUid !== user\.uid[\s\S]*?pending\.deferredFor\.authorizationGeneration !== pending\.authorizationGeneration[\s\S]*?pending\.blocksProfilePreparation/u);
+  assert.match(transitionReuse, /else if \(!await guardRecoveryBeforePreparation\(auth\)\)/u);
+  assert.doesNotMatch(transitionReuse.slice(transitionReuse.indexOf("if (recoveryTransition?.kind === \"success\")"), transitionReuse.indexOf("} else if")), /getAuthorizationGeneration\(/u);
+});
+
+test("recovery proof scope accepts only exact operation identity or witnessed coordinator successors", () => {
+  const actorUid = "scope-actor";
+  const deferredUid = "deferred-actor";
+  const issue = (overrides: Record<string, unknown> = {}) => ({
+    kind: "issue" as const,
+    operationId: "00000000-0000-4000-8000-000000000101",
+    status: "delivery_unconfirmed" as const,
+    firebaseUid: actorUid,
+    authorizationGeneration: 8,
+    generationId: null,
+    codes: null,
+    savedIntent: false,
+    replacementPending: false,
+    deferredFor: null as Readonly<{ firebaseUid: string; authorizationGeneration: number }> | null,
+    accountResolution: null as "missing_generation" | "different_uid" | "different_generation" | null,
+    needsAccountResolution: false,
+    failure: null as null,
+    blocksProfilePreparation: true,
+    ...overrides,
+  });
+  const original = issue();
+  const deferred = issue({ deferredFor: { firebaseUid: deferredUid, authorizationGeneration: 2 } });
+  const resumed = issue({ deferredFor: null, blocksProfilePreparation: false, status: "provider_retryable" });
+  const resumeWitness = { kind: "issueResume" as const, operationId: original.operationId, firebaseUid: actorUid, authorizationGeneration: 8, deferredFor: { firebaseUid: deferredUid, authorizationGeneration: 2 } };
+  assert.equal(recoveryOperationTransitionIsAllowed(original, deferred, actorUid), false, "a changed deferred binding is not an implicit same-operation success");
+  assert.equal(recoveryOperationTransitionIsAllowed(deferred, resumed, actorUid, resumeWitness), true, "resume accepts only the exact captured operation and deferred identity");
+  assert.equal(recoveryOperationTransitionIsAllowed(deferred, issue({ ...resumed, deferredFor: null, authorizationGeneration: 9 }), actorUid, resumeWitness), false);
+  assert.equal(recoveryOperationTransitionIsAllowed(deferred, issue({ ...resumed, deferredFor: null, operationId: "00000000-0000-4000-8000-000000000102" }), actorUid, resumeWitness), false);
+
+  const replacementId = "00000000-0000-4000-8000-000000000103";
+  const replacement = issue({ operationId: replacementId, previousIssueOperationId: original.operationId, status: "provider_retryable" });
+  const replaceWitness = { kind: "issueReplace" as const, previousOperationId: original.operationId, firebaseUid: actorUid, authorizationGeneration: 8 };
+  assert.equal(recoveryOperationTransitionIsAllowed(original, replacement, actorUid, replaceWitness), true, "replacement requires the exact validated vault predecessor ID");
+  assert.equal(recoveryOperationTransitionIsAllowed(original, issue({ ...replacement, previousIssueOperationId: "00000000-0000-4000-8000-000000000104" }), actorUid, replaceWitness), false);
+  assert.equal(recoveryOperationTransitionIsAllowed(issue({ status: "provider_retryable" }), replacement, actorUid, replaceWitness), false, "replacement cannot bypass the delivery_unconfirmed predecessor status");
+  const replacementTerminal = { kind: "terminal" as const, operationId: replacementId, status: "superseded" as const, previousIssueOperationId: original.operationId, blocksProfilePreparation: false as const };
+  assert.equal(recoveryOperationTransitionIsAllowed(original, replacementTerminal, actorUid, replaceWitness), true);
+  assert.equal(recoveryOperationTransitionIsAllowed(original, { ...replacementTerminal, previousIssueOperationId: undefined }, actorUid, replaceWitness), false);
+
+  const idle = { kind: "idle" as const, blocksProfilePreparation: false as const };
+  const firstIssue = issue({ operationId: replacementId, status: "in_progress" });
+  assert.equal(recoveryOperationTransitionIsAllowed(idle, firstIssue, actorUid, { kind: "issueStart", firebaseUid: actorUid, authorizationGeneration: 8 }), true);
+  assert.equal(recoveryOperationTransitionIsAllowed(idle, firstIssue, "foreign-actor", { kind: "issueStart", firebaseUid: actorUid, authorizationGeneration: 8 }), false);
+  assert.equal(recoveryOperationTransitionIsAllowed(original, { kind: "terminal", operationId: original.operationId, status: "acknowledged", blocksProfilePreparation: false }, actorUid), true);
+  assert.equal(recoveryOperationTransitionIsAllowed(original, { kind: "terminal", operationId: replacementId, status: "acknowledged", blocksProfilePreparation: false }, actorUid), false, "a terminal result cannot clear a different accepted operation");
+});
+
+test("the production identity-proof boundary retains exact localOffline on temporary failure and admits a later verified response", async () => {
+  assert.equal(isTemporaryIdentityProofUnavailable(new PatternlyApiClientError("request_timeout")), true);
+  assert.equal(isTemporaryIdentityProofUnavailable(new PatternlyApiClientError("transport_failed")), true);
+  assert.equal(isTemporaryIdentityProofUnavailable(new PatternlyApiClientError("server_error", 503)), true);
+  assert.equal(isTemporaryIdentityProofUnavailable(new PatternlyApiClientError("server_error", 401, "app_check_invalid")), false);
+  assert.equal(isTemporaryIdentityProofUnavailable(new PatternlyApiClientError("server_error", 404, "account_not_found")), false);
+
+  const accountId = "offline-proof-account";
+  const uid = "offline-proof-firebase-uid";
+  const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+  const base = new MemoryKeyValueStorage();
+  const controlValues = new Map<string, string>();
+  const control: StorageManifestStore = {
+    async get(key) { return controlValues.get(key) ?? null; },
+    async set(key, value) { controlValues.set(key, value); },
+    async remove(key) { controlValues.delete(key); },
+  };
+  let nextIdentity = 300;
+  const identity = { async create() { return { installationId: uuid(nextIdentity++), localDatasetId: uuid(nextIdentity++) }; } };
+  let router = await openProfileStorageRouter(base, control, { identity });
+  const profile = await router.selectAccount(accountId);
+  router = await openProfileStorageRouter(base, control);
+  const binding = await router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: uid, accountId, canContinue: () => true });
+  setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
+  try {
+    await prepareProfileStorage();
+    activatePreparedProfile(profile.id, profile.kind);
+    const lease = captureActiveProfileStorageLease();
+    assert.ok(lease);
+    const user = { uid, email: "offline@example.test", emailVerified: true, providers: ["password"] as const };
+    let currentState: AccountState;
+    const coordinator = createAccountSessionCoordinator<Readonly<{ result: Readonly<{ kind: "failure"; failure: string }>; state?: AccountState }>>((_token, outcome) => {
+      if (outcome.state) currentState = outcome.state;
+    });
+    const generation = coordinator.begin(uid);
+    const accountData = {
+      status: "synced" as const, preview: null, lastSuccessfulSyncAt: "2026-10-08T00:00:00.000Z",
+      pendingMutationCount: 2, blockingConflictCode: null, lastFailureCode: null,
+      activeSessionBlocked: false, guestAdoptionChoice: "discard" as const,
+    };
+    currentState = {
+      kind: "localOffline", accountId, accountData, bindingRevision: binding.verificationRevision,
+      generation, profile: lease.profile, profileLease: lease, user,
+    };
+    let requests = 0;
+    const failed = await coordinator.run(generation, async () => {
+      const proof = await runAccountIdentityProof<Readonly<{ user: Readonly<{ id: string }> }> >({
+        request: async () => { requests += 1; throw new PatternlyApiClientError("request_timeout"); },
+        user, generation, getCurrentState: () => currentState, getCurrentSdkUid: () => uid,
+        beginBarrier: async () => {
+          const receipt = await beginAccountIdentityProofBarrier({ profileId: profile.id, accountId, firebaseUid: uid, verificationRevision: binding.verificationRevision, lease, canContinue: () => coordinator.isCurrent(generation) });
+          return receipt ? { receipt, lease, profile, previousBinding: binding, requestUid: uid, generation } : null;
+        },
+        resolveBarrier: (barrier) => resolveAccountIdentityProofBarrier({ receipt: barrier.receipt, lease, canContinue: () => coordinator.isCurrent(generation) }),
+        matchesProofSubject: (value, barrier) => value.user.id === barrier.previousBinding.accountId && barrier.previousBinding.firebaseUid === uid,
+        isCurrentGeneration: coordinator.isCurrent, isLeaseCurrent: isActiveProfileStorageLeaseCurrent,
+        readBinding: readActiveAccountIdentityBinding,
+        revokeDeniedBinding: async (error) => { await revokeBindingForAuthoritativeIdentityDenial(error, { profile, uid, lease, verificationRevision: binding.verificationRevision, canContinue: () => coordinator.isCurrent(generation) }); },
+      });
+      assert.equal(proof.kind, "failed");
+      if (proof.kind === "failed") return { result: { kind: "failure", failure: proof.failure }, state: proof.state };
+      return { result: { kind: "failure", failure: "test_unexpected_success" }, state: currentState };
+    });
+    assert.deepEqual(failed.result, { kind: "failure", failure: "offline" });
+    assert.equal(requests, 1);
+    assert.equal(currentState.kind, "localOffline");
+    if (currentState.kind === "localOffline") {
+      assert.equal(currentState.accountData, accountData);
+      assert.equal(currentState.profileLease, lease);
+      assert.equal(currentState.bindingRevision, binding.verificationRevision + 2);
+      assert.equal(currentState.generation, generation);
+    }
+    const restoredBinding = await readActiveAccountIdentityBinding(lease);
+    assert.equal(restoredBinding.kind, "verified");
+    if (restoredBinding.kind === "verified") {
+      assert.equal(restoredBinding.binding.firebaseUid, uid);
+      assert.equal(restoredBinding.binding.accountId, accountId);
+      assert.equal(restoredBinding.binding.verificationRevision, binding.verificationRevision + 2);
+    }
+
+    const firstProbe = claimLocalOfflineInitialRefresh({ stateKind: currentState.kind, uid, attemptedUid: null });
+    assert.equal(firstProbe.shouldRefresh, true);
+    const afterFailure = claimLocalOfflineInitialRefresh({ stateKind: currentState.kind, uid, attemptedUid: firstProbe.attemptedUid });
+    assert.equal(afterFailure.shouldRefresh, false, "same local actor must not auto-loop another initial probe after timeout");
+
+    const me = { user: { id: accountId, email: user.email!, emailVerified: true, providers: ["password"] } } as const;
+    const recovered = await runAccountIdentityProof({
+      request: async () => { requests += 1; return me; },
+      user, generation, getCurrentState: () => currentState, getCurrentSdkUid: () => uid,
+      beginBarrier: async () => null,
+      barrierAlreadyCaptured: true,
+      resolveBarrier: async () => { throw new Error("unexpected barrier restore"); },
+      matchesProofSubject: () => false,
+      isCurrentGeneration: coordinator.isCurrent, isLeaseCurrent: isActiveProfileStorageLeaseCurrent,
+      readBinding: readActiveAccountIdentityBinding,
+      revokeDeniedBinding: async (error) => { await revokeBindingForAuthoritativeIdentityDenial(error, { profile, uid, lease, verificationRevision: binding.verificationRevision, canContinue: () => coordinator.isCurrent(generation) }); },
+    });
+    assert.deepEqual(recovered, { kind: "verified", value: me, barrier: null });
+    assert.equal(requests, 2);
+    const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+    assert.match(provider, /const identityProof = await runAccountIdentityProof\([\s\S]*?if \(identityProof\.kind === "failed"\) return \{ result: \{ kind: "failure", failure: identityProof\.failure \}, state: identityProof\.state \};[\s\S]*?const response = identityProof\.value;[\s\S]*?state: \{ kind: "authenticated", backendUser: response\.user/u);
+  } finally {
+    closeActiveProfileStorage();
+    setProfileStoragePreparationFactoryForTests(null);
+  }
+});
+
+test("a lost tombstone readback prevents every identity proof call and leaves the cold binding invalidated", async () => {
+  const accountId = "identity-barrier-readback-account";
+  const uid = "identity-barrier-readback-uid";
+  const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+  const base = new MemoryKeyValueStorage();
+  const controlValues = new Map<string, string>();
+  const getCounts = new Map<string, number>();
+  let failNextSetReadback = false;
+  let failReadKey: string | null = null;
+  let failReadOccurrence = 0;
+  const control: StorageManifestStore = {
+    async get(key) {
+      const occurrence = (getCounts.get(key) ?? 0) + 1;
+      getCounts.set(key, occurrence);
+      if (key === failReadKey && occurrence === failReadOccurrence) {
+        failReadKey = null;
+        throw new Error("injected_control_readback_failure");
+      }
+      return controlValues.get(key) ?? null;
+    },
+    async set(key, value) {
+      controlValues.set(key, value);
+      if (failNextSetReadback) {
+        failNextSetReadback = false;
+        failReadKey = key;
+        failReadOccurrence = (getCounts.get(key) ?? 0) + 1;
+      }
+    },
+    async remove(key) { controlValues.delete(key); },
+  };
+  let nextIdentity = 500;
+  const identity = { async create() { return { installationId: uuid(nextIdentity++), localDatasetId: uuid(nextIdentity++) }; } };
+  let router = await openProfileStorageRouter(base, control, { identity });
+  const profile = await router.selectAccount(accountId);
+  router = await openProfileStorageRouter(base, control);
+  const binding = await router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: uid, accountId, canContinue: () => true });
+  setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
+  try {
+    await prepareProfileStorage();
+    activatePreparedProfile(profile.id, profile.kind);
+    const lease = captureActiveProfileStorageLease();
+    assert.ok(lease);
+    const user = { uid, email: "barrier@example.test", emailVerified: true, providers: ["password"] as const };
+    const coordinator = createAccountSessionCoordinator<Readonly<{ result: Readonly<{ kind: "failure"; failure: string }>; state?: AccountState }>>(() => undefined);
+    const generation = coordinator.begin(uid);
+    const accountData = { status: "synced" as const, preview: null, lastSuccessfulSyncAt: null, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, activeSessionBlocked: false, guestAdoptionChoice: "discard" as const };
+    const currentState: AccountState = { kind: "localOffline", accountId, accountData, bindingRevision: binding.verificationRevision, generation, profile, profileLease: lease, user };
+    let proofCalls = 0;
+    failNextSetReadback = true;
+    const result = await runAccountIdentityProof({
+      request: async () => { proofCalls += 1; throw new PatternlyApiClientError("transport_failed"); },
+      user, generation, barrierAlreadyCaptured: false,
+      beginBarrier: async () => {
+        const receipt = await beginAccountIdentityProofBarrier({ profileId: profile.id, accountId, firebaseUid: uid, verificationRevision: binding.verificationRevision, lease, canContinue: () => coordinator.isCurrent(generation) });
+        return receipt ? { receipt, lease, profile, previousBinding: binding, requestUid: uid, generation } : null;
+      },
+      resolveBarrier: (barrier) => resolveAccountIdentityProofBarrier({ receipt: barrier.receipt, lease, canContinue: () => coordinator.isCurrent(generation) }),
+      matchesProofSubject: () => true, getCurrentState: () => currentState, getCurrentSdkUid: () => uid,
+      isCurrentGeneration: coordinator.isCurrent, isLeaseCurrent: isActiveProfileStorageLeaseCurrent,
+      readBinding: readActiveAccountIdentityBinding,
+      revokeDeniedBinding: async () => undefined,
+    });
+    assert.equal(result.kind, "failed");
+    assert.equal(proofCalls, 0, "the /me or SDK proof callback never runs until the durable tombstone readback succeeds");
+    assert.deepEqual(await readActiveAccountIdentityBinding(lease), { kind: "invalidated" });
+  } finally {
+    closeActiveProfileStorage();
+    setProfileStoragePreparationFactoryForTests(null);
+  }
+});
+
+test("cold identity proof and reconnect revocation both persist the exact binding tombstone across router reopen", async () => {
+  const accountId = "identity-proof-account";
+  const uid = "identity-proof-firebase-uid";
+  const denied = new PatternlyApiClientError("server_error", 404, "account_not_found");
+  const appCheckDenied = new PatternlyApiClientError("server_error", 401, "app_check_invalid");
+  const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+
+  async function exercise(scope: "prepared" | "active"): Promise<void> {
+    const base = new MemoryKeyValueStorage();
+    const controlValues = new Map<string, string>();
+    const control: StorageManifestStore = {
+      async get(key) { return controlValues.get(key) ?? null; },
+      async set(key, value) { controlValues.set(key, value); },
+      async remove(key) { controlValues.delete(key); },
+    };
+    let nextIdentity = 100;
+    const identity = { async create() { return { installationId: uuid(nextIdentity++), localDatasetId: uuid(nextIdentity++) }; } };
+    let router = await openProfileStorageRouter(base, control, { identity });
+    const selected = await router.selectAccount(accountId);
+    router = await openProfileStorageRouter(base, control);
+    const binding = await router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: uid, accountId, canContinue: () => true });
+    const profile = router.profile;
+    setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
+    try {
+      await prepareProfileStorage();
+      const lease = scope === "active" ? (activatePreparedProfile(profile.id, profile.kind), captureActiveProfileStorageLease()) : null;
+      assert.ok(scope === "prepared" || (lease && lease.profile.id === selected.id));
+      const input = {
+        profile,
+        uid,
+        ...(lease ? { lease, verificationRevision: binding.verificationRevision } : {}),
+        canContinue: () => true,
+      };
+      const readBinding = () => lease
+        ? readActiveAccountIdentityBinding(lease)
+        : readPreparedAccountIdentityBinding(profile.id);
+      assert.equal(await revokeBindingForAuthoritativeIdentityDenial(appCheckDenied, input), false);
+      assert.deepEqual(await readBinding(), { kind: "verified", binding });
+      assert.equal(await revokeBindingForAuthoritativeIdentityDenial(denied, input), true);
+      assert.deepEqual(await readBinding(), { kind: "invalidated" });
+
+      setProfileStoragePreparationFactoryForTests(null);
+      setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
+      await prepareProfileStorage();
+      assert.deepEqual(await readPreparedAccountIdentityBinding(profile.id), { kind: "invalidated" }, `${scope}: offline fallback must remain denied after reopening storage`);
+    } finally {
+      closeActiveProfileStorage();
+      setProfileStoragePreparationFactoryForTests(null);
+    }
+  }
+
+  await exercise("prepared");
+  await exercise("active");
+  const accountDataService = readFileSync("src/application/account/accountDataService.ts", "utf8");
+  assert.doesNotMatch(accountDataService, /revokeBindingForAuthoritativeIdentityDenial|isAuthoritativeIdentityProofDenial/u);
+});
+
+test("a definitive SDK claim denial after /me cannot restore the deferred recovery binding", async () => {
+  const accountId = "recovery-claim-denial-account";
+  const uid = "recovery-claim-denial-uid";
+  const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+  const base = new MemoryKeyValueStorage();
+  const controlValues = new Map<string, string>();
+  const control: StorageManifestStore = {
+    async get(key) { return controlValues.get(key) ?? null; },
+    async set(key, value) { controlValues.set(key, value); },
+    async remove(key) { controlValues.delete(key); },
+  };
+  let nextIdentity = 700;
+  const identity = { async create() { return { installationId: uuid(nextIdentity++), localDatasetId: uuid(nextIdentity++) }; } };
+  let router = await openProfileStorageRouter(base, control, { identity });
+  const profile = await router.selectAccount(accountId);
+  router = await openProfileStorageRouter(base, control);
+  const binding = await router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: uid, accountId, canContinue: () => true });
+  setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
+  try {
+    await prepareProfileStorage();
+    activatePreparedProfile(profile.id, profile.kind);
+    const lease = captureActiveProfileStorageLease();
+    assert.ok(lease);
+    const user = { uid, email: "recovery-claim@example.test", emailVerified: true, providers: ["password"] as const };
+    const coordinator = createAccountSessionCoordinator<unknown>(() => undefined);
+    const generation = coordinator.begin(uid);
+    const barrierReceipt = await beginAccountIdentityProofBarrier({ profileId: profile.id, accountId, firebaseUid: uid, verificationRevision: binding.verificationRevision, lease, canContinue: () => coordinator.isCurrent(generation) });
+    assert.ok(barrierReceipt);
+    const barrier: AccountIdentityProofBarrierContext = { receipt: barrierReceipt, profile, lease, previousBinding: binding, requestUid: uid, generation };
+    const proof = await runAccountIdentityProof({
+      request: async () => ({ user: { id: accountId, identity: { subject: uid } } }),
+      user, generation, barrier, barrierAlreadyCaptured: true, resolveOnSuccess: false,
+      beginBarrier: async () => barrier,
+      resolveBarrier: (captured) => resolveAccountIdentityProofBarrier({ receipt: captured.receipt, lease, canContinue: () => coordinator.isCurrent(generation) }),
+      matchesProofSubject: (value, captured) => value.user.id === captured.previousBinding.accountId && value.user.identity.subject === captured.previousBinding.firebaseUid,
+      getCurrentState: () => ({ kind: "loading" }), getCurrentSdkUid: () => uid,
+      isCurrentGeneration: coordinator.isCurrent, isLeaseCurrent: isActiveProfileStorageLeaseCurrent,
+      readBinding: readActiveAccountIdentityBinding,
+      revokeDeniedBinding: async (error) => { await revokeBindingForAuthoritativeIdentityDenial(error, { profile, uid, lease, verificationRevision: binding.verificationRevision, canContinue: () => coordinator.isCurrent(generation) }); },
+    });
+    assert.equal(proof.kind, "verified");
+    if (proof.kind !== "verified") return;
+    assert.ok(proof.barrier, "the positive /me result keeps the barrier until later generation checks complete");
+    assert.deepEqual(await readActiveAccountIdentityBinding(lease), { kind: "invalidated" });
+
+    const claimError = { code: "auth/user-token-expired" };
+    assert.equal(isAuthoritativeIdentityProofDenial(claimError), true);
+    await revokeBindingForAuthoritativeIdentityDenial(claimError, { profile, uid, lease, verificationRevision: binding.verificationRevision, canContinue: () => coordinator.isCurrent(generation) });
+    assert.deepEqual(await readActiveAccountIdentityBinding(lease), { kind: "invalidated" }, "a later definitive SDK denial cannot use the retained receipt to restore access");
+
+    closeActiveProfileStorage();
+    router = await openProfileStorageRouter(base, control);
+    assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "invalidated" }, "the denial survives reopening the canonical router");
+  } finally {
+    closeActiveProfileStorage();
+    setProfileStoragePreparationFactoryForTests(null);
+  }
 });
 
 test("cold account_not_found clears persisted Firebase auth or exposes a truthful sign-out retry", async () => {

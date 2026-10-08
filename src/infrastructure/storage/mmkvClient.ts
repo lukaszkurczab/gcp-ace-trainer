@@ -6,18 +6,28 @@ export interface KeyValueStorage {
   getAllKeys(): readonly string[];
 }
 
-import { openProfileStorageRouter, ProfileStorageError, ProfileTransitionActiveError, type GuestRemoval34ExpectedState, type GuestRemoval34Receipt, type ProfileStorageRouter, type StorageProfile } from "./profileStorageRouter";
+import { openProfileStorageRouter, ProfileStorageError, ProfileTransitionActiveError, type AccountIdentityBinding, type AccountIdentityBindingRead, type AccountIdentityProofBarrierReceipt, type GuestRemoval34ExpectedState, type GuestRemoval34Receipt, type ProfileStorageRouter, type StorageProfile } from "./profileStorageRouter";
+import type { StorageManifestStore } from "./encryptedStorageBootstrap";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { sha256Utf8 } from "../identity/sha256";
 
 let client: KeyValueStorage | null = null;
 let profileRouter: ProfileStorageRouter | null = null;
-type OpenedProfileStorage = Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter }>;
+type OpenedProfileStorage = Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter; secureControl?: StorageManifestStore }>;
 type PreparedProfileStorage = OpenedProfileStorage & Readonly<{ generation: number }>;
+export type ActiveProfileStorageLease = Readonly<{ profile: StorageProfile; generation: number }>;
+/** A read-only fence for the already prepared profile while it is not active. */
+export type PreparedProfileStorageLease = Readonly<{ profile: StorageProfile; generation: number }>;
+export type AccountIdentityProofBarrier = Readonly<{
+  schema: "patternly.account-identity-proof-barrier-scope.v1";
+  ownerReceipt: AccountIdentityProofBarrierReceipt;
+  storageGeneration: number;
+  leaseGeneration: number | null;
+}>;
 let preparedStorage: PreparedProfileStorage | null = null;
 let activePreparedStorage: PreparedProfileStorage | null = null;
 let preparation: Promise<PreparedProfileStorage> | null = null;
-let testPreparationFactory: (() => Promise<Readonly<{ base: KeyValueStorage; router: ProfileStorageRouter }>>) | null = null;
+let testPreparationFactory: (() => Promise<OpenedProfileStorage>) | null = null;
 let testProfileTransitionReload: (() => Promise<void>) | null = null;
 let profileStorageGeneration = 0;
 const readyListeners = new Set<() => void>();
@@ -191,6 +201,245 @@ export type PreparedProfileState = Readonly<{
   isFreshInstallation: boolean;
 }>;
 
+export type Q13StorageReadiness = Readonly<
+  | { kind: "ready"; registeredProfileCount: number; physicalKeyCount: number }
+  | { kind: "unavailable"; reason: "prepared_storage_missing" | "profile_transition_active" | "prepared_storage_changed" | "physical_key_inventory_invalid" | "physical_key_read_failed" }
+>;
+
+export type Q13StorageInventorySnapshot = Readonly<{
+  kind: "observed" | "unavailable";
+  complete: boolean;
+  reason?: "prepared_storage_missing" | "profile_transition_active" | "prepared_storage_changed" | "physical_key_inventory_invalid" | "physical_key_read_failed" | "unclassified_key" | "control_inventory_unavailable";
+  registryGeneration?: number;
+  registryChecksumSha256?: string;
+  profileCount?: number;
+  profileInventorySha256?: string;
+  physicalKeyCount?: number;
+  physicalInventorySha256?: string;
+  unclassifiedKeys?: Readonly<{
+    keyCount: number;
+    scopeCounts: readonly Readonly<{ scope: "registered_profile" | "unregistered_profile" | "legacy_profile" | "global" | "unscoped"; count: number }>[];
+    fingerprints: readonly Readonly<{ scope: "registered_profile" | "unregistered_profile" | "legacy_profile" | "global" | "unscoped"; keySha256: string }>[];
+  }>;
+  profileInventories?: readonly Readonly<{
+    profileIdSha256: string;
+    kind: StorageProfile["kind"];
+    keyCount: number;
+    inventorySha256: string;
+    categoryInventories: readonly Readonly<{ category: "learningProgress" | "settings" | "profileLifecycle" | "packagePointers" | "premiumCache" | "premiumTestRuntime"; keyCount: number; inventorySha256: string }>[];
+  }>[];
+  globalInventories?: readonly Readonly<{ category: string; keyCount: number; inventorySha256: string }>[];
+  control?: Awaited<ReturnType<ProfileStorageRouter["inspectQ13ControlInventory"]>>;
+  secureControl?: Readonly<{ kind: "observed"; slotCount: number; keyMaterialPresentCount: number; inventorySha256: string } | { kind: "unavailable" }>;
+  packagePointerSources?: readonly Readonly<{ profileIdSha256: string; entries: readonly Readonly<{ key: string; value: string }>[] }>[];
+}>;
+
+function isKnownQ13CanonicalKey(key: string): boolean {
+  const exact: string[] = Object.entries(STORAGE_KEYS).flatMap(([, value]) => typeof value === "string" ? [value] : []);
+  if (exact.includes(key) || globalQ13Category(key) !== null) return true;
+  const dynamicPrefixes = [
+    "patternly:canonical:v1:training-session:", "patternly:canonical:v1:training-session-result:",
+    "patternly:canonical:v1:training-attempt:", "patternly:canonical:v1:review-entry:",
+    "patternly:canonical:v1:goal:", "patternly:canonical:v1:learning-plan:",
+    "patternly:canonical:v1:archival-history:", "patternly:canonical:v1:unavailable-active:",
+    "patternly:canonical:v1:unavailable-review:",
+  ];
+  return dynamicPrefixes.some((prefix) => key.startsWith(prefix) && key.length > prefix.length && /^[a-zA-Z0-9._:-]+$/u.test(key.slice(prefix.length)));
+}
+
+type Q13ProfileCategory = "learningProgress" | "settings" | "profileLifecycle" | "packagePointers" | "premiumCache" | "premiumTestRuntime";
+const Q13_PROFILE_CATEGORIES: readonly Q13ProfileCategory[] = Object.freeze(["learningProgress", "settings", "profileLifecycle", "packagePointers", "premiumCache", "premiumTestRuntime"]);
+
+function canonicalQ13Category(key: string): Exclude<Q13ProfileCategory, "packagePointers"> | null {
+  const learningProgress: readonly string[] = [
+    STORAGE_KEYS.ACTIVE_TRACK, STORAGE_KEYS.ACTIVE_TRAINING_SESSION, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER,
+    STORAGE_KEYS.TRAINING_SESSION_INDEX, STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, STORAGE_KEYS.REVIEW_INDEX,
+    STORAGE_KEYS.ARCHIVAL_HISTORY_INDEX, STORAGE_KEYS.UNAVAILABLE_ACTIVE_INDEX, STORAGE_KEYS.UNAVAILABLE_REVIEW_INDEX,
+  ];
+  if (learningProgress.includes(key) || [
+    "patternly:canonical:v1:training-session:", "patternly:canonical:v1:training-session-result:",
+    "patternly:canonical:v1:training-attempt:", "patternly:canonical:v1:review-entry:",
+    "patternly:canonical:v1:archival-history:", "patternly:canonical:v1:unavailable-active:",
+    "patternly:canonical:v1:unavailable-review:", "patternly:canonical:v1:goal:", "patternly:canonical:v1:learning-plan:",
+  ].some((prefix) => key.startsWith(prefix) && key.length > prefix.length)) return "learningProgress";
+  const settings: readonly string[] = [
+    STORAGE_KEYS.SETTINGS, STORAGE_KEYS.GOAL_ONBOARDING_PREFERENCES,
+    STORAGE_KEYS.NOTIFICATION_SETTINGS, STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL,
+  ];
+  if (settings.includes(key)) return "settings";
+  const profileLifecycle: readonly string[] = [
+    STORAGE_KEYS.METADATA, STORAGE_KEYS.GUEST_INSTALLATION, STORAGE_KEYS.GUEST_ACCESS, STORAGE_KEYS.ACTIVE_JOURNAL,
+    STORAGE_KEYS.ACCOUNT_SYNC, STORAGE_KEYS.ACCOUNT_SIGN_OUT, STORAGE_KEYS.ACCOUNT_DELETION, STORAGE_KEYS.CONTENT_REPORT_OUTBOX,
+  ];
+  if (profileLifecycle.includes(key)) return "profileLifecycle";
+  const cacheCategory = globalQ13Category(key);
+  if (cacheCategory === "premium_cache") return "premiumCache";
+  if (cacheCategory === "premium_test_runtime") return "premiumTestRuntime";
+  return null;
+}
+
+function isQ13PackagePointerKey(key: string): boolean {
+  return /^patternly\.content-node\.active\.v1\.[a-f0-9]{64}$/u.test(key);
+}
+
+type Q13UnclassifiedScope = "registered_profile" | "unregistered_profile" | "legacy_profile" | "global" | "unscoped";
+const Q13_UNCLASSIFIED_SCOPES: readonly Q13UnclassifiedScope[] = Object.freeze(["registered_profile", "unregistered_profile", "legacy_profile", "global", "unscoped"]);
+
+function q13UnknownKeyFingerprint(key: string, profiles: readonly StorageProfile[], legacyProfileId: string | null): Readonly<{ scope: Q13UnclassifiedScope; keySha256: string }> {
+  let scope: Q13UnclassifiedScope;
+  let normalizedKey: string;
+  if (key.startsWith(MODERN_PROFILE_PREFIX)) {
+    const rest = key.slice(MODERN_PROFILE_PREFIX.length);
+    const separator = rest.indexOf(":");
+    if (separator < 0) {
+      scope = "unregistered_profile";
+      normalizedKey = key;
+    } else {
+      const profileId = rest.slice(0, separator);
+      scope = profiles.some((profile) => profile.id === profileId) ? "registered_profile" : "unregistered_profile";
+      const encodedLogicalKey = rest.slice(separator + 1);
+      try {
+        const logicalKey = decodeURIComponent(encodedLogicalKey);
+        normalizedKey = encodeURIComponent(logicalKey) === encodedLogicalKey ? logicalKey : encodedLogicalKey;
+      } catch { normalizedKey = encodedLogicalKey; }
+    }
+  } else if (key.startsWith("patternly:canonical:v1:") || key.startsWith("patternly.content-node.active.v1.")) {
+    scope = legacyProfileId ? "legacy_profile" : "unscoped";
+    normalizedKey = key;
+  } else if (key.startsWith("patternly:premium-cache:") || key.startsWith("patternly:test-runtime:")) {
+    scope = "global";
+    normalizedKey = key;
+  } else {
+    scope = "unscoped";
+    normalizedKey = key;
+  }
+  return Object.freeze({ scope, keySha256: sha256Utf8(`${scope}\u0000${normalizedKey}`) });
+}
+
+function q13UnclassifiedInventory(keys: readonly Readonly<{ scope: Q13UnclassifiedScope; keySha256: string }>[]) {
+  const fingerprints = [...keys].sort((left, right) => left.scope.localeCompare(right.scope) || left.keySha256.localeCompare(right.keySha256));
+  return Object.freeze({
+    keyCount: fingerprints.length,
+    scopeCounts: Object.freeze(Q13_UNCLASSIFIED_SCOPES.map((scope) => Object.freeze({ scope, count: fingerprints.filter((entry) => entry.scope === scope).length }))),
+    fingerprints: Object.freeze(fingerprints),
+  });
+}
+
+function globalQ13Category(key: string): string | null {
+  if (key === "patternly:premium-cache:v1") return "premium_cache";
+  if (key === "patternly:test-runtime:v1:premium-access") return "premium_test_runtime";
+  return null;
+}
+const Q13_GLOBAL_CATEGORIES = Object.freeze(["premium_cache", "premium_test_runtime"] as const);
+
+/** Full, sanitized census over refs already prepared by normal lifecycle; no open, refresh, or selection. */
+export async function inspectPreparedQ13StorageInventory(actorUidSha256?: string | null): Promise<Q13StorageInventorySnapshot> {
+  const current = activePreparedStorage ?? preparedStorage;
+  const readiness = inspectPreparedQ13StorageReadiness();
+  if (readiness.kind !== "ready" || !current) return Object.freeze({ kind: "unavailable", complete: false, reason: readiness.kind === "unavailable" ? readiness.reason : "prepared_storage_missing" });
+  const router = current.router;
+  let keys: string[], values: string[];
+  try {
+    keys = [...current.base.getAllKeys()];
+    const readValues = keys.map((key) => current.base.getString(key));
+    if (readValues.some((value) => value === undefined)) return Object.freeze({ kind: "unavailable", complete: false, reason: "physical_key_read_failed" });
+    values = readValues as string[];
+  } catch { return Object.freeze({ kind: "unavailable", complete: false, reason: "physical_key_read_failed" }); }
+  if (keys.some((key) => typeof key !== "string") || new Set(keys).size !== keys.length || keys.length !== values.length) return Object.freeze({ kind: "unavailable", complete: false, reason: "physical_key_inventory_invalid" });
+  const physicalEntries = keys.map((key, index) => [sha256Utf8(key), sha256Utf8(values[index]!)] as const).sort((a, b) => a[0].localeCompare(b[0]));
+  const physicalInventorySha256 = sha256Utf8(JSON.stringify(physicalEntries));
+  const profiles = router.registry.profiles;
+  const byProfile = new Map(profiles.map((profile) => [profile.id, [] as Array<readonly [string, string]>]));
+  const profileCategories = new Map(profiles.map((profile) => [profile.id, new Map(Q13_PROFILE_CATEGORIES.map((category) => [category, [] as Array<readonly [string, string]>]))]));
+  const globals = new Map<string, Array<readonly [string, string]>>();
+  const packageEntries = new Map(profiles.map((profile) => [profile.id, [] as Array<Readonly<{ key: string; value: string }>>]));
+  const unclassified: Array<Readonly<{ scope: Q13UnclassifiedScope; keySha256: string }>> = [];
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index]!; const value = values[index]!;
+    if (key.startsWith(MODERN_PROFILE_PREFIX)) {
+      const rest = key.slice(MODERN_PROFILE_PREFIX.length); const separator = rest.indexOf(":");
+      if (separator <= 0) { unclassified.push(q13UnknownKeyFingerprint(key, profiles, router.registry.legacyProfileId)); continue; }
+      const id = rest.slice(0, separator); const profile = profiles.find((candidate) => candidate.id === id);
+      if (!profile) { unclassified.push(q13UnknownKeyFingerprint(key, profiles, router.registry.legacyProfileId)); continue; }
+      let logical: string;
+      try { logical = decodeURIComponent(rest.slice(separator + 1)); } catch { unclassified.push(q13UnknownKeyFingerprint(key, profiles, router.registry.legacyProfileId)); continue; }
+      if (encodeURIComponent(logical) !== rest.slice(separator + 1) || (!isKnownQ13CanonicalKey(logical) && !isQ13PackagePointerKey(logical))) { unclassified.push(q13UnknownKeyFingerprint(key, profiles, router.registry.legacyProfileId)); continue; }
+      byProfile.get(id)!.push([sha256Utf8(key), sha256Utf8(value)]);
+      const category: Q13ProfileCategory | null = isQ13PackagePointerKey(logical) ? "packagePointers" : canonicalQ13Category(logical);
+      if (!category) { unclassified.push(q13UnknownKeyFingerprint(key, profiles, router.registry.legacyProfileId)); continue; }
+      profileCategories.get(id)!.get(category)!.push([sha256Utf8(key), sha256Utf8(value)]);
+      if (category === "packagePointers") packageEntries.get(id)!.push(Object.freeze({ key: logical, value }));
+      continue;
+    }
+    if (isQ13PackagePointerKey(key) && router.registry.legacyProfileId) {
+      const legacyId = router.registry.legacyProfileId;
+      byProfile.get(legacyId)!.push([sha256Utf8(key), sha256Utf8(value)]);
+      profileCategories.get(legacyId)!.get("packagePointers")!.push([sha256Utf8(key), sha256Utf8(value)]);
+      packageEntries.get(legacyId)!.push(Object.freeze({ key, value }));
+      continue;
+    }
+    if (key.startsWith(STORAGE_KEYS.METADATA.slice(0, "patternly:canonical:v1:".length))) {
+      const legacyId = router.registry.legacyProfileId;
+      const category = canonicalQ13Category(key);
+      if (!legacyId || !byProfile.has(legacyId) || !category) { unclassified.push(q13UnknownKeyFingerprint(key, profiles, legacyId)); continue; }
+      byProfile.get(legacyId)!.push([sha256Utf8(key), sha256Utf8(value)]);
+      profileCategories.get(legacyId)!.get(category)!.push([sha256Utf8(key), sha256Utf8(value)]);
+      continue;
+    }
+    const category = globalQ13Category(key);
+    if (!category) { unclassified.push(q13UnknownKeyFingerprint(key, profiles, router.registry.legacyProfileId)); continue; }
+    const list = globals.get(category) ?? []; list.push([sha256Utf8(key), sha256Utf8(value)]); globals.set(category, list);
+  }
+  if (unclassified.length > 0) return Object.freeze({ kind: "unavailable", complete: false, reason: "unclassified_key", physicalKeyCount: keys.length, physicalInventorySha256, unclassifiedKeys: q13UnclassifiedInventory(unclassified) });
+  let control: Awaited<ReturnType<ProfileStorageRouter["inspectQ13ControlInventory"]>>;
+  try { control = await router.inspectQ13ControlInventory(actorUidSha256); } catch { return Object.freeze({ kind: "unavailable", complete: false, reason: "control_inventory_unavailable", physicalKeyCount: keys.length, physicalInventorySha256 }); }
+  if (control.kind !== "observed") return Object.freeze({ kind: "unavailable", complete: false, reason: "control_inventory_unavailable", physicalKeyCount: keys.length, physicalInventorySha256 });
+  let secureControl: NonNullable<Q13StorageInventorySnapshot["secureControl"]> = Object.freeze({ kind: "unavailable" });
+  if (current.secureControl) {
+    try {
+      const secureNames = ["patternly.storage.manifest.a", "patternly.storage.manifest.b", "patternly.storage.key.a", "patternly.storage.key.b", "patternly.storage.quarantine-key", "patternly.storage.rotation-request"] as const;
+      const secureValues = await Promise.all(secureNames.map((name) => current.secureControl!.get(name)));
+      const entries = secureNames.map((name, index) => [sha256Utf8(name), secureValues[index] === null ? null : name.startsWith("patternly.storage.key.") || name.endsWith("quarantine-key") ? "present" : sha256Utf8(secureValues[index]!)]);
+      secureControl = Object.freeze({ kind: "observed", slotCount: secureNames.length, keyMaterialPresentCount: secureNames.filter((name, index) => (name.startsWith("patternly.storage.key.") || name.endsWith("quarantine-key")) && secureValues[index] !== null).length, inventorySha256: sha256Utf8(JSON.stringify(entries)) });
+    } catch { return Object.freeze({ kind: "unavailable", complete: false, reason: "control_inventory_unavailable", physicalKeyCount: keys.length, physicalInventorySha256 }); }
+  }
+  const profileInventories = profiles.map((profile) => {
+    const entries = byProfile.get(profile.id)!;
+    entries.sort((a, b) => a[0].localeCompare(b[0]));
+    const categoryInventories = Q13_PROFILE_CATEGORIES.map((category) => {
+      const categoryEntries = profileCategories.get(profile.id)!.get(category)!;
+      categoryEntries.sort((a, b) => a[0].localeCompare(b[0]));
+      return Object.freeze({ category, keyCount: categoryEntries.length, inventorySha256: sha256Utf8(JSON.stringify(categoryEntries)) });
+    });
+    return Object.freeze({ profileIdSha256: sha256Utf8(profile.id), kind: profile.kind, keyCount: entries.length, inventorySha256: sha256Utf8(JSON.stringify(entries)), categoryInventories: Object.freeze(categoryInventories) });
+  }).sort((a, b) => a.profileIdSha256.localeCompare(b.profileIdSha256));
+  const globalInventories = Q13_GLOBAL_CATEGORIES.map((category) => {
+    const entries = globals.get(category) ?? [];
+    entries.sort((a, b) => a[0].localeCompare(b[0]));
+    return Object.freeze({ category, keyCount: entries.length, inventorySha256: sha256Utf8(JSON.stringify(entries)) });
+  });
+  const after = inspectPreparedQ13StorageReadiness();
+  let afterEntries: Array<readonly [string, string]>;
+  try {
+    const afterKeys = [...current.base.getAllKeys()];
+    if (afterKeys.length !== keys.length || afterKeys.some((key) => !keys.includes(key))) return Object.freeze({ kind: "unavailable", complete: false, reason: "prepared_storage_changed", physicalKeyCount: keys.length, physicalInventorySha256 });
+    afterEntries = afterKeys.map((key) => {
+      const value = current.base.getString(key);
+      if (value === undefined) throw new Error("q13_value_missing");
+      return [sha256Utf8(key), sha256Utf8(value)] as const;
+    }).sort((a, b) => a[0].localeCompare(b[0]));
+  } catch { return Object.freeze({ kind: "unavailable", complete: false, reason: "physical_key_read_failed", physicalKeyCount: keys.length, physicalInventorySha256 }); }
+  if (after.kind !== "ready" || current.router !== (activePreparedStorage ?? preparedStorage)?.router || JSON.stringify(physicalEntries) !== JSON.stringify(afterEntries)) return Object.freeze({ kind: "unavailable", complete: false, reason: "prepared_storage_changed", physicalKeyCount: keys.length, physicalInventorySha256 });
+  const profileIdentityRows = profiles.map((profile) => [sha256Utf8(profile.id), profile.kind, profile.accountId === null ? null : sha256Utf8(profile.accountId)]);
+  profileIdentityRows.sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)));
+  return Object.freeze({
+    kind: "observed" as const, complete: true, registryGeneration: router.registry.generation, registryChecksumSha256: sha256Utf8(router.registry.checksum), profileCount: profiles.length,
+    profileInventorySha256: sha256Utf8(JSON.stringify(profileIdentityRows)),
+    physicalKeyCount: keys.length, physicalInventorySha256, profileInventories, globalInventories, control, secureControl,
+    packagePointerSources: Object.freeze(profiles.map((profile) => Object.freeze({ profileIdSha256: sha256Utf8(profile.id), entries: Object.freeze(packageEntries.get(profile.id)!) }))),
+  });
+}
+
 function closePublishedProfileStorage(): void {
   profileStorageGeneration += 1;
   client = null;
@@ -216,7 +465,7 @@ async function openProductionProfileStorage(generation: number): Promise<Prepare
     isTransitionActive: () => profileTransitionActive || profileStorageGeneration !== generation,
     onBeforeProfileCommit: beginProfileTransition,
   });
-  return { base, router, generation };
+  return { base, router, secureControl: platform.manifestStore, generation };
 }
 
 async function ensurePreparedStorage(): Promise<PreparedProfileStorage> {
@@ -297,6 +546,41 @@ export async function inspectPreparedProfileState(): Promise<PreparedProfileStat
     selectedProfile,
     isFreshInstallation: router.isFreshInstallation,
   });
+}
+
+/** Capability-only, read-only probe over storage refs already opened by normal app preparation. */
+export function inspectPreparedQ13StorageReadiness(): Q13StorageReadiness {
+  if (profileTransitionActive) return Object.freeze({ kind: "unavailable", reason: "profile_transition_active" });
+  const active = activePreparedStorage;
+  const prepared = preparedStorage;
+  const current = active ?? prepared;
+  if (!current || current.generation !== profileStorageGeneration) {
+    return Object.freeze({ kind: "unavailable", reason: "prepared_storage_missing" });
+  }
+  const router = active ? profileRouter : current.router;
+  if (!router || current.router !== router) return Object.freeze({ kind: "unavailable", reason: "prepared_storage_changed" });
+  if (active ? client === null || activePreparedStorage !== active : client !== null || preparedStorage !== prepared || profileRouter !== null) {
+    return Object.freeze({ kind: "unavailable", reason: "prepared_storage_changed" });
+  }
+
+  let first: string[];
+  let second: string[];
+  try {
+    first = [...current.base.getAllKeys()];
+    second = [...current.base.getAllKeys()];
+  } catch {
+    return Object.freeze({ kind: "unavailable", reason: "physical_key_read_failed" });
+  }
+  if (first.some((key) => typeof key !== "string") || new Set(first).size !== first.length) {
+    return Object.freeze({ kind: "unavailable", reason: "physical_key_inventory_invalid" });
+  }
+  const firstIdentity = JSON.stringify([...first].sort());
+  if (firstIdentity !== JSON.stringify([...second].sort())) return Object.freeze({ kind: "unavailable", reason: "prepared_storage_changed" });
+  const sameOwner = profileStorageGeneration === current.generation && !profileTransitionActive
+    && (active ? activePreparedStorage === active && profileRouter === router && client !== null
+      : preparedStorage === prepared && profileRouter === null && client === null);
+  if (!sameOwner) return Object.freeze({ kind: "unavailable", reason: "prepared_storage_changed" });
+  return Object.freeze({ kind: "ready", registeredProfileCount: router.registry.profiles.length, physicalKeyCount: first.length });
 }
 
 /** Validates only the exact selected guest's access and installation markers before publication. */
@@ -459,6 +743,155 @@ export function getActiveStorageProfile(): StorageProfile {
 }
 
 export function getActiveStorageProfileOrNull(): StorageProfile | null { return profileRouter?.profile ?? null; }
+
+export function captureActiveProfileStorageLease(): ActiveProfileStorageLease | null {
+  if (!client || !profileRouter || !activePreparedStorage || profileTransitionActive || activePreparedStorage.generation !== profileStorageGeneration) return null;
+  return Object.freeze({ profile: Object.freeze({ ...profileRouter.profile }), generation: activePreparedStorage.generation });
+}
+
+/** Captures only an existing closed prepared router; this never prepares or opens scoped storage. */
+export function capturePreparedProfileStorageLease(): PreparedProfileStorageLease | null {
+  const prepared = preparedStorage;
+  if (!prepared || client || profileTransitionActive || prepared.generation !== profileStorageGeneration) return null;
+  return Object.freeze({ profile: Object.freeze({ ...prepared.router.profile }), generation: prepared.generation });
+}
+
+export function isPreparedProfileStorageLeaseCurrent(lease: PreparedProfileStorageLease): boolean {
+  const prepared = preparedStorage;
+  return Boolean(prepared && !client && !profileTransitionActive && prepared.generation === lease.generation
+    && prepared.generation === profileStorageGeneration && prepared.router.profile.id === lease.profile.id
+    && prepared.router.profile.kind === lease.profile.kind && prepared.router.profile.accountId === lease.profile.accountId);
+}
+
+export function isActiveProfileStorageLeaseCurrent(lease: ActiveProfileStorageLease): boolean {
+  const profile = profileRouter?.profile;
+  return Boolean(client && activePreparedStorage && !profileTransitionActive && activePreparedStorage.generation === lease.generation
+    && profile && profile.id === lease.profile.id && profile.kind === lease.profile.kind && profile.accountId === lease.profile.accountId
+    && activePreparedStorage.generation === profileStorageGeneration);
+}
+
+export async function readPreparedAccountIdentityBinding(profileId: string): Promise<AccountIdentityBindingRead> {
+  const prepared = preparedStorage;
+  const registered = prepared?.router.registry.profiles.find((profile) => profile.id === profileId);
+  if (client || !prepared || profileTransitionActive || prepared.generation !== profileStorageGeneration
+    || prepared.router.profile.id !== profileId || prepared.router.registry.selectedProfileId !== profileId
+    || !registered || registered.kind !== prepared.router.profile.kind || registered.accountId !== prepared.router.profile.accountId) {
+    throw new ProfileStorageError("profile_transition_cancelled");
+  }
+  const value = await prepared.router.readSelectedAccountIdentityBinding();
+  if (preparedStorage !== prepared || prepared.generation !== profileStorageGeneration || client || profileTransitionActive) {
+    throw new ProfileStorageError("profile_transition_cancelled");
+  }
+  return value;
+}
+
+export async function invalidatePreparedAccountIdentityBinding(input: Readonly<{ profileId: string; canContinue: () => boolean }>): Promise<void> {
+  const prepared = preparedStorage;
+  if (client || !prepared || profileTransitionActive || prepared.generation !== profileStorageGeneration || prepared.router.profile.id !== input.profileId) {
+    throw new ProfileStorageError("profile_transition_cancelled");
+  }
+  await prepared.router.invalidateSelectedAccountIdentityBinding(input.canContinue);
+  if (preparedStorage !== prepared || prepared.generation !== profileStorageGeneration || client || profileTransitionActive || !input.canContinue()) {
+    throw new ProfileStorageError("profile_transition_cancelled");
+  }
+}
+
+export async function readActiveAccountIdentityBinding(lease: ActiveProfileStorageLease): Promise<AccountIdentityBindingRead> {
+  const router = profileRouter;
+  if (!router || !isActiveProfileStorageLeaseCurrent(lease)) throw new ProfileStorageError("profile_transition_cancelled");
+  const value = await router.readSelectedAccountIdentityBinding();
+  if (profileRouter !== router || !isActiveProfileStorageLeaseCurrent(lease)) throw new ProfileStorageError("profile_transition_cancelled");
+  return value;
+}
+
+export async function writeActiveAccountIdentityBinding(input: Readonly<{
+  lease: ActiveProfileStorageLease;
+  accountId: string;
+  firebaseUid: string;
+  canContinue: () => boolean;
+}>): Promise<AccountIdentityBinding> {
+  const router = profileRouter;
+  const guard = () => input.canContinue() && isActiveProfileStorageLeaseCurrent(input.lease);
+  if (!router || !guard()) throw new ProfileStorageError("profile_transition_cancelled");
+  const value = await router.writeVerifiedSelectedAccountIdentityBinding({
+    accountId: input.accountId,
+    firebaseUid: input.firebaseUid,
+    canContinue: guard,
+  });
+  if (profileRouter !== router || !guard()) throw new ProfileStorageError("profile_transition_cancelled");
+  return value;
+}
+
+export async function invalidateActiveAccountIdentityBinding(input: Readonly<{
+  lease: ActiveProfileStorageLease;
+  canContinue: () => boolean;
+}>): Promise<void> {
+  const router = profileRouter;
+  const guard = () => input.canContinue() && isActiveProfileStorageLeaseCurrent(input.lease);
+  if (!router || !guard()) throw new ProfileStorageError("profile_transition_cancelled");
+  await router.invalidateSelectedAccountIdentityBinding(guard);
+  if (profileRouter !== router || !guard()) throw new ProfileStorageError("profile_transition_cancelled");
+}
+
+export async function beginAccountIdentityProofBarrier(input: Readonly<{
+  profileId: string;
+  accountId: string;
+  firebaseUid: string;
+  verificationRevision: number;
+  lease?: ActiveProfileStorageLease;
+  canContinue: () => boolean;
+}>): Promise<AccountIdentityProofBarrier | null> {
+  if (input.lease) {
+    const router = profileRouter;
+    const guard = () => input.canContinue() && isActiveProfileStorageLeaseCurrent(input.lease!);
+    if (!router || input.lease.profile.id !== input.profileId || !guard()) throw new ProfileStorageError("profile_transition_cancelled");
+    const receipt = await router.beginSelectedAccountIdentityProofBarrier({
+      accountId: input.accountId, firebaseUid: input.firebaseUid, verificationRevision: input.verificationRevision, canContinue: guard,
+    });
+    if (profileRouter !== router || !guard()) throw new ProfileStorageError("profile_transition_cancelled");
+    return receipt ? Object.freeze({ schema: "patternly.account-identity-proof-barrier-scope.v1", ownerReceipt: receipt, storageGeneration: input.lease.generation, leaseGeneration: input.lease.generation }) : null;
+  }
+  const prepared = preparedStorage;
+  if (client || !prepared || profileTransitionActive || prepared.generation !== profileStorageGeneration
+    || prepared.router.profile.id !== input.profileId || prepared.router.profile.accountId !== input.accountId
+    || !input.canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
+  const receipt = await prepared.router.beginSelectedAccountIdentityProofBarrier({
+    accountId: input.accountId, firebaseUid: input.firebaseUid, verificationRevision: input.verificationRevision,
+    canContinue: input.canContinue,
+  });
+  if (preparedStorage !== prepared || prepared.generation !== profileStorageGeneration || client || profileTransitionActive || !input.canContinue()) {
+    throw new ProfileStorageError("profile_transition_cancelled");
+  }
+  return receipt ? Object.freeze({ schema: "patternly.account-identity-proof-barrier-scope.v1", ownerReceipt: receipt, storageGeneration: prepared.generation, leaseGeneration: null }) : null;
+}
+
+export async function resolveAccountIdentityProofBarrier(input: Readonly<{
+  receipt: AccountIdentityProofBarrier;
+  lease?: ActiveProfileStorageLease;
+  canContinue: () => boolean;
+}>): Promise<AccountIdentityBinding> {
+  const scope = input.receipt;
+  if (scope.schema !== "patternly.account-identity-proof-barrier-scope.v1") throw new ProfileStorageError("account_binding_conflict");
+  if (scope.leaseGeneration !== null) {
+    const router = profileRouter;
+    const lease = input.lease;
+    const guard = () => input.canContinue() && Boolean(lease) && lease!.generation === scope.leaseGeneration
+      && lease!.generation === scope.storageGeneration && isActiveProfileStorageLeaseCurrent(lease!);
+    if (!router || !lease || lease.profile.id !== scope.ownerReceipt.profileId || !guard()) throw new ProfileStorageError("profile_transition_cancelled");
+    const binding = await router.resolveSelectedAccountIdentityProofBarrier({ receipt: scope.ownerReceipt, canContinue: guard });
+    if (profileRouter !== router || !guard()) throw new ProfileStorageError("profile_transition_cancelled");
+    return binding;
+  }
+  const prepared = preparedStorage;
+  if (client || !prepared || profileTransitionActive || prepared.generation !== scope.storageGeneration
+    || prepared.generation !== profileStorageGeneration || prepared.router.profile.id !== scope.ownerReceipt.profileId
+    || !input.canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
+  const binding = await prepared.router.resolveSelectedAccountIdentityProofBarrier({ receipt: scope.ownerReceipt, canContinue: input.canContinue });
+  if (preparedStorage !== prepared || prepared.generation !== profileStorageGeneration || client || profileTransitionActive || !input.canContinue()) {
+    throw new ProfileStorageError("profile_transition_cancelled");
+  }
+  return binding;
+}
 
 export function beginProfileTransition(): void {
   if (profileTransitionActive) return;

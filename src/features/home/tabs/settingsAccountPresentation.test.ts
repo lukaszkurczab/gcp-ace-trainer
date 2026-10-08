@@ -24,6 +24,7 @@ test("Settings names guest and signed-out entry honestly and never offers guest 
   assert.deepEqual(getSettingsAccountPresentation({ kind: "guest" }), {
     accountDataStatus: null,
     canOpenAccount: true,
+    canManageAccount: false,
     canSignOut: false,
     email: null,
     status: "guest",
@@ -31,6 +32,7 @@ test("Settings names guest and signed-out entry honestly and never offers guest 
   assert.deepEqual(getSettingsAccountPresentation({ kind: "signedOut" }), {
     accountDataStatus: null,
     canOpenAccount: true,
+    canManageAccount: false,
     canSignOut: false,
     email: null,
     status: "signedOut",
@@ -43,6 +45,7 @@ test("Settings preserves authenticated identity and distinguishes synchronized f
   assert.equal(synced.accountDataStatus, "synced");
   assert.equal(synced.email, "learner@example.com");
   assert.equal(synced.canSignOut, true);
+  assert.equal(synced.canManageAccount, true);
 
   const pending = getSettingsAccountPresentation(authenticated("offlinePending"));
   assert.equal(pending.status, "attention");
@@ -66,6 +69,25 @@ test("Settings treats synced account data with durable warnings as needing atten
     assert.equal(presentation.canSignOut, true);
   }
   assert.equal(getSettingsAccountPresentation(authenticated("synced")).status, "authenticated");
+});
+
+test("offline account Settings offers local sign-out but no online account-management actions", () => {
+  const state = {
+    kind: "localOffline",
+    accountId: "account-id",
+    bindingRevision: 2,
+    generation: { generation: 3, uid: "firebase-uid" },
+    profile: { id: "profile-id", kind: "account", accountId: "account-id" },
+    profileLease: { generation: 4, profile: { id: "profile-id", kind: "account", accountId: "account-id" } },
+    user: { email: "learner@example.com", emailVerified: true, providers: ["password"], uid: "firebase-uid" },
+    accountData: { status: "offlinePending", preview: null, lastSuccessfulSyncAt: null, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: "offline", activeSessionBlocked: false, guestAdoptionChoice: "transfer" },
+  } as unknown as AccountState;
+  const presentation = getSettingsAccountPresentation(state);
+  assert.equal(presentation.status, "localOffline");
+  assert.equal(presentation.accountDataStatus, "offlinePending");
+  assert.equal(presentation.canOpenAccount, false);
+  assert.equal(presentation.canManageAccount, false);
+  assert.equal(presentation.canSignOut, true);
 });
 
 test("Settings maps only the resume-required sign-out pair to canonical localized copy", () => {
@@ -115,6 +137,7 @@ test("Settings blocks invalid actions while account lifecycle work is busy and k
   const recoveryPending = getSettingsAccountPresentation({ kind: "recoveryPending" });
   assert.deepEqual(recoveryPending, {
     accountDataStatus: null,
+    canManageAccount: false,
     canOpenAccount: true,
     canSignOut: false,
     email: null,

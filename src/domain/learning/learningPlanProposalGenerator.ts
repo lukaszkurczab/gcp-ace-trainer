@@ -2,7 +2,7 @@ import type { GoalDay, GoalRecord, GoalSnapshot } from "../goals/goalContracts";
 import { GOAL_DAY_IDS, isGoalDay, isGoalRecordForTrack, normalizeGoalRecord } from "../goals/goalContracts";
 import { projectGoalTargetDate } from "../goals/goalTargetDateSemantics";
 import { createArtifactSha256 } from "./contentItemRef";
-import type { PackageCompletionState } from "./packageCompletionRule";
+import { minimumAttemptsForMentalUnits, type ChapterCompletionStatus, type PackageCompletionState } from "./packageCompletionRule";
 import { createProposalSlotId, type ProposalSlotId } from "./slotIdentity";
 import type { TrackId } from "./trackIdentity";
 
@@ -221,14 +221,42 @@ function validateCompletionState(value: unknown): PackageCompletionState {
     return Object.freeze({ kind: "unknown" });
   }
   if (completion.kind === "in_progress") {
-    if (!hasOnlyKeys(completion, ["kind", "qualifyingAttemptCount", "requiredAttemptCount", "rollingWindowSize"]) || !nonNegativeInteger(completion.qualifyingAttemptCount) || !positiveInteger(completion.requiredAttemptCount) || !positiveInteger(completion.rollingWindowSize)) fail("invalid_completion_state");
-    return Object.freeze({ kind: "in_progress", qualifyingAttemptCount: completion.qualifyingAttemptCount, requiredAttemptCount: completion.requiredAttemptCount, rollingWindowSize: completion.rollingWindowSize });
+    const chapters = validateChapterStatuses(completion.chapters);
+    if (!hasOnlyKeys(completion, ["kind", "chapters", "completedChapterCount", "requiredChapterCount", "qualifyingAttemptCount", "requiredAttemptCount", "remainingAttemptCount"]) ||
+      !nonNegativeInteger(completion.completedChapterCount) || !positiveInteger(completion.requiredChapterCount) ||
+      completion.requiredChapterCount !== chapters.length || completion.completedChapterCount !== chapters.filter(chapter => chapter.status === "completed").length ||
+      completion.completedChapterCount >= completion.requiredChapterCount || completion.qualifyingAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.qualifyingAttemptCount, 0) ||
+      completion.requiredAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.requiredAttemptCount, 0) ||
+      completion.remainingAttemptCount !== chapters.reduce((sum, chapter) => sum + Math.max(0, chapter.requiredAttemptCount - chapter.qualifyingAttemptCount), 0)) fail("invalid_completion_state");
+    return Object.freeze({ kind: "in_progress", chapters, completedChapterCount: completion.completedChapterCount, requiredChapterCount: completion.requiredChapterCount, qualifyingAttemptCount: completion.qualifyingAttemptCount, requiredAttemptCount: completion.requiredAttemptCount, remainingAttemptCount: completion.remainingAttemptCount });
   }
   if (completion.kind === "completed") {
-    if (!hasOnlyKeys(completion, ["kind", "qualifyingAttemptCount", "rollingWindowSize", "quality"]) || !nonNegativeInteger(completion.qualifyingAttemptCount) || !positiveInteger(completion.rollingWindowSize) || typeof completion.quality !== "number" || !Number.isFinite(completion.quality) || completion.quality < 0 || completion.quality > 1) fail("invalid_completion_state");
-    return Object.freeze({ kind: "completed", qualifyingAttemptCount: completion.qualifyingAttemptCount, rollingWindowSize: completion.rollingWindowSize, quality: completion.quality });
+    const chapters = validateChapterStatuses(completion.chapters);
+    if (!hasOnlyKeys(completion, ["kind", "chapters", "completedChapterCount", "requiredChapterCount", "qualifyingAttemptCount", "requiredAttemptCount", "remainingAttemptCount"]) ||
+      !positiveInteger(completion.requiredChapterCount) || completion.requiredChapterCount !== chapters.length || completion.completedChapterCount !== chapters.length ||
+      chapters.some(chapter => chapter.status !== "completed") || completion.qualifyingAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.qualifyingAttemptCount, 0) ||
+      completion.requiredAttemptCount !== chapters.reduce((sum, chapter) => sum + chapter.requiredAttemptCount, 0) || completion.remainingAttemptCount !== 0) fail("invalid_completion_state");
+    return Object.freeze({ kind: "completed", chapters, completedChapterCount: completion.completedChapterCount, requiredChapterCount: completion.requiredChapterCount, qualifyingAttemptCount: completion.qualifyingAttemptCount, requiredAttemptCount: completion.requiredAttemptCount, remainingAttemptCount: 0 });
   }
   fail("invalid_completion_state");
+}
+
+function validateChapterStatuses(value: unknown): readonly ChapterCompletionStatus[] {
+  if (!Array.isArray(value) || value.length === 0) fail("invalid_completion_state");
+  const seen = new Set<string>();
+  return Object.freeze(value.map((candidate) => {
+    const chapter = asRecord(candidate, "invalid_completion_state");
+    if (!hasOnlyKeys(chapter, ["nodeId", "mentalUnitCount", "qualifyingAttemptCount", "requiredAttemptCount", "rollingWindowSize", "qualityThreshold", "quality", "status", "reason"]) ||
+      typeof chapter.nodeId !== "string" || !chapter.nodeId.trim() || seen.has(chapter.nodeId) || !positiveInteger(chapter.mentalUnitCount) ||
+      !nonNegativeInteger(chapter.qualifyingAttemptCount) || !positiveInteger(chapter.requiredAttemptCount) || chapter.requiredAttemptCount !== minimumAttemptsForMentalUnits(chapter.mentalUnitCount) || chapter.rollingWindowSize !== 20 || chapter.qualityThreshold !== 0.8 ||
+      !["in_progress", "completed"].includes(String(chapter.status)) || ![null, "minimum_attempts_unmet", "quality_unmet"].includes(chapter.reason as null | string) ||
+      (chapter.quality !== null && (typeof chapter.quality !== "number" || !Number.isFinite(chapter.quality) || chapter.quality < 0 || chapter.quality > 1)) ||
+      (chapter.status === "completed" && (chapter.reason !== null || chapter.quality === null || chapter.qualifyingAttemptCount < chapter.requiredAttemptCount || chapter.quality < chapter.qualityThreshold)) ||
+      (chapter.status === "in_progress" && chapter.reason === "minimum_attempts_unmet" && chapter.qualifyingAttemptCount >= chapter.requiredAttemptCount) ||
+      (chapter.status === "in_progress" && chapter.reason === "quality_unmet" && (chapter.qualifyingAttemptCount < chapter.requiredAttemptCount || chapter.quality === null || chapter.quality >= chapter.qualityThreshold))) fail("invalid_completion_state");
+    seen.add(chapter.nodeId);
+    return Object.freeze({ nodeId: chapter.nodeId, mentalUnitCount: chapter.mentalUnitCount, qualifyingAttemptCount: chapter.qualifyingAttemptCount, requiredAttemptCount: chapter.requiredAttemptCount, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality: chapter.quality, status: chapter.status as "in_progress" | "completed", reason: chapter.reason as "minimum_attempts_unmet" | "quality_unmet" | null });
+  }));
 }
 
 function buildTargetAssessment(record: GoalRecord, completion: PackageCompletionState, localToday: string, capacity: ResolvedCapacity): TargetAssessment {
@@ -239,13 +267,13 @@ function buildTargetAssessment(record: GoalRecord, completion: PackageCompletion
   if (target.targetDate === undefined || target.meaning === "none") return Object.freeze({ kind: "open_ended" });
   if (completion.kind === "unknown") return Object.freeze({ kind: "unknown_completion_rule" });
 
-  if (completion.kind === "in_progress" && completion.qualifyingAttemptCount >= completion.requiredAttemptCount) {
+  if (completion.kind === "in_progress" && completion.remainingAttemptCount === 0) {
     return Object.freeze({ kind: "quality_requirement_unmet" });
   }
 
   const remainingAttempts = completion.kind === "completed"
     ? 0
-    : Math.max(0, completion.requiredAttemptCount - completion.qualifyingAttemptCount);
+    : completion.remainingAttemptCount;
   const boundary = target.sessionBoundary === "strictly_before"
     ? addCalendarDays(target.targetDate, -1)
     : target.targetDate;
@@ -278,9 +306,7 @@ function cloneCapacity(capacity: ProposalSessionCapacity): ProposalSessionCapaci
 function cloneCompletionState(state: PackageCompletionState): PackageCompletionState {
   return state.kind === "unknown"
     ? Object.freeze({ kind: "unknown" })
-    : state.kind === "in_progress"
-      ? Object.freeze({ kind: "in_progress", qualifyingAttemptCount: state.qualifyingAttemptCount, requiredAttemptCount: state.requiredAttemptCount, rollingWindowSize: state.rollingWindowSize })
-      : Object.freeze({ kind: "completed", qualifyingAttemptCount: state.qualifyingAttemptCount, rollingWindowSize: state.rollingWindowSize, quality: state.quality });
+    : Object.freeze({ ...state, chapters: Object.freeze(state.chapters.map(chapter => Object.freeze({ ...chapter }))) });
 }
 
 function validateIsoDate(value: unknown, code: InvalidLearningPlanProposalInputCode): string {

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import test from "node:test";
 
-import { createRecoveryCodeClipboard, RECOVERY_CODE_CLIPBOARD_RETENTION_MS } from "./recoveryCodeClipboard";
+import { createRecoveryCodeClipboard, inspectQ13RecoveryCodeClipboard, RECOVERY_CODE_CLIPBOARD_RETENTION_MS } from "./recoveryCodeClipboard";
 
 const digest = async (value: string) => createHash("sha256").update(value).digest("hex");
 
@@ -46,6 +46,24 @@ test("copy stores only a digest and schedules cleanup for five minutes", async (
   const record = [...state.storage.values()][0] ?? "";
   assert.doesNotMatch(record, /ONE|TWO/u);
   assert.match(record, /"digest":"[a-f0-9]{64}"/u);
+});
+
+test("Q13 clipboard receipt hashes only its marker and does not reconcile or mutate clipboard", async () => {
+  const storage = new Map([["patternly.security.recovery-code-clipboard.v1", JSON.stringify({ version: 1, clearAfter: 9_000, digest: "a".repeat(64) })]]);
+  let mutations = 0;
+  const store = {
+    getItemAsync: async (key: string) => storage.get(key) ?? null,
+    setItemAsync: async () => { mutations += 1; },
+    deleteItemAsync: async () => { mutations += 1; },
+  };
+
+  const receipt = await inspectQ13RecoveryCodeClipboard(store);
+
+  assert.equal(receipt.kind, "observed");
+  assert.equal(receipt.marker, "present");
+  assert.equal(receipt.markerSha256?.length, 64);
+  assert.equal(JSON.stringify(receipt).includes("a".repeat(64)), false);
+  assert.equal(mutations, 0);
 });
 
 test("expired unchanged recovery codes are cleared", async () => {

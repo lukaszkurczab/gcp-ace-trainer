@@ -38,6 +38,21 @@ export function hasOfflinePremiumAccess(identity: PremiumIdentity, nowMs: number
   } catch { return false; }
 }
 
+/** Read-only snapshot for display; unlike session admission it never advances the clock fence. */
+export function readCachedPremiumAccess(identity: PremiumIdentity, nowMs: number): "allowed" | "denied" | "unavailable" {
+  try {
+    const raw = getKeyValueStorage().getString(KEY);
+    if (raw === undefined) return "unavailable";
+    let parsed: unknown;
+    try { parsed = JSON.parse(raw); } catch { return "unavailable"; }
+    if (!isPremiumCacheRecord(parsed) || parsed.snapshot.accountId !== identity.accountId || parsed.snapshot.entitlement !== identity.entitlement || parsed.snapshot.productId !== identity.productId) return "unavailable";
+    if (!Number.isSafeInteger(nowMs) || nowMs < 0 || nowMs < parsed.maxObservedWallTime) return "unavailable";
+    const decision = evaluateOfflinePremiumAccess(parsed, identity, nowMs);
+    if (decision.nextRecord === null) return "unavailable";
+    return decision.allowed ? "allowed" : "denied";
+  } catch { return "unavailable"; }
+}
+
 export function clearPremiumCache(): void { getKeyValueStorage().remove(KEY); }
 
 export type OwnedPremiumCacheClearResult = "cleared" | "absent" | "foreign" | "unavailable";

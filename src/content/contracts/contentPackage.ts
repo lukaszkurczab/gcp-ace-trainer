@@ -1,4 +1,4 @@
-import type { PackageCompletionRuleV1 } from "../../domain/learning/packageCompletionRule";
+import type { PackageCompletionRuleV2 } from "../../domain/learning/packageCompletionRule";
 
 export type ContentPackageErrorCode =
   | "package_record_invalid"
@@ -91,7 +91,7 @@ export type VerifiedContentPackageBase = Readonly<{
     profileId: string;
     profileVersion: string;
     primaryEntry: Readonly<{ modeId: string; requestedLength: number }>;
-    completionRule?: PackageCompletionRuleV1;
+    completionRule?: PackageCompletionRuleV2;
     modes: readonly VerifiedPackageMode[];
     configurations: readonly VerifiedPackageModeConfiguration[];
   }>;

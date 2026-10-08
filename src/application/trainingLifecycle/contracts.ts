@@ -101,6 +101,17 @@ export type ContentPackageRuntimeResolution = Readonly<{
   runtime: TrainingFamilyRuntime;
 }>;
 
+export type ExactArtifactIdentity = Pick<ResolvedContentRef, "trackId" | "contentVersion" | "artifactSha256">;
+
+/** A verified catalog and retained-package lookup proved one exact pin absent. */
+export class ExactContentArtifactUnavailableError extends Error {
+  readonly code = "exact_artifact_unavailable" as const;
+  constructor(readonly identity: ExactArtifactIdentity) {
+    super("The exact verified content artifact is unavailable.");
+    this.name = "ExactContentArtifactUnavailableError";
+  }
+}
+
 /** Sole verified package-to-family-runtime authority for preparation, exact resume, review, and discovery. */
 export interface ContentPackageRuntimePort {
   resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string; nodeId?: string }>): Promise<ContentPackageRuntimeResolution>;
@@ -144,7 +155,7 @@ export interface TrainingMutationCoordinatorPort {
   advance(session: TrainingSession): Promise<void>;
   completeWithResult(input: PracticeFinalization): Promise<void>;
   finalize(input: SimulationFinalization): Promise<void>;
-  abandon(session: TrainingSession): Promise<void>;
+  abandon(session: TrainingSession, preflight?: () => Promise<void>): Promise<void>;
   recover(): Promise<void>;
   reset(): Promise<void>;
 }

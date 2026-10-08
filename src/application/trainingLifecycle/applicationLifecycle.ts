@@ -2,6 +2,7 @@ import type { TrackId } from "../../domain";
 import type { PreparedSession } from "./contracts";
 import type { TrainingLifecycleUseCases } from "./TrainingLifecycleUseCases";
 import type { DurableOperationState } from "./durableOperationState";
+import type { ExactArtifactIdentity } from "./contracts";
 
 export type StartTrainingSessionCommand = Readonly<{
   trackId: TrackId;
@@ -31,6 +32,10 @@ export async function startTrainingSession(command: StartTrainingSessionCommand)
 
 export async function resumeActiveTrainingSession() {
   return getTrainingLifecycleUseCases().resumeActiveSession();
+}
+
+export async function abandonUnavailableExactActiveTrainingSession(input: Readonly<{ sessionId: string; identity: ExactArtifactIdentity; isCurrent(): boolean | Promise<boolean> }>) {
+  return getTrainingLifecycleUseCases().abandonUnavailableExactActiveSession(input);
 }
 
 /** Presentation-facing observable application read model. */

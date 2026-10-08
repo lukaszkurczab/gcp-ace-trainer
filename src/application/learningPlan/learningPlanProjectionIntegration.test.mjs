@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { cp, mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,17 +22,12 @@ const LOCALES = ['en', 'pl', 'de', 'fr', 'es', 'it', 'et'];
 
 const TRACK = 'aws-certified-solutions-architect-associate';
 const CONTENT = fileURLToPath(new URL('../../../../patternly-content/', import.meta.url));
-// Explicit transport test policy; never written into the authoritative nine tracks.
-const RULE = { ruleVersion: 1, minimumAttemptCount: 20, rollingWindowSize: 10, qualityThreshold: 0.8 };
+const RULE = JSON.parse(readFileSync(path.join(CONTENT, 'content/catalog.json'), 'utf8')).tracks.find(track => track.trackId === TRACK).completionRule;
 
-async function sourceWorkspace(t, rule = RULE) {
+async function sourceWorkspace(t) {
   const rootDirectory = await mkdtemp(path.join(os.tmpdir(), 'patternly-bizq02-projection-'));
   t.after(() => rm(rootDirectory, { recursive: true, force: true }));
-  await cp(path.join(CONTENT, 'content'), path.join(rootDirectory, 'content'), { recursive: true, filter: source => source === path.join(CONTENT, 'content') || source === path.join(CONTENT, 'content/catalog.json') || source.startsWith(path.join(CONTENT, 'content', TRACK)) });
-  const catalogPath = path.join(rootDirectory, 'content/catalog.json');
-  const catalog = JSON.parse(await readFile(catalogPath, 'utf8'));
-  if (rule !== undefined) catalog.tracks.find(track => track.trackId === TRACK).completionRule = rule;
-  await writeFile(catalogPath, JSON.stringify(catalog));
+  await cp(path.join(CONTENT, 'content'), path.join(rootDirectory, 'content'), { recursive: true });
   return { rootDirectory, outputRoot: path.join(rootDirectory, 'dist'), trackId: TRACK };
 }
 
@@ -70,7 +66,6 @@ const { LearningPlanProposalCoordinator } = require('./LearningPlanProposalCoord
 const { projectLearningEvidence } = require('./learningEvidenceProjection.ts');
 const { createHash } = await import('node:crypto');
 const { validatePackageCompletionRule } = await import('../../../../patternly-content/scripts/content/question-contract.mjs');
-const { createPackageCompletionRuleV1 } = require('../../domain/learning/packageCompletionRule.ts');
 
 async function verifiedProducerRuntime(t) {
   const built = await buildTrack(await sourceWorkspace(t));
@@ -111,10 +106,10 @@ async function learningFixture(resolved, install = true, goalOverrides = {}) {
   return { trackId, storage, goal, plan, base, proposal, get now() { return now; }, setNow(value) { now = value; }, home: new HomePlanSnapshotReader(base) };
 }
 
-function durableAttempt(resolved, index, resultKind = 'incorrect', overrides = {}) {
+function durableAttempt(resolved, index, resultKind = 'incorrect', overrides = {}, question = resolved.track.questions[0]) {
   const trackId = resolved.track.trackId;
-  const item = { trackId, contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256, questionId: resolved.track.questions[0].questionId };
-  const answeredAt = `2026-09-${String(Math.floor(index / 60) + 1).padStart(2, '0')}T12:00:${String(index % 60).padStart(2, '0')}.000Z`;
+  const item = { trackId, contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256, questionId: question.questionId };
+  const answeredAt = new Date(Date.parse('2026-09-01T12:00:00.000Z') + index * 1000).toISOString();
   return {
     id: `projection-attempt:${index}`, sessionId: 'projection-session', occurrenceId: `projection-occurrence:${index}`,
     trackId, modeId: resolved.track.modes[0].modeId, item, response: {},
@@ -122,6 +117,20 @@ function durableAttempt(resolved, index, resultKind = 'incorrect', overrides = {
       : resultKind === 'partial' ? { kind: 'partial', earnedPoints: 0.5, maxPoints: 1 } : { kind: 'incorrect', earnedPoints: 0, maxPoints: 1 },
     reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [] }, answeredAt, committedAt: answeredAt, ...overrides,
   };
+}
+
+async function completeAllButFirstChapter(f, resolved) {
+  let index = 1000;
+  let qualifyingAttemptCount = 0;
+  for (const chapter of RULE.chapters.slice(1)) {
+    const question = resolved.track.questions.find(candidate => candidate.nodeId === chapter.nodeId);
+    assert.ok(question, `chapter ${chapter.nodeId} has a canonical question`);
+    for (let count = 0; count < chapter.minimumAttemptCount; count++) {
+      await repositories.addTrainingAttempt(durableAttempt(resolved, index++, 'correct', {}, question));
+      qualifyingAttemptCount++;
+    }
+  }
+  return qualifyingAttemptCount;
 }
 
 async function assertShared(f, expected) {
@@ -137,19 +146,24 @@ async function assertShared(f, expected) {
 test('real producer → verified canonical runtime → persisted evidence → Home and proposal use the same rule', async t => {
   const resolved = await verifiedProducerRuntime(t);
   const f = await learningFixture(resolved);
+  const otherChapterAttempts = await completeAllButFirstChapter(f, resolved);
   const empty = await assertShared(f, 'in_progress');
-  assert.equal(empty.home.completion.qualifyingAttemptCount, 0);
+  assert.equal(empty.home.completion.qualifyingAttemptCount, otherChapterAttempts);
   assert.equal(empty.home.paceForecast.reason, 'insufficient_elapsed_evidence');
-  for (let index = 0; index < 25; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, index < 20 ? 'correct' : 'incorrect'));
+  const firstChapter = RULE.chapters[0];
+  const question = resolved.track.questions.find(candidate => candidate.nodeId === firstChapter.nodeId);
+  assert.ok(question);
+  for (let index = 0; index < firstChapter.minimumAttemptCount; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, index >= firstChapter.minimumAttemptCount - 15 ? 'correct' : 'incorrect', {}, question));
   const quality = await assertShared(f, 'in_progress');
-  assert.equal(quality.home.completion.qualifyingAttemptCount, 25);
+  assert.equal(quality.home.completion.qualifyingAttemptCount, otherChapterAttempts + firstChapter.minimumAttemptCount);
+  assert.equal(quality.home.completion.chapters[0].qualifyingAttemptCount, firstChapter.minimumAttemptCount);
   assert.deepEqual(quality.home.paceForecast, { kind: 'unavailable', reason: 'quality_requirement_unmet' });
   assert.deepEqual(quality.proposal.outcome.targetAssessment, { kind: 'quality_requirement_unmet' });
-  for (let index = 25; index < 33; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct'));
+  for (let index = firstChapter.minimumAttemptCount; index < firstChapter.minimumAttemptCount + 5; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', {}, question));
   const completed = await assertShared(f, 'completed');
-  assert.equal(completed.home.completion.quality, 0.8);
+  assert.equal(completed.home.completion.chapters[0].quality, 1);
   assert.equal(completed.home.guidance.state, 'completed');
-  for (let index = 33; index < 38; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index));
+  for (let index = firstChapter.minimumAttemptCount + 5; index < firstChapter.minimumAttemptCount + 10; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'incorrect', {}, question));
   await assertShared(f, 'in_progress');
 });
 
@@ -157,27 +171,32 @@ test('Progress consumes actual shared evidence without claiming completion from 
   const resolved = await verifiedProducerRuntime(t);
   for (const goalOverrides of [{}, { goalType: 'learn_at_own_pace', targetDate: null }]) await t.test(goalOverrides.goalType ?? 'targeted', async () => {
     const f = await learningFixture(resolved, true, goalOverrides);
-    await assertProgressCompletion(await assertShared(f, 'in_progress'), 0);
+    const otherChapterAttempts = await completeAllButFirstChapter(f, resolved);
+    const firstChapter = RULE.chapters[0];
+    const question = resolved.track.questions.find(candidate => candidate.nodeId === firstChapter.nodeId);
+    assert.ok(question);
+    await assertProgressCompletion(await assertShared(f, 'in_progress'), otherChapterAttempts);
     for (let index = 0; index < 19; index++) {
-      await repositories.addTrainingAttempt(durableAttempt(resolved, index, index < 15 ? 'correct' : 'incorrect'));
-      if ([8, 15, 18, 19].includes(index + 1)) await assertProgressCompletion(await assertShared(f, 'in_progress'), index + 1);
+      await repositories.addTrainingAttempt(durableAttempt(resolved, index, index < 15 ? 'correct' : 'incorrect', {}, question));
+      if ([8, 15, 18, 19].includes(index + 1)) await assertProgressCompletion(await assertShared(f, 'in_progress'), otherChapterAttempts + index + 1);
     }
-    await repositories.addTrainingAttempt(durableAttempt(resolved, 19));
-    await assertProgressCompletion(await assertShared(f, 'in_progress'), 20);
-    for (let index = 20; index < 25; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index));
+    await repositories.addTrainingAttempt(durableAttempt(resolved, 19, 'incorrect', {}, question));
+    await assertProgressCompletion(await assertShared(f, 'in_progress'), otherChapterAttempts + 20);
+    for (let index = 20; index < 20 + firstChapter.minimumAttemptCount - 20; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'incorrect', {}, question));
     const quality = await assertShared(f, 'in_progress');
-    await assertProgressCompletion(quality, 25);
+    const reachedMinimum = 20 + (firstChapter.minimumAttemptCount - 20);
+    await assertProgressCompletion(quality, otherChapterAttempts + reachedMinimum);
     for (const surface of ['home', 'progress']) assert.equal(runtimeSelectors.targetDateGuidance.reason(surface, 'quality_requirement_unmet'), `patternly:target-date-guidance:reason:${surface}:quality-requirement-unmet`);
     assert.throws(() => runtimeSelectors.targetDateGuidance.reason('progress', 'quality_unmet'), /Unknown target date guidance reason/);
     const before = readLearningPlanInputSnapshot(f.trackId);
-    await assertProgressCompletion(quality, 25);
+    await assertProgressCompletion(quality, otherChapterAttempts + reachedMinimum);
     assert.deepEqual(readLearningPlanInputSnapshot(f.trackId), before, 'Presentation cannot change attempts, reviews, goal or accepted plan');
-    for (let index = 25; index < 33; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct'));
+    for (let index = reachedMinimum; index < reachedMinimum + 16; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', {}, question));
     const completed = await assertShared(f, 'completed');
-    await assertProgressCompletion(completed, 33);
-    assert.equal(completed.home.completion.quality, 0.8);
-    for (let index = 33; index < 38; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index));
-    await assertProgressCompletion(await assertShared(f, 'in_progress'), 38);
+    await assertProgressCompletion(completed, otherChapterAttempts + reachedMinimum + 16);
+    assert.equal(completed.home.completion.chapters[0].quality, 0.8);
+    for (let index = reachedMinimum + 16; index < reachedMinimum + 21; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'incorrect', {}, question));
+    await assertProgressCompletion(await assertShared(f, 'in_progress'), otherChapterAttempts + reachedMinimum + 21);
   });
 });
 
@@ -199,17 +218,17 @@ async function assertProgressCompletion(state, count) {
       assert.ok(text.includes(translate('The package does not define a completion rule.')));
     } else {
       assert.equal(model.completion.qualifyingAttemptCount, count);
-      assert.ok(text.endsWith(translate('{{count}} qualifying attempt', { count })));
+      assert.ok(text.includes(translate('{{count}} qualifying attempt', { count })));
       if (model.completion.kind === 'completed') {
         assert.ok(text.includes(translate('The package completion rule is currently met.')));
         assert.equal(model.primaryAction, null);
-      } else if (count >= model.completion.requiredAttemptCount) {
-        const message = translate('The minimum number of attempts is met. Keep practising to improve your results; completion timing is not predictable yet.');
+      } else if (model.completion.remainingAttemptCount === 0) {
+        const message = translate('All chapter attempt minimums are met, but recent accuracy in at least one chapter is below the required level. Keep practising; completion timing is not predictable yet.');
         assert.ok(rendered.text.includes(message));
         assert.equal(rendered.nodes.filter(node => node.type === 'Text' && rendered.textOf(node) === message).length, 1, 'Keep quality status visible once, without repeating identical guidance');
         assert.ok(!text.includes(translate('The package completion rule is currently met.')));
       } else {
-        const remaining = model.completion.requiredAttemptCount - count;
+        const remaining = model.completion.remainingAttemptCount;
         assert.ok(text.includes(translate('attemptsRemaining', { count: remaining, remaining })));
         if (locale === 'en') assert.match(text, /to reach the minimum number of attempts/);
       }
@@ -238,18 +257,38 @@ test('shared evidence is package-wide across plan revisions, exact by artifact, 
   assert.throws(() => projectLearningEvidence({ profile: resolved.track, attempts: [...inputs.attempts, conflict], reviews: [], now: f.now }), /conflicting/);
 });
 
-test('absent actual policies stay unknown in both actual Home and proposal for all nine current tracks', async () => {
+test('P01: all nine verified current artifacts report zero attempts and the full chapter minimum', async () => {
   const catalog = await loadCanonicalRuntimeCatalog();
+  assert.equal(catalog.tracks.length, 9);
+  let verifiedChapterCount = 0;
   for (const trackId of catalog.tracks) {
     const track = catalog.getTrack(trackId);
-    assert.equal(Object.hasOwn(track, 'completionRule'), false);
+    assert.equal(track.completionRule.ruleVersion, 2);
+    const expectedNodes = [...new Set(track.questions.map(question => question.nodeId))].sort();
+    assert.deepEqual(track.completionRule.chapters.map(chapter => chapter.nodeId).sort(), expectedNodes);
+    verifiedChapterCount += expectedNodes.length;
+    for (const chapter of track.completionRule.chapters) {
+      const mentalUnitCount = new Set(track.questions.filter(question => question.nodeId === chapter.nodeId).map(question => question.mentalUnitId)).size;
+      assert.equal(chapter.mentalUnitCount, mentalUnitCount);
+      assert.ok(chapter.minimumAttemptCount >= 20);
+    }
     const resolved = { track, runtime: new CanonicalTrainingRuntime(track) };
     const f = await learningFixture(resolved);
-    await repositories.addTrainingAttempt(durableAttempt(resolved, 0, 'correct'));
-    const state = await assertShared(f, 'unknown');
-    assert.deepEqual(state.home.paceForecast, { kind: 'unavailable', reason: 'unknown_completion_rule' });
-    await assertProgressCompletion(state);
+    const minimumTotal = track.completionRule.chapters.reduce((sum, chapter) => sum + chapter.minimumAttemptCount, 0);
+    const empty = await assertShared(f, 'in_progress');
+    assert.equal(empty.home.completion.qualifyingAttemptCount, 0);
+    assert.equal(empty.home.completion.requiredChapterCount, expectedNodes.length);
+    assert.equal(empty.home.completion.requiredAttemptCount, minimumTotal);
+    assert.equal(empty.home.completion.remainingAttemptCount, minimumTotal);
+    await assertProgressCompletion(empty, 0);
+    const question = track.questions[0];
+    await repositories.addTrainingAttempt(durableAttempt(resolved, 0, 'correct', {}, question));
+    const state = await assertShared(f, 'in_progress');
+    assert.equal(state.home.completion.requiredChapterCount, expectedNodes.length);
+    assert.equal(state.home.completion.remainingAttemptCount, track.completionRule.chapters.reduce((sum, chapter) => sum + chapter.minimumAttemptCount, 0) - 1);
+    await assertProgressCompletion(state, 1);
   }
+  assert.equal(verifiedChapterCount, 117);
 });
 
 test('actual Home none and Progress unavailable preserve honest status, actions and retry semantics', async () => {
@@ -295,18 +334,18 @@ test('actual Home none and Progress unavailable preserve honest status, actions 
   }
 });
 
-test('producer and actual consumer reject the same malformed v1 rule vectors and hash binds a valid rule', async t => {
+test('producer and actual consumer reject the same malformed v2 rule vectors and hash binds a valid rule', async t => {
   const workspace = await sourceWorkspace(t);
   const built = await buildTrack(workspace);
   const { createCanonicalQuestionCatalog } = require('../../content/canonical/questionCatalog.ts');
   const hash = async bytes => createHash('sha256').update(bytes).digest('hex');
-  for (const invalid of [null, undefined, {}, { ...RULE, ruleVersion: 2 }, { ...RULE, extra: 1 }, { ...RULE, minimumAttemptCount: 9 }, { ...RULE, rollingWindowSize: 0 }, { ...RULE, minimumAttemptCount: Number.MAX_SAFE_INTEGER + 1 }, { ...RULE, qualityThreshold: 1.01 }, { ...RULE, qualityThreshold: NaN }]) {
-    assert.equal(validatePackageCompletionRule(invalid).valid, false);
-    assert.throws(() => createPackageCompletionRuleV1(invalid));
+  for (const invalid of [null, {}, { ...RULE, ruleVersion: 1 }, { ...RULE, extra: 1 }, { ...RULE, chapters: [] }, { ...RULE, chapters: [{ ...RULE.chapters[0], minimumAttemptCount: 20 }] }, { ...RULE, chapters: [{ ...RULE.chapters[0], nodeId: 'foreign-node' }] }, { ...RULE, chapters: [{ ...RULE.chapters[0], mentalUnitCount: Number.MAX_SAFE_INTEGER }] }, { ...RULE, chapters: [{ ...RULE.chapters[0], qualityThreshold: 1.01 }] }, { ...RULE, chapters: [{ ...RULE.chapters[0], qualityThreshold: NaN }] }]) {
+    assert.equal(validatePackageCompletionRule(invalid, undefined, built.artifact.questions).valid, false);
     const artifact = { ...built.artifact, completionRule: invalid };
     await assert.rejects(createCanonicalQuestionCatalog(artifact, built.lockEntry, TRACK, hash), /canonical contract/);
   }
-  const changed = { ...JSON.parse(built.artifactBytes), completionRule: { ...RULE, qualityThreshold: 0.7 } };
+  const changed = JSON.parse(built.artifactBytes);
+  changed.questions[0].prompt = `${changed.questions[0].prompt} Changed without updating the artifact hash.`;
   await assert.rejects(createCanonicalQuestionCatalog(changed, built.lockEntry, TRACK, hash), /SHA-256/);
 });
 
@@ -401,7 +440,7 @@ test('future exact-package evidence cannot complete proposal while Home rejects 
   const resolved = await verifiedProducerRuntime(t);
   const f = await learningFixture(resolved);
   const future = '2026-10-03T12:00:00.000Z';
-  for (let index = 0; index < RULE.minimumAttemptCount; index++) {
+  for (let index = 0; index < RULE.chapters[0].minimumAttemptCount; index++) {
     await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', { answeredAt: future, committedAt: future }));
   }
   const before = readLearningPlanInputSnapshot(TRACK);
@@ -416,21 +455,29 @@ test('future exact-package evidence cannot complete proposal while Home rejects 
 test('captured instant rejects same-day future answers by one millisecond without silently dropping them', async t => {
   const resolved = await verifiedProducerRuntime(t);
   const f = await learningFixture(resolved);
-  for (let index = 0; index < 19; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct'));
+  const otherChapterAttempts = await completeAllButFirstChapter(f, resolved);
+  const firstChapter = RULE.chapters[0];
+  const question = resolved.track.questions.find(candidate => candidate.nodeId === firstChapter.nodeId);
+  assert.ok(question);
+  for (let index = 0; index < 19; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', {}, question));
   const future = '2026-10-02T12:00:00.001Z';
-  await repositories.addTrainingAttempt(durableAttempt(resolved, 19, 'correct', { answeredAt: future, committedAt: future }));
+  await repositories.addTrainingAttempt(durableAttempt(resolved, 19, 'correct', { answeredAt: future, committedAt: future }, question));
   const before = readLearningPlanInputSnapshot(TRACK);
   assert.throws(() => projectLearningEvidence({ profile: resolved.track, attempts: before.attempts, reviews: [], now: f.now }), /answer time.*captured clock/);
   assert.deepEqual(await f.home.read({ trackId: TRACK, now: f.now }), { kind: 'unavailable', trackId: TRACK, reason: 'calculation_error' });
   assert.deepEqual(await f.proposal.create(TRACK), { kind: 'generator_error', classification: 'unclassified' });
   assert.deepEqual(readLearningPlanInputSnapshot(TRACK), before);
-  assert.equal(before.attempts.length, 20);
+  assert.equal(before.attempts.length, otherChapterAttempts + 20);
   // Rebind the same persisted dataset: this is memory repository continuity, not SDK recovery.
   installKeyValueStorageForTests(f.storage);
   f.setNow(future);
+  for (let index = 20; index < firstChapter.minimumAttemptCount; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', { answeredAt: future, committedAt: future }, question));
   const valid = await assertShared(f, 'completed');
-  assert.equal(valid.home.completion.qualifyingAttemptCount, 20);
-  assert.deepEqual(readLearningPlanInputSnapshot(TRACK).attempts, before.attempts);
+  assert.equal(valid.home.completion.qualifyingAttemptCount, otherChapterAttempts + firstChapter.minimumAttemptCount);
+  const after = readLearningPlanInputSnapshot(TRACK);
+  assert.equal(after.attempts.length, otherChapterAttempts + firstChapter.minimumAttemptCount);
+  const afterIds = new Set(after.attempts.map(attempt => attempt.id));
+  assert.ok(before.attempts.every(attempt => afterIds.has(attempt.id)));
   assert.deepEqual(readLearningPlanInputSnapshot(TRACK).goal, before.goal);
   assert.deepEqual(readLearningPlanInputSnapshot(TRACK).plan, before.plan);
 });
@@ -438,28 +485,33 @@ test('captured instant rejects same-day future answers by one millisecond withou
 test('past and exactly captured answers remain eligible despite later materialization, duplicates and historical future evidence', async t => {
   const resolved = await verifiedProducerRuntime(t);
   const f = await learningFixture(resolved);
+  const otherChapterAttempts = await completeAllButFirstChapter(f, resolved);
+  const firstChapter = RULE.chapters[0];
+  const question = resolved.track.questions.find(candidate => candidate.nodeId === firstChapter.nodeId);
+  assert.ok(question);
   for (let index = 0; index < 20; index++) {
-    const record = durableAttempt(resolved, index, 'correct', { answeredAt: index === 19 ? f.now : '2026-10-02T11:59:59.999Z', committedAt: '2026-10-03T12:00:00.000Z' });
+    const record = durableAttempt(resolved, index, 'correct', { answeredAt: index === 19 ? f.now : '2026-10-02T11:59:59.999Z', committedAt: '2026-10-03T12:00:00.000Z' }, question);
     await repositories.addTrainingAttempt(record);
     if (index === 19) await repositories.addTrainingAttempt(record);
   }
-  const historical = durableAttempt(resolved, 20, 'correct', { answeredAt: '2026-10-03T12:00:00.000Z', committedAt: '2026-10-03T12:00:00.000Z' });
+  const historical = durableAttempt(resolved, 20, 'correct', { answeredAt: '2026-10-03T12:00:00.000Z', committedAt: '2026-10-03T12:00:00.000Z' }, question);
   const item = { ...historical.item, contentVersion: 'other-exact-package-version' };
   await repositories.addTrainingAttempt({ ...historical, item, reviewEvidence: { ...historical.reviewEvidence, sourceItem: item } });
+  for (let index = 100; index < 100 + firstChapter.minimumAttemptCount - 20; index++) await repositories.addTrainingAttempt(durableAttempt(resolved, index, 'correct', { answeredAt: f.now, committedAt: '2026-10-03T12:00:00.000Z' }, question));
   const before = readLearningPlanInputSnapshot(TRACK);
   const valid = await assertShared(f, 'completed');
-  assert.equal(valid.home.completion.qualifyingAttemptCount, 20);
+  assert.equal(valid.home.completion.qualifyingAttemptCount, otherChapterAttempts + firstChapter.minimumAttemptCount);
   const projected = projectLearningEvidence({ profile: resolved.track, attempts: [...before.attempts, before.attempts[0]], reviews: [], now: f.now });
-  assert.equal(projected.attempts.length, 20);
-  assert.equal(projected.completedFacts.attempts.length, 20);
+  assert.equal(projected.attempts.length, otherChapterAttempts + firstChapter.minimumAttemptCount);
+  assert.equal(projected.completedFacts.attempts.length, otherChapterAttempts + firstChapter.minimumAttemptCount);
   assert.deepEqual(readLearningPlanInputSnapshot(TRACK), before);
   assert.throws(() => projectLearningEvidence({ profile: resolved.track, attempts: [ { ...before.attempts[0], answeredAt: 'not-an-instant' } ], reviews: [], now: f.now }), /invalid/);
   assert.throws(() => projectLearningEvidence({ profile: resolved.track, attempts: before.attempts, reviews: [], now: 'not-a-clock' }), /clock is invalid/);
 });
 
-test('absent production rule does not hide future exact-package facts as unknown', async () => {
+test('future exact-package evidence remains unavailable until the captured clock reaches it', async () => {
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK, 'certification');
-  assert.equal(Object.hasOwn(resolved.track, 'completionRule'), false);
+  assert.equal(resolved.track.completionRule.ruleVersion, 2);
   const f = await learningFixture(resolved);
   const future = '2026-10-02T12:00:00.001Z';
   await repositories.addTrainingAttempt(durableAttempt(resolved, 0, 'correct', { answeredAt: future, committedAt: future }));
@@ -468,7 +520,8 @@ test('absent production rule does not hide future exact-package facts as unknown
   assert.deepEqual(await f.proposal.create(TRACK), { kind: 'generator_error', classification: 'unclassified' });
   assert.deepEqual(readLearningPlanInputSnapshot(TRACK), before);
   f.setNow(future);
-  await assertShared(f, 'unknown');
+  const available = await assertShared(f, 'in_progress');
+  assert.equal(available.home.completion.qualifyingAttemptCount, 1);
 });
 
 test('clock rollback blocks real proposal resolve and acceptance before goal-plan CAS or reminders', async t => {
@@ -507,7 +560,7 @@ test('clock rollback blocks real proposal resolve and acceptance before goal-pla
   assert.equal((await f.proposal.resolve(id, TRACK)).kind, 'ready');
 });
 
-test('current producer rebuild preserves all nine rule-free artifact bytes and exact app lock', async t => {
+test('current producer rebuild preserves all nine v2 artifact bytes and exact app lock', async t => {
   const outputRoot = await mkdtemp(path.join(os.tmpdir(), 'patternly-bizq02-current-parity-'));
   t.after(() => rm(outputRoot, { recursive: true, force: true }));
   const built = await buildAll({ rootDirectory: CONTENT, outputRoot });
@@ -519,6 +572,117 @@ test('current producer rebuild preserves all nine rule-free artifact bytes and e
     const expected = await readFile(path.join(bundleRoot, `${artifact.trackId}.json`), 'utf8');
     const bytes = await readFile(path.join(outputRoot, `${artifact.trackId}.json`), 'utf8');
     assert.equal(bytes, expected);
-    assert.equal(Object.hasOwn(JSON.parse(bytes), 'completionRule'), false);
+    const parsedArtifact = JSON.parse(bytes);
+    assert.equal(parsedArtifact.completionRule.ruleVersion, 2);
+    assert.ok(parsedArtifact.completionRule.chapters.length > 0);
   }
+});
+
+test('P13: production lifecycle submit materializes one exact attempt into fresh Home and proposal in the same process', async () => {
+  const trackId = 'coding-interview-dsa-problem-solving';
+  const familyId = 'coding_interview';
+  const descriptor = require('../../domain/tracks/trackAdmission.ts').TRACK_DENSITY_DESCRIPTORS.find(entry => entry.trackId === trackId);
+  assert.ok(descriptor);
+  installKeyValueStorageForTests(new MemoryKeyValueStorage());
+  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, familyId);
+  const f = await learningFixture(resolved);
+  const lifecycle = require('../bootstrap/trainingLifecycleComposition.ts').composeTrainingLifecycleUseCases({
+    wallClock: { now: () => f.now },
+    sessionIds: { create: async () => 'bizq02-p13-production-session' },
+  });
+
+  const prepared = await lifecycle.startSession({
+    trackId,
+    modeId: 'coding-interview-learn-approach',
+    request: { nodeId: descriptor.freeNodeId, requestedLength: 10 },
+  });
+  const item = prepared.session.itemOrder[0].item;
+  assert.equal(item.trackId, trackId);
+  assert.equal(item.contentVersion, resolved.track.contentVersion);
+  assert.equal(item.artifactSha256, resolved.track.artifactSha256);
+  const question = await contentPackageRuntimeOwner.resolveItem(item);
+  assert.equal(question.nodeId, descriptor.freeNodeId);
+
+  await lifecycle.submitPracticeResponse(question.answer);
+
+  const attempts = (await repositories.getTrainingAttempts()).value;
+  assert.equal(attempts.length, 1);
+  assert.equal(attempts[0].sessionId, prepared.session.id);
+  assert.equal(attempts[0].occurrenceId, prepared.session.itemOrder[0].occurrenceId);
+  assert.deepEqual(attempts[0].item, item);
+  assert.equal(attempts[0].result.kind, 'correct');
+  assert.equal(await repositories.getActiveMutationJournal(), null, 'the submit journal is materialized and cleared before Home reads');
+
+  const home = new HomePlanSnapshotReader({
+    readInputs: readLearningPlanInputSnapshot,
+    getActiveTrainingSession: repositories.getActiveTrainingSession,
+    getTrainingSessions: repositories.getTrainingSessions,
+    resolveExactArtifact: identity => contentPackageRuntimeOwner.resolveExactArtifact(identity),
+  });
+  const snapshot = await home.read({ trackId, now: f.now });
+  assert.equal(snapshot.kind, 'ready');
+  assert.equal(snapshot.completion.kind, 'in_progress');
+  assert.equal(snapshot.completion.qualifyingAttemptCount, 1);
+  assert.equal(snapshot.completion.chapters.find(chapter => chapter.nodeId === descriptor.freeNodeId)?.qualifyingAttemptCount, 1);
+
+  const proposal = new LearningPlanProposalCoordinator({
+    createProposalId: () => 'bizq02-p13-production-proposal',
+    getTimezone: () => 'Europe/Warsaw',
+    readInputs: readLearningPlanInputSnapshot,
+    peekPackage: () => contentPackageRuntimeOwner.getPreparedDiscovery(trackId),
+    now: () => f.now,
+    resolvePackage: () => contentPackageRuntimeOwner.resolveForDiscovery(trackId, familyId),
+    resolveTrackFamily: () => familyId,
+  });
+  const projectedProposal = await proposal.create(trackId);
+  assert.ok('proposal' in projectedProposal, JSON.stringify(projectedProposal));
+  assert.deepEqual(projectedProposal.proposal.outcome.completionState, snapshot.completion);
+});
+
+test('P20: completed Free chapter remains complete while every required Premium chapter stays locked in Progress', async () => {
+  const trackId = 'coding-interview-dsa-problem-solving';
+  const familyId = 'coding_interview';
+  const descriptor = require('../../domain/tracks/trackAdmission.ts').TRACK_DENSITY_DESCRIPTORS.find(entry => entry.trackId === trackId);
+  assert.ok(descriptor);
+  installKeyValueStorageForTests(new MemoryKeyValueStorage());
+  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, familyId);
+  const f = await learningFixture(resolved);
+  const rule = resolved.track.completionRule;
+  const freeChapter = rule.chapters.find(chapter => chapter.nodeId === descriptor.freeNodeId);
+  assert.ok(freeChapter);
+  const freeQuestion = resolved.track.questions.find(question => question.nodeId === descriptor.freeNodeId);
+  assert.ok(freeQuestion);
+  for (let index = 0; index < freeChapter.minimumAttemptCount; index++) {
+    await repositories.addTrainingAttempt(durableAttempt(resolved, 3000 + index, 'correct', {}, freeQuestion));
+  }
+
+  const home = new HomePlanSnapshotReader({
+    readInputs: readLearningPlanInputSnapshot,
+    getActiveTrainingSession: repositories.getActiveTrainingSession,
+    getTrainingSessions: repositories.getTrainingSessions,
+    resolveExactArtifact: identity => contentPackageRuntimeOwner.resolveExactArtifact(identity),
+  });
+  const snapshot = await home.read({ trackId, now: f.now, premiumAccess: 'denied' });
+  assert.equal(snapshot.kind, 'ready');
+  assert.equal(snapshot.completion.kind, 'in_progress');
+  assert.equal(snapshot.completion.requiredChapterCount, rule.chapters.length);
+  assert.equal(snapshot.completion.completedChapterCount, 1);
+  assert.equal(snapshot.completion.chapters.find(chapter => chapter.nodeId === freeChapter.nodeId)?.status, 'completed');
+  assert.equal(snapshot.completion.remainingAttemptCount, rule.chapters.filter(chapter => chapter.nodeId !== freeChapter.nodeId).reduce((sum, chapter) => sum + chapter.minimumAttemptCount, 0));
+  assert.deepEqual(snapshot.chapterAccess.find(chapter => chapter.nodeId === freeChapter.nodeId), { nodeId: freeChapter.nodeId, access: 'free' });
+  const lockedChapterIds = rule.chapters.filter(chapter => chapter.nodeId !== freeChapter.nodeId).map(chapter => chapter.nodeId);
+  assert.ok(lockedChapterIds.length > 0);
+  assert.deepEqual(snapshot.chapterAccess.filter(chapter => chapter.access === 'locked').map(chapter => chapter.nodeId).sort(), [...lockedChapterIds].sort());
+
+  const model = buildProgressPlanPresentationModel({ snapshot, activeTrackId: trackId, locale: 'en' });
+  assert.equal(model.kind, 'ready');
+  assert.equal(model.completion.kind, 'in_progress');
+  assert.equal(model.chapterAccess.filter(chapter => chapter.access === 'locked').length, lockedChapterIds.length);
+  const rendered = renderProgressPlanSection(model, { locale: 'en' });
+  const chapterList = rendered.byTestId(runtimeSelectors.progressPlan.chapterList());
+  assert.ok(chapterList, 'Progress renders the required chapter inventory');
+  const chapterText = rendered.textOf(chapterList);
+  const lockedCopy = rendered.i18n.getFixedT('en', 'learningPlan')('Premium access required');
+  assert.equal(chapterText.split(lockedCopy).length - 1, lockedChapterIds.length);
+  assert.ok(chapterText.includes(`1 of ${rule.chapters.length} chapters complete`));
 });

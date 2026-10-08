@@ -12,6 +12,7 @@ web-build/
 .maestro/*
 !.maestro/rc-certification-exam-resume-finish.yaml
 !.maestro/rc-certification-exam-timeout-result.yaml
+!.maestro/q13-readonly-scroll.yaml
 docs/qa/
 
 npm-debug.log*
@@ -26,6 +27,7 @@ yarn-error.log*
 *.key
 *.mobileprovision
 credentials.json
+.temp/q13-local-actor/
 
 android/
 ios/

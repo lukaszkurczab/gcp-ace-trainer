@@ -64,6 +64,10 @@
       "title": "Datos de tu cuenta",
       "body": "Los datos de aprendizaje se guardan en este dispositivo. Los registros de cuenta compatibles también pueden sincronizarse con la nube de tu cuenta y volver mediante la sincronización habitual cuando inicies sesión. Usa las opciones de exportación, detalles y privacidad de abajo para esta cuenta."
     },
+    "localOffline": {
+      "title": "Datos de la cuenta en este dispositivo",
+      "body": "Tu aprendizaje guardado permanece en este dispositivo. Vuelve a conectarte para comprobar la cuenta antes de sincronizar cambios o usar las opciones de datos de la cuenta."
+    },
     "guest": {
       "title": "Datos de invitado",
       "body": "Los datos de aprendizaje se guardan localmente en este dispositivo. Puedes usar Patternly sin una cuenta. Si necesitas ayuda con tus datos, utiliza el formulario de privacidad de esta aplicación."

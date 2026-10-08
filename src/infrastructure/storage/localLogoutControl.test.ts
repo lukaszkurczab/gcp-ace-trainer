@@ -1,10 +1,54 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { LocalLogoutControlError, createLocalLogoutControl, type LocalLogoutControlSnapshot } from "./localLogoutControl";
+import { inspectQ13LocalLogoutControl, LocalLogoutControlError, createLocalLogoutControl, type LocalLogoutControlSnapshot } from "./localLogoutControl";
 import type { StorageManifestStore } from "./encryptedStorageBootstrap";
+import { sha256Utf8 } from "../identity/sha256";
 
 const KEY = "patternly.local-logout-control.v2";
+
+test("Q13 logout projection distinguishes empty, pending, and corrupt state without mutation", () => {
+  assert.deepEqual(inspectQ13LocalLogoutControl(null, sha256Utf8("uid-Q13-current")), { globalStatus: "clear", actorStatus: "clear" });
+  const pending = JSON.stringify({ version: 2, blocked: { uid: "private-uid", operationId: "4f8508d5-10b0-4db2-886d-1a4a88ab1d56" }, completed: [], pending: [{ uid: "private-uid", operationId: "4f8508d5-10b0-4db2-886d-1a4a88ab1d56" }] });
+  assert.deepEqual(inspectQ13LocalLogoutControl(pending, sha256Utf8("private-uid")), { globalStatus: "pending", actorStatus: "pending" });
+  assert.deepEqual(inspectQ13LocalLogoutControl("corrupt", sha256Utf8("private-uid")), { globalStatus: "unavailable", actorStatus: "unavailable" });
+  assert.equal(pending.includes("private-uid"), true);
+});
+
+test("Q13 logout projection separates global and matching actor pending state without exposing identifiers", () => {
+  const ownUid = "uid-Q13-current";
+  const foreignUid = "uid-foreign";
+  const ownSha = sha256Utf8(ownUid);
+  const record = JSON.stringify({
+    version: 2,
+    blocked: null,
+    pending: [{ uid: foreignUid, operationId: "4f8508d5-10b0-4db2-886d-1a4a88ab1d56" }],
+    completed: [{ uid: "uid-completed", operationId: "8a01ca30-36b8-4421-a803-ec71cf7a3d02" }],
+  });
+  const foreignPending = inspectQ13LocalLogoutControl(record, ownSha);
+  assert.deepEqual(foreignPending, { globalStatus: "pending", actorStatus: "clear" });
+  assert.deepEqual(inspectQ13LocalLogoutControl(record, sha256Utf8(foreignUid)), { globalStatus: "pending", actorStatus: "pending" });
+  assert.deepEqual(inspectQ13LocalLogoutControl(record, null), { globalStatus: "pending", actorStatus: "unavailable" });
+  const ownBlocked = JSON.stringify({
+    version: 2,
+    blocked: { uid: ownUid, operationId: "4f8508d5-10b0-4db2-886d-1a4a88ab1d56" },
+    pending: [{ uid: ownUid, operationId: "4f8508d5-10b0-4db2-886d-1a4a88ab1d56" }],
+    completed: [],
+  });
+  assert.deepEqual(inspectQ13LocalLogoutControl(ownBlocked, ownSha), { globalStatus: "pending", actorStatus: "pending" });
+  assert.equal(JSON.stringify(foreignPending).includes(foreignUid), false);
+  assert.equal(JSON.stringify(foreignPending).includes(ownUid), false);
+});
+
+test("Q13 logout projection fails closed for malformed records and treats completed-only history as nonblocking", () => {
+  assert.deepEqual(inspectQ13LocalLogoutControl("{malformed", sha256Utf8("uid-Q13-current")), { globalStatus: "unavailable", actorStatus: "unavailable" });
+  assert.deepEqual(inspectQ13LocalLogoutControl("{malformed", null), { globalStatus: "unavailable", actorStatus: "unavailable" });
+  assert.deepEqual(inspectQ13LocalLogoutControl(JSON.stringify({ version: 3, blocked: null, pending: [], completed: [] }), sha256Utf8("uid-Q13-current")), { globalStatus: "unavailable", actorStatus: "unavailable" });
+  const completedOnly = JSON.stringify({ version: 2, blocked: null, pending: [], completed: [{ uid: "uid-other", operationId: "8a01ca30-36b8-4421-a803-ec71cf7a3d02" }] });
+  assert.deepEqual(inspectQ13LocalLogoutControl(completedOnly, sha256Utf8("uid-Q13-current")), { globalStatus: "clear", actorStatus: "clear" });
+  assert.deepEqual(inspectQ13LocalLogoutControl(null, null), { globalStatus: "clear", actorStatus: "unavailable" });
+  assert.deepEqual(inspectQ13LocalLogoutControl(null, "not-a-uid-hash"), { globalStatus: "clear", actorStatus: "unavailable" });
+});
 
 class MemoryManifestStore implements StorageManifestStore {
   readonly values = new Map<string, string>();

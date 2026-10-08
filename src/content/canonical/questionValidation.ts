@@ -1,10 +1,11 @@
-import { createPackageCompletionRuleV1 } from "../../domain/learning/packageCompletionRule";
+import { assertPackageCompletionRuleMatchesQuestions, createPackageCompletionRuleV2 } from "../../domain/learning/packageCompletionRule";
 import type { CanonicalArtifact, CanonicalContentLockRecord, Question, QuestionInteractionType } from "./questionTypes";
 
 const WHITESPACE = "\\u0009-\\u000D\\u001C-\\u001F\\u0020\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000\\uFEFF";
 const HAS_CONTENT = new RegExp(`[^${WHITESPACE}]`, "u");
 const EDGE_WHITESPACE = new RegExp(`^[${WHITESPACE}]|[${WHITESPACE}]$`, "u");
 const SHA256 = /^[a-f0-9]{64}$/;
+const SAFE_CONTENT_VERSION = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u;
 const TYPES = new Set<QuestionInteractionType>(["choice_single", "choice_multiple", "ordering", "complexity", "decision_matrix"]);
 const METHODS: Record<QuestionInteractionType, string> = { choice_single: "exact_selected_set", choice_multiple: "exact_selected_set", ordering: "adjacent_relations", complexity: "dimension_exact", decision_matrix: "dimension_exact" };
 const FEEDBACK_KINDS: Record<QuestionInteractionType, readonly string[]> = { choice_single: ["wrong_option"], choice_multiple: ["wrong_option", "omitted_option"], ordering: ["wrong_element", "broken_relation"], complexity: ["wrong_value", "omitted_dimension"], decision_matrix: ["wrong_value", "omitted_dimension"] };
@@ -110,7 +111,10 @@ export function validateCanonicalArtifact(value: unknown, lock: CanonicalContent
   if (lock.trackId !== expectedTrackId || lock.trackId !== value.trackId || lock.contentVersion !== value.contentVersion || !Number.isSafeInteger(lock.questionCount) || lock.questionCount < 1 || !SHA256.test(lock.sha256)) errors.push("lock: identity, version, count, or SHA-256 is inconsistent");
   if (!Array.isArray(value.questions)) errors.push("artifact.questions: must be an array"); else { if (value.questions.length !== lock.questionCount) errors.push("artifact.questions: count differs from lock"); const ids = new Set<string>(); for (const [i, question] of value.questions.entries()) { const child = validateQuestion(question); errors.push(...child.map((x) => `artifact.questions[${i}].${x.replace(/^question\.?/, "")}`)); if (record(question)) { if (question.trackId !== expectedTrackId) errors.push(`artifact.questions[${i}].trackId: foreign track`); if (typeof question.questionId === "string") { if (ids.has(question.questionId)) errors.push(`artifact.questions[${i}].questionId: duplicate identity`); ids.add(question.questionId); } const hasProfile = Object.hasOwn(value, "simulationProfiles"); if (Object.hasOwn(question, "contentDomainId") && (expectedTrackId !== "google-cloud-associate-cloud-engineer" || !hasProfile)) errors.push(`artifact.questions[${i}].contentDomainId: only valid for GCP artifacts with simulation profiles`); if (hasProfile && expectedTrackId === "google-cloud-associate-cloud-engineer" && !Object.hasOwn(question, "contentDomainId")) errors.push(`artifact.questions[${i}].contentDomainId: required for GCP simulation profile`); } } }
   if (Object.hasOwn(value, "completionRule")) {
-    try { createPackageCompletionRuleV1(value.completionRule); }
+    try {
+      const rule = createPackageCompletionRuleV2(value.completionRule);
+      assertPackageCompletionRuleMatchesQuestions(rule, value.questions as readonly { nodeId: string; mentalUnitId: string }[]);
+    }
     catch { errors.push("artifact.completionRule: invalid versioned completion rule"); }
   }
   if (Object.hasOwn(value, "simulationProfiles")) validateSimulationProfiles(value.simulationProfiles, Array.isArray(value.questions) ? value.questions : [], value.trackId, value.contentVersion, errors);
@@ -134,7 +138,7 @@ function validateSimulationProfiles(value: unknown, questions: readonly unknown[
       if (profile.familyId !== "certification") errors.push(`${path}.familyId: unsupported family`);
       if (profile.profileId !== "google-cloud-associate-cloud-engineer-certification-exam-v1") errors.push(`${path}.profileId: unsupported profile`);
       if (trackId !== "google-cloud-associate-cloud-engineer") errors.push(`${path}: simulation profile is not supported for this track`);
-      validateCertificationSimulationConfig(profile.familyConfig, questions, nodeIds, trackId, contentVersion, questions.length, path, errors);
+      validateCertificationSimulationConfig(profile.familyConfig, questions, nodeIds, trackId, questions.length, path, errors);
       return;
     }
     if (profile.modeId === "coding-interview-simulation") {
@@ -244,7 +248,7 @@ function validateCodingInterviewSimulationConfig(value: unknown, questions: read
   });
 }
 
-function validateCertificationSimulationConfig(value: unknown, questions: readonly unknown[], nodeIds: readonly string[], trackId: unknown, contentVersion: unknown, questionTotal: number, path: string, errors: string[]): void {
+function validateCertificationSimulationConfig(value: unknown, questions: readonly unknown[], nodeIds: readonly string[], trackId: unknown, questionTotal: number, path: string, errors: string[]): void {
   const configKeys = ["schemaVersion", "source", "durationMinutes", "questionCount", "blueprint", "interactionPolicy", "nodeDomainMap", "nodeDomainMapEvidence"];
   const configPath = `${path}.familyConfig`;
   if (!exact(value, configKeys, configKeys, configPath, errors)) return;
@@ -293,6 +297,15 @@ function validateCertificationSimulationConfig(value: unknown, questions: readon
   const evidence = value.nodeDomainMapEvidence;
   const evidenceKeys = ["artifactPath", "contentVersion", "itemCount", "nodeCount", "ambiguousNodeCount"];
   if (!exact(evidence, evidenceKeys, evidenceKeys, `${configPath}.nodeDomainMapEvidence`, errors)) return;
-  if (typeof trackId !== "string" || typeof contentVersion !== "string" || !text(evidence.artifactPath, `${configPath}.nodeDomainMapEvidence.artifactPath`, errors) || evidence.artifactPath !== `artifacts/tracks/${trackId}/${contentVersion}/track-artifact.json` || evidence.contentVersion !== contentVersion || evidence.nodeCount !== nodeIds.length || evidence.ambiguousNodeCount !== 0 || evidence.itemCount !== questionTotal || !Number.isInteger(evidence.itemCount) || evidence.itemCount < 1) errors.push(`${configPath}.nodeDomainMapEvidence: does not match artifact identity or complete mapping`);
+  const evidenceVersion = evidence.contentVersion;
+  const expectedEvidencePath = typeof trackId === "string" && typeof evidenceVersion === "string"
+    ? `artifacts/tracks/${trackId}/${evidenceVersion}/track-artifact.json`
+    : null;
+  if (typeof trackId !== "string" || typeof evidenceVersion !== "string" || !SAFE_CONTENT_VERSION.test(evidenceVersion) ||
+    !text(evidence.artifactPath, `${configPath}.nodeDomainMapEvidence.artifactPath`, errors) || evidence.artifactPath !== expectedEvidencePath ||
+    evidence.nodeCount !== nodeIds.length || evidence.ambiguousNodeCount !== 0 || evidence.itemCount !== questionTotal ||
+    !Number.isInteger(evidence.itemCount) || evidence.itemCount < 1) {
+    errors.push(`${configPath}.nodeDomainMapEvidence: does not match its pinned artifact identity or complete mapping`);
+  }
 }
 function deepFreeze<T>(value: T): T { if (value && typeof value === "object" && !Object.isFrozen(value)) { for (const child of Object.values(value as Record<string, unknown>)) deepFreeze(child); Object.freeze(value); } return value; }

@@ -35,6 +35,10 @@
   },
   "state": {
     "authenticated": { "title": "Données de votre compte", "body": "Les données d’apprentissage sont stockées sur cet appareil. Les enregistrements de compte pris en charge peuvent aussi être synchronisés avec le cloud de votre compte et restaurés par la synchronisation habituelle après connexion. Utilisez ci-dessous les actions d’exportation, de détails et de confidentialité pour ce compte." },
+    "localOffline": {
+      "title": "Données du compte sur cet appareil",
+      "body": "Votre apprentissage enregistré reste sur cet appareil. Reconnectez-vous pour vérifier le compte avant de synchroniser les changements ou d’utiliser les actions sur les données du compte."
+    },
     "guest": { "title": "Données de l’invité", "body": "Les données d’apprentissage sont stockées localement sur cet appareil. Vous pouvez utiliser Patternly sans compte. Si vous avez besoin d’aide concernant vos données, utilisez le formulaire de confidentialité de l’application." },
     "signedOut": { "title": "Connectez-vous pour gérer les données du compte", "body": "Connectez-vous ou créez un compte pour accéder aux données du compte et aux actions relatives à la confidentialité." },
     "guestAccessBlocked": { "title": "Accès au compte nécessaire", "body": "Ces données d’invité enregistrées sont associées à un autre compte. Connectez-vous pour continuer." },

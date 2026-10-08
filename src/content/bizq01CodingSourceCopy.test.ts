@@ -9,7 +9,7 @@ import { CanonicalTrainingRuntime } from "../application/canonical/CanonicalTrai
 
 const trackId = "coding-interview-dsa-problem-solving";
 const questionId = "alg-contrast-binary-scan-correctness-006";
-const version = "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04";
+const version = "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04-bizq02-v2";
 const trackPromise = loadCanonicalRuntimeCatalog().then((catalog) => catalog.getTrack(trackId));
 const source = JSON.parse(readFileSync(new URL("../../../patternly-content/content/coding-interview-dsa-problem-solving/contrast_binary_search_vs_linear_scan/correctness_before_asymptotic_speed.json", import.meta.url), "utf8")) as Question[];
 

@@ -1,0 +1,7 @@
+appId: com.lkurczab.patternly
+name: Patternly Q13 - read-only storage receipt scroll
+tags:
+  - q13
+  - read-only
+---
+- scroll

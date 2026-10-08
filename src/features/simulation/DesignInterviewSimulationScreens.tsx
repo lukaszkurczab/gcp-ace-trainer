@@ -11,6 +11,7 @@ import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { useThemedStyles } from "../../preferences";
+import { useHomeResumeUnavailable } from "../../content/application/ContentPreparationGate";
 import { spacing, typography, type AppColors } from "../../theme";
 import { DesignSimulationDraftDrain } from "./designSimulationDraftDrain";
 
@@ -22,6 +23,7 @@ const STAGES: readonly DesignSimulationStage[] = ["requirements", "architecture"
 
 export function DesignInterviewSimulationScreen({ navigation, route }: RunnerProps) {
   const { t } = useTranslation("common");
+  const homeResumeContext = useHomeResumeUnavailable();
   const styles = useThemedStyles(createStyles);
   const [projection, setProjection] = useState<DesignSimulationProjection | null>(null);
   const [responses, setResponses] = useState<Partial<Record<DesignSimulationStage, string>>>({});
@@ -55,7 +57,16 @@ export function DesignInterviewSimulationScreen({ navigation, route }: RunnerPro
   useFocusEffect(useCallback(() => {
     let live = true;
     void openDesignInterviewSimulation({ trackId: route.params.trackId, profileId: route.params.profileId, expectedSessionId: route.params.expectedSessionId })
-      .then((next) => { if (live) { setProjection(next); setResponses({ ...next.responsesByStage }); drain.seedDurable(next.responsesByStage); } })
+      .then((next) => {
+        if (!live) return;
+        if (route.params.expectedSessionId === next.session.id && next.session.trackId === route.params.trackId
+          && next.session.modeId === "design-interview-simulation") {
+          homeResumeContext?.clearAfterSuccessfulResume(next.session.id);
+        }
+        setProjection(next);
+        setResponses({ ...next.responsesByStage });
+        drain.seedDurable(next.responsesByStage);
+      })
       .catch((cause) => {
         if (!live) return;
         if (cause instanceof DesignInterviewSimulationExpiredError) navigation.replace(ROUTES.DESIGN_INTERVIEW_SIMULATION_RESULT, { sessionId: cause.sessionId });
@@ -63,7 +74,7 @@ export function DesignInterviewSimulationScreen({ navigation, route }: RunnerPro
       });
     const interval = setInterval(() => { void refresh().catch((cause) => setError(describeOperationalFailure(cause, t("Simulation state is unavailable.")))); }, 1000);
     return () => { live = false; clearInterval(interval); void drain.flush().catch((cause) => setError(describeOperationalFailure(cause, t("Your response could not be saved.")))); };
-  }, [drain, navigation, refresh, route.params.expectedSessionId, route.params.profileId, route.params.trackId, t]));
+  }, [drain, homeResumeContext, navigation, refresh, route.params.expectedSessionId, route.params.profileId, route.params.trackId, t]));
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (state) => {

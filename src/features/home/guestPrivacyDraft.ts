@@ -1,4 +1,5 @@
 import type { PrivacyRequestRightDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
+import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 
 const STORAGE_KEY = "patternly.guest-privacy-pending.v1";
 const RIGHTS = new Set<PrivacyRequestRightDto>(["access", "rectification", "erasure", "restriction", "objection", "portability", "consent_withdrawal"]);
@@ -41,4 +42,12 @@ export async function saveGuestPrivacyDraft(draft: GuestPrivacyDraft, store: Sec
 
 export async function clearGuestPrivacyDraft(store: SecureStorePort = secureStore()): Promise<void> {
   await store.deleteItemAsync(STORAGE_KEY);
+}
+
+/** Does not parse or expose PII; reads only the exact guest privacy draft slot. */
+export async function inspectQ13GuestPrivacyDraft(store?: SecureStorePort): Promise<Readonly<{ kind: "observed"; draft: "absent" | "present"; draftSha256: string | null } | { kind: "unavailable" }>> {
+  try {
+    const raw = await (store ?? secureStore()).getItemAsync(STORAGE_KEY);
+    return Object.freeze({ kind: "observed", draft: raw === null ? "absent" : "present", draftSha256: raw === null ? null : sha256Utf8(raw) });
+  } catch { return Object.freeze({ kind: "unavailable" }); }
 }

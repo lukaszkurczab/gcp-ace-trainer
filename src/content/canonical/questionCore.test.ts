@@ -126,7 +126,8 @@ test("optional GCP simulation profile is strict, complete, immutable and covered
   const nodeIds = [...new Set(artifact.questions.map((question) => question.nodeId))].sort();
   assert.deepEqual(Object.keys(familyConfig.nodeDomainMap as object).sort(), nodeIds);
   const evidence = familyConfig.nodeDomainMapEvidence as Record<string, unknown>;
-  assert.equal(evidence.contentVersion, gcp.entry.contentVersion);
+  assert.notEqual(evidence.contentVersion, gcp.entry.contentVersion);
+  assert.equal(evidence.artifactPath, `artifacts/tracks/${gcp.entry.trackId}/${String(evidence.contentVersion)}/track-artifact.json`);
   assert.equal(evidence.itemCount, gcp.entry.questionCount);
   assert.equal(evidence.nodeCount, nodeIds.length);
   assert.equal(evidence.ambiguousNodeCount, 0);
@@ -149,6 +150,7 @@ test("optional GCP simulation profile is strict, complete, immutable and covered
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.nodeDomainMap as Record<string, string>)[sourceDerivedNode!] = "gcp-ace-standard-domain-2"; },
     (copy: Record<string, unknown>) => { ((copy.questions as Array<Record<string, unknown>>).find((question) => question.nodeId === sourceDerivedNode)!).contentDomainId = "gcp-ace-standard-domain-2"; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.nodeDomainMapEvidence as Record<string, unknown>).contentVersion = "foreign-version"; },
+    (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.nodeDomainMapEvidence as Record<string, unknown>).contentVersion = "../foreign"; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.questionCount as Record<string, unknown>).maximum = 61; },
     (copy: Record<string, unknown>) => { const first = (copy.simulationProfiles as Array<Record<string, unknown>>)[0]!; const config = first.familyConfig as Record<string, unknown>; (config.interactionPolicy as Record<string, unknown>).feedbackTiming = "after_each_answer"; },
   ];

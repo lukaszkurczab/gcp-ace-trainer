@@ -12,6 +12,8 @@ import {
 import { TRACK_DENSITY_DESCRIPTORS } from "../../domain/tracks/trackAdmission";
 import {
   TrainingApplicationFailure,
+  ExactContentArtifactUnavailableError,
+  type ExactArtifactIdentity,
   type ApplicationFailureCode,
   type PreparedSession,
   type PracticeFinalization,
@@ -450,6 +452,75 @@ export class TrainingLifecycleUseCases {
     return this.serializeSessionMutation(initial.id, () => this.abandonActiveSessionInLane());
   }
 
+  /** Explicitly ends one active session only after its exact verified artifact is still absent. */
+  async abandonUnavailableExactActiveSession(input: Readonly<{ sessionId: string; identity: ExactArtifactIdentity; isCurrent(): boolean | Promise<boolean> }>): Promise<TrainingSession> {
+    if (!input.sessionId.trim() || !await input.isCurrent()) throw new TrainingApplicationFailure("resume_unavailable", "The unavailable-session confirmation no longer belongs to the current account and profile.");
+    const initial = await this.requireActive();
+    assertUnavailableSessionIdentity(initial, input.sessionId, input.identity);
+    return this.serializeSessionMutation(initial.id, () => this.abandonUnavailableExactActiveSessionInLane(input));
+  }
+
+  private async abandonUnavailableExactActiveSessionInLane(input: Readonly<{ sessionId: string; identity: ExactArtifactIdentity; isCurrent(): boolean | Promise<boolean> }>): Promise<TrainingSession> {
+    const active = await this.requireActive();
+    assertUnavailableSessionIdentity(active, input.sessionId, input.identity);
+    if (!await input.isCurrent()) throw new TrainingApplicationFailure("resume_unavailable", "The unavailable-session confirmation no longer belongs to the current account and profile.");
+    await this.authorizePremiumProductMode(active.modeId);
+    await this.assertNoPendingMutation();
+    await this.assertExactArtifactStillUnavailable(active, input.identity);
+    if (!await input.isCurrent()) throw new TrainingApplicationFailure("resume_unavailable", "The unavailable-session confirmation no longer belongs to the current account and profile.");
+    const abandoned = this.runSync("persistence_failure", () => abandonTrainingSession(active, this.ports.clock.now()));
+    const isSimulation = active.configurationSnapshot.submission === "manualOrForegroundTimeout";
+    this.operationStates.set(active.id, isSimulation ? simulation("abandoning") : practice("abandoning"));
+    try {
+      await this.run("persistence_failure", () => this.ports.mutations.abandon(abandoned, async () => {
+        const fresh = await this.requireActive();
+        assertUnavailableSessionIdentity(fresh, input.sessionId, input.identity);
+        if (!await input.isCurrent()) throw new TrainingApplicationFailure("resume_unavailable", "The unavailable-session confirmation no longer belongs to the current account and profile.");
+        await this.authorizePremiumProductMode(fresh.modeId);
+        await this.assertNoPendingMutation();
+        await this.assertExactArtifactStillUnavailable(fresh, input.identity);
+        const afterResolution = await this.requireActive();
+        assertUnavailableSessionIdentity(afterResolution, input.sessionId, input.identity);
+        await this.assertNoPendingMutation();
+        if (!await input.isCurrent()) throw new TrainingApplicationFailure("resume_unavailable", "The unavailable-session confirmation no longer belongs to the current account and profile.");
+      }));
+      const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
+      if (verified) throw new TrainingApplicationFailure("verification_failure", "Abandoned session remains resumable.");
+      const persisted = await this.run("verification_failure", () => this.ports.repositories.getSession(active.id));
+      if (!persisted || persisted.status !== "abandoned" || !sameSessionContentIdentity(persisted, active)) {
+        throw new TrainingApplicationFailure("verification_failure", "The exact unavailable session abandonment was not verified.");
+      }
+      this.operationStates.set(active.id, isSimulation ? simulation("abandoned") : practice("abandoned"));
+      this.operationStates.clear(active.id);
+      return persisted;
+    } catch (error) {
+      const mutationFailure = mutationCommitFailureFrom(error);
+      const afterJournal = mutationFailure !== null && mutationFailure.durableState !== "not_durable";
+      const operation = isSimulation ? "simulation_abandon" : "practice_abandon";
+      const state = afterJournal ? "abandonment_recovery_required" : "abandonment_failed_before_journal";
+      const detail = operationError(operation, mutationFailure?.durableState ?? "not_durable", afterJournal ? "recover" : "retry_same_command");
+      this.operationStates.set(active.id, isSimulation ? simulation(state, detail) : practice(state, detail));
+      throw error;
+    }
+  }
+
+  private async assertExactArtifactStillUnavailable(session: TrainingSession, identity: ExactArtifactIdentity): Promise<void> {
+    assertUnavailableSessionIdentity(session, session.id, identity);
+    try {
+      await this.resolveRuntimeForSession(session);
+    } catch (error) {
+      if (error instanceof TrainingApplicationFailure && error.code === "resume_unavailable" && error.cause instanceof ExactContentArtifactUnavailableError
+        && sameExactArtifactIdentity(error.cause.identity, identity)) return;
+      throw error;
+    }
+    throw new TrainingApplicationFailure("resume_unavailable", "The exact content is available again; retry session recovery before confirming abandonment.");
+  }
+
+  private async assertNoPendingMutation(): Promise<void> {
+    const pending = await this.run("persistence_failure", () => this.ports.repositories.getPendingMutation?.() ?? Promise.resolve(null));
+    if (pending) throw new TrainingApplicationFailure("resume_unavailable", "A pending canonical mutation must be recovered before ending this session.");
+  }
+
   private async abandonActiveSessionInLane(): Promise<TrainingSession> {
     const active = await this.requireActive();
     await this.authorizePremiumProductMode(active.modeId);
@@ -638,8 +709,28 @@ function requestedNodeId(request: unknown): string | undefined {
   return typeof nodeId === "string" && nodeId.trim() ? nodeId : undefined;
 }
 
+function mutationCommitFailureFrom(error: unknown): MutationCommitFailure | null {
+  if (error instanceof MutationCommitFailure) return error;
+  if (error instanceof TrainingApplicationFailure && error.cause instanceof MutationCommitFailure) return error.cause;
+  return null;
+}
+
 function isPracticeOperation(value: DurableOperationState): value is PracticeDurableOperationState { return value.family === "practice"; }
 function isSimulationOperation(value: DurableOperationState): value is SimulationDurableOperationState { return value.family === "simulation"; }
+
+function sameExactArtifactIdentity(left: ExactArtifactIdentity, right: ExactArtifactIdentity): boolean {
+  return left.trackId === right.trackId && left.contentVersion === right.contentVersion && left.artifactSha256 === right.artifactSha256;
+}
+
+function assertUnavailableSessionIdentity(session: TrainingSession, sessionId: string, identity: ExactArtifactIdentity): void {
+  if (session.id !== sessionId || session.status !== "active" || !sameExactArtifactIdentity(session, identity)) {
+    throw new TrainingApplicationFailure("version_mismatch", "The active session no longer matches the exact unavailable content confirmation.");
+  }
+}
+
+function sameSessionContentIdentity(left: TrainingSession, right: TrainingSession): boolean {
+  return left.id === right.id && left.trackId === right.trackId && left.contentVersion === right.contentVersion && left.artifactSha256 === right.artifactSha256;
+}
 
 function practice<K extends PracticeDurableOperationState["kind"]>(kind: K, error?: DurableOperationError): Extract<PracticeDurableOperationState, { kind: K }> {
   return Object.freeze(error ? { family: "practice", kind, error } : { family: "practice", kind }) as Extract<PracticeDurableOperationState, { kind: K }>;

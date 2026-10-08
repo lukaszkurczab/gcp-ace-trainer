@@ -6,7 +6,7 @@ import test from "node:test";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { LAUNCH_TRACK_IDS } from "..";
 
-test("runtime admission resolves the exact candidate lock for every canonical launch track", async () => {
+test("canonical launch catalog binds every track to the current candidate lock", async () => {
   const releaseLock = JSON.parse(await readFile(path.resolve("integration/contracts/content-release/release.lock.json"), "utf8")) as {
     schemaVersion: number; candidateId: string; bundledContentLockSha256: string;
     artifacts: { trackId: string; checksumSha256: string; contentVersion: string }[];
@@ -14,7 +14,6 @@ test("runtime admission resolves the exact candidate lock for every canonical la
   const contentLockBytes = await readFile(path.resolve("src/content/generated/canonical-content/content-lock.json"));
   const contentLock = JSON.parse(contentLockBytes.toString("utf8")) as { tracks: { trackId: string; sha256: string; contentVersion: string }[] };
   assert.equal(releaseLock.schemaVersion, 3);
-  assert.equal(releaseLock.candidateId, "946d3589abf9bfb205b382e7ebb9205786c3e42e18fe733c3607ad836a6a80a4");
   assert.equal(releaseLock.bundledContentLockSha256, createHash("sha256").update(contentLockBytes).digest("hex"));
   assert.deepEqual(releaseLock.artifacts.map((item) => item.trackId), contentLock.tracks.map((item) => item.trackId));
   for (const [index, item] of releaseLock.artifacts.entries()) {

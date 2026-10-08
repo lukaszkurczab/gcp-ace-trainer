@@ -3,8 +3,11 @@ import type { StorageManifestStore } from "./encryptedStorageBootstrap";
 import { STORAGE_NAMESPACE, STORAGE_KEYS } from "../../storage/keys";
 import { installationIdentity, type GuestInstallationIdentityPort } from "../identity/installationIdentity";
 import { sha256Utf8 } from "../identity/sha256";
+import { inspectQ13LocalLogoutControl } from "./localLogoutControl";
 
 const ROOT_KEYS = Object.freeze(["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"] as const);
+const ACCOUNT_BINDING_KEYS = Object.freeze(["patternly.account-binding.v1.a", "patternly.account-binding.v1.b"] as const);
+const ACCOUNT_BINDING_SCHEMA = "patternly.account-binding.v1" as const;
 const GUEST_REMOVAL_JOURNAL_KEY = "patternly.profile-removal.v1";
 const LOCAL_LOGOUT_CONTROL_KEY = "patternly.local-logout-control.v2";
 const ROOT_VERSION = 1 as const;
@@ -19,6 +22,51 @@ export type ProfileRegistry = Readonly<{
   profiles: readonly StorageProfile[];
   legacyProfileId: string | null;
   selectedProfileId: string;
+  checksum: string;
+}>;
+
+export type AccountIdentityBinding = Readonly<{
+  schema: typeof ACCOUNT_BINDING_SCHEMA;
+  profileId: string;
+  profileKind: "account" | "legacy_owner";
+  accountId: string;
+  firebaseUid: string;
+  verified: true;
+  verificationRevision: number;
+  checksum: string;
+}>;
+
+export type AccountIdentityBindingRead = Readonly<{ kind: "verified"; binding: AccountIdentityBinding } | { kind: "missing" | "invalidated" }>;
+
+export type AccountIdentityProofBarrierReceipt = Readonly<{
+  schema: "patternly.account-identity-proof-barrier.v1";
+  profileId: string;
+  profileKind: "account" | "legacy_owner";
+  accountId: string;
+  firebaseUid: string;
+  previousBindingChecksum: string;
+  previousVerificationRevision: number;
+  tombstoneChecksum: string;
+  tombstoneVerificationRevision: number;
+  envelopeChecksum: string;
+  envelopeGeneration: number;
+}>;
+
+type AccountIdentityBindingEntry = Readonly<{
+  schema: typeof ACCOUNT_BINDING_SCHEMA;
+  profileId: string;
+  profileKind: "account" | "legacy_owner";
+  accountId: string | null;
+  firebaseUid: string | null;
+  verified: boolean;
+  verificationRevision: number;
+  checksum: string;
+}>;
+
+type AccountIdentityBindingEnvelope = Readonly<{
+  schema: typeof ACCOUNT_BINDING_SCHEMA;
+  generation: number;
+  bindings: readonly AccountIdentityBindingEntry[];
   checksum: string;
 }>;
 
@@ -71,7 +119,7 @@ type GuestRemoval34Journal = Readonly<{
 }>;
 
 export class ProfileStorageError extends Error {
-  public constructor(public readonly code: "profile_registry_corrupt" | "legacy_profile_unidentified" | "profile_scope_unavailable" | "profile_transition_cancelled" | "prepared_guest_choice_required" | "profile_removal_recovery_required") {
+  public constructor(public readonly code: "profile_registry_corrupt" | "legacy_profile_unidentified" | "profile_scope_unavailable" | "profile_transition_cancelled" | "prepared_guest_choice_required" | "profile_removal_recovery_required" | "account_binding_corrupt" | "account_binding_ambiguous" | "account_binding_conflict" | "account_binding_commit_unverified") {
     super(code);
     this.name = "ProfileStorageError";
   }
@@ -121,6 +169,98 @@ function parseRegistry(raw: string | null): ProfileRegistry | null {
     const expected = withChecksum(clean);
     return checksum === expected.checksum ? expected : null;
   } catch { return null; }
+}
+
+function bindingBody(value: Omit<AccountIdentityBindingEntry, "checksum">): Omit<AccountIdentityBindingEntry, "checksum"> {
+  return value;
+}
+
+function withBindingChecksum(value: Omit<AccountIdentityBindingEntry, "checksum">): AccountIdentityBindingEntry {
+  return Object.freeze({ ...value, checksum: sha256Utf8(JSON.stringify(bindingBody(value))) });
+}
+
+function withBindingEnvelopeChecksum(value: Omit<AccountIdentityBindingEnvelope, "checksum">): AccountIdentityBindingEnvelope {
+  return Object.freeze({ ...value, checksum: sha256Utf8(JSON.stringify(value)) });
+}
+
+function parseAccountBindingEnvelope(raw: string | null): AccountIdentityBindingEnvelope | null {
+  if (raw === null) return null;
+  try {
+    const value = JSON.parse(raw) as Record<string, unknown>;
+    if (Object.keys(value).sort().join(",") !== "bindings,checksum,generation,schema"
+      || value.schema !== ACCOUNT_BINDING_SCHEMA || !Number.isSafeInteger(value.generation) || Number(value.generation) < 1
+      || typeof value.checksum !== "string" || !Array.isArray(value.bindings)) return null;
+    const ids = new Set<string>();
+    const bindings: AccountIdentityBindingEntry[] = [];
+    for (const candidate of value.bindings) {
+      if (typeof candidate !== "object" || candidate === null || Array.isArray(candidate)) return null;
+      const entry = candidate as Record<string, unknown>;
+      if (Object.keys(entry).sort().join(",") !== "accountId,checksum,firebaseUid,profileId,profileKind,schema,verificationRevision,verified"
+        || entry.schema !== ACCOUNT_BINDING_SCHEMA || !uuid(entry.profileId) || ids.has(String(entry.profileId))
+        || (entry.profileKind !== "account" && entry.profileKind !== "legacy_owner")
+        || !Number.isSafeInteger(entry.verificationRevision) || Number(entry.verificationRevision) < 1
+        || typeof entry.verified !== "boolean" || typeof entry.checksum !== "string") return null;
+      ids.add(entry.profileId);
+      const verified = entry.verified === true;
+      if (verified ? (typeof entry.accountId !== "string" || !entry.accountId.trim() || typeof entry.firebaseUid !== "string" || !entry.firebaseUid.trim())
+        : (entry.accountId !== null || entry.firebaseUid !== null)) return null;
+      const profileKind = entry.profileKind as "account" | "legacy_owner";
+      const body = {
+        schema: ACCOUNT_BINDING_SCHEMA,
+        profileId: entry.profileId,
+        profileKind,
+        accountId: entry.accountId as string | null,
+        firebaseUid: entry.firebaseUid as string | null,
+        verified,
+        verificationRevision: Number(entry.verificationRevision),
+      };
+      const parsed = withBindingChecksum(body);
+      if (parsed.checksum !== entry.checksum) return null;
+      bindings.push(parsed);
+    }
+    const envelope = withBindingEnvelopeChecksum({ schema: ACCOUNT_BINDING_SCHEMA, generation: Number(value.generation), bindings });
+    return envelope.checksum === value.checksum ? envelope : null;
+  } catch { return null; }
+}
+
+let bindingMutationTail: Promise<void> = Promise.resolve();
+
+function serializeBindingMutation<T>(operation: () => Promise<T>): Promise<T> {
+  const current = bindingMutationTail.then(operation, operation);
+  bindingMutationTail = current.then(() => undefined, () => undefined);
+  return current;
+}
+
+async function readAccountBindingSlots(control: StorageManifestStore): Promise<Readonly<{ raw: readonly (string | null)[]; envelope: AccountIdentityBindingEnvelope | null }>> {
+  const raw = await Promise.all(ACCOUNT_BINDING_KEYS.map((key) => control.get(key)));
+  const parsed = raw.map(parseAccountBindingEnvelope);
+  if (raw.some((entry, index) => entry !== null && parsed[index] === null)) throw new ProfileStorageError("account_binding_corrupt");
+  const valid = parsed.filter((entry): entry is AccountIdentityBindingEnvelope => entry !== null);
+  if (valid.length === 2 && valid[0]!.generation === valid[1]!.generation) throw new ProfileStorageError("account_binding_ambiguous");
+  const envelope = valid.sort((left, right) => right.generation - left.generation)[0] ?? null;
+  return Object.freeze({ raw: Object.freeze(raw), envelope });
+}
+
+async function commitAccountBindingEnvelope(
+  control: StorageManifestStore,
+  previous: Readonly<{ raw: readonly (string | null)[]; envelope: AccountIdentityBindingEnvelope | null }>,
+  next: AccountIdentityBindingEnvelope,
+): Promise<void> {
+  const latest = await readAccountBindingSlots(control);
+  if (latest.raw.some((value, index) => value !== previous.raw[index])) throw new ProfileStorageError("account_binding_conflict");
+  const targetIndex = latest.raw.findIndex((raw) => raw === null || parseAccountBindingEnvelope(raw)?.generation !== latest.envelope?.generation);
+  if (targetIndex < 0) throw new ProfileStorageError("account_binding_conflict");
+  const serialized = JSON.stringify(next);
+  await control.set(ACCOUNT_BINDING_KEYS[targetIndex]!, serialized);
+  const readBack = await control.get(ACCOUNT_BINDING_KEYS[targetIndex]!);
+  const verified = parseAccountBindingEnvelope(readBack);
+  if (readBack !== serialized || verified?.generation !== next.generation || verified.checksum !== next.checksum) {
+    throw new ProfileStorageError("account_binding_commit_unverified");
+  }
+}
+
+function bindingEntryFor(envelope: AccountIdentityBindingEnvelope | null, profileId: string): AccountIdentityBindingEntry | null {
+  return envelope?.bindings.find((entry) => entry.profileId === profileId) ?? null;
 }
 
 type StoredGuestInstallation = Readonly<{
@@ -588,7 +728,13 @@ export type ProfileStorageRouter = Readonly<{
   selectAccount(accountId: string, canContinue?: () => boolean): Promise<StorageProfile>;
   hasValidGuestAccess(profileId: string): boolean;
   hasExactUnboundModernGuest(profileId: string, installationIdSha256: string, datasetIdSha256: string): boolean;
+  readSelectedAccountIdentityBinding(): Promise<AccountIdentityBindingRead>;
+  writeVerifiedSelectedAccountIdentityBinding(input: Readonly<{ firebaseUid: string; accountId: string; canContinue: () => boolean }>): Promise<AccountIdentityBinding>;
+  invalidateSelectedAccountIdentityBinding(canContinue: () => boolean): Promise<void>;
+  beginSelectedAccountIdentityProofBarrier(input: Readonly<{ firebaseUid: string; accountId: string; verificationRevision: number; canContinue: () => boolean }>): Promise<AccountIdentityProofBarrierReceipt | null>;
+  resolveSelectedAccountIdentityProofBarrier(input: Readonly<{ receipt: AccountIdentityProofBarrierReceipt; canContinue: () => boolean }>): Promise<AccountIdentityBinding>;
   removeOriginalGuest34(expected: GuestRemoval34ExpectedState): Promise<GuestRemoval34Receipt>;
+  inspectQ13ControlInventory(actorUidSha256?: string | null): Promise<Readonly<{ kind: "observed"; slotCount: number; slotInventorySha256: string; accountBindingState: "absent" | "present"; journalState: "absent" | "present"; logoutState: "absent" | "present"; logoutGlobalStatus: "clear" | "pending" | "unavailable"; logoutActorStatus: "clear" | "pending" | "unavailable" } | { kind: "unavailable" }>>;
 }>;
 
 export async function openProfileStorageRouter(
@@ -637,6 +783,18 @@ export async function openProfileStorageRouter(
     transitionClaimed = true;
     dependencies.onBeforeProfileCommit?.();
   };
+  const assertCurrentSelectedAccountProfile = async (canContinue: () => boolean): Promise<void> => {
+    if (!canContinue() || dependencies.isTransitionActive?.() || (profile.kind !== "account" && profile.kind !== "legacy_owner") || profile.accountId === null) {
+      throw new ProfileStorageError("profile_transition_cancelled");
+    }
+    const currentRaw = await Promise.all(ROOT_KEYS.map((key) => control.get(key)));
+    const currentParsed = currentRaw.map(parseRegistry);
+    if (currentRaw.some((value, index) => value !== null && currentParsed[index] === null)) throw new ProfileStorageError("profile_registry_corrupt");
+    const current = currentParsed.filter((entry): entry is ProfileRegistry => entry !== null).sort((left, right) => right.generation - left.generation)[0];
+    if (!current || current.generation !== registry.generation || current.checksum !== registry.checksum || current.selectedProfileId !== profile.id
+      || !current.profiles.some((candidate) => candidate.id === profile.id && candidate.kind === profile.kind && candidate.accountId === profile.accountId)
+      || !canContinue() || dependencies.isTransitionActive?.()) throw new ProfileStorageError("profile_transition_cancelled");
+  };
   const selectExistingGuest = async (profileId: string, canContinue: () => boolean = () => true): Promise<StorageProfile> => {
     const guest = registry.profiles.find((candidate) => candidate.id === profileId && (candidate.kind === "guest" || candidate.kind === "legacy_guest"));
     if (!guest) throw new ProfileStorageError("profile_scope_unavailable");
@@ -681,6 +839,188 @@ export async function openProfileStorageRouter(
         && sha256Utf8(guestInstallation.installationId) === installationIdSha256
         && sha256Utf8(guestInstallation.localDatasetId) === datasetIdSha256
         && validGuestAccess(base.getString(physicalKey(candidate.id, STORAGE_KEYS.GUEST_ACCESS, false)));
+    },
+    async readSelectedAccountIdentityBinding() {
+      await assertCurrentSelectedAccountProfile(() => true);
+      const snapshot = await readAccountBindingSlots(control);
+      await assertCurrentSelectedAccountProfile(() => true);
+      const entry = bindingEntryFor(snapshot.envelope, profile.id);
+      if (!entry) return Object.freeze({ kind: "missing" as const });
+      if (!entry.verified) return Object.freeze({ kind: "invalidated" as const });
+      if (entry.profileKind !== profile.kind || entry.accountId !== profile.accountId || typeof entry.firebaseUid !== "string") {
+        throw new ProfileStorageError("account_binding_corrupt");
+      }
+      const accountId = entry.accountId;
+      const firebaseUid = entry.firebaseUid;
+      if (accountId === null) throw new ProfileStorageError("account_binding_corrupt");
+      const { checksum, ...binding } = entry;
+      return Object.freeze({ kind: "verified" as const, binding: Object.freeze({ ...binding, verified: true as const, accountId, firebaseUid, checksum }) });
+    },
+    async writeVerifiedSelectedAccountIdentityBinding(input) {
+      return serializeBindingMutation(async () => {
+        if (!input.firebaseUid.trim() || !input.accountId.trim() || profile.accountId !== input.accountId) throw new ProfileStorageError("profile_scope_unavailable");
+        await assertCurrentSelectedAccountProfile(input.canContinue);
+        const previous = await readAccountBindingSlots(control);
+        await assertCurrentSelectedAccountProfile(input.canContinue);
+        const existing = bindingEntryFor(previous.envelope, profile.id);
+        const nextEntry = withBindingChecksum({
+          schema: ACCOUNT_BINDING_SCHEMA,
+          profileId: profile.id,
+          profileKind: profile.kind as "account" | "legacy_owner",
+          accountId: input.accountId,
+          firebaseUid: input.firebaseUid,
+          verified: true,
+          verificationRevision: (existing?.verificationRevision ?? 0) + 1,
+        });
+        const bindings = [...(previous.envelope?.bindings ?? []).filter((entry) => entry.profileId !== profile.id), nextEntry]
+          .sort((left, right) => left.profileId.localeCompare(right.profileId));
+        const next = withBindingEnvelopeChecksum({ schema: ACCOUNT_BINDING_SCHEMA, generation: (previous.envelope?.generation ?? 0) + 1, bindings });
+        await assertCurrentSelectedAccountProfile(input.canContinue);
+        await commitAccountBindingEnvelope(control, previous, next);
+        await assertCurrentSelectedAccountProfile(input.canContinue);
+        const verify = await readAccountBindingSlots(control);
+        const persisted = bindingEntryFor(verify.envelope, profile.id);
+        if (verify.envelope?.generation !== next.generation || persisted?.checksum !== nextEntry.checksum || !persisted?.verified
+          || persisted.firebaseUid !== input.firebaseUid || persisted.accountId !== input.accountId || persisted.verificationRevision !== nextEntry.verificationRevision) {
+          throw new ProfileStorageError("account_binding_commit_unverified");
+        }
+        const { checksum, ...binding } = persisted;
+        return Object.freeze({ ...binding, verified: true as const, accountId: persisted.accountId!, firebaseUid: persisted.firebaseUid!, checksum });
+      });
+    },
+    async invalidateSelectedAccountIdentityBinding(canContinue) {
+      await serializeBindingMutation(async () => {
+        await assertCurrentSelectedAccountProfile(canContinue);
+        const previous = await readAccountBindingSlots(control);
+        const existing = bindingEntryFor(previous.envelope, profile.id);
+        if (!existing || !existing.verified) return;
+        const tombstone = withBindingChecksum({
+          schema: ACCOUNT_BINDING_SCHEMA,
+          profileId: profile.id,
+          profileKind: profile.kind as "account" | "legacy_owner",
+          accountId: null,
+          firebaseUid: null,
+          verified: false,
+          verificationRevision: existing.verificationRevision + 1,
+        });
+        const bindings = [...(previous.envelope?.bindings ?? []).filter((entry) => entry.profileId !== profile.id), tombstone]
+          .sort((left, right) => left.profileId.localeCompare(right.profileId));
+        const next = withBindingEnvelopeChecksum({ schema: ACCOUNT_BINDING_SCHEMA, generation: (previous.envelope?.generation ?? 0) + 1, bindings });
+        await assertCurrentSelectedAccountProfile(canContinue);
+        await commitAccountBindingEnvelope(control, previous, next);
+        await assertCurrentSelectedAccountProfile(canContinue);
+        if (bindingEntryFor((await readAccountBindingSlots(control)).envelope, profile.id)?.checksum !== tombstone.checksum) {
+          throw new ProfileStorageError("account_binding_commit_unverified");
+        }
+      });
+    },
+    async beginSelectedAccountIdentityProofBarrier(input) {
+      return serializeBindingMutation(async () => {
+        await assertCurrentSelectedAccountProfile(input.canContinue);
+        const previous = await readAccountBindingSlots(control);
+        await assertCurrentSelectedAccountProfile(input.canContinue);
+        const existing = bindingEntryFor(previous.envelope, profile.id);
+        if (!existing || !existing.verified) return null;
+        if (existing.accountId !== input.accountId || existing.firebaseUid !== input.firebaseUid
+          || existing.profileKind !== profile.kind || existing.verificationRevision !== input.verificationRevision) {
+          throw new ProfileStorageError("account_binding_conflict");
+        }
+        const tombstone = withBindingChecksum({
+          schema: ACCOUNT_BINDING_SCHEMA,
+          profileId: profile.id,
+          profileKind: profile.kind as "account" | "legacy_owner",
+          accountId: null,
+          firebaseUid: null,
+          verified: false,
+          verificationRevision: existing.verificationRevision + 1,
+        });
+        const bindings = [...(previous.envelope?.bindings ?? []).filter((entry) => entry.profileId !== profile.id), tombstone]
+          .sort((left, right) => left.profileId.localeCompare(right.profileId));
+        const next = withBindingEnvelopeChecksum({ schema: ACCOUNT_BINDING_SCHEMA, generation: (previous.envelope?.generation ?? 0) + 1, bindings });
+        await assertCurrentSelectedAccountProfile(input.canContinue);
+        await commitAccountBindingEnvelope(control, previous, next);
+        await assertCurrentSelectedAccountProfile(input.canContinue);
+        const verified = await readAccountBindingSlots(control);
+        const persisted = bindingEntryFor(verified.envelope, profile.id);
+        if (verified.envelope?.generation !== next.generation || verified.envelope.checksum !== next.checksum
+          || persisted?.checksum !== tombstone.checksum || persisted.verified
+          || persisted.verificationRevision !== tombstone.verificationRevision) {
+          throw new ProfileStorageError("account_binding_commit_unverified");
+        }
+        return Object.freeze({
+          schema: "patternly.account-identity-proof-barrier.v1" as const,
+          profileId: profile.id,
+          profileKind: profile.kind as "account" | "legacy_owner",
+          accountId: input.accountId,
+          firebaseUid: input.firebaseUid,
+          previousBindingChecksum: existing.checksum,
+          previousVerificationRevision: existing.verificationRevision,
+          tombstoneChecksum: tombstone.checksum,
+          tombstoneVerificationRevision: tombstone.verificationRevision,
+          envelopeChecksum: next.checksum,
+          envelopeGeneration: next.generation,
+        });
+      });
+    },
+    async resolveSelectedAccountIdentityProofBarrier(input) {
+      return serializeBindingMutation(async () => {
+        const receipt = input.receipt;
+        if (receipt.schema !== "patternly.account-identity-proof-barrier.v1" || receipt.profileId !== profile.id
+          || receipt.profileKind !== profile.kind || !/^[a-f0-9]{64}$/u.test(receipt.previousBindingChecksum)
+          || !/^[a-f0-9]{64}$/u.test(receipt.tombstoneChecksum) || !/^[a-f0-9]{64}$/u.test(receipt.envelopeChecksum)
+          || !Number.isSafeInteger(receipt.previousVerificationRevision) || receipt.previousVerificationRevision < 1
+          || receipt.tombstoneVerificationRevision !== receipt.previousVerificationRevision + 1
+          || !Number.isSafeInteger(receipt.envelopeGeneration) || receipt.envelopeGeneration < 1
+          || !receipt.accountId.trim() || !receipt.firebaseUid.trim()) throw new ProfileStorageError("account_binding_conflict");
+        await assertCurrentSelectedAccountProfile(input.canContinue);
+        const previous = await readAccountBindingSlots(control);
+        const tombstone = bindingEntryFor(previous.envelope, profile.id);
+        if (!previous.envelope || previous.envelope.generation !== receipt.envelopeGeneration
+          || previous.envelope.checksum !== receipt.envelopeChecksum || !tombstone
+          || tombstone.checksum !== receipt.tombstoneChecksum || tombstone.verified
+          || tombstone.profileKind !== receipt.profileKind || tombstone.accountId !== null || tombstone.firebaseUid !== null
+          || tombstone.verificationRevision !== receipt.tombstoneVerificationRevision) throw new ProfileStorageError("account_binding_conflict");
+        await assertCurrentSelectedAccountProfile(input.canContinue);
+        const restored = withBindingChecksum({
+          schema: ACCOUNT_BINDING_SCHEMA,
+          profileId: receipt.profileId,
+          profileKind: receipt.profileKind,
+          accountId: receipt.accountId,
+          firebaseUid: receipt.firebaseUid,
+          verified: true,
+          verificationRevision: receipt.tombstoneVerificationRevision + 1,
+        });
+        const bindings = [...previous.envelope.bindings.filter((entry) => entry.profileId !== receipt.profileId), restored]
+          .sort((left, right) => left.profileId.localeCompare(right.profileId));
+        const next = withBindingEnvelopeChecksum({ schema: ACCOUNT_BINDING_SCHEMA, generation: previous.envelope.generation + 1, bindings });
+        await assertCurrentSelectedAccountProfile(input.canContinue);
+        await commitAccountBindingEnvelope(control, previous, next);
+        await assertCurrentSelectedAccountProfile(input.canContinue);
+        const verify = await readAccountBindingSlots(control);
+        const persisted = bindingEntryFor(verify.envelope, receipt.profileId);
+        if (verify.envelope?.generation !== next.generation || verify.envelope.checksum !== next.checksum
+          || persisted?.checksum !== restored.checksum || !persisted.verified
+          || persisted.firebaseUid !== receipt.firebaseUid || persisted.accountId !== receipt.accountId
+          || persisted.verificationRevision !== restored.verificationRevision) throw new ProfileStorageError("account_binding_commit_unverified");
+        const { checksum, ...binding } = persisted;
+        return Object.freeze({ ...binding, verified: true as const, accountId: persisted.accountId!, firebaseUid: persisted.firebaseUid!, checksum });
+      });
+    },
+    async inspectQ13ControlInventory(actorUidSha256?: string | null) {
+      try {
+        const keys = [...ROOT_KEYS, ...ACCOUNT_BINDING_KEYS, GUEST_REMOVAL_JOURNAL_KEY, LOCAL_LOGOUT_CONTROL_KEY];
+        const values = await Promise.all(keys.map((key) => control.get(key)));
+        if (values.some((value) => value !== null && typeof value !== "string")) return Object.freeze({ kind: "unavailable" as const });
+        const slotInventorySha256 = sha256Utf8(JSON.stringify(keys.map((key, index) => [sha256Utf8(key), values[index] === null ? null : sha256Utf8(values[index]!)])));
+        const journalIndex = ROOT_KEYS.length + ACCOUNT_BINDING_KEYS.length;
+        const logoutIndex = journalIndex + 1;
+        const logout = inspectQ13LocalLogoutControl(values[logoutIndex] ?? null, actorUidSha256);
+        return Object.freeze({ kind: "observed" as const, slotCount: keys.length, slotInventorySha256,
+          accountBindingState: values.slice(ROOT_KEYS.length, journalIndex).some((value) => value !== null) ? "present" as const : "absent" as const,
+          journalState: values[journalIndex] === null ? "absent" as const : "present" as const,
+          logoutState: values[logoutIndex] === null ? "absent" as const : "present" as const,
+          logoutGlobalStatus: logout.globalStatus, logoutActorStatus: logout.actorStatus });
+      } catch { return Object.freeze({ kind: "unavailable" as const }); }
     },
     async removeOriginalGuest34(expected) {
       return startGuestRemoval34(base, control, registry, profile, identity, expected, claimTransition);

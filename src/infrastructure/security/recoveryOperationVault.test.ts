@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   createRecoveryOperationVault,
+  inspectQ13RecoveryOperationVault,
   RECOVERY_OPERATION_VAULT_KEY,
   RecoveryOperationVaultError,
   type RecoveryOperationSecureStore,
@@ -31,6 +32,27 @@ test("vault round-trips only the versioned recovery record and clears it", async
   assert.deepEqual(await vault.load(), { version: 1, kind: "issue", operationId, firebaseUid: "firebase-user-1", authorizationGeneration: 4, status: "result_available", generationId: "generation-4", codes, savedIntent: false });
   await vault.clear();
   assert.equal(await vault.load(), null);
+});
+
+test("Q13 recovery operation receipt fingerprints the exact slot without parsing or mutation", async () => {
+  const secretRecord = JSON.stringify({ version: 1, kind: "issue", codes, firebaseUid: "private-uid" });
+  let writes = 0;
+  let deletes = 0;
+  const store: RecoveryOperationSecureStore = {
+    getItemAsync: async (key) => { assert.equal(key, RECOVERY_OPERATION_VAULT_KEY); return secretRecord; },
+    setItemAsync: async () => { writes += 1; },
+    deleteItemAsync: async () => { deletes += 1; },
+  };
+
+  const receipt = await inspectQ13RecoveryOperationVault(store);
+
+  assert.equal(receipt.kind, "observed");
+  assert.equal(receipt.record, "present");
+  assert.equal(receipt.recordSha256?.length, 64);
+  assert.equal(JSON.stringify(receipt).includes(codes[0]!), false);
+  assert.equal(JSON.stringify(receipt).includes("private-uid"), false);
+  assert.equal(writes, 0);
+  assert.equal(deletes, 0);
 });
 
 test("vault persists a strict current-account defer marker in the retained issue record", async () => {

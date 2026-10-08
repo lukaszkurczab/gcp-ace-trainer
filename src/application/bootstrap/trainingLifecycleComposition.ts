@@ -138,7 +138,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
       async advance(session) { await commitTrainingSessionAdvance(session, wallClock.now()); },
       async completeWithResult(input) { await commitSessionCompletion(input.session, input.result, input.session.completedAt ?? wallClock.now()); },
       async finalize(input) { await commitFinalization(input, wallClock); },
-      async abandon(session) { await commitSessionAbandonment(session, session.completedAt ?? wallClock.now()); },
+      async abandon(session, preflight) { await commitSessionAbandonment(session, session.completedAt ?? wallClock.now(), preflight); },
       async recover() { await recoverPendingMutation(); },
       async reset() { await commitLearningStateReset(wallClock.now()); },
     },

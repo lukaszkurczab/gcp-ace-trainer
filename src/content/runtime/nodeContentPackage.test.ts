@@ -44,8 +44,8 @@ test("node package verifier enforces exact transport headers, hashes, schema and
   await assert.rejects(verifyNodePackage({ trackId: TRACK, nodeId: NODE, packageBytes: good.bytes, headers: good.headers, appVersion: "0.0.9", hash }), (error: unknown) => error instanceof NodePackageError && error.code === "minimum_app_version");
   const foreign = response(new TextEncoder().encode(JSON.stringify({ ...JSON.parse(new TextDecoder().decode(artifact)), nodeId: "other-node" })));
   await assert.rejects(verifyNodePackage({ trackId: TRACK, nodeId: NODE, packageBytes: foreign.bytes, headers: foreign.headers, appVersion: "0.1.0", hash }), (error: unknown) => error instanceof NodePackageError && error.code === "package_identity_mismatch");
-  const wholeTrackRule = response(new TextEncoder().encode(JSON.stringify({ ...JSON.parse(new TextDecoder().decode(artifact)), completionRule: { ruleVersion: 1, minimumAttemptCount: 20, rollingWindowSize: 10, qualityThreshold: 0.8 } })));
-  await assert.rejects(verifyNodePackage({ trackId: TRACK, nodeId: NODE, packageBytes: wholeTrackRule.bytes, headers: wholeTrackRule.headers, appVersion: "0.1.0", hash }), NodePackageError);
+  const malformedCompletionRule = response(new TextEncoder().encode(JSON.stringify({ ...JSON.parse(new TextDecoder().decode(artifact)), completionRule: { ruleVersion: 2, chapters: [] } })));
+  await assert.rejects(verifyNodePackage({ trackId: TRACK, nodeId: NODE, packageBytes: malformedCompletionRule.bytes, headers: malformedCompletionRule.headers, appVersion: "0.1.0", hash }), NodePackageError);
   const invalidMode = response(new TextEncoder().encode(JSON.stringify({ ...JSON.parse(new TextDecoder().decode(artifact)), modes: [] })));
   await assert.rejects(verifyNodePackage({ trackId: TRACK, nodeId: NODE, packageBytes: invalidMode.bytes, headers: invalidMode.headers, appVersion: "0.1.0", hash }), NodePackageError);
 });

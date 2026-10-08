@@ -12,6 +12,8 @@ function state(kind: AccountState["kind"]): AccountState {
   switch (kind) {
     case "authenticated":
       return { accountData, backendUser: { id: "backend-user" }, kind, user } as unknown as AccountState;
+    case "localOffline":
+      return { accountData: { ...accountData, status: "offlinePending" }, accountId: "account-id", bindingRevision: 1, generation: { generation: 1, uid: user.uid }, kind, profile: { id: "profile-id", kind: "account", accountId: "account-id" }, profileLease: { generation: 1, profile: { id: "profile-id", kind: "account", accountId: "account-id" } }, user } as unknown as AccountState;
     case "guest":
     case "guestAccessBlocked":
     case "loading":
@@ -42,6 +44,7 @@ function state(kind: AccountState["kind"]): AccountState {
 test("Your data presents an explicit action/details/privacy matrix for every account state", () => {
   const expected: Readonly<Record<string, Readonly<{ action: string; icon: string; testID?: string; details: string; privacyRequests: boolean; reset: boolean; stateCopy: string }>>> = {
     authenticated: { action: "export", details: "account", icon: "database", privacyRequests: true, reset: true, stateCopy: "authenticated", testID: "account-data-export" },
+    localOffline: { action: "none", details: "none", icon: "info-circle", privacyRequests: false, reset: false, stateCopy: "localOffline" },
     guest: { action: "guestPrivacy", details: "guest", icon: "mail", privacyRequests: false, reset: true, stateCopy: "guest", testID: "data-privacy-request" },
     signedOut: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "signedOut", testID: "data-open-account" },
     guestAccessBlocked: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "guestAccessBlocked", testID: "data-open-account" },
@@ -113,11 +116,14 @@ test("Your data keeps details and privacy access exclusive to authenticated and 
   }
 });
 
-test("Recovery-pending copy is translated in every supported data locale", () => {
+test("recovery-pending and local-offline copy exist in every supported data locale", () => {
   const locales = ["en", "pl", "de", "es", "fr", "it", "et"] as const;
   const entries = locales.map((locale) => {
     const data = JSON.parse(readFileSync(`src/locales/${locale}/data.json`, "utf8")) as {
-      state: Record<string, { title: string; body: string }> & { recoveryPending: { title: string; body: string } };
+      state: Record<string, { title: string; body: string }> & {
+        localOffline: { title: string; body: string };
+        recoveryPending: { title: string; body: string };
+      };
     };
     return { locale, state: data.state };
   });
@@ -129,9 +135,15 @@ test("Recovery-pending copy is translated in every supported data locale", () =>
     title: "Finish account recovery",
     body: "A saved recovery step needs your attention before we open your data.",
   });
+  assert.deepEqual(english.state.localOffline, {
+    title: "Account data on this device",
+    body: "Your saved learning stays on this device. Reconnect to check your account before syncing changes or using account data actions.",
+  });
   for (const entry of entries) {
     assert.deepEqual(Object.keys(entry.state).sort(), englishStateKeys, entry.locale);
     assert.ok(entry.state.recoveryPending.title.trim().length > 0, entry.locale);
     assert.ok(entry.state.recoveryPending.body.trim().length > 0, entry.locale);
+    assert.ok(entry.state.localOffline.title.trim().length > 0, entry.locale);
+    assert.ok(entry.state.localOffline.body.trim().length > 0, entry.locale);
   }
 });

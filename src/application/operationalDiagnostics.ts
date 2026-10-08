@@ -17,7 +17,8 @@ export type BootstrapInvariantCode =
   | "active_session_records_without_reference"
   | "active_session_reference_inconsistent"
   | "active_session_draft_missing"
-  | "active_session_draft_mismatch";
+  | "active_session_draft_mismatch"
+  | "active_session_changed_during_resume";
 
 export class BootstrapInvariantError extends Error {
   readonly code: BootstrapInvariantCode;
@@ -65,6 +66,7 @@ const BOOTSTRAP_INVARIANT_CODES: readonly BootstrapInvariantCode[] = [
   "active_session_reference_inconsistent",
   "active_session_draft_missing",
   "active_session_draft_mismatch",
+  "active_session_changed_during_resume",
 ];
 const ERROR_KINDS: readonly OperationalDiagnosticErrorKind[] = ["error", "string", "object", "null", "undefined", "number", "boolean", "symbol", "bigint", "function"];
 

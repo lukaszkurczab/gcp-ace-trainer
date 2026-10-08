@@ -103,6 +103,7 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
   const productName = terms.premiumProductName[legalLocale];
   const serviceScope = terms.premiumServiceScope[legalLocale];
   const isAuthenticated = account.state.kind === "authenticated";
+  const isLocalOfflineAccount = account.state.kind === "localOffline";
   const hasCurrentLegalAcceptance = account.state.kind === "authenticated" && account.state.backendUser.acceptedTermsVersion === legalVariables.documentVersion.en;
   const price = loadState.kind === "ready" ? loadState.package.product.priceString : null;
   const purchaseEnabled = hasCurrentLegalAcceptance && loadState.kind === "ready" && instantStartAccepted && busy === null;
@@ -117,7 +118,12 @@ export function PremiumPurchaseScreen({ navigation }: Props) {
         <Text maxFontSizeMultiplier={2} style={styles.caption}>{t("premiumRenewalSummary")}</Text>
       </View>
 
-      {!isAuthenticated ? <InfoBlock body={t("premiumAccountRequiredDetail")} title={t("premiumAccountRequired")} testID="premium-account-required" tone="warning" /> : null}
+      {!isAuthenticated ? <InfoBlock
+        body={t(isLocalOfflineAccount ? "premiumOfflineAccountRequiredDetail" : "premiumAccountRequiredDetail")}
+        title={t(isLocalOfflineAccount ? "premiumOfflineAccountRequired" : "premiumAccountRequired")}
+        testID="premium-account-required"
+        tone="warning"
+      /> : null}
       {isAuthenticated && loadState.kind === "loading" ? <InfoBlock body={t("premiumLoadingDetail")} title={t("premiumLoading")} testID="premium-loading" /> : null}
       {isAuthenticated && loadState.kind === "unavailable" ? <InfoBlock body={t("premiumUnavailableDetail")} title={t("premiumUnavailable")} testID="premium-unavailable" tone="warning" /> : null}
       {isAuthenticated && loadState.kind === "failure" ? <InfoBlock body={t("premiumLoadFailedDetail")} title={t("premiumLoadFailed")} testID="premium-load-failed" tone="warning" /> : null}

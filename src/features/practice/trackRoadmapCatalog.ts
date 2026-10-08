@@ -123,7 +123,7 @@ const roadmapIds = {
   ],
 } as const satisfies Record<Exclude<TrackId, typeof CODING_INTERVIEW_TRACK_ID>, readonly string[]>;
 
-function titleForNode(id: string): string {
+export function titleForNode(id: string): string {
   return id
     .replace(/[_-]+/g, " ")
     .replace(/\bai\b/gi, "AI")
@@ -131,6 +131,8 @@ function titleForNode(id: string): string {
     .replace(/\baws\b/gi, "AWS")
     .replace(/\bgke\b/gi, "GKE")
     .replace(/\biam\b/gi, "IAM")
+    .replace(/\bnat\b/gi, "NAT")
+    .replace(/\bdns\b/gi, "DNS")
     .replace(/\bvpc\b/gi, "VPC")
     .replace(/\brbac\b/gi, "RBAC")
     .replace(/\b\w/g, (character) => character.toUpperCase());

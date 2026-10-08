@@ -126,6 +126,8 @@ export function SettingsTab({
     guestAccessBlockedDetail: t("guestAccessBlockedDetail"),
     accountUnavailable: t("accountUnavailable"),
     accountUnavailableDetail: t("accountUnavailableDetail"),
+    accountOffline: t("accountOffline"),
+    accountOfflineDetail: t("accountOfflineDetail"),
     accountBusyDetail: t("accountBusyDetail"),
     signOut: t("signOut"),
     signOutErrorTitle: t("signOutErrorTitle"),
@@ -184,9 +186,11 @@ export function SettingsTab({
       ? text.signedOutAccount
       : account.status === "verificationPending"
         ? text.verificationPending
-        : account.status === "guestAccessBlocked"
-          ? text.guestAccessBlocked
-          : account.status === "attention"
+          : account.status === "guestAccessBlocked"
+            ? text.guestAccessBlocked
+            : account.status === "localOffline"
+              ? text.accountOffline
+            : account.status === "attention"
             ? text.accountAttention
             : account.status === "unavailable"
               ? text.accountUnavailable
@@ -197,9 +201,11 @@ export function SettingsTab({
       ? text.signedOutAccountDetail
       : account.status === "verificationPending"
         ? text.verificationPendingDetail
-        : account.status === "guestAccessBlocked"
-          ? text.guestAccessBlockedDetail
-          : account.status === "attention"
+      : account.status === "guestAccessBlocked"
+        ? text.guestAccessBlockedDetail
+        : account.status === "localOffline"
+          ? text.accountOfflineDetail
+        : account.status === "attention"
             ? text.accountAttentionDetail
             : account.status === "unavailable"
               ? text.accountUnavailableDetail
@@ -257,9 +263,9 @@ export function SettingsTab({
             title={text.language}
             value={languageValue}
           />
-          {account.canSignOut ? <SettingsNavigationRow detail={t("recoveryDetail")} disabled={busyAction !== null} icon="shield-check" onPress={() => onOpenSecurity("recovery")} testID="settings-recovery" title={t("recoveryCodes")} /> : null}
-          {account.canSignOut ? <SettingsNavigationRow detail={t("emailDetail")} disabled={busyAction !== null} icon="user" onPress={() => onOpenSecurity("email")} testID="settings-email" title={t("changeEmail")} /> : null}
-          {account.canSignOut ? <SettingsNavigationRow detail={t("passwordDetail")} disabled={busyAction !== null} icon="shield" onPress={() => onOpenSecurity("password")} testID="settings-password" title={t("changePassword")} /> : null}
+          {account.canManageAccount ? <SettingsNavigationRow detail={t("recoveryDetail")} disabled={busyAction !== null} icon="shield-check" onPress={() => onOpenSecurity("recovery")} testID="settings-recovery" title={t("recoveryCodes")} /> : null}
+          {account.canManageAccount ? <SettingsNavigationRow detail={t("emailDetail")} disabled={busyAction !== null} icon="user" onPress={() => onOpenSecurity("email")} testID="settings-email" title={t("changeEmail")} /> : null}
+          {account.canManageAccount ? <SettingsNavigationRow detail={t("passwordDetail")} disabled={busyAction !== null} icon="shield" onPress={() => onOpenSecurity("password")} testID="settings-password" title={t("changePassword")} /> : null}
         </SettingsGroup>
 
         <SettingsGroup dividers title={text.learning} titleGap={spacing.md}>
@@ -316,7 +322,7 @@ export function SettingsTab({
         ) : null}
       </View>
       {account.canSignOut ? <View style={styles.content} testID="settings-account-actions">
-        <Button disabled={busyAction !== null} onPress={() => onOpenSecurity("delete")} testID="settings-delete-account" variant="secondary">{tAccount("deleteAccount")}</Button>
+        {account.canManageAccount ? <Button disabled={busyAction !== null} onPress={() => onOpenSecurity("delete")} testID="settings-delete-account" variant="secondary">{tAccount("deleteAccount")}</Button> : null}
         <Button disabled={busyAction !== null} loading={busyAction === "signOut"} onPress={signOut} testID="settings-sign-out" variant="destructive">{text.signOut}</Button>
       </View> : null}
       <View style={styles.footer}>

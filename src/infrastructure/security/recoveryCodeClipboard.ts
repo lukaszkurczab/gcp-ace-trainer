@@ -122,3 +122,13 @@ export const recoveryCodeClipboard = {
   copy: (codes: readonly string[]) => getNativeClipboard().copy(codes),
   reconcile: () => getNativeClipboard().reconcile(),
 };
+
+/** Does not reconcile, read or clear clipboard contents; reports only the owned marker fingerprint. */
+export async function inspectQ13RecoveryCodeClipboard(secureStore?: SecureStorePort): Promise<Readonly<{ kind: "observed"; marker: "absent" | "present"; markerSha256: string | null } | { kind: "unavailable" }>> {
+  try {
+    const store = secureStore ?? require("expo-secure-store") as SecureStorePort;
+    const raw = await store.getItemAsync(STORAGE_KEY);
+    return Object.freeze({ kind: "observed", marker: raw === null ? "absent" : "present", markerSha256: raw === null ? null : sha256Utf8(raw) });
+  } catch { return Object.freeze({ kind: "unavailable" }); }
+}
+import { sha256Utf8 } from "../identity/sha256";

@@ -61,7 +61,7 @@ export type ImmutableCompletedFacts = Readonly<{
 export type PaceForecastInput = Readonly<{
   acceptedPlan: LearningPlan;
   c3Result: C3Result;
-  requiredAttemptCount: number;
+  remainingAttemptCount: number;
   today: string;
   timezone: string;
   completedFacts: ImmutableCompletedFacts;
@@ -105,15 +105,12 @@ export function calculatePaceForecast(input: PaceForecastInput): PaceForecast {
     return unavailable("unknown_completion_rule");
   }
 
-  const qualifyingAll = value.facts.attempts.filter((attempt) => attempt.countsTowardCompletion);
   const qualifying = value.facts.attempts.filter((attempt) => {
     if (value.observationStart === null) return false;
     const localDate = localDateForInstant(attempt.answeredAt, value.timezone);
     return attempt.countsTowardCompletion && localDate >= value.observationStart && localDate <= value.today;
   });
-  const remaining = value.c3Result === "completed"
-    ? 0
-    : Math.max(0, value.requiredAttemptCount - qualifyingAll.length);
+  const remaining = value.c3Result === "completed" ? 0 : value.remainingAttemptCount;
 
   // Zero missing volume cannot predict when the rolling quality rule will be met.
   // Only a current completed C3 result permits the zero-work path below.
@@ -167,7 +164,7 @@ type ValidatedFacts = ImmutableCompletedFacts;
 type ValidatedInput = Readonly<{
   acceptedPlan: LearningPlan;
   c3Result: C3Result;
-  requiredAttemptCount: number;
+  remainingAttemptCount: number;
   today: string;
   timezone: string;
   facts: ImmutableCompletedFacts;
@@ -178,7 +175,7 @@ type ValidatedInput = Readonly<{
 
 function validateInput(input: PaceForecastInput): ValidatedInput {
   const value = asRecord(input, "invalid_shape");
-  if (!hasOnlyKeys(value, ["acceptedPlan", "c3Result", "requiredAttemptCount", "today", "timezone", "completedFacts"])) fail("invalid_shape");
+  if (!hasOnlyKeys(value, ["acceptedPlan", "c3Result", "remainingAttemptCount", "today", "timezone", "completedFacts"])) fail("invalid_shape");
   const planValue = value.acceptedPlan;
   let acceptedPlan: LearningPlan;
   try {
@@ -195,13 +192,13 @@ function validateInput(input: PaceForecastInput): ValidatedInput {
   const ageDays = daysBetween(createdLocalDate, today);
   if (ageDays < 0) fail("inconsistent_fact");
 
-  if (!isNonNegativeInteger(value.requiredAttemptCount)) fail("invalid_completion_requirement");
-  const requiredAttemptCount = value.requiredAttemptCount;
+  if (!isNonNegativeInteger(value.remainingAttemptCount)) fail("invalid_completion_requirement");
+  const remainingAttemptCount = value.remainingAttemptCount;
   const facts = validateFacts(value.completedFacts, timezone, today);
   const observationWindowStart = tryAddDays(today, -27);
   const observationStart = observationWindowStart === null ? null : maxDate(createdLocalDate, observationWindowStart);
   const observationDays = observationStart === null ? 0 : daysBetween(observationStart, today) + 1;
-  return Object.freeze({ acceptedPlan, c3Result, requiredAttemptCount, today, timezone, facts, observationStart, observationDays, ageDays });
+  return Object.freeze({ acceptedPlan, c3Result, remainingAttemptCount, today, timezone, facts, observationStart, observationDays, ageDays });
 }
 
 function validateFacts(value: unknown, timezone: string, today: string): ValidatedFacts {

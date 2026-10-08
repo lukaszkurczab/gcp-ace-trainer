@@ -27,6 +27,7 @@ import {
   type CloudCertificationProgressViewModel,
 } from "../tracks/certification";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
+import { withLocalLearningWriteOperation } from "./learningMutations/localLearningWriteOperation";
 
 /** Application-owned read ports consumed by presentation. */
 export type { StorageIssue };
@@ -34,9 +35,9 @@ export type { StorageIssue };
 export async function loadActiveTrackId() { return loadSettledActiveTrackSelection(); }
 export async function selectActiveTrack(trackId: TrackId) { await commitActiveTrackSelection(trackId); }
 export async function loadGoal(trackId: TrackId): Promise<GoalRecord | null> { return getGoal(trackId); }
-export async function persistGoal(goal: GoalRecord): Promise<void> { await saveGoal(goal); }
+export async function persistGoal(goal: GoalRecord): Promise<void> { await withLocalLearningWriteOperation(() => saveGoal(goal)); }
 export async function loadGoalSnapshot(trackId: TrackId): Promise<GoalSnapshot | null> { return getGoalSnapshot(trackId); }
-export async function persistGoalSnapshot(goal: GoalRecord, expectedRevision: number | null): Promise<GoalSnapshot> { return saveGoalSnapshot(goal, expectedRevision); }
+export async function persistGoalSnapshot(goal: GoalRecord, expectedRevision: number | null): Promise<GoalSnapshot> { return withLocalLearningWriteOperation(() => saveGoalSnapshot(goal, expectedRevision)); }
 export function loadGoalOnboardingDismissed(trackId: TrackId): boolean { return isGoalOnboardingDismissed(trackId); }
 export function persistGoalOnboardingDismissal(trackId: TrackId): void { dismissGoalOnboarding(trackId); }
 export async function loadExamSummaries() { return getAttempts(); }

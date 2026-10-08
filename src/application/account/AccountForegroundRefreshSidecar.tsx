@@ -4,12 +4,12 @@ import NetInfo from "@react-native-community/netinfo";
 
 import { usePatternlyAccount, type AccountSessionContextValue, type AccountState } from "./AccountSessionProvider";
 import { createAccountForegroundRefreshScheduler, type AccountForegroundRefreshIntent } from "./accountForegroundRefresh";
-import { observeReachability } from "./accountReconnect";
+import { claimLocalOfflineInitialRefresh, observeReachability } from "./accountReconnect";
 
 type ForegroundRefreshIntent = AccountForegroundRefreshIntent & Readonly<{ sessionGeneration: number }>;
 
-function authenticatedUid(state: AccountState): string | null {
-  return state.kind === "authenticated" ? state.user.uid : null;
+function reconnectableUid(state: AccountState): string | null {
+  return state.kind === "authenticated" || state.kind === "localOffline" ? state.user.uid : null;
 }
 
 /** Owns the process-wide app-return signal while the provider owns refresh semantics. */
@@ -21,7 +21,8 @@ export function AccountForegroundRefreshSidecar() {
   const sessionGenerationRef = useRef(0);
   const foregroundGenerationRef = useRef(0);
   const bootstrappedAccountRef = useRef<string | null>(null);
-  const currentUid = authenticatedUid(account.state);
+  const localOfflineInitialRefreshUidRef = useRef<string | null>(null);
+  const currentUid = reconnectableUid(account.state);
   const currentAccountId = account.state.kind === "authenticated" ? account.state.backendUser.id : null;
   const currentRecoveryIncidentId = account.state.kind === "authenticated" ? account.state.accountData.learningPlanRecovery?.incidentId ?? null : null;
   if (currentUid !== sessionUidRef.current) {
@@ -39,15 +40,35 @@ export function AccountForegroundRefreshSidecar() {
   }, [currentUid, currentAccountId, currentRecoveryIncidentId]);
 
   useEffect(() => {
+    const claim = claimLocalOfflineInitialRefresh({
+      stateKind: account.state.kind,
+      uid: account.state.kind === "localOffline" ? account.state.user.uid : null,
+      attemptedUid: localOfflineInitialRefreshUidRef.current,
+    });
+    localOfflineInitialRefreshUidRef.current = claim.attemptedUid;
+    if (!claim.shouldRefresh) return;
+    let live = true;
+    void NetInfo.fetch().then((network) => {
+      if (live && network.isInternetReachable === true) void accountRef.current.refreshAccountIdentity();
+    }).catch(() => undefined);
+    return () => { live = false; };
+  }, [account.state.kind, currentUid]);
+
+  useEffect(() => {
     let previousReachability: boolean | null = null;
     const unsubscribe = NetInfo.addEventListener(({ isInternetReachable }) => {
       const transition = observeReachability(previousReachability, isInternetReachable);
       previousReachability = transition.next;
       if (!transition.reconnected) return;
       const current = accountRef.current.state;
-      if (current.kind !== "authenticated") return;
-      void accountRef.current.refreshPremiumEntitlement(current.backendUser.id);
-      void accountRef.current.retryLearningPlanRecovery(current.backendUser.id);
+      if (current.kind === "localOffline") {
+        void accountRef.current.refreshAccountIdentity();
+        return;
+      }
+      if (current.kind === "authenticated") {
+        void accountRef.current.refreshPremiumEntitlement(current.backendUser.id);
+        void accountRef.current.retryLearningPlanRecovery(current.backendUser.id);
+      }
     });
     return unsubscribe;
   }, []);
@@ -56,7 +77,7 @@ export function AccountForegroundRefreshSidecar() {
     const scheduler = createAccountForegroundRefreshScheduler<ForegroundRefreshIntent>({
       isCurrent: (intent) => {
         const current = accountRef.current.state;
-        return current.kind === "authenticated"
+        return (current.kind === "authenticated" || current.kind === "localOffline")
           && current.user.uid === intent.uid
           && foregroundGenerationRef.current === intent.generation
           && sessionGenerationRef.current === intent.sessionGeneration;
@@ -76,7 +97,7 @@ export function AccountForegroundRefreshSidecar() {
       previousState = nextState;
       if (!returnedToForeground) return;
       const current = accountRef.current.state;
-      if (current.kind !== "authenticated") return;
+      if (current.kind !== "authenticated" && current.kind !== "localOffline") return;
       foregroundGenerationRef.current += 1;
       scheduler.request({
         generation: foregroundGenerationRef.current,

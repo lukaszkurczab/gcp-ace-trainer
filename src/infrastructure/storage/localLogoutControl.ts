@@ -1,4 +1,5 @@
 import type { StorageManifestStore } from "./encryptedStorageBootstrap";
+import { sha256Utf8 } from "../identity/sha256";
 
 const CONTROL_KEY = "patternly.local-logout-control.v2";
 const CONTROL_VERSION = 2 as const;
@@ -89,6 +90,25 @@ function parseRecord(raw: string | null): LocalLogoutControlSnapshot {
     if (error instanceof LocalLogoutControlError) throw error;
     return fail("local_logout_control_corrupt");
   }
+}
+
+export type Q13LocalLogoutControlStatus = Readonly<{
+  globalStatus: "clear" | "pending" | "unavailable";
+  actorStatus: "clear" | "pending" | "unavailable";
+}>;
+
+/** Q13-only projection of the existing record; never returns account identifiers. */
+export function inspectQ13LocalLogoutControl(raw: string | null, actorUidSha256?: string | null): Q13LocalLogoutControlStatus {
+  try {
+    const snapshot = parseRecord(raw);
+    const globalStatus = snapshot.pending.length > 0 || snapshot.blocked !== null ? "pending" : "clear";
+    if (typeof actorUidSha256 !== "string" || !/^[a-f0-9]{64}$/u.test(actorUidSha256)) {
+      return Object.freeze({ globalStatus, actorStatus: "unavailable" });
+    }
+    const actorHasPending = snapshot.pending.some((operation) => sha256Utf8(operation.uid) === actorUidSha256)
+      || (snapshot.blocked !== null && sha256Utf8(snapshot.blocked.uid) === actorUidSha256);
+    return Object.freeze({ globalStatus, actorStatus: actorHasPending ? "pending" : "clear" });
+  } catch { return Object.freeze({ globalStatus: "unavailable", actorStatus: "unavailable" }); }
 }
 
 function serialize(snapshot: LocalLogoutControlSnapshot): string {

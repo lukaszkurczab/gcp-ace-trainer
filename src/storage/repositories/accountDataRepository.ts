@@ -104,6 +104,7 @@ export type AccountMaterialization = Readonly<
 export type GuestOwnedLocalDataBackupEntry = Readonly<{ key: string; value: string }>;
 
 export type AccountAcknowledgedRecord = Readonly<{ fingerprint: string; recordId: string; recordType: SyncableRecordType; remoteVersion: number; trackId: string }>;
+export type AccountMutationAcknowledgement = Readonly<{ mutationId: string; record: AccountDataRecord }>;
 export type AccountOutboxEntry = Readonly<AccountDataRecord & { mutationId: string; expectedVersion: number | null; attemptCount: number; lastErrorCode: string | null; status: "pending" | "retrying" | "failed"; sequence: number }>;
 
 const emptyState = (): AccountSyncState => Object.freeze({ accountId: null, guestAdoptionChoice: "transfer", status: "initialSyncRequired", localDatasetVersion: 0, localDatasetFingerprint: null, remoteAccountRevision: 0, lastSuccessfulSyncAt: null, pendingMutationCount: 0, blockingConflictCode: null, lastFailureCode: null, acknowledged: Object.freeze({}), outbox: Object.freeze([]), materialization: null, pendingConfirmation: null, syncPlan: null, outboxSequence: 0, highWatermark: 0, resetGuard: null, learningPlanRecovery: null });
@@ -497,6 +498,61 @@ export function saveAccountSyncState(state: AccountSyncState): AccountSyncState 
   if (!isCanonicalAccountSyncState(state)) throw new AccountDataFailure("account_sync_state_invalid");
   const saved = writeCanonicalJson(STORAGE_KEYS.ACCOUNT_SYNC, state);
   return saved.payload;
+}
+
+/**
+ * Retains exact upload acknowledgements without clearing the local outbox.
+ * The persisted sync-plan mutation ID binds each remote version to the exact
+ * payload that the server acknowledged; a later local edit therefore gets a
+ * new outbox entry based on this confirmed remote version.
+ */
+export function recordAccountMutationAcknowledgements(input: Readonly<{
+  accountId: string;
+  planId: string;
+  remoteAccountRevision: number;
+  acknowledgements: readonly AccountMutationAcknowledgement[];
+}>): AccountSyncState {
+  if (!input.accountId.trim() || !input.planId.trim() || !Number.isSafeInteger(input.remoteAccountRevision) || input.remoteAccountRevision < 0) {
+    throw new AccountDataFailure("account_sync_state_invalid");
+  }
+  const current = readValidatedAccountSyncState();
+  const plan = current.syncPlan;
+  if (current.accountId !== input.accountId || !plan || plan.planId !== input.planId) throw new AccountDataFailure("account_sync_state_invalid");
+  assertValidAccountDataRecords(input.acknowledgements.map((acknowledgement) => acknowledgement.record));
+  const itemsByMutationId = new Map(plan.items.map((item) => [item.mutationId, item]));
+  const acknowledged = { ...current.acknowledged };
+  const seen = new Set<string>();
+  for (const { mutationId, record } of input.acknowledgements) {
+    const item = itemsByMutationId.get(mutationId);
+    if (!item || seen.has(mutationId)
+      || item.recordKey !== accountDataRecordKey(record)
+      || item.payload.fingerprint !== record.fingerprint
+      || item.payload.recordType !== record.recordType
+      || item.payload.recordId !== record.recordId
+      || item.payload.trackId !== record.trackId
+      || (item.expectedVersion !== null && record.version <= item.expectedVersion)
+      || (item.expectedVersion === null && record.version < 1)) {
+      throw new AccountDataFailure("account_sync_state_invalid");
+    }
+    seen.add(mutationId);
+    acknowledged[item.recordKey] = Object.freeze({
+      fingerprint: record.fingerprint,
+      recordId: record.recordId,
+      recordType: record.recordType,
+      remoteVersion: record.version,
+      trackId: record.trackId,
+    });
+  }
+  const acknowledgedPlan = Object.freeze({
+    ...plan,
+    items: Object.freeze(plan.items.map((item) => seen.has(item.mutationId) ? Object.freeze({ ...item, status: "acked" as const }) : item)),
+  });
+  return saveAccountSyncState({
+    ...current,
+    remoteAccountRevision: input.remoteAccountRevision,
+    acknowledged: Object.freeze(acknowledged),
+    syncPlan: acknowledgedPlan,
+  });
 }
 
 export function dismissLearningPlanRecovery(accountId: string, incidentId: string): AccountSyncState {

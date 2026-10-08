@@ -62,3 +62,38 @@ test('opening editor from Progress does not mutate model, active session or prim
   assert.deepEqual(JSON.parse(JSON.stringify(actions)), [edit]);
   assert.equal(rendered.byTestId('patternly:target-date-guidance:primary:progress'), undefined);
 });
+
+test('Progress chapter rows humanize unknown IDs and keep curated titles first', () => {
+  const rendered = renderProgressPlanSection(ready({
+    trackId: 'backend-system-design-interview',
+    completion: {
+      kind: 'in_progress',
+      completedChapterCount: 0,
+      requiredChapterCount: 1,
+      qualifyingAttemptCount: 0,
+      requiredAttemptCount: 20,
+      remainingAttemptCount: 20,
+      chapters: [
+        { nodeId: 'api_contracts_service_boundaries_and_request_flows', status: 'in_progress', reason: 'minimum_attempts_unmet', qualifyingAttemptCount: 0, requiredAttemptCount: 20 },
+      ],
+    },
+    chapterAccess: [
+      { nodeId: 'api_contracts_service_boundaries_and_request_flows', access: 'free' },
+    ],
+  }));
+  const chapterList = rendered.byTestId('patternly:progress-plan:chapter-list');
+  assert.ok(chapterList);
+  const chapterText = rendered.textOf(chapterList);
+  assert.ok(chapterText.includes('API Contracts Service Boundaries And Request Flows'));
+  assert.ok(!chapterText.includes('api_contracts_service_boundaries_and_request_flows'));
+
+  const curated = renderProgressPlanSection(ready({
+    trackId: 'coding-interview-dsa-problem-solving',
+    completion: { kind: 'in_progress', completedChapterCount: 0, requiredChapterCount: 1, qualifyingAttemptCount: 0, requiredAttemptCount: 20, remainingAttemptCount: 20, chapters: [{ nodeId: 'complexity_and_constraints', status: 'in_progress', reason: 'minimum_attempts_unmet', qualifyingAttemptCount: 0, requiredAttemptCount: 20 }] },
+    chapterAccess: [{ nodeId: 'complexity_and_constraints', access: 'free' }],
+  }));
+  const curatedList = curated.byTestId('patternly:progress-plan:chapter-list');
+  assert.ok(curatedList);
+  assert.ok(curated.textOf(curatedList).includes('Complexity and constraints'));
+  assert.ok(!curated.textOf(curatedList).includes('Complexity And Constraints'));
+});

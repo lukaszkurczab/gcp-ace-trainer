@@ -7,7 +7,7 @@ import type {
   GuestMergeRecordDto,
   GuestMergeSnapshotRequestDto,
   PatternlyApiClient,
-  SyncResponseDto,
+  ProgressRecordDto,
 } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import {
   accountDataRecordKey,
@@ -28,6 +28,7 @@ import {
   markGuestDiscardMaterializationApplying,
   markGuestDiscardMaterializationPending,
   partitionRemoteAccountDataForRecovery,
+  recordAccountMutationAcknowledgements,
   reserveLearningPlanRecoveryAttempt,
   dismissLearningPlanRecovery as dismissPersistedLearningPlanRecovery,
   restoreGuestOwnedLocalDataBackup,
@@ -38,6 +39,7 @@ import {
   type AccountOutboxEntry,
   type AccountSyncPlanItem,
   type AccountDataSnapshot,
+  type AccountMutationAcknowledgement,
   type AccountSyncState,
   type LearningPlanRecoveryIncident,
   type RemoteAccountDataRecord,
@@ -56,6 +58,7 @@ import { getActiveMutationJournal } from "../../storage/repositories/mutationJou
 import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { withLocalLearningWriteOperation } from "../learningMutations/localLearningWriteOperation";
+import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
 import { commitLearningStateReset } from "../learningMutations";
 import type { TrackId } from "../../domain";
 import { getActiveTrackId, saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
@@ -120,6 +123,38 @@ const CLASSIFIABLE_ACCOUNT_DATA_FAILURE_CODES: readonly string[] = [
   "account_deletion_local_preparation_failed",
 ];
 
+const AUTHORITATIVE_LOCAL_IDENTITY_DENIAL_CODES = new Set([
+  "account_deleted",
+  "account_not_found",
+  "authentication_required",
+  "authorization_generation_invalid",
+  "authorization_generation_required",
+  "authorization_generation_stale",
+  "firebase_authorization_generation_invalid",
+  "user_not_found",
+]);
+
+function authoritativeLocalIdentityDenialCode(error: PatternlyApiClientError): string | null {
+  const code = error.serverCode;
+  if (!code || !AUTHORITATIVE_LOCAL_IDENTITY_DENIAL_CODES.has(code)) return null;
+  const validStatus = code === "account_not_found" || code === "user_not_found"
+    ? error.status === 404
+    : error.status === 401;
+  return validStatus ? `identity_denial:${error.status}:${code}` : null;
+}
+
+function isPersistedIdentityDenial(value: string | null): boolean {
+  if (value === "revokedSession") return true; // Older persisted marker predates issuer/status preservation.
+  const match = /^identity_denial:(401|404):([a-z_]+)$/u.exec(value ?? "");
+  if (!match) return false;
+  const status = Number(match[1]);
+  const code = match[2]!;
+  if (!AUTHORITATIVE_LOCAL_IDENTITY_DENIAL_CODES.has(code)) return false;
+  return code === "account_not_found" || code === "user_not_found"
+    ? status === 404
+    : status === 401;
+}
+
 let accountDataOperationLane: Promise<void> = Promise.resolve();
 const pendingHomeSyncAttempts = new Map<string, Promise<AccountDataSession | null>>();
 const pendingLocalResetAttempts = new Map<string, Promise<AccountDataSession>>();
@@ -160,6 +195,60 @@ export function loadAccountDataSession(
   return withAccountDataOperation(() => loadAccountDataSessionUnlocked(api, accountId, options));
 }
 
+/** Reads the already-bound local account projection without contacting the API or changing sync state. */
+export function readLocalAccountDataSession(accountId: string): Promise<AccountDataSession | null> {
+  return withAccountDataOperation(async () => {
+    if (!accountId.trim()) return null;
+    const installation = await getGuestInstallation();
+    if (!installation || installation.accountId !== accountId || installation.bindingState !== "account_bound") return null;
+    const state = await getAccountSyncState();
+    if (state.accountId !== accountId || state.materialization || state.pendingConfirmation !== null || state.resetGuard) return null;
+    // A prior authoritative identity denial must not be hidden by a later
+    // transport failure and projected as an ordinary offline session.
+    if (isPersistedIdentityDenial(state.lastFailureCode)) return null;
+    return Object.freeze({
+      status: "offlinePending" as const,
+      preview: null,
+      lastSuccessfulSyncAt: state.lastSuccessfulSyncAt,
+      pendingMutationCount: state.pendingMutationCount,
+      blockingConflictCode: state.blockingConflictCode,
+      lastFailureCode: "offline",
+      activeSessionBlocked: false,
+      guestAdoptionChoice: state.guestAdoptionChoice,
+      ...(state.learningPlanRecovery ? { learningPlanRecovery: Object.freeze({ ...state.learningPlanRecovery }) } : {}),
+    });
+  });
+}
+
+/** Clears only a durable identity-denial marker after the caller revalidates the exact online identity. */
+export function clearAccountIdentityDenialAfterProof(input: Readonly<{
+  accountId: string;
+  firebaseUid: string;
+  canContinue: () => boolean | Promise<boolean>;
+}>): Promise<boolean> {
+  return withAccountDataOperation(async () => {
+    if (!input.accountId.trim() || !input.firebaseUid.trim() || !await input.canContinue()) return false;
+    let storageScope: object;
+    try { storageScope = readLearningPlanStorageScope(); } catch { return false; }
+    const installation = await getGuestInstallation();
+    const state = await getAccountSyncState();
+    if (!await input.canContinue() || readLearningPlanStorageScope() !== storageScope
+      || !installation || installation.accountId !== input.accountId || installation.bindingState !== "account_bound"
+      || state.accountId !== input.accountId) return false;
+    if (!isPersistedIdentityDenial(state.lastFailureCode)) return true;
+    const next = saveAccountSyncState({ ...state, lastFailureCode: null });
+    const verified = await getAccountSyncState();
+    return await input.canContinue() && readLearningPlanStorageScope() === storageScope
+      && verified.accountId === input.accountId && verified.lastFailureCode === null
+      && verified.localDatasetVersion === next.localDatasetVersion
+      && JSON.stringify(verified.outbox) === JSON.stringify(next.outbox)
+      && verified.pendingMutationCount === next.pendingMutationCount
+      && verified.blockingConflictCode === next.blockingConflictCode
+      && JSON.stringify(verified.pendingConfirmation) === JSON.stringify(next.pendingConfirmation)
+      && JSON.stringify(verified.syncPlan) === JSON.stringify(next.syncPlan);
+  });
+}
+
 async function loadAccountDataSessionUnlocked(
   api: PatternlyApiClient,
   accountId: string,
@@ -177,6 +266,7 @@ async function loadAccountDataSessionUnlocked(
     if (completedDeletion?.status === "complete" && completedDeletion.accountId !== accountId) clearAccountDeletionState();
     const state = await getAccountSyncState();
     if (state.accountId !== null && state.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+    if (isPersistedIdentityDenial(state.lastFailureCode)) return failureSession(state, false);
     if (state.resetGuard) return await resumeAccountLocalHistoryReset(api, accountId, state);
     if (state.materialization) {
       const targetAccountId = materializationTargetAccountId(state);
@@ -239,6 +329,7 @@ async function loadAccountDataSessionUnlocked(
     return await synchronizeBoundAccount(api, accountId);
   } catch (error) {
     const state = await getAccountSyncState().catch(() => null);
+    if (state?.accountId === accountId && isPersistedIdentityDenial(state.lastFailureCode)) return failureSession(state, false);
     return failureSession(state ? await recordFailure(state, classifyDataFailure(error)) : null, false);
   }
 }
@@ -477,6 +568,7 @@ async function retryPendingAccountDataSyncUnlocked(api: PatternlyApiClient, acco
   const installation = await getGuestInstallation();
   const state = await getAccountSyncState();
   if (!installation || installation.accountId !== accountId || state.accountId !== accountId) return null;
+  if (isPersistedIdentityDenial(state.lastFailureCode)) return failureSession(state, false);
   if (state.status !== "offlinePending") return null;
   if (state.materialization) return explicitFailureSession(state, "account_materialization_in_progress", false);
   if (state.pendingConfirmation !== null) return explicitFailureSession(state, "account_adoption_pending", false);
@@ -490,6 +582,7 @@ async function retryPendingAccountDataSyncUnlocked(api: PatternlyApiClient, acco
   const latestInstallation = await getGuestInstallation();
   const latestState = await getAccountSyncState();
   if (!latestInstallation || latestInstallation.accountId !== accountId || latestState.accountId !== accountId) return null;
+  if (isPersistedIdentityDenial(latestState.lastFailureCode)) return failureSession(latestState, false);
   if (latestState.status !== "offlinePending") return null;
   if (latestState.materialization) return explicitFailureSession(latestState, "account_materialization_in_progress", false);
   if (latestState.pendingConfirmation !== null) return explicitFailureSession(latestState, "account_adoption_pending", false);
@@ -666,6 +759,7 @@ function deletionResultForFailure(failure: string): AccountDeletionResult {
 
 function shouldResolveDeletionStatus(failure: string): boolean {
   return failure === "revokedSession"
+    || failure.startsWith("identity_denial:")
     || failure === "offline"
     || failure === "remoteFailure"
     || failure === "server_error"
@@ -854,16 +948,54 @@ async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: st
 }
 
 async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: string): Promise<AccountDataSession> {
+  let state = await getAccountSyncState();
+  if (state.accountId === accountId && isPersistedIdentityDenial(state.lastFailureCode)) return failureSession(state, false);
   const initialGuard = await readBoundSyncGuard(accountId);
   if (initialGuard) return initialGuard;
-
-  let state = await ensureAccountOutboxFromLocalDataset();
-  state = saveAccountSyncState({ ...state, accountId, status: "syncing", lastFailureCode: null });
+  let baseline: BoundSyncBaseline | null = null;
   try {
-    const uploadGuard = await readBoundSyncGuard(accountId);
-    if (uploadGuard) return preservePendingSyncGuard(accountId, uploadGuard);
-    state = await getAccountSyncState();
-    let response: SyncResponseDto | null = null;
+    const planned = await withLocalLearningWriteOperation(async () => {
+      const storageScope = readLearningPlanStorageScope();
+      const uploadGuard = await readBoundSyncGuard(accountId);
+      if (uploadGuard) return Object.freeze({ kind: "blocked" as const, guard: uploadGuard });
+      const installation = await getGuestInstallation();
+      if (!installation || installation.accountId !== accountId || installation.bindingState !== "account_bound") throw new AccountDataFailure("account_binding_mismatch");
+      await ensureAccountOutboxFromLocalDataset();
+      const snapshot = await buildAccountDataSnapshot();
+      const currentInstallation = await getGuestInstallation();
+      const currentState = await getAccountSyncState();
+      if (currentState.accountId === accountId && isPersistedIdentityDenial(currentState.lastFailureCode)) {
+        return Object.freeze({ kind: "identity_denied" as const, session: failureSession(currentState, false) });
+      }
+      if (readLearningPlanStorageScope() !== storageScope
+        || !currentInstallation
+        || currentInstallation.installationId !== installation.installationId
+        || currentInstallation.localDatasetId !== installation.localDatasetId
+        || currentInstallation.accountId !== accountId
+        || currentInstallation.bindingState !== "account_bound"
+        || (currentState.accountId !== null && currentState.accountId !== accountId)) throw new AccountDataFailure("account_binding_mismatch");
+      const snapshotGuard = learningSyncGuardSession(currentState, snapshot, true, accountId);
+      if (snapshotGuard) return Object.freeze({ kind: "blocked" as const, guard: snapshotGuard });
+      const syncing = saveAccountSyncState({ ...currentState, accountId, status: "syncing", lastFailureCode: null });
+      return Object.freeze({
+        kind: "ready" as const,
+        state: syncing,
+        baseline: Object.freeze({
+          accountId,
+          installationId: installation.installationId,
+          localDatasetId: installation.localDatasetId,
+          storageScope,
+          localDatasetVersion: currentState.localDatasetVersion,
+          snapshotFingerprint: localAccountSnapshotFingerprint(snapshot),
+        }),
+      });
+    });
+    if (planned.kind === "blocked") return preservePendingSyncGuard(accountId, planned.guard);
+    if (planned.kind === "identity_denied") return planned.session;
+    state = planned.state;
+    baseline = planned.baseline;
+    let postUploadDatasetVersion = baseline.localDatasetVersion;
+    const duplicateMutationIds = new Set<string>();
     if (state.outbox.length > 0) {
       const plan = state.syncPlan;
       if (!plan) throw new AccountDataFailure("account_sync_state_invalid");
@@ -882,7 +1014,7 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
         if (batch.every((entry) => planItemsByMutationId.get(entry.mutationId)?.status === "acked")) continue;
         const current = await getAccountSyncState();
         if (current.syncPlan?.planId !== plan.planId) throw new AccountDataFailure("account_sync_state_invalid");
-        response = await api.syncProgress({
+        const response = await api.syncProgress({
           canonicalVersion: "canonical-json-v1",
           expectedAccountRevision: current.remoteAccountRevision,
           deviceId: installation.installationId,
@@ -891,25 +1023,126 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
           highWatermark: plan.highWatermark,
           mutations: batch.map((entry) => ({ mutationId: entry.mutationId, kind: entry.recordType === "training_attempt" || entry.recordType === "review_queue_entry" ? "item" as const : "node" as const, recordType: entry.recordType, trackId: entry.trackId, targetId: entry.recordId, expectedVersion: entry.expectedVersion, fingerprint: entry.fingerprint, state: entry.state })),
         });
+        if (response.accountRevisionConflict) {
+          throw new PatternlyApiClientError("server_error", 409, response.accountRevisionConflict.code);
+        }
         if (response.conflicts.length > 0) throw new PatternlyApiClientError("server_error", 409, response.conflicts[0]?.code ?? "version_conflict");
-        const currentAfterUpload = await getAccountSyncState();
-        const acknowledgedIds = new Set([...response.applied.map((record) => record.lastMutationId), ...response.duplicates]);
-        const nextPlan = currentAfterUpload.syncPlan && currentAfterUpload.syncPlan.planId === plan.planId
-          ? { ...currentAfterUpload.syncPlan, items: Object.freeze(currentAfterUpload.syncPlan.items.map((item) => acknowledgedIds.has(item.mutationId) ? Object.freeze({ ...item, status: "acked" as const }) : item)) }
-          : currentAfterUpload.syncPlan;
-        state = saveAccountSyncState({ ...currentAfterUpload, remoteAccountRevision: response.accountRevision, syncPlan: nextPlan });
+        const batchMutationIds = new Set(batch.map((entry) => entry.mutationId));
+        if (response.applied.some((record) => !batchMutationIds.has(record.lastMutationId))
+          || response.duplicates.some((mutationId) => !batchMutationIds.has(mutationId))
+          || response.applied.some((record) => response.duplicates.includes(record.lastMutationId))
+          || new Set(response.applied.map((record) => record.lastMutationId)).size !== response.applied.length
+          || new Set(response.duplicates).size !== response.duplicates.length) {
+          throw new PatternlyApiClientError("invalid_response");
+        }
+        const acknowledgedMutationIds = new Set([
+          ...response.applied.map((record) => record.lastMutationId),
+          ...response.duplicates,
+        ]);
+        if (acknowledgedMutationIds.size !== batchMutationIds.size
+          || [...batchMutationIds].some((mutationId) => !acknowledgedMutationIds.has(mutationId))) {
+          throw new PatternlyApiClientError("invalid_response");
+        }
+        response.duplicates.forEach((mutationId) => duplicateMutationIds.add(mutationId));
+        const acknowledgements: AccountMutationAcknowledgement[] = response.applied.map((record) => ({
+          mutationId: record.lastMutationId,
+          record: Object.freeze({
+            fingerprint: record.fingerprint,
+            recordId: record.targetId,
+            recordType: record.recordType,
+            state: record.state,
+            trackId: record.trackId,
+            version: record.version,
+          }),
+        }));
+        state = await withLocalLearningWriteOperation(async () => {
+          await assertBoundSyncIdentity(baseline!);
+          return recordAccountMutationAcknowledgements({ accountId, planId: plan.planId, remoteAccountRevision: response.accountRevision, acknowledgements });
+        });
       }
     }
     const materializationGuard = await readBoundSyncGuard(accountId);
     if (materializationGuard) return preservePendingSyncGuard(accountId, materializationGuard);
+    const postUploadCheck = await withLocalLearningWriteOperation(async () => {
+      await assertBoundSyncIdentity(baseline!);
+      const currentState = await getAccountSyncState();
+      if (currentState.accountId !== accountId) return Object.freeze({ kind: "scope_changed" as const });
+      const snapshot = await buildAccountDataSnapshot();
+      if (localAccountSnapshotFingerprint(snapshot) !== baseline!.snapshotFingerprint) {
+        const pending = saveAccountSyncState({ ...await getAccountSyncState(), status: "offlinePending", blockingConflictCode: null, lastFailureCode: "local_dataset_changed_during_sync" });
+        return Object.freeze({ kind: "local_changed" as const, session: failureSession(pending, false) });
+      }
+      const latest = await getAccountSyncState();
+      if (latest.accountId !== accountId) return Object.freeze({ kind: "scope_changed" as const });
+      return Object.freeze({ kind: "ready" as const, localDatasetVersion: latest.localDatasetVersion });
+    });
+    if (postUploadCheck.kind === "scope_changed") return failureSession(state, false);
+    if (postUploadCheck.kind === "local_changed") return postUploadCheck.session;
+    postUploadDatasetVersion = postUploadCheck.localDatasetVersion;
     const remote = await api.getProgress();
-    const downloadGuard = await readBoundSyncGuard(accountId);
-    if (downloadGuard) return preservePendingSyncGuard(accountId, downloadGuard);
     const partition = await partitionRemoteAccountDataForRecovery({ accountId, generation: remote.generation ?? 0, records: remote.records });
-    await applyRemoteAccountData(partition.records);
-    const finished = await finishAccountMaterialization(partition.records, accountId, remote.accountRevision, nowIso(), partition.incident);
-    return sessionFromState(finished, false);
+    const materialized = await withLocalLearningWriteOperation(async () => {
+      if (!isBoundStorageScopeCurrent(baseline!)) return Object.freeze({ kind: "scope_changed" as const });
+      const downloadGuard = await readBoundSyncGuard(accountId);
+      if (downloadGuard) return Object.freeze({ kind: "blocked" as const, guard: downloadGuard });
+      const installation = await getGuestInstallation();
+      if (!installation
+        || installation.installationId !== baseline!.installationId
+        || installation.localDatasetId !== baseline!.localDatasetId
+        || installation.accountId !== accountId
+        || installation.bindingState !== "account_bound") return Object.freeze({ kind: "scope_changed" as const });
+      let latestState = await getAccountSyncState();
+      if (latestState.accountId !== accountId) return Object.freeze({ kind: "scope_changed" as const });
+      if (latestState.localDatasetVersion !== postUploadDatasetVersion) {
+        const pending = saveAccountSyncState({ ...latestState, status: "offlinePending", blockingConflictCode: null, lastFailureCode: "local_dataset_changed_during_sync" });
+        return Object.freeze({ kind: "local_changed" as const, session: failureSession(pending, false) });
+      }
+      const latestSnapshot = await buildAccountDataSnapshot();
+      latestState = await getAccountSyncState();
+      // The post-upload snapshot captured any expected version changes from
+      // exact ACKs. From here, compare that version again after materialization
+      // while the lane excludes new local commits.
+      const materializationDatasetVersion = latestState.localDatasetVersion;
+      const duplicateCheck = duplicateMutationAcknowledgements(duplicateMutationIds, latestState.syncPlan, remote.records);
+      await assertBoundSyncIdentity(baseline!);
+      latestState = await getAccountSyncState();
+      if (latestState.accountId !== accountId) return Object.freeze({ kind: "scope_changed" as const });
+      if (latestState.localDatasetVersion !== materializationDatasetVersion) {
+        return Object.freeze({ kind: "scope_changed" as const });
+      }
+      if (duplicateCheck.acknowledgements.length > 0) {
+        latestState = recordAccountMutationAcknowledgements({
+          accountId,
+          planId: latestState.syncPlan!.planId,
+          remoteAccountRevision: remote.accountRevision,
+          acknowledgements: duplicateCheck.acknowledgements,
+        });
+      }
+      if (duplicateCheck.unconfirmed.length > 0) {
+        const conflict = saveAccountSyncState({ ...latestState, status: "conflict", blockingConflictCode: "duplicate_ack_unverified", lastFailureCode: "duplicate_ack_unverified" });
+        return Object.freeze({ kind: "duplicate_unverified" as const, session: failureSession(conflict, false) });
+      }
+      if (localAccountSnapshotFingerprint(latestSnapshot) !== baseline!.snapshotFingerprint) {
+        const pending = saveAccountSyncState({ ...latestState, status: "offlinePending", blockingConflictCode: null, lastFailureCode: "local_dataset_changed_during_sync" });
+        return Object.freeze({ kind: "local_changed" as const, session: failureSession(pending, false) });
+      }
+      await assertBoundSyncIdentity(baseline!);
+      await applyRemoteAccountData(partition.records);
+      await assertBoundSyncIdentity(baseline!);
+      const stateBeforeFinish = await getAccountSyncState();
+      if (stateBeforeFinish.accountId !== accountId || stateBeforeFinish.localDatasetVersion !== materializationDatasetVersion) {
+        return Object.freeze({ kind: "scope_changed" as const });
+      }
+      const finished = await finishAccountMaterialization(partition.records, accountId, remote.accountRevision, nowIso(), partition.incident);
+      return Object.freeze({ kind: "synced" as const, session: sessionFromState(finished, false) });
+    });
+    if (materialized.kind === "blocked") return preservePendingSyncGuard(accountId, materialized.guard);
+    if (materialized.kind === "scope_changed") return failureSession(state, false);
+    return materialized.session;
   } catch (error) {
+    if (baseline && !isBoundStorageScopeCurrent(baseline)) return failureSession(state, false);
+    const latest = await getAccountSyncState().catch(() => null);
+    if (latest?.accountId === accountId && isPersistedIdentityDenial(latest.lastFailureCode)) return failureSession(latest, false);
     const failure = classifyDataFailure(error);
     if (failure === "active_session_adoption_blocked" || failure === "journal_recovery_required") {
       const guard = await readBoundSyncGuard(accountId);
@@ -918,6 +1151,83 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
     const failed = await recordFailure(state, failure);
     return failureSession(failed, failure === "offline");
   }
+}
+
+type BoundSyncBaseline = Readonly<{
+  accountId: string;
+  installationId: string;
+  localDatasetId: string;
+  storageScope: object;
+  localDatasetVersion: number;
+  snapshotFingerprint: string;
+}>;
+
+function localAccountSnapshotFingerprint(snapshot: AccountDataSnapshot): string {
+  // The repository's versioned snapshot also includes acknowledged remote
+  // record versions. Those versions may advance from this sync's exact upload
+  // ACKs; compare local record identity/content while the write lane protects
+  // the snapshot from concurrent app mutations.
+  const localRecords = snapshot.records
+    .map((record) => [accountDataRecordKey(record), record.fingerprint] as const)
+    .sort(([left], [right]) => left.localeCompare(right));
+  return sha256Utf8(JSON.stringify(localRecords));
+}
+
+function isBoundStorageScopeCurrent(baseline: BoundSyncBaseline): boolean {
+  try {
+    return readLearningPlanStorageScope() === baseline.storageScope;
+  } catch {
+    return false;
+  }
+}
+
+function assertBoundStorageScope(baseline: BoundSyncBaseline): void {
+  if (!isBoundStorageScopeCurrent(baseline)) throw new AccountDataFailure("account_binding_mismatch");
+}
+
+async function assertBoundSyncIdentity(baseline: BoundSyncBaseline): Promise<void> {
+  assertBoundStorageScope(baseline);
+  const installation = await getGuestInstallation();
+  if (!installation
+    || installation.installationId !== baseline.installationId
+    || installation.localDatasetId !== baseline.localDatasetId
+    || installation.accountId !== baseline.accountId
+    || installation.bindingState !== "account_bound"
+    || !isBoundStorageScopeCurrent(baseline)) throw new AccountDataFailure("account_binding_mismatch");
+}
+
+function duplicateMutationAcknowledgements(
+  duplicateMutationIds: ReadonlySet<string>,
+  plan: AccountSyncState["syncPlan"],
+  remoteRecords: readonly ProgressRecordDto[],
+): Readonly<{ acknowledgements: readonly AccountMutationAcknowledgement[]; unconfirmed: readonly string[] }> {
+  const acknowledgements: AccountMutationAcknowledgement[] = [];
+  const unconfirmed: string[] = [];
+  for (const mutationId of duplicateMutationIds) {
+    const item = plan?.items.find((candidate) => candidate.mutationId === mutationId);
+    const matchingRemote = remoteRecords.filter((record) => record.lastMutationId === mutationId);
+    const remote = matchingRemote.length === 1 ? matchingRemote[0] : null;
+    if (!item || !remote
+      || remote.recordType !== item.payload.recordType
+      || remote.targetId !== item.payload.recordId
+      || remote.trackId !== item.payload.trackId
+      || remote.fingerprint !== item.payload.fingerprint) {
+      unconfirmed.push(mutationId);
+      continue;
+    }
+    acknowledgements.push(Object.freeze({
+      mutationId,
+      record: Object.freeze({
+        fingerprint: remote.fingerprint,
+        recordId: remote.targetId,
+        recordType: remote.recordType,
+        state: remote.state,
+        trackId: remote.trackId,
+        version: remote.version,
+      }),
+    }));
+  }
+  return Object.freeze({ acknowledgements: Object.freeze(acknowledgements), unconfirmed: Object.freeze(unconfirmed) });
 }
 
 async function preservePendingSyncGuard(accountId: string, guard: AccountDataSession): Promise<AccountDataSession> {
@@ -981,7 +1291,8 @@ function classifyDataFailure(error: unknown): string {
     if (error.serverCode === "session_revocation_pending") return "session_revocation_pending";
     if (error.serverCode === "remote_deletion_pending") return "remote_deletion_pending";
     if (error.serverCode === "recent_reauthentication_required") return "reauthentication_required";
-    if (error.status === 401 || error.serverCode === "account_deleted") return "revokedSession";
+    const identityDenial = authoritativeLocalIdentityDenialCode(error);
+    if (identityDenial) return identityDenial;
     if (error.code === "transport_failed" || error.code === "request_timeout") return "offline";
     return error.serverCode ?? error.code;
   }

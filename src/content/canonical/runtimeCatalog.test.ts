@@ -43,7 +43,10 @@ test("canonical runtime catalog exposes all locked tracks, modes, pools, and exa
   assert.equal(gcp.simulationProfiles?.[0]?.profileId, "google-cloud-associate-cloud-engineer-certification-exam-v1");
   assert.equal(gcp.simulationProfiles?.[0]?.familyId, "certification");
   assert.equal(gcp.simulationProfiles?.[0]?.modeId, "certification-exam-simulation");
-  assert.equal(gcp.simulationProfiles?.[0]?.familyConfig.nodeDomainMapEvidence.contentVersion, gcp.contentVersion);
+  const evidence = gcp.simulationProfiles?.[0]?.familyConfig.nodeDomainMapEvidence;
+  assert.ok(evidence);
+  assert.notEqual(evidence.contentVersion, gcp.contentVersion, "the canonical policy version keeps its historical attribution pin");
+  assert.equal(evidence.artifactPath, `artifacts/tracks/${gcp.trackId}/${evidence.contentVersion}/track-artifact.json`);
   assert.equal(Object.isFrozen(gcp.simulationProfiles?.[0]?.familyConfig.nodeDomainMap), true);
   assert.equal(catalog.getTrack("aws-certified-solutions-architect-associate").simulationProfiles, undefined);
 });
@@ -53,6 +56,19 @@ test("injected loader failures are visible and do not poison the active cache", 
   await assert.rejects(() => buildCanonicalRuntimeCatalog({ artifacts: [coding], locks: [lockFile.tracks.find((entry) => entry.trackId === coding.trackId)!], sha256Utf8: badSha }), /SHA-256/);
   const catalog = await loadCanonicalRuntimeCatalog();
   assert.equal(catalog.tracks.length, 9);
+});
+
+test("canonical runtime rejects a malformed chapter completion rule before product-mode projection", async () => {
+  const malformed = structuredClone(coding) as unknown as Record<string, unknown>;
+  const rule = malformed.completionRule as { chapters: Array<{ rollingWindowSize: number }> };
+  rule.chapters[0]!.rollingWindowSize = 19;
+  await assert.rejects(
+    () => buildCanonicalRuntimeCatalog({ artifacts: [malformed], locks: [lockFile.tracks.find((entry) => entry.trackId === coding.trackId)!] }),
+    (error: unknown) => error instanceof Error
+      && "errors" in error
+      && Array.isArray(error.errors)
+      && error.errors.includes("artifact.completionRule: invalid versioned completion rule"),
+  );
 });
 
 test("canonical runtime catalog hashes artifacts sequentially and preserves artifact order", async () => {

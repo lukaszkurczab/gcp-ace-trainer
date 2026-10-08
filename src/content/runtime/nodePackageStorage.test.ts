@@ -4,10 +4,86 @@ import { gzipSync } from "node:zlib";
 import test from "node:test";
 import { ContentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { verifyNodePackage, type BinaryPackageResponse, type NodePackageHash } from "./nodeContentPackage";
-import { createNodePackageStore, type NodePackageFilePort } from "./nodePackageStorage";
+import { createNodePackageStore, inspectExpoNodePackageInventory, inspectExpoNodePackageRootReadiness, type NodePackageFilePort } from "./nodePackageStorage";
+import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 
 const hash: NodePackageHash = { sha256Bytes: async (bytes) => createHash("sha256").update(bytes).digest("hex") };
 const TRACK = "coding-interview-dsa-problem-solving", NODE = "storage-test-node";
+
+test("read-only Expo package-root readiness checks the fixed path without creating it", () => {
+  let constructorArguments: readonly unknown[] = [];
+  let createCalls = 0;
+  class DirectoryFixture {
+    readonly exists = false;
+    constructor(...args: unknown[]) { constructorArguments = args; }
+    create() { createCalls += 1; }
+  }
+  const fileSystem = { Paths: { document: "documents" }, Directory: DirectoryFixture } as unknown as typeof import("expo-file-system");
+
+  assert.deepEqual(inspectExpoNodePackageRootReadiness(fileSystem), { kind: "observed", exists: false });
+  assert.deepEqual(constructorArguments, ["documents", "patternly-content-node-packages-v1"]);
+  assert.equal(createCalls, 0);
+});
+
+test("Q13 package receipt validates every profile pointer and hashes referenced, orphan and staging files read-only", async () => {
+  const verified = await record("1.0.0");
+  const artifact = verified.artifactBytes;
+  const identity = verified.identity;
+  const recordKey = sha256Utf8(`${identity.trackId}\u0000${identity.nodeId}\u0000${identity.contentVersion}\u0000${identity.artifactSha256}`);
+  const manifest = new TextEncoder().encode(JSON.stringify(verified.manifest));
+  const files = new Map<string, Uint8Array>([
+    [`artifacts/${recordKey}.bin`, artifact],
+    [`manifests/${recordKey}.json`, manifest],
+    ["staging/interrupted.bin", new Uint8Array([1, 2, 3])],
+  ]);
+  class FileFixture {
+    constructor(readonly path: string) {}
+    get name() { return this.path.split("/").at(-1)!; }
+    bytes() { return Promise.resolve(files.get(this.path)!); }
+  }
+  class DirectoryFixture {
+    exists = true;
+    constructor(...segments: string[]) { this.path = segments.length > 1 ? "" : segments[0] ?? ""; }
+    readonly path: string;
+    get name() { return this.path.split("/").at(-1)!; }
+    list() {
+      const prefix = this.path ? `${this.path}/` : "";
+      const direct = new Map<string, FileFixture | DirectoryFixture>();
+      for (const path of files.keys()) {
+        if (!path.startsWith(prefix)) continue;
+        const remainder = path.slice(prefix.length);
+        const slash = remainder.indexOf("/");
+        if (slash < 0) direct.set(remainder, new FileFixture(path));
+        else direct.set(remainder.slice(0, slash), new DirectoryFixture(`${this.path ? `${this.path}/` : ""}${remainder.slice(0, slash)}`));
+      }
+      return [...direct.values()];
+    }
+  }
+  const fileSystem = { Paths: { document: "documents" }, File: FileFixture, Directory: DirectoryFixture } as unknown as typeof import("expo-file-system");
+  const pointerBytesBefore = JSON.stringify([...files].map(([path, bytes]) => [path, [...bytes]]));
+  const receipt = await inspectExpoNodePackageInventory([{
+    profileIdSha256: "b".repeat(64),
+    entries: [{ key: `patternly.content-node.active.v1.${sha256Utf8(`${TRACK}\u0000${NODE}`)}`, value: JSON.stringify({ schemaVersion: 1, current: identity, retained: [identity] }) }],
+  }], fileSystem);
+
+  assert.equal(receipt.kind, "observed");
+  assert.equal(receipt.pointerCount, 1);
+  assert.equal(receipt.referencedPairCount, 1);
+  assert.equal(receipt.physicalFileCount, 3);
+  assert.equal(receipt.orphanFileCount, 1);
+  assert.equal(receipt.stagingFileCount, 1);
+  assert.equal(JSON.stringify([...files].map(([path, bytes]) => [path, [...bytes]])), pointerBytesBefore);
+});
+
+test("Q13 package receipt refuses malformed and dangling pointers without skipping them", async () => {
+  const fileSystem = { Paths: { document: "documents" }, Directory: class { exists = true; list() { return []; } }, File: class {} } as unknown as typeof import("expo-file-system");
+  const malformed = await inspectExpoNodePackageInventory([{ profileIdSha256: "a".repeat(64), entries: [{ key: `patternly.content-node.active.v1.${"b".repeat(64)}`, value: "not-json" }] }], fileSystem);
+  const dangling = await inspectExpoNodePackageInventory([{ profileIdSha256: "a".repeat(64), entries: [{ key: `patternly.content-node.active.v1.${sha256Utf8(`${TRACK}\u0000${NODE}`)}`, value: JSON.stringify({ schemaVersion: 1, current: { trackId: TRACK, nodeId: NODE, contentVersion: "1.0.0", artifactSha256: "a".repeat(64) }, retained: [{ trackId: TRACK, nodeId: NODE, contentVersion: "1.0.0", artifactSha256: "a".repeat(64) }] }) }] }], fileSystem);
+  assert.deepEqual(malformed, { kind: "unavailable", reason: "pointer_inventory_invalid" });
+  assert.equal(dangling.kind, "unavailable");
+  assert.equal(dangling.reason, "pointer_file_mismatch");
+});
+
 function response(version: string): BinaryPackageResponse {
   const artifact = new TextEncoder().encode(JSON.stringify({ schemaVersion: "patternly-content-node-payload-v1", trackId: TRACK, nodeId: NODE, contentVersion: version, contentReleaseId: "release-1", items: [{ questionId: `question-${version}`, trackId: TRACK, nodeId: NODE, mentalUnitId: "unit-1", prompt: "Select an option.", interaction: { type: "choice_single", scoringMethod: "exact_selected_set", options: [{ optionId: "a", text: "A" }, { optionId: "b", text: "B" }] }, answer: { type: "choice_single", optionId: "a" }, feedback: { type: "choice_single", reason: "Reason", details: {} }, difficulty: null }] }));
   const packed = gzipSync(artifact);

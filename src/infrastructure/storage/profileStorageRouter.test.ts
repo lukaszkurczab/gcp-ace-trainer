@@ -15,6 +15,8 @@ const ACCOUNT_ID = "owner-account-1";
 class MemoryControlStore implements StorageManifestStore {
   readonly values = new Map<string, string>();
   failNextSet = false;
+  failNextSetReadback = false;
+  tearNextSet = false;
   failSetKeyOnce: string | null = null;
   failGetKeyOccurrence: { key: string; occurrence: number } | null = null;
   failNextRemove = false;
@@ -22,7 +24,16 @@ class MemoryControlStore implements StorageManifestStore {
   private assertValidKey(key: string) { assert.match(key, /^[\w.-]+$/u, "SecureStore keys may only contain alphanumeric characters, '.', '-', and '_'"); }
   async get(key: string) { this.assertValidKey(key); const count = (this.getCounts.get(key) ?? 0) + 1; this.getCounts.set(key, count); if (this.failGetKeyOccurrence?.key === key && this.failGetKeyOccurrence.occurrence === count) { this.failGetKeyOccurrence = null; throw new Error("injected_control_read_failure"); } return this.values.get(key) ?? null; }
   getCount(key: string) { return this.getCounts.get(key) ?? 0; }
-  async set(key: string, value: string) { this.assertValidKey(key); if (this.failNextSet || this.failSetKeyOnce === key) { this.failNextSet = false; this.failSetKeyOnce = null; throw new Error("injected_control_commit_failure"); } this.values.set(key, value); }
+  async set(key: string, value: string) {
+    this.assertValidKey(key);
+    if (this.failNextSet || this.failSetKeyOnce === key) { this.failNextSet = false; this.failSetKeyOnce = null; throw new Error("injected_control_commit_failure"); }
+    if (this.tearNextSet) { this.tearNextSet = false; this.values.set(key, value.slice(0, Math.max(1, Math.floor(value.length / 2)))); return; }
+    this.values.set(key, value);
+    if (this.failNextSetReadback) {
+      this.failNextSetReadback = false;
+      this.failGetKeyOccurrence = { key, occurrence: this.getCount(key) + 1 };
+    }
+  }
   async remove(key: string) { this.assertValidKey(key); if (this.failNextRemove) { this.failNextRemove = false; throw new Error("injected_control_remove_failure"); } this.values.delete(key); }
 }
 
@@ -177,6 +188,202 @@ test("exact modern-guest preflight requires selected registered identity, exact 
   }));
   const pending = await openProfileStorageRouter(base, control);
   assert.equal(pending.hasExactUnboundModernGuest(GUEST_ID, installationHash, datasetHash), false);
+});
+
+test("account identity bindings are dual-slot versioned, exact-profile scoped, and never inferred for legacy profiles", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  let router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, OWNER_ID, GUEST_ID) });
+  await router.selectAccount("account-a");
+  router = await openProfileStorageRouter(base, control);
+  assert.equal(router.profile.kind, "account");
+  assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "missing" });
+
+  const first = await router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: "firebase-uid-a", accountId: "account-a", canContinue: () => true });
+  assert.equal(first.profileId, router.profile.id);
+  assert.equal(first.profileKind, "account");
+  assert.equal(first.accountId, "account-a");
+  assert.equal(first.firebaseUid, "firebase-uid-a");
+  assert.equal(first.verified, true);
+  assert.equal(first.verificationRevision, 1);
+  assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "verified", binding: first });
+
+  const second = await router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: "firebase-uid-a", accountId: "account-a", canContinue: () => true });
+  assert.equal(second.verificationRevision, 2);
+  assert.equal(second.firebaseUid, first.firebaseUid);
+  assert.equal(control.values.has("patternly.account-binding.v1.a"), true);
+  assert.equal(control.values.has("patternly.account-binding.v1.b"), true);
+  assert.equal(control.values.has("patternly.profile-root.v1.a"), true);
+  assert.equal(control.values.has("patternly.profile-root.v1.b"), true);
+
+  const rejected = await assert.rejects(() => router.writeVerifiedSelectedAccountIdentityBinding({
+    firebaseUid: "firebase-uid-other", accountId: "account-other", canContinue: () => true,
+  }));
+  assert.equal(rejected, undefined);
+  assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "verified", binding: second });
+});
+
+test("account identity binding invalidation writes a higher PII-free tombstone and corrupt newest slot never falls back", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  let router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, OWNER_ID) });
+  await router.selectAccount("account-delete-me");
+  router = await openProfileStorageRouter(base, control);
+  const binding = await router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: "firebase-uid-delete-me", accountId: "account-delete-me", canContinue: () => true });
+  await router.invalidateSelectedAccountIdentityBinding(() => true);
+  assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "invalidated" });
+  const slotBytes = [...control.values.entries()].filter(([key]) => key.startsWith("patternly.account-binding.v1."));
+  assert.equal(slotBytes.length, 2);
+  const latest = slotBytes.map(([, raw]) => JSON.parse(raw) as { generation: number; bindings: Array<Record<string, unknown>> })
+    .sort((left, right) => right.generation - left.generation)[0]!;
+  assert.equal(latest.bindings[0]?.verified, false);
+  assert.equal(latest.bindings[0]?.firebaseUid, null);
+  assert.equal(latest.bindings[0]?.accountId, null);
+  assert.equal(latest.bindings[0]?.verificationRevision, binding.verificationRevision + 1);
+
+  router = await openProfileStorageRouter(base, control);
+  assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "invalidated" }, "authority-denial tombstones remain fail-closed after a cold router reopen");
+
+  const targetKey = slotBytes.map(([key, raw]) => ({ key, generation: Number((JSON.parse(raw) as { generation: number }).generation) }))
+    .sort((left, right) => right.generation - left.generation)[0]!.key;
+  control.values.set(targetKey, "corrupt-current-binding");
+  await assert.rejects(() => router.readSelectedAccountIdentityBinding(), /account_binding_corrupt/u);
+});
+
+test("identity proof barrier commits an exact tombstone and only its own envelope receipt can restore", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  let router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, OWNER_ID) });
+  await router.selectAccount("proof-barrier-account");
+  router = await openProfileStorageRouter(base, control);
+  const original = await router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: "proof-barrier-uid", accountId: "proof-barrier-account", canContinue: () => true });
+
+  const receipt = await router.beginSelectedAccountIdentityProofBarrier({
+    firebaseUid: original.firebaseUid, accountId: original.accountId, verificationRevision: original.verificationRevision, canContinue: () => true,
+  });
+  assert.ok(receipt);
+  assert.equal(receipt.previousBindingChecksum, original.checksum);
+  assert.equal(receipt.previousVerificationRevision, original.verificationRevision);
+  assert.equal(receipt.tombstoneVerificationRevision, original.verificationRevision + 1);
+  assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "invalidated" });
+
+  const restored = await router.resolveSelectedAccountIdentityProofBarrier({ receipt, canContinue: () => true });
+  assert.equal(restored.firebaseUid, original.firebaseUid);
+  assert.equal(restored.accountId, original.accountId);
+  assert.equal(restored.verificationRevision, receipt.tombstoneVerificationRevision + 1);
+  assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "verified", binding: restored });
+});
+
+test("identity proof barrier fails closed on commit failure and cannot restore over a newer envelope", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  let router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, OWNER_ID) });
+  await router.selectAccount("proof-barrier-fault-account");
+  router = await openProfileStorageRouter(base, control);
+  const original = await router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: "proof-barrier-fault-uid", accountId: "proof-barrier-fault-account", canContinue: () => true });
+  const beforeFailure = new Map(control.values);
+  control.failNextSet = true;
+  await assert.rejects(() => router.beginSelectedAccountIdentityProofBarrier({
+    firebaseUid: original.firebaseUid, accountId: original.accountId, verificationRevision: original.verificationRevision, canContinue: () => true,
+  }), /injected_control_commit_failure/u);
+  assert.deepEqual(control.values, beforeFailure);
+  assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "verified", binding: original });
+
+  const receipt = await router.beginSelectedAccountIdentityProofBarrier({
+    firebaseUid: original.firebaseUid, accountId: original.accountId, verificationRevision: original.verificationRevision, canContinue: () => true,
+  });
+  assert.ok(receipt);
+  const newer = await router.writeVerifiedSelectedAccountIdentityBinding({
+    firebaseUid: original.firebaseUid, accountId: original.accountId, canContinue: () => true,
+  });
+  assert.equal(newer.verificationRevision, receipt.tombstoneVerificationRevision + 1);
+  await assert.rejects(() => router.resolveSelectedAccountIdentityProofBarrier({ receipt, canContinue: () => true }), /account_binding_conflict/u);
+  assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "verified", binding: newer });
+});
+
+test("proof barrier distinguishes torn and post-set readback faults from a pre-set failure", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  let router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, OWNER_ID) });
+  await router.selectAccount("proof-barrier-stage-account");
+  router = await openProfileStorageRouter(base, control);
+  const original = await router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: "proof-barrier-stage-uid", accountId: "proof-barrier-stage-account", canContinue: () => true });
+
+  control.tearNextSet = true;
+  await assert.rejects(() => router.beginSelectedAccountIdentityProofBarrier({
+    firebaseUid: original.firebaseUid, accountId: original.accountId, verificationRevision: original.verificationRevision, canContinue: () => true,
+  }), /account_binding_corrupt|account_binding_commit_unverified/u);
+  router = await openProfileStorageRouter(base, control);
+  await assert.rejects(() => router.readSelectedAccountIdentityBinding(), /account_binding_corrupt/u, "a torn newest slot blocks instead of reviving the older verified slot");
+
+  const secondBase = new MemoryKeyValueStorage();
+  const secondControl = new MemoryControlStore();
+  router = await openProfileStorageRouter(secondBase, secondControl, { identity: identitySequence(GUEST_ID, OWNER_ID) });
+  await router.selectAccount("proof-barrier-stage-account");
+  router = await openProfileStorageRouter(secondBase, secondControl);
+  const secondOriginal = await router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: "proof-barrier-stage-uid", accountId: "proof-barrier-stage-account", canContinue: () => true });
+  secondControl.failNextSetReadback = true;
+  await assert.rejects(() => router.beginSelectedAccountIdentityProofBarrier({
+    firebaseUid: secondOriginal.firebaseUid, accountId: secondOriginal.accountId, verificationRevision: secondOriginal.verificationRevision, canContinue: () => true,
+  }), /injected_control_read_failure/u);
+  router = await openProfileStorageRouter(secondBase, secondControl);
+  assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "invalidated" }, "a committed barrier remains durable when its caller loses the readback");
+
+  const restoreReceipt = await router.beginSelectedAccountIdentityProofBarrier({
+    firebaseUid: secondOriginal.firebaseUid, accountId: secondOriginal.accountId, verificationRevision: secondOriginal.verificationRevision + 1, canContinue: () => true,
+  }).catch(() => null);
+  assert.equal(restoreReceipt, null, "an invalidated binding cannot mint a second restore receipt without online proof");
+});
+
+test("restore pre-set failure keeps tombstone while a committed restore with lost readback is recoverable on cold read", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  let router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, OWNER_ID) });
+  await router.selectAccount("proof-restore-stage-account");
+  router = await openProfileStorageRouter(base, control);
+  const original = await router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: "proof-restore-stage-uid", accountId: "proof-restore-stage-account", canContinue: () => true });
+  const receipt = await router.beginSelectedAccountIdentityProofBarrier({ firebaseUid: original.firebaseUid, accountId: original.accountId, verificationRevision: original.verificationRevision, canContinue: () => true });
+  assert.ok(receipt);
+  control.failNextSet = true;
+  await assert.rejects(() => router.resolveSelectedAccountIdentityProofBarrier({ receipt, canContinue: () => true }), /injected_control_commit_failure/u);
+  router = await openProfileStorageRouter(base, control);
+  assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "invalidated" }, "failure before restore commit remains blocked after reopen");
+
+  const restoreBase = new MemoryKeyValueStorage();
+  const restoreControl = new MemoryControlStore();
+  let restoreRouter = await openProfileStorageRouter(restoreBase, restoreControl, { identity: identitySequence(GUEST_ID, OWNER_ID) });
+  await restoreRouter.selectAccount("proof-restore-stage-account");
+  restoreRouter = await openProfileStorageRouter(restoreBase, restoreControl);
+  const verified = await restoreRouter.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: "proof-restore-stage-uid", accountId: "proof-restore-stage-account", canContinue: () => true });
+  const restoreReceipt = await restoreRouter.beginSelectedAccountIdentityProofBarrier({ firebaseUid: verified.firebaseUid, accountId: verified.accountId, verificationRevision: verified.verificationRevision, canContinue: () => true });
+  assert.ok(restoreReceipt);
+  restoreControl.failNextSetReadback = true;
+  await assert.rejects(() => restoreRouter.resolveSelectedAccountIdentityProofBarrier({ receipt: restoreReceipt, canContinue: () => true }), /injected_control_read_failure/u);
+  restoreRouter = await openProfileStorageRouter(restoreBase, restoreControl);
+  const recovered = await restoreRouter.readSelectedAccountIdentityBinding();
+  assert.equal(recovered.kind, "verified", "the exact fully valid restored highest revision is available to a later cold proof");
+  if (recovered.kind === "verified") assert.equal(recovered.binding.verificationRevision, restoreReceipt.tombstoneVerificationRevision + 1);
+});
+
+test("account identity binding writer fails closed on stale scope, denied guard, and unverified dual-slot commit", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  let router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, OWNER_ID) });
+  await router.selectAccount("account-write");
+  router = await openProfileStorageRouter(base, control);
+  const before = new Map(control.values);
+  await assert.rejects(() => router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: "uid", accountId: "account-write", canContinue: () => false }), /profile_transition_cancelled/u);
+  assert.deepEqual(control.values, before);
+
+  control.failNextSet = true;
+  await assert.rejects(() => router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: "uid", accountId: "account-write", canContinue: () => true }), /injected_control_commit_failure/u);
+  assert.deepEqual(control.values, before);
+
+  let canContinue = true;
+  control.failGetKeyOccurrence = { key: "patternly.profile-root.v1.a", occurrence: control.getCount("patternly.profile-root.v1.a") + 1 };
+  await assert.rejects(() => router.writeVerifiedSelectedAccountIdentityBinding({ firebaseUid: "uid", accountId: "account-write", canContinue: () => canContinue }), /injected_control_read_failure/u);
+  canContinue = false;
+  assert.deepEqual(control.values, before);
 });
 
 test("a selected modern guest keeps its earlier independent dataset identity and scoped data", async () => {

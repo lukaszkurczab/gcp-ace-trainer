@@ -420,6 +420,7 @@ test("explicit replacement confirms delivery_unconfirmed, saves one backup befor
   assert.equal(snapshot.kind, "issue");
   if (snapshot.kind !== "issue") return;
   assert.equal(snapshot.replacementPending, false);
+  assert.equal(snapshot.previousIssueOperationId, operationId, "the returned snapshot carries the exact encrypted predecessor lineage for the caller's transition fence");
   assert.deepEqual(snapshot.codes, issueCodes.slice().reverse());
   const durable = JSON.parse(state.serialized() ?? "null");
   assert.equal(Object.hasOwn(durable, "previousIssue"), false);
@@ -591,7 +592,7 @@ test("confirmed ACK and superseded replacement statuses resolve the backup as te
     await state.seed(pendingReplacement());
     state.setIssueStatusResponder(async (id) => ({ operationId: id, status, authorizationGeneration: 4 }));
     const snapshot = await state.coordinator.retryRecoveryOperation();
-    assert.deepEqual(snapshot, { kind: "terminal", operationId: replacementOperationId, status, blocksProfilePreparation: false });
+    assert.deepEqual(snapshot, { kind: "terminal", operationId: replacementOperationId, status, ...(status === "acknowledged" || status === "superseded" ? { previousIssueOperationId: operationId } : {}), blocksProfilePreparation: false });
     assert.equal(state.serialized(), null);
     assert.equal(state.calls.issueAck, 0);
   }

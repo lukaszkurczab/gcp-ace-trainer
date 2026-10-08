@@ -10,6 +10,7 @@ import i18next from 'i18next';
 const require = createRequire(import.meta.url);
 const { runtimeSelectors } = require('../../../testing/runtimeSelectors.ts');
 const { completionCopy } = require('../homePlanUiContract.ts');
+const { getTrackRoadmapCatalog, titleForNode } = require('../../practice/trackRoadmapCatalog.ts');
 const source = readFileSync(new URL('./ProgressTab.tsx', import.meta.url), 'utf8');
 const ast = ts.createSourceFile('ProgressTab.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 const subjects = ast.statements.filter(node => ts.isFunctionDeclaration(node) && ['ProgressPlanSection', 'planToneColor'].includes(node.name?.text));
@@ -27,7 +28,7 @@ export function renderProgressPlanSection(model, { locale = 'en', fontScale = 1,
   }
   void i18n.init({ initAsync: false, lng: locale, fallbackLng: 'en', keySeparator: false, resources, interpolation: { escapeValue: false } });
   const context = {
-    module: { exports: {} }, exports: {}, require, runtimeSelectors, completionCopy,
+    module: { exports: {} }, exports: {}, require, runtimeSelectors, completionCopy, getTrackRoadmapCatalog, titleForNode,
     useThemedStyles: () => ({}), createStyles: () => ({}),
     useTranslation: namespace => ({ t: i18n.getFixedT(locale, namespace) }),
     useAppPreferences: () => ({ colors: {} }), useWindowDimensions: () => ({ fontScale }),

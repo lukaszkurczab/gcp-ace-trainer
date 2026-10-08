@@ -54,7 +54,7 @@ function input(overrides: Partial<PaceForecastInput> = {}): PaceForecastInput {
   return {
     acceptedPlan: plan(),
     c3Result: "in_progress",
-    requiredAttemptCount: 8,
+    remainingAttemptCount: 8,
     today: "2026-02-01",
     timezone: ZONE,
     completedFacts: facts(["2026-01-29", "2026-01-31"]),
@@ -77,16 +77,16 @@ test("uses the explicit formulas, includes today, and excludes an event target d
   const deadline = calculatePaceForecast(input({
     acceptedPlan: plan({ acceptedTarget: { meaning: "deadline", targetDate: "2026-02-10" } }),
     today,
-    requiredAttemptCount: 8,
+    remainingAttemptCount: 8,
   }));
   assert.equal(deadline.kind, "available");
   if (deadline.kind !== "available") return;
-  assert.equal(deadline.remainingRequiredAttempts, 6);
+  assert.equal(deadline.remainingRequiredAttempts, 8);
   assert.equal(deadline.requiredQuestionsPerSession, 2);
-  assert.equal(deadline.requiredQuestionsPerWeek, 4.2);
+  assert.equal(deadline.requiredQuestionsPerWeek, 5.6);
   assert.equal(deadline.actualQuestionsPerWeek, 0.5);
   assert.equal(deadline.remainingPlannedCapacity, 40);
-  assert.equal(deadline.projectedCompletionDate, "2026-04-25");
+  assert.equal(deadline.projectedCompletionDate, "2026-05-23");
   assert.equal(deadline.status, "at_risk");
 
   const event = calculatePaceForecast(input({
@@ -135,30 +135,30 @@ test("minimum observation age is inclusive: six days gives seven days, five give
 test("trend starts at thirteen days and applies strict ten-percent boundaries", () => {
   const today = "2026-02-20";
   const previous = Array.from({ length: 10 }, (_, index) => dateMinus(today, 7 + (index % 7)));
-  const boundary = calculatePaceForecast(input({ acceptedPlan: plan({ createdAt: "2026-01-01T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2026-03-20" } }), today, requiredAttemptCount: 100, completedFacts: facts([...previous, ...Array.from({ length: 11 }, (_, index) => dateMinus(today, index % 7))]) }));
+  const boundary = calculatePaceForecast(input({ acceptedPlan: plan({ createdAt: "2026-01-01T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2026-03-20" } }), today, remainingAttemptCount: 100, completedFacts: facts([...previous, ...Array.from({ length: 11 }, (_, index) => dateMinus(today, index % 7))]) }));
   assert.equal(boundary.kind, "available");
   if (boundary.kind === "available") assert.equal(boundary.trend, "stable");
 
-  const improving = calculatePaceForecast(input({ acceptedPlan: plan({ createdAt: "2026-01-01T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2026-03-20" } }), today, requiredAttemptCount: 100, completedFacts: facts([...previous, ...Array.from({ length: 12 }, (_, index) => dateMinus(today, index % 7))]) }));
+  const improving = calculatePaceForecast(input({ acceptedPlan: plan({ createdAt: "2026-01-01T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2026-03-20" } }), today, remainingAttemptCount: 100, completedFacts: facts([...previous, ...Array.from({ length: 12 }, (_, index) => dateMinus(today, index % 7))]) }));
   assert.equal(improving.kind, "available");
   if (improving.kind === "available") assert.equal(improving.trend, "improving");
 
-  const slowing = calculatePaceForecast(input({ acceptedPlan: plan({ createdAt: "2026-01-01T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2026-03-20" } }), today, requiredAttemptCount: 100, completedFacts: facts([...previous, ...Array.from({ length: 8 }, (_, index) => dateMinus(today, index % 7))]) }));
+  const slowing = calculatePaceForecast(input({ acceptedPlan: plan({ createdAt: "2026-01-01T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2026-03-20" } }), today, remainingAttemptCount: 100, completedFacts: facts([...previous, ...Array.from({ length: 8 }, (_, index) => dateMinus(today, index % 7))]) }));
   assert.equal(slowing.kind, "available");
   if (slowing.kind === "available") assert.equal(slowing.trend, "slowing");
 
-  const ageThirteen = calculatePaceForecast(input({ acceptedPlan: plan({ createdAt: "2026-02-07T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2026-03-20" } }), today, requiredAttemptCount: 5, completedFacts: facts([today]) }));
+  const ageThirteen = calculatePaceForecast(input({ acceptedPlan: plan({ createdAt: "2026-02-07T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2026-03-20" } }), today, remainingAttemptCount: 5, completedFacts: facts([today]) }));
   assert.equal(ageThirteen.kind, "available");
   if (ageThirteen.kind === "available") assert.equal(ageThirteen.trend, "improving");
 
-  const ageTwelve = calculatePaceForecast(input({ acceptedPlan: plan({ createdAt: "2026-02-08T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2026-03-20" } }), today, requiredAttemptCount: 5, completedFacts: facts([today]) }));
+  const ageTwelve = calculatePaceForecast(input({ acceptedPlan: plan({ createdAt: "2026-02-08T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2026-03-20" } }), today, remainingAttemptCount: 5, completedFacts: facts([today]) }));
   assert.equal(ageTwelve.kind, "available");
   if (ageTwelve.kind === "available") assert.equal(ageTwelve.trend, "stable");
 });
 
 test("trend handles zero-to-zero, zero-to-positive, and positive-to-zero windows after age fourteen", () => {
   const today = "2026-02-20";
-  const base = { acceptedPlan: plan({ createdAt: "2026-02-06T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2026-03-20" } }), today, requiredAttemptCount: 100 };
+  const base = { acceptedPlan: plan({ createdAt: "2026-02-06T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2026-03-20" } }), today, remainingAttemptCount: 100 };
   const zeroToZero = calculatePaceForecast(input({ ...base, completedFacts: facts([]) }));
   assert.equal(zeroToZero.kind, "unavailable");
   // No current qualifying attempt remains an honest business absence even
@@ -179,7 +179,7 @@ test("completed work is zero work even without future occurrences or observation
     acceptedPlan: plan({ acceptedTarget: { meaning: "event", targetDate: "2026-01-31" }, slots: [{ slotId: createLearningPlanSlotId("slot:mon"), day: "mon", localTime: "18:00", sessionLength: 10 }] }),
     today: "2026-02-01",
     c3Result: "completed",
-    requiredAttemptCount: 8,
+    remainingAttemptCount: 8,
     completedFacts: { sessions: [], attempts: [] },
   }));
   assert.equal(result.kind, "available");
@@ -202,17 +202,17 @@ test("returns each honest unavailable business reason", () => {
 
 test("requires a concrete non-negative completion requirement", () => {
   const missing = { ...input() } as Record<string, unknown>;
-  delete missing.requiredAttemptCount;
+  delete missing.remainingAttemptCount;
   assertInvalid(missing, "invalid_completion_requirement");
-  assertInvalid({ ...input(), requiredAttemptCount: undefined }, "invalid_completion_requirement");
-  assertInvalid({ ...input(), requiredAttemptCount: null }, "invalid_completion_requirement");
-  assertInvalid(input({ requiredAttemptCount: -1 }), "invalid_completion_requirement");
+  assertInvalid({ ...input(), remainingAttemptCount: undefined }, "invalid_completion_requirement");
+  assertInvalid({ ...input(), remainingAttemptCount: null }, "invalid_completion_requirement");
+  assertInvalid(input({ remainingAttemptCount: -1 }), "invalid_completion_requirement");
   assertInvalid({ ...input(), completionRule: { minimumAttemptCount: 1 } }, "invalid_shape");
 });
 
 test("returns calculation_error when the projected calendar date is not representable", () => {
   const result = calculatePaceForecast(input({
-    requiredAttemptCount: 1_000_000_000,
+    remainingAttemptCount: 1_000_000_000,
     completedFacts: facts(["2026-01-31"]),
   }));
   assert.deepEqual(result, { kind: "unavailable", reason: "calculation_error" });
@@ -221,10 +221,10 @@ test("returns calculation_error when the projected calendar date is not represen
 test("uses full immutable facts and does not double-count session questions", () => {
   const mutableFacts = { sessions: [{ completedAt: "2026-01-20T10:00:00.000Z", completedQuestions: 10, plannedQuestions: 10 }], attempts: [{ answeredAt: "2026-01-20T10:00:00.000Z", countsTowardCompletion: true }] } satisfies ImmutableCompletedFacts;
   const before = structuredClone(mutableFacts);
-  const result = calculatePaceForecast(input({ requiredAttemptCount: 5, completedFacts: mutableFacts }));
+  const result = calculatePaceForecast(input({ remainingAttemptCount: 5, completedFacts: mutableFacts }));
   assert.deepEqual(mutableFacts, before);
   assert.equal(result.kind, "available");
-  if (result.kind === "available") assert.equal(result.remainingRequiredAttempts, 4);
+  if (result.kind === "available") assert.equal(result.remainingRequiredAttempts, 5);
   assert.equal(Object.isFrozen(result), true);
   if (result.kind === "available") {
     assert.equal(Object.isFrozen(result.source), true);
@@ -238,11 +238,11 @@ test("handles DST, leap-day calendar arithmetic, and today occurrences without e
     { slotId: createLearningPlanSlotId("slot:mon"), day: "mon", localTime: "18:00", sessionLength: 3 },
     { slotId: createLearningPlanSlotId("slot:sun"), day: "sun", localTime: "18:00", sessionLength: 3 },
   ] });
-  const result = calculatePaceForecast(input({ acceptedPlan: dstPlan, timezone: "America/New_York", today: "2024-03-10", requiredAttemptCount: 2, completedFacts: { sessions: [], attempts: [{ answeredAt: "2024-03-10T04:30:00.000Z", countsTowardCompletion: true }] } }));
+  const result = calculatePaceForecast(input({ acceptedPlan: dstPlan, timezone: "America/New_York", today: "2024-03-10", remainingAttemptCount: 2, completedFacts: { sessions: [], attempts: [{ answeredAt: "2024-03-10T04:30:00.000Z", countsTowardCompletion: true }] } }));
   assert.equal(result.kind, "available");
   if (result.kind === "available") assert.equal(result.remainingPlannedCapacity, 6);
 
-  const leap = calculatePaceForecast(input({ acceptedPlan: plan({ createdAt: "2024-02-20T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2024-03-03" }, slots: [{ slotId: createLearningPlanSlotId("slot:thu"), day: "thu", localTime: "18:00", sessionLength: 2 }, { slotId: createLearningPlanSlotId("slot:fri"), day: "fri", localTime: "18:00", sessionLength: 2 }] }), today: "2024-02-28", requiredAttemptCount: 2, completedFacts: { sessions: [], attempts: [{ answeredAt: "2024-02-28T10:00:00.000Z", countsTowardCompletion: true }] } }));
+  const leap = calculatePaceForecast(input({ acceptedPlan: plan({ createdAt: "2024-02-20T10:00:00.000Z", acceptedTarget: { meaning: "deadline", targetDate: "2024-03-03" }, slots: [{ slotId: createLearningPlanSlotId("slot:thu"), day: "thu", localTime: "18:00", sessionLength: 2 }, { slotId: createLearningPlanSlotId("slot:fri"), day: "fri", localTime: "18:00", sessionLength: 2 }] }), today: "2024-02-28", remainingAttemptCount: 2, completedFacts: { sessions: [], attempts: [{ answeredAt: "2024-02-28T10:00:00.000Z", countsTowardCompletion: true }] } }));
   assert.equal(leap.kind, "available");
   if (leap.kind === "available") assert.equal(leap.remainingPlannedCapacity, 4);
 });
@@ -250,7 +250,7 @@ test("handles DST, leap-day calendar arithmetic, and today occurrences without e
 test("rejects malformed numbers, dates, timezones, future facts, and inconsistent sessions", () => {
   assertInvalid(input({ today: "2026-02-30" }), "invalid_today");
   assertInvalid(input({ timezone: "Mars/Olympus" }), "invalid_timezone");
-  assertInvalid(input({ requiredAttemptCount: -1 }), "invalid_completion_requirement");
+  assertInvalid(input({ remainingAttemptCount: -1 }), "invalid_completion_requirement");
   assertInvalid(input({ completedFacts: { sessions: [], attempts: [{ answeredAt: "2026-02-02T10:00:00.000Z", countsTowardCompletion: true }] } }), "future_fact");
   assertInvalid(input({ completedFacts: { sessions: [{ completedAt: "2026-01-20T10:00:00.000Z", completedQuestions: 4, plannedQuestions: 3 }], attempts: [] } }), "inconsistent_fact");
   assertInvalid(input({ acceptedPlan: { ...plan(), trackId: "not-a-track" } }), "invalid_plan");

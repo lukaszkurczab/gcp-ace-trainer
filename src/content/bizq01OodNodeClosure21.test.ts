@@ -157,7 +157,7 @@ test("OOD21 producer proof binds the frozen 153-item same-ID map and exact sourc
 test("OOD21 loaded runtime matches every fixed same-ID question object", async () => {
   const map = readMap();
   const runtime = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK);
-  assert.equal(runtime.contentVersion, "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24");
+  assert.equal(runtime.contentVersion, "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24-bizq02-v2");
   const questions = runtime.getQuestionsForNode(NODE);
   assert.equal(questions.length, 153);
   assert.deepEqual(

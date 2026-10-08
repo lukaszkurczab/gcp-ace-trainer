@@ -64,6 +64,10 @@
       "title": "Deine Kontodaten",
       "body": "Lerndaten werden auf diesem Gerät gespeichert. Unterstützte Kontodatensätze können zusätzlich mit der Cloud deines Kontos synchronisiert und nach der Anmeldung durch die normale Synchronisierung wiederhergestellt werden. Nutze unten die Export-, Detail- und Datenschutzaktionen für dieses Konto."
     },
+    "localOffline": {
+      "title": "Kontodaten auf diesem Gerät",
+      "body": "Deine gespeicherten Lerndaten bleiben auf diesem Gerät. Stelle die Verbindung wieder her, um dein Konto zu prüfen, bevor du Änderungen synchronisierst oder Kontodaten nutzt."
+    },
     "guest": {
       "title": "Gastdaten",
       "body": "Lerndaten werden lokal auf diesem Gerät gespeichert. Du kannst Patternly ohne Konto verwenden. Wenn du Hilfe zu deinen Daten benötigst, nutze das Datenschutzformular in dieser App."

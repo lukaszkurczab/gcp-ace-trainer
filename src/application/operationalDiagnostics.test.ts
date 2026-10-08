@@ -36,6 +36,23 @@ test("bootstrap observers receive only the canonical bounded event", () => {
   clearDevelopmentBootstrapDiagnostic();
 });
 
+test("resume-time canonical changes have a bounded invariant code", () => {
+  const events: BootstrapDiagnosticEvent[] = [];
+  observeBootstrapFailure(
+    (event) => { events.push(event); },
+    ApplicationBootstrapStage.ResumingSession,
+    new BootstrapInvariantError("active_session_changed_during_resume", "session payload=session-123"),
+  );
+
+  assert.deepEqual(events, [{
+    stage: ApplicationBootstrapStage.ResumingSession,
+    operationalCode: "LOCAL_OPERATION_FAILED",
+    invariantCode: "active_session_changed_during_resume",
+    errorKind: "error",
+  }]);
+  assert.doesNotMatch(JSON.stringify(events), /payload|session-123/u);
+});
+
 test("a throwing diagnostic observer cannot alter the operation", () => {
   assert.doesNotThrow(() => observeBootstrapFailure(
     () => { throw new Error("observer payload=session-456"); },

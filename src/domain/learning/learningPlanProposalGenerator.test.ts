@@ -19,6 +19,16 @@ function snapshot(goalType: GoalRecord["goalType"], preferredDays: GoalRecord["p
   });
 }
 
+function chapterCompletion(qualifyingAttemptCount: number, quality: number | null = null): PackageCompletionState {
+  const requiredAttemptCount = 20;
+  const completed = qualifyingAttemptCount >= requiredAttemptCount && quality !== null && quality >= 0.8;
+  const reason = completed ? null : qualifyingAttemptCount < requiredAttemptCount ? "minimum_attempts_unmet" : "quality_unmet";
+  const chapter = Object.freeze({ nodeId: "chapter", mentalUnitCount: 1, qualifyingAttemptCount, requiredAttemptCount, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality, status: completed ? "completed" as const : "in_progress" as const, reason });
+  const remainingAttemptCount = Math.max(0, requiredAttemptCount - qualifyingAttemptCount);
+  const common = { chapters: Object.freeze([chapter]), completedChapterCount: completed ? 1 : 0, requiredChapterCount: 1, qualifyingAttemptCount, requiredAttemptCount, remainingAttemptCount };
+  return completed ? Object.freeze({ kind: "completed", ...common, remainingAttemptCount: 0 }) : Object.freeze({ kind: "in_progress", ...common });
+}
+
 function input(overrides: Partial<GeneratorInput> = {}): GeneratorInput {
   return {
     goalSnapshot: snapshot("build_foundations"),
@@ -27,7 +37,7 @@ function input(overrides: Partial<GeneratorInput> = {}): GeneratorInput {
     primaryModeId: "coding-interview-learn-approach",
     requestedLength: 10,
     sessionCapacity: { kind: "exact", actualLength: 10 },
-    completionState: { kind: "in_progress", qualifyingAttemptCount: 2, requiredAttemptCount: 5, rollingWindowSize: 3 },
+    completionState: chapterCompletion(2),
     dueReviewCount: 0,
     primaryScopeLabel: "Foundations",
     localToday: "2026-02-23",
@@ -67,12 +77,12 @@ test("uses due review priority, otherwise package scope, without item identifier
 test("event boundaries are strict-before while deadline and checkpoint are inclusive", () => {
   const eventDate = "2026-02-25"; // Wednesday: today is Monday, event-day session is excluded.
   for (const goalType of ["prepare_for_an_interview", "prepare_for_a_certification"] as const) {
-    const result = generateLearningPlanProposal(input({ goalSnapshot: snapshot(goalType, ["mon", "wed"], eventDate, goalType === "prepare_for_a_certification" ? CERTIFICATION_TRACK_ID : TRACK_ID), completionState: { kind: "in_progress", qualifyingAttemptCount: 0, requiredAttemptCount: 11, rollingWindowSize: 1 } }));
+    const result = generateLearningPlanProposal(input({ goalSnapshot: snapshot(goalType, ["mon", "wed"], eventDate, goalType === "prepare_for_a_certification" ? CERTIFICATION_TRACK_ID : TRACK_ID), completionState: chapterCompletion(0) }));
     assert.equal(result.targetAssessment.kind, "unreachable");
-    if (result.targetAssessment.kind === "unreachable") assert.deepEqual(result.targetAssessment, { kind: "unreachable", occurrences: 1, actualLength: 10, remainingAttempts: 11 });
+    if (result.targetAssessment.kind === "unreachable") assert.deepEqual(result.targetAssessment, { kind: "unreachable", occurrences: 1, actualLength: 10, remainingAttempts: 20 });
   }
   for (const goalType of ["build_foundations", "refresh_and_maintain_skills"] as const) {
-    const result = generateLearningPlanProposal(input({ goalSnapshot: snapshot(goalType, ["mon", "wed"], eventDate), completionState: { kind: "in_progress", qualifyingAttemptCount: 0, requiredAttemptCount: 20, rollingWindowSize: 1 } }));
+    const result = generateLearningPlanProposal(input({ goalSnapshot: snapshot(goalType, ["mon", "wed"], eventDate), completionState: chapterCompletion(0) }));
     assert.equal(result.targetAssessment.kind, "achievable");
     if (result.targetAssessment.kind === "achievable") assert.equal(result.targetAssessment.occurrences, 2);
   }
@@ -88,16 +98,16 @@ test("missing target date is open-ended before an unknown completion rule", () =
 test("C3 unknown is explicit with a target; in-progress uses remaining attempts and completed has no remaining work", () => {
   const unknown = generateLearningPlanProposal(input({ goalSnapshot: snapshot("build_foundations", ["mon"], "2026-03-01"), completionState: { kind: "unknown" } }));
   assert.deepEqual(unknown.targetAssessment, { kind: "unknown_completion_rule" });
-  const inProgress = generateLearningPlanProposal(input({ goalSnapshot: snapshot("build_foundations", ["mon"], "2026-03-01"), completionState: { kind: "in_progress", qualifyingAttemptCount: 9, requiredAttemptCount: 5, rollingWindowSize: 1 } }));
+  const inProgress = generateLearningPlanProposal(input({ goalSnapshot: snapshot("build_foundations", ["mon"], "2026-03-01"), completionState: chapterCompletion(20, 0.75) }));
   assert.deepEqual(inProgress.targetAssessment, { kind: "quality_requirement_unmet" });
-  const completed = generateLearningPlanProposal(input({ goalSnapshot: snapshot("build_foundations", ["mon"], "2026-03-01"), completionState: { kind: "completed", qualifyingAttemptCount: 5, rollingWindowSize: 1, quality: 1 } }));
+  const completed = generateLearningPlanProposal(input({ goalSnapshot: snapshot("build_foundations", ["mon"], "2026-03-01"), completionState: chapterCompletion(20, 1) }));
   assert.deepEqual(completed.targetAssessment, { kind: "achievable", occurrences: 1, actualLength: 10, remainingAttempts: 0 });
 });
 
 test("S12 is the only capacity source and shortfall preserves all counts without slots or attainability", () => {
   const shortened = generateLearningPlanProposal(input({ goalSnapshot: snapshot("build_foundations", ["mon"], "2026-03-01"), requestedLength: 10, sessionCapacity: { kind: "shortened", actualLength: 4, requestedLength: 10 } }));
   assert.equal(shortened.slots[0]?.sessionLength, 4);
-  assert.equal(shortened.targetAssessment.kind, "achievable");
+  assert.deepEqual(shortened.targetAssessment, { kind: "unreachable", occurrences: 1, actualLength: 4, remainingAttempts: 18 });
 
   const shortfall = generateLearningPlanProposal(input({ sessionCapacity: { kind: "shortfall", requestedLength: 10, eligibleItemCount: 2, missingItemCount: 8 }, completionState: { kind: "unknown" } }));
   assert.deepEqual(shortfall.sessionCapacity, { kind: "shortfall", requestedLength: 10, eligibleItemCount: 2, missingItemCount: 8 });
@@ -106,10 +116,10 @@ test("S12 is the only capacity source and shortfall preserves all counts without
 });
 
 test("leap-day and DST-neutral occurrence counting use calendar dates, not elapsed local milliseconds", () => {
-  const leap = generateLearningPlanProposal(input({ localToday: "2024-02-28", timezone: "America/New_York", goalSnapshot: snapshot("build_foundations", ["thu", "fri", "sat"], "2024-03-01"), completionState: { kind: "in_progress", qualifyingAttemptCount: 0, requiredAttemptCount: 3, rollingWindowSize: 1 } }));
+  const leap = generateLearningPlanProposal(input({ localToday: "2024-02-28", timezone: "America/New_York", goalSnapshot: snapshot("build_foundations", ["thu", "fri", "sat"], "2024-03-01"), completionState: chapterCompletion(0) }));
   assert.equal(leap.targetAssessment.kind, "achievable");
   if (leap.targetAssessment.kind === "achievable") assert.equal(leap.targetAssessment.occurrences, 2);
-  const dst = generateLearningPlanProposal(input({ localToday: "2024-03-08", timezone: "America/New_York", goalSnapshot: snapshot("build_foundations", ["sun", "mon"], "2024-03-11"), completionState: { kind: "in_progress", qualifyingAttemptCount: 0, requiredAttemptCount: 20, rollingWindowSize: 1 } }));
+  const dst = generateLearningPlanProposal(input({ localToday: "2024-03-08", timezone: "America/New_York", goalSnapshot: snapshot("build_foundations", ["sun", "mon"], "2024-03-11"), completionState: chapterCompletion(0) }));
   assert.equal(dst.targetAssessment.kind, "achievable");
   if (dst.targetAssessment.kind === "achievable") assert.equal(dst.targetAssessment.occurrences, 2);
 });
@@ -138,7 +148,7 @@ test("rejects malformed or inconsistent input with the one explicit error class"
     ["target date", input({ goalSnapshot: snapshot("build_foundations", ["mon"], "2024-02-30") }), "invalid_goal_snapshot"],
     ["length", input({ requestedLength: 0 }), "invalid_requested_length"],
     ["capacity", input({ requestedLength: 10, sessionCapacity: { kind: "exact", actualLength: 9 } }), "invalid_session_capacity"],
-    ["completion", input({ completionState: { kind: "in_progress", qualifyingAttemptCount: -1, requiredAttemptCount: 1, rollingWindowSize: 1 } as PackageCompletionState }), "invalid_completion_state"],
+    ["completion", input({ completionState: { kind: "in_progress", qualifyingAttemptCount: -1, requiredAttemptCount: 1, rollingWindowSize: 1 } as unknown as PackageCompletionState }), "invalid_completion_state"],
     ["empty days", input({ goalSnapshot: snapshot("build_foundations", []) }), "invalid_goal_snapshot"],
   ];
   for (const [name, value, code] of invalidCases) {

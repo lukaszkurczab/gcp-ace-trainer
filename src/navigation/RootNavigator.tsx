@@ -128,7 +128,7 @@ export function RootNavigator() {
     );
   }
 
-  const applicationSessionReady = state.kind === "guest" || state.kind === "signingOut" || state.kind === "deleting" || (state.kind === "authenticated" && state.accountData.status === "synced") || (state.kind === "authenticated" && ["resumeRequired", "remoteDeletionPending", "localCleanupPending"].includes(state.accountData.status));
+  const applicationSessionReady = state.kind === "guest" || state.kind === "localOffline" || state.kind === "signingOut" || state.kind === "deleting" || (state.kind === "authenticated" && state.accountData.status === "synced") || (state.kind === "authenticated" && ["resumeRequired", "remoteDeletionPending", "localCleanupPending"].includes(state.accountData.status));
 
   if (state.kind === "loading" || state.kind === "profilePreparing") {
     return (

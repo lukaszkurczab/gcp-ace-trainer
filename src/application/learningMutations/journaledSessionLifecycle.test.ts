@@ -9,6 +9,19 @@ import { installMemoryStorage, session, timestamp } from "../../testing/journalT
 
 test("session abandonment persists abandoned session before clearing active pointer", async () => { const storage = installMemoryStorage(); await saveTrainingSession(session()); await commitSessionAbandonment(session("abandoned"), timestamp); assert.equal((await getTrainingSessions()).value[0]?.status, "abandoned"); assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), false); });
 test("session abandonment replay is idempotent", async () => { installMemoryStorage(); await saveTrainingSession(session()); await commitSessionAbandonment(session("abandoned"), timestamp); await commitSessionAbandonment(session("abandoned"), timestamp); assert.equal((await getTrainingSessions()).value.length, 1); });
+test("abandonment preflight failure leaves canonical records and journal untouched", async () => {
+  const storage = installMemoryStorage();
+  await saveTrainingSession(session());
+  let preflightCalls = 0;
+  await assert.rejects(() => commitSessionAbandonment(session("abandoned"), timestamp, async () => {
+    preflightCalls += 1;
+    throw new Error("stale exact artifact confirmation");
+  }), /stale exact artifact confirmation/u);
+  assert.equal(preflightCalls, 1);
+  assert.deepEqual((await getTrainingSessions()).value, [session()]);
+  assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), true);
+  assert.equal(await getActiveMutationJournal(), null);
+});
 test("abandonment recovers identically after every durable write boundary", async () => {
   const boundaries = [
     { kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_JOURNAL },

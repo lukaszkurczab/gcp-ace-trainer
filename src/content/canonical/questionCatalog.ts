@@ -1,4 +1,4 @@
-import type { PackageCompletionRuleV1 } from "../../domain/learning/packageCompletionRule";
+import type { PackageCompletionRuleV2 } from "../../domain/learning/packageCompletionRule";
 import type { ContentArtifactMetadata } from "../contracts";
 import type { CanonicalArtifact, CanonicalContentLockRecord, CanonicalProductSimulationProfile, Question } from "./questionTypes";
 import { validateCanonicalArtifact } from "./questionValidation";
@@ -8,7 +8,7 @@ export type CanonicalQuestionCatalog = Readonly<{
   contentVersion: string;
   artifactSha256: string;
   questions: readonly Question[];
-  completionRule?: PackageCompletionRuleV1;
+  completionRule?: PackageCompletionRuleV2;
   simulationProfiles?: readonly CanonicalProductSimulationProfile[];
   artifactMetadata: ContentArtifactMetadata;
   getQuestionById(questionId: string): Question | undefined;

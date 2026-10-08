@@ -24,6 +24,7 @@ import {
 import { formatActivityDateLabel } from "./activityPresentation";
 import type { ActivityItem } from "./activityModel";
 import { buildProgressPlanPresentationModel, type ProgressPlanPresentationModel, type ProgressPlanReadyPresentation } from "../progressPlanPresentationModel";
+import { getTrackRoadmapCatalog, titleForNode } from "../../practice/trackRoadmapCatalog";
 
 type ProgressTabProps = {
   activeTrack: TrackDisplay;
@@ -359,6 +360,19 @@ function ProgressPlanSection({ model, onAction, onRetry }: Readonly<{
               <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{t("Completion rule")}</Text>
               {completionMessage !== model.guidance.message ? <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{completionMessage}</Text> : null}
               {model.completion.kind !== "unknown" ? <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t("{{count}} qualifying attempt", { count: model.completion.qualifyingAttemptCount })}</Text> : null}
+              {model.completion.kind !== "unknown" ? (
+                <View style={styles.planChapterList} testID={runtimeSelectors.progressPlan.chapterList()}>
+                  <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{t("Chapter progress")}</Text>
+                  <Text maxFontSizeMultiplier={2} style={styles.planFactValue}>{t("{{completed}} of {{required}} chapters complete", { completed: model.completion.completedChapterCount, required: model.completion.requiredChapterCount })}</Text>
+                  {model.completion.chapters.map((chapter) => {
+                    const access = model.chapterAccess.find((entry) => entry.nodeId === chapter.nodeId)?.access ?? "unavailable";
+                    const title = getTrackRoadmapCatalog(model.trackId).find((node) => node.id === chapter.nodeId)?.title ?? titleForNode(chapter.nodeId);
+                    const accessCopy = access === "locked" ? t("Premium access required") : access === "unavailable" ? t("Premium access unavailable") : null;
+                    const statusCopy = chapter.status === "completed" ? t("Chapter complete") : chapter.reason === "quality_unmet" ? t("Recent chapter accuracy is below the required level") : t("Chapter attempts remaining: {{count}}", { count: Math.max(0, chapter.requiredAttemptCount - chapter.qualifyingAttemptCount) });
+                    return <Text key={chapter.nodeId} maxFontSizeMultiplier={2} style={styles.planFactValue}>{`${title} · ${statusCopy}${accessCopy ? ` · ${accessCopy}` : ""}`}</Text>;
+                  })}
+                </View>
+              ) : null}
             </View>
             <View style={styles.planDay} testID={runtimeSelectors.progressPlan.day(model.day.status)}>
               <Text maxFontSizeMultiplier={2} style={styles.planFactLabel}>{t("Today's plan")}</Text>
@@ -760,6 +774,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   planState: { ...typography.bodyStrong, color: palette.textPrimary },
   planMessage: { color: palette.textSecondary, fontSize: 13, lineHeight: 19 },
   planCompletion: { backgroundColor: palette.elevatedSurface, borderRadius: radius.md, gap: spacing.xs, padding: spacing.md },
+  planChapterList: { gap: spacing.xs, paddingTop: spacing.sm },
   planDay: { gap: spacing.xs },
   planSession: { gap: spacing.xs },
   planFacts: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },

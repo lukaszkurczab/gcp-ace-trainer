@@ -1,11 +1,12 @@
 import type { AccountState } from "../../../application/account/AccountSessionProvider";
 import type { AccountDataSession } from "../../../application/account/accountDataService";
 
-export type SettingsAccountStatus = "guest" | "signedOut" | "authenticated" | "attention" | "verificationPending" | "guestAccessBlocked" | "busy" | "unavailable";
+export type SettingsAccountStatus = "guest" | "signedOut" | "authenticated" | "attention" | "localOffline" | "verificationPending" | "guestAccessBlocked" | "busy" | "unavailable";
 
 export type SettingsAccountPresentation = Readonly<{
   accountDataStatus: AccountDataSession["status"] | null;
   canOpenAccount: boolean;
+  canManageAccount: boolean;
   canSignOut: boolean;
   email: string | null;
   providerLabel?: string;
@@ -22,46 +23,58 @@ function accountDataNeedsAttention(accountData: AccountDataSession): boolean {
 export function getSettingsAccountPresentation(state: AccountState): SettingsAccountPresentation {
   switch (state.kind) {
     case "guest":
-      return { accountDataStatus: null, canOpenAccount: true, canSignOut: false, email: null, status: "guest" };
+      return { accountDataStatus: null, canOpenAccount: true, canManageAccount: false, canSignOut: false, email: null, status: "guest" };
     case "signedOut":
-      return { accountDataStatus: null, canOpenAccount: true, canSignOut: false, email: null, status: "signedOut" };
+      return { accountDataStatus: null, canOpenAccount: true, canManageAccount: false, canSignOut: false, email: null, status: "signedOut" };
     case "authenticated":
       return {
         accountDataStatus: state.accountData.status,
         canOpenAccount: true,
+        canManageAccount: true,
         canSignOut: true,
         email: state.user.email,
         providerLabel: state.user.providers.map((provider) => provider === "apple" ? "Apple" : provider === "google" ? "Google" : "Patternly").join(", "),
         status: accountDataNeedsAttention(state.accountData) ? "attention" : "authenticated",
+      };
+    case "localOffline":
+      return {
+        accountDataStatus: state.accountData.status,
+        canOpenAccount: false,
+        canManageAccount: false,
+        canSignOut: true,
+        email: state.user.email,
+        providerLabel: state.user.providers.map((provider) => provider === "apple" ? "Apple" : provider === "google" ? "Google" : "Patternly").join(", "),
+        status: "localOffline",
       };
     case "signingOut":
     case "deleting":
       return {
         accountDataStatus: state.accountData.status,
         canOpenAccount: false,
+        canManageAccount: false,
         canSignOut: false,
         email: state.user.email,
         providerLabel: state.user.providers.map((provider) => provider === "apple" ? "Apple" : provider === "google" ? "Google" : "Patternly").join(", "),
         status: "busy",
       };
     case "providerRegistrationRequired":
-      return { accountDataStatus: null, canOpenAccount: false, canSignOut: false, email: state.user.email, status: "busy" };
+      return { accountDataStatus: null, canOpenAccount: false, canManageAccount: false, canSignOut: false, email: state.user.email, status: "busy" };
     case "deletionPending":
-      return { accountDataStatus: state.status, canOpenAccount: true, canSignOut: false, email: state.user.email, status: "unavailable" };
+      return { accountDataStatus: state.status, canOpenAccount: true, canManageAccount: false, canSignOut: false, email: state.user.email, status: "unavailable" };
     case "recoveryPending":
-      return { accountDataStatus: null, canOpenAccount: true, canSignOut: false, email: null, status: "unavailable" };
+      return { accountDataStatus: null, canOpenAccount: true, canManageAccount: false, canSignOut: false, email: null, status: "unavailable" };
     case "verificationPending":
-      return { accountDataStatus: null, canOpenAccount: true, canSignOut: false, email: state.user.email, status: "verificationPending" };
+      return { accountDataStatus: null, canOpenAccount: true, canManageAccount: false, canSignOut: false, email: state.user.email, status: "verificationPending" };
     case "guestAccessBlocked":
-      return { accountDataStatus: null, canOpenAccount: true, canSignOut: false, email: null, status: "guestAccessBlocked" };
+      return { accountDataStatus: null, canOpenAccount: true, canManageAccount: false, canSignOut: false, email: null, status: "guestAccessBlocked" };
     case "backendUnavailable":
     case "reauthenticationRequired":
     case "revokedSession":
     case "signOutPending":
-      return { accountDataStatus: null, canOpenAccount: true, canSignOut: false, email: state.user.email, status: "unavailable" };
+      return { accountDataStatus: null, canOpenAccount: true, canManageAccount: false, canSignOut: false, email: state.user.email, status: "unavailable" };
     case "loading":
     case "profilePreparing":
     case "unavailable":
-      return { accountDataStatus: null, canOpenAccount: false, canSignOut: false, email: null, status: "unavailable" };
+      return { accountDataStatus: null, canOpenAccount: false, canManageAccount: false, canSignOut: false, email: null, status: "unavailable" };
   }
 }

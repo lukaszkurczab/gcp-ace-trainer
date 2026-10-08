@@ -11,6 +11,7 @@ import { buildNavigationTheme } from "./src/theme/navigationTheme";
 import { PatternlyAccountProvider, usePatternlyAccount } from "./src/application/account/AccountSessionProvider";
 import { ProfileStoragePreparationGate } from "./src/application/account/ProfileStoragePreparationGate";
 import { AccountForegroundRefreshSidecar } from "./src/application/account/AccountForegroundRefreshSidecar";
+import { Q13StorageReceiptHost } from "./src/application/runtimeAuditability/Q13StorageReceiptHost";
 import { RecoveryCodeClipboardGuard } from "./src/infrastructure/security/RecoveryCodeClipboardGuard";
 import { Button, LoadingState, Screen } from "./src/components";
 import { isProfileTransitionActive, onProfileTransitionChanged, reloadForProfileTransition } from "./src/infrastructure/storage/mmkvClient";
@@ -24,6 +25,7 @@ export default function App() {
         <ProfileStoragePreparationGate>
           <PatternlyAccountProvider>
             <AccountForegroundRefreshSidecar />
+            <Q13StorageReceiptHost />
             <AppContent />
           </PatternlyAccountProvider>
         </ProfileStoragePreparationGate>
@@ -34,7 +36,7 @@ export default function App() {
 
 function AppContent() {
   const { state, completeProfilePreparation } = usePatternlyAccount();
-  const needsContent = state.kind === "profilePreparing" || state.kind === "guest" || state.kind === "authenticated" || state.kind === "signingOut" || state.kind === "deleting";
+  const needsContent = state.kind === "profilePreparing" || state.kind === "guest" || state.kind === "authenticated" || state.kind === "localOffline" || state.kind === "signingOut" || state.kind === "deleting";
   return needsContent
     ? <ContentPreparationGate completeAccountPreparation={completeProfilePreparation}><AppNavigation /></ContentPreparationGate>
     : <AppNavigation />;
@@ -45,7 +47,7 @@ function AppNavigation() {
   const { state } = usePatternlyAccount();
   const profileTransition = useSyncExternalStore(onProfileTransitionChanged, isProfileTransitionActive, () => false);
   const navigationTheme = buildNavigationTheme(preferences.colors, preferences.colorMode);
-  const sessionKey = state.kind === "authenticated" || state.kind === "guest" || state.kind === "signingOut" || state.kind === "deleting"
+  const sessionKey = state.kind === "authenticated" || state.kind === "guest" || state.kind === "localOffline" || state.kind === "signingOut" || state.kind === "deleting"
     ? "application-session"
     : "account-entry";
 

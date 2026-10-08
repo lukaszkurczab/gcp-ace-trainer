@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { PREMIUM_ENTITLEMENT, evaluateOfflinePremiumAccess, isPremiumAccessConfirmedOnline, isPremiumSnapshot, premiumCacheFromFreshResponse } from "../../domain/entitlements";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
-import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAccess, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
+import { clearPremiumCache, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAccess, readCachedPremiumAccess, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 
 const observed = "2026-09-22T12:00:00.000Z";
 const expiry = "2026-09-23T12:00:00.000Z";
@@ -95,4 +96,41 @@ test("cache writes before offline authorization; failed writes, invalid refresh 
   assert.equal(hasOfflinePremiumAccess(identity, now + 3000), false);
   clearPremiumCache();
   assert.equal(hasOfflinePremiumAccess({ ...identity, accountId: "account-2" }, now + 3000), false);
+});
+
+test("read-only cached access distinguishes policy denial from unavailable evidence without advancing the clock fence", () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  assert.equal(readCachedPremiumAccess(identity, now), "unavailable");
+  assert.equal(replacePremiumCacheFromFreshResponse(response(), identity, now), true);
+  const before = storage.snapshot();
+  assert.equal(readCachedPremiumAccess(identity, now), "allowed");
+  assert.deepEqual(storage.snapshot(), before);
+  assert.equal(readCachedPremiumAccess(identity, now - 1), "unavailable");
+  assert.deepEqual(storage.snapshot(), before);
+  assert.equal(readCachedPremiumAccess({ ...identity, accountId: "account-2" }, now), "unavailable");
+  assert.deepEqual(storage.snapshot(), before);
+  assert.equal(readCachedPremiumAccess(identity, Date.parse(expiry)), "denied");
+  assert.deepEqual(storage.snapshot(), before);
+  storage.setString("patternly:premium-cache:v1", "not-json");
+  assert.equal(readCachedPremiumAccess(identity, now), "unavailable");
+});
+
+test("Premium distinguishes an account waiting for online verification from Guest or signed-out access", () => {
+  const screen = readFileSync("src/features/premium/PremiumPurchaseScreen.tsx", "utf8");
+  assert.match(screen, /const isLocalOfflineAccount = account\.state\.kind === "localOffline"/u);
+  assert.match(screen, /isLocalOfflineAccount \? "premiumOfflineAccountRequiredDetail" : "premiumAccountRequiredDetail"/u);
+  assert.match(screen, /isLocalOfflineAccount \? "premiumOfflineAccountRequired" : "premiumAccountRequired"/u);
+
+  const locales = ["en", "pl", "de", "es", "fr", "it", "et"] as const;
+  const entries = locales.map((locale) => {
+    const settings = JSON.parse(readFileSync(`src/locales/${locale}/settings.json`, "utf8")) as Record<string, unknown>;
+    return { locale, settings };
+  });
+  for (const { locale, settings } of entries) {
+    assert.equal(typeof settings.premiumOfflineAccountRequired, "string", `${locale} title`);
+    assert.ok(String(settings.premiumOfflineAccountRequired).trim().length > 0, `${locale} title`);
+    assert.equal(typeof settings.premiumOfflineAccountRequiredDetail, "string", `${locale} detail`);
+    assert.ok(String(settings.premiumOfflineAccountRequiredDetail).trim().length > 0, `${locale} detail`);
+  }
 });

@@ -18,7 +18,7 @@ const DESIGN_TRACK_IDS = ["backend-system-design-interview", "frontend-system-de
 
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
 
-function validGcpSimulationProfile(contentVersion, nodeId) {
+function validGcpSimulationProfile(contentVersion, nodeId, evidenceVersion = "gcp-published-2026.08.01") {
   return {
     schemaVersion: "patternly-simulation-profile-envelope-v1",
     profileId: "google-cloud-associate-cloud-engineer-certification-exam-v1",
@@ -54,8 +54,8 @@ function validGcpSimulationProfile(contentVersion, nodeId) {
       },
       nodeDomainMap: { [nodeId]: "gcp-ace-standard-domain-3" },
       nodeDomainMapEvidence: {
-        artifactPath: `artifacts/tracks/google-cloud-associate-cloud-engineer/${contentVersion}/track-artifact.json`,
-        contentVersion,
+        artifactPath: `artifacts/tracks/google-cloud-associate-cloud-engineer/${evidenceVersion}/track-artifact.json`,
+        contentVersion: evidenceVersion,
         itemCount: 1,
         nodeCount: 1,
         ambiguousNodeCount: 0,
@@ -172,6 +172,18 @@ test("sync replaces the whole generated directory with an exact validated set", 
   assert.deepEqual(result.inventory, SMALL_INVENTORY);
   assert.deepEqual((await readdir(state.targetDirectory)).sort(), [...EXPECTED_TRACK_IDS.map((id) => `${id}.json`), "content-lock.json"].sort());
   assert.deepEqual(await snapshot(state.targetDirectory), await snapshot(state.producerOutput));
+});
+
+test("sync admits a policy-only canonical version while retaining the historical GCP evidence pin", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  const result = await syncCanonicalContent(state.options);
+  const gcp = JSON.parse(await readFile(path.join(state.targetDirectory, "google-cloud-associate-cloud-engineer.json"), "utf8"));
+  const evidence = gcp.simulationProfiles[0].familyConfig.nodeDomainMapEvidence;
+  assert.notEqual(gcp.contentVersion, evidence.contentVersion);
+  assert.equal(evidence.contentVersion, "gcp-published-2026.08.01");
+  assert.equal(evidence.artifactPath, `artifacts/tracks/${gcp.trackId}/${evidence.contentVersion}/track-artifact.json`);
+  assert.equal(result.inventory.questionCount, SMALL_INVENTORY.questionCount);
 });
 
 test("sync accepts a complete GCP Exam envelope inside the artifact lock boundary", async (t) => {
@@ -324,6 +336,7 @@ test("sync rejects malformed GCP profiles before replacing the target even when 
     (profile) => { profile.familyConfig.nodeDomainMap[`${trackId}-node`] = "foreign-domain"; },
     (profile) => { profile.familyConfig.nodeDomainMap[`${trackId}-node`] = "gcp-ace-standard-domain-2"; },
     (profile) => { profile.familyConfig.nodeDomainMapEvidence.contentVersion = "foreign-version"; },
+    (profile) => { profile.familyConfig.nodeDomainMapEvidence.artifactPath = "artifacts/tracks/google-cloud-associate-cloud-engineer/other-version/track-artifact.json"; },
   ];
   for (const mutate of mutations) {
     const artifact = structuredClone(originalArtifact);

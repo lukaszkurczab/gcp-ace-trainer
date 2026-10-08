@@ -10,6 +10,11 @@ export async function commitMutation(record: MutationJournalRecord): Promise<voi
   return withLocalLearningWriteOperation(() => commitMutationUnlocked(record));
 }
 
+/** Build an existing journal only after a guarded read inside the canonical learning-write lane. */
+export async function commitMutationAfterPreflight(build: () => Promise<MutationJournalRecord>): Promise<void> {
+  return withLocalLearningWriteOperation(async () => commitMutationUnlocked(await build()));
+}
+
 async function commitMutationUnlocked(record: MutationJournalRecord): Promise<void> {
   const accountState = await getAccountSyncState();
   if (accountState.materialization || accountState.pendingConfirmation) throw new MutationCommitFailure("journal_write", "not_durable", new Error("Account data transition is in progress."));

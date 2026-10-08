@@ -78,6 +78,7 @@ export type HomePlanReady = Readonly<{
   dueReviewCount: number;
   dueReviewIds: readonly string[];
   completion: PackageCompletionState;
+  chapterAccess: readonly Readonly<{ nodeId: string; access: "free" | "available" | "locked" | "unavailable" }>[];
   session: Readonly<{
     modeId: string;
     topicId: string;
@@ -104,6 +105,7 @@ export type HomePlanReadInput = Readonly<{
   now?: string | number | Date;
   /** Optional explicit local day for deterministic composition tests. */
   today?: string;
+  premiumAccess?: "allowed" | "denied" | "unavailable";
 }>;
 
 type Awaitable<T> = T | Promise<T>;
@@ -163,7 +165,7 @@ export class HomePlanSnapshotReader {
     }
     if (!generationsEqual(first, second)) return unavailable(input.trackId, "concurrent_change");
 
-    return this.project(input.trackId, first, instant, input.today);
+    return this.project(input.trackId, first, instant, input.today, input.premiumAccess ?? "unavailable");
   }
 
   private async readGeneration(trackId: TrackId): Promise<HomeReadGeneration> {
@@ -180,7 +182,7 @@ export class HomePlanSnapshotReader {
     });
   }
 
-  private async project(trackId: TrackId, generation: HomeReadGeneration, instant: string, requestedToday?: string): Promise<HomePlanSnapshot> {
+  private async project(trackId: TrackId, generation: HomeReadGeneration, instant: string, requestedToday?: string, premiumAccess: "allowed" | "denied" | "unavailable" = "unavailable"): Promise<HomePlanSnapshot> {
     if (generation.plan === null) {
       let goal: GoalSnapshot | null = null;
       if (generation.goal !== null) {
@@ -267,7 +269,7 @@ export class HomePlanSnapshotReader {
       c3Result = completion.kind;
       dueReviews = evidence.dueReviews;
       paceForecast = calculatePaceForecast({
-        acceptedPlan: plan, c3Result, requiredAttemptCount: resolved.track.completionRule?.minimumAttemptCount ?? 0,
+        acceptedPlan: plan, c3Result, remainingAttemptCount: completion.kind === "completed" ? 0 : completion.kind === "in_progress" ? completion.remainingAttemptCount : 0,
         today, timezone: plan.timezone, completedFacts,
       });
     } catch {
@@ -290,6 +292,13 @@ export class HomePlanSnapshotReader {
     }
     if (!isSupportedHomeAction(guidance.home.primary)) return unavailable(trackId, "unsupported_action");
 
+    const freeMode = resolved.track.modes.find((mode) => mode.selection.kind === "node");
+    const freeNodeId = freeMode?.selection.kind === "node" ? freeMode.selection.nodeId : undefined;
+    const chapterAccess = completion.kind === "unknown" ? Object.freeze([]) : Object.freeze(completion.chapters.map((chapter) => Object.freeze({
+      nodeId: chapter.nodeId,
+      access: chapter.nodeId === freeNodeId ? "free" as const : premiumAccess === "allowed" ? "available" as const : premiumAccess === "denied" ? "locked" as const : "unavailable" as const,
+    })));
+
     let day: HomePlanDay;
     try { day = buildHomeDay(plan, today, matchingSessions); }
     catch { return unavailable(trackId, "calculation_error"); }
@@ -309,6 +318,7 @@ export class HomePlanSnapshotReader {
       dueReviewCount: dueReviews.length,
       dueReviewIds: Object.freeze(dueReviews.map((entry) => entry.id)),
       completion,
+      chapterAccess,
       session: Object.freeze({
         modeId: primary.modeId,
         topicId: primary.selection.kind === "node" ? primary.selection.nodeId : "",

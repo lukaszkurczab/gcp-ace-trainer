@@ -486,7 +486,17 @@ test("auth command composition keeps provider credentials and hold-only deletion
   assert.match(provider, /deletionAuthorization\.consume\(user\.uid, token\.generation\)/);
   assert.match(provider, /async function disableAccountRemindersForDeletion\(\): Promise<boolean>/);
   assert.match(provider, /disableLearningPlanReminders\(expoNotificationPlatform\)/);
-  assert.equal([...provider.matchAll(/(?:deleteBoundAccount|retryPendingAccountDeletion)\([^;]+disableAccountRemindersForDeletion\)/g)].length, 3);
+  const newDeletion = provider.slice(provider.indexOf("deleteBoundAccount(api"), provider.indexOf("retryPendingAccountDeletion(api"));
+  const retryDeletion = provider.slice(provider.indexOf("retryPendingAccountDeletion(api"), provider.indexOf("function handleAuthState"));
+  for (const [name, callback] of [["new deletion", newDeletion], ["manual deletion retry", retryDeletion]] as const) {
+    const invalidation = callback.indexOf("invalidateAccountBindingForConfirmedDeletion");
+    const reminderDisable = callback.indexOf("return disableAccountRemindersForDeletion()");
+    assert.ok(callback.includes("async () => {"), `${name} serializes invalidation before cleanup`);
+    assert.ok(callback.includes("if (!await invalidateAccountBindingForConfirmedDeletion"), `${name} blocks cleanup if the tombstone cannot be verified`);
+    assert.ok(invalidation >= 0 && reminderDisable > invalidation, `${name} disables reminders only after identity binding invalidation`);
+  }
+  assert.equal([...provider.matchAll(/retryPendingAccountDeletion\(api,/g)].length, 2, "manual retry and durable startup recovery remain separate entry points");
+  assert.match(provider, /retryPendingAccountDeletion\(api, deletion\.accountId, user\.uid, disableAccountRemindersForDeletion\)/u);
   assert.match(provider, /issueRecoveryCodes: \(credentials: FirebaseAuthCredentials\)/);
   assert.match(provider, /next: "verificationSent"/);
   assert.match(provider, /holdAccountIdentityRefresh/);

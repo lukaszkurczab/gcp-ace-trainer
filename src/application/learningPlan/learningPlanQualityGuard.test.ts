@@ -19,16 +19,17 @@ const TRACK = "google-cloud-associate-cloud-engineer";
 const TODAY = "2026-03-01";
 const TIMEZONE = "Europe/Warsaw";
 
-// BIZQ-02 P05 policy fixture only; no current canonical track has an approved rule.
+// Focused evaluator fixture; canonical artifact admission is covered separately.
 async function qualityFixture(attemptCount = 25) {
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK, "certification");
   const goal = await saveGoalSnapshot({ ...createDefaultGoal(TRACK), targetDate: "2026-04-01" }, null);
+  const focusQuestion = resolved.track.questions[0]!;
   const profile = {
     trackId: TRACK, contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256,
-    completionRule: { ruleVersion: 1 as const, minimumAttemptCount: 20, rollingWindowSize: 10, qualityThreshold: 0.8 },
+    completionRule: { ruleVersion: 2 as const, chapters: [{ nodeId: focusQuestion.nodeId, mentalUnitCount: 1, minimumAttemptCount: 20, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const }] },
   };
-  const item = { trackId: TRACK, contentVersion: profile.contentVersion, artifactSha256: profile.artifactSha256, questionId: resolved.track.questions[0]!.questionId };
+  const item = { trackId: TRACK, contentVersion: profile.contentVersion, artifactSha256: profile.artifactSha256, questionId: focusQuestion.questionId };
   for (let index = 0; index < attemptCount; index++) {
     const answeredAt = `2026-02-${String(index + 1).padStart(2, "0")}T12:00:00.000Z`;
     const attempt: TrainingAttempt = {
@@ -48,15 +49,20 @@ async function qualityFixture(attemptCount = 25) {
   });
   saveLearningPlanAtomically({ plan, expectedGoalRevision: goal.revision, expectedPlanStorageRevision: null });
   const inputs = readLearningPlanInputSnapshot(TRACK);
-  const completion = evaluatePackageCompletion(profile, inputs.attempts);
-  assert.deepEqual(completion, { kind: "in_progress", qualifyingAttemptCount: attemptCount, requiredAttemptCount: 20, rollingWindowSize: 10 });
+  const completion = evaluatePackageCompletion(profile, inputs.attempts, resolved.track.getQuestion);
+  assert.equal(completion.kind, "in_progress");
+  if (completion.kind === "in_progress") {
+    assert.equal(completion.qualifyingAttemptCount, attemptCount);
+    assert.equal(completion.remainingAttemptCount, 0);
+    assert.equal(completion.chapters[0]?.reason, "quality_unmet");
+  }
   return { resolved, inputs, plan, completion, profile };
 }
 
 test("P05 persisted 25 attempts / 5 correct in latest 10 cannot predict completion today", async () => {
   const f = await qualityFixture();
   const result = calculatePaceForecast({
-    acceptedPlan: f.plan, c3Result: f.completion.kind, requiredAttemptCount: f.profile.completionRule.minimumAttemptCount,
+    acceptedPlan: f.plan, c3Result: f.completion.kind, remainingAttemptCount: f.completion.kind === "in_progress" ? f.completion.remainingAttemptCount : 0,
     today: TODAY, timezone: TIMEZONE,
     completedFacts: { sessions: [], attempts: f.inputs.attempts.map((attempt) => ({ answeredAt: attempt.answeredAt, countsTowardCompletion: true })) },
   });
@@ -90,12 +96,12 @@ function proposalFor(f: Awaited<ReturnType<typeof qualityFixture>>, completion: 
   });
 }
 
-const QUALITY_MESSAGE = "The minimum number of attempts is met. Keep practising to improve your results; completion timing is not predictable yet.";
+const QUALITY_MESSAGE = "All chapter attempt minimums are met, but recent accuracy in at least one chapter is below the required level. Keep practising; completion timing is not predictable yet.";
 
 test("P05 evaluator, proposal copy and canonical guidance presentation agree in all seven locales", async () => {
   const f = await qualityFixture();
   const facts = completedFacts(f);
-  const forecast = calculatePaceForecast({ acceptedPlan: f.plan, c3Result: f.completion.kind, requiredAttemptCount: 20, today: TODAY, timezone: TIMEZONE, completedFacts: facts });
+  const forecast = calculatePaceForecast({ acceptedPlan: f.plan, c3Result: f.completion.kind, remainingAttemptCount: f.completion.kind === "in_progress" ? f.completion.remainingAttemptCount : 0, today: TODAY, timezone: TIMEZONE, completedFacts: facts });
   const guidance = projectTargetDateGuidance({ currentGoal: f.inputs.goal, acceptedPlan: f.plan, currentVerifiedArtifactSha256: f.profile.artifactSha256, c3Result: f.completion.kind, today: TODAY, completedFacts: facts, paceForecast: forecast });
   assert.equal(guidance.state, "unavailable");
   assert.equal(guidance.reason, "quality_requirement_unmet");
@@ -117,8 +123,8 @@ test("P05 evaluator, proposal copy and canonical guidance presentation agree in 
 
 test("missing actual rule stays unknown before quality guard even when there are many persisted attempts", async () => {
   const f = await qualityFixture();
-  const completion = evaluatePackageCompletion({ ...f.profile, completionRule: undefined }, f.inputs.attempts);
-  const forecast = calculatePaceForecast({ acceptedPlan: f.plan, c3Result: completion.kind, requiredAttemptCount: 0, today: TODAY, timezone: TIMEZONE, completedFacts: completedFacts(f) });
+  const completion = evaluatePackageCompletion({ ...f.profile, completionRule: undefined }, f.inputs.attempts, f.resolved.track.getQuestion);
+  const forecast = calculatePaceForecast({ acceptedPlan: f.plan, c3Result: completion.kind, remainingAttemptCount: 0, today: TODAY, timezone: TIMEZONE, completedFacts: completedFacts(f) });
   assert.deepEqual(forecast, { kind: "unavailable", reason: "unknown_completion_rule" });
   const proposal = proposalFor(f, completion);
   assert.deepEqual(proposal.completionState, { kind: "unknown" });
@@ -136,7 +142,7 @@ test("minimum exactly met still needs quality, while own pace and shortfall keep
   assert.deepEqual(ownPace.targetAssessment, { kind: "open_ended" });
   assert.equal(completionCopy(ownPace, (key) => key), QUALITY_MESSAGE);
   const openPlan = normalizeLearningPlan({ ...f.plan, acceptedTarget: { meaning: "none", targetDate: null } });
-  assert.deepEqual(calculatePaceForecast({ acceptedPlan: openPlan, c3Result: f.completion.kind, requiredAttemptCount: 20, today: TODAY, timezone: TIMEZONE, completedFacts: completedFacts(f) }), { kind: "unavailable", reason: "no_target" });
+  assert.deepEqual(calculatePaceForecast({ acceptedPlan: openPlan, c3Result: f.completion.kind, remainingAttemptCount: f.completion.kind === "in_progress" ? f.completion.remainingAttemptCount : 0, today: TODAY, timezone: TIMEZONE, completedFacts: completedFacts(f) }), { kind: "unavailable", reason: "no_target" });
   const shortfall = proposalFor(f, f.completion, f.inputs.goal!, true);
   assert.deepEqual(shortfall.targetAssessment, { kind: "unavailable_due_to_shortfall" });
   assert.equal(shortfall.slots.length, 0);
@@ -145,24 +151,29 @@ test("minimum exactly met still needs quality, while own pace and shortfall keep
 test("current completed window permits zero-work; later incorrect durable attempts restore the quality limit", async () => {
   const f = await qualityFixture();
   const base = f.inputs.attempts[0]!;
-  for (let index = 0; index < 13; index++) {
+  for (let index = 0; index < 20; index++) {
     const answeredAt = `2026-03-01T12:00:${String(index).padStart(2, "0")}.000Z`;
     await addTrainingAttempt({ ...base, id: `quality-later-${index}`, occurrenceId: `quality-later-occurrence-${index}`, answeredAt, committedAt: answeredAt,
-      result: index < 8 ? { kind: "correct", earnedPoints: 1, maxPoints: 1 } : { kind: "incorrect", earnedPoints: 0, maxPoints: 1 } });
-    if (index === 7) {
+      result: index < 16 ? { kind: "correct", earnedPoints: 1, maxPoints: 1 } : { kind: "incorrect", earnedPoints: 0, maxPoints: 1 } });
+    if (index === 19) {
       const inputs = readLearningPlanInputSnapshot(TRACK);
-      const completion = evaluatePackageCompletion(f.profile, inputs.attempts);
+      const completion = evaluatePackageCompletion(f.profile, inputs.attempts, f.resolved.track.getQuestion);
       assert.equal(completion.kind, "completed");
       const proposal = proposalFor(f, completion);
       assert.equal(proposal.targetAssessment.kind, "achievable");
-      const forecast = calculatePaceForecast({ acceptedPlan: f.plan, c3Result: completion.kind, requiredAttemptCount: 20, today: TODAY, timezone: TIMEZONE, completedFacts: completedFacts({ ...f, inputs }) });
+      const forecast = calculatePaceForecast({ acceptedPlan: f.plan, c3Result: completion.kind, remainingAttemptCount: completion.remainingAttemptCount, today: TODAY, timezone: TIMEZONE, completedFacts: completedFacts({ ...f, inputs }) });
       assert.equal(forecast.kind, "available");
       if (forecast.kind === "available") { assert.equal(forecast.projectedCompletionDate, TODAY); assert.equal(forecast.status, "on_track"); }
     }
   }
+  for (let index = 0; index < 5; index++) {
+    const answeredAt = `2026-03-01T12:01:${String(index).padStart(2, "0")}.000Z`;
+    await addTrainingAttempt({ ...base, id: `quality-regression-${index}`, occurrenceId: `quality-regression-occurrence-${index}`, answeredAt, committedAt: answeredAt,
+      result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 } });
+  }
   const inputs = readLearningPlanInputSnapshot(TRACK);
-  const completion = evaluatePackageCompletion(f.profile, inputs.attempts);
+  const completion = evaluatePackageCompletion(f.profile, inputs.attempts, f.resolved.track.getQuestion);
   assert.equal(completion.kind, "in_progress");
   assert.deepEqual(proposalFor(f, completion).targetAssessment, { kind: "quality_requirement_unmet" });
-  assert.deepEqual(calculatePaceForecast({ acceptedPlan: f.plan, c3Result: completion.kind, requiredAttemptCount: 20, today: TODAY, timezone: TIMEZONE, completedFacts: completedFacts({ ...f, inputs }) }), { kind: "unavailable", reason: "quality_requirement_unmet" });
+  assert.deepEqual(calculatePaceForecast({ acceptedPlan: f.plan, c3Result: completion.kind, remainingAttemptCount: completion.kind === "in_progress" ? completion.remainingAttemptCount : 0, today: TODAY, timezone: TIMEZONE, completedFacts: completedFacts({ ...f, inputs }) }), { kind: "unavailable", reason: "quality_requirement_unmet" });
 });

@@ -28,6 +28,7 @@ import { localizeHomePlanArea } from "../homePlanUiContract";
 type HomeTabProps = {
   activeTrack: TrackDisplay;
   activeSession: TrainingSession | null;
+  resumeUnavailableReason?: "premium_entitlement_denied" | "premium_entitlement_unavailable";
   analytics: AnalyticsData;
   algorithmsDashboard: CodingInterviewDashboard | null;
   dashboardError: string | null;
@@ -119,6 +120,7 @@ export function HomeLoadingSkeleton() {
 export function HomeTab({
   activeTrack,
   activeSession,
+  resumeUnavailableReason,
   analytics,
   algorithmsDashboard,
   dashboardError,
@@ -181,12 +183,15 @@ export function HomeTab({
       ? "Review weak areas"
       : recommendation?.title ?? formatPracticeTopicTitle(model.heroTitle, t);
   const decisionDetail = hasActiveSession
-    ? t(modeLabel(activeSession.modeId))
+    ? `${t(modeLabel(activeSession.modeId))}${resumeUnavailableReason ? ` · ${tPlan(resumeUnavailableReason === "premium_entitlement_denied" ? "Premium access required" : "Premium access unavailable")}` : ""}`
     : homePlanPresentation && readyHomePlan
       ? tPlan("homePlan.todayDetail", {
         area: localizeHomePlanArea(readyHomePlan, t),
         count: readyHomePlan.session.sessionLength,
-        message: homePlanPresentation.message,
+        message: [homePlanPresentation.message,
+          readyHomePlan.chapterAccess.some((chapter) => chapter.access === "locked") ? tPlan("A Premium chapter is locked but remains required to complete this track.") : null,
+          readyHomePlan.chapterAccess.some((chapter) => chapter.access === "unavailable") ? tPlan("Premium chapter access could not be verified. The chapter remains required.") : null,
+        ].filter(Boolean).join(" "),
         reviews: readyHomePlan.dueReviewCount,
         status: tPlan(`homePlan.day.${readyHomePlan.day.status}`),
       })

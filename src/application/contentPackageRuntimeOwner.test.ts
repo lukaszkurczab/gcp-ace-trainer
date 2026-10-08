@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test, { before } from "node:test";
 import { getProductSimulationModeConfig } from "../content/canonical/productModeConfig";
-import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
+import { ContentPackageRuntimeOwner, contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
+import { ExactContentArtifactUnavailableError } from "./trainingLifecycle/contracts";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 
@@ -24,7 +25,7 @@ test("resolves an exact canonical artifact by track, content version, and SHA", 
       contentVersion: prepared.track.contentVersion,
       artifactSha256: "f".repeat(64),
     }),
-    /does not match the verified catalog/,
+    (error: unknown) => error instanceof ExactContentArtifactUnavailableError,
   );
   await assert.rejects(
     contentPackageRuntimeOwner.resolveExactArtifact({
@@ -34,6 +35,61 @@ test("resolves an exact canonical artifact by track, content version, and SHA", 
     }),
     /identity is invalid/,
   );
+});
+
+test("verified current OOD v24 does not resolve an absent exact OOD v23 pin when retained packages are empty", async () => {
+  let retainedPackageLoads = 0;
+  const owner = new ContentPackageRuntimeOwner(
+    () => "test-profile",
+    async () => { retainedPackageLoads += 1; return []; },
+  );
+  await owner.verifyBundledPackages();
+  const current = owner.getPreparedDiscovery("object-oriented-design-interview").track;
+  assert.equal(current.contentVersion, "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24-bizq02-v2");
+  assert.equal(current.artifactSha256, "015e21db498465602857d1461aa84ddd26546e665cd9225997e121eca790efe0");
+
+  await assert.rejects(
+    owner.resolveExactArtifact({
+      trackId: "object-oriented-design-interview",
+      contentVersion: "object-oriented-design-interview-authoring-v2026.10.05-bizq01-23",
+      artifactSha256: "932b7370d7be44bb5274ad8bc5a31b45f0479b3ff4251160af1ed2b170ca80d7",
+    }),
+    (error: unknown) => error instanceof ExactContentArtifactUnavailableError
+      && error.identity.trackId === "object-oriented-design-interview"
+      && error.identity.contentVersion === "object-oriented-design-interview-authoring-v2026.10.05-bizq01-23",
+  );
+  assert.equal(retainedPackageLoads, 1);
+});
+
+test("malformed runtime identities never become typed exact-artifact absence", async () => {
+  const owner = new ContentPackageRuntimeOwner(() => null, async () => []);
+  await owner.verifyBundledPackages();
+  for (const identity of [
+    { trackId: "not-a-registered-track" as never, contentVersion: "old-v1", artifactSha256: "a".repeat(64) },
+    { trackId: TRACK_ID, contentVersion: "../old-v1", artifactSha256: "a".repeat(64) },
+    { trackId: TRACK_ID, contentVersion: "old-v1", artifactSha256: "not-a-sha" },
+  ]) {
+    await assert.rejects(owner.resolveExactArtifact(identity), (error: unknown) => !(error instanceof ExactContentArtifactUnavailableError));
+  }
+});
+
+test("retained inventory failures and profile-scope changes remain blocking, never typed missing", async () => {
+  let scope = "profile-a";
+  const unreadable = new ContentPackageRuntimeOwner(() => scope, async () => { throw new Error("retained package read failed"); });
+  await unreadable.verifyBundledPackages();
+  await assert.rejects(unreadable.resolveExactArtifact({
+    trackId: "object-oriented-design-interview",
+    contentVersion: "object-oriented-design-interview-authoring-v2026.10.05-bizq01-23",
+    artifactSha256: "932b7370d7be44bb5274ad8bc5a31b45f0479b3ff4251160af1ed2b170ca80d7",
+  }), (error: unknown) => !(error instanceof ExactContentArtifactUnavailableError));
+
+  const transitioning = new ContentPackageRuntimeOwner(() => scope, async () => { scope = "profile-b"; return []; });
+  await transitioning.verifyBundledPackages();
+  await assert.rejects(transitioning.resolveExactArtifact({
+    trackId: "object-oriented-design-interview",
+    contentVersion: "object-oriented-design-interview-authoring-v2026.10.05-bizq01-23",
+    artifactSha256: "932b7370d7be44bb5274ad8bc5a31b45f0479b3ff4251160af1ed2b170ca80d7",
+  }), (error: unknown) => !(error instanceof ExactContentArtifactUnavailableError));
 });
 
 test("resolves only the question identified by a canonical ResolvedContentRef", async () => {
@@ -49,7 +105,7 @@ test("resolves only the question identified by a canonical ResolvedContentRef", 
   assert.equal(resolved.questionId, question.questionId);
   await assert.rejects(
     contentPackageRuntimeOwner.resolveItem({ ...ref, artifactSha256: "f".repeat(64) }),
-    /does not match the verified catalog/,
+    (error: unknown) => error instanceof ExactContentArtifactUnavailableError,
   );
   await assert.rejects(
     contentPackageRuntimeOwner.resolveItem({ ...ref, questionId: "missing-question" }),

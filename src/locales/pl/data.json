@@ -64,6 +64,10 @@
       "title": "Dane Twojego konta",
       "body": "Dane nauki są zapisywane na tym urządzeniu. Obsługiwane rekordy konta mogą być także synchronizowane z chmurą konta i wrócić przez zwykłą synchronizację po zalogowaniu. Użyj poniższych działań eksportu, szczegółów i prywatności dla tego konta."
     },
+    "localOffline": {
+      "title": "Dane konta na tym urządzeniu",
+      "body": "Zapisana nauka pozostaje na tym urządzeniu. Połącz się ponownie, aby sprawdzić konto przed synchronizacją zmian lub użyciem działań dotyczących danych konta."
+    },
     "guest": {
       "title": "Dane gościa",
       "body": "Dane nauki są zapisywane lokalnie na tym urządzeniu. Możesz korzystać z Patternly bez konta. Jeśli potrzebujesz pomocy w sprawie danych, użyj poniższego publicznego kanału pomocy."
