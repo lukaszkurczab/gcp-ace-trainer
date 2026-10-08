@@ -108,6 +108,40 @@ test("local offline account projection is read-only and requires the exact bound
   assert.equal(apiCalls, callsBeforeRead);
 });
 
+test("current identity proof admits an unmaterialized profile without changing its data, then loads the account", async () => {
+  await clearGuestAccountBinding();
+  const installation = await getGuestInstallation();
+  const state = await getAccountSyncState();
+  assert.equal(state.accountId, null);
+  assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => true }), true);
+  assert.deepEqual(await getGuestInstallation(), installation);
+  assert.deepEqual(await getAccountSyncState(), state);
+  let requests = 0;
+  const loaded = await loadAccountDataSession(api({ getProgress: async () => {
+    requests += 1;
+    return { accountRevision: 0, records: [] };
+  } }), accountId, { guestAdoption: "discard" });
+  assert.equal(loaded.status, "synced");
+  assert.equal(requests, 1);
+  assert.equal((await getGuestInstallation())?.accountId, accountId);
+  assert.equal((await getAccountSyncState()).accountId, accountId);
+});
+
+test("proof without a denial still rejects stale scope and foreign account projections", async () => {
+  assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => false }), false);
+  assert.equal(await clearAccountIdentityDenialAfterProof({ accountId: "foreign-account", firebaseUid: uid, canContinue: () => true }), false);
+  await clearGuestAccountBinding();
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId: "foreign-account" });
+  assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => true }), false);
+  saveAccountSyncState({ ...await getAccountSyncState(), accountId: null, lastFailureCode: "identity_denial:401:authentication_required" });
+  const denied = await getAccountSyncState();
+  assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => true }), false);
+  assert.deepEqual(await getAccountSyncState(), denied, "a denial in an unbound projection is never cleared");
+  saveAccountSyncState({ ...denied, lastFailureCode: null });
+  let checks = 0;
+  assert.equal(await clearAccountIdentityDenialAfterProof({ accountId, firebaseUid: uid, canContinue: () => ++checks === 1 }), false);
+});
+
 test("a persisted authoritative identity denial is not converted to offline success, while App Check and recent-auth denials remain scoped", async () => {
   const deleted = await loadAccountDataSession(api({
     getProgress: async () => { throw new PatternlyApiClientError("server_error", 404, "account_not_found"); },

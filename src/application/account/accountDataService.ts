@@ -233,9 +233,16 @@ export function clearAccountIdentityDenialAfterProof(input: Readonly<{
     const installation = await getGuestInstallation();
     const state = await getAccountSyncState();
     if (!await input.canContinue() || readLearningPlanStorageScope() !== storageScope
-      || !installation || installation.accountId !== input.accountId || installation.bindingState !== "account_bound"
-      || state.accountId !== input.accountId) return false;
+      || !installation
+      || (installation.accountId !== null && installation.accountId !== input.accountId)
+      || (state.accountId !== null && state.accountId !== input.accountId)) return false;
+    // A freshly opened account profile has an unbound installation and an
+    // empty sync projection until account loading materializes it. With no
+    // denial to clear, the exact current identity proof may proceed without
+    // mutating or prematurely binding that projection.
     if (!isPersistedIdentityDenial(state.lastFailureCode)) return true;
+    if (installation.accountId !== input.accountId || installation.bindingState !== "account_bound"
+      || state.accountId !== input.accountId) return false;
     const next = saveAccountSyncState({ ...state, lastFailureCode: null });
     const verified = await getAccountSyncState();
     return await input.canContinue() && readLearningPlanStorageScope() === storageScope
