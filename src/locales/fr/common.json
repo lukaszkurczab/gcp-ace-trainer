@@ -172,6 +172,8 @@
   "Questions": "Questions",
   "Feedback after each answer": "Explications après chaque réponse",
   "Feedback at session end": "Explications à la fin de la session",
+  "Related practice": "Exercice lié",
+  "A related question pair — a near variant or condition contrast — appears in this session or in an earlier recorded attempt using this exact content version. Treat it as related practice, not independent transfer evidence.": "Cette session contient une paire de questions liées — une variante proche ou un contraste de conditions — ou une question d’une tentative précédente enregistrée avec cette version exacte du contenu. Considérez cela comme un exercice lié, et non comme une preuve de transfert indépendant.",
   "Elapsed foreground timer": "Chronomètre du temps au premier plan",
   "45-minute foreground countdown": "Compte à rebours de 45 minutes au premier plan",
   "Reinsert enabled": "Réinsertion activée",

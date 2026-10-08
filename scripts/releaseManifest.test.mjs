@@ -2,12 +2,15 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import {
   copyFileSync,
+  closeSync,
   existsSync,
+  openSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
+  statSync,
   symlinkSync,
   writeFileSync,
 } from "node:fs";
@@ -31,6 +34,7 @@ const backendRoot = resolve(root, "../patternly-backend");
 const HISTORICAL_APPLICATION_COMMIT = "e889b05d033d4cc4b7676d0ca3f224efc3fac115";
 const HISTORICAL_CONTENT_COMMIT = "8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03";
 const HISTORICAL_CANDIDATE_ID = "946d3589abf9bfb205b382e7ebb9205786c3e42e18fe733c3607ad836a6a80a4";
+const CURRENT_DRAFT_CANDIDATE_ID = "9112efcc6fd1d0a170a6a6c298291796be1bd650ac8c03a02328dc899c336b6e";
 let fixtureRoot;
 let applicationRoot;
 let backendFixtureRoot;
@@ -109,11 +113,26 @@ function makeWorkingTreeFixture(name, sourceRoot, revision = null) {
   const repositoryRoot = join(fixtureRoot, name);
   execFileSync("git", ["clone", "--quiet", "--shared", sourceRoot, repositoryRoot]);
   if (revision) execFileSync("git", ["checkout", "--quiet", "--detach", revision], { cwd: repositoryRoot });
-  const trackedDiff = revision ? Buffer.alloc(0) : execFileSync("git", ["diff", "HEAD", "--binary"], { cwd: sourceRoot });
-  if (trackedDiff.length > 0) {
-    execFileSync("git", ["apply", "--binary", "-"], { cwd: repositoryRoot, input: trackedDiff });
-    execFileSync("git", ["add", "-u"], { cwd: repositoryRoot });
-    execFileSync("git", ["-c", "user.name=release-manifest-test", "-c", "user.email=release-manifest-test@example.com", "commit", "-qm", "working tree fixture"], { cwd: repositoryRoot });
+  if (!revision) {
+    const patchPath = join(fixtureRoot, `${name}-tracked-working-tree.patch`);
+    const patchFd = openSync(patchPath, "wx", 0o600);
+    try {
+      try {
+        execFileSync("git", ["diff", "HEAD", "--binary"], {
+          cwd: sourceRoot,
+          stdio: ["ignore", patchFd, "pipe"],
+        });
+      } finally {
+        closeSync(patchFd);
+      }
+      if (statSync(patchPath).size > 0) {
+        execFileSync("git", ["apply", "--binary", patchPath], { cwd: repositoryRoot });
+        execFileSync("git", ["add", "-u"], { cwd: repositoryRoot });
+        execFileSync("git", ["-c", "user.name=release-manifest-test", "-c", "user.email=release-manifest-test@example.com", "commit", "-qm", "working tree fixture"], { cwd: repositoryRoot });
+      }
+    } finally {
+      rmSync(patchPath, { force: true });
+    }
   }
   const sourceModules = join(sourceRoot, "node_modules");
   if (existsSync(sourceModules)) {
@@ -193,7 +212,7 @@ test("creates deterministic portable identity with repositories, locks, build, c
   assert.equal(readFileSync(secondPath, "utf8"), firstBytes);
 });
 
-test("current 9e candidate draft is rejected while the immutable historical pair remains the admitted proof", async () => {
+test("current candidate draft is rejected while the immutable historical pair remains the admitted proof", async () => {
   const currentContentFixture = makeWorkingTreeFixture("content-current-draft", contentRoot);
   const currentApplicationFixture = makeGitRoot("application-current-draft", {
     "integration/contracts/content-release/release.lock.json": readFileSync(join(root, "integration/contracts/content-release/release.lock.json")),
@@ -203,7 +222,7 @@ test("current 9e candidate draft is rejected while the immutable historical pair
   mkdirSync(currentEvidenceRoot);
   const currentApplicationCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: currentApplicationFixture, encoding: "utf8" }).trim();
   writeFileSync(join(currentEvidenceRoot, "signing-and-builds.json"), JSON.stringify(signingEvidence(currentApplicationCommit)));
-  assert.equal(currentCandidate.candidateId, "9e05819c21304ff4b8f6ea4239efd5044a1b434749b736bbd32c771ba2d56697");
+  assert.equal(currentCandidate.candidateId, CURRENT_DRAFT_CANDIDATE_ID);
   await assert.rejects(
     createReleaseManifest({
       roots: { ...roots(), application: currentApplicationFixture, content: currentContentFixture },

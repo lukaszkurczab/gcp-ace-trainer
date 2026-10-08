@@ -1,0 +1,16 @@
+appId: com.lkurczab.patternly
+name: Patternly BIZQ05 open Q007 source from actual review details
+---
+- assertVisible: "Question 40 / 40"
+- assertVisible:
+    id: "patternly:session:details:gcp-ace-gcpace-n01-b04-007"
+- scrollUntilVisible:
+    element:
+      id: "question-source-link-gcp-ace-gcpace-n01-b04-007-0"
+    direction: DOWN
+    timeout: 15000
+- assertVisible:
+    id: "question-source-link-gcp-ace-gcpace-n01-b04-007-0"
+- takeScreenshot: bizq05-focus40-q007-source-link-before-open
+- tapOn:
+    id: "question-source-link-gcp-ace-gcpace-n01-b04-007-0"

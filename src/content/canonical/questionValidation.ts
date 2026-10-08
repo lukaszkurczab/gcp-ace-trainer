@@ -54,10 +54,11 @@ function exactSet(actual: readonly string[], expected: readonly string[], path: 
 
 export function validateQuestion(value: unknown): readonly string[] {
   const errors: string[] = [];
-  const common = ["questionId", "trackId", "nodeId", "mentalUnitId", "prompt", "constraints", "interaction", "answer", "feedback", "difficulty", "sourceRefs", "contentDomainId"];
+  const common = ["questionId", "trackId", "nodeId", "mentalUnitId", "prompt", "constraints", "interaction", "answer", "feedback", "difficulty", "sourceRefs", "contentDomainId", "questionRelation"];
   if (!exact(value, common, ["questionId", "trackId", "nodeId", "mentalUnitId", "prompt", "interaction", "answer", "feedback", "difficulty"], "question", errors)) return errors;
   for (const key of ["questionId", "trackId", "nodeId", "mentalUnitId"]) safeIdentity(value[key], `question.${key}`, errors);
   if (Object.hasOwn(value, "contentDomainId")) safeIdentity(value.contentDomainId, "question.contentDomainId", errors);
+  if (Object.hasOwn(value, "questionRelation")) validateQuestionRelation(value.questionRelation, value.questionId, "question.questionRelation", errors);
   text(value.prompt, "question.prompt", errors);
   if (value.difficulty !== null) id(value.difficulty, "question.difficulty", errors);
   if (Object.hasOwn(value, "constraints")) { if (!Array.isArray(value.constraints)) errors.push("question.constraints: must be an array"); else value.constraints.forEach((entry, i) => text(entry, `question.constraints[${i}]`, errors)); }
@@ -103,13 +104,67 @@ function validateFeedback(value: unknown, type: QuestionInteractionType, refs: r
 
 export function assertValidQuestion(value: unknown): asserts value is Question { const errors = validateQuestion(value); if (errors.length) throw new CanonicalQuestionValidationError("Question does not satisfy the canonical contract.", errors); }
 
+function validateQuestionRelation(value: unknown, questionId: unknown, path: string, errors: string[]): void {
+  const keys = ["counterpartQuestionId", "kind", "changedCondition", "decisionBoundary"];
+  if (!exact(value, keys, keys, path, errors)) return;
+  safeIdentity(value.counterpartQuestionId, `${path}.counterpartQuestionId`, errors);
+  if (value.counterpartQuestionId === questionId) errors.push(`${path}.counterpartQuestionId: cannot reference the same question`);
+  if (value.kind !== "near_variant" && value.kind !== "condition_contrast") errors.push(`${path}.kind: unsupported relation kind`);
+  text(value.changedCondition, `${path}.changedCondition`, errors);
+  text(value.decisionBoundary, `${path}.decisionBoundary`, errors);
+}
+
+export function validateQuestionRelations(questions: readonly unknown[]): readonly string[] {
+  const errors: string[] = [];
+  const questionsById = new Map<string, Record<string, unknown>>();
+  for (const question of questions) if (record(question) && typeof question.questionId === "string") questionsById.set(question.questionId, question);
+  for (const question of questionsById.values()) {
+    if (!Object.hasOwn(question, "questionRelation")) continue;
+    const relation = question.questionRelation;
+    if (!record(relation) || typeof relation.counterpartQuestionId !== "string") continue;
+    const path = `artifact.questions.${question.questionId}.questionRelation`;
+    const counterpart = questionsById.get(relation.counterpartQuestionId);
+    if (!counterpart) { errors.push(`${path}.counterpartQuestionId: must reference a question in this artifact`); continue; }
+    if (counterpart.trackId !== question.trackId || counterpart.nodeId !== question.nodeId || counterpart.mentalUnitId !== question.mentalUnitId) {
+      errors.push(`${path}: counterpart must share track, node, and mental unit`);
+    }
+    const reverse = counterpart.questionRelation;
+    if (!record(reverse) || reverse.counterpartQuestionId !== question.questionId) {
+      errors.push(`${path}: relation must be reciprocal and one-to-one`);
+      continue;
+    }
+    if (relation.kind !== reverse.kind || relation.changedCondition !== reverse.changedCondition || relation.decisionBoundary !== reverse.decisionBoundary) {
+      errors.push(`${path}: reciprocal relation kind and rationale must match`);
+    }
+  }
+  return Object.freeze(errors);
+}
+
 export function validateCanonicalArtifact(value: unknown, lock: CanonicalContentLockRecord, expectedTrackId: string): CanonicalArtifact {
   const errors: string[] = [];
   if (!exact(value, ["schemaVersion", "trackId", "contentVersion", "questions", "simulationProfiles", "completionRule"], ["schemaVersion", "trackId", "contentVersion", "questions"], "artifact", errors)) throw new CanonicalQuestionValidationError("Artifact does not satisfy the canonical contract.", errors);
   if (value.schemaVersion !== "patternly-content-artifact-v1") errors.push("artifact.schemaVersion: invalid version"); safeIdentity(expectedTrackId, "expectedTrackId", errors); if (value.trackId !== expectedTrackId) errors.push("artifact.trackId: foreign path identity"); safeIdentity(value.trackId, "artifact.trackId", errors); id(value.contentVersion, "artifact.contentVersion", errors);
   if (!exact(lock, ["trackId", "contentVersion", "questionCount", "sha256"], ["trackId", "contentVersion", "questionCount", "sha256"], "lock", errors)) throw new CanonicalQuestionValidationError("Artifact lock is invalid.", errors);
   if (lock.trackId !== expectedTrackId || lock.trackId !== value.trackId || lock.contentVersion !== value.contentVersion || !Number.isSafeInteger(lock.questionCount) || lock.questionCount < 1 || !SHA256.test(lock.sha256)) errors.push("lock: identity, version, count, or SHA-256 is inconsistent");
-  if (!Array.isArray(value.questions)) errors.push("artifact.questions: must be an array"); else { if (value.questions.length !== lock.questionCount) errors.push("artifact.questions: count differs from lock"); const ids = new Set<string>(); for (const [i, question] of value.questions.entries()) { const child = validateQuestion(question); errors.push(...child.map((x) => `artifact.questions[${i}].${x.replace(/^question\.?/, "")}`)); if (record(question)) { if (question.trackId !== expectedTrackId) errors.push(`artifact.questions[${i}].trackId: foreign track`); if (typeof question.questionId === "string") { if (ids.has(question.questionId)) errors.push(`artifact.questions[${i}].questionId: duplicate identity`); ids.add(question.questionId); } const hasProfile = Object.hasOwn(value, "simulationProfiles"); if (Object.hasOwn(question, "contentDomainId") && (expectedTrackId !== "google-cloud-associate-cloud-engineer" || !hasProfile)) errors.push(`artifact.questions[${i}].contentDomainId: only valid for GCP artifacts with simulation profiles`); if (hasProfile && expectedTrackId === "google-cloud-associate-cloud-engineer" && !Object.hasOwn(question, "contentDomainId")) errors.push(`artifact.questions[${i}].contentDomainId: required for GCP simulation profile`); } } }
+  if (!Array.isArray(value.questions)) errors.push("artifact.questions: must be an array");
+  else {
+    if (value.questions.length !== lock.questionCount) errors.push("artifact.questions: count differs from lock");
+    const ids = new Set<string>();
+    for (const [i, question] of value.questions.entries()) {
+      const child = validateQuestion(question);
+      errors.push(...child.map((x) => `artifact.questions[${i}].${x.replace(/^question\.?/, "")}`));
+      if (!record(question)) continue;
+      if (question.trackId !== expectedTrackId) errors.push(`artifact.questions[${i}].trackId: foreign track`);
+      if (typeof question.questionId === "string") {
+        if (ids.has(question.questionId)) errors.push(`artifact.questions[${i}].questionId: duplicate identity`);
+        ids.add(question.questionId);
+      }
+      const hasProfile = Object.hasOwn(value, "simulationProfiles");
+      if (Object.hasOwn(question, "contentDomainId") && (expectedTrackId !== "google-cloud-associate-cloud-engineer" || !hasProfile)) errors.push(`artifact.questions[${i}].contentDomainId: only valid for GCP artifacts with simulation profiles`);
+      if (hasProfile && expectedTrackId === "google-cloud-associate-cloud-engineer" && !Object.hasOwn(question, "contentDomainId")) errors.push(`artifact.questions[${i}].contentDomainId: required for GCP simulation profile`);
+    }
+    errors.push(...validateQuestionRelations(value.questions));
+  }
   if (Object.hasOwn(value, "completionRule")) {
     try {
       const rule = createPackageCompletionRuleV2(value.completionRule);

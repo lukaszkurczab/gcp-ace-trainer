@@ -7,13 +7,15 @@ import { radius, spacing, typography } from "../../theme";
 import { isPatternlySmokeRuntime } from "../../infrastructure/runtime/runtimeMode";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { usePatternlyAccount } from "../account/AccountSessionProvider";
-import { decideQ13StorageReceiptCommand } from "./q13StorageReceiptCommand";
+import { readDevelopmentBootstrapPendingStep } from "../operationalDiagnostics";
+import { createQ13CommandLifecycle, decideQ13BootstrapDiagnosticCommand, decideQ13StorageReceiptCommand } from "./q13StorageReceiptCommand";
 import { inspectQ13CapabilityProbe, type Q13CapabilityProbeReceipt } from "./q13StorageReceiptOwner";
 
 type Q13ProbeState =
   | Readonly<{ kind: "closed" }>
   | Readonly<{ kind: "checking" }>
   | Readonly<{ kind: "observed"; receipt: Extract<Q13CapabilityProbeReceipt, { kind: "observed" }> }>
+  | Readonly<{ kind: "bootstrap_diagnostic"; pendingStep: ReturnType<typeof readDevelopmentBootstrapPendingStep> }>
   | Readonly<{ kind: "unavailable" }>;
 
 function enabledInThisRuntime(): boolean {
@@ -24,37 +26,78 @@ export function Q13StorageReceiptHost() {
   const styles = useThemedStyles(createStyles);
   const account = usePatternlyAccount();
   const [state, setState] = useState<Q13ProbeState>({ kind: "closed" });
-  const commandHandled = useRef(false);
+  const commandLifecycleRef = useRef<ReturnType<typeof createQ13CommandLifecycle> | null>(null);
+  if (commandLifecycleRef.current === null) commandLifecycleRef.current = createQ13CommandLifecycle();
+  const commandLifecycle = commandLifecycleRef.current;
 
   useEffect(() => {
     if (!enabledInThisRuntime()) return;
     let mounted = true;
     const handle = (url: string | null) => {
-      if (!mounted || commandHandled.current) return;
-      const decision = decideQ13StorageReceiptCommand(url, { development: __DEV__, smoke: isPatternlySmokeRuntime() });
+      if (!mounted || !commandLifecycle.shouldHandle(url)) return;
+      const context = { development: __DEV__, smoke: isPatternlySmokeRuntime() };
+      const bootstrapDiagnosticDecision = decideQ13BootstrapDiagnosticCommand(url, context);
+      if (bootstrapDiagnosticDecision === "inspect") {
+        commandLifecycle.begin(url);
+        setState({ kind: "bootstrap_diagnostic", pendingStep: readDevelopmentBootstrapPendingStep() });
+        return;
+      }
+      const decision = decideQ13StorageReceiptCommand(url, context);
       if (decision !== "inspect") return;
-      commandHandled.current = true;
+      const attempt = commandLifecycle.begin(url);
+      commandLifecycle.markInFlight(url);
       setState({ kind: "checking" });
       void inspectQ13CapabilityProbe(account.inspectQ13ActorFence(), account.readCurrentPremiumAccess)
         .then((receipt) => {
-          if (!mounted) return;
+          if (!mounted || !commandLifecycle.isCurrent(attempt)) return;
           setState(receipt.kind === "observed" ? { kind: "observed", receipt } : { kind: "unavailable" });
         })
         .catch(() => {
-          if (mounted) setState({ kind: "unavailable" });
+          if (mounted && commandLifecycle.isCurrent(attempt)) setState({ kind: "unavailable" });
+        })
+        .finally(() => {
+          commandLifecycle.settle(url);
         });
     };
 
+    commandLifecycle.setInitialUrlHandler(handle);
     const subscription = Linking.addEventListener("url", ({ url }) => handle(url));
-    void Linking.getInitialURL().then(handle).catch(() => undefined);
+    if (commandLifecycle.claimInitialUrlDelivery()) {
+      void Linking.getInitialURL()
+        .then((url) => commandLifecycle.resolveInitialUrl(url))
+        .catch(() => commandLifecycle.resolveInitialUrl(null));
+    }
     return () => {
       mounted = false;
+      commandLifecycle.clearInitialUrlHandler(handle);
+      commandLifecycle.invalidate();
       subscription.remove();
     };
-  }, [account]);
+  }, [account, commandLifecycle]);
 
   if (state.kind === "closed") return null;
-  const close = () => setState({ kind: "closed" });
+  const close = () => {
+    commandLifecycle.close();
+    setState({ kind: "closed" });
+  };
+  if (state.kind === "bootstrap_diagnostic") {
+    return (
+      <Modal animationType="fade" onRequestClose={close} transparent visible>
+        <View style={styles.backdrop}>
+          <View accessibilityRole="summary" style={styles.card} testID={runtimeSelectors.q13.bootstrapDiagnosticRoot()}>
+            <Text accessibilityRole="header" style={styles.title}>Bootstrap recovery diagnostic</Text>
+            <Text style={styles.row} testID={runtimeSelectors.q13.bootstrapStep()}>
+              {`Pending recovery await: ${state.pendingStep ?? "none observed"}`}
+            </Text>
+            <Text style={styles.note}>Development smoke only. This reads one in-memory step name and does not inspect saved learning data.</Text>
+            <Pressable accessibilityRole="button" onPress={close} style={styles.closeButton} testID={runtimeSelectors.q13.close()}>
+              <Text style={styles.closeLabel}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
   const storageStatus = state.kind === "checking"
       ? "checking"
       : state.kind === "unavailable"

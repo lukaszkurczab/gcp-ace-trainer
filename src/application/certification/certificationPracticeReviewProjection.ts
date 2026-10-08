@@ -65,6 +65,7 @@ export type CertificationPracticeReviewProjection = Readonly<{
   items: readonly CertificationPracticeReviewItem[];
   modeId: CertificationPracticeModeId;
   overallPointsEarned: number;
+  relatedPracticeLimitation?: "related_question_pair";
   sessionId: string;
   total: number;
 }>;
@@ -103,10 +104,12 @@ export async function projectCertificationPracticeReview(input: Readonly<{
     }
     return { attempt, occurrence, index };
   });
+  const questionById = new Map<string, Question>();
   const items = await Promise.all(reviewInputs.map(async ({ attempt, occurrence, index }): Promise<CertificationPracticeReviewItem> => {
     const question = await resolveQuestion(occurrence.item);
     const response = attempt.response;
     if (question.questionId !== occurrence.item.questionId || !isCanonicalResponseComplete(question, response)) return fail("Certification Practice answer evidence does not match its immutable session plan.");
+    questionById.set(question.questionId, question);
     const scored = scoreCanonicalQuestion(question, response);
     if (JSON.stringify(scored) !== JSON.stringify(attempt.result)) return fail("Certification Practice answer evidence has an invalid result.");
     if ((question.interaction.type !== "choice_single" && question.interaction.type !== "choice_multiple") || (question.answer.type !== "choice_single" && question.answer.type !== "choice_multiple")) {
@@ -145,7 +148,45 @@ export async function projectCertificationPracticeReview(input: Readonly<{
   const diagnosticReport = session.modeId === "certification-diagnostic-baseline"
     ? projectDiagnosticReport({ items, attempts, session, ...(input.diagnosticContext ? { context: input.diagnosticContext } : {}) })
     : undefined;
-  return Object.freeze({ ...(diagnosticReport ? { diagnosticReport } : {}), feedbackMode, items: Object.freeze(items), modeId: session.modeId, overallPointsEarned, sessionId: session.id, total: session.actualLength });
+  const relatedPracticeLimitation = hasRecordedRelatedQuestionPair({ attempts, items, questionById, session, attemptByOccurrenceId })
+    ? "related_question_pair" as const
+    : undefined;
+  return Object.freeze({ ...(diagnosticReport ? { diagnosticReport } : {}), feedbackMode, items: Object.freeze(items), modeId: session.modeId, overallPointsEarned, ...(relatedPracticeLimitation ? { relatedPracticeLimitation } : {}), sessionId: session.id, total: session.actualLength });
+}
+
+function hasRecordedRelatedQuestionPair(input: Readonly<{
+  attempts: readonly TrainingAttempt<unknown>[];
+  items: readonly CertificationPracticeReviewItem[];
+  questionById: ReadonlyMap<string, Question>;
+  session: CompletedTrainingSession;
+  attemptByOccurrenceId: ReadonlyMap<string, TrainingAttempt<unknown>>;
+}>): boolean {
+  const { attempts, items, questionById, session, attemptByOccurrenceId } = input;
+  for (const item of items) {
+    const question = questionById.get(item.questionId);
+    const relation = question?.questionRelation;
+    if (!relation) continue;
+    const peerInSession = questionById.get(relation.counterpartQuestionId);
+    if (peerInSession?.questionRelation?.kind === relation.kind
+      && peerInSession.questionRelation.counterpartQuestionId === question.questionId
+      && peerInSession.questionRelation.changedCondition === relation.changedCondition
+      && peerInSession.questionRelation.decisionBoundary === relation.decisionBoundary
+      && peerInSession.trackId === question.trackId && peerInSession.nodeId === question.nodeId && peerInSession.mentalUnitId === question.mentalUnitId) return true;
+
+    const currentAttempt = attemptByOccurrenceId.get(item.occurrenceId);
+    const currentAnsweredAt = currentAttempt ? Date.parse(currentAttempt.answeredAt) : Number.NaN;
+    if (!Number.isFinite(currentAnsweredAt)) continue;
+    const priorPeerRecorded = attempts.some((attempt) => attempt.sessionId !== session.id
+      && attempt.trackId === session.trackId
+      && attempt.item.trackId === session.trackId
+      && attempt.item.contentVersion === session.contentVersion
+      && attempt.item.artifactSha256 === session.artifactSha256
+      && attempt.item.questionId === relation.counterpartQuestionId
+      && Number.isFinite(Date.parse(attempt.answeredAt))
+      && Date.parse(attempt.answeredAt) < currentAnsweredAt);
+    if (priorPeerRecorded) return true;
+  }
+  return false;
 }
 
 function projectDiagnosticReport(input: Readonly<{

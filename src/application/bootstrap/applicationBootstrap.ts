@@ -8,6 +8,7 @@ import {
   BootstrapInvariantError,
   describeOperationalFailure,
   observeBootstrapFailure,
+  type BootstrapRecoveryStepObserver,
   type BootstrapDiagnosticObserver,
 } from "../operationalDiagnostics";
 import { encryptedStorageFailureCode, type EncryptedStorageFailureCode } from "../../infrastructure/storage/encryptedStorageBootstrap";
@@ -33,6 +34,7 @@ export type ActiveSessionResumeOutcome = Readonly<{ kind: "premium_resume_unavai
 export type ApplicationBootstrapDependencies = Readonly<{
   repositories?: CanonicalRepositoryBootstrapDependencies;
   diagnosticObserver?: BootstrapDiagnosticObserver;
+  recoveryStepObserver?: BootstrapRecoveryStepObserver;
 }>;
 
 export { ApplicationBootstrapStage } from "../operationalDiagnostics";
@@ -49,12 +51,15 @@ export async function abandonUnavailableActiveTrainingSession(sessionId: string)
 export async function bootstrapApplication(
   prepareContentPackages: () => Promise<unknown>,
   resolveActiveSession: (sessionId: string) => Promise<void | ActiveSessionResumeOutcome>,
-  prepareLifecycle?: () => Promise<void>,
+  prepareLifecycle?: (observeRecoveryStep?: BootstrapRecoveryStepObserver) => Promise<void>,
   dependencies: ApplicationBootstrapDependencies = {},
 ): Promise<ApplicationBootstrapState> {
   let stage = ApplicationBootstrapStage.OpeningStorage;
   let currentRepositoryStep: CanonicalRepositoryBootstrapStep | undefined;
   let resumingSession: TrainingSession | null = null;
+  const reportRecoveryStep: BootstrapRecoveryStepObserver = (step) => {
+    try { dependencies.recoveryStepObserver?.(step); } catch { /* Diagnostics are best-effort. */ }
+  };
   try {
     const repositoryDependencies = dependencies.repositories;
     await openCanonicalRepositories({
@@ -77,11 +82,19 @@ export async function bootstrapApplication(
     }
     stage = ApplicationBootstrapStage.RecoveringLearningState;
     if (prepareLifecycle) {
-      await prepareLifecycle();
+      await prepareLifecycle(reportRecoveryStep);
       const lifecycle = getTrainingLifecycleUseCases();
+      reportRecoveryStep("pending_journal_recovery");
       await lifecycle.recoverPendingJournal();
+      reportRecoveryStep(null);
+      reportRecoveryStep("active_session_read");
       const activeAfterRecovery = await getActiveTrainingSession();
-      if (activeAfterRecovery) await lifecycle.reconstructOperationProjection(activeAfterRecovery);
+      reportRecoveryStep(null);
+      if (activeAfterRecovery) {
+        reportRecoveryStep("operation_projection_reconstruction");
+        await lifecycle.reconstructOperationProjection(activeAfterRecovery);
+        reportRecoveryStep(null);
+      }
     } else {
       // Test-only/headless bootstrap has no lifecycle composition to install.
       await recoverPendingMutation();
@@ -158,6 +171,10 @@ export async function bootstrapApplication(
       currentRepositoryStep,
     );
     return result;
+  } finally {
+    // A timed-out presentation keeps its step while this promise is pending. Once
+    // bootstrap settles, even a non-throwing unavailable result ends that attempt.
+    reportRecoveryStep(null);
   }
 }
 

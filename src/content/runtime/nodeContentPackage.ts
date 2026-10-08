@@ -1,5 +1,5 @@
 import { gunzipSync } from "fflate";
-import { assertValidQuestion, isCanonicalSafeIdentity, type Question } from "../canonical";
+import { assertValidQuestion, isCanonicalSafeIdentity, validateQuestionRelations, type Question } from "../canonical";
 import { isRegisteredTrackId } from "../../domain/tracks/trackRegistry";
 
 export const NODE_PACKAGE_SCHEMA = "patternly-content-node-payload-v1" as const;
@@ -83,10 +83,11 @@ export function validateNodePayload(value: unknown, expected?: Readonly<{ trackI
   if (expected && (value.trackId !== expected.trackId || value.nodeId !== expected.nodeId || value.contentVersion !== expected.contentVersion || value.contentReleaseId !== expected.contentReleaseId)) throw new NodePackageError("package_identity_mismatch");
   const ids = new Set<string>();
   for (const item of value.items) {
-    assertValidQuestion(item);
+    try { assertValidQuestion(item); } catch { throw new NodePackageError("invalid_response"); }
     if (item.trackId !== value.trackId || item.nodeId !== value.nodeId || ids.has(item.questionId)) throw new NodePackageError("package_identity_mismatch");
     ids.add(item.questionId);
   }
+  if (validateQuestionRelations(value.items).length > 0) throw new NodePackageError("invalid_response");
   return Object.freeze({ schemaVersion: NODE_PACKAGE_SCHEMA, trackId: value.trackId, nodeId: value.nodeId, contentVersion: value.contentVersion, contentReleaseId: value.contentReleaseId, items: Object.freeze([...value.items]) });
 }
 

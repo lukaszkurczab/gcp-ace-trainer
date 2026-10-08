@@ -102,6 +102,71 @@ test("bootstrap stays pending until verified content preparation finishes", asyn
   assert.deepEqual(events, ["content-started", "content-ready"]);
 });
 
+test("recovery-step observer reports only the current await and clears it after successful bootstrap", async () => {
+  const steps: (string | null)[] = [];
+  let releaseProfile!: () => void;
+  let markProfilePending!: () => void;
+  const profileBarrier = new Promise<void>((resolve) => { releaseProfile = resolve; });
+  const profilePending = new Promise<void>((resolve) => { markProfilePending = resolve; });
+  let settled = false;
+  const pending = bootstrapApplication(
+    async () => undefined,
+    async () => undefined,
+    async (observeStep) => {
+      observeStep?.("profile_completion");
+      markProfilePending();
+      await profileBarrier;
+      observeStep?.("lifecycle_composition");
+      composeTrainingLifecycleUseCases();
+      await Promise.resolve();
+      observeStep?.(null);
+    },
+    { recoveryStepObserver: (step) => { steps.push(step); } },
+  );
+  void pending.then(() => { settled = true; });
+
+  await profilePending;
+  assert.deepEqual(steps, ["profile_completion"]);
+  assert.equal(settled, false);
+  releaseProfile();
+  assert.deepEqual(await pending, { kind: "ready", activeSessionId: null });
+  assert.deepEqual(steps, [
+    "profile_completion",
+    "lifecycle_composition",
+    null,
+    "pending_journal_recovery",
+    null,
+    "active_session_read",
+    null,
+    null,
+  ]);
+});
+
+test("a failed recovery await is reported through the bounded observer and cleared on settlement", async () => {
+  const steps: (string | null)[] = [];
+  const diagnostics: unknown[] = [];
+  const result = await bootstrapApplication(
+    async () => undefined,
+    async () => undefined,
+    async (observeStep) => {
+      observeStep?.("actor_anchor_capture");
+      throw new Error("private account payload");
+    },
+    {
+      recoveryStepObserver: (step) => { steps.push(step); },
+      diagnosticObserver: (event) => { diagnostics.push(event); },
+    },
+  );
+  assert.equal(result.kind, "blocking");
+  assert.deepEqual(steps, ["actor_anchor_capture", null]);
+  assert.deepEqual(diagnostics, [{
+    stage: ApplicationBootstrapStage.RecoveringLearningState,
+    operationalCode: "LOCAL_OPERATION_FAILED",
+    errorKind: "error",
+  }]);
+  assert.doesNotMatch(JSON.stringify(diagnostics), /private account payload/u);
+});
+
 test("verified Premium sessions remain available in Home when resume admission is denied or unavailable", async () => {
   for (const decision of ["denied", "unavailable"] as const) {
     testStorage = new MemoryKeyValueStorage();

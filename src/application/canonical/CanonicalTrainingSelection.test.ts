@@ -79,3 +79,39 @@ test("a never-attempted question stays uncovered even when its unit has attempt 
   const attempts = [attemptFor(track, first.questionId, "attempted-question")];
   assert.equal(selectPracticeQuestions(pool, attempts, track, 1)[0]!.questionId, freshInSameUnit.questionId);
 });
+
+test("near-variant penalty is an exact-pin final tie-break for history and the current ordered plan", async () => {
+  const catalog = await catalogPromise;
+  const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
+  const sameUnit = track.getPool("certification-focus-practice").reduce((groups, question) => {
+    const key = `${question.nodeId}:${question.mentalUnitId}`;
+    groups.set(key, [...(groups.get(key) ?? []), question]);
+    return groups;
+  }, new Map<string, typeof track.questions>()).values().next().value as typeof track.questions;
+  assert.ok(sameUnit && sameUnit.length >= 3, "fixture needs three questions in one unit");
+  const relation = (counterpartQuestionId: string, kind: "near_variant" | "condition_contrast" = "near_variant") => ({
+    counterpartQuestionId, kind, changedCondition: "The caller can retry.", decisionBoundary: "Retry is safe only for idempotent operations.",
+  });
+  const candidate = { ...sameUnit[0]!, questionRelation: relation(sameUnit[1]!.questionId) };
+  const unrelated = sameUnit[2]!;
+  const currentPinPool = [
+    { ...sameUnit[0]!, questionRelation: relation(sameUnit[1]!.questionId) },
+    { ...sameUnit[1]!, questionRelation: relation(sameUnit[0]!.questionId) },
+    sameUnit[2]!,
+  ];
+  const exactPinPeerAttempt = attemptFor(track, sameUnit[1]!.questionId, "near-peer-history");
+  assert.deepEqual(selectPracticeQuestions([candidate, unrelated], [exactPinPeerAttempt], track, 1).map((question) => question.questionId), [unrelated.questionId]);
+  const stalePeerAttempt = { ...exactPinPeerAttempt, item: { ...exactPinPeerAttempt.item, contentVersion: "older-version" } } as TrainingAttempt<unknown>;
+  assert.deepEqual(selectPracticeQuestions([candidate, unrelated], [stalePeerAttempt], track, 1).map((question) => question.questionId), [candidate.questionId]);
+  const foreignTrackPeerAttempt = { ...exactPinPeerAttempt, trackId: "other-track", item: { ...exactPinPeerAttempt.item, trackId: "other-track" } } as TrainingAttempt<unknown>;
+  const staleShaPeerAttempt = { ...exactPinPeerAttempt, item: { ...exactPinPeerAttempt.item, artifactSha256: "b".repeat(64) } } as TrainingAttempt<unknown>;
+  assert.deepEqual(selectPracticeQuestions([candidate, unrelated], [foreignTrackPeerAttempt, staleShaPeerAttempt], track, 1).map((question) => question.questionId), [candidate.questionId]);
+  assert.deepEqual(selectPracticeQuestions(currentPinPool, [], track, 2).map((question) => question.questionId), [currentPinPool[0]!.questionId, currentPinPool[2]!.questionId]);
+
+  const contrastPool = [
+    { ...sameUnit[0]!, questionRelation: relation(sameUnit[1]!.questionId, "condition_contrast") },
+    { ...sameUnit[1]!, questionRelation: relation(sameUnit[0]!.questionId, "condition_contrast") },
+    sameUnit[2]!,
+  ];
+  assert.deepEqual(selectPracticeQuestions(contrastPool, [], track, 2).map((question) => question.questionId), [contrastPool[0]!.questionId, contrastPool[1]!.questionId]);
+});

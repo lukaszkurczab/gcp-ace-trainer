@@ -48,3 +48,9 @@ test("manual review marking uses verified result identity and cannot turn an una
   assert.doesNotMatch(review, /questionSnapshot|sourceAttemptId: item\.occurrenceId/);
   assert.match(resultScreenSource, /navigation\.navigate\(ROUTES\.EXAM_REVIEW, \{ sessionId: route\.params\.sessionId \}\)/);
 });
+
+test("related practice limitations appear only on completed certification results", () => {
+  assert.match(resultScreenSource, /certificationPractice && summary\.certificationPracticeReview\?\.relatedPracticeLimitation/);
+  assert.match(resultScreenSource, /t\("A related question pair — a near variant or condition contrast — appears in this session or in an earlier recorded attempt using this exact content version\. Treat it as related practice, not independent transfer evidence\."\)/);
+  assert.doesNotMatch(resultScreenSource, /questionRelation.*accessibilityLabel|accessibilityLabel.*questionRelation/u);
+});

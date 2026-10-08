@@ -18,6 +18,7 @@ export function selectPracticeQuestions(
 
   const questionIds = new Set<string>();
   const questionAttempts = new Map<string, number>();
+  const exactPinAttemptedQuestionIds = new Set<string>();
   const unitQuestions = new Map<string, Question[]>();
   const poolIndex = new Map<string, number>();
   for (const [index, question] of pool.entries()) {
@@ -35,9 +36,11 @@ export function selectPracticeQuestions(
     if (attempt.trackId !== contentPin.trackId
       || attempt.item.trackId !== contentPin.trackId
       || attempt.item.contentVersion !== contentPin.contentVersion
-      || attempt.item.artifactSha256 !== contentPin.artifactSha256
-      || !questionIds.has(attempt.item.questionId)) continue;
-    questionAttempts.set(attempt.item.questionId, (questionAttempts.get(attempt.item.questionId) ?? 0) + 1);
+      || attempt.item.artifactSha256 !== contentPin.artifactSha256) continue;
+    exactPinAttemptedQuestionIds.add(attempt.item.questionId);
+    if (questionIds.has(attempt.item.questionId)) {
+      questionAttempts.set(attempt.item.questionId, (questionAttempts.get(attempt.item.questionId) ?? 0) + 1);
+    }
   }
 
   const historicalSeenByUnit = new Map<string, number>();
@@ -54,7 +57,7 @@ export function selectPracticeQuestions(
     let best: Question | undefined;
     for (const candidate of pool) {
       if (selectedIds.has(candidate.questionId)) continue;
-      if (!best || compareCandidates(candidate, best, unitQuestions, historicalSeenByUnit, questionAttempts, selectedByUnit, poolIndex) < 0) best = candidate;
+      if (!best || compareCandidates(candidate, best, unitQuestions, historicalSeenByUnit, questionAttempts, selectedByUnit, poolIndex, exactPinAttemptedQuestionIds, selectedIds) < 0) best = candidate;
     }
     if (!best) break;
     selected.push(best);
@@ -73,6 +76,8 @@ function compareCandidates(
   questionAttempts: ReadonlyMap<string, number>,
   selectedByUnit: ReadonlyMap<string, number>,
   poolIndex: ReadonlyMap<string, number>,
+  exactPinAttemptedQuestionIds: ReadonlySet<string>,
+  selectedIds: ReadonlySet<string>,
 ): number {
   const leftUnitSize = unitQuestions.get(left.mentalUnitId)!.length;
   const rightUnitSize = unitQuestions.get(right.mentalUnitId)!.length;
@@ -91,5 +96,14 @@ function compareCandidates(
 
   const attemptDifference = (questionAttempts.get(left.questionId) ?? 0) - (questionAttempts.get(right.questionId) ?? 0);
   if (attemptDifference !== 0) return attemptDifference;
+  const leftRelated = nearVariantPeerSeen(left, exactPinAttemptedQuestionIds, selectedIds);
+  const rightRelated = nearVariantPeerSeen(right, exactPinAttemptedQuestionIds, selectedIds);
+  if (leftRelated !== rightRelated) return Number(leftRelated) - Number(rightRelated);
   return poolIndex.get(left.questionId)! - poolIndex.get(right.questionId)!;
+}
+
+function nearVariantPeerSeen(question: Question, exactPinAttemptedQuestionIds: ReadonlySet<string>, selectedIds: ReadonlySet<string>): boolean {
+  const relation = question.questionRelation;
+  return relation?.kind === "near_variant"
+    && (exactPinAttemptedQuestionIds.has(relation.counterpartQuestionId) || selectedIds.has(relation.counterpartQuestionId));
 }

@@ -41,6 +41,7 @@ type ResultReadState =
 
 export function ResultScreen({ navigation, route, readSummary, fixtureNotice, onFixtureExit }: Props & Readonly<{ readSummary?: (sessionId: string) => Promise<Summary>; fixtureNotice?: ReactNode; onFixtureExit?: () => void }>) {
   const { t } = useTranslation("common");
+  const styles = useThemedStyles(createStyles);
   const requestKey = route.params.sessionId;
   const [readState, setReadState] = useState<ResultReadState>({ kind: "pending", requestKey });
   useEffect(() => {
@@ -157,6 +158,12 @@ export function ResultScreen({ navigation, route, readSummary, fixtureNotice, on
         totalOccurrences={actualCount}
         unansweredCount={unansweredCount}
       />
+      {certificationPractice && summary.certificationPracticeReview?.relatedPracticeLimitation
+        ? <Card style={styles.diagnosticCard}>
+            <Text style={styles.diagnosticTitle}>{t("Related practice")}</Text>
+            <Text style={styles.diagnosticBody}>{t("A related question pair — a near variant or condition contrast — appears in this session or in an earlier recorded attempt using this exact content version. Treat it as related practice, not independent transfer evidence.")}</Text>
+          </Card>
+        : null}
       {session.trackId === "google-cloud-associate-cloud-engineer" && session.modeId === "certification-diagnostic-baseline"
         ? <CloudDiagnosticReportCard
             report={summary.certificationPracticeReview?.diagnosticReport ?? null}

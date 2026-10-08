@@ -41,6 +41,8 @@ type ItemId = ResolvedContentRef["questionId"];
 export const runtimeSelectors = Object.freeze({
   q13: Object.freeze({
     receiptRoot: () => selector("q13", "receipt"),
+    bootstrapDiagnosticRoot: () => selector("q13", "bootstrap-diagnostic"),
+    bootstrapStep: () => selector("q13", "bootstrap-step"),
     storageReadiness: () => selector("q13", "storage-readiness"),
     packageRootReadiness: () => selector("q13", "package-root-readiness"),
     inventory: () => selector("q13", "inventory"),

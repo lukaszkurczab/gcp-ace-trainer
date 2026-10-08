@@ -3,7 +3,7 @@ import { Linking, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Button, EmptyState, LoadingState, Screen } from "../../components";
 import { abandonUnavailableActiveTrainingSession, bootstrapApplication } from "../../application/bootstrap";
-import { describeOperationalFailure } from "../../application/operationalDiagnostics";
+import { createBootstrapProgressObserver, describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
 import { getForegroundSessionTimerFacade } from "../../application/trainingLifecycle";
 import { handleRuntimeAuditabilityUrl } from "../../application/runtimeAuditability/developmentResetCommand";
@@ -109,6 +109,7 @@ export function ContentPreparationGate({ children, completeAccountPreparation }:
   useEffect(() => {
     let live = true;
     let settled = false;
+    const bootstrapProgress = createBootstrapProgressObserver();
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     let lifecycle: ReturnType<typeof composeTrainingLifecycleUseCases> | null = null;
     let resumeActorFence: HomeResumeActorFence | null = null;
@@ -166,13 +167,14 @@ export function ContentPreparationGate({ children, completeAccountPreparation }:
           }
           return;
         },
-        async () => {
+        async (observeRecoveryStep) => {
           setPhase("recovering-learning-state");
           lifecycle = await prepareLifecycleAfterProfileCompletion(completeAccountPreparation, async () => composeTrainingLifecycleUseCases({
             premiumSessionAdmission: {
               authorize: () => accountRef.current.authorizePremiumSessionStart(),
             },
-          }));
+          }), observeRecoveryStep);
+          observeRecoveryStep?.("actor_anchor_capture");
           try {
             exactMissingActorAnchor.current = await captureExactMissingActorAnchor({
               profile: getActiveStorageProfileOrNull(),
@@ -181,15 +183,22 @@ export function ContentPreparationGate({ children, completeAccountPreparation }:
               hasGuestAccess,
             });
           } catch { exactMissingActorAnchor.current = null; }
+          observeRecoveryStep?.(null);
           lifecycleReady.current = true;
           const queuedUrl = pendingRuntimeAuditabilityUrl.current;
           pendingRuntimeAuditabilityUrl.current = null;
+          observeRecoveryStep?.("auditability_command");
           const handling = await handleRuntimeAuditabilityUrl(queuedUrl ?? initialUrl);
+          observeRecoveryStep?.(null);
           if (handling.kind === "reset_learning_state") auditResetAwaitingBootstrap.current = true;
         },
-        undefined,
+        {
+          diagnosticObserver: bootstrapProgress.observeFailure,
+          recoveryStepObserver: bootstrapProgress.observeStep,
+        },
       );
     })().then((result) => {
+      bootstrapProgress.dispose();
       if (result.kind === "ready") {
         complete({ kind: "ready" });
         return;
@@ -208,11 +217,13 @@ export function ContentPreparationGate({ children, completeAccountPreparation }:
       }
       complete({ kind: "blocking", phase: currentPhase, reason: result.reason });
     }).catch((error) => {
+      bootstrapProgress.dispose();
       complete({ kind: "blocking", phase: currentPhase, reason: describeOperationalFailure(error, "Application bootstrap failed.") });
     });
     return () => {
       live = false;
       settled = true;
+      bootstrapProgress.dispose();
       if (timeoutId !== undefined) clearTimeout(timeoutId);
     };
   }, [bootstrapRevision, completeAccountPreparation, t]);

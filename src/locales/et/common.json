@@ -172,6 +172,8 @@
   "Questions": "Küsimused",
   "Feedback after each answer": "Tagasiside pärast iga vastust",
   "Feedback at session end": "Tagasiside sessiooni lõpus",
+  "Related practice": "Seotud harjutamine",
+  "A related question pair — a near variant or condition contrast — appears in this session or in an earlier recorded attempt using this exact content version. Treat it as related practice, not independent transfer evidence.": "Selles sessioonis on seotud küsimustepaar — lähedane variant või tingimuste kontrast — või küsimus varasemast salvestatud katsest sama sisuväljaandega. Käsitle seda seotud harjutamisena, mitte sõltumatu ülekande tõendina.",
   "Elapsed foreground timer": "Esiplaanil oldud aja taimer",
   "45-minute foreground countdown": "45-minutiline esiplaanil oldud aja loendur",
   "Reinsert enabled": "Vale vastuse kordamine lubatud",

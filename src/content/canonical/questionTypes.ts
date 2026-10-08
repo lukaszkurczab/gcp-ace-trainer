@@ -20,6 +20,13 @@ export type CanonicalFeedback<T extends QuestionInteractionType> = Readonly<{
   messages?: readonly CanonicalFeedbackMessage[];
 }>;
 
+export type CanonicalQuestionRelation = Readonly<{
+  counterpartQuestionId: string;
+  kind: "near_variant" | "condition_contrast";
+  changedCondition: string;
+  decisionBoundary: string;
+}>;
+
 type QuestionBase<T extends QuestionInteractionType> = Readonly<{
   questionId: string;
   trackId: string;
@@ -30,6 +37,7 @@ type QuestionBase<T extends QuestionInteractionType> = Readonly<{
   difficulty: string | null;
   sourceRefs?: readonly string[];
   contentDomainId?: string;
+  questionRelation?: CanonicalQuestionRelation;
   feedback: CanonicalFeedback<T>;
 }>;
 

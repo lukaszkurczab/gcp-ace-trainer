@@ -36,6 +36,40 @@ test("all nine canonical artifacts validate with exact inventory and stable lear
   assert.equal(padded?.prompt, "After Floyd's pointers meet, what transformation finds the cycle entry? ");
 });
 
+test("optional question relations require reciprocal same-unit peers with matching rationales", () => {
+  const source = inputs.find(({ entry }) => entry.trackId === "google-cloud-associate-cloud-engineer")!;
+  const artifact = clone(source.artifact) as { schemaVersion: string; trackId: string; contentVersion: string; questions: Question[]; simulationProfiles?: unknown[] };
+  const firstIndex = artifact.questions.findIndex((question, index) => artifact.questions.some((candidate, candidateIndex) =>
+    candidateIndex > index && candidate.nodeId === question.nodeId && candidate.mentalUnitId === question.mentalUnitId));
+  assert.ok(firstIndex >= 0, "fixture needs two questions in the same mental unit");
+  const first = artifact.questions[firstIndex]!;
+  const secondIndex = artifact.questions.findIndex((question, index) => index > firstIndex && question.nodeId === first.nodeId && question.mentalUnitId === first.mentalUnitId);
+  const second = artifact.questions[secondIndex]!;
+  const relation = (counterpartQuestionId: string) => ({ counterpartQuestionId, kind: "near_variant" as const, changedCondition: "The caller may now retry.", decisionBoundary: "Retry is safe only when the operation is idempotent." });
+  artifact.questions[firstIndex] = { ...first, questionRelation: relation(second.questionId) } as Question;
+  artifact.questions[secondIndex] = { ...second, questionRelation: relation(first.questionId) } as Question;
+  assert.doesNotThrow(() => validateCanonicalArtifact(artifact, source.entry, source.entry.trackId));
+
+  const invalidVariants = [
+    (copy: typeof artifact) => {
+      const { questionRelation: _relation, ...withoutRelation } = copy.questions[secondIndex]!;
+      copy.questions[secondIndex] = withoutRelation as Question;
+    },
+    (copy: typeof artifact) => { copy.questions[secondIndex] = { ...copy.questions[secondIndex]!, questionRelation: relation("missing-peer") } as Question; },
+    (copy: typeof artifact) => { copy.questions[secondIndex] = { ...copy.questions[secondIndex]!, questionRelation: { ...relation(first.questionId), kind: "condition_contrast" } } as Question; },
+    (copy: typeof artifact) => { copy.questions[secondIndex] = { ...copy.questions[secondIndex]!, questionRelation: { ...relation(first.questionId), decisionBoundary: "A different boundary." } } as Question; },
+    (copy: typeof artifact) => { copy.questions[secondIndex] = { ...copy.questions[secondIndex]!, mentalUnitId: "another-unit", questionRelation: relation(first.questionId) } as Question; },
+    (copy: typeof artifact) => { copy.questions[secondIndex] = { ...copy.questions[secondIndex]!, nodeId: "another-node", questionRelation: relation(first.questionId) } as Question; },
+    (copy: typeof artifact) => { copy.questions[secondIndex] = { ...copy.questions[secondIndex]!, trackId: "another-track", questionRelation: relation(first.questionId) } as Question; },
+  ];
+  for (const mutate of invalidVariants) {
+    const copy = clone(artifact);
+    mutate(copy);
+    assert.throws(() => validateCanonicalArtifact(copy, source.entry, source.entry.trackId));
+  }
+  assert.ok(validateQuestion({ ...first, questionRelation: relation(first.questionId) }).some((error) => error.includes("cannot reference the same question")));
+});
+
 test("canonical scoring matches the producer oracle exhaustively", async () => {
   const oracle = await import(pathToFileURL(path.join(contentRoot, "scripts/content/question-contract.mjs")).href) as Oracle;
   for (const { entry, artifact } of inputs) { const validated = artifact as { questions: Question[] }; for (const question of validated.questions) for (const response of [answerResponse(question), partialResponse(question), { type: question.interaction.type }, null]) { const { contentDomainId: _contentDomainId, ...oracleQuestion } = question; const expected = oracle.scoreQuestion(oracleQuestion, response); const actual = scoreCanonicalQuestion(question, response); assert.deepEqual({ status: actual.kind, earnedPoints: actual.earnedPoints, maxPoints: actual.maxPoints }, { status: expected.status, earnedPoints: expected.earnedPoints, maxPoints: expected.maxPoints }, `${entry.trackId}/${question.questionId}`); } }

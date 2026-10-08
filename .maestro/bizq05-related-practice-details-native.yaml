@@ -1,0 +1,58 @@
+appId: com.lkurczab.patternly
+name: Patternly BIZQ05 Light actual details full scroll
+---
+- assertVisible: "Related practice"
+- scrollUntilVisible:
+    element:
+      id: "patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-focus-practice:5"
+    direction: UP
+    timeout: 15000
+- tapOn:
+    id: "patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-focus-practice:5"
+- extendedWaitUntil:
+    visible: "Question 1 / 40"
+    timeout: 30000
+- repeat:
+    times: 35
+    commands:
+      - tapOn: "Next"
+- assertVisible: "Question 36 / 40"
+- assertVisible:
+    id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:gcp-ace-gcpace-n01-b04-006"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:details-toggle:gcp-ace-gcpace-n01-b04-006"
+- assertVisible:
+    id: "patternly:session:details:gcp-ace-gcpace-n01-b04-006"
+- scrollUntilVisible:
+    element: "When the project or active consumer changes, reassess identifiers, service state, permissions, and workload ownership together."
+    direction: DOWN
+    timeout: 15000
+- assertVisible: "When the project or active consumer changes, reassess identifiers, service state, permissions, and workload ownership together."
+- takeScreenshot: bizq05-focus40-q006-details-full-scroll-light
+- repeat:
+    times: 4
+    commands:
+      - tapOn: "Next"
+- assertVisible: "Question 40 / 40"
+- assertVisible:
+    id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:gcp-ace-gcpace-n01-b04-007"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:details-toggle:gcp-ace-gcpace-n01-b04-007"
+- assertVisible:
+    id: "patternly:session:details:gcp-ace-gcpace-n01-b04-007"
+- scrollUntilVisible:
+    element: "When the project or active consumer changes, reassess identifiers, service state, permissions, and workload ownership together."
+    direction: DOWN
+    timeout: 15000
+- assertVisible: "When the project or active consumer changes, reassess identifiers, service state, permissions, and workload ownership together."
+- takeScreenshot: bizq05-focus40-q007-details-full-scroll-light

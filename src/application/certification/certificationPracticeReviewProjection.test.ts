@@ -24,6 +24,66 @@ test("completed practice projector preserves the canonical five-state answer mat
   assert.deepEqual(fixture.result.evidence.details, { activeForegroundMs: 0, correctCount: 7, partialCount: 1, incorrectCount: 2, pointsEarned: 15, maxPoints: 22 });
 });
 
+test("related-practice limitation requires a current near-variant peer or a strictly earlier exact-pin peer attempt", async () => {
+  const fixture = await fixturePromise;
+  const catalog = await loadCanonicalRuntimeCatalog();
+  const track = catalog.getTrack(fixture.session.trackId);
+  const currentIds = new Set(fixture.session.itemOrder.map((occurrence) => occurrence.item.questionId));
+  const questions = new Map(track.questions.map((question) => [question.questionId, question]));
+  const first = questions.get(fixture.session.itemOrder[0]!.item.questionId)!;
+  const second = questions.get(fixture.session.itemOrder[1]!.item.questionId)!;
+  const rationale = { kind: "near_variant" as const, changedCondition: "A retry is now possible.", decisionBoundary: "Retry is safe only when the operation is idempotent." };
+  questions.set(first.questionId, { ...first, questionRelation: { counterpartQuestionId: second.questionId, ...rationale } } as Question);
+  questions.set(second.questionId, { ...second, questionRelation: { counterpartQuestionId: first.questionId, ...rationale } } as Question);
+  const project = (attempts: readonly TrainingAttempt<unknown>[], sourceQuestions: ReadonlyMap<string, Question> = questions) => projectCertificationPracticeReview({
+    attempts,
+    resolveQuestion: async (item) => sourceQuestions.get(item.questionId)!,
+    result: fixture.result,
+    session: fixture.session,
+  });
+
+  const sameSession = await project(fixture.attempts);
+  assert.equal(sameSession.relatedPracticeLimitation, "related_question_pair");
+
+  const contrastQuestions = new Map(track.questions.map((question) => [question.questionId, question]));
+  const contrast = { ...rationale, kind: "condition_contrast" as const };
+  contrastQuestions.set(first.questionId, { ...first, questionRelation: { counterpartQuestionId: second.questionId, ...contrast } } as Question);
+  contrastQuestions.set(second.questionId, { ...second, questionRelation: { counterpartQuestionId: first.questionId, ...contrast } } as Question);
+  const sameSessionContrast = await project(fixture.attempts, contrastQuestions);
+  assert.equal(sameSessionContrast.relatedPracticeLimitation, "related_question_pair");
+
+  const peer = track.questions.find((question) => question.nodeId === first.nodeId && question.mentalUnitId === first.mentalUnitId && !currentIds.has(question.questionId));
+  assert.ok(peer, "fixture needs an exact-pin peer outside the completed session");
+  const currentOnlyQuestions = new Map(track.questions.map((question) => [question.questionId, question]));
+  currentOnlyQuestions.set(first.questionId, { ...first, questionRelation: { counterpartQuestionId: peer.questionId, ...rationale } } as Question);
+  const currentAttempt = fixture.attempts.find((attempt) => attempt.occurrenceId === fixture.session.itemOrder[0]!.occurrenceId)!;
+  const peerAttempt = {
+    ...currentAttempt,
+    id: "prior-near-variant-attempt",
+    sessionId: "prior-recorded-practice",
+    occurrenceId: "prior-peer-occurrence",
+    item: { ...currentAttempt.item, questionId: peer.questionId },
+    answeredAt: new Date(Date.parse(currentAttempt.answeredAt) - 60_000).toISOString(),
+  } as TrainingAttempt<unknown>;
+  const earlier = await project([...fixture.attempts, peerAttempt], currentOnlyQuestions);
+  assert.equal(earlier.relatedPracticeLimitation, "related_question_pair");
+
+  const priorContrastQuestions = new Map(track.questions.map((question) => [question.questionId, question]));
+  priorContrastQuestions.set(first.questionId, { ...first, questionRelation: { counterpartQuestionId: peer.questionId, ...contrast } } as Question);
+  const earlierContrast = await project([...fixture.attempts, peerAttempt], priorContrastQuestions);
+  assert.equal(earlierContrast.relatedPracticeLimitation, "related_question_pair");
+
+  for (const ambiguousPeerAttempt of [
+    { ...peerAttempt, answeredAt: currentAttempt.answeredAt },
+    { ...peerAttempt, answeredAt: "invalid-time" },
+    { ...peerAttempt, item: { ...peerAttempt.item, artifactSha256: "a".repeat(64) } },
+  ]) {
+    const ambiguous = await project([...fixture.attempts, ambiguousPeerAttempt], currentOnlyQuestions);
+    assert.equal(Object.hasOwn(ambiguous, "relatedPracticeLimitation"), false);
+  }
+  assert.equal(Object.hasOwn(fixture.projection, "relatedPracticeLimitation"), false, "content without relation metadata keeps current behavior");
+});
+
 test("completed practice review projects authored wrong and omitted-correct messages from the saved response only", async () => {
   const fixture = await fixturePromise;
   const catalog = await loadCanonicalRuntimeCatalog();

@@ -1,0 +1,1445 @@
+appId: com.lkurczab.patternly
+name: Patternly BIZQ05 actual N01 Focus 40 and relation review
+---
+- assertVisible: "Question 1 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:1:length:40"
+- takeScreenshot: bizq05-focus40-q01-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 2 of 40"
+    timeout: 30000
+- assertVisible: "Question 2 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:2:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 3 of 40"
+    timeout: 30000
+- assertVisible: "Question 3 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:3:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 4 of 40"
+    timeout: 30000
+- assertVisible: "Question 4 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:4:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 5 of 40"
+    timeout: 30000
+- assertVisible: "Question 5 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:5:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 6 of 40"
+    timeout: 30000
+- assertVisible: "Question 6 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:6:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 7 of 40"
+    timeout: 30000
+- assertVisible: "Question 7 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:7:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 8 of 40"
+    timeout: 30000
+- assertVisible: "Question 8 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:8:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 9 of 40"
+    timeout: 30000
+- assertVisible: "Question 9 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:9:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 10 of 40"
+    timeout: 30000
+- assertVisible: "Question 10 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:10:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 11 of 40"
+    timeout: 30000
+- assertVisible: "Question 11 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:11:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 12 of 40"
+    timeout: 30000
+- assertVisible: "Question 12 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:12:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 13 of 40"
+    timeout: 30000
+- assertVisible: "Question 13 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:13:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 14 of 40"
+    timeout: 30000
+- assertVisible: "Question 14 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:14:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 15 of 40"
+    timeout: 30000
+- assertVisible: "Question 15 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:15:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 16 of 40"
+    timeout: 30000
+- assertVisible: "Question 16 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:16:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 17 of 40"
+    timeout: 30000
+- assertVisible: "Question 17 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:17:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 18 of 40"
+    timeout: 30000
+- assertVisible: "Question 18 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:18:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 19 of 40"
+    timeout: 30000
+- assertVisible: "Question 19 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:19:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 20 of 40"
+    timeout: 30000
+- assertVisible: "Question 20 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:20:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 21 of 40"
+    timeout: 30000
+- assertVisible: "Question 21 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:21:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 22 of 40"
+    timeout: 30000
+- assertVisible: "Question 22 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:22:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 23 of 40"
+    timeout: 30000
+- assertVisible: "Question 23 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:23:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 24 of 40"
+    timeout: 30000
+- assertVisible: "Question 24 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:24:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 25 of 40"
+    timeout: 30000
+- assertVisible: "Question 25 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:25:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 26 of 40"
+    timeout: 30000
+- assertVisible: "Question 26 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:26:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 27 of 40"
+    timeout: 30000
+- assertVisible: "Question 27 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:27:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 28 of 40"
+    timeout: 30000
+- assertVisible: "Question 28 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:28:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 29 of 40"
+    timeout: 30000
+- assertVisible: "Question 29 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:29:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 30 of 40"
+    timeout: 30000
+- assertVisible: "Question 30 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:30:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 31 of 40"
+    timeout: 30000
+- assertVisible: "Question 31 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:31:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 32 of 40"
+    timeout: 30000
+- assertVisible: "Question 32 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:32:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 33 of 40"
+    timeout: 30000
+- assertVisible: "Question 33 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:33:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 34 of 40"
+    timeout: 30000
+- assertVisible: "Question 34 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:34:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 35 of 40"
+    timeout: 30000
+- assertVisible: "Question 35 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:35:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 36 of 40"
+    timeout: 30000
+- assertVisible: "Question 36 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:36:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 37 of 40"
+    timeout: 30000
+- assertVisible: "Question 37 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:37:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 38 of 40"
+    timeout: 30000
+- assertVisible: "Question 38 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:38:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 39 of 40"
+    timeout: 30000
+- assertVisible: "Question 39 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:39:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:continue:.*"
+    timeout: 20000
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Question 40 of 40"
+    timeout: 30000
+- assertVisible: "Question 40 of 40"
+- assertVisible:
+    id: "patternly:session:counter:.*:ordinal:40:length:40"
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-006"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q006-before-answer
+- runFlow:
+    when:
+      visible:
+        id: "patternly:session:question:gcp-ace-gcpace-n01-b04-007"
+    commands:
+      - assertNotVisible: "Related practice"
+      - takeScreenshot: bizq05-focus40-q007-before-answer
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "patternly:session:option:.*"
+    index: 0
+- tapOn:
+    id: "patternly:session:submit:.*"
+- extendedWaitUntil:
+    visible: "Finish session"
+    timeout: 30000
+- takeScreenshot: bizq05-focus40-final-answer-finish-session
+- tapOn:
+    id: "patternly:session:continue:.*"
+- extendedWaitUntil:
+    visible: "Session complete"
+    timeout: 30000
+- takeScreenshot: bizq05-focus40-completed-result

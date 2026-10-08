@@ -3,14 +3,20 @@ import { createHash } from "node:crypto";
 import { gzipSync } from "node:zlib";
 import test from "node:test";
 import { ContentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
-import { createMemoryNodePackageStore, installNodePackage, NodePackageError, verifyNodePackage, type BinaryPackageResponse, type NodePackageHash } from "./nodeContentPackage";
+import { createMemoryNodePackageStore, installNodePackage, NodePackageError, validateNodePayload, verifyNodePackage, type BinaryPackageResponse, type NodePackageHash } from "./nodeContentPackage";
 
 const sha256Bytes = async (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const hash: NodePackageHash = { sha256Bytes };
 const TRACK = "coding-interview-dsa-problem-solving";
 const NODE = "package-test-node";
+function question(questionId: string, extra: Record<string, unknown> = {}) {
+  return { questionId, trackId: TRACK, nodeId: NODE, mentalUnitId: "mental-unit-1", prompt: "Choose the safe option.", interaction: { type: "choice_single", scoringMethod: "exact_selected_set", options: [{ optionId: "yes", text: "Yes" }, { optionId: "no", text: "No" }] }, answer: { type: "choice_single", optionId: "yes" }, feedback: { type: "choice_single", reason: "The contract defines the accepted result.", details: { rule: "safe" } }, difficulty: null, ...extra };
+}
+function payloadSource(version: string, items: readonly unknown[]): Uint8Array {
+  return new TextEncoder().encode(JSON.stringify({ schemaVersion: "patternly-content-node-payload-v1", trackId: TRACK, nodeId: NODE, contentVersion: version, contentReleaseId: "fixture-release-1", items }));
+}
 function source(version: string, questionId = `question-${version}`): Uint8Array {
-  return new TextEncoder().encode(JSON.stringify({ schemaVersion: "patternly-content-node-payload-v1", trackId: TRACK, nodeId: NODE, contentVersion: version, contentReleaseId: "fixture-release-1", items: [{ questionId, trackId: TRACK, nodeId: NODE, mentalUnitId: "mental-unit-1", prompt: "Choose the safe option.", interaction: { type: "choice_single", scoringMethod: "exact_selected_set", options: [{ optionId: "yes", text: "Yes" }, { optionId: "no", text: "No" }] }, answer: { type: "choice_single", optionId: "yes" }, feedback: { type: "choice_single", reason: "The contract defines the accepted result.", details: { rule: "safe" } }, difficulty: null }] }));
+  return payloadSource(version, [question(questionId)]);
 }
 function response(artifact: Uint8Array, overrides: Record<string, string> = {}): BinaryPackageResponse {
   const compressed = gzipSync(artifact);
@@ -48,6 +54,34 @@ test("node package verifier enforces exact transport headers, hashes, schema and
   await assert.rejects(verifyNodePackage({ trackId: TRACK, nodeId: NODE, packageBytes: malformedCompletionRule.bytes, headers: malformedCompletionRule.headers, appVersion: "0.1.0", hash }), NodePackageError);
   const invalidMode = response(new TextEncoder().encode(JSON.stringify({ ...JSON.parse(new TextDecoder().decode(artifact)), modes: [] })));
   await assert.rejects(verifyNodePackage({ trackId: TRACK, nodeId: NODE, packageBytes: invalidMode.bytes, headers: invalidMode.headers, appVersion: "0.1.0", hash }), NodePackageError);
+});
+
+test("node payload validates question relations against the complete installed node collection", () => {
+  const relation = (counterpartQuestionId: string, overrides: Record<string, unknown> = {}) => ({
+    counterpartQuestionId,
+    kind: "condition_contrast",
+    changedCondition: "The active constraint changes.",
+    decisionBoundary: "Choose the option that satisfies the active constraint.",
+    ...overrides,
+  });
+  const validPair = [
+    question("pair-a", { questionRelation: relation("pair-b") }),
+    question("pair-b", { questionRelation: relation("pair-a") }),
+  ];
+  assert.equal(validateNodePayload(JSON.parse(new TextDecoder().decode(payloadSource("1.0.0", validPair)))).items.length, 2);
+
+  const invalidPairs: readonly (readonly unknown[])[] = [
+    [question("orphan", { questionRelation: relation("missing") })],
+    [question("one-way-a", { questionRelation: relation("one-way-b") }), question("one-way-b")],
+    [question("self", { questionRelation: relation("self") })],
+    [question("foreign-unit-a", { questionRelation: relation("foreign-unit-b") }), question("foreign-unit-b", { mentalUnitId: "different-unit", questionRelation: relation("foreign-unit-a") })],
+    [question("kind-a", { questionRelation: relation("kind-b") }), question("kind-b", { questionRelation: relation("kind-a", { kind: "near_variant" }) })],
+    [question("rationale-a", { questionRelation: relation("rationale-b") }), question("rationale-b", { questionRelation: relation("rationale-a", { decisionBoundary: "A different boundary." }) })],
+  ];
+  for (const [index, items] of invalidPairs.entries()) {
+    const bytes = payloadSource(`invalid-${index}`, items);
+    assert.throws(() => validateNodePayload(JSON.parse(new TextDecoder().decode(bytes))), (error: unknown) => error instanceof NodePackageError && error.code === "invalid_response");
+  }
 });
 
 test("install keeps old exact package resolvable after new activation and rolls back on failed reread or activation", async () => {

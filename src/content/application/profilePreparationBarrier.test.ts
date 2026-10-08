@@ -6,6 +6,7 @@ import { prepareLifecycleAfterProfileCompletion } from "./profilePreparationBarr
 
 test("profile completion settles before lifecycle composition and resume authorization", async () => {
   const events: string[] = [];
+  const pendingSteps: (string | null)[] = [];
   const result = await prepareLifecycleAfterProfileCompletion(
     async () => {
       await Promise.resolve();
@@ -16,10 +17,12 @@ test("profile completion settles before lifecycle composition and resume authori
       events.push("resume-authorized");
       return "ready";
     },
+    (step) => { pendingSteps.push(step); },
   );
 
   assert.equal(result, "ready");
   assert.deepEqual(events, ["profile-complete", "lifecycle-composed", "resume-authorized"]);
+  assert.deepEqual(pendingSteps, ["profile_completion", "lifecycle_composition", null]);
 });
 
 test("application bootstrap wires account completion ahead of lifecycle composition", () => {
