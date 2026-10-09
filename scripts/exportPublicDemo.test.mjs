@@ -1,17 +1,16 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { execFileSync } from "node:child_process";
-import { dirname, join, resolve, sep } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { tmpdir } from "node:os";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
-import { assertSnapshotCurrent, buildPublicDemoProjection, createPublicDemoCatalog } from "./exportPublicDemo.mjs";
+import { assertHistoricalDemoMatchesCurrentRuntime, assertSnapshotCurrent, buildPublicDemoProjection, createLocalAdmittedPublicDemoCatalog, createPublicDemoCatalog } from "./exportPublicDemo.mjs";
 
 const require = createRequire(import.meta.url);
 const { buildCanonicalRuntimeCatalog } = require("../src/content/canonical/runtimeCatalog.ts");
+const { contentPackageRuntimeOwner } = require("../src/application/contentPackageRuntimeOwner.ts");
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const contentRoot = resolve(root, "../patternly-content");
 const readAppJson = (path) => JSON.parse(readFileSync(resolve(root, path), "utf8"));
@@ -37,17 +36,6 @@ const historicalText = (repository, commit, path) => execFileSync(
   { encoding: "utf8", maxBuffer: 80 * 1024 * 1024 },
 );
 const historicalJson = (repository, commit, path) => JSON.parse(historicalText(repository, commit, path));
-async function writeHistoricalFile(targetRoot, repository, commit, relativePath) {
-  const rootPath = resolve(targetRoot);
-  const targetPath = resolve(rootPath, relativePath);
-  assert.ok(targetPath.startsWith(`${rootPath}${sep}`), "historical fixture path must stay inside its temporary root");
-  await mkdir(dirname(targetPath), { recursive: true });
-  await writeFile(targetPath, historicalText(repository, commit, relativePath));
-}
-async function writeHistoricalTree(targetRoot, repository, commit, relativePaths) {
-  const archive = execFileSync("git", ["-C", repository, "archive", commit, ...relativePaths], { encoding: "buffer", maxBuffer: 80 * 1024 * 1024 });
-  execFileSync("tar", ["-x", "-f", "-", "-C", targetRoot], { input: archive, maxBuffer: 80 * 1024 * 1024 });
-}
 const contentSelections = [
   {
     trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview", nodeId: "complexity_and_constraints", questionId: "alg-complexity-time-005",
@@ -112,38 +100,8 @@ async function historicalFixture(selection) {
   };
 }
 
-async function createHistoricalProductionFixture(t) {
-  const fixtureRoot = await mkdtemp(join(tmpdir(), "patternly-public-demo-946d-"));
-  t.after(() => rm(fixtureRoot, { recursive: true, force: true }));
-  const appFixture = join(fixtureRoot, "patternly");
-  const contentFixture = join(fixtureRoot, "patternly-content");
-  await mkdir(appFixture, { recursive: true });
-  await mkdir(contentFixture, { recursive: true });
-  await writeHistoricalTree(appFixture, root, HISTORICAL_APP_COMMIT, ["src", "scripts/exportPublicDemo.mjs"]);
-  await symlink(join(root, "node_modules"), join(appFixture, "node_modules"), "dir");
-
-  const canonicalRoot = "src/content/generated/canonical-content";
-  for (const trackId of HISTORICAL_TRACK_IDS) {
-    await writeHistoricalFile(appFixture, root, HISTORICAL_APP_COMMIT, `${canonicalRoot}/${trackId}.json`);
-  }
-  await writeHistoricalFile(appFixture, root, HISTORICAL_APP_COMMIT, `${canonicalRoot}/content-lock.json`);
-  await writeHistoricalFile(appFixture, root, HISTORICAL_APP_COMMIT, "integration/contracts/content-release/release.lock.json");
-
-  const admissionPath = "evidence/admissions/candidate-admission-v3.json";
-  const admissionBytes = historicalText(contentRoot, HISTORICAL_CONTENT_COMMIT, admissionPath);
-  const admission = JSON.parse(admissionBytes);
-  await writeHistoricalFile(contentFixture, contentRoot, HISTORICAL_CONTENT_COMMIT, admissionPath);
-  for (const relativePath of [admission.candidatePath, admission.release.releasePath, admission.runtimeEvidence.path, ...contentSelections.map(({ sourcePath }) => sourcePath)]) {
-    await writeHistoricalFile(contentFixture, contentRoot, HISTORICAL_CONTENT_COMMIT, relativePath);
-  }
-
-  const exporterPath = join(appFixture, "scripts/exportPublicDemo.mjs");
-  const exporter = await import(pathToFileURL(exporterPath).href);
-  return { catalog: await exporter.createPublicDemoCatalog() };
-}
-
-test("production catalog exports Coding and AWS from the exact historically admitted 946d ordinary Free pools", async (t) => {
-  const { catalog } = await createHistoricalProductionFixture(t);
+test("explicit local admitted-source projection preserves the admitted questions and current Free pools", async () => {
+  const catalog = await createLocalAdmittedPublicDemoCatalog();
   const bases = await Promise.all(contentSelections.map(historicalFixture));
   const demos = catalog.demos;
   assert.equal(catalog.schemaVersion, "patternly-canonical-demo-questions-v1");
@@ -175,6 +133,19 @@ test("production catalog exports Coding and AWS from the exact historically admi
     "AWS defines reliability as a workload performing its intended function consistently and notes that hard dependency interruptions directly translate into interruptions of the invoking system.",
     "The review records the database as a reliability risk and evaluates Multi-AZ, failover, backup, and recovery behavior for the data dependency rather than stopping at frontend redundancy.",
   ]);
+});
+
+test("local admitted-source parity requires the same exact sample and current Free pool, not a matching whole-track version", async () => {
+  const selection = contentSelections[0];
+  const base = await historicalFixture(selection);
+  const { track: currentTrack, runtime } = await contentPackageRuntimeOwner.resolveForDiscovery(selection.trackId, selection.familyId);
+  const valid = { selection, historicalQuestion: base.question, currentTrack, currentFamilyId: runtime.familyId };
+  assert.notEqual(base.track.artifactSha256, currentTrack.trainingIdentity.artifactSha256, "the historical admission owns the sample while the current track has a separate training identity");
+  assert.equal(assertHistoricalDemoMatchesCurrentRuntime(valid), undefined);
+  assert.throws(() => assertHistoricalDemoMatchesCurrentRuntime({ ...valid, currentFamilyId: "certification" }), /canonical track family/u);
+  assert.throws(() => assertHistoricalDemoMatchesCurrentRuntime({ ...valid, historicalQuestion: { ...base.question, prompt: `${base.question.prompt} changed` } }), /differs from the current canonical training question/u);
+  const outsidePool = { ...currentTrack, getPool: () => [] };
+  assert.throws(() => assertHistoricalDemoMatchesCurrentRuntime({ ...valid, currentTrack: outsidePool }), /outside the current ordinary Free practice pool/u);
 });
 
 test("current draft cannot reuse the historical admission and fails its current app-lock precondition", async () => {
