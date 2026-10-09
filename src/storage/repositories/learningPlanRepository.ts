@@ -4,6 +4,7 @@ import { readCanonicalEnvelope, writeCanonicalJsonUnlocked, withCanonicalWriteLo
 import { STORAGE_KEYS } from "../keys";
 import { CanonicalWriteConflictError, UnsupportedStoredRecordError } from "../errors";
 import { StaleGoalRevisionError } from "./goalRepository";
+import { assertGoalPlanPairReadable } from "./mutationJournalRepository";
 
 export type { LearningPlanSnapshot } from "../../domain";
 
@@ -32,6 +33,7 @@ export type SaveLearningPlanAtomicallyInput = Readonly<{
 
 /** Reads the plan envelope revision; absence is a valid first-run state. */
 export function getLearningPlanSnapshot(trackId: TrackId): LearningPlanSnapshot | null {
+  assertGoalPlanPairReadable();
   const envelope = readCanonicalEnvelope(STORAGE_KEYS.learningPlan(trackId), (value): value is LearningPlan => isLearningPlanV1ForTrack(value, trackId));
   return envelope ? freezeSnapshot(envelope) : null;
 }
@@ -65,6 +67,7 @@ export function saveLearningPlanAtomically(
   positionalExpectedGoalRevision?: number | null,
   positionalExpectedPlanStorageRevision?: number | null,
 ): LearningPlanSnapshot {
+  assertGoalPlanPairReadable();
   const input: SaveLearningPlanAtomicallyInput = typeof inputOrTrackId === "string"
     ? { trackId: inputOrTrackId, plan: positionalPlan!, expectedGoalRevision: positionalExpectedGoalRevision!, expectedPlanStorageRevision: positionalExpectedPlanStorageRevision! }
     : inputOrTrackId;

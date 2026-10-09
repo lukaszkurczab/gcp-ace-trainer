@@ -14,6 +14,7 @@ import {
   type LearningPlanSavedReminderResult,
 } from "./learningPlanMutationRuntimeCore";
 import type { TrackId } from "../../domain";
+import { takeGoalPlanAcceptanceInterruptionHook } from "../runtimeAuditability/goalPlanAcceptanceInterruptionCommand";
 
 export type {
   LearningPlanAcceptRuntimeResult,
@@ -26,7 +27,7 @@ export type { LearningPlanReminderExpectedIdentity } from "../notificationPrefer
 
 function defaultDependencies(): LearningPlanMutationRuntimeDependencies {
   return {
-    acceptProposal: (proposalId, trackId) => learningPlanEditorCoordinator.acceptProposal(proposalId, trackId),
+    acceptProposal: (proposalId, trackId, beforePlanWrite) => learningPlanEditorCoordinator.acceptProposal(proposalId, trackId, beforePlanWrite),
     commit: (editorId, trackId) => learningPlanEditorCoordinator.commit(editorId, trackId),
     reconcile: (copy, expected) => reconcileLearningPlanReminders(expoNotificationPlatform, copy, expected),
     retry: (copy, expected) => retryLearningPlanReminders(expoNotificationPlatform, copy, expected),
@@ -42,7 +43,7 @@ export class LearningPlanMutationRuntime extends LearningPlanMutationRuntimeCore
 export const learningPlanMutationRuntime = new LearningPlanMutationRuntime();
 
 export function acceptPlanWithReminders(proposalId: string, trackId: TrackId, copy: PracticeReminderCopy): Promise<LearningPlanAcceptRuntimeResult> {
-  return learningPlanMutationRuntime.acceptProposal(proposalId, trackId, copy);
+  return learningPlanMutationRuntime.acceptProposal(proposalId, trackId, copy, takeGoalPlanAcceptanceInterruptionHook(proposalId, trackId));
 }
 
 export function commitPlanWithReminders(editorId: string, trackId: TrackId, copy: PracticeReminderCopy): Promise<LearningPlanCommitRuntimeResult> {

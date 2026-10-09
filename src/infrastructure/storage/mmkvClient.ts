@@ -601,8 +601,20 @@ export async function selectPreparedAccountProfile(
   if (client || !canContinue()) throw new Error("profile_transition_cancelled");
   const previous = router.registry.profiles.find((profile) => profile.id === router.registry.selectedProfileId);
   if (!previous) throw new Error("profile_registry_corrupt");
-  const profile = (options.recoverBoundGuest ? await router.promoteSelectedBoundGuest(accountId, canContinue) : null)
-    ?? await router.selectAccount(accountId, canContinue);
+  let profile: StorageProfile;
+  try {
+    profile = (options.recoverBoundGuest ? await router.promoteSelectedBoundGuest(accountId, canContinue) : null)
+      ?? await router.selectAccount(accountId, canContinue);
+  } catch (error) {
+    // Registry-first account provisioning can fail after the account became
+    // selected. Refresh the prepared router to that durable state and release
+    // the transition fence; callers still receive the provisioning failure and
+    // cannot activate or sync the account in this attempt.
+    if (preparedStorage === prepared && !client) {
+      try { await refreshPreparedAfterSelection(prepared, () => true); } catch { /* refresh clears stale prepared state on failure */ }
+    }
+    throw error;
+  }
   const changed = profile.id !== previous.id || profile.kind !== previous.kind;
   if (!canContinue() && !changed) throw new Error("profile_transition_cancelled");
   if (changed) await refreshPreparedAfterSelection(prepared, canContinue);
@@ -1059,8 +1071,20 @@ export async function selectAccountProfileAndRestart(
   options: Readonly<{ recoverBoundGuest?: boolean }> = {},
 ): Promise<boolean> {
   if (!profileRouter) throw new Error("encrypted_storage_not_initialized");
-  const selected = (options.recoverBoundGuest ? await profileRouter.promoteSelectedBoundGuest(accountId, canContinue) : null)
-    ?? await profileRouter.selectAccount(accountId, canContinue);
+  let selected: StorageProfile;
+  try {
+    selected = (options.recoverBoundGuest ? await profileRouter.promoteSelectedBoundGuest(accountId, canContinue) : null)
+      ?? await profileRouter.selectAccount(accountId, canContinue);
+  } catch (error) {
+    if (profileTransitionActive) {
+      const retained = activePreparedStorage;
+      closeActiveProfileStorage();
+      if (retained && preparedStorage === retained) {
+        try { await refreshPreparedAfterSelection(retained, () => true); } catch { /* leave storage closed if durable refresh fails */ }
+      }
+    }
+    throw error;
+  }
   const changed = selected.id !== profileRouter.profile.id || selected.kind !== profileRouter.profile.kind;
   if (!changed) return false;
   await reloadForProfileTransition();
@@ -1109,12 +1133,13 @@ export class MemoryKeyValueStorage implements KeyValueStorage {
   setFailurePlan(plan: FailurePlan | null): void { this.failurePlan = plan; }
   resetCounters(): void { this.reads = 0; this.writes = 0; this.removes = 0; this.operations.length = 0; }
   snapshot(): ReadonlyMap<string, string> { return new Map(this.values); }
-  private fail(kind: "read" | "write" | "remove", key: string, number: number): void { const plan = this.failurePlan; if (!plan) return; const matchingKeyWrites = kind === "write" ? this.operations.filter((operation) => operation.kind === "write" && operation.key === key).length : 0; const fail = (plan.kind === "fail_on_write_number" && kind === "write" && plan.writeNumber === number) || (plan.kind === "fail_on_key_write" && kind === "write" && plan.key === key) || (plan.kind === "fail_on_key_write_occurrence" && kind === "write" && plan.key === key && plan.occurrence === matchingKeyWrites) || (plan.kind === "fail_on_read_number" && kind === "read" && plan.readNumber === number) || (plan.kind === "fail_on_key_read" && kind === "read" && plan.key === key) || (plan.kind === "fail_on_remove_number" && kind === "remove" && plan.removeNumber === number) || (plan.kind === "fail_on_key_remove" && kind === "remove" && plan.key === key); if (fail) throw new Error(`Injected ${kind} failure for ${key}.`); }
+  private fail(kind: "read" | "write" | "remove", key: string, number: number): void { const plan = this.failurePlan; if (!plan) return; const matchingKeyOperations = this.operations.filter((operation) => operation.kind === kind && operation.key === key).length; const fail = (plan.kind === "fail_on_write_number" && kind === "write" && plan.writeNumber === number) || (plan.kind === "fail_on_key_write" && kind === "write" && plan.key === key) || (plan.kind === "fail_on_key_write_occurrence" && kind === "write" && plan.key === key && plan.occurrence === matchingKeyOperations) || (plan.kind === "fail_on_read_number" && kind === "read" && plan.readNumber === number) || (plan.kind === "fail_on_key_read" && kind === "read" && plan.key === key) || (plan.kind === "fail_on_key_read_occurrence" && kind === "read" && plan.key === key && plan.occurrence === matchingKeyOperations) || (plan.kind === "fail_on_remove_number" && kind === "remove" && plan.removeNumber === number) || (plan.kind === "fail_on_key_remove" && kind === "remove" && plan.key === key); if (fail) throw new Error(`Injected ${kind} failure for ${key}.`); }
 }
 export type FailurePlan =
   | { kind: "fail_on_write_number"; writeNumber: number }
   | { kind: "fail_on_key_write"; key: string }
   | { kind: "fail_on_key_write_occurrence"; key: string; occurrence: number }
+  | { kind: "fail_on_key_read_occurrence"; key: string; occurrence: number }
   | { kind: "fail_on_read_number"; readNumber: number }
   | { kind: "fail_on_key_read"; key: string }
   | { kind: "fail_on_remove_number"; removeNumber: number }

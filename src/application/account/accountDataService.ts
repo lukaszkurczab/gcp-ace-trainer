@@ -17,10 +17,16 @@ import {
   buildGuestOwnedLocalDataBackup,
   clearAccountDeletionOwnedLocalData,
   clearGuestOwnedLocalData,
+  createConflictResolutionOutboxEntry,
+  rebuildConflictResolutionSyncPlan,
   ensureAccountOutboxFromLocalDataset,
   completeLearningPlanRecovery,
   finishAccountMaterialization,
   getAccountSyncState,
+  readAccountSyncStateEnvelope,
+  parseGoalCloudState,
+  parseLearningPlanCloudState,
+  isDeletedAccountDataRecord,
   markAccountDataPending,
   markAccountResetPending,
   markAccountResetRemoteRestorePending,
@@ -41,6 +47,8 @@ import {
   type AccountDataSnapshot,
   type AccountMutationAcknowledgement,
   type AccountSyncState,
+  type AccountSyncConflict,
+  type AccountSyncPlan,
   type LearningPlanRecoveryIncident,
   type RemoteAccountDataRecord,
   type SyncableRecordType,
@@ -57,11 +65,27 @@ import { bindGuestInstallationToAccount, clearGuestAccountBinding, getGuestInsta
 import { getActiveMutationJournal } from "../../storage/repositories/mutationJournalRepository";
 import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
+import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { withLocalLearningWriteOperation } from "../learningMutations/localLearningWriteOperation";
 import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
 import { commitLearningStateReset } from "../learningMutations";
 import type { TrackId } from "../../domain";
 import { getActiveTrackId, saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
+import { captureActiveProfileStorageLease, getActiveStorageProfileOrNull, isActiveProfileStorageLeaseCurrent, readActiveAccountIdentityBinding } from "../../storage/repositories/profileStorageRepository";
+import { getGoalSnapshot } from "../../storage/repositories/goalRepository";
+import { getLearningPlanSnapshot } from "../../storage/repositories/learningPlanRepository";
+import { commitMutationAfterPreflight } from "../learningMutations/commitMutation";
+import { buildMutationJournal } from "../learningMutations/mutationJournalBuilder";
+import { getActiveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
+import { normalizeGoalRecord } from "../../domain/goals/goalContracts";
+import { normalizeLearningPlan } from "../../domain";
+import type { GoalRecord, LearningPlan } from "../../domain";
+import { isGoalRecordShapeForTrack } from "../../domain/goals/goalContracts";
+import { isLearningPlanV1ForTrack } from "../../domain";
+import { readCanonicalEnvelope, type CanonicalRecordEnvelope } from "../../storage/repositories/canonicalRecordCodec";
+import { STORAGE_KEYS } from "../../storage/keys";
+import type { AccountSyncConflictResolutionRecord } from "../../storage/repositories/mutationJournalRepository";
+import { isRegisteredTrackId } from "../../domain";
 
 export { accountDataRecordFingerprint } from "../../storage/repositories/accountDataRepository";
 export { clearAccountDeletionOwnedLocalData } from "../../storage/repositories/accountDataRepository";
@@ -85,7 +109,16 @@ export type AccountDataSession = Readonly<{
   lastFailureCode: string | null;
   activeSessionBlocked: boolean;
   guestAdoptionChoice: "transfer" | "discard";
+  syncConflict?: AccountSyncConflict | null;
   learningPlanRecovery?: LearningPlanRecoveryIncident;
+}>;
+
+export type AccountSyncConflictPreview = Readonly<{
+  conflictId: string;
+  kind: "rebase_available" | "pair_choice_required" | "unsupported_changes";
+  remoteAccountRevision: number;
+  changedPairTrackIds: readonly TrackId[];
+  changedOtherRecordCount: number;
 }>;
 
 export { saveGuestAdoptionChoice };
@@ -273,6 +306,7 @@ async function loadAccountDataSessionUnlocked(
     if (completedDeletion?.status === "complete" && completedDeletion.accountId !== accountId) clearAccountDeletionState();
     const state = await getAccountSyncState();
     if (state.accountId !== null && state.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+    if (state.accountId === accountId && state.syncConflict) return failureSession(state, false);
     if (isPersistedIdentityDenial(state.lastFailureCode)) return failureSession(state, false);
     if (state.resetGuard) return await resumeAccountLocalHistoryReset(api, accountId, state);
     if (state.materialization) {
@@ -576,6 +610,7 @@ async function retryPendingAccountDataSyncUnlocked(api: PatternlyApiClient, acco
   const state = await getAccountSyncState();
   if (!installation || installation.accountId !== accountId || state.accountId !== accountId) return null;
   if (isPersistedIdentityDenial(state.lastFailureCode)) return failureSession(state, false);
+  if (state.syncConflict) return failureSession(state, false);
   if (state.status !== "offlinePending") return null;
   if (state.materialization) return explicitFailureSession(state, "account_materialization_in_progress", false);
   if (state.pendingConfirmation !== null) return explicitFailureSession(state, "account_adoption_pending", false);
@@ -957,9 +992,11 @@ async function deleteBoundAccountUnlocked(api: PatternlyApiClient, accountId: st
 async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: string): Promise<AccountDataSession> {
   let state = await getAccountSyncState();
   if (state.accountId === accountId && isPersistedIdentityDenial(state.lastFailureCode)) return failureSession(state, false);
+  if (state.accountId === accountId && state.syncConflict) return failureSession(state, false);
   const initialGuard = await readBoundSyncGuard(accountId);
   if (initialGuard) return initialGuard;
   let baseline: BoundSyncBaseline | null = null;
+  let confirmedConflict: AccountSyncConflict | null = null;
   try {
     const planned = await withLocalLearningWriteOperation(async () => {
       const storageScope = readLearningPlanStorageScope();
@@ -1021,7 +1058,7 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
         if (batch.every((entry) => planItemsByMutationId.get(entry.mutationId)?.status === "acked")) continue;
         const current = await getAccountSyncState();
         if (current.syncPlan?.planId !== plan.planId) throw new AccountDataFailure("account_sync_state_invalid");
-        const response = await api.syncProgress({
+        const request = {
           canonicalVersion: "canonical-json-v1",
           expectedAccountRevision: current.remoteAccountRevision,
           deviceId: installation.installationId,
@@ -1029,11 +1066,24 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
           batchId,
           highWatermark: plan.highWatermark,
           mutations: batch.map((entry) => ({ mutationId: entry.mutationId, kind: entry.recordType === "training_attempt" || entry.recordType === "review_queue_entry" ? "item" as const : "node" as const, recordType: entry.recordType, trackId: entry.trackId, targetId: entry.recordId, expectedVersion: entry.expectedVersion, fingerprint: entry.fingerprint, state: entry.state })),
-        });
+        } as const;
+        let response: Awaited<ReturnType<PatternlyApiClient["syncProgress"]>>;
+        try {
+          response = await api.syncProgress(request);
+        } catch (error) {
+          const conflictCode = confirmedSyncConflictCode(error);
+          if (conflictCode) confirmedConflict = buildConfirmedSyncConflict({ code: conflictCode, request, planId: plan.planId, batchId, batchIndex, batch });
+          throw error;
+        }
         if (response.accountRevisionConflict) {
+          confirmedConflict = buildConfirmedSyncConflict({ code: response.accountRevisionConflict.code, request, planId: plan.planId, batchId, batchIndex, batch });
           throw new PatternlyApiClientError("server_error", 409, response.accountRevisionConflict.code);
         }
-        if (response.conflicts.length > 0) throw new PatternlyApiClientError("server_error", 409, response.conflicts[0]?.code ?? "version_conflict");
+        if (response.conflicts.length > 0) {
+          const conflictCode = response.conflicts[0]?.code ?? "version_conflict";
+          confirmedConflict = buildConfirmedSyncConflict({ code: conflictCode, request, planId: plan.planId, batchId, batchIndex, batch });
+          throw new PatternlyApiClientError("server_error", 409, conflictCode);
+        }
         const batchMutationIds = new Set(batch.map((entry) => entry.mutationId));
         if (response.applied.some((record) => !batchMutationIds.has(record.lastMutationId))
           || response.duplicates.some((mutationId) => !batchMutationIds.has(mutationId))
@@ -1155,7 +1205,9 @@ async function synchronizeBoundAccount(api: PatternlyApiClient, accountId: strin
       const guard = await readBoundSyncGuard(accountId);
       if (guard) return preservePendingSyncGuard(accountId, guard);
     }
-    const failed = await recordFailure(state, failure);
+    const failed = confirmedConflict
+      ? await persistConfirmedSyncConflict(accountId, confirmedConflict)
+      : await recordFailure(state, failure);
     return failureSession(failed, failure === "offline");
   }
 }
@@ -1251,6 +1303,7 @@ async function readBoundSyncGuard(accountId: string): Promise<AccountDataSession
   if (!installation || installation.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
   const state = await getAccountSyncState();
   if (state.accountId !== null && state.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
+  if (state.accountId === accountId && state.syncConflict) return failureSession(state, false);
   if (state.resetGuard) return explicitFailureSession(state, "local_reset_pending", false);
   if (state.materialization) return explicitFailureSession(state, "account_materialization_in_progress", false);
   if (state.pendingConfirmation !== null) return explicitFailureSession(state, "account_adoption_pending", false);
@@ -1272,8 +1325,307 @@ async function recordFailure(state: AccountSyncState, code: string): Promise<Acc
   return saveAccountSyncState({ ...state, status, blockingConflictCode: status === "conflict" ? code : state.blockingConflictCode, lastFailureCode: code });
 }
 
+const CONFIRMED_SYNC_CONFLICTS = new Set(["account_revision_conflict", "version_conflict", "content_identity_schema_conflict"]);
+function confirmedSyncConflictCode(error: unknown): AccountSyncConflict["code"] | null {
+  return error instanceof PatternlyApiClientError && error.status === 409 && error.serverCode && CONFIRMED_SYNC_CONFLICTS.has(error.serverCode)
+    ? error.serverCode as AccountSyncConflict["code"]
+    : null;
+}
+
+function buildConfirmedSyncConflict(input: Readonly<{
+  code: string;
+  request: Readonly<Record<string, unknown>>;
+  planId: string;
+  batchId: string;
+  batchIndex: number;
+  batch: readonly AccountOutboxEntry[];
+}>): AccountSyncConflict {
+  if (!CONFIRMED_SYNC_CONFLICTS.has(input.code)) throw new AccountDataFailure("account_sync_state_invalid");
+  const requestFingerprint = sha256Utf8(canonicalSerialize(input.request));
+  const mutationIds = input.batch.map((entry) => entry.mutationId);
+  const recordKeys = input.batch.map((entry) => accountDataRecordKey(entry));
+  const trackIds = [...new Set(input.batch.map((entry) => entry.trackId))].sort();
+  const occurredAt = nowIso();
+  const code = input.code as AccountSyncConflict["code"];
+  const conflictId = sha256Utf8(canonicalSerialize({ batchId: input.batchId, code, planId: input.planId, requestFingerprint }));
+  return Object.freeze({ schemaVersion: 1, conflictId, code, planId: input.planId, batchId: input.batchId, batchIndex: input.batchIndex,
+    expectedAccountRevision: Number((input.request as { expectedAccountRevision?: unknown }).expectedAccountRevision), requestFingerprint,
+    mutationIds: Object.freeze(mutationIds), recordKeys: Object.freeze(recordKeys), trackIds: Object.freeze(trackIds), occurredAt });
+}
+
+async function persistConfirmedSyncConflict(accountId: string, conflict: AccountSyncConflict): Promise<AccountSyncState> {
+  return withLocalLearningWriteOperation(async () => {
+    const installation = await getGuestInstallation();
+    const current = await getAccountSyncState();
+    if (!installation || installation.accountId !== accountId || installation.bindingState !== "account_bound"
+      || current.accountId !== accountId || current.materialization || current.pendingConfirmation !== null || current.resetGuard
+      || (current.syncPlan?.planId !== conflict.planId && !current.syncConflict)) {
+      throw new AccountDataFailure("account_binding_mismatch");
+    }
+    if (current.syncConflict && current.syncConflict.conflictId !== conflict.conflictId) throw new AccountDataFailure("account_sync_state_invalid");
+    const saved = saveAccountSyncState({ ...current, status: "conflict", blockingConflictCode: conflict.code, lastFailureCode: conflict.code, syncConflict: conflict });
+    const verified = await getAccountSyncState();
+    if (verified.accountId !== accountId || verified.syncConflict?.conflictId !== conflict.conflictId
+      || verified.syncPlan?.planId !== conflict.planId) throw new AccountDataFailure("account_sync_state_invalid");
+    return saved;
+  });
+}
+
+type ConflictReadContext = Readonly<{
+  accountId: string;
+  conflict: AccountSyncConflict;
+  installationId: string;
+  localDatasetId: string;
+  profileId: string;
+  lease: NonNullable<ReturnType<typeof captureActiveProfileStorageLease>>;
+  storageScope: object;
+  syncEnvelopeRevision: number;
+  localDatasetVersion: number;
+  localDatasetFingerprint: string | null;
+}>;
+
+type ConflictAnalysis = Readonly<{ changedPairTrackIds: readonly TrackId[]; changedOtherRecordCount: number }>;
+
+/** Explicit conflict entry is the only path that reads the latest cloud revision before a rebase/choice. */
+export function inspectAccountSyncConflict(api: PatternlyApiClient, accountId: string): Promise<AccountSyncConflictPreview> {
+  return withAccountDataOperation(async () => {
+    const context = await captureConflictReadContext(accountId);
+    const remote = await api.getProgress(); // Deliberately outside the local learning write lane.
+    const remoteRecords = toLocalRecords(remote.records);
+    assertValidAccountDataRecords(remoteRecords);
+    return withLocalLearningWriteOperation(async () => {
+      const { snapshot, state } = await validateConflictReadContext(context);
+      void snapshot;
+      const analysis = analyzeConflict(state, remoteRecords);
+      return Object.freeze({
+        conflictId: context.conflict.conflictId,
+        kind: analysis.changedOtherRecordCount > 0 ? "unsupported_changes" as const
+          : analysis.changedPairTrackIds.length > 0 ? "pair_choice_required" as const : "rebase_available" as const,
+        remoteAccountRevision: remote.accountRevision,
+        changedPairTrackIds: analysis.changedPairTrackIds,
+        changedOtherRecordCount: analysis.changedOtherRecordCount,
+      });
+    });
+  });
+}
+
+export function resolveAccountSyncConflict(input: Readonly<{
+  api: PatternlyApiClient;
+  accountId: string;
+  conflictId: string;
+  resolution: "rebase" | "keep_local" | "keep_account";
+  trackId?: TrackId;
+}>): Promise<AccountDataSession> {
+  return withAccountDataOperation(async () => {
+    const resolution = input.resolution;
+    const context = await captureConflictReadContext(input.accountId);
+    if (context.conflict.conflictId !== input.conflictId) throw new AccountDataFailure("account_sync_conflict_stale");
+    const remote = await input.api.getProgress(); // Never hold the local write lane across network I/O.
+    const remoteRecords = toLocalRecords(remote.records);
+    assertValidAccountDataRecords(remoteRecords);
+    if (resolution === "rebase") {
+      return withLocalLearningWriteOperation(async () => {
+        const { state } = await validateConflictReadContext(context);
+        const analysis = analyzeConflict(state, remoteRecords);
+        if (analysis.changedPairTrackIds.length > 0 || analysis.changedOtherRecordCount > 0) throw new AccountDataFailure("account_sync_conflict_stale");
+        const next = stateAfterConflictRebase(state, input.accountId, remote.accountRevision);
+        const saved = saveAccountSyncState(next, context.syncEnvelopeRevision);
+        return sessionFromState(saved, false);
+      });
+    }
+    if (!input.trackId) throw new AccountDataFailure("account_sync_conflict_choice_required");
+    await commitMutationAfterPreflight(async () => {
+      const { snapshot, state, syncEnvelope } = await validateConflictReadContext(context);
+      const analysis = analyzeConflict(state, remoteRecords);
+      if (!analysis.changedPairTrackIds.includes(input.trackId!)) throw new AccountDataFailure("account_sync_conflict_stale");
+      if (analysis.changedOtherRecordCount > 0) throw new AccountDataFailure("account_sync_conflict_unsupported_changes");
+      const pair = await resolvePairForChoice({ state, snapshot, remoteRecords, remoteAccountRevision: remote.accountRevision, accountId: input.accountId, trackId: input.trackId!, resolution });
+      const goalSnapshot = await getGoalSnapshot(input.trackId!);
+      const planSnapshot = getLearningPlanSnapshot(input.trackId!);
+      const afterState = stateAfterPairChoice({ state, snapshot, accountId: input.accountId, trackId: input.trackId!, remoteRecords, remoteAccountRevision: remote.accountRevision, pair, resolution });
+      const record: AccountSyncConflictResolutionRecord = Object.freeze({
+        conflictId: input.conflictId,
+        accountId: input.accountId,
+        profileId: context.profileId,
+        trackId: input.trackId!,
+        resolution,
+        expectedGoalRevision: goalSnapshot?.revision ?? null,
+        expectedPlanStorageRevision: planSnapshot?.revision ?? null,
+        expectedSyncStateRevision: syncEnvelope?.revision ?? null,
+        afterGoalRevision: pair.afterGoalRevision,
+        afterPlanStorageRevision: pair.afterPlanStorageRevision,
+        beforeGoal: goalSnapshot ? Object.freeze({ schemaIdentity: "patternly:canonical:v1" as const, revision: goalSnapshot.revision, payload: goalSnapshot.record }) : null,
+        beforePlan: planSnapshot ? Object.freeze({ schemaIdentity: "patternly:canonical:v1" as const, revision: planSnapshot.revision, payload: planSnapshot.plan }) : null,
+        beforeSyncState: syncEnvelope,
+        afterGoal: pair.afterGoal,
+        afterPlan: pair.afterPlan,
+        afterSyncState: afterState,
+      });
+      return buildMutationJournal({ operation: "resolve_account_sync_conflict", conflictId: input.conflictId, trackId: input.trackId!, identity: { accountId: input.accountId, resolution, remoteAccountRevision: remote.accountRevision, profileId: context.profileId, syncStateRevision: syncEnvelope?.revision ?? null }, writes: [{ kind: "resolve_account_sync_conflict", record }], createdAt: nowIso() });
+    }, () => assertConflictContextCurrent(context));
+    return failureSession(await getAccountSyncState(), false);
+  });
+}
+
+async function captureConflictReadContext(accountId: string): Promise<ConflictReadContext> {
+  const lease = captureActiveProfileStorageLease();
+  const profile = getActiveStorageProfileOrNull();
+  const installation = await getGuestInstallation();
+  const state = await getAccountSyncState();
+  const syncEnvelope = readAccountSyncStateEnvelope();
+  if (!lease || !profile || profile.id !== lease.profile.id || !installation || installation.accountId !== accountId
+    || installation.bindingState !== "account_bound" || state.accountId !== accountId || !state.syncConflict || !syncEnvelope
+    || state.materialization || state.pendingConfirmation || state.resetGuard) throw new AccountDataFailure("account_sync_conflict_unavailable");
+  const binding = await readActiveAccountIdentityBinding(lease);
+  if (binding.kind !== "verified" || binding.binding.profileId !== profile.id || binding.binding.accountId !== accountId
+    || !isActiveProfileStorageLeaseCurrent(lease) || getActiveStorageProfileOrNull()?.id !== profile.id) throw new AccountDataFailure("account_binding_mismatch");
+  return Object.freeze({ accountId, conflict: state.syncConflict, installationId: installation.installationId, localDatasetId: installation.localDatasetId,
+    profileId: profile.id, lease, storageScope: readLearningPlanStorageScope(), syncEnvelopeRevision: syncEnvelope.revision,
+    localDatasetVersion: state.localDatasetVersion, localDatasetFingerprint: state.localDatasetFingerprint });
+}
+
+async function validateConflictReadContext(context: ConflictReadContext): Promise<Readonly<{ snapshot: AccountDataSnapshot; state: AccountSyncState; syncEnvelope: ReturnType<typeof readAccountSyncStateEnvelope> }>> {
+  assertConflictContextCurrent(context);
+  const installation = await getGuestInstallation();
+  const binding = await readActiveAccountIdentityBinding(context.lease);
+  if (!installation || installation.installationId !== context.installationId || installation.localDatasetId !== context.localDatasetId
+    || installation.accountId !== context.accountId || installation.bindingState !== "account_bound"
+    || binding.kind !== "verified" || binding.binding.accountId !== context.accountId || binding.binding.profileId !== context.profileId) {
+    throw new AccountDataFailure("account_sync_conflict_stale");
+  }
+  const activeJournal = await getActiveMutationJournal();
+  if (activeJournal) throw new AccountDataFailure("journal_recovery_required");
+  const snapshot = await buildAccountDataSnapshot();
+  const state = await getAccountSyncState();
+  const syncEnvelope = readAccountSyncStateEnvelope();
+  if (snapshot.activeSession || snapshot.pendingJournal || !syncEnvelope || syncEnvelope.revision !== context.syncEnvelopeRevision
+    || state.localDatasetVersion !== context.localDatasetVersion || state.localDatasetFingerprint !== context.localDatasetFingerprint
+    || state.accountId !== context.accountId || state.syncConflict?.conflictId !== context.conflict.conflictId
+    || state.materialization || state.pendingConfirmation || state.resetGuard) throw new AccountDataFailure("account_sync_conflict_stale");
+  assertConflictContextCurrent(context);
+  return Object.freeze({ snapshot, state, syncEnvelope });
+}
+
+function assertConflictContextCurrent(context: ConflictReadContext): void {
+  if (!isActiveProfileStorageLeaseCurrent(context.lease) || getActiveStorageProfileOrNull()?.id !== context.profileId
+    || readLearningPlanStorageScope() !== context.storageScope) throw new AccountDataFailure("account_sync_conflict_stale");
+}
+
+function analyzeConflict(state: AccountSyncState, remoteRecords: readonly AccountDataRecord[]): ConflictAnalysis {
+  const remoteByKey = new Map(remoteRecords.map((record) => [accountDataRecordKey(record), record]));
+  const pairTracks = new Set<TrackId>();
+  let changedOtherRecordCount = 0;
+  for (const entry of state.outbox) {
+    const current = remoteByKey.get(accountDataRecordKey(entry));
+    const unchangedVersion = entry.expectedVersion === null ? current === undefined : current?.version === entry.expectedVersion;
+    if (unchangedVersion) continue;
+    if (entry.recordType === "goal" || entry.recordType === "learning_plan") pairTracks.add(entry.trackId as TrackId);
+    else changedOtherRecordCount += 1;
+  }
+  for (const trackId of pairTracks) {
+    for (const recordType of ["goal", "learning_plan"] as const) {
+      const key = accountDataRecordKey({ recordType, recordId: trackId, trackId });
+      const baseline = state.acknowledged[key];
+      const latest = remoteByKey.get(key);
+      if (baseline === undefined ? latest !== undefined : latest === undefined || latest.version !== baseline.remoteVersion || latest.fingerprint !== baseline.fingerprint) {
+        pairTracks.add(trackId);
+      }
+    }
+  }
+  return Object.freeze({ changedPairTrackIds: Object.freeze([...pairTracks].sort()), changedOtherRecordCount });
+}
+
+type ResolvedConflictPair = Readonly<{ afterGoal: GoalRecord | null; afterPlan: LearningPlan | null; afterGoalRevision: number | null; afterPlanStorageRevision: number | null; localPairRecords: readonly AccountDataRecord[] }>;
+
+async function resolvePairForChoice(input: Readonly<{
+  state: AccountSyncState; snapshot: AccountDataSnapshot; remoteRecords: readonly AccountDataRecord[]; remoteAccountRevision: number; accountId: string; trackId: TrackId; resolution: "keep_local" | "keep_account";
+}>): Promise<ResolvedConflictPair> {
+  const goal = await getGoalSnapshot(input.trackId);
+  const plan = getLearningPlanSnapshot(input.trackId);
+  if (input.resolution === "keep_local") {
+    const localRecords = input.snapshot.records.filter((record) => record.trackId === input.trackId && (record.recordType === "goal" || record.recordType === "learning_plan"));
+    let localPairRecords = localRecords;
+    if (localPairRecords.length === 0) {
+      localPairRecords = input.state.outbox.filter((entry) => entry.trackId === input.trackId && (entry.recordType === "goal" || entry.recordType === "learning_plan") && isDeletedAccountDataRecord(entry));
+    }
+    if (localPairRecords.length !== 2 || !localPairRecords.some((record) => record.recordType === "goal") || !localPairRecords.some((record) => record.recordType === "learning_plan")) throw new AccountDataFailure("account_sync_conflict_unsupported_changes");
+    const deletedPair = localPairRecords.every(isDeletedAccountDataRecord);
+    if (!deletedPair && (!goal || !plan || localPairRecords.some(isDeletedAccountDataRecord))) throw new AccountDataFailure("account_sync_conflict_unsupported_changes");
+    return Object.freeze({ afterGoal: goal?.record ?? null, afterPlan: plan?.plan ?? null,
+      afterGoalRevision: goal?.revision ?? null, afterPlanStorageRevision: plan?.revision ?? null, localPairRecords: Object.freeze(localPairRecords) });
+  }
+  const remotePair = readRemoteGoalPlanPair(input.remoteRecords, input.trackId);
+  if (remotePair.kind === "deleted") return Object.freeze({ afterGoal: null, afterPlan: null, afterGoalRevision: null, afterPlanStorageRevision: null, localPairRecords: Object.freeze([]) });
+  const localPairRecords = input.remoteRecords.filter((record) => record.trackId === input.trackId && (record.recordType === "goal" || record.recordType === "learning_plan"));
+  return Object.freeze({ afterGoal: remotePair.goal.record, afterPlan: remotePair.plan.plan,
+    afterGoalRevision: remotePair.goal.revision, afterPlanStorageRevision: remotePair.plan.revision, localPairRecords: Object.freeze(localPairRecords) });
+}
+
+function readRemoteGoalPlanPair(records: readonly AccountDataRecord[], trackId: TrackId):
+  | Readonly<{ kind: "deleted" }>
+  | Readonly<{ kind: "live"; goal: NonNullable<ReturnType<typeof parseGoalCloudState>>; plan: NonNullable<ReturnType<typeof parseLearningPlanCloudState>> }> {
+  const goal = records.find((record) => record.recordType === "goal" && record.trackId === trackId);
+  const plan = records.find((record) => record.recordType === "learning_plan" && record.trackId === trackId);
+  const goalDeleted = !goal || isDeletedAccountDataRecord(goal);
+  const planDeleted = !plan || isDeletedAccountDataRecord(plan);
+  if (goalDeleted && planDeleted) return Object.freeze({ kind: "deleted" });
+  if (goalDeleted || planDeleted || !goal || !plan) throw new AccountDataFailure("account_sync_conflict_unsupported_changes");
+  const parsedGoal = parseGoalCloudState(goal.state, trackId);
+  const parsedPlan = parseLearningPlanCloudState(plan.state, trackId);
+  if (!parsedGoal || !parsedPlan || parsedPlan.plan.goalRevision !== parsedGoal.revision) throw new AccountDataFailure("account_sync_conflict_unsupported_changes");
+  return Object.freeze({ kind: "live", goal: parsedGoal, plan: parsedPlan });
+}
+
+function stateAfterPairChoice(input: Readonly<{
+  state: AccountSyncState; snapshot: AccountDataSnapshot; accountId: string; trackId: TrackId; remoteRecords: readonly AccountDataRecord[]; remoteAccountRevision: number; pair: ResolvedConflictPair; resolution: "keep_local" | "keep_account";
+}>): AccountSyncState {
+  assertValidAccountDataRecords(input.pair.localPairRecords);
+  const remoteByKey = new Map(input.remoteRecords.map((record) => [accountDataRecordKey(record), record]));
+  const pairEntries = input.state.outbox.filter((entry) => entry.trackId === input.trackId && (entry.recordType === "goal" || entry.recordType === "learning_plan"));
+  const otherEntries = input.state.outbox.filter((entry) => !pairEntries.includes(entry));
+  const acknowledged: Record<string, AccountSyncState["acknowledged"][string]> = { ...input.state.acknowledged };
+  for (const recordType of ["goal", "learning_plan"] as const) {
+    const key = accountDataRecordKey({ recordType, recordId: input.trackId, trackId: input.trackId });
+    const remote = remoteByKey.get(key);
+    if (remote) acknowledged[key] = Object.freeze({ fingerprint: remote.fingerprint, recordId: remote.recordId, recordType, remoteVersion: remote.version, trackId: input.trackId });
+    else delete acknowledged[key];
+  }
+  let outbox: AccountOutboxEntry[];
+  let outboxSequence = input.state.outboxSequence;
+  if (input.resolution === "keep_local") {
+    outbox = otherEntries.slice();
+    for (const record of input.pair.localPairRecords) {
+      const key = accountDataRecordKey(record);
+      const latest = remoteByKey.get(key);
+      const previous = pairEntries.find((entry) => accountDataRecordKey(entry) === key);
+      const entry = createConflictResolutionOutboxEntry({ accountId: input.accountId, record, expectedVersion: latest?.version ?? null, sequence: ++outboxSequence, ...(previous ? { previous } : {}) });
+      outbox.push(entry);
+    }
+  } else {
+    outbox = otherEntries.slice();
+  }
+  const candidate = { ...input.state, acknowledged: Object.freeze(acknowledged), outbox: Object.freeze(outbox), outboxSequence,
+    highWatermark: Math.max(input.state.highWatermark, outboxSequence), pendingMutationCount: outbox.length };
+  const remaining = analyzeConflict(candidate, input.remoteRecords);
+  const canFinish = remaining.changedPairTrackIds.length === 0 && remaining.changedOtherRecordCount === 0;
+  if (!canFinish) return Object.freeze({ ...candidate, status: "conflict", remoteAccountRevision: input.state.remoteAccountRevision, blockingConflictCode: input.state.syncConflict?.code ?? input.state.blockingConflictCode, syncConflict: input.state.syncConflict, syncPlan: input.state.syncPlan, lastFailureCode: input.state.syncConflict?.code ?? input.state.lastFailureCode });
+  const plan = rebuildConflictResolutionSyncPlan({ accountId: input.accountId, snapshotVersion: input.snapshot.guestSnapshotVersion, remoteAccountRevision: input.remoteAccountRevision,
+    highWatermark: Math.max(input.state.highWatermark, outboxSequence), outbox, previous: input.state.syncPlan });
+  return Object.freeze({ ...candidate, remoteAccountRevision: input.remoteAccountRevision, status: outbox.length > 0 ? "offlinePending" : "synced",
+    blockingConflictCode: null, lastFailureCode: null, syncConflict: null, syncPlan: plan });
+}
+
+function stateAfterConflictRebase(state: AccountSyncState, accountId: string, remoteAccountRevision: number): AccountSyncState {
+  const acknowledgedMutationIds = new Set(state.syncPlan?.items.filter((item) => item.status === "acked").map((item) => item.mutationId) ?? []);
+  const outbox = state.outbox.filter((entry) => !acknowledgedMutationIds.has(entry.mutationId));
+  const syncPlan = rebuildConflictResolutionSyncPlan({ accountId, snapshotVersion: state.localDatasetVersion, remoteAccountRevision,
+    highWatermark: state.highWatermark, outbox, previous: null });
+  return Object.freeze({ ...state, remoteAccountRevision, outbox: Object.freeze(outbox), pendingMutationCount: outbox.length,
+    syncPlan, status: outbox.length > 0 ? "offlinePending" : "synced", blockingConflictCode: null, lastFailureCode: null, syncConflict: null });
+}
+
 function sessionFromState(state: AccountSyncState, activeSessionBlocked: boolean): AccountDataSession {
-  return Object.freeze({ status: state.status, preview: null, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: state.blockingConflictCode, lastFailureCode: state.lastFailureCode, activeSessionBlocked, guestAdoptionChoice: state.guestAdoptionChoice, ...(state.learningPlanRecovery ? { learningPlanRecovery: state.learningPlanRecovery } : {}) });
+  return Object.freeze({ status: state.status, preview: null, lastSuccessfulSyncAt: state.lastSuccessfulSyncAt, pendingMutationCount: state.pendingMutationCount, blockingConflictCode: state.blockingConflictCode, lastFailureCode: state.lastFailureCode, activeSessionBlocked, guestAdoptionChoice: state.guestAdoptionChoice, syncConflict: state.syncConflict ?? null, ...(state.learningPlanRecovery ? { learningPlanRecovery: state.learningPlanRecovery } : {}) });
 }
 
 function resumeRequiredSession(state: AccountSyncState): AccountDataSession {
@@ -1281,7 +1633,7 @@ function resumeRequiredSession(state: AccountSyncState): AccountDataSession {
 }
 
 function failureSession(state: AccountSyncState | null, activeSessionBlocked: boolean): AccountDataSession {
-  return Object.freeze({ status: state?.status ?? "failed", preview: null, lastSuccessfulSyncAt: state?.lastSuccessfulSyncAt ?? null, pendingMutationCount: state?.pendingMutationCount ?? 0, blockingConflictCode: state?.blockingConflictCode ?? null, lastFailureCode: state?.lastFailureCode ?? "account_data_unavailable", activeSessionBlocked, guestAdoptionChoice: state?.guestAdoptionChoice ?? "transfer" });
+  return Object.freeze({ status: state?.status ?? "failed", preview: null, lastSuccessfulSyncAt: state?.lastSuccessfulSyncAt ?? null, pendingMutationCount: state?.pendingMutationCount ?? 0, blockingConflictCode: state?.blockingConflictCode ?? null, lastFailureCode: state?.lastFailureCode ?? "account_data_unavailable", activeSessionBlocked, guestAdoptionChoice: state?.guestAdoptionChoice ?? "transfer", syncConflict: state?.syncConflict ?? null });
 }
 
 function toLocalRecords(records: readonly Readonly<{ fingerprint: string; recordId?: string; recordType: string; state: Readonly<Record<string, unknown>>; trackId: string; targetId?: string; version: number }>[]): readonly AccountDataRecord[] {

@@ -49,7 +49,7 @@ import { type CloudCertificationProgressViewModel } from "../../tracks/certifica
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/certification";
 import { type GoalRecord, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
 import type { CodingInterviewDashboard } from "../../application/coding-interview";
-import { resumeActiveTrainingSession } from "../../application/trainingLifecycle";
+import { getApplicationCurrentTime, resumeActiveTrainingSession } from "../../application/trainingLifecycle";
 import { TrainingApplicationFailure } from "../../application/trainingLifecycle/contracts";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { buildAnalyticsData } from "../analytics/analyticsService";
@@ -191,7 +191,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             getReviewQueueItems(),
             trainingAttemptsRead,
             loadActivitySessionRecords({ getAttempts: () => trainingAttemptsRead }),
-            savedTrackId ? homePlanSnapshotReader.read({ trackId: savedTrackId, now: new Date(), premiumAccess: accountRef.current.readCurrentPremiumAccess() }) : Promise.resolve(null),
+            savedTrackId ? homePlanSnapshotReader.read({ trackId: savedTrackId, now: getApplicationCurrentTime(), premiumAccess: accountRef.current.readCurrentPremiumAccess() }) : Promise.resolve(null),
           ]);
           const goal = savedTrackId ? await loadGoal(savedTrackId) : null;
           let goalOnboardingDismissed = true;

@@ -13,7 +13,8 @@ import { getForegroundSessionTimerFacade, getTrainingLifecycleUseCases, Training
 import { commitTrainingSessionStart } from "../learningMutations";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { createTrainingSession } from "../../domain";
-import { loadCanonicalRuntimeCatalog, type CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
+import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
+import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import type { CanonicalQuestionResponse, Question } from "../../content/canonical/questionTypes";
 import { getReviewQueueItems, getTrainingAttempts } from "../../storage/repositories";
 import { STORAGE_KEYS } from "../../storage/keys";
@@ -79,9 +80,10 @@ function responseFor(question: Extract<Question, { interaction: { type: "choice_
 }
 
 test("all three actual Design pools deliver exact authored wrong-option feedback after durable submit and rebind", async () => {
-  const catalog = await loadCanonicalRuntimeCatalog();
   for (const trackId of TRACK_IDS) {
-    const track = catalog.getTrack(trackId);
+    const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, "design_interview");
+    assert.ok(resolved.planningPolicyIdentity, "policy successor stays separate from the session training pin");
+    const track = resolved.track;
     const question = track.getPool(MODE_ID).find((candidate) => choiceQuestion(candidate) && candidate.feedback.messages?.some((message) => message.kind === "wrong_option"));
     assert.ok(question && choiceQuestion(question), `eligible authored choice question exists in ${trackId}`);
 
@@ -123,8 +125,9 @@ test("all three actual Design pools deliver exact authored wrong-option feedback
 });
 
 test("Design choice diagnostics stay hidden for a failed journal write and committed-only response", async () => {
-  const catalog = await loadCanonicalRuntimeCatalog();
-  const track = catalog.getTrack(TRACK_IDS[0]);
+  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK_IDS[0], "design_interview");
+  assert.ok(resolved.planningPolicyIdentity, "policy successor stays separate from the session training pin");
+  const track = resolved.track;
   const question = track.getPool(MODE_ID).find((candidate) => choiceQuestion(candidate) && candidate.feedback.messages?.some((message) => message.kind === "wrong_option"));
   assert.ok(question && choiceQuestion(question));
   const response = responseFor(question, false);

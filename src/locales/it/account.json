@@ -96,6 +96,7 @@
   "pendingDescription": "Le modifiche sono salvate su questo dispositivo. Connettiti a Internet e riprova per salvarle nel tuo account.",
   "conflict": "Conflitto nei dati dell’account",
   "conflictDescription": "Non è stato possibile riconciliare i progressi di questo dispositivo con quelli del tuo account. Riprova per controllare. I tuoi progressi restano salvati su questo dispositivo. Se il conflitto persiste, contatta l’assistenza da Informazioni legali.",
+  "syncConflictDescription": "I tuoi progressi restano salvati su questo dispositivo. Controlla lo stato più recente dell’account prima di scegliere quale coppia completa di obiettivo e piano conservare.",
   "dataFailure": "Dati dell’account non disponibili",
   "dataFailureDescription": "Non è stato possibile caricare i progressi del tuo account. I tuoi progressi restano salvati su questo dispositivo.",
   "resumeRequired": "Sessione salvata su questo dispositivo",
@@ -216,5 +217,12 @@
   "recoveryOperationReplaceDescription": "Accedi di nuovo per ottenere un nuovo set. Quando verrà emesso, i codici precedenti smetteranno di funzionare.",
   "recoveryOperationReplaceCancel": "Annulla",
   "recoveryOperationReplaceConfirm": "Accedi di nuovo",
-  "recoveryOperationFinishReplacement": "Completa la sostituzione dei codici"
+  "recoveryOperationFinishReplacement": "Completa la sostituzione dei codici",
+  "syncConflictReview": "Esamina il conflitto dell’account",
+  "syncConflictReviewDescription": "L’ultimo caricamento è stato rifiutato perché l’account è cambiato su un altro dispositivo. Controlla lo stato più recente prima di scegliere cosa conservare.",
+  "syncConflictRebase": "Usa l’account aggiornato e riprova le modifiche invariate",
+  "syncConflictKeepLocal": "Mantieni obiettivo e piano di questo dispositivo",
+  "syncConflictKeepAccount": "Usa obiettivo e piano dell’account",
+  "syncConflictUnsupported": "Sono cambiati anche altri dati dell’account. Non esiste una scelta automatica sicura; i dati di questo dispositivo restano invariati. Contatta l’assistenza.",
+  "syncConflictStale": "L’account è cambiato di nuovo. Controlla lo stato più recente prima di scegliere."
 }

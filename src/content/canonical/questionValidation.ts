@@ -142,8 +142,15 @@ export function validateQuestionRelations(questions: readonly unknown[]): readon
 
 export function validateCanonicalArtifact(value: unknown, lock: CanonicalContentLockRecord, expectedTrackId: string): CanonicalArtifact {
   const errors: string[] = [];
-  if (!exact(value, ["schemaVersion", "trackId", "contentVersion", "questions", "simulationProfiles", "completionRule"], ["schemaVersion", "trackId", "contentVersion", "questions"], "artifact", errors)) throw new CanonicalQuestionValidationError("Artifact does not satisfy the canonical contract.", errors);
-  if (value.schemaVersion !== "patternly-content-artifact-v1") errors.push("artifact.schemaVersion: invalid version"); safeIdentity(expectedTrackId, "expectedTrackId", errors); if (value.trackId !== expectedTrackId) errors.push("artifact.trackId: foreign path identity"); safeIdentity(value.trackId, "artifact.trackId", errors); id(value.contentVersion, "artifact.contentVersion", errors);
+  if (!exact(value, ["schemaVersion", "trackId", "contentVersion", "questions", "simulationProfiles", "completionRule", "planningPolicy"], ["schemaVersion", "trackId", "contentVersion", "questions"], "artifact", errors)) throw new CanonicalQuestionValidationError("Artifact does not satisfy the canonical contract.", errors);
+  if (value.schemaVersion !== "patternly-content-artifact-v1" && value.schemaVersion !== "patternly-content-artifact-v2") errors.push("artifact.schemaVersion: invalid version");
+  if (value.schemaVersion === "patternly-content-artifact-v2" && !Object.hasOwn(value, "planningPolicy")) errors.push("artifact.planningPolicy: required for v2 artifacts");
+  if (value.schemaVersion === "patternly-content-artifact-v1" && Object.hasOwn(value, "planningPolicy")) errors.push("artifact.planningPolicy: requires artifact v2");
+  if (Object.hasOwn(value, "planningPolicy")) {
+    const policy = value.planningPolicy;
+    if (!record(policy) || policy.schemaVersion !== "patternly-learning-planning-policy-v1") errors.push("artifact.planningPolicy: unsupported policy contract");
+  }
+  safeIdentity(expectedTrackId, "expectedTrackId", errors); if (value.trackId !== expectedTrackId) errors.push("artifact.trackId: foreign path identity"); safeIdentity(value.trackId, "artifact.trackId", errors); id(value.contentVersion, "artifact.contentVersion", errors);
   if (!exact(lock, ["trackId", "contentVersion", "questionCount", "sha256"], ["trackId", "contentVersion", "questionCount", "sha256"], "lock", errors)) throw new CanonicalQuestionValidationError("Artifact lock is invalid.", errors);
   if (lock.trackId !== expectedTrackId || lock.trackId !== value.trackId || lock.contentVersion !== value.contentVersion || !Number.isSafeInteger(lock.questionCount) || lock.questionCount < 1 || !SHA256.test(lock.sha256)) errors.push("lock: identity, version, count, or SHA-256 is inconsistent");
   if (!Array.isArray(value.questions)) errors.push("artifact.questions: must be an array");

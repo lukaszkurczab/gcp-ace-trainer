@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { cp, mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { execFileSync } from "node:child_process";
 import { dirname, join, resolve, sep } from "node:path";
@@ -34,7 +34,7 @@ const HISTORICAL_TRACK_IDS = [
 const historicalText = (repository, commit, path) => execFileSync(
   "git",
   ["-C", repository, "show", `${commit}:${path}`],
-  { encoding: "utf8", maxBuffer: 40 * 1024 * 1024 },
+  { encoding: "utf8", maxBuffer: 80 * 1024 * 1024 },
 );
 const historicalJson = (repository, commit, path) => JSON.parse(historicalText(repository, commit, path));
 async function writeHistoricalFile(targetRoot, repository, commit, relativePath) {
@@ -43,6 +43,10 @@ async function writeHistoricalFile(targetRoot, repository, commit, relativePath)
   assert.ok(targetPath.startsWith(`${rootPath}${sep}`), "historical fixture path must stay inside its temporary root");
   await mkdir(dirname(targetPath), { recursive: true });
   await writeFile(targetPath, historicalText(repository, commit, relativePath));
+}
+async function writeHistoricalTree(targetRoot, repository, commit, relativePaths) {
+  const archive = execFileSync("git", ["-C", repository, "archive", commit, ...relativePaths], { encoding: "buffer", maxBuffer: 80 * 1024 * 1024 });
+  execFileSync("tar", ["-x", "-f", "-", "-C", targetRoot], { input: archive, maxBuffer: 80 * 1024 * 1024 });
 }
 const contentSelections = [
   {
@@ -115,9 +119,7 @@ async function createHistoricalProductionFixture(t) {
   const contentFixture = join(fixtureRoot, "patternly-content");
   await mkdir(appFixture, { recursive: true });
   await mkdir(contentFixture, { recursive: true });
-  await cp(join(root, "src"), join(appFixture, "src"), { recursive: true });
-  await mkdir(join(appFixture, "scripts"), { recursive: true });
-  await cp(join(root, "scripts/exportPublicDemo.mjs"), join(appFixture, "scripts/exportPublicDemo.mjs"));
+  await writeHistoricalTree(appFixture, root, HISTORICAL_APP_COMMIT, ["src", "scripts/exportPublicDemo.mjs"]);
   await symlink(join(root, "node_modules"), join(appFixture, "node_modules"), "dir");
 
   const canonicalRoot = "src/content/generated/canonical-content";
@@ -175,14 +177,14 @@ test("production catalog exports Coding and AWS from the exact historically admi
   ]);
 });
 
-test("current draft without matching admission is rejected by the production public-demo path", async () => {
+test("current draft cannot reuse the historical admission and fails its current app-lock precondition", async () => {
   const releaseLock = readAppJson("integration/contracts/content-release/release.lock.json");
   const admission = readContentJson("evidence/admissions/candidate-admission-v3.json");
   const candidateManifest = readContentJson(admission.candidatePath);
   assert.equal(releaseLock.candidateId, candidateManifest.candidateId);
   assert.equal(candidateManifest.status, "draft_not_admitted");
   assert.notEqual(candidateManifest.candidateId, admission.candidateId);
-  await assert.rejects(createPublicDemoCatalog(), /existing app admission evidence/u);
+  await assert.rejects(createPublicDemoCatalog(), (error) => error instanceof Error && error.message === "Public demo artifact does not match the current app content lock.");
 });
 
 /* Historical 946d proof above intentionally reads the immutable commits that own

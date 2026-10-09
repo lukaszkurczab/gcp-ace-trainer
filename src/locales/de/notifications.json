@@ -85,5 +85,9 @@
   "schedulerFailureTitle": "Erinnerungen konnten nicht geplant werden",
   "schedulerFailureDetail": "Dein Plan ist gespeichert. Versuche erneut, seine Erinnerungen zu planen.",
   "concurrentChangeTitle": "Plan geändert",
-  "concurrentChangeDetail": "Der Plan wurde geändert, während die Erinnerungen aktualisiert wurden. Versuche es erneut."
+  "concurrentChangeDetail": "Der Plan wurde geändert, während die Erinnerungen aktualisiert wurden. Versuche es erneut.",
+  "activeReminderDetail": "Erinnerungen sind für den angenommenen Plan eingeplant.",
+  "disabledReminderDetail": "Erinnerungen für den angenommenen Plan sind ausgeschaltet.",
+  "draftPlanReminderDetail": "Diese Änderungen sind ein Entwurf. Der angenommene Plan bleibt gültig, bis du den neuen Plan annimmst.",
+  "reminderStatusUnavailableDetail": "Der Erinnerungsstatus für diesen Lernpfad ist derzeit nicht verfügbar."
 }

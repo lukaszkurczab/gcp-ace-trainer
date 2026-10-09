@@ -96,6 +96,7 @@
   "pendingDescription": "Vos modifications sont enregistrées sur cet appareil. Connectez-vous à Internet et réessayez de les enregistrer dans votre compte.",
   "conflict": "Conflit des données du compte",
   "conflictDescription": "Nous n’avons pas pu rapprocher la progression de cet appareil et celle de votre compte. Réessayez pour vérifier. Votre progression reste enregistrée sur cet appareil. Si le conflit persiste, contactez l’assistance depuis les informations légales.",
+  "syncConflictDescription": "Votre progression reste enregistrée sur cet appareil. Consultez l’état le plus récent du compte avant de choisir quelle paire complète formée par l’objectif et le plan conserver.",
   "dataFailure": "Données du compte indisponibles",
   "dataFailureDescription": "Nous n’avons pas pu charger la progression de votre compte. Votre progression reste enregistrée sur cet appareil.",
   "resumeRequired": "Session enregistrée sur cet appareil",
@@ -216,5 +217,12 @@
   "recoveryOperationReplaceDescription": "Reconnectez-vous pour obtenir un nouveau jeu de codes. Une fois émis, les anciens codes ne fonctionneront plus.",
   "recoveryOperationReplaceCancel": "Annuler",
   "recoveryOperationReplaceConfirm": "Se reconnecter",
-  "recoveryOperationFinishReplacement": "Terminer le remplacement des codes"
+  "recoveryOperationFinishReplacement": "Terminer le remplacement des codes",
+  "syncConflictReview": "Examiner le conflit du compte",
+  "syncConflictReviewDescription": "Le dernier envoi a été refusé, car le compte a changé sur un autre appareil. Consultez son état le plus récent avant de choisir les données à conserver.",
+  "syncConflictRebase": "Utiliser le compte à jour et renvoyer les changements inchangés",
+  "syncConflictKeepLocal": "Garder l’objectif et le plan de cet appareil",
+  "syncConflictKeepAccount": "Utiliser l’objectif et le plan du compte",
+  "syncConflictUnsupported": "D’autres données du compte ont aussi changé. Aucun choix automatique n’est sûr ; les données de cet appareil restent inchangées. Contactez l’assistance.",
+  "syncConflictStale": "Le compte a encore changé. Consultez son état le plus récent avant de choisir."
 }

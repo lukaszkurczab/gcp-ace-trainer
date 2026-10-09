@@ -11,7 +11,14 @@ import { loadCanonicalRuntimeCatalog } from "./canonical";
 
 type CurrentProducerBuilder = Readonly<{
   buildAll(options: Readonly<{ rootDirectory: string; outputRoot: string }>): Promise<Readonly<{
-    artifacts: readonly Readonly<{ trackId: string; artifact: { contentVersion: string; questions: readonly Readonly<{ trackId: string; nodeId: string; mentalUnitId: string; questionId: string }>[] } }>[];
+    artifacts: readonly {
+      trackId: string;
+      artifact: {
+        contentVersion: string;
+        planningPolicy?: { policyVersion: string };
+        questions: readonly { trackId: string; nodeId: string; mentalUnitId: string; questionId: string }[];
+      };
+    }[];
     lock: Readonly<{ tracks: readonly Readonly<{ trackId: string; contentVersion: string; questionCount: number; sha256: string }>[] }>;
   }>>;
   canonicalJson(value: unknown): string;
@@ -120,7 +127,7 @@ test("bundled canonical release matches the current producer builder", async () 
   }
 });
 
-test("current canonical builder preserves ODK-096 questions and adds the approved chapter-rule version without repinning history", async () => {
+test("current canonical builder adds the planning policy while preserving the exact v1 training predecessor", async () => {
   const appRoot = process.cwd();
   const currentContentRoot = contentRoot("PATTERNLY_CONTENT_CURRENT_ROOT");
   const expectedCurrentSha = expectedCurrentContentSha();
@@ -142,9 +149,22 @@ test("current canonical builder preserves ODK-096 questions and adds the approve
     assert.deepEqual({ tracks: built.artifacts.length, nodes: nodes.size, mentalUnits: mentalUnits.size, questions }, { tracks: 9, nodes: 117, mentalUnits: 943, questions: 16_622 });
 
     const aws = built.artifacts.find((entry) => entry.trackId === "aws-certified-solutions-architect-associate")!.artifact;
+    const successorLedger = JSON.parse(readFileSync(join(appRoot, "src/content/generated/canonical-content/content-successor-ledger.json"), "utf8")) as {
+      tracks: readonly Readonly<{ trackId: string; training: Readonly<{ contentVersion: string; artifactSha256: string; questionCount: number }>; planningPolicy: Readonly<{ contentVersion: string; artifactSha256: string; policyVersion: string }> }>[];
+    };
+    const awsSuccessor = successorLedger.tracks.find((entry) => entry.trackId === "aws-certified-solutions-architect-associate")!;
     const awsQuestions = [...aws.questions].sort((left, right) => left.questionId < right.questionId ? -1 : left.questionId > right.questionId ? 1 : 0);
     const awsNodeQuestions = awsQuestions.filter((question) => question.nodeId === "aws_secure_architecture_foundations");
-    assert.equal(aws.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096-bizq02-v2");
+    assert.equal(aws.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096-bizq02-v2-bizq03-planning-v2");
+    assert.equal(aws.planningPolicy?.policyVersion, awsSuccessor.planningPolicy.policyVersion);
+    assert.equal(awsSuccessor.training.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096-bizq02-v2");
+    assert.equal(awsSuccessor.training.questionCount, awsQuestions.length);
+    const emittedAws = JSON.parse(readFileSync(join(outputRoot, "aws-certified-solutions-architect-associate.json"), "utf8")) as { schemaVersion: string; contentVersion: string; planningPolicy?: unknown } & Record<string, unknown>;
+    const trainingProjection = structuredClone(emittedAws);
+    delete trainingProjection.planningPolicy;
+    trainingProjection.schemaVersion = "patternly-content-artifact-v1";
+    trainingProjection.contentVersion = awsSuccessor.training.contentVersion;
+    assert.equal(sha256Raw(JSON.stringify(trainingProjection)), awsSuccessor.training.artifactSha256);
     assert.equal((aws as unknown as { completionRule: { ruleVersion: number; chapters: readonly unknown[] } }).completionRule.ruleVersion, 2);
     assert.equal(awsNodeQuestions.length, 40);
     assert.equal(builder.sha256(builder.canonicalJson(awsNodeQuestions)), "8dd16df1d7c6741b373026547c35255aea97869542bbb8897a4f36c73730bc33");

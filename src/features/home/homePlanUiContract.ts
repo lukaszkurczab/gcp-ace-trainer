@@ -13,13 +13,16 @@ export function buildHomePlanPracticeSetupParams(
   plan: HomePlanReady,
   trackId: TrackId,
 ): NonNullable<RootStackParamList[typeof ROUTES.PRACTICE_SETUP]> {
+  const topicId = plan.session.topicId;
+  if (topicId !== undefined && !topicId.trim()) throw new Error("Home plan node scope is empty.");
   return Object.freeze({
     expectedArtifactSha256: plan.identity.artifactSha256,
     expectedContentVersion: plan.identity.contentVersion,
     mode: plan.session.modeId as never,
+    ...(plan.session.reviewSource ? { reviewSource: plan.session.reviewSource } : {}),
     sessionLength: plan.session.sessionLength,
     source: "home" as const,
-    topicId: plan.session.topicId,
+    ...(topicId === undefined ? {} : { topicId }),
     trackId,
   });
 }
@@ -38,6 +41,9 @@ export function targetCopy(target: TargetAssessment, t: Translate): string {
   if (target.kind === "quality_requirement_unmet") return t("All chapter attempt minimums are met, but recent accuracy in at least one chapter is below the required level. Keep practising; completion timing is not predictable yet.");
   if (target.kind === "unknown_completion_rule") return t("The target outlook is unknown because the package has no completion rule.");
   if (target.kind === "unavailable_due_to_shortfall") return t("Target outlook is unavailable until the material shortfall is resolved.");
-  if (target.kind === "achievable") return t("The target is achievable with {{occurrences}} planned sessions.", { occurrences: target.occurrences });
-  return t("The target is not achievable with the current rhythm. {{remaining}} attempts remain and {{occurrences}} sessions fit before the target.", { occurrences: target.occurrences, remaining: target.remainingAttempts });
+  if (target.kind === "minimum_volume_fits") {
+    if (target.remainingAttempts === 0) return t("Required completion is already recorded; this forecast excludes optional practice.");
+    return t("The minimum response volume fits in {{occurrences}} sessions; time, reviews and future quality are not included.", { occurrences: target.occurrences });
+  }
+  return t("The minimum response volume exceeds available sessions: {{remaining}} attempts remain and {{occurrences}} fit before the target.", { occurrences: target.occurrences, remaining: target.remainingAttempts });
 }

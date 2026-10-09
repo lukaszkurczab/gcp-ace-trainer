@@ -85,5 +85,9 @@
   "schedulerFailureTitle": "No se pudieron programar los recordatorios",
   "schedulerFailureDetail": "Tu plan está guardado. Intenta programar sus recordatorios de nuevo.",
   "concurrentChangeTitle": "El plan ha cambiado",
-  "concurrentChangeDetail": "El plan cambió mientras se actualizaban los recordatorios. Inténtalo de nuevo."
+  "concurrentChangeDetail": "El plan cambió mientras se actualizaban los recordatorios. Inténtalo de nuevo.",
+  "activeReminderDetail": "Los recordatorios están programados para el plan aceptado.",
+  "disabledReminderDetail": "Los recordatorios del plan aceptado están desactivados.",
+  "draftPlanReminderDetail": "Estos cambios son un borrador. El plan aceptado sigue vigente hasta que aceptes el nuevo plan.",
+  "reminderStatusUnavailableDetail": "El estado de los recordatorios para este recorrido no está disponible ahora."
 }

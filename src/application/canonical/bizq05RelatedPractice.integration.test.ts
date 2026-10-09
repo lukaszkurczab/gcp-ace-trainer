@@ -7,8 +7,8 @@ import { pathToFileURL } from "node:url";
 import test from "node:test";
 
 import { buildCanonicalRuntimeCatalog, type CanonicalContentLockRecord, type Question } from "../../content/canonical";
+import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
-import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
 import { selectPracticeQuestions } from "./practiceQuestionSelector";
 import { createTrainingSession, type CompletedTrainingSession, type TrainingAttempt, type TrainingSession } from "../../domain";
 import { projectCertificationPracticeReview } from "../certification/certificationPracticeReviewProjection";
@@ -24,8 +24,6 @@ type CurrentProducerBuilder = Readonly<{
 const GCP_TRACK_ID = "google-cloud-associate-cloud-engineer";
 const GCP_FOCUS_MODE_ID = "certification-focus-practice";
 const NODE_ID = "organization_projects_policies_services_quotas_and_assets";
-const NEW_GCP_CONTENT_VERSION = "google-cloud-associate-cloud-engineer-authoring-v2026.10.08-bizq05-v1";
-const NEW_GCP_ARTIFACT_SHA256 = "9a14f1d185c3717ec118fc817dee458a3e6a33c1de145805c9d76093c77e2fa5";
 const PREVIOUS_GCP_CONTENT_VERSION = "google-cloud-associate-cloud-engineer-authoring-v2026.08.11-bizq02-v2";
 const PREVIOUS_GCP_ARTIFACT_SHA256 = "b88d542f742be3de3a023b1c87b20c6416dc48f30aa53a223987a161edfcb609";
 const PAIRS = Object.freeze([
@@ -47,19 +45,29 @@ test("BIZQ-05 GCP candidate relation metadata reaches actual Focus selection, im
     const lockFile = JSON.parse(readFileSync(join(generatedRoot, "content-lock.json"), "utf8")) as { tracks: CanonicalContentLockRecord[] };
     const bundledGcpLock = lockFile.tracks.find((entry) => entry.trackId === GCP_TRACK_ID);
     assert.ok(bundledGcpLock, "the bundled candidate needs its existing GCP lock record");
-    assert.equal(current.lockEntry.contentVersion, NEW_GCP_CONTENT_VERSION, "candidate producer must assign the reviewed new GCP content version");
-    assert.equal(current.lockEntry.sha256, NEW_GCP_ARTIFACT_SHA256, "candidate producer must produce the reviewed new artifact pin");
+    const successorLedger = JSON.parse(readFileSync(join(generatedRoot, "content-successor-ledger.json"), "utf8")) as {
+      tracks: readonly Readonly<{ trackId: string; training: Readonly<{ contentVersion: string; artifactSha256: string; questionCount: number }>; planningPolicy: Readonly<{ contentVersion: string; artifactSha256: string; policyVersion: string }> }> [];
+    };
+    const gcpSuccessor = successorLedger.tracks.find((entry) => entry.trackId === GCP_TRACK_ID);
+    assert.ok(gcpSuccessor, "current GCP has its strict v1-training/v2-policy successor entry");
+    assert.equal(current.lockEntry.contentVersion, gcpSuccessor.planningPolicy.contentVersion, "producer v2 identity is the planning-policy artifact identity");
+    assert.equal(current.lockEntry.sha256, gcpSuccessor.planningPolicy.artifactSha256, "producer v2 bytes match the policy successor pin");
     assert.equal(bundledGcpLock.contentVersion, current.lockEntry.contentVersion, "the shipped bundle must contain the exact candidate version");
     assert.equal(bundledGcpLock.sha256, current.lockEntry.sha256, "the shipped bundle must contain the exact candidate pin");
-    assert.notEqual(PREVIOUS_GCP_ARTIFACT_SHA256, current.lockEntry.sha256, "the preserved prior artifact pin must remain foreign to the candidate");
+    assert.notEqual(PREVIOUS_GCP_ARTIFACT_SHA256, gcpSuccessor.training.artifactSha256, "the preserved older artifact remains foreign to the exact current training predecessor");
 
     const historicalArtifacts = lockFile.tracks.map((entry) => JSON.parse(readFileSync(join(generatedRoot, `${entry.trackId}.json`), "utf8")) as unknown);
     assert.equal(historicalArtifacts.length, 9);
     const artifacts = historicalArtifacts.map((artifact) => artifact && typeof artifact === "object" && "trackId" in artifact && artifact.trackId === GCP_TRACK_ID ? candidateArtifact : artifact);
     const locks = lockFile.tracks.map((entry) => entry.trackId === GCP_TRACK_ID ? current.lockEntry : entry);
-    const catalog = await buildCanonicalRuntimeCatalog({ artifacts, locks });
-    const track = catalog.getTrack(GCP_TRACK_ID);
-    const runtime = new CanonicalTrainingRuntime(track);
+    const catalog = await buildCanonicalRuntimeCatalog({ artifacts, locks, successorLedger });
+    const candidateTrack = catalog.getTrack(GCP_TRACK_ID);
+    assert.deepEqual(candidateTrack.trainingIdentity, { contentVersion: gcpSuccessor.training.contentVersion, artifactSha256: gcpSuccessor.training.artifactSha256 });
+    assert.deepEqual(candidateTrack.planningPolicyIdentity, gcpSuccessor.planningPolicy);
+    const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(GCP_TRACK_ID, "certification");
+    assert.deepEqual(resolved.track.trainingIdentity, candidateTrack.trainingIdentity);
+    assert.deepEqual(resolved.planningPolicyIdentity, candidateTrack.planningPolicyIdentity);
+    const { track, runtime } = resolved;
     const focus = track.getMode(GCP_FOCUS_MODE_ID);
     assert.equal(focus.selection.kind, "node");
     if (focus.selection.kind !== "node") throw new Error("GCP Focus must use the existing node selection.");

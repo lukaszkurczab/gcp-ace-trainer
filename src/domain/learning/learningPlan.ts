@@ -22,8 +22,15 @@ export type PlanSlot = Readonly<{
   sessionLength: number;
 }>;
 
-export type LearningPlan = Readonly<{
-  schemaVersion: 1;
+export type PlannedMode = Readonly<{ modeId: string; requestedLength: number }>;
+export type LearningPlanExecutionPolicy = Readonly<{
+  policyVersion: "patternly-learning-execution-v1";
+  initialDiagnosis: PlannedMode | null;
+  practice: PlannedMode;
+}>;
+export type LearningPlanPolicyIdentity = Readonly<{ contentVersion: string; artifactSha256: string; policyVersion: string }>;
+
+type LearningPlanFields = Readonly<{
   planId: string;
   trackId: TrackId;
   goalRevision: number;
@@ -38,6 +45,10 @@ export type LearningPlan = Readonly<{
   commandId: string;
   slots: readonly PlanSlot[];
 }>;
+/** Schema-v1 plans have unknown availability; newly accepted plans use v2. */
+export type LearningPlanV1 = LearningPlanFields & Readonly<{ schemaVersion: 1 }>;
+export type LearningPlanV2 = LearningPlanFields & Readonly<{ schemaVersion: 2; minutesPerStudyDay: number; executionPolicy: LearningPlanExecutionPolicy; planningPolicyIdentity: LearningPlanPolicyIdentity }>;
+export type LearningPlan = LearningPlanV1 | LearningPlanV2;
 
 export type LearningPlanSnapshot = Readonly<{
   plan: LearningPlan;
@@ -50,6 +61,7 @@ export type LearningPlanValidationCode =
   | "invalid_identity"
   | "unknown_track"
   | "invalid_revision"
+  | "invalid_availability"
   | "invalid_status"
   | "invalid_timezone"
   | "invalid_artifact_sha256"
@@ -65,10 +77,11 @@ export class InvalidLearningPlanError extends Error {
   }
 }
 
-const PLAN_KEYS = [
+const PLAN_V1_KEYS = [
   "schemaVersion", "planId", "trackId", "goalRevision", "status", "timezone",
   "contentVersion", "artifactSha256", "acceptedTarget", "createdAt", "updatedAt", "planRevision", "commandId", "slots",
 ] as const;
+const PLAN_V2_KEYS = [...PLAN_V1_KEYS, "minutesPerStudyDay", "executionPolicy", "planningPolicyIdentity"] as const;
 const SLOT_KEYS = ["slotId", "day", "localTime", "sessionLength"] as const;
 const TARGET_KEYS = ["meaning", "targetDate"] as const;
 
@@ -80,7 +93,7 @@ export function acceptedTargetFromGoal(goal: GoalRecord): AcceptedTargetSnapshot
 
 export const createAcceptedTargetSnapshot = acceptedTargetFromGoal;
 
-/** Strict runtime guard for the persisted LearningPlan v1 contract. */
+/** Strict runtime guard for the supported persisted plan contracts. */
 export function isLearningPlanV1(value: unknown): value is LearningPlan {
   try {
     normalizeLearningPlan(value);
@@ -99,8 +112,11 @@ export const isLearningPlan = isLearningPlanV1;
 /** Defensive clone/freeze used at the domain and persistence boundary. */
 export function normalizeLearningPlan(value: unknown): LearningPlan {
   const plan = asRecord(value, "invalid_shape");
-  if (!hasOnlyKeys(plan, PLAN_KEYS)) fail("invalid_shape");
-  if (plan.schemaVersion !== 1) fail("invalid_schema_version");
+  if (plan.schemaVersion !== 1 && plan.schemaVersion !== 2) fail("invalid_schema_version");
+  if (!hasOnlyKeys(plan, plan.schemaVersion === 1 ? PLAN_V1_KEYS : PLAN_V2_KEYS)) fail("invalid_shape");
+  if (plan.schemaVersion === 2 && (!positiveInteger(plan.minutesPerStudyDay) || plan.minutesPerStudyDay > 1440)) fail("invalid_availability");
+  const executionPolicy = plan.schemaVersion === 2 ? validateExecutionPolicy(plan.executionPolicy) : null;
+  const planningPolicyIdentity = plan.schemaVersion === 2 ? validatePlanningPolicyIdentity(plan.planningPolicyIdentity) : null;
   if (!nonEmpty(plan.planId) || !nonEmpty(plan.trackId) || !nonEmpty(plan.commandId)) fail("invalid_identity");
   try { getTrackGoalTemplates(plan.trackId); } catch { fail("unknown_track"); }
   if (!positiveInteger(plan.goalRevision) || !positiveInteger(plan.planRevision)) fail("invalid_revision");
@@ -113,8 +129,7 @@ export function normalizeLearningPlan(value: unknown): LearningPlan {
   const updatedAt = validateTimestamp(plan.updatedAt);
   if (Date.parse(updatedAt) < Date.parse(createdAt)) fail("invalid_timestamp");
   const slots = validateSlots(plan.slots);
-  return deepFreeze({
-    schemaVersion: 1 as const,
+  const fields = {
     planId: plan.planId,
     trackId: plan.trackId,
     goalRevision: plan.goalRevision,
@@ -128,7 +143,10 @@ export function normalizeLearningPlan(value: unknown): LearningPlan {
     planRevision: plan.planRevision,
     commandId: plan.commandId,
     slots,
-  });
+  };
+  return plan.schemaVersion === 1
+    ? deepFreeze({ schemaVersion: 1 as const, ...fields })
+    : deepFreeze({ schemaVersion: 2 as const, minutesPerStudyDay: plan.minutesPerStudyDay as number, executionPolicy: executionPolicy!, planningPolicyIdentity: planningPolicyIdentity!, ...fields });
 }
 
 export function createLearningPlan(value: LearningPlan): LearningPlan {
@@ -150,11 +168,34 @@ export function learningPlansEqual(left: LearningPlan, right: LearningPlan): boo
     left.updatedAt === right.updatedAt &&
     left.planRevision === right.planRevision &&
     left.commandId === right.commandId &&
+    (left.schemaVersion === 1 || right.schemaVersion === 1
+      ? left.schemaVersion === right.schemaVersion
+      : left.minutesPerStudyDay === right.minutesPerStudyDay && JSON.stringify(left.executionPolicy) === JSON.stringify(right.executionPolicy) && JSON.stringify(left.planningPolicyIdentity) === JSON.stringify(right.planningPolicyIdentity)) &&
     left.slots.length === right.slots.length &&
     left.slots.every((slot, index) => {
       const other = right.slots[index];
       return other !== undefined && slot.slotId === other.slotId && slot.day === other.day && slot.localTime === other.localTime && slot.sessionLength === other.sessionLength;
     });
+}
+
+function validateExecutionPolicy(value: unknown): LearningPlanExecutionPolicy {
+  const policy = asRecord(value, "invalid_shape");
+  if (!hasOnlyKeys(policy, ["policyVersion", "initialDiagnosis", "practice"]) || policy.policyVersion !== "patternly-learning-execution-v1") fail("invalid_shape");
+  const initialDiagnosis = policy.initialDiagnosis === null ? null : validatePlannedMode(policy.initialDiagnosis);
+  const practice = validatePlannedMode(policy.practice);
+  return Object.freeze({ policyVersion: "patternly-learning-execution-v1", initialDiagnosis, practice });
+}
+
+function validatePlannedMode(value: unknown): PlannedMode {
+  const mode = asRecord(value, "invalid_shape");
+  if (!hasOnlyKeys(mode, ["modeId", "requestedLength"]) || !nonEmpty(mode.modeId) || !positiveInteger(mode.requestedLength)) fail("invalid_shape");
+  return Object.freeze({ modeId: mode.modeId, requestedLength: mode.requestedLength });
+}
+
+function validatePlanningPolicyIdentity(value: unknown): LearningPlanPolicyIdentity {
+  const identity = asRecord(value, "invalid_shape");
+  if (!hasOnlyKeys(identity, ["contentVersion", "artifactSha256", "policyVersion"]) || !nonEmpty(identity.contentVersion) || !nonEmpty(identity.policyVersion)) fail("invalid_shape");
+  return Object.freeze({ contentVersion: validateContentVersion(identity.contentVersion), artifactSha256: validateArtifactSha256(identity.artifactSha256), policyVersion: identity.policyVersion });
 }
 
 function validateTarget(value: unknown): AcceptedTargetSnapshot {

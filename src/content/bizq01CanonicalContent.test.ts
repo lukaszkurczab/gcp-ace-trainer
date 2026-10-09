@@ -14,7 +14,9 @@ const changed = [
 
 test("BIZQ-01 bundled loader and pre-submit projection preserve the corrected source contract", async () => {
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(trackId);
-  assert.equal(track.contentVersion, "backend-system-design-interview-authoring-v2026.10.03-bizq01-14-bizq02-v2");
+  assert.equal(track.contentVersion, "backend-system-design-interview-authoring-v2026.10.03-bizq01-14-bizq02-v2-bizq03-planning-v2");
+  assert.equal(track.trainingIdentity?.contentVersion, "backend-system-design-interview-authoring-v2026.10.03-bizq01-14-bizq02-v2");
+  assert.equal(track.planningPolicyIdentity?.contentVersion, track.contentVersion);
   for (const expected of changed) {
     assert.equal(track.getQuestion(expected.replacedId), undefined, "replaced IDs must not resolve to new meanings");
     const question = track.getQuestion(expected.questionId)!;
@@ -41,6 +43,7 @@ test("BIZQ-01 bundled loader and pre-submit projection preserve the corrected so
 
 test("BIZQ-01 replaced identities from an old package do not enter current due retrieval", async () => {
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(trackId);
+  assert.notEqual(track.trainingIdentity?.contentVersion, track.contentVersion);
   const now = "2026-10-02T12:00:00.000Z";
   const reviews: ReviewQueueEntry[] = changed.map((item, index) => ({
     id: `bizq-old-review-${index}`, trackId, sourceAttemptId: `old-attempt-${index}`, sourceSessionId: "old-session",

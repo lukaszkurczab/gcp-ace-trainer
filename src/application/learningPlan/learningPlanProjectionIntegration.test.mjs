@@ -17,7 +17,10 @@ const { MemoryKeyValueStorage, installKeyValueStorageForTests } = require('../..
 const repositories = require('../../storage/repositories/index.ts');
 const { readLearningPlanInputSnapshot } = require('../../storage/repositories/learningPlanInputSnapshot.ts');
 const { buildProgressPlanPresentationModel } = require('../../features/home/progressPlanPresentationModel.ts');
+const { buildHomePlanPracticeSetupParams } = require('../../features/home/homePlanUiContract.ts');
 const { runtimeSelectors } = require('../../testing/runtimeSelectors.ts');
+const { recommendLearningPlanMode } = require('./learningPlanModeRecommendation.ts');
+const { getTrackRegistration } = require('../../domain/tracks/trackRegistry.ts');
 const LOCALES = ['en', 'pl', 'de', 'fr', 'es', 'it', 'et'];
 
 const TRACK = 'aws-certified-solutions-architect-associate';
@@ -28,7 +31,18 @@ async function sourceWorkspace(t) {
   const rootDirectory = await mkdtemp(path.join(os.tmpdir(), 'patternly-bizq02-projection-'));
   t.after(() => rm(rootDirectory, { recursive: true, force: true }));
   await cp(path.join(CONTENT, 'content'), path.join(rootDirectory, 'content'), { recursive: true });
+  await cp(path.join(CONTENT, 'config'), path.join(rootDirectory, 'config'), { recursive: true });
   return { rootDirectory, outputRoot: path.join(rootDirectory, 'dist'), trackId: TRACK };
+}
+
+function executionPolicyFor(resolved, sessions = [], dueReviewCount = 0) {
+  return recommendLearningPlanMode({
+    familyId: getTrackRegistration(resolved.track.trackId).familyId,
+    trackId: resolved.track.trackId,
+    modes: resolved.track.modes,
+    sessions,
+    dueReviewCount,
+  }).executionPolicy;
 }
 
 test('actual canonical producer preserves a versioned completion rule in the hashed artifact', async t => {
@@ -40,13 +54,16 @@ test('actual canonical producer preserves a versioned completion rule in the has
 test('Home rejects a goal change during exact package resolution instead of publishing an old generation', async () => {
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK, 'certification');
+  assert.ok(resolved.planningPolicyIdentity);
+  const executionPolicy = executionPolicyFor(resolved);
   const goal = await repositories.saveGoalSnapshot({ ...createDefaultGoal(TRACK), targetDate: '2026-10-31' }, null);
   const plan = normalizeLearningPlan({
-    schemaVersion: 1, planId: 'projection-plan', trackId: TRACK, goalRevision: goal.revision, status: 'accepted',
+    schemaVersion: 2, planId: 'projection-plan', trackId: TRACK, goalRevision: goal.revision, status: 'accepted',
     timezone: 'Europe/Warsaw', contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256,
+    minutesPerStudyDay: 60, executionPolicy, planningPolicyIdentity: resolved.planningPolicyIdentity,
     acceptedTarget: acceptedTargetFromGoal(goal.record), createdAt: '2026-10-01T12:00:00.000Z', updatedAt: '2026-10-01T12:00:00.000Z',
     planRevision: 1, commandId: 'projection-command',
-    slots: [{ slotId: createLearningPlanSlotId('projection-slot'), day: 'fri', localTime: '18:00', sessionLength: resolved.track.modes[0].defaultRequestedLength }],
+    slots: [{ slotId: createLearningPlanSlotId('projection-slot'), day: 'fri', localTime: '18:00', sessionLength: executionPolicy.practice.requestedLength }],
   });
   repositories.saveLearningPlanAtomically({ plan, expectedGoalRevision: goal.revision, expectedPlanStorageRevision: null });
   const reader = new HomePlanSnapshotReader({
@@ -60,8 +77,7 @@ test('Home rejects a goal change during exact package resolution instead of publ
   assert.deepEqual(await reader.read({ trackId: TRACK, now: '2026-10-02T12:00:00.000Z' }), { kind: 'unavailable', trackId: TRACK, reason: 'concurrent_change' });
 });
 
-const { buildCanonicalRuntimeCatalog, loadCanonicalRuntimeCatalog } = require('../../content/canonical/runtimeCatalog.ts');
-const { CanonicalTrainingRuntime } = require('../canonical/CanonicalTrainingRuntime.ts');
+const { loadCanonicalRuntimeCatalog } = require('../../content/canonical/runtimeCatalog.ts');
 const { LearningPlanProposalCoordinator } = require('./LearningPlanProposalCoordinator.ts');
 const { projectLearningEvidence } = require('./learningEvidenceProjection.ts');
 const { createHash } = await import('node:crypto');
@@ -69,26 +85,29 @@ const { validatePackageCompletionRule } = await import('../../../../patternly-co
 
 async function verifiedProducerRuntime(t) {
   const built = await buildTrack(await sourceWorkspace(t));
-  const bundleRoot = fileURLToPath(new URL('../../content/generated/canonical-content/', import.meta.url));
-  const lock = JSON.parse(await readFile(path.join(bundleRoot, 'content-lock.json'), 'utf8'));
-  const artifacts = await Promise.all(lock.tracks.map(async entry => entry.trackId === TRACK ? JSON.parse(built.artifactBytes) : JSON.parse(await readFile(path.join(bundleRoot, `${entry.trackId}.json`), 'utf8'))));
-  const locks = lock.tracks.map(entry => entry.trackId === TRACK ? built.lockEntry : entry);
-  const catalog = await buildCanonicalRuntimeCatalog({ artifacts, locks, sha256Utf8: async bytes => createHash('sha256').update(bytes).digest('hex') });
-  const track = catalog.getTrack(TRACK);
-  assert.deepEqual(track.completionRule, RULE);
-  return { track, runtime: new CanonicalTrainingRuntime(track) };
+  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK, 'certification');
+  assert.ok(resolved.planningPolicyIdentity);
+  assert.equal(resolved.planningPolicyIdentity.contentVersion, built.lockEntry.contentVersion);
+  assert.equal(resolved.planningPolicyIdentity.artifactSha256, built.lockEntry.sha256);
+  assert.equal(resolved.planningPolicyIdentity.policyVersion, built.artifact.planningPolicy.policyVersion);
+  assert.ok(resolved.track.trainingIdentity);
+  assert.deepEqual(resolved.track.completionRule, RULE);
+  return resolved;
 }
 
 async function learningFixture(resolved, install = true, goalOverrides = {}) {
   const trackId = resolved.track.trackId;
+  assert.ok(resolved.planningPolicyIdentity, 'the exact current policy pin is independent from the training identity');
+  const executionPolicy = executionPolicyFor(resolved);
   const storage = new MemoryKeyValueStorage();
   if (install) installKeyValueStorageForTests(storage);
   const goal = await repositories.saveGoalSnapshot({ ...createDefaultGoal(trackId), targetDate: '2026-11-30', ...goalOverrides }, null);
   const plan = normalizeLearningPlan({
-    schemaVersion: 1, planId: 'shared-projection-plan', trackId, goalRevision: goal.revision, status: 'accepted',
+    schemaVersion: 2, planId: 'shared-projection-plan', trackId, goalRevision: goal.revision, status: 'accepted',
     timezone: 'Europe/Warsaw', contentVersion: resolved.track.contentVersion, artifactSha256: resolved.track.artifactSha256,
+    minutesPerStudyDay: 60, executionPolicy, planningPolicyIdentity: resolved.planningPolicyIdentity,
     acceptedTarget: acceptedTargetFromGoal(goal.record), createdAt: '2026-09-01T12:00:00.000Z', updatedAt: '2026-09-01T12:00:00.000Z',
-    planRevision: 1, commandId: 'shared-projection-command', slots: [{ slotId: createLearningPlanSlotId('shared-projection-slot'), day: 'fri', localTime: '18:00', sessionLength: resolved.track.modes[0].defaultRequestedLength }],
+    planRevision: 1, commandId: 'shared-projection-command', slots: [{ slotId: createLearningPlanSlotId('shared-projection-slot'), day: 'fri', localTime: '18:00', sessionLength: executionPolicy.practice.requestedLength }],
   });
   repositories.saveLearningPlanAtomically({ plan, expectedGoalRevision: goal.revision, expectedPlanStorageRevision: null });
   let sequence = 0;
@@ -101,7 +120,7 @@ async function learningFixture(resolved, install = true, goalOverrides = {}) {
   const proposal = new LearningPlanProposalCoordinator({
     createProposalId: () => `shared-projection:${++sequence}`, getTimezone: () => 'Europe/Warsaw',
     readInputs: readLearningPlanInputSnapshot, peekPackage: () => resolved, now: () => now,
-    resolvePackage: async () => resolved, resolveTrackFamily: () => 'certification',
+    resolvePackage: async () => resolved, resolveTrackFamily: () => getTrackRegistration(trackId).familyId,
   });
   return { trackId, storage, goal, plan, base, proposal, get now() { return now; }, setNow(value) { now = value; }, home: new HomePlanSnapshotReader(base) };
 }
@@ -137,7 +156,7 @@ async function assertShared(f, expected) {
   const home = await f.home.read({ trackId: f.trackId, now: f.now });
   assert.equal(home.kind, 'ready');
   const proposal = await f.proposal.create(f.trackId);
-  assert.ok('proposal' in proposal, JSON.stringify(proposal));
+  assert.ok('proposal' in proposal, `${f.trackId}: ${JSON.stringify(proposal)}`);
   assert.deepEqual(home.completion, proposal.proposal.outcome.completionState);
   assert.equal(home.completion.kind, expected);
   return { home, proposal: proposal.proposal };
@@ -262,7 +281,10 @@ test('P01: all nine verified current artifacts report zero attempts and the full
   assert.equal(catalog.tracks.length, 9);
   let verifiedChapterCount = 0;
   for (const trackId of catalog.tracks) {
-    const track = catalog.getTrack(trackId);
+    const familyId = getTrackRegistration(trackId).familyId;
+    const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, familyId);
+    assert.ok(resolved.planningPolicyIdentity);
+    const track = resolved.track;
     assert.equal(track.completionRule.ruleVersion, 2);
     const expectedNodes = [...new Set(track.questions.map(question => question.nodeId))].sort();
     assert.deepEqual(track.completionRule.chapters.map(chapter => chapter.nodeId).sort(), expectedNodes);
@@ -272,10 +294,23 @@ test('P01: all nine verified current artifacts report zero attempts and the full
       assert.equal(chapter.mentalUnitCount, mentalUnitCount);
       assert.ok(chapter.minimumAttemptCount >= 20);
     }
-    const resolved = { track, runtime: new CanonicalTrainingRuntime(track) };
     const f = await learningFixture(resolved);
     const minimumTotal = track.completionRule.chapters.reduce((sum, chapter) => sum + chapter.minimumAttemptCount, 0);
     const empty = await assertShared(f, 'in_progress');
+    const initialMode = track.getMode(empty.home.session.modeId);
+    const setupParams = buildHomePlanPracticeSetupParams(empty.home, trackId);
+    assert.equal(setupParams.mode, empty.home.session.modeId);
+    assert.equal(setupParams.sessionLength, empty.home.session.sessionLength);
+    assert.equal(setupParams.expectedContentVersion, empty.home.identity.contentVersion);
+    assert.equal(setupParams.expectedArtifactSha256, empty.home.identity.artifactSha256);
+    if (initialMode.selection.kind === 'node') {
+      assert.equal(empty.home.session.topicId, initialMode.selection.nodeId, `${trackId} retains its exact canonical node scope`);
+      assert.equal(setupParams.topicId, initialMode.selection.nodeId);
+    } else {
+      assert.equal(empty.home.session.topicId, undefined, `${trackId}/${initialMode.modeId} has no node topic`);
+      assert.equal(Object.hasOwn(setupParams, 'topicId'), false, 'a non-node request omits topicId instead of bridging an empty string');
+      assert.throws(() => buildHomePlanPracticeSetupParams({ ...empty.home, session: { ...empty.home.session, topicId: '' } }, trackId), /node scope is empty/u);
+    }
     assert.equal(empty.home.completion.qualifyingAttemptCount, 0);
     assert.equal(empty.home.completion.requiredChapterCount, expectedNodes.length);
     assert.equal(empty.home.completion.requiredAttemptCount, minimumTotal);
@@ -430,6 +465,11 @@ test('actual persisted reviews share exact qualification and due cutoff; phantom
   const state = await assertShared(f, 'in_progress');
   assert.equal(state.home.dueReviewCount, 1); assert.deepEqual(state.home.dueReviewIds, [review.id]);
   assert.deepEqual(state.proposal.outcome.materialPriority, { kind: 'due_review' });
+  const reviewSetup = buildHomePlanPracticeSetupParams(state.home, TRACK);
+  assert.equal(state.home.session.modeId, 'certification-weak-area-review');
+  assert.equal(state.home.session.reviewSource, 'due_queue');
+  assert.equal(reviewSetup.reviewSource, 'due_queue');
+  assert.equal(Object.hasOwn(reviewSetup, 'topicId'), false, 'due review uses its canonical request source without a fabricated node');
   const phantom = { ...review, id: 'projection-phantom-review', sourceItem: { ...review.sourceItem, questionId: 'review-item-absent-from-current-package' } };
   await repositories.addReviewQueueItems([phantom]);
   assert.deepEqual(await f.home.read({ trackId: TRACK, now: f.now }), { kind: 'unavailable', trackId: TRACK, reason: 'calculation_error' });

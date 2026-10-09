@@ -106,7 +106,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
       async saveDraft(input) { await saveTrainingSessionDraft(input.draft, input.expectedPreviousRevision); },
       async getPendingMutation() {
         const pending = await getActiveMutationJournal();
-        if (!pending) return null;
+        if (!pending || pending.operation === "accept_goal_plan" || pending.operation === "resolve_account_sync_conflict") return null;
         const attempt = pending.writes.find((write): write is Extract<typeof pending.writes[number], { kind: "put_attempt" }> => write.kind === "put_attempt");
         const reviews: ReviewMutationCommand[] = [];
         for (const write of pending.writes) {

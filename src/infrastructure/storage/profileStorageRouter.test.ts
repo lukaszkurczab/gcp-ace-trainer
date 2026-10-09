@@ -223,6 +223,57 @@ test("account identity bindings are dual-slot versioned, exact-profile scoped, a
   assert.deepEqual(await router.readSelectedAccountIdentityBinding(), { kind: "verified", binding: second });
 });
 
+test("new account selection binds its marker to the registered profile ID and reuses the exact marker on retry", async () => {
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  const router = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, OWNER_ID) });
+
+  const account = await router.selectAccount("account-profile-init");
+  const key = `patternly:profile:v1:${account.id}:${encodeURIComponent(STORAGE_KEYS.GUEST_INSTALLATION)}`;
+  const envelope = JSON.parse(base.getString(key)!) as { revision: number; payload: Record<string, unknown> };
+  assert.deepEqual(envelope.payload, {
+    installationId: uuidAt(2),
+    localDatasetId: account.id,
+    bindingState: "account_bound",
+    accountId: "account-profile-init",
+  });
+  assert.notEqual(envelope.payload.installationId, envelope.payload.localDatasetId);
+
+  const reopened = await router.refresh();
+  assert.deepEqual(await reopened.selectAccount("account-profile-init"), account);
+  assert.equal(base.getString(key), JSON.stringify(envelope));
+});
+
+test("account marker is never synthesized over data, malformed bytes, or a foreign binding", async () => {
+  for (const existing of ["data", "malformed"]) {
+    const base = new MemoryKeyValueStorage();
+    const control = new MemoryControlStore();
+    const first = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, OWNER_ID) });
+    const account = await first.selectAccount(`account-${existing}`);
+    const key = `patternly:profile:v1:${account.id}:${encodeURIComponent(STORAGE_KEYS.GUEST_INSTALLATION)}`;
+    base.remove(key);
+    if (existing === "data") base.setString(`patternly:profile:v1:${account.id}:${encodeURIComponent("sentinel")}`, "preserve");
+    else base.setString(key, "not-json");
+    const before = base.snapshot();
+    const reopened = await first.refresh();
+    await assert.rejects(() => reopened.selectAccount(`account-${existing}`), (error) => error instanceof ProfileStorageError && error.code === "profile_scope_unavailable");
+    assert.deepEqual(base.snapshot(), before);
+  }
+
+  const base = new MemoryKeyValueStorage();
+  const control = new MemoryControlStore();
+  const first = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, OWNER_ID) });
+  const account = await first.selectAccount("account-foreign");
+  const key = `patternly:profile:v1:${account.id}:${encodeURIComponent(STORAGE_KEYS.GUEST_INSTALLATION)}`;
+  const before = base.getString(key)!;
+  const changed = JSON.parse(before) as { schemaIdentity: string; revision: number; payload: Record<string, unknown> };
+  changed.payload.accountId = "different-account";
+  base.setString(key, JSON.stringify(changed));
+  const foreign = base.getString(key);
+  await assert.rejects(async () => (await first.refresh()).selectAccount("account-foreign"), (error) => error instanceof ProfileStorageError && error.code === "profile_scope_unavailable");
+  assert.equal(base.getString(key), foreign);
+});
+
 test("account identity binding invalidation writes a higher PII-free tombstone and corrupt newest slot never falls back", async () => {
   const base = new MemoryKeyValueStorage();
   const control = new MemoryControlStore();
@@ -565,9 +616,9 @@ test("a later exact owner login selects the unchanged legacy scope before local 
 test("switching away from a modern account never reads its scoped payload", async () => {
   const base = new MemoryKeyValueStorage();
   const control = new MemoryControlStore();
-  const first = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, DATASET_ID) });
+  const first = await openProfileStorageRouter(base, control, { identity: identitySequence(GUEST_ID, uuidAt(70)) });
   const firstAccount = await first.selectAccount("account-a");
-  const firstAccountRouter = await openProfileStorageRouter(base, control, { identity: identitySequence(OWNER_ID) });
+  const firstAccountRouter = await openProfileStorageRouter(base, control, { identity: identitySequence(uuidAt(4)) });
   firstAccountRouter.storage.setString(STORAGE_KEYS.METADATA, "account-a-private-data");
   base.resetCounters();
 
@@ -650,7 +701,7 @@ test("selectGuest returns a typed ambiguity error without writing when multiple 
 test("one canonical guest and two account scopes survive restart without cross-scope access", async () => {
   const base = new MemoryKeyValueStorage();
   const control = new MemoryControlStore();
-  const ids = identitySequence(GUEST_ID, DATASET_ID, OWNER_ID, "00000000-0000-4000-8000-000000000004");
+  const ids = identitySequence(GUEST_ID, uuidAt(70), uuidAt(71), uuidAt(72));
   const prefix = (profileId: string) => `patternly:profile:v1:${profileId}:`;
   const assertOnlyProfileAccessed = (profileId: string) => {
     const scopedOperations = base.operations.filter((operation) => operation.key.startsWith("patternly:profile:v1:"));

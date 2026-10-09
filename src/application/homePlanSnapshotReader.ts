@@ -30,6 +30,11 @@ import {
   projectTargetDateGuidance,
   type TargetDateGuidance,
 } from "./learningPlan/targetDateGuidance";
+import { recommendLearningPlanMode } from "./learningPlan/learningPlanModeRecommendation";
+import { ActiveSessionPlanningError } from "./learningPlan/learningPlanModeRecommendation";
+import { CanonicalTrainingRuntime } from "./canonical/CanonicalTrainingRuntime";
+import { getTrainingSessionProgress } from "./trainingSessions/sessionDurability";
+import { getTrackRegistration } from "../domain/tracks/trackRegistry";
 
 /** Explicit Home failure categories. The Home surface must not invent a fallback. */
 export type HomePlanUnavailableReason =
@@ -40,6 +45,8 @@ export type HomePlanUnavailableReason =
   | "identity_mismatch"
   | "package_error"
   | "package_unavailable"
+  | "active_session_conflict"
+  | "active_session_unavailable"
   | "calculation_error"
   | "unsupported_action";
 
@@ -62,6 +69,7 @@ export type HomePlanIdentity = Readonly<{
   planStorageRevision: number;
   contentVersion: string;
   artifactSha256: string;
+  planningPolicyIdentity?: import("../domain/learning/learningPlan").LearningPlanPolicyIdentity;
   timezone: string;
 }>;
 
@@ -81,9 +89,11 @@ export type HomePlanReady = Readonly<{
   chapterAccess: readonly Readonly<{ nodeId: string; access: "free" | "available" | "locked" | "unavailable" }>[];
   session: Readonly<{
     modeId: string;
-    topicId: string;
+    /** Present only when the canonical next mode selects a concrete node. */
+    topicId?: string;
     sessionLength: number;
     areaLabel: string;
+    reviewSource?: "due_queue";
   }>;
   paceForecast: PaceForecast;
   guidance: TargetDateGuidance;
@@ -173,6 +183,9 @@ export class HomePlanSnapshotReader {
     const [activeSession, sessionsRead] = await Promise.all([
       this.dependencies.getActiveTrainingSession(), this.dependencies.getTrainingSessions(),
     ]);
+    if (inputs.activeSession !== undefined && canonicalSerialize(inputs.activeSession ?? null) !== canonicalSerialize(activeSession ?? null)) {
+      throw new HomePlanReadFailure("concurrent_change", "Home active-session pointer changed during the canonical snapshot.");
+    }
     if (!learningInputsEqual(inputs, this.dependencies.readInputs(trackId))) throw new HomePlanReadFailure("concurrent_change", "Home inputs changed while reading sessions.");
     return Object.freeze({
       storageScope: inputs.storageScope, goal: inputs.goal, plan: inputs.plan,
@@ -230,14 +243,12 @@ export class HomePlanSnapshotReader {
     }
     if (!isResolvedPackageForPlan(resolved, plan)) return unavailable(trackId, "identity_mismatch");
 
-    const primary = resolved.track.modes[0];
-    if (!primary) return unavailable(trackId, "unsupported_action");
-    let primaryMode: ReturnType<ResolvedPackageRuntime["track"]["getMode"]>;
-    try { primaryMode = resolved.track.getMode(primary.modeId); }
+    const legacyPrimary = resolved.track.modes[0];
+    if (plan.schemaVersion === 1 && !legacyPrimary) return unavailable(trackId, "unsupported_action");
+    let practiceMode: ReturnType<ResolvedPackageRuntime["track"]["getMode"]>;
+    try { practiceMode = resolved.track.getMode(plan.schemaVersion === 2 ? plan.executionPolicy.practice.modeId : legacyPrimary!.modeId); }
     catch { return unavailable(trackId, "unsupported_action"); }
-    if (plan.slots.some((slot) => !primaryMode.requestedLengths.includes(slot.sessionLength))) {
-      return unavailable(trackId, "unsupported_action");
-    }
+    if (plan.slots.some((slot) => !practiceMode.requestedLengths.includes(slot.sessionLength))) return unavailable(trackId, "unsupported_action");
 
     const identity = freezeIdentity(planSnapshot, plan);
     const sessions = deduplicateById(generation.sessions, "session");
@@ -248,6 +259,8 @@ export class HomePlanSnapshotReader {
     const matchingSessions = sessions.filter((session) => matchesSessionIdentity(session, identity));
     const activeSession = selectActiveSession(generation.activeSession, identity, matchingSessions);
     if (activeSession === "corrupt") return unavailable(trackId, "corrupt_record");
+    if (activeSession === "other_track") return unavailable(trackId, "active_session_conflict");
+    if (activeSession === "identity_mismatch") return unavailable(trackId, "active_session_unavailable");
 
     let today: string;
     try {
@@ -262,18 +275,44 @@ export class HomePlanSnapshotReader {
     let c3Result: "unknown" | "in_progress" | "completed";
     let completion: PackageCompletionState;
     let completedFacts: ImmutableCompletedFacts;
+    let nextMode: ReturnType<ResolvedPackageRuntime["track"]["getMode"]>;
+    let nextSessionLength = 0;
+    if (plan.schemaVersion === 2 && activeSession) {
+      try {
+        await new CanonicalTrainingRuntime(resolved.track, getTrackRegistration(trackId).familyId).validateResume({ session: activeSession, draft: null });
+        const activeAttempts = attempts.filter((attempt) => attempt.sessionId === activeSession.id);
+        if (activeAttempts.some((attempt) => attempt.committedAt === undefined)) throw new Error("Active session contains an uncommitted attempt.");
+        getTrainingSessionProgress(activeSession, activeAttempts);
+      } catch { return unavailable(trackId, "active_session_unavailable"); }
+    }
     try {
       const evidence = projectLearningEvidence({ profile: resolved.track, attempts, reviews, now: instant });
       completedFacts = evidence.completedFacts;
       completion = evidence.completion;
       c3Result = completion.kind;
       dueReviews = evidence.dueReviews;
+      if (plan.schemaVersion === 2) {
+        const recommendation = recommendLearningPlanMode({
+          familyId: getTrackRegistration(trackId).familyId,
+          trackId,
+          modes: resolved.track.modes,
+          sessions,
+          activeSession,
+          dueReviewCount: dueReviews.length,
+        });
+        if (JSON.stringify(recommendation.executionPolicy) !== JSON.stringify(plan.executionPolicy)) return unavailable(trackId, "identity_mismatch");
+        nextMode = resolved.track.getMode(recommendation.mode.modeId);
+        nextSessionLength = recommendation.requestedLength;
+      } else {
+        nextMode = resolved.track.getMode(legacyPrimary!.modeId);
+        nextSessionLength = nextMode.defaultRequestedLength;
+      }
       paceForecast = calculatePaceForecast({
         acceptedPlan: plan, c3Result, remainingAttemptCount: completion.kind === "completed" ? 0 : completion.kind === "in_progress" ? completion.remainingAttemptCount : 0,
         today, timezone: plan.timezone, completedFacts,
       });
-    } catch {
-      return unavailable(trackId, "calculation_error");
+    } catch (error) {
+      return unavailable(trackId, error instanceof ActiveSessionPlanningError ? "active_session_unavailable" : "calculation_error");
     }
 
     let guidance: TargetDateGuidance;
@@ -302,6 +341,7 @@ export class HomePlanSnapshotReader {
     let day: HomePlanDay;
     try { day = buildHomeDay(plan, today, matchingSessions); }
     catch { return unavailable(trackId, "calculation_error"); }
+    if (plan.schemaVersion === 1 && day.slot && nextMode.requestedLengths.includes(day.slot.sessionLength)) nextSessionLength = day.slot.sessionLength;
     try {
       if (!learningInputsEqual(generation, this.dependencies.readInputs(trackId))) return unavailable(trackId, "concurrent_change");
     } catch { return unavailable(trackId, "storage_error"); }
@@ -320,10 +360,11 @@ export class HomePlanSnapshotReader {
       completion,
       chapterAccess,
       session: Object.freeze({
-        modeId: primary.modeId,
-        topicId: primary.selection.kind === "node" ? primary.selection.nodeId : "",
-        sessionLength: day.slot?.sessionLength ?? primary.defaultRequestedLength,
-        areaLabel: humanizeScope(primary.selection.kind === "node" ? primary.selection.nodeId : "track"),
+        modeId: nextMode.modeId,
+        ...(nextMode.selection.kind === "node" ? { topicId: nextMode.selection.nodeId } : {}),
+        sessionLength: nextSessionLength,
+        areaLabel: humanizeScope(nextMode.selection.kind === "node" ? nextMode.selection.nodeId : "track"),
+        ...(nextMode.selection.kind === "evidence_conditioned" && nextMode.selection.evidenceSources.includes("due_queue") ? { reviewSource: "due_queue" as const } : {}),
       }),
       paceForecast,
       guidance,
@@ -380,6 +421,7 @@ function freezeIdentity(snapshot: LearningPlanSnapshot, plan: LearningPlan): Hom
     planStorageRevision: snapshot.revision,
     contentVersion: plan.contentVersion,
     artifactSha256: plan.artifactSha256,
+    ...(plan.schemaVersion === 2 ? { planningPolicyIdentity: plan.planningPolicyIdentity } : {}),
     timezone: plan.timezone,
   });
 }
@@ -387,7 +429,8 @@ function freezeIdentity(snapshot: LearningPlanSnapshot, plan: LearningPlan): Hom
 function isResolvedPackageForPlan(resolved: ResolvedPackageRuntime, plan: LearningPlan): boolean {
   return resolved.track.trackId === plan.trackId &&
     resolved.track.contentVersion === plan.contentVersion &&
-    resolved.track.artifactSha256 === plan.artifactSha256;
+    resolved.track.artifactSha256 === plan.artifactSha256 &&
+    (plan.schemaVersion === 1 || JSON.stringify(resolved.planningPolicyIdentity) === JSON.stringify(plan.planningPolicyIdentity));
 }
 
 function isSupportedHomeAction(action: TargetDateGuidance["home"]["primary"]): boolean {
@@ -402,9 +445,10 @@ function selectActiveSession(
   active: TrainingSession | null,
   identity: HomePlanIdentity,
   sessions: readonly TrainingSession[],
-): TrainingSession | null | "corrupt" {
+): TrainingSession | null | "corrupt" | "other_track" | "identity_mismatch" {
   if (active === null || active.status !== "active") return null;
-  if (!matchesSessionIdentity(active, identity)) return null;
+  if (active.trackId !== identity.trackId) return "other_track";
+  if (!matchesSessionIdentity(active, identity)) return "identity_mismatch";
   if (!sessions.some((session) => session.id === active.id)) return "corrupt";
   const stored = sessions.find((session) => session.id === active.id)!;
   try { if (canonicalSerialize(stored) !== canonicalSerialize(active)) return "corrupt"; }
@@ -466,11 +510,11 @@ function deduplicateById<T extends { id: string }>(values: readonly T[], source:
   return Object.freeze([...byId.values()]);
 }
 
-function learningInputsEqual(left: Pick<LearningPlanInputSnapshot, "storageScope" | "goal" | "plan" | "attempts" | "reviews">, right: LearningPlanInputSnapshot): boolean {
+function learningInputsEqual(left: Pick<LearningPlanInputSnapshot, "storageScope" | "goal" | "plan" | "attempts" | "reviews" | "activeSession">, right: LearningPlanInputSnapshot): boolean {
   if (left.storageScope !== right.storageScope) return false;
   try {
-    return canonicalSerialize({ goal: left.goal, plan: left.plan, attempts: left.attempts, reviews: left.reviews }) ===
-      canonicalSerialize({ goal: right.goal, plan: right.plan, attempts: right.attempts, reviews: right.reviews });
+    return canonicalSerialize({ goal: left.goal, plan: left.plan, attempts: left.attempts, reviews: left.reviews, activeSession: left.activeSession ?? null }) ===
+      canonicalSerialize({ goal: right.goal, plan: right.plan, attempts: right.attempts, reviews: right.reviews, activeSession: right.activeSession ?? null });
   } catch { return false; }
 }
 

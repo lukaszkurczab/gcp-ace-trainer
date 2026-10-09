@@ -434,7 +434,13 @@
   "Choose at least one practice day.": "Wähle mindestens einen Übungstag aus.",
   "Reminders": "Erinnerungen",
   "Reminder draft": "Erinnerungsentwurf",
-  "Exact reminder times and activation are available only after you accept a learning plan.": "Genaue Erinnerungszeiten und ihre Aktivierung sind erst nach der Annahme eines Lernplans verfügbar.",
+  "Accept a learning plan first.": "Akzeptiere zuerst einen Lernplan.",
+  "Choose exact reminder times next.": "Wähle als Nächstes\ngenaue\nErinnerungszeiten.",
+  "Then you can turn reminders on.": "Danach kannst du Erinnerungen aktivieren.",
+  "Time available for this track": "Verfügbare Zeit für diesen Lernpfad",
+  "Minutes on each chosen study day. This applies to this track only.": "Minuten an jedem gewählten Lerntag. Diese Angabe gilt nur für diesen Lernpfad.",
+  "Custom minutes per study day for this track": "Eigene Minuten pro Lerntag für diesen Lernpfad",
+  "Or enter 1–1440 minutes": "Oder 1–1440 Minuten eingeben",
   "Save goal": "Ziel speichern",
   "Save changes": "Änderungen speichern",
   "Loading goal": "Ziel wird geladen",
@@ -775,5 +781,7 @@
   "This recommended practice scope is no longer available for the current content package.": "Der empfohlene Übungsbereich ist im aktuellen Inhaltspaket nicht mehr verfügbar.",
   "This recommended practice scope does not have enough available questions.": "Im empfohlenen Übungsbereich sind nicht genügend Fragen verfügbar.",
   "{{correct}} correct, {{partial}} partly correct, {{incorrect}} incorrect, and {{unanswered}} unanswered from {{sampled}} sampled questions.": "{{correct}} richtig, {{partial}} teilweise richtig, {{incorrect}} falsch und {{unanswered}} unbeantwortet von {{sampled}} Fragen in der Stichprobe.",
-  "Next practice: {{topic}} — learning unit {{number}}. This diagnostic sampled {{sampled}} of {{eligible}} Focus questions for this unit, with {{partial}} partly correct and {{incorrect}} incorrect answers.": "Nächste Übung: {{topic}} — Lerneinheit {{number}}. Diese Diagnose umfasste {{sampled}} von {{eligible}} Focus-Fragen dieser Einheit; {{partial}} Antworten waren teilweise richtig und {{incorrect}} falsch."
+  "Next practice: {{topic}} — learning unit {{number}}. This diagnostic sampled {{sampled}} of {{eligible}} Focus questions for this unit, with {{partial}} partly correct and {{incorrect}} incorrect answers.": "Nächste Übung: {{topic}} — Lerneinheit {{number}}. Diese Diagnose umfasste {{sampled}} von {{eligible}} Focus-Fragen dieser Einheit; {{partial}} Antworten waren teilweise richtig und {{incorrect}} falsch.",
+  "Choose how much time you can spend on this track each study day.": "Wähle, wie viel Zeit du an jedem Lerntag für diesen Lernpfad hast.",
+  "{{count}} min": "{{count}} Min."
 }

@@ -10,6 +10,10 @@ export class JournalVerificationError extends Error { constructor() { super("The
 
 export type AccountDataFailureCode =
   | "account_sync_state_invalid"
+  | "account_sync_conflict_unavailable"
+  | "account_sync_conflict_stale"
+  | "account_sync_conflict_choice_required"
+  | "account_sync_conflict_unsupported_changes"
   | "account_id_required"
   | "guest_installation_required"
   | "account_binding_mismatch"

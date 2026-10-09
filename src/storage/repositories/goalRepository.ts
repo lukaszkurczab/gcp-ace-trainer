@@ -4,6 +4,7 @@ import { readCanonicalEnvelope, writeCanonicalJson } from "./canonicalRecordCode
 import { isGoalRecordForTrack, isGoalRecordShapeForTrack, normalizeGoalRecord } from "../../domain/goals/goalContracts";
 import { normalizeGoalForExplicitSave } from "../../domain/goals/goalTargetDateSemantics";
 import { CanonicalWriteConflictError, UnsupportedStoredRecordError } from "../errors";
+import { assertGoalPlanPairReadable } from "./mutationJournalRepository";
 
 export class StaleGoalRevisionError extends Error {
   constructor(readonly expectedRevision: number | null, readonly actualRevision: number | null) {
@@ -13,6 +14,7 @@ export class StaleGoalRevisionError extends Error {
 }
 
 export function readGoalSnapshot(trackId: TrackId): GoalSnapshot | null {
+  assertGoalPlanPairReadable();
   const saved = readCanonicalEnvelope(STORAGE_KEYS.goal(trackId), (value): value is GoalRecord => isGoalRecordShapeForTrack(value, trackId));
   return saved ? Object.freeze({ record: normalizeGoalRecord(saved.payload), revision: saved.revision }) : null;
 }
@@ -24,12 +26,14 @@ export async function getGoal(trackId: TrackId): Promise<GoalRecord | null> {
 }
 
 export async function saveGoal(goal: GoalRecord): Promise<void> {
+  assertGoalPlanPairReadable();
   const normalized = normalizeGoalForSave(goal);
   const trackId = normalized.trackId;
   writeCanonicalJson(STORAGE_KEYS.goal(trackId), normalized);
 }
 
 export async function saveGoalSnapshot(goal: GoalRecord, expectedRevision: number | null): Promise<GoalSnapshot> {
+  assertGoalPlanPairReadable();
   const normalized = normalizeGoalForSave(goal);
   const key = STORAGE_KEYS.goal(normalized.trackId);
   const actualRevision = readCanonicalEnvelope(key, (_value): _value is unknown => true)?.revision ?? null;

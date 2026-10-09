@@ -2,12 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createDefaultGoal } from "../goals/goalContracts";
-import { acceptedTargetFromGoal, InvalidLearningPlanError, isLearningPlanV1, normalizeLearningPlan, type LearningPlan } from "./learningPlan";
+import { acceptedTargetFromGoal, InvalidLearningPlanError, isLearningPlanV1, normalizeLearningPlan, type LearningPlan, type LearningPlanV1 } from "./learningPlan";
 import { createLearningPlanSlotId } from "./slotIdentity";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
+const PLANNING_POLICY_IDENTITY = { contentVersion: "content-v1", artifactSha256: "a".repeat(64), policyVersion: "planning-v1" } as const;
 
-function plan(overrides: Partial<LearningPlan> = {}): LearningPlan {
+function plan(overrides: Partial<LearningPlanV1> = {}): LearningPlan {
   return {
     schemaVersion: 1,
     planId: "plan:one",
@@ -44,6 +45,22 @@ test("LearningPlan v1 guard requires the complete strict shape and canonical slo
   assert.equal(isLearningPlanV1({ ...plan(), trackId: "unknown-track" }), false);
   assert.throws(() => normalizeLearningPlan({ ...plan(), trackId: "unknown-track" }), (error: unknown) => error instanceof InvalidLearningPlanError && error.code === "unknown_track");
   assert.equal(isLearningPlanV1({ ...plan(), extra: true }), false);
+});
+
+test("LearningPlan v2 requires explicit positive per-track daily availability while legacy v1 remains unknown", () => {
+  const legacy = normalizeLearningPlan(plan());
+  assert.equal(legacy.schemaVersion, 1);
+  assert.equal("minutesPerStudyDay" in legacy, false);
+  const executionPolicy = { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: null, practice: { modeId: "coding-interview-guided-practice", requestedLength: 20 } };
+  const current = normalizeLearningPlan({ ...plan(), schemaVersion: 2, minutesPerStudyDay: 25, planningPolicyIdentity: PLANNING_POLICY_IDENTITY, executionPolicy });
+  assert.equal(current.schemaVersion, 2);
+  if (current.schemaVersion === 2) { assert.equal(current.minutesPerStudyDay, 25); assert.deepEqual(current.executionPolicy, executionPolicy); }
+  assert.equal(isLearningPlanV1({ ...plan(), schemaVersion: 2 }), false);
+  assert.equal(isLearningPlanV1({ ...plan(), schemaVersion: 2, minutesPerStudyDay: 0 }), false);
+  assert.equal(isLearningPlanV1({ ...plan(), schemaVersion: 2, minutesPerStudyDay: 1441 }), false);
+  assert.equal(isLearningPlanV1({ ...plan(), schemaVersion: 2, minutesPerStudyDay: 25, planningPolicyIdentity: PLANNING_POLICY_IDENTITY, executionPolicy }), true);
+  assert.equal(isLearningPlanV1({ ...plan(), schemaVersion: 2, minutesPerStudyDay: 25, planningPolicyIdentity: PLANNING_POLICY_IDENTITY, executionPolicy: { ...executionPolicy, practice: { modeId: "", requestedLength: 10 } } }), false);
+  assert.equal(isLearningPlanV1({ ...plan(), schemaVersion: 2, minutesPerStudyDay: 25, planningPolicyIdentity: PLANNING_POLICY_IDENTITY, executionPolicy, extra: true }), false);
 });
 
 test("accepted target snapshot follows T4 goal meaning and canonical null dates", () => {

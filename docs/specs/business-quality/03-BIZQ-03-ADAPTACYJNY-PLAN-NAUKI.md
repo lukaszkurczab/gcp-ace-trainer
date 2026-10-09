@@ -287,3 +287,202 @@ Odbiór wymaga co najmniej dwóch rzeczywistych rodzin materiału o odmiennym ch
 Pokaż na iOS trzy wersje planu dla tego samego tracka: nowy użytkownik, powracający z review oraz bliski niewykonalny termin. Każdy plan musi prowadzić do rzeczywistej zgodnej sesji, nie karty z fixture. Syntetyczne profile są dopuszczalne jako dane testu, ale używają prawdziwego runtime i zatwierdzonego contentu.
 
 Raport zawiera algorytm i wersję polityki, pochodzenie kosztów, listę braków metadata, różnice planów, testy, identity/sync evidence i ograniczenia prognozy. Brak danych od użytkowników oznacza, że trafność estymat nie została jeszcze empirycznie potwierdzona; nie blokuje technicznego odbioru, ale blokuje claim o udowodnionej skuteczności.
+
+## 12. Bieżące wykonanie — 08.10.2026
+
+Cel pozostaje pełny A01–A24 i odbiór §11. Pierwszy pakiet wdraża kontrakt
+producenta i konsumenta oraz rzeczywistą atomową akceptację; nie zamyka BIZQ-03.
+Niezależny Luna high design review zatwierdził małą projekcję `planningPolicy`
+w istniejącym exact artefakcie. Po wykryciu braku curriculum target→runtime unit join projekcja przenosi
+bezpośrednie exact runtime scope `(nodeId, mentalUnitId, modeId)` i autorskie
+koszty z niepewnością/rezerwą scoped per estimate albo explicit unavailable.
+Scope jest weryfikowany przeciw rzeczywistym canonical pytaniom; nie deklaruje
+pokrycia curriculum targetów ani official domains. Wspólne koszty mogą grupować
+exact refs tylko przy tym samym uzasadnieniu i zakresie. Nie dodawać nowego enum
+klasy pracy bez istniejącego właściciela. Niezależny revised-design review:
+fit0.93/simplicity0.92/risk0.90/maintainability0.91; minimum0.90. Bez nowej taxonomy, manifestu, content stage-order ani
+kopii legal lengths/Premium/shortening: ich właścicielem pozostaje APP/family.
+Szacunki są nowymi wersjonowanymi hipotezami, nie potwierdzoną trafnością.
+
+Dostępność `minutesPerStudyDay` ma jednego trwałego właściciela — accepted plan;
+cel i dostępność pozostają draftem przed accept. Obecny zapis goal-first i
+plan-only CAS nie spełnia odmowy zachowującej starą parę. Zatwierdzona korekta
+używa discriminated `accept_goal_plan` w istniejącym ACTIVE_JOURNAL i wspólnej
+write lane: exact before/after envelopes, pinned profile, revision/fingerprint,
+roll-forward recovery i gate odczytów/sync. Bez fake session fields i rollbacku
+nieutrwalonego jako decyzja. Independent architecture review: fit0.94,
+simplicity0.86, risk0.83, maintainability0.88; minimum0.83.
+
+Kalibracja ma jeden APP-side pure projection z kanonicznych ukończonych sesji
+i committed attempts. Obecny runtime utrwala łączny `activeForegroundMs`, nie
+czas każdej odpowiedzi. Wersjonowana metoda użyje mediany ilorazów aktywnego
+czasu sesji i liczby jej odpowiedzi: co najmniej 5 porównywalnych sesji i 20
+odpowiedzi, najwyżej 10 ostatnich; błędy, partial i czytanie objaśnień pozostają
+w czasie i mianowniku. Tylko kompletny unique attempt set i jedna zgodna klasa
+estymaty/polityki/artefaktu; mixed/legacy/active/abandoned lub niewiarygodny timer
+nie kalibrują. Content pozostaje authored z observationCount0; APP zachowuje
+źródło, liczby i wersję metody, bez dodatkowego persistence/telemetry. Independent
+design review: fit0.94/simplicity0.87/risk0.83/maintainability0.88; minimum0.83.
+To zatwierdzenie projektu, nie odbiór implementacji lub trafności estymat.
+
+Integracja ujawniła brak trwałej semantyki trybu: Home ponownie wybierał
+`modes[0]`, a plan nie zachowywał zaakceptowanego mode/scope/length. Zatwierdzony
+projekt rozszerza nieopublikowany plan v2 o jeden `executionPolicy` z osobną
+initial diagnosis i recurring practice; due review używa istniejącego resolvera
+i kanonicznej kolejki. Proposal i Home używają jednego APP chooser. Potwierdzone
+HEAD APP/backend obsługują tylko produkcyjne v1, więc nie tworzyć ghost legacy
+v2/v3. Aktualizować strict storage/export/sync/backend w tym samym pakiecie.
+Historia zweryfikowanej diagnozy dla tracka nie resetuje się po nowym planId
+lub polityce kosztu: active resume, completed practice, abandoned jawna akcja
+bez cichego zaliczenia lub automatycznej pętli. Niezależny revised design review:
+fit0.94/simplicity0.88/risk0.84/maintainability0.88; minimum0.84.
+
+Pauza/wznowienie nie mogą zapisywać samego goal i rozrywać goalRevision pary.
+Rozszerzyć ten sam typed pair journal/lane o jawny lifecycle cause, CAS obu
+rekordów i coherent transitions active+accepted ↔ paused+paused; ukończony plan
+nie jest reaktywowany. Zachować before/after, recovery i read/sync gates;
+reminder reconciliation dopiero po zapisie, z osobnym błędem. Niezależny review:
+fit0.93/simplicity0.84/risk0.82/maintainability0.86; minimum0.82.
+
+Pre-push próba CI potwierdziła konflikt źródła z historycznym kandydatem:
+automatyczny workflow odbudowywał current source w starej ścieżce i próbował
+użyć hash-bound decyzji BIZQ-05. Nowy candidate jest prawidłowo odrzucany jako
+stale względem starej decyzji; historyczne verifyCandidateReleaseEvidence nadal
+przechodzi i zachowuje publishing/runtime not_granted. Zatwierdzona najmniejsza
+korekta obejmuje automatic workflow i jego test: current source draft w
+RUNNER_TEMP quarantine, jawny draft/not_granted, osobny odczytowy istniejący
+validator historycznych dowodów. Bez zmian manual release gate, approval,
+admission lub historycznych artifacts. Root independent review z actual
+source/probes: fit0.95/simplicity0.93/risk0.90/maintainability0.94; minimum0.90.
+To bramka źródła, nie nowe runtime/publishing admission.
+
+Niezależny źródłowy przegląd kalendarza potwierdza existing date-only owner:
+projectGoalTargetDate event strictly_before (ostatni dzień poprzedni),
+deadline/checkpoint inclusive, own pace none. Nie dodawać nieistniejącej godziny.
+Today/due-day liczyć w aktualnej strefie, stale/refresh po jej zmianie; stored
+civil target i absolutny dueAt bez przesunięcia. Real resolver nadal sprawdza
+instant due, także później tego samego dnia. activeForegroundMs jest lifetime:
+całość odejmować tylko przy udowodnionym same-local-day interval; sesja obejmująca
+północ i dziś daje jawnie unknown today capacity, bez arbitralnego0/whole.
+Przyszłe dni zachowują known budget; dzienny ledger nie jest nową bramką tego
+pakietu. Source review fit0.90/simplicity0.84/risk0.82/maintainability0.84;
+minimum0.82, implementacja/tests OPEN.
+
+A19: rzeczywista próba wykazała, że policy-only bump version/SHA odcina także
+kwalifikację wcześniejszych postępów, due reviews i terminalnych tombstones.
+Zatwierdzono jeden composite training owner: odtworzenie dokładnego wcześniejszego
+v1 z nowego źródła przez usunięcie planningPolicy i przywrócenie wyłącznie
+schema/contentVersion. Dla wszystkich dziewięciu ścieżek niezależnie uzyskano
+identyczny wcześniejszy payload i jego pełny SHA. Training, nowe odpowiedzi,
+progress, review i reminders pozostają przy tej rzeczywistej tożsamości v1;
+polityka planowania pochodzi z osobno zweryfikowanego v2 i ma własny jawny pin.
+Bez aliasów SHA, osłabienia strict parsera, remapowania historii lub podwójnego
+runtime. Canonical sync generuje i zachowuje exact predecessor/successor ledger,
+sprawdza obie strony i fail-closed przy niespójności; późniejsza zmiana semantyczna
+nie może cicho usunąć tego kontraktu. Scope tylko potwierdzony cost-only v1→v2,
+bez ogólnego archiwum dowolnych wersji. Independent revised design:
+fit0.96/simplicity0.83/risk0.82/maintainability0.82; minimum0.82.
+To odbiór projektu i próby źródłowej; implementacja, integracja i native A19 OPEN.
+
+Zależność real native acceptance: nowy existing-user account profile nie dostaje
+wymaganego installation/dataset marker; actual memory router→accountDataService
+reprodukuje guest_installation_required przy zachowaniu Guest. Zatwierdzony bounded
+fix istniejącego profile owner: registry-first → absent marker CAS/readback →
+activation; account_bound/accountId exact, localDatasetId zachowany z profilu.
+Retry po błędzie refresh/invalidate prepared routing bez activation (dotychczas
+transitionActive zakleszczał retry). Wyłącznie pusty scope; malformed/foreign/guest
+lub nonempty missing fail-closed/nooverwrite. Odzyskanie po registry commit może
+wygenerować nowy distinct installationId przy zachowanym profile.id; żadnej
+adopcji lub kasowania Guest, synthetic AccountBinding lub pełnego AUTH rewrite.
+Independent revised design fit0.94/simplicity0.84/risk0.82/maintainability0.86;
+minimum0.82. To dependency w BIZQ-03, nie przełączenie na konkurencyjny plan.
+
+Uzupełnienie 09.10 — pełny model pracy. Niezależny przegląd odrzucił
+wycenianie całego wolumenu C3 przez scope jednego najbliższego bloku (risk0.72).
+Zatwierdzony revised projekt zachowuje deficyt każdego obowiązkowego rozdziału,
+rzeczywiste due references i exact koszt legalnego trybu. Kwalifikująca odpowiedź
+review może pomniejszyć wolumen tylko swojego rozdziału o najwyżej jeden; czas
+jest liczony raz, a pozostały deficit to dalsza praktyka. Rezerwa jest dodatkową
+prognozą według autorskiej klasy, nigdy nowym wpisem kolejki. Obecny selector
+nie daje rozkładu przyszłych odpowiedzi dla wszystkich rozdziałów: exact scope
+najbliższego bloku pozostaje osobno; przyszłe bounds wolno podać tylko przy
+koszcie każdego możliwego scope rzeczywistej legalnej puli, z jawną niepewnością
+rozkładu. Brak legalnego trybu/scope/kosztu lub repair-volume contract zachowuje
+jawny rozdział unknown i blokuje full-fit; obowiązkowe Premium nie znika.
+Nie retargetować ProductModeConfig ani symulować przyszłych odpowiedzi.
+Oceny fit0.84/simplicity0.80/risk0.82/maintainability0.82; minimum0.80.
+To zatwierdzenie projektu, nie odbiór full-work/calendar/coordinator/UI A01–A24.
+
+Uzupełnienie integracji 09.10 — niezależny real GCP coordinator wykazał
+zero full-work demand i open_ended_preview dla datowanych celów +7/+60 dni;
+74 przechodzące testy nie odebrały tej integracji. Korekta ma typed obligations
+per phase (diagnosis/practice/due_review) z legalnymi długościami. GCP fixed
+ordered diagnosis posiada dokładne QID; koszt całego requestu i prognozowany
+credit do minimum rozdziału liczone raz, bez przyszłych durable evidence.
+Aktywna diagnoza używa pozostałego utrwalonego itemOrder; ukończona nie wraca,
+porzucona ma jawny stan. Aggregate bounds dalszej legalnej praktyki obejmują
+cały rzeczywisty selectable pool i koszt każdego możliwego scope; min/max
+konserwatywne, centralna mediana scope to jawna estymata polityki. Nie wymagamy
+materializacji przyszłych QID; niepełny pool/koszt pozostaje unknown/full-fit
+niepotwierdzony. Available A04 sprawdza rzeczywiste wyjściowe QID/unit refs
+selektora przy tym samym celu i różnych pinned histories, nie sam modeId.
+Independent design fit0.88/simplicity0.84/risk0.80/maintainability0.82;
+minimum0.80. Full A01–A24 i native pozostają otwarte do odbioru implementacji.
+
+Bieżący kalendarz wymaga distinct unknown capacity i unknown-blocked obligations,
+bez dopisywania ich do confirmed no-fit/shortfall; real due jest rozkładane
+według earliest due i dostępnej pojemności. Native bounded account preparation,
+zachowanie11 wcześniejszych profili/kategorii77/77 i cold-start powiązanego
+profilu mają niezależny odbiór: [raport](../../reports/bizq03-account-profile-native-2026-10-09.md).
+Nie zastępuje to journal fault/relaunch, aktywnej sesji ani trzech planów.
+
+Korekta bramki CI po policy-only v2: rzeczywisty candidateContentReleaseLock
+check odrzuca raw v2 bundled lock wobec immutable training candidatev1.
+Niezależna rekonstrukcja z istniejącego successor ledger daje dokładny dawny
+v1 lock SHA i wszystkie dziewięć training identities. Zatwierdzono użycie
+jednego istniejącego reconstruction ownera do kontroli tego poprzednika,
+bez przepisywania schema3 release.lock, kandydatury, historii lub admission.
+Oddzielny wymagany actual current producer build/roundtrip (CI recorded SHA)
+pozostaje dowodem v2 policy source; nie jest nową zgodą runtime/publishing.
+Negatywne sprawdzenia muszą odrzucać zmienione pytania/training pin oraz
+niezgodny policy output. Independent design fit0.93/simplicity0.88/risk0.86/
+maintainability0.88; minimum0.86. Implementacja i CI jeszcze nieodebrane.
+
+Native lokalnego przerwania pary: debugger nie udostępnia exact runtime source,
+więc testy narzędzia nie odebrały fault/replay. Niezależnie zatwierdzono prostszą
+jednorazową __DEV__ awarię po rzeczywistym zapisie i readback celu, przed zapisem
+planu, bez zmiany synchronicznych blokad. Strict actor/binding/live SDK UID/lease/
+profile/track/proposal/nonce oraz exact persisted journal i envelopes; tylko
+świeży kontrolowany profil bez celu/planu/sesji/transition. Po błędzie istniejący
+catch pozostawia journal_durable i storage_error, read/sync fence pozostaje.
+Root kill tylko po potwierdzonym actual receipt, zwykły bootstrap i exact replay;
+bez resetu/global override/sztucznych danych/persistentdebugflag/secretslog.
+Oceny fit0.92/simplicity0.90/risk0.85/maintainability0.88; minimum0.85.
+To projekt kontrolowanej awarii po native write i restartu, nie power-loss lub
+literalnego CPU breakpoint; offline→restart→sync konflikt A21 pozostaje osobny.
+Implementacja i bounded native fault/restart/recovery odebrane niezależnie09.10; pełny offline HTTP conflict i pozostały odbiór otwarte.
+
+Kolejność implementacji: CONTENT source/schema/build → APP transport/planner i
+BACKEND strict sync consumer; merge po zintegrowanym QA, deployment/publikacja
+pozostają osobno autoryzowane. Historyczne exact pakiety i aktywne sesje zachowują
+identity; nowe piny nie zastępują utrwalonego occurrence/item/option order.
+Odbiór będzie obejmował actual producer output → APP oraz przerwania journalu;
+same mocki/typecheck nie zamykają kryteriów. Bieżące dowody i następny krok
+są w [jedynym stanie](../../../.agent/WORKING_STATE.md).
+
+### Doprecyzowanie native probe i zegara — 09.10
+
+Niezależny source-design review odrzucił globalny storage setter failpointu: mógł przetrwać do kolejnej propozycji bez authority aktora. Approved correction: arm one-shot jest application runtimeAuditability-owned; konkretny commit przekazuje synchroniczny callback aż do repo seam po exact Goal readback i przed Plan write. Recovery nigdy nie dostaje callbacku. Final synchronous actorFence/lease/exactjournal/proposal/nonce guard, mismatch disarm i consume-before-throw, bez await/nowego journalu/destrukcyjnego resetu. Fit0.91/simple0.84/risk0.84/maint0.84, minimum0.84. Native bounded atomic-pair interruption/restart/recovery independent PASS09.10, strictreceipt allguards→exactpair/revisions/journalclear i stare77/77/GCPpreserved; pełna A21 offline HTTP conflict nadal OPEN.
+
+Dev clock audit wykazał wyłącznie harness mismatch: lifecycle używa istniejącego adjustable WallClock, proposal/editor/Home brały Date systemowy. Approved minimalna integracja wszystkich trzech konsumentów przez publiczne lifecycle.currentTime; production default systemtime unchanged, bez globalDateoverride/history mutation/24h wait. Source graph review acyclic; test actual answer→due→advance→proposal/Home i native po freeze. Fit0.93/simple0.90/risk0.87/maint0.90, minimum0.87. To design approval, nie runtime odbiór.
+
+
+### Doprecyzowanie konfliktu synchronizacji A21 — 09.10
+
+Research currentownerów wykazał, że zwykły 409 utrwala konflikt, ale retry wysyła stary SyncPlan/accountRevision. docs04:371–375 wymagają atomic Goal/Plan pair i conflict choice at safe entry. Reused local/account group semantics nie oznacza wywołania guest adoption endpoint dla już powiązanego konta. Pierwszy design min0,68 odrzucono: full remote materialization mogłaby wyczyścić inne lokalne pary/outbox; pair-only journal zostawia crash window ponownego uploadu starego intentu.
+
+Ostateczny independent APPROVE design min0,82 (fit0,93/simple0,82/risk0,84/maint0,84): jawny409 tworzy durableconflict gate blokujący startup/HomeautoPOST. Wyłącznie wejście użytkownika w bezpieczny resolver pobiera latestGET poza write lane. Niezmienione pendingtargetversions+whole touchedpair/absence/tombstones pozwalają zrebasować accountRevision i przebudować SyncPlan; zmieniona para wymaga explicit wholetrack local/account choice, bez automatycznego winnera. Timeout zachowuje dokładne poprzednie żądanie i nigdy nie uruchamia rebase.
+
+Keep-account używa tego samego ACTIVE_JOURNAL/write lane/recovery dla exact before/after Goal/Plan envelopes ORAZ pełnego CAS sync-state delta: wyłącznie selectedpair outbox drop/ackversions/revision i remainingplan rebuild, bez usunięcia niezależnej pracy/ackedbatches. Read/sync fences do pełnego readback i clearjournal last. Keep-local zachowuje localpair i atomowo zmienia oba expectedremoteversions/mutationIDs/plan w CAS syncstate. Confirm rechecks SDKactor/bindinglease/profile/localdatasetversion+fingerprint/outbox/remoteversion oraz noactivesession/journal/materialization/reset/pendingchoice; stale/invalid failclosed preserve local.
+
+Backend existingtransaction odczytuje touchedpair counterpart przed write i sprawdza prospectiveeffectivepair przez istniejący strictbundle owner; identicalbatchmarker replay pozostaje przed revision/paircheck. Bez nowego endpointu/schema. Testy: crash każdego pair/statewrite, unrelatedpending preservation, durable409restartnoPOST, stalechoice, bothdelete/orphan/mutatedcounterpart, idempotent ambiguoussuccess replay. To odbiór projektu, nie implementacji ani runtime A21.

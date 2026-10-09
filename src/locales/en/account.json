@@ -96,6 +96,7 @@
   "pendingDescription": "Your changes are saved on this device. Connect to the internet and try again to save them to your account.",
   "conflict": "Account data conflict",
   "conflictDescription": "We couldn’t reconcile progress between this device and your account. Retry to check again. Your progress remains saved on this device. If the conflict remains, contact support from Legal information.",
+  "syncConflictDescription": "Your progress remains saved on this device. Check the latest account state before choosing which complete goal-and-plan pair to keep.",
   "dataFailure": "Account data is unavailable",
   "dataFailureDescription": "We couldn’t load your account progress. Your progress remains saved on this device.",
   "resumeRequired": "Session saved on this device",
@@ -216,5 +217,12 @@
   "recoveryOperationReplaceDescription": "Sign in again to issue a replacement set. When the new set is issued, the previous codes will stop working.",
   "recoveryOperationReplaceCancel": "Cancel",
   "recoveryOperationReplaceConfirm": "Sign in again",
-  "recoveryOperationFinishReplacement": "Finish replacing codes"
+  "recoveryOperationFinishReplacement": "Finish replacing codes",
+  "syncConflictReview": "Review the account conflict",
+  "syncConflictReviewDescription": "The last upload was rejected because the account changed elsewhere. Check the latest account state before choosing what to keep.",
+  "syncConflictRebase": "Use latest account and retry unchanged updates",
+  "syncConflictKeepLocal": "Keep this device’s goal and plan",
+  "syncConflictKeepAccount": "Use the account’s goal and plan",
+  "syncConflictUnsupported": "Other account records changed too. No automatic choice is safe; keep this device unchanged and contact support.",
+  "syncConflictStale": "The account changed again. Check the latest state before choosing."
 }

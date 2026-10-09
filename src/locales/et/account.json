@@ -96,6 +96,7 @@
   "pendingDescription": "Muudatused on sellesse seadmesse salvestatud. Loo internetiühendus ja proovi need uuesti kontole salvestada.",
   "conflict": "Kontoandmete konflikt",
   "conflictDescription": "Selle seadme ja konto edenemist ei õnnestunud kooskõlastada. Kontrollimiseks proovi uuesti. Sinu edenemine jääb sellesse seadmesse. Kui konflikt püsib, võta ühendust toega jaotises „Juriidiline teave“.",
+  "syncConflictDescription": "Sinu edenemine jääb sellesse seadmesse. Enne valimist vaata üle konto uusim olek ja otsusta, milline eesmärgi ja plaani tervikpaar säilitada.",
   "dataFailure": "Kontoandmed pole saadaval",
   "dataFailureDescription": "Konto edenemist ei õnnestunud laadida. Sinu edenemine jääb sellesse seadmesse.",
   "resumeRequired": "Õppesessioon on sellesse seadmesse salvestatud",
@@ -216,5 +217,12 @@
   "recoveryOperationReplaceDescription": "Logi uuesti sisse, et saada uus koodikomplekt. Kui see väljastatakse, lakkavad eelmised koodid töötamast.",
   "recoveryOperationReplaceCancel": "Tühista",
   "recoveryOperationReplaceConfirm": "Logi uuesti sisse",
-  "recoveryOperationFinishReplacement": "Lõpeta koodide asendamine"
+  "recoveryOperationFinishReplacement": "Lõpeta koodide asendamine",
+  "syncConflictReview": "Vaata konto konflikt üle",
+  "syncConflictReviewDescription": "Viimane üleslaadimine lükati tagasi, sest konto muutus mujal. Enne valimist vaata üle konto uusim olek.",
+  "syncConflictRebase": "Kasuta uusimat kontot ja saada muutmata uuendused uuesti",
+  "syncConflictKeepLocal": "Säilita selle seadme eesmärk ja plaan",
+  "syncConflictKeepAccount": "Kasuta konto eesmärki ja plaani",
+  "syncConflictUnsupported": "Muutusid ka muud kontoandmed. Turvalist automaatset valikut pole; selle seadme andmed jäävad muutmata. Võta ühendust toega.",
+  "syncConflictStale": "Konto muutus uuesti. Enne valimist vaata üle uusim olek."
 }

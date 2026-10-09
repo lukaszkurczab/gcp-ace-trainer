@@ -96,6 +96,7 @@
   "pendingDescription": "Deine Änderungen sind auf diesem Gerät gespeichert. Stelle eine Internetverbindung her und versuche erneut, sie in deinem Konto zu speichern.",
   "conflict": "Konflikt bei Kontodaten",
   "conflictDescription": "Wir konnten den Lernfortschritt auf diesem Gerät nicht mit deinem Konto abgleichen. Versuche es erneut, um den Status zu prüfen. Dein Lernfortschritt bleibt auf diesem Gerät gespeichert. Wenn der Konflikt bestehen bleibt, wende dich über die rechtlichen Informationen an den Support.",
+  "syncConflictDescription": "Dein Lernfortschritt bleibt auf diesem Gerät gespeichert. Prüfe den neuesten Kontostand, bevor du auswählst, welches vollständige Ziel-Plan-Paar bleiben soll.",
   "dataFailure": "Kontodaten nicht verfügbar",
   "dataFailureDescription": "Wir konnten deinen Lernfortschritt aus dem Konto nicht laden. Er bleibt auf diesem Gerät gespeichert.",
   "resumeRequired": "Übungseinheit auf diesem Gerät gespeichert",
@@ -216,5 +217,12 @@
   "recoveryOperationReplaceDescription": "Melde dich erneut an, um einen neuen Satz zu erhalten. Sobald er ausgestellt wird, funktionieren die bisherigen Codes nicht mehr.",
   "recoveryOperationReplaceCancel": "Abbrechen",
   "recoveryOperationReplaceConfirm": "Erneut anmelden",
-  "recoveryOperationFinishReplacement": "Codes ersetzen abschließen"
+  "recoveryOperationFinishReplacement": "Codes ersetzen abschließen",
+  "syncConflictReview": "Kontokonflikt prüfen",
+  "syncConflictReviewDescription": "Der letzte Upload wurde abgelehnt, weil sich das Konto anderswo geändert hat. Prüfe den aktuellen Kontostand, bevor du auswählst, was erhalten bleiben soll.",
+  "syncConflictRebase": "Aktuelles Konto verwenden und unveränderte Änderungen erneut senden",
+  "syncConflictKeepLocal": "Ziel und Plan dieses Geräts behalten",
+  "syncConflictKeepAccount": "Ziel und Plan des Kontos verwenden",
+  "syncConflictUnsupported": "Auch andere Kontodaten wurden geändert. Es gibt keine sichere automatische Auswahl; die Daten auf diesem Gerät bleiben unverändert. Wende dich an den Support.",
+  "syncConflictStale": "Das Konto wurde erneut geändert. Prüfe den aktuellen Stand, bevor du auswählst."
 }

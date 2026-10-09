@@ -11,6 +11,7 @@ import {
 import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQuestionViewModel";
 import { canonicalSerialize } from "../infrastructure/identity/canonicalSerialization";
 import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
+import successorLedger from "./generated/canonical-content/content-successor-ledger.json";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { CanonicalFeedbackMessage, Question } from "./canonical/questionTypes";
 
@@ -163,7 +164,15 @@ test("OOD23 producer proof binds the frozen 144-item mixed identity map and exac
 test("OOD23 loaded runtime matches every fixed reviewed question object", async () => {
   const map = readMap();
   const runtime = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK);
-  assert.equal(runtime.contentVersion, "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24-bizq02-v2");
+  const successor = successorLedger.tracks.find((entry) => entry.trackId === TRACK);
+  assert.ok(successor);
+  assert.deepEqual(runtime.trainingIdentity, {
+    contentVersion: successor.training.contentVersion,
+    artifactSha256: successor.training.artifactSha256,
+  });
+  assert.deepEqual(runtime.planningPolicyIdentity, successor.planningPolicy);
+  assert.equal(runtime.contentVersion, successor.planningPolicy.contentVersion);
+  assert.equal(runtime.artifactSha256, successor.planningPolicy.artifactSha256);
   assert.equal(runtime.questions.length, 1413);
   assert.equal(sha256(Buffer.from(canonicalSerialize([...runtime.questions].sort((a, b) => a.questionId.localeCompare(b.questionId))))), "c92a9f04488efb4ef7a5fa8b3257495c21e6c62125123df8073141c60000b2d8", "whole current v24 runtime QSet; historical23 map stays fixed");
   const questions = runtime.getQuestionsForNode(NODE);

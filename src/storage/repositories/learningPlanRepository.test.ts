@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
-import { createDefaultGoal, createLearningPlanSlotId, type LearningPlan } from "../../domain";
+import { createDefaultGoal, createLearningPlanSlotId, type LearningPlan, type LearningPlanV1 } from "../../domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests, type KeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { saveGoalSnapshot } from "./goalRepository";
 import {
@@ -16,7 +16,7 @@ import { withCanonicalWriteLocks } from "./canonicalRecordCodec";
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 const TEST_ARTIFACT_SHA256 = "a".repeat(64);
 
-function plan(overrides: Partial<LearningPlan> = {}): LearningPlan {
+function plan(overrides: Partial<LearningPlanV1> = {}): LearningPlan {
   return {
     schemaVersion: 1,
     planId: "plan:one",

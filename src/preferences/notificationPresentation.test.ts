@@ -9,6 +9,8 @@ const hook = readFileSync("src/preferences/useNotificationSettings.ts", "utf8");
 const guard = readFileSync("src/preferences/notificationSettingsState.ts", "utf8");
 const navigation = readFileSync("src/navigation/types.ts", "utf8");
 const locales = ["en", "pl", "de", "fr", "es", "it", "et"] as const;
+const goalScreen = readFileSync("src/features/home/GoalCadenceScreen.tsx", "utf8");
+const proposalScreen = readFileSync("src/features/home/LearningPlanProposalScreen.tsx", "utf8");
 const notificationCopies = Object.fromEntries(locales.map((locale) => [
   locale,
   JSON.parse(readFileSync(`src/locales/${locale}/notifications.json`, "utf8")) as Record<string, string>,
@@ -104,11 +106,23 @@ test("seven locales have distinct reminder-draft and cancellation copy with no g
       assert.equal(typeof copy[key], "string", `${locale} missing ${key}`);
       assert.ok(copy[key]!.trim().length > 0, `${locale} empty ${key}`);
     }
+    for (const key of ["activeReminderDetail", "disabledReminderDetail", "draftPlanReminderDetail", "reminderStatusUnavailableDetail"]) {
+      assert.equal(typeof copy[key], "string", `${locale} missing ${key}`);
+      assert.ok(copy[key]!.trim().length > 0, `${locale} empty ${key}`);
+    }
     assert.equal("backToGoal" in copy, false, `${locale} retained dead goal return copy`);
     assert.equal("goal" in copy, false, `${locale} retained dead goal context copy`);
     if (locale !== "en") assert.notEqual(copy.cancelReminderRequest, notificationCopies.en.cancelReminderRequest, `${locale} must have translated cancellation copy`);
   }
   assert.deepEqual(Object.keys(notificationCopies.en).sort(), Object.keys(notificationCopies.pl).sort());
+});
+
+test("goal summary reports canonical reminder state and proposal errors announce accessibly", () => {
+  assert.match(goalScreen, /useNotificationSettings\(reminderCopy\)/);
+  assert.match(goalScreen, /state\.status === "synced"\) return "activeReminderDetail"/);
+  assert.match(goalScreen, /state\.status === "disabled"\) return "disabledReminderDetail"/);
+  assert.match(goalScreen, /state\.draft \? <Text[\s\S]*?draftPlanReminderDetail/);
+  assert.match(proposalScreen, /accessibilityLiveRegion="assertive" accessibilityRole="alert" accessible/);
 });
 
 test("notification settings keeps lifecycle-safe request coordination", () => {

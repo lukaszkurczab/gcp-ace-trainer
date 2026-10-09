@@ -183,7 +183,7 @@ test("goal selectors expose stable target-date input and field-error identities"
 
 test("learning plan selectors use the closed primary states and stable slot identities", () => {
   const states: readonly LearningPlanPrimaryState[] = [
-    "loading", "stale", "no_goal", "goal_paused", "package_error", "package_unavailable", "generator_error",
+    "loading", "stale", "no_goal", "goal_paused", "package_error", "package_unavailable", "active_session_unavailable", "generator_error",
     "shortfall", "shortened", "ready", "accepted",
   ];
   for (const state of states) {

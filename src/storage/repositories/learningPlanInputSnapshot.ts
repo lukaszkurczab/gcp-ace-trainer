@@ -1,4 +1,4 @@
-import type { GoalSnapshot, ReviewQueueEntry, TrackId, TrainingAttempt } from "../../domain";
+import type { GoalSnapshot, ReviewQueueEntry, TrackId, TrainingAttempt, TrainingSession } from "../../domain";
 import { getKeyValueStorage, isProfileTransitionActive } from "../../infrastructure/storage/mmkvClient";
 import { readActiveTrackId } from "./activeTrackRepository";
 import { isGoalOnboardingDismissed } from "./goalOnboardingPreferenceRepository";
@@ -16,6 +16,9 @@ export type LearningPlanInputSnapshot = Readonly<{
   plan: LearningPlanSnapshot | null;
   attempts: readonly TrainingAttempt<unknown>[];
   reviews: readonly ReviewQueueEntry[];
+  sessions?: readonly TrainingSession[];
+  /** The single canonical active-session pointer, cross-checked against the indexed records. */
+  activeSession?: TrainingSession | null;
 }>;
 
 /** Opaque published lease: callers may compare it, never read raw storage. */
@@ -32,9 +35,17 @@ export function readLearningPlanInputSnapshot(trackId: TrackId | null): Learning
   const plan = trackId === null ? null : getLearningPlanSnapshot(trackId);
   const attempts = readTrainingAttempts();
   const reviews = readReviewQueueItems();
+  const sessions = readTrainingSessions();
+  const activeSession = readActiveTrainingSession();
   if (attempts.issues?.length || reviews.issues?.length) throw new Error("Learning plan evidence could not be read.");
+  if (sessions.issues?.length) throw new Error("Learning plan session evidence could not be read.");
+  const indexedActive = sessions.value.filter((session) => session.status === "active");
+  if (indexedActive.length > 1 || (activeSession === null) !== (indexedActive.length === 0) ||
+    (activeSession !== null && (indexedActive[0]?.id !== activeSession.id || JSON.stringify(indexedActive[0]) !== JSON.stringify(activeSession)))) {
+    throw new Error("Learning plan active-session pointer is inconsistent with its indexed records.");
+  }
   if (readLearningPlanStorageScope() !== storageScope) throw new Error("Learning plan storage scope changed.");
-  return Object.freeze({ storageScope, goal, plan, attempts: Object.freeze(attempts.value), reviews: Object.freeze(reviews.value) });
+  return Object.freeze({ storageScope, goal, plan, attempts: Object.freeze(attempts.value), reviews: Object.freeze(reviews.value), sessions: Object.freeze(sessions.value), activeSession });
 }
 
 /** Validated persistent sources used by the full Home shell; no await or raw projection cache. */

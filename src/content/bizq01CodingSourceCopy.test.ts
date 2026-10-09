@@ -9,7 +9,8 @@ import { CanonicalTrainingRuntime } from "../application/canonical/CanonicalTrai
 
 const trackId = "coding-interview-dsa-problem-solving";
 const questionId = "alg-contrast-binary-scan-correctness-006";
-const version = "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04-bizq02-v2";
+const version = "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04-bizq02-v2-bizq03-planning-v2";
+const trainingVersion = "coding-interview-dsa-problem-solving-authoring-v2026.10.02-bizq01-04-bizq02-v2";
 const trackPromise = loadCanonicalRuntimeCatalog().then((catalog) => catalog.getTrack(trackId));
 const source = JSON.parse(readFileSync(new URL("../../../patternly-content/content/coding-interview-dsa-problem-solving/contrast_binary_search_vs_linear_scan/correctness_before_asymptotic_speed.json", import.meta.url), "utf8")) as Question[];
 
@@ -20,6 +21,8 @@ function permutations(ids: readonly string[]): string[][] {
 test("current canonical bundle carries the exact reviewed source while pre-submit hides authored feedback", async () => {
   const track = await trackPromise, question = track.getQuestion(questionId)!;
   assert.equal(track.contentVersion, version);
+  assert.equal(track.trainingIdentity?.contentVersion, trainingVersion);
+  assert.equal(track.planningPolicyIdentity?.contentVersion, version);
   assert.deepEqual(question, source.find((question) => question.questionId === questionId));
   const view = toCanonicalQuestionViewModel(question);
   assert.deepEqual(Object.keys(view).sort(), ["constraints", "interaction", "itemId", "prompt"]);

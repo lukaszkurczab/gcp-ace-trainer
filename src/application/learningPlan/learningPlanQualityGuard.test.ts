@@ -71,11 +71,10 @@ test("P05 persisted 25 attempts / 5 correct in latest 10 cannot predict completi
 
 test("P05 evaluator result cannot become an achievable target merely because volume is met", async () => {
   const f = await qualityFixture();
-  const primary = f.resolved.track.modes[0]!;
   const proposal = generateLearningPlanProposal({
-    goalSnapshot: f.inputs.goal!, artifactSha256: f.profile.artifactSha256, contentVersion: f.profile.contentVersion,
-    primaryModeId: primary.modeId, requestedLength: primary.defaultRequestedLength,
-    sessionCapacity: { kind: "exact", actualLength: primary.defaultRequestedLength },
+    goalRecord: f.inputs.goal!.record, expectedGoalRevision: f.inputs.goal!.revision, minutesPerStudyDay: 60, executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: { modeId: "certification-diagnostic-baseline", requestedLength: 40 }, practice: { modeId: "certification-focus-practice", requestedLength: 10 } }, nextSession: { kind: "diagnosis", modeId: "certification-diagnostic-baseline", requestedLength: 40 }, diagnosisStatus: "scheduled", artifactSha256: f.profile.artifactSha256, planningPolicyIdentity: f.resolved.planningPolicyIdentity!, contentVersion: f.profile.contentVersion,
+    primaryModeId: "certification-focus-practice", requestedLength: 10,
+    sessionCapacity: { kind: "exact", actualLength: 10 },
     completionState: f.completion, dueReviewCount: 0, primaryScopeLabel: "Track", localToday: TODAY, timezone: TIMEZONE,
   });
   assert.deepEqual(proposal.targetAssessment, { kind: "quality_requirement_unmet" });
@@ -87,11 +86,10 @@ function completedFacts(f: Awaited<ReturnType<typeof qualityFixture>>) {
   return { sessions: [], attempts: f.inputs.attempts.map((attempt) => ({ answeredAt: attempt.answeredAt, countsTowardCompletion: true })) };
 }
 function proposalFor(f: Awaited<ReturnType<typeof qualityFixture>>, completion: PackageCompletionState = f.completion, goal = f.inputs.goal!, shortfall = false) {
-  const primary = f.resolved.track.modes[0]!;
   return generateLearningPlanProposal({
-    goalSnapshot: goal, artifactSha256: f.profile.artifactSha256, contentVersion: f.profile.contentVersion,
-    primaryModeId: primary.modeId, requestedLength: primary.defaultRequestedLength,
-    sessionCapacity: shortfall ? { kind: "shortfall", requestedLength: primary.defaultRequestedLength, eligibleItemCount: 0, missingItemCount: primary.defaultRequestedLength } : { kind: "exact", actualLength: primary.defaultRequestedLength },
+    goalRecord: goal.record, expectedGoalRevision: goal.revision, minutesPerStudyDay: 60, executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: { modeId: "certification-diagnostic-baseline", requestedLength: 40 }, practice: { modeId: "certification-focus-practice", requestedLength: 10 } }, nextSession: { kind: "diagnosis", modeId: "certification-diagnostic-baseline", requestedLength: 40 }, diagnosisStatus: "scheduled", artifactSha256: f.profile.artifactSha256, planningPolicyIdentity: f.resolved.planningPolicyIdentity!, contentVersion: f.profile.contentVersion,
+    primaryModeId: "certification-focus-practice", requestedLength: 10,
+    sessionCapacity: shortfall ? { kind: "shortfall", requestedLength: 10, eligibleItemCount: 0, missingItemCount: 10 } : { kind: "exact", actualLength: 10 },
     completionState: completion, dueReviewCount: 0, primaryScopeLabel: "Track", localToday: TODAY, timezone: TIMEZONE,
   });
 }
@@ -160,7 +158,7 @@ test("current completed window permits zero-work; later incorrect durable attemp
       const completion = evaluatePackageCompletion(f.profile, inputs.attempts, f.resolved.track.getQuestion);
       assert.equal(completion.kind, "completed");
       const proposal = proposalFor(f, completion);
-      assert.equal(proposal.targetAssessment.kind, "achievable");
+      assert.equal(proposal.targetAssessment.kind, "minimum_volume_fits");
       const forecast = calculatePaceForecast({ acceptedPlan: f.plan, c3Result: completion.kind, remainingAttemptCount: completion.remainingAttemptCount, today: TODAY, timezone: TIMEZONE, completedFacts: completedFacts({ ...f, inputs }) });
       assert.equal(forecast.kind, "available");
       if (forecast.kind === "available") { assert.equal(forecast.projectedCompletionDate, TODAY); assert.equal(forecast.status, "on_track"); }

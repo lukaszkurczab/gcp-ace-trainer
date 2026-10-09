@@ -1,6 +1,6 @@
 import { createTrainingAttempt, createTrainingSession, type ResolvedContentRef, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../infrastructure/storage/mmkvClient";
-import { captureMutationExpectedRevisions, createMutationPlanFingerprint, type MutationJournalPlan, type MutationJournalRecord } from "../storage/repositories/mutationJournalRepository";
+import { captureMutationExpectedRevisions, createMutationPlanFingerprint, type MutationJournalPlan, type TrainingMutationJournalRecord, type TrainingMutationOperation } from "../storage/repositories/mutationJournalRepository";
 
 export const timestamp = "2026-07-15T10:00:00.000Z";
 const artifactSha256 = "a".repeat(64);
@@ -66,7 +66,7 @@ export function review(id = "review-1", sourceAttemptId = "attempt-1"): ReviewQu
   };
 }
 
-export function journal(writes: MutationJournalRecord["writes"], operation: MutationJournalRecord["operation"] = "submit_training_outcome"): MutationJournalRecord {
+export function journal(writes: TrainingMutationJournalRecord["writes"], operation: TrainingMutationOperation = "submit_training_outcome"): TrainingMutationJournalRecord {
   const identifiedWrite = writes.find((write) => write.kind === "put_session" || write.kind === "put_attempt" || write.kind === "put_review_entry");
   const sessionId = identifiedWrite?.kind === "put_session" ? identifiedWrite.record.id : identifiedWrite?.kind === "put_attempt" ? identifiedWrite.record.sessionId : identifiedWrite?.kind === "put_review_entry" ? identifiedWrite.record.sourceSessionId : "session-1";
   const trackId = identifiedWrite?.kind === "put_session" || identifiedWrite?.kind === "put_attempt" || identifiedWrite?.kind === "put_review_entry" ? identifiedWrite.record.trackId : "coding-interview-dsa-problem-solving";

@@ -12,6 +12,7 @@ import az104 from "../generated/canonical-content/microsoft-azure-administrator-
 import ai901 from "../generated/canonical-content/microsoft-azure-ai-fundamentals-ai-901.json";
 import lockFile from "../generated/canonical-content/content-lock.json";
 import objectDesign from "../generated/canonical-content/object-oriented-design-interview.json";
+import successorLedger from "../generated/canonical-content/content-successor-ledger.json";
 
 test("canonical runtime catalog exposes all locked tracks, modes, pools, and exact artifact identities", async () => {
   const catalog = await loadCanonicalRuntimeCatalog();
@@ -23,6 +24,11 @@ test("canonical runtime catalog exposes all locked tracks, modes, pools, and exa
     assert.equal(track.trackId, trackId);
     assert.equal(track.contentReleaseId, "canonical-content-v1");
     assert.match(track.artifactSha256, /^[a-f0-9]{64}$/u);
+    assert.ok(track.trainingIdentity);
+    assert.ok(track.planningPolicyIdentity);
+    assert.notEqual(track.trainingIdentity.contentVersion, track.contentVersion);
+    assert.equal(track.planningPolicyIdentity.contentVersion, track.contentVersion);
+    assert.equal(track.planningPolicyIdentity.artifactSha256, track.artifactSha256);
     assert.ok(Object.isFrozen(track.questions));
     assert.ok(track.modes.length > 0);
     for (const mode of track.modes) {
@@ -49,6 +55,12 @@ test("canonical runtime catalog exposes all locked tracks, modes, pools, and exa
   assert.equal(evidence.artifactPath, `artifacts/tracks/${gcp.trackId}/${evidence.contentVersion}/track-artifact.json`);
   assert.equal(Object.isFrozen(gcp.simulationProfiles?.[0]?.familyConfig.nodeDomainMap), true);
   assert.equal(catalog.getTrack("aws-certified-solutions-architect-associate").simulationProfiles, undefined);
+});
+
+test("runtime refuses a successor ledger that no longer reconstructs the exact training artifact", async () => {
+  const altered = structuredClone(successorLedger) as unknown as { tracks: Array<{ training: { artifactSha256: string } }> };
+  altered.tracks[0]!.training.artifactSha256 = "0".repeat(64);
+  await assert.rejects(() => buildCanonicalRuntimeCatalog({ successorLedger: altered }), /does not reconstruct the exact training predecessor/u);
 });
 
 test("injected loader failures are visible and do not poison the active cache", async () => {

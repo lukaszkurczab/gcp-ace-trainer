@@ -169,12 +169,13 @@ export type CanonicalQuestionResponse =
   | Readonly<{ type: "decision_matrix"; selectedValueIdsByDimension: Readonly<Record<string, readonly string[]>> }>;
 
 export type CanonicalArtifact = Readonly<{
-  schemaVersion: "patternly-content-artifact-v1";
+  schemaVersion: "patternly-content-artifact-v1" | "patternly-content-artifact-v2";
   trackId: string;
   contentVersion: string;
   questions: readonly Question[];
   completionRule?: PackageCompletionRuleV2;
   simulationProfiles?: readonly CanonicalProductSimulationProfile[];
+  planningPolicy?: unknown;
 }>;
 
 export type CanonicalContentLockRecord = Readonly<{ trackId: string; contentVersion: string; questionCount: number; sha256: string }>;

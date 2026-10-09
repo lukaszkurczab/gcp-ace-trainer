@@ -96,6 +96,7 @@
   "pendingDescription": "Tus cambios están guardados en este dispositivo. Conéctate a Internet e inténtalo de nuevo para guardarlos en tu cuenta.",
   "conflict": "Conflicto en los datos de la cuenta",
   "conflictDescription": "No se pudo conciliar el progreso de este dispositivo con el de tu cuenta. Inténtalo de nuevo para comprobarlo. Tu progreso sigue guardado en este dispositivo. Si el conflicto persiste, contacta con el servicio de asistencia desde Información legal.",
+  "syncConflictDescription": "Tu progreso sigue guardado en este dispositivo. Consulta el estado más reciente de la cuenta antes de elegir qué pareja completa de objetivo y plan conservar.",
   "dataFailure": "Los datos de la cuenta no están disponibles",
   "dataFailureDescription": "No se pudo cargar el progreso de tu cuenta. Tu progreso sigue guardado en este dispositivo.",
   "resumeRequired": "Sesión guardada en este dispositivo",
@@ -216,5 +217,12 @@
   "recoveryOperationReplaceDescription": "Inicia sesión de nuevo para obtener un nuevo conjunto. Cuando se emita, los códigos anteriores dejarán de funcionar.",
   "recoveryOperationReplaceCancel": "Cancelar",
   "recoveryOperationReplaceConfirm": "Iniciar sesión de nuevo",
-  "recoveryOperationFinishReplacement": "Completar el reemplazo de códigos"
+  "recoveryOperationFinishReplacement": "Completar el reemplazo de códigos",
+  "syncConflictReview": "Revisar el conflicto de la cuenta",
+  "syncConflictReviewDescription": "Se rechazó la última subida porque la cuenta cambió en otro dispositivo. Consulta el estado más reciente antes de elegir qué conservar.",
+  "syncConflictRebase": "Usar la cuenta actual y reintentar los cambios intactos",
+  "syncConflictKeepLocal": "Conservar el objetivo y el plan de este dispositivo",
+  "syncConflictKeepAccount": "Usar el objetivo y el plan de la cuenta",
+  "syncConflictUnsupported": "También cambiaron otros datos de la cuenta. No hay una elección automática segura; los datos de este dispositivo no cambiarán. Contacta con soporte.",
+  "syncConflictStale": "La cuenta volvió a cambiar. Consulta el estado más reciente antes de elegir."
 }

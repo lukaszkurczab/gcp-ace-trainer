@@ -85,5 +85,9 @@
   "schedulerFailureTitle": "Impossible de programmer les rappels",
   "schedulerFailureDetail": "Votre plan est enregistré. Réessayez de programmer ses rappels.",
   "concurrentChangeTitle": "Le plan a changé",
-  "concurrentChangeDetail": "Le plan a changé pendant la mise à jour des rappels. Réessayez."
+  "concurrentChangeDetail": "Le plan a changé pendant la mise à jour des rappels. Réessayez.",
+  "activeReminderDetail": "Les rappels sont programmés pour le plan accepté.",
+  "disabledReminderDetail": "Les rappels du plan accepté sont désactivés.",
+  "draftPlanReminderDetail": "Ces modifications sont un brouillon. Le plan accepté reste actif jusqu’à l’acceptation du nouveau plan.",
+  "reminderStatusUnavailableDetail": "Le statut des rappels pour ce parcours est indisponible pour le moment."
 }

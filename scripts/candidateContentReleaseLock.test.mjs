@@ -1,16 +1,20 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { createHash as cryptoCreateHash } from "node:crypto";
+import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { execFileSync } from "node:child_process";
 import { createCandidateContentReleaseLock, readCandidateContentProducerPin, readHistoricalContentProducerPin } from "./candidateContentReleaseLock.mjs";
+import { historicalTrainingProjection } from "./syncBundledContentRelease.mjs";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 const contentRoot = path.resolve(appRoot, "../patternly-content");
 
 test("candidate lock binds the exact nine bundled artifacts", async () => {
   const lock = await createCandidateContentReleaseLock({ appRoot, contentRoot });
+  const immutable = JSON.parse(await readFile(path.join(appRoot, "integration/contracts/content-release/release.lock.json"), "utf8"));
+  assert.deepEqual(lock, immutable, "a policy-only v2 successor keeps the exact immutable v1 candidate lock");
   assert.equal(lock.schemaVersion, 3);
   assert.equal(lock.artifacts.length, 9);
   assert.equal(new Set(lock.artifacts.map((artifact) => artifact.trackId)).size, 9);
@@ -22,13 +26,30 @@ test("candidate lock rejects bundled bytes outside the candidate", async () => {
   const fixture = await mkdtemp(path.join(os.tmpdir(), "patternly-candidate-lock-"));
   try {
     const target = path.join(fixture, "src/content/generated/canonical-content");
-    await mkdir(target, { recursive: true });
-    const bundled = JSON.parse(await readFile(path.join(appRoot, "src/content/generated/canonical-content/content-lock.json"), "utf8"));
+    await cp(path.join(appRoot, "src/content/generated/canonical-content"), target, { recursive: true });
+    const bundled = JSON.parse(await readFile(path.join(target, "content-lock.json"), "utf8"));
     bundled.tracks[0].sha256 = "0".repeat(64);
     await writeFile(path.join(target, "content-lock.json"), `${JSON.stringify(bundled)}\n`);
-    await assert.rejects(createCandidateContentReleaseLock({ appRoot: fixture, contentRoot }), /Bundled content differs/);
+    await assert.rejects(createCandidateContentReleaseLock({ appRoot: fixture, contentRoot }), /SHA-256 mismatch/);
   } finally { await rm(fixture, { recursive: true, force: true }); }
 });
+
+test("the v2 policy successor round trips to exact v1 training bytes and rejects changed training content", async () => {
+  const directory = path.join(appRoot, "src/content/generated/canonical-content");
+  const ledger = JSON.parse(await readFile(path.join(directory, "content-successor-ledger.json"), "utf8"));
+  assert.equal(ledger.tracks.length, 9);
+  for (const entry of ledger.tracks) {
+    const artifact = JSON.parse(await readFile(path.join(directory, `${entry.trackId}.json`), "utf8"));
+    const reconstructed = historicalTrainingProjection(artifact, entry.training.contentVersion);
+    assert.equal(createHash(reconstructed), entry.training.artifactSha256, `${entry.trackId} preserves its exact v1 training pin`);
+    const changedTraining = structuredClone(artifact);
+    changedTraining.questions[0].questionId = `${changedTraining.questions[0].questionId}-changed`;
+    assert.notEqual(createHash(historicalTrainingProjection(changedTraining, entry.training.contentVersion)), entry.training.artifactSha256,
+      `${entry.trackId} must reject a training change hidden behind the policy successor`);
+  }
+});
+
+function createHash(value) { return cryptoCreateHash("sha256").update(value).digest("hex"); }
 
 test("CI bootstrap binds the actual current v3 lock to all nine verified bundled artifacts", async () => {
   const lock = JSON.parse(await readFile(path.join(appRoot, "integration/contracts/content-release/release.lock.json"), "utf8"));
@@ -76,7 +97,7 @@ test("CI bootstrap rejects valid-shaped metadata that disagrees with actual bund
       await writeFile(path.join(fixture, "integration/contracts/content-release/release.lock.json"), JSON.stringify(lock));
       const { cp } = await import("node:fs/promises");
       await cp(path.join(appRoot, "src/content/generated/canonical-content"), path.join(fixture, "src/content/generated/canonical-content"), { recursive: true });
-      await assert.rejects(readCandidateContentProducerPin({ appRoot: fixture }), /bootstrap bundled (?:lock hash|artifact) differs/);
+      await assert.rejects(readCandidateContentProducerPin({ appRoot: fixture }), /bootstrap bundled (?:training lock hash|training artifact) differs/);
     } finally { await rm(fixture, { recursive: true, force: true }); }
   });
 });

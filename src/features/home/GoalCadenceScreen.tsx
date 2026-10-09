@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 
 import {
   Button,
@@ -16,7 +16,7 @@ import {
 } from "../../components";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { learningPlanProposalCoordinator, type LearningPlanProposalResult } from "../../application/learningPlan";
-import { loadActiveTrackId, loadGoal, persistGoal } from "../../application/learningReadModels";
+import { loadActiveTrackId, loadGoal, loadLearningPlan, persistGoalPlanStatus } from "../../application/learningReadModels";
 import { reconcileDeviceReminder, reminderNeedsAttention } from "../../preferences";
 import { ROUTES } from "../../constants/routes";
 import {
@@ -32,7 +32,7 @@ import {
 } from "../../domain";
 import { getTrackDisplay, isRegisteredTrackId, type TrackId } from "../../domain";
 import type { GoalCadenceReturnTo, RootStackParamList } from "../../navigation";
-import { useAppPreferences, useThemedStyles, type AppLocale } from "../../preferences";
+import { useAppPreferences, useNotificationSettings, useThemedStyles, type AppLocale } from "../../preferences";
 import { colorWithOpacity, radius, spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import type { LearningPlanReminderFailure, LearningPlanReminderResult } from "../../application/notificationPreferences";
@@ -40,7 +40,6 @@ import { targetDatePickerValue, targetDateToLocalIso } from "./goalTargetDatePic
 import { GoalTargetDateCalendar } from "./GoalTargetDateCalendar";
 
 type GoalCadenceScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.GOAL_CADENCE>;
-
 const GOAL_COPY: Readonly<Record<GoalTemplateId, Readonly<{ detail: string; title: string }>>> = {
   prepare_for_an_interview: { detail: "Structured practice for upcoming interviews", title: "Interview preparation" },
   prepare_for_a_certification: { detail: "Structured practice for an upcoming certification", title: "Certification preparation" },
@@ -132,11 +131,15 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   const styles = useThemedStyles(createStyles);
   const { colors: palette, locale } = useAppPreferences();
   const { t } = useTranslation("common");
+  const { t: tLearningPlan } = useTranslation("learningPlan");
   const { t: tNotifications } = useTranslation("notifications");
   const reminderCopy = useMemo(() => ({ body: tNotifications("notificationBody"), title: tNotifications("notificationTitle") }), [tNotifications]);
+  const notificationSettings = useNotificationSettings(reminderCopy);
   const [trackId, setTrackId] = useState<TrackId | null>(null);
   const [goal, setGoal] = useState<GoalRecord | null>(null);
+  const [acceptedPlan, setAcceptedPlan] = useState(false);
   const [draft, setDraft] = useState<GoalRecord | null>(null);
+  const [minutesPerStudyDay, setMinutesPerStudyDay] = useState<number | null>(null);
   const [dateInput, setDateInput] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -167,18 +170,22 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
           if (active) {
             setTrackId(null);
             setGoal(null);
+            setAcceptedPlan(false);
             setDraft(null);
             setLoadError("Choose a track before setting a goal.");
             setLoading(false);
           }
           return;
         }
-        const savedGoal = await loadGoal(savedTrackId);
+        const [savedGoal, savedPlan] = await Promise.all([loadGoal(savedTrackId), loadLearningPlan(savedTrackId)]);
         if (active) {
           setTrackId(savedTrackId);
           setGoal(savedGoal);
+          setAcceptedPlan(savedPlan?.plan.status === "accepted");
           setDraft(savedGoal ? null : createDefaultGoal(savedTrackId));
           setDateInput(savedGoal?.targetDate ?? "");
+          const loadedMinutes = savedPlan?.plan.schemaVersion === 2 ? savedPlan.plan.minutesPerStudyDay : null;
+          setMinutesPerStudyDay(loadedMinutes);
           setLoading(false);
         }
       } catch (error) {
@@ -233,22 +240,15 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
       setSaveError(t("Choose at least one practice day."));
       return;
     }
+    if (minutesPerStudyDay === null || !Number.isSafeInteger(minutesPerStudyDay) || minutesPerStudyDay < 1 || minutesPerStudyDay > 1440) {
+      setSaveError(t("Choose how much time you can spend on this track each study day."));
+      return;
+    }
     setSaving(true);
     setSaveError(null);
     setReminderErrorKind(null);
     try {
-      await persistGoal(nextGoal);
-      setGoal(nextGoal);
-      setDraft(null);
-      try {
-        const reminderResult = await reconcileDeviceReminder(reminderCopy);
-        if (applyReminderResult(reminderResult)) return;
-      } catch {
-        setReminderErrorKind("scheduler_failure");
-        setSaveError(tNotifications("schedulerFailureDetail"));
-        return;
-      }
-      await createAndOpenPlan(track.id);
+      await createAndOpenPlan(track.id, nextGoal, minutesPerStudyDay);
     } catch (error) {
       setSaveError(describeOperationalFailure(error, "The goal could not be saved."));
     } finally {
@@ -256,11 +256,22 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
     }
   }
 
-  async function createAndOpenPlan(selectedTrackId: TrackId): Promise<void> {
+  async function createAndOpenPlan(selectedTrackId: TrackId, proposedGoal?: GoalRecord, proposedMinutesPerStudyDay?: number | null): Promise<void> {
+    const availableMinutes = proposedMinutesPerStudyDay ?? minutesPerStudyDay;
+    const goalToPropose = proposedGoal ?? goal;
+    if (!goalToPropose) {
+      setSaveError(t("Set an active goal before creating a plan."));
+      return;
+    }
+    if (availableMinutes === null || availableMinutes === undefined) {
+      setDraft({ ...goalToPropose, preferredDays: [...goalToPropose.preferredDays] });
+      setSaveError(t("Choose how much time you can spend on this track each study day."));
+      return;
+    }
     setCreatingPlan(true);
     setSaveError(null);
     try {
-      const result = await learningPlanProposalCoordinator.create(selectedTrackId);
+      const result = await learningPlanProposalCoordinator.create(selectedTrackId, { goal: goalToPropose, minutesPerStudyDay: availableMinutes });
       if (isCreatedProposal(result)) {
         navigation.navigate(ROUTES.LEARNING_PLAN_PROPOSAL, { proposalId: result.proposal.proposalId, trackId: selectedTrackId });
         return;
@@ -273,19 +284,20 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
 
   async function togglePause(): Promise<void> {
     if (!goal) return;
-    const nextGoal = { ...goal, status: goal.status === "active" ? "paused" as const : "active" as const };
     setSaving(true);
     setSaveError(null);
     setReminderErrorKind(null);
     try {
-      await persistGoal(nextGoal);
-      setGoal(nextGoal);
+      const pair = await persistGoalPlanStatus(goal.trackId);
+      setGoal(pair.goal.record);
       try {
         const reminderResult = await reconcileDeviceReminder(reminderCopy);
         applyReminderResult(reminderResult);
+        await notificationSettings.refresh();
       } catch {
         setReminderErrorKind("scheduler_failure");
         setSaveError(tNotifications("schedulerFailureDetail"));
+        await notificationSettings.refresh();
       }
     } catch (error) {
       setSaveError(describeOperationalFailure(error, "The goal status could not be saved."));
@@ -329,7 +341,7 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
             style={styles.footerButton}
             testID={runtimeSelectors.goal.save()}
           >
-            {t(goal ? "Save changes" : "Save goal")}
+            {tLearningPlan("Review your learning plan")}
           </Button>
         ) : null}
         footerVariant="sticky"
@@ -359,23 +371,29 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
             dateInput={dateInput}
             locale={locale}
             onChangeDate={setDateInput}
-            onSelectGoalType={(goalType) => updateDraft((currentDraft) => ({ ...currentDraft, goalType }))}
+          onSelectGoalType={(goalType) => updateDraft((currentDraft) => ({ ...currentDraft, goalType }))}
+            onSelectMinutes={setMinutesPerStudyDay}
             onToggleDay={toggleDay}
             palette={palette}
             selectedDays={current.preferredDays}
+            reminderState={{ acceptedPlan, draft: true, matchesTrack: notificationSettings.trackId === trackId, loading: notificationSettings.loading, status: notificationSettings.status }}
             selectedGoalType={current.goalType}
+            selectedMinutes={minutesPerStudyDay}
             templates={templates}
             t={t}
+            tNotifications={tNotifications}
           />
         ) : (
           <ActiveGoalSummary
             goal={current}
+            reminderState={{ acceptedPlan, draft: false, matchesTrack: notificationSettings.trackId === trackId, loading: notificationSettings.loading, status: notificationSettings.status }}
             locale={locale}
             onEdit={() => { setDraft({ ...current, preferredDays: [...current.preferredDays] }); setSaveError(null); }}
             onCreatePlan={() => { void createAndOpenPlan(track.id); }}
             creatingPlan={creatingPlan}
             onTogglePause={() => { void togglePause(); }}
             t={t}
+            tNotifications={tNotifications}
           />
         )}
         {saveError ? <Text accessibilityRole="alert" maxFontSizeMultiplier={2} style={styles.error} testID={reminderErrorKind ? runtimeSelectors.notifications.error(reminderErrorKind) : undefined}>{t(saveError)}</Text> : null}
@@ -384,17 +402,21 @@ export function GoalCadenceScreen({ navigation, route }: GoalCadenceScreenProps)
   );
 }
 
-function CreateGoalForm({ dateInput, locale, onChangeDate, onSelectGoalType, onToggleDay, palette, selectedDays, selectedGoalType, templates, t }: Readonly<{
+function CreateGoalForm({ dateInput, locale, onChangeDate, onSelectGoalType, onSelectMinutes, onToggleDay, palette, selectedDays, reminderState, selectedGoalType, selectedMinutes, templates, t, tNotifications }: Readonly<{
   dateInput: string;
   locale: AppLocale;
   onChangeDate: (value: string) => void;
   onSelectGoalType: (value: GoalTemplateId) => void;
+  onSelectMinutes: (value: number | null) => void;
   onToggleDay: (value: GoalDay) => void;
   palette: AppColors;
   selectedDays: readonly GoalDay[];
+  reminderState: ReminderPresentationState;
   selectedGoalType: GoalTemplateId;
+  selectedMinutes: number | null;
   templates: readonly GoalTemplateId[];
-  t: (value: string) => string;
+  t: (value: string, options?: Record<string, unknown>) => string;
+  tNotifications: (value: string) => string;
 }>) {
   const styles = useThemedStyles(createStyles);
   const [datePickerVisible, setDatePickerVisible] = useState(false);
@@ -438,6 +460,30 @@ function CreateGoalForm({ dateInput, locale, onChangeDate, onSelectGoalType, onT
             );
           })}
         </View>
+      </View>
+
+      <View style={styles.formSection} testID="goal-track-availability">
+        <Text maxFontSizeMultiplier={2} style={styles.sectionTitle}>{t("Time available for this track")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.sectionSubtitle}>{t("Minutes on each chosen study day. This applies to this track only.")}</Text>
+        <View style={styles.minutesChoices}>
+          {[15, 30, 45, 60, 90].map((minutes) => {
+            const selected = selectedMinutes === minutes;
+            return <Pressable accessibilityRole="button" accessibilityState={{ selected }} key={minutes} onPress={() => onSelectMinutes(minutes)} style={[styles.minuteChoice, selected ? styles.minuteChoiceSelected : null]}><Text maxFontSizeMultiplier={2} style={[styles.minuteChoiceText, selected ? styles.minuteChoiceTextSelected : null]}>{t("{{count}} min", { count: minutes })}</Text></Pressable>;
+          })}
+        </View>
+        <TextInput
+          accessibilityLabel={t("Custom minutes per study day for this track")}
+          keyboardType="number-pad"
+          maxLength={4}
+          onChangeText={(value) => {
+            const validValue = /^\d{1,4}$/u.test(value) && Number(value) >= 1 && Number(value) <= 1440 ? Number(value) : null;
+            onSelectMinutes(validValue);
+          }}
+          placeholder={t("Or enter 1–1440 minutes")}
+          placeholderTextColor={palette.textSecondary}
+          style={styles.minutesInput}
+          value={selectedMinutes !== null && ![15, 30, 45, 60, 90].includes(selectedMinutes) ? String(selectedMinutes) : ""}
+        />
       </View>
 
       {selectedGoalType === "learn_at_own_pace" ? (
@@ -494,19 +540,21 @@ function CreateGoalForm({ dateInput, locale, onChangeDate, onSelectGoalType, onT
         </View>
       </View>
 
-      <ReminderDraft preferredDays={selectedDays} t={t} />
+      <ReminderDraft preferredDays={selectedDays} state={reminderState} t={t} tNotifications={tNotifications} />
     </View>
   );
 }
 
-function ActiveGoalSummary({ creatingPlan, goal, locale, onCreatePlan, onEdit, onTogglePause, t }: Readonly<{
+function ActiveGoalSummary({ creatingPlan, goal, locale, onCreatePlan, onEdit, onTogglePause, reminderState, t, tNotifications }: Readonly<{
   creatingPlan: boolean;
   goal: GoalRecord;
   locale: AppLocale;
   onCreatePlan: () => void;
   onEdit: () => void;
   onTogglePause: () => void;
+  reminderState: ReminderPresentationState;
   t: (value: string) => string;
+  tNotifications: (value: string) => string;
 }>) {
   const styles = useThemedStyles(createStyles);
   const copy = GOAL_COPY[goal.goalType];
@@ -535,7 +583,7 @@ function ActiveGoalSummary({ creatingPlan, goal, locale, onCreatePlan, onEdit, o
           ) : <Text maxFontSizeMultiplier={2} style={styles.summaryValue}>{t("Choose at least one practice day.")}</Text>}
         </View>
         <View style={styles.summaryDivider} />
-        <ReminderDraft preferredDays={goal.preferredDays} t={t} />
+        <ReminderDraft preferredDays={goal.preferredDays} state={reminderState} t={t} tNotifications={tNotifications} />
       </View>
       <Button disabled={goal.status === "paused"} loading={creatingPlan} onPress={onCreatePlan} testID={runtimeSelectors.learningPlan.create()}>{t("Create plan")}</Button>
       <Pressable accessibilityRole="button" onPress={onEdit} style={styles.centerAction}><Text maxFontSizeMultiplier={2} style={styles.centerActionLabel}>{t("Edit goal")}</Text></Pressable>
@@ -546,16 +594,68 @@ function ActiveGoalSummary({ creatingPlan, goal, locale, onCreatePlan, onEdit, o
   );
 }
 
-function ReminderDraft({ preferredDays, t }: Readonly<{ preferredDays: readonly GoalDay[]; t: (value: string) => string }>) {
+type ReminderPresentationState = Readonly<{
+  acceptedPlan: boolean;
+  draft: boolean;
+  loading: boolean;
+  matchesTrack: boolean;
+  status: ReturnType<typeof useNotificationSettings>["status"];
+}>;
+
+function ReminderDraft({ preferredDays, state, t, tNotifications }: Readonly<{ preferredDays: readonly GoalDay[]; state: ReminderPresentationState; t: (value: string) => string; tNotifications: (value: string) => string }>) {
   const styles = useThemedStyles(createStyles);
   const days = preferredDays.map((day) => t(DAY_SHORT_LABELS[day])).join(", ");
+  const reminderSteps = [
+    t("Accept a learning plan first."),
+    t("Choose exact reminder times next."),
+    t("Then you can turn reminders on."),
+  ];
   return (
-    <View style={styles.reminderDraft} testID="goal-reminder-draft">
-      <Text maxFontSizeMultiplier={2} style={styles.reminderTitle}>{t("Reminder draft")}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.reminderDetail}>{days || t("Choose at least one practice day.")}</Text>
-      <Text maxFontSizeMultiplier={2} style={styles.reminderDetail}>{t("Exact reminder times and activation are available only after you accept a learning plan.")}</Text>
-    </View>
+      <View style={styles.reminderDraft} testID="goal-reminder-draft">
+        <Text maxFontSizeMultiplier={2} style={styles.reminderTitle}>{t("Reminder draft")}</Text>
+        <Text maxFontSizeMultiplier={2} style={styles.reminderDetail}>{days || t("Choose at least one practice day.")}</Text>
+        {!state.acceptedPlan ? reminderSteps.map((step, index) => (
+          index === 1 ? (
+            <View key={step} accessible accessibilityLabel={step.replace(/\n/gu, " ")}>
+              <View accessibilityElementsHidden>
+                {step.split("\n").map((fragment) => (
+                  <Text key={fragment} maxFontSizeMultiplier={2} style={styles.reminderDetail}>{fragment}</Text>
+                ))}
+              </View>
+            </View>
+          ) : (
+            <Text key={step} maxFontSizeMultiplier={2} style={styles.reminderDetail}>
+              {step}
+            </Text>
+          )
+        )) : (
+          <>
+            <Text maxFontSizeMultiplier={2} style={styles.reminderDetail}>{tNotifications(reminderStatusCopy(state))}</Text>
+            {state.draft ? <Text maxFontSizeMultiplier={2} style={styles.reminderDetail}>{tNotifications("draftPlanReminderDetail")}</Text> : null}
+          </>
+        )}
+      </View>
   );
+}
+
+function reminderStatusCopy(state: ReminderPresentationState): string {
+  if (state.loading) return "loadingDetail";
+  if (!state.matchesTrack) return "reminderStatusUnavailableDetail";
+  if (state.status === "synced") return "activeReminderDetail";
+  if (state.status === "disabled") return "disabledReminderDetail";
+  if (state.status === "missing_track") return "missingTrackDetail";
+  if (state.status === "missing_goal") return "missingGoalDetail";
+  if (state.status === "missing_plan") return "missingPlanDetail";
+  if (state.status === "identity_mismatch") return "identityMismatchDetail";
+  if (state.status === "goal_paused") return "goalPausedDetail";
+  if (state.status === "plan_paused") return "planPausedDetail";
+  if (state.status === "plan_completed") return "planCompletedDetail";
+  if (state.status === "no_slots") return "noSlotsDetail";
+  if (state.status === "timezone_mismatch") return "timezoneMismatchDetail";
+  if (state.status === "permission_denied") return "permissionDeniedDetail";
+  if (state.status === "scheduler_failure") return "schedulerFailureDetail";
+  if (state.status === "concurrent_change") return "concurrentChangeDetail";
+  return "reminderStatusUnavailableDetail";
 }
 
 function isCreatedProposal(result: LearningPlanProposalResult): result is Extract<LearningPlanProposalResult, { proposal: unknown }> {
@@ -565,6 +665,7 @@ function isCreatedProposal(result: LearningPlanProposalResult): result is Extrac
 function proposalCreationError(kind: LearningPlanProposalResult["kind"]): string {
   if (kind === "no_goal") return "Set an active goal before creating a plan.";
   if (kind === "goal_paused") return "Resume the goal before creating a plan.";
+  if (kind === "budget_required") return "Choose how much time you can spend on this track each study day.";
   if (kind === "package_unavailable") return "This learning package is not available for planning.";
   return "The learning plan could not be prepared. Try again.";
 }
@@ -615,21 +716,27 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   statusRow: { alignItems: "center", flexDirection: "row" },
   form: { gap: 28 },
   formSection: { gap: spacing.sm },
+  minutesChoices: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  minuteChoice: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, justifyContent: "center", minHeight: 40, minWidth: 56, paddingHorizontal: spacing.sm },
+  minuteChoiceSelected: { backgroundColor: palette.success, borderColor: palette.success },
+  minuteChoiceText: { color: palette.textSecondary, fontSize: 13, fontWeight: "600" },
+  minuteChoiceTextSelected: { color: palette.onPrimary },
+  minutesInput: { ...typography.body, backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, color: palette.textPrimary, minHeight: 48, paddingHorizontal: spacing.md },
   sectionCopy: { flex: 1, gap: spacing.xs },
   sectionTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "700", lineHeight: 18 },
   sectionSubtitle: { ...typography.small, color: palette.primary, lineHeight: 18 },
   choiceGroup: { gap: spacing.md },
   dateField: { alignItems: "flex-start", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.sm, padding: spacing.md },
   targetDateValue: { ...typography.bodyStrong, color: palette.textPrimary },
-  daysRow: { flexDirection: "row", gap: 6, justifyContent: "space-between" },
-  dayButton: { alignItems: "center", borderRadius: 10, borderWidth: 1, height: 36, justifyContent: "center", width: 44 },
+  daysRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  dayButton: { alignItems: "center", borderRadius: 10, borderWidth: 1, flexBasis: "20%", flexGrow: 1, justifyContent: "center", minHeight: 44, minWidth: 44, paddingHorizontal: spacing.xs, paddingVertical: spacing.xs },
   dayButtonSelected: { backgroundColor: palette.success, borderColor: palette.success },
   dayButtonUnselected: { backgroundColor: palette.surface, borderColor: palette.border },
-  dayLabel: { color: palette.textSecondary, fontSize: 12, fontWeight: "700", lineHeight: 15 },
+  dayLabel: { color: palette.textSecondary, fontSize: 12, fontWeight: "700", textAlign: "center" },
   dayLabelSelected: { color: palette.onPrimary },
-  reminderDraft: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.xs, padding: spacing.md },
-  reminderTitle: { ...typography.bodyStrong, color: palette.textPrimary },
-  reminderDetail: { ...typography.small, color: palette.textSecondary },
+  reminderDraft: { alignSelf: "stretch", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.xs, padding: spacing.md, width: "100%" },
+  reminderTitle: { ...typography.bodyStrong, color: palette.textPrimary, flexShrink: 1 },
+      reminderDetail: { ...typography.small, color: palette.textSecondary },
   summaryCard: { backgroundColor: palette.surface, borderColor: palette.effects.subtleBorder, borderRadius: 14, borderWidth: 1, gap: 14, padding: spacing.lg },
   summaryRow: { gap: spacing.xs },
   summaryDivider: { backgroundColor: palette.effects.divider, height: StyleSheet.hairlineWidth, width: "100%" },

@@ -6,6 +6,7 @@ import type {
 } from "./LearningPlanEditorCoordinator";
 import type { LearningPlanReminderExpectedIdentity, LearningPlanReminderResult, PracticeReminderCopy } from "../notificationPreferences";
 import type { NotificationPlanIdentity } from "../../storage/repositories/notificationSettingsRepository";
+import type { GoalPlanAcceptanceInterruptionHook } from "../../storage/repositories/goalPlanAcceptanceRepository";
 
 export type LearningPlanSavedReminderResult =
   | Readonly<{ kind: "plan_saved_reminders_synced"; snapshot: LearningPlanSnapshot; reminder: LearningPlanReminderResult }>
@@ -16,7 +17,7 @@ export type LearningPlanAcceptRuntimeResult = Exclude<LearningPlanAcceptResult, 
 export type LearningPlanCommitRuntimeResult = Exclude<LearningPlanEditorCommitResult, { kind: "saved" }> | LearningPlanSavedReminderResult;
 
 export type LearningPlanMutationRuntimeDependencies = Readonly<{
-  acceptProposal(proposalId: string, trackId: TrackId): Promise<LearningPlanAcceptResult>;
+  acceptProposal(proposalId: string, trackId: TrackId, beforePlanWrite?: GoalPlanAcceptanceInterruptionHook): Promise<LearningPlanAcceptResult>;
   commit(editorId: string, trackId: TrackId): Promise<LearningPlanEditorCommitResult>;
   reconcile(copy: PracticeReminderCopy, expected: LearningPlanReminderExpectedIdentity): Promise<LearningPlanReminderResult>;
   retry(copy: PracticeReminderCopy, expected?: LearningPlanReminderExpectedIdentity): Promise<LearningPlanReminderResult>;
@@ -48,9 +49,11 @@ export function pendingSchedulerFailure(): LearningPlanReminderResult {
 export class LearningPlanMutationRuntimeCore {
   constructor(private readonly dependencies: LearningPlanMutationRuntimeDependencies) {}
 
-  async acceptProposal(proposalId: string, trackId: TrackId, copy: PracticeReminderCopy): Promise<LearningPlanAcceptRuntimeResult> {
+  async acceptProposal(proposalId: string, trackId: TrackId, copy: PracticeReminderCopy, beforePlanWrite?: GoalPlanAcceptanceInterruptionHook): Promise<LearningPlanAcceptRuntimeResult> {
     let result: LearningPlanAcceptResult;
-    try { result = await this.dependencies.acceptProposal(proposalId, trackId); } catch { return Object.freeze({ kind: "storage_error" as const }); }
+    try { result = await this.dependencies.acceptProposal(proposalId, trackId, beforePlanWrite); }
+    catch { return Object.freeze({ kind: "storage_error" as const }); }
+    finally { beforePlanWrite?.dispose?.(); }
     if (result.kind !== "accepted") return result;
     return this.finishSavedPlan(result.snapshot, copy);
   }
@@ -58,6 +61,7 @@ export class LearningPlanMutationRuntimeCore {
   async commit(editorId: string, trackId: TrackId, copy: PracticeReminderCopy): Promise<LearningPlanCommitRuntimeResult> {
     let result: LearningPlanEditorCommitResult;
     try { result = await this.dependencies.commit(editorId, trackId); } catch { return Object.freeze({ kind: "storage_error" as const }); }
+    if (result.kind === "staged") return result;
     if (result.kind !== "saved") return result;
     return this.finishSavedPlan(result.snapshot, copy);
   }

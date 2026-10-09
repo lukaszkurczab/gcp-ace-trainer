@@ -8,6 +8,7 @@ import test from "node:test";
 import {
   EXPECTED_TRACK_IDS,
   GENERATED_DIRECTORY,
+  SUCCESSOR_LEDGER_FILE_NAME,
   syncCanonicalContent,
   validateBuiltContent,
 } from "./syncBundledContentRelease.mjs";
@@ -116,13 +117,28 @@ function validDesignSimulationProfile(trackId) {
   };
 }
 
+function validPlanningPolicy(questions) {
+  const scopeRefs = [...new Map(questions.map((question) => [`${question.nodeId}\u0000${question.mentalUnitId}`, { nodeId: question.nodeId, mentalUnitId: question.mentalUnitId }])).values()];
+  return {
+    schemaVersion: "patternly-learning-planning-policy-v1",
+    policyVersion: "test-policy-v1",
+    workEstimates: [{
+      estimateId: "test-estimate", modeId: "test-mode", scopeRefs,
+      minMinutesPerResponse: 1, typicalMinutesPerResponse: 2, maxMinutesPerResponse: 3,
+      provenance: "authored", observationCount: 0, rationale: "Bounded fixture estimate.",
+      reviewReserve: { kind: "unavailable", reason: "not a producer policy fixture" },
+    }],
+    unavailableScopes: [],
+  };
+}
+
 async function createBuiltSet(directory, suffix = "current") {
   await mkdir(directory, { recursive: true });
   const tracks = [];
   for (const trackId of EXPECTED_TRACK_IDS) {
     const codingQuestionIds = trackId === "coding-interview-dsa-problem-solving" ? Array.from({ length: 40 }, (_, index) => `${trackId}-${suffix}-q-${index + 1}`) : undefined;
     const artifact = {
-      schemaVersion: "patternly-content-artifact-v1",
+      schemaVersion: "patternly-content-artifact-v2",
       trackId,
       contentVersion: `2026.09.12-${suffix}`,
       questions: (codingQuestionIds ?? [`${trackId}-${suffix}-q`]).map((questionId) => ({
@@ -133,6 +149,7 @@ async function createBuiltSet(directory, suffix = "current") {
         ...(trackId === "google-cloud-associate-cloud-engineer" ? { contentDomainId: "gcp-ace-standard-domain-3" } : {}),
       })),
     };
+    artifact.planningPolicy = validPlanningPolicy(artifact.questions);
     if (trackId === "google-cloud-associate-cloud-engineer") artifact.simulationProfiles = [validGcpSimulationProfile(artifact.contentVersion, `${trackId}-node`)];
     if (codingQuestionIds) artifact.simulationProfiles = [validCodingSimulationProfile(codingQuestionIds)];
     if (DESIGN_TRACK_IDS.includes(trackId)) artifact.simulationProfiles = [validDesignSimulationProfile(trackId)];
@@ -144,19 +161,43 @@ async function createBuiltSet(directory, suffix = "current") {
   await writeFile(path.join(directory, "content-lock.json"), JSON.stringify({ schemaVersion: "patternly-content-lock-v1", tracks }));
 }
 
+async function createPredecessorFromBuiltSet(sourceDirectory, directory) {
+  await mkdir(directory, { recursive: true });
+  const tracks = [];
+  for (const trackId of EXPECTED_TRACK_IDS) {
+    const successor = JSON.parse(await readFile(path.join(sourceDirectory, `${trackId}.json`), "utf8"));
+    delete successor.planningPolicy;
+    successor.schemaVersion = "patternly-content-artifact-v1";
+    successor.contentVersion = `legacy-${successor.contentVersion}`;
+    const bytes = Buffer.from(JSON.stringify(successor));
+    await writeFile(path.join(directory, `${trackId}.json`), bytes);
+    tracks.push({ trackId, contentVersion: successor.contentVersion, questionCount: successor.questions.length, sha256: sha256(bytes) });
+  }
+  tracks.sort((left, right) => left.trackId.localeCompare(right.trackId));
+  const lock = { schemaVersion: "patternly-content-lock-v1", tracks };
+  await writeFile(path.join(directory, "content-lock.json"), JSON.stringify(lock));
+}
+
 async function fixture() {
   const root = await mkdtemp(path.join(tmpdir(), "patternly-canonical-sync-test-"));
   const appRoot = path.join(root, "patternly");
   const producerRoot = path.join(root, "patternly-content");
   const producerOutput = path.join(root, "producer-output");
+  const predecessorOutput = path.join(root, "predecessor-output");
   const targetDirectory = path.join(appRoot, GENERATED_DIRECTORY);
   await mkdir(path.dirname(targetDirectory), { recursive: true });
   await mkdir(path.join(producerRoot, "scripts"), { recursive: true });
   await writeFile(path.join(producerRoot, "scripts", "build.mjs"), "// fixture\n");
   await createBuiltSet(producerOutput);
+  await createPredecessorFromBuiltSet(producerOutput, predecessorOutput);
   const runBuild = async ({ outputRoot }) => cp(producerOutput, outputRoot, { recursive: true });
-  const options = { appRoot, producerRoot, targetDirectory, runBuild, getProducerHead: async () => HEAD, verifyProducer: async () => {}, expectedInventory: SMALL_INVENTORY };
-  return { root, appRoot, producerRoot, producerOutput, targetDirectory, options };
+  const getBootstrapPredecessor = async () => {
+    const lock = JSON.parse(await readFile(path.join(predecessorOutput, "content-lock.json"), "utf8"));
+    const artifacts = new Map(await Promise.all(EXPECTED_TRACK_IDS.map(async (trackId) => [`${trackId}.json`, await readFile(path.join(predecessorOutput, `${trackId}.json`))])));
+    return { lock, artifacts };
+  };
+  const options = { appRoot, producerRoot, targetDirectory, runBuild, getProducerHead: async () => HEAD, getBootstrapPredecessor, verifyProducer: async () => {}, expectedInventory: SMALL_INVENTORY };
+  return { root, appRoot, producerRoot, producerOutput, predecessorOutput, targetDirectory, options };
 }
 
 async function snapshot(directory) {
@@ -170,8 +211,28 @@ test("sync replaces the whole generated directory with an exact validated set", 
   const result = await syncCanonicalContent(state.options);
   assert.equal(result.head, HEAD);
   assert.deepEqual(result.inventory, SMALL_INVENTORY);
-  assert.deepEqual((await readdir(state.targetDirectory)).sort(), [...EXPECTED_TRACK_IDS.map((id) => `${id}.json`), "content-lock.json"].sort());
-  assert.deepEqual(await snapshot(state.targetDirectory), await snapshot(state.producerOutput));
+  assert.deepEqual((await readdir(state.targetDirectory)).sort(), [...EXPECTED_TRACK_IDS.map((id) => `${id}.json`), "content-lock.json", SUCCESSOR_LEDGER_FILE_NAME].sort());
+  const installed = Object.fromEntries(await snapshot(state.targetDirectory));
+  const producer = Object.fromEntries(await snapshot(state.producerOutput));
+  for (const [name, digest] of Object.entries(producer)) assert.equal(installed[name], digest);
+  assert.equal(result.ledger.tracks.length, 9);
+});
+
+test("repeated sync and check preserve the validated training predecessor ledger byte-for-byte", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  await syncCanonicalContent(state.options);
+  const ledgerPath = path.join(state.targetDirectory, SUCCESSOR_LEDGER_FILE_NAME);
+  const initialLedger = await readFile(ledgerPath);
+  const initialDirectory = await snapshot(state.targetDirectory);
+
+  await syncCanonicalContent(state.options);
+  assert.deepEqual(await readFile(ledgerPath), initialLedger);
+  assert.deepEqual(await snapshot(state.targetDirectory), initialDirectory);
+
+  const checked = await syncCanonicalContent({ ...state.options, mode: "check" });
+  assert.deepEqual(await readFile(ledgerPath), initialLedger);
+  assert.equal(checked.ledger.tracks.length, 9);
 });
 
 test("sync admits a policy-only canonical version while retaining the historical GCP evidence pin", async (t) => {
@@ -295,7 +356,7 @@ test("sync rejects Coding Mock profiles that drift from the declared strict cont
   }
 });
 
-test("sync continues to accept a legacy GCP artifact without simulation metadata", async (t) => {
+test("producer validation accepts legacy GCP shape but first ledger bootstrap refuses changed training material", async (t) => {
   const state = await fixture();
   t.after(() => rm(state.root, { recursive: true, force: true }));
   const trackId = "google-cloud-associate-cloud-engineer";
@@ -310,9 +371,9 @@ test("sync continues to accept a legacy GCP artifact without simulation metadata
   lock.tracks.find((entry) => entry.trackId === trackId).sha256 = sha256(bytes);
   await writeFile(lockPath, JSON.stringify(lock));
 
-  await syncCanonicalContent(state.options);
-  const synced = JSON.parse(await readFile(path.join(state.targetDirectory, `${trackId}.json`), "utf8"));
-  assert.equal(Object.hasOwn(synced, "simulationProfiles"), false);
+  await validateBuiltContent(state.producerOutput, { expectedInventory: SMALL_INVENTORY });
+  await assert.rejects(syncCanonicalContent(state.options), /byte-exact policy-only successor/u);
+  assert.equal(await lstat(state.targetDirectory).then(() => true, () => false), false);
 });
 
 test("sync rejects malformed GCP profiles before replacing the target even when lock SHA is recomputed", async (t) => {
@@ -406,7 +467,10 @@ test("an interrupted target-to-backup move is recovered before replacement", asy
   await syncCanonicalContent(state.options);
   await rename(state.targetDirectory, `${state.targetDirectory}.backup`);
   await syncCanonicalContent(state.options);
-  assert.deepEqual(await snapshot(state.targetDirectory), await snapshot(state.producerOutput));
+  const installed = Object.fromEntries(await snapshot(state.targetDirectory));
+  const producer = Object.fromEntries(await snapshot(state.producerOutput));
+  for (const [name, digest] of Object.entries(producer)) assert.equal(installed[name], digest);
+  assert.ok(installed[SUCCESSOR_LEDGER_FILE_NAME]);
   assert.equal(await lstat(`${state.targetDirectory}.backup`).then(() => true, () => false), false);
 });
 

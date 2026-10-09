@@ -9,10 +9,13 @@ import az104 from "../generated/canonical-content/microsoft-azure-administrator-
 import ai901 from "../generated/canonical-content/microsoft-azure-ai-fundamentals-ai-901.json";
 import objectDesign from "../generated/canonical-content/object-oriented-design-interview.json";
 import lockFile from "../generated/canonical-content/content-lock.json";
+import successorLedgerFile from "../generated/canonical-content/content-successor-ledger.json";
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
 import { getProductModeConfig, PRODUCT_MODE_CONFIGS, validateProductModeConfigsAgainstArtifacts, type ProductModeConfig } from "./productModeConfig";
 import { createCanonicalQuestionCatalog, type CanonicalQuestionCatalog } from "./questionCatalog";
 import type { CanonicalContentLockRecord, CanonicalProductSimulationProfile, Question } from "./questionTypes";
+import { validateLearningPlanningPolicy, type LearningPlanningPolicy } from "./planningPolicy";
+import { assertValidContentSuccessorLedger, contentSuccessorLedgerEntry, type ContentPlanningPolicyIdentity, type ContentTrackIdentity, type ContentSuccessorLedger } from "./contentSuccessorLedger";
 
 const artifacts: readonly unknown[] = Object.freeze([aws, backend, claude, coding, frontend, gcp, az104, ai901, objectDesign]);
 const locks = new Map((lockFile.tracks as CanonicalContentLockRecord[]).map((entry) => [entry.trackId, entry]));
@@ -25,6 +28,9 @@ export type CanonicalTrackRuntime = Readonly<{
   questions: readonly Question[];
   completionRule?: PackageCompletionRuleV2;
   simulationProfiles?: readonly CanonicalProductSimulationProfile[];
+  planningPolicy?: LearningPlanningPolicy;
+  trainingIdentity?: ContentTrackIdentity;
+  planningPolicyIdentity?: ContentPlanningPolicyIdentity;
   modes: readonly ProductModeConfig[];
   getQuestion(questionId: string): Question | undefined;
   getQuestionsForNode(nodeId: string): readonly Question[];
@@ -42,7 +48,7 @@ export type CanonicalRuntimeCatalog = Readonly<{
   getMode(trackId: string, modeId: string): ProductModeConfig;
   getPool(trackId: string, modeId: string): readonly Question[];
 }>;
-export type CanonicalRuntimeBuildDependencies = Readonly<{ artifacts?: readonly unknown[]; locks?: readonly CanonicalContentLockRecord[]; sha256Utf8?: (value: string) => Promise<string> }>;
+export type CanonicalRuntimeBuildDependencies = Readonly<{ artifacts?: readonly unknown[]; locks?: readonly CanonicalContentLockRecord[]; sha256Utf8?: (value: string) => Promise<string>; successorLedger?: unknown }>;
 
 let activeCatalog: Promise<CanonicalRuntimeCatalog> | undefined;
 
@@ -77,6 +83,8 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
   const sourceArtifacts = dependencies.artifacts ?? artifacts;
   const sourceLocks = new Map((dependencies.locks ?? [...locks.values()]).map((entry) => [entry.trackId, entry]));
   const sha256 = dependencies.sha256Utf8 ?? contentHasher.sha256;
+  const successorLedger = dependencies.successorLedger ?? (dependencies.artifacts === undefined ? successorLedgerFile : undefined);
+  if (successorLedger !== undefined) assertValidContentSuccessorLedger(successorLedger);
   const catalogs: CanonicalQuestionCatalog[] = [];
   for (const artifact of sourceArtifacts) {
     if (!artifact || typeof artifact !== "object" || Array.isArray(artifact) || typeof (artifact as Record<string, unknown>).trackId !== "string") throw new Error("Canonical artifact is unavailable; restart to load canonical content.");
@@ -84,10 +92,24 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
     const lock = sourceLocks.get(trackId);
     if (!lock) throw new Error(`Canonical content lock is missing for ${trackId}.`);
     catalogs.push(await createCanonicalQuestionCatalog(artifact, lock, trackId, sha256));
+    if (successorLedger !== undefined) {
+      const entry = contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, trackId);
+      const source = artifact as Record<string, unknown>;
+      if (source.schemaVersion !== "patternly-content-artifact-v2" || source.contentVersion !== entry.planningPolicy.contentVersion || lock.sha256 !== entry.planningPolicy.artifactSha256 ||
+        (source.planningPolicy as Record<string, unknown> | undefined)?.policyVersion !== entry.planningPolicy.policyVersion || !Array.isArray(source.questions) || source.questions.length !== entry.training.questionCount) {
+        throw new Error(`Content successor ledger does not match the current v2 policy artifact for ${trackId}.`);
+      }
+      const historical = structuredClone(source);
+      delete historical.planningPolicy;
+      historical.schemaVersion = "patternly-content-artifact-v1";
+      historical.contentVersion = entry.training.contentVersion;
+      if (await sha256(JSON.stringify(historical)) !== entry.training.artifactSha256) throw new Error(`Content successor ledger does not reconstruct the exact training predecessor for ${trackId}.`);
+    }
   }
   const projections = catalogs.map((catalog) => ({ schemaVersion: "patternly-content-artifact-v1", trackId: catalog.trackId, contentVersion: catalog.contentVersion, questions: catalog.questions.map((question) => ({ trackId: question.trackId, nodeId: question.nodeId, mentalUnitId: question.mentalUnitId, questionId: question.questionId, interaction: { type: question.interaction.type } })) }));
   const modeConfigs = validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, projections);
-  const byTrack = new Map(catalogs.map((catalog) => [catalog.trackId, createTrackRuntime(catalog, modeConfigs)]));
+  const byTrack = new Map(catalogs.map((catalog) => [catalog.trackId, createTrackRuntime(catalog, modeConfigs,
+    successorLedger === undefined ? undefined : contentSuccessorLedgerEntry(successorLedger as ContentSuccessorLedger, catalog.trackId))]));
   return Object.freeze({
     tracks: Object.freeze(catalogs.map((catalog) => catalog.trackId)),
     getTrack(trackId: string) { const result = byTrack.get(trackId); if (!result) throw new Error(`Canonical track ${trackId} is unavailable; restart to load canonical content.`); return result; },
@@ -99,8 +121,9 @@ async function buildCatalog(dependencies: CanonicalRuntimeBuildDependencies = {}
   });
 }
 
-function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly ProductModeConfig[]): CanonicalTrackRuntime {
+function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly ProductModeConfig[], predecessor?: ContentSuccessorLedger["tracks"][number]): CanonicalTrackRuntime {
   const modes = Object.freeze(configs.filter((config) => config.trackId === catalog.trackId));
+  const planningPolicy = catalog.planningPolicy === undefined ? undefined : validateLearningPlanningPolicy(catalog.planningPolicy, catalog.questions, modes);
   const pools = new Map(modes.map((mode) => [mode.modeId, resolvePool(catalog, mode)]));
   return Object.freeze({
     trackId: catalog.trackId,
@@ -110,6 +133,9 @@ function createTrackRuntime(catalog: CanonicalQuestionCatalog, configs: readonly
     questions: catalog.questions,
     ...(catalog.completionRule ? { completionRule: catalog.completionRule } : {}),
     ...(catalog.simulationProfiles ? { simulationProfiles: catalog.simulationProfiles } : {}),
+    ...(planningPolicy ? { planningPolicy } : {}),
+    trainingIdentity: predecessor ? Object.freeze({ contentVersion: predecessor.training.contentVersion, artifactSha256: predecessor.training.artifactSha256 }) : Object.freeze({ contentVersion: catalog.contentVersion, artifactSha256: catalog.artifactSha256 }),
+    ...(predecessor ? { planningPolicyIdentity: Object.freeze({ contentVersion: predecessor.planningPolicy.contentVersion, artifactSha256: predecessor.planningPolicy.artifactSha256, policyVersion: predecessor.planningPolicy.policyVersion }) } : {}),
     modes,
     getQuestion: catalog.getQuestionById,
     getQuestionsForNode: catalog.getQuestionsByNodeId,

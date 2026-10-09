@@ -10,6 +10,7 @@ import {
 } from "../application/canonical/canonicalInteractionPresentation";
 import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQuestionViewModel";
 import { loadCanonicalRuntimeCatalog } from "./canonical/runtimeCatalog";
+import successorLedger from "./generated/canonical-content/content-successor-ledger.json";
 import { scoreCanonicalQuestion } from "./canonical/questionScoring";
 import type { CanonicalFeedbackMessage, Question } from "./canonical/questionTypes";
 
@@ -157,7 +158,15 @@ test("OOD21 producer proof binds the frozen 153-item same-ID map and exact sourc
 test("OOD21 loaded runtime matches every fixed same-ID question object", async () => {
   const map = readMap();
   const runtime = (await loadCanonicalRuntimeCatalog()).getTrack(TRACK);
-  assert.equal(runtime.contentVersion, "object-oriented-design-interview-authoring-v2026.10.05-bizq01-24-bizq02-v2");
+  const successor = successorLedger.tracks.find((entry) => entry.trackId === TRACK);
+  assert.ok(successor);
+  assert.deepEqual(runtime.trainingIdentity, {
+    contentVersion: successor.training.contentVersion,
+    artifactSha256: successor.training.artifactSha256,
+  });
+  assert.deepEqual(runtime.planningPolicyIdentity, successor.planningPolicy);
+  assert.equal(runtime.contentVersion, successor.planningPolicy.contentVersion);
+  assert.equal(runtime.artifactSha256, successor.planningPolicy.artifactSha256);
   const questions = runtime.getQuestionsForNode(NODE);
   assert.equal(questions.length, 153);
   assert.deepEqual(

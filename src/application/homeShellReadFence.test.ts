@@ -35,7 +35,7 @@ import { attempt, journal, review, session, timestamp } from "../testing/journal
 const TRACK_ID = CODING_INTERVIEW_TRACK_ID;
 const ARTIFACT = "a".repeat(64);
 
-function acceptedPlan(overrides: Partial<LearningPlan> = {}): LearningPlan {
+function acceptedPlan(overrides: Partial<Extract<LearningPlan, { schemaVersion: 1 }>> = {}): LearningPlan {
   return {
     schemaVersion: 1,
     planId: "plan:home-fence",
@@ -114,7 +114,9 @@ test("Home fence rejects terminal, active, and result-only session evidence writ
 
   const activePointerFence = captureHomeShellReadFence(TRACK_ID);
   await clearActiveTrainingSession("new-active-session");
-  assert.throws(activePointerFence, /Home learning sources changed/);
+  // Clearing only the pointer leaves an indexed active session unreachable;
+  // the canonical reader rejects that inconsistent state before the fence compares it.
+  assert.throws(activePointerFence, /active-session pointer is inconsistent/);
 });
 
 test("Home fence observes selected-track changes, including from a null-track snapshot", async () => {

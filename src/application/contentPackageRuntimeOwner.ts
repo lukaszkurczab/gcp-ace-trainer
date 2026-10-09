@@ -8,8 +8,10 @@ import { findPremiumNodeOfferForIdentity } from "../content/application/premiumN
 import { getAvailablePremiumNodeOfferForMode } from "../content/application/premiumNodeOfferAccess";
 import { ExactContentArtifactUnavailableError } from "./trainingLifecycle/contracts";
 import { isRegisteredTrackId } from "../domain/tracks/trackRegistry";
+import type { LearningPlanningPolicy } from "../content/canonical/planningPolicy";
+import type { ContentPlanningPolicyIdentity } from "../content/canonical/contentSuccessorLedger";
 
-export type ResolvedPackageRuntime = Readonly<{ track: CanonicalTrackRuntime; runtime: CanonicalTrainingRuntime }>;
+export type ResolvedPackageRuntime = Readonly<{ track: CanonicalTrackRuntime; runtime: CanonicalTrainingRuntime; planningPolicy?: LearningPlanningPolicy; planningPolicyIdentity?: ContentPlanningPolicyIdentity }>;
 type PackageOffer = ReturnType<typeof findPremiumNodeOfferForIdentity>;
 export class ContentPackageRuntimeOwner {
   private hydration: Readonly<{ scopeKey: string; promise: Promise<void> }> | null = null;
@@ -73,7 +75,7 @@ export class ContentPackageRuntimeOwner {
     const catalog = await this.catalogOwner.load();
     if (catalog.tracks.includes(input.trackId)) {
       const track = catalog.getTrack(input.trackId);
-      if (track.contentVersion === input.contentVersion && track.artifactSha256 === input.artifactSha256) return this.materialize(track);
+      if (track.trainingIdentity?.contentVersion === input.contentVersion && track.trainingIdentity.artifactSha256 === input.artifactSha256) return this.materialize(track);
     }
     if (scopeKey) {
       // A corrupt, unreadable, or changing retained-package inventory must
@@ -151,7 +153,27 @@ export class ContentPackageRuntimeOwner {
     }
     return scopeKey;
   }
-  private materialize(track: CanonicalTrackRuntime): ResolvedPackageRuntime { const key = runtimeKey(track.trackId, track.contentVersion, track.artifactSha256); const cached = this.exact.get(key); if (cached) return cached; const r = Object.freeze({ track, runtime: new CanonicalTrainingRuntime(track) }); this.exact.set(key, r); return r; }
+  private materialize(sourceTrack: CanonicalTrackRuntime): ResolvedPackageRuntime {
+    const identity = sourceTrack.trainingIdentity ?? Object.freeze({ contentVersion: sourceTrack.contentVersion, artifactSha256: sourceTrack.artifactSha256 });
+    const key = runtimeKey(sourceTrack.trackId, identity.contentVersion, identity.artifactSha256);
+    const cached = this.exact.get(key);
+    if (cached) return cached;
+    const { planningPolicy: _planningPolicy, planningPolicyIdentity: _planningIdentity, ...sourceWithoutPolicy } = sourceTrack;
+    const track: CanonicalTrackRuntime = Object.freeze({
+      ...sourceWithoutPolicy,
+      contentVersion: identity.contentVersion,
+      artifactSha256: identity.artifactSha256,
+      trainingIdentity: identity,
+    });
+    const resolved = Object.freeze({
+      track,
+      runtime: new CanonicalTrainingRuntime(track),
+      ...(sourceTrack.planningPolicy ? { planningPolicy: sourceTrack.planningPolicy } : {}),
+      ...(sourceTrack.planningPolicyIdentity ? { planningPolicyIdentity: sourceTrack.planningPolicyIdentity } : {}),
+    });
+    this.exact.set(key, resolved);
+    return resolved;
+  }
 }
 function runtimeKey(trackId: string, contentVersion: string, artifactSha256: string): string { return JSON.stringify([trackId, contentVersion, artifactSha256]); }
 function assertFamily(track: CanonicalTrackRuntime, familyId: TrackFamilyId): void { if (new CanonicalTrainingRuntime(track).familyId !== familyId) throw new Error(`Canonical family routing does not own ${track.trackId}.`); }

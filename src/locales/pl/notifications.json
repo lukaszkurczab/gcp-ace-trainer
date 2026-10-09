@@ -85,5 +85,9 @@
   "schedulerFailureTitle": "Nie udało się zaplanować przypomnień",
   "schedulerFailureDetail": "Plan jest zapisany. Spróbuj ponownie zaplanować przypomnienia.",
   "concurrentChangeTitle": "Plan się zmienił",
-  "concurrentChangeDetail": "Plan zmienił się podczas aktualizacji przypomnień. Spróbuj ponownie."
+  "concurrentChangeDetail": "Plan zmienił się podczas aktualizacji przypomnień. Spróbuj ponownie.",
+  "activeReminderDetail": "Przypomnienia są zaplanowane dla zaakceptowanego planu.",
+  "disabledReminderDetail": "Przypomnienia dla zaakceptowanego planu są wyłączone.",
+  "draftPlanReminderDetail": "Te zmiany są wersją roboczą. Zaakceptowany plan pozostaje aktywny, dopóki nie zaakceptujesz nowego.",
+  "reminderStatusUnavailableDetail": "Stan przypomnień dla tej ścieżki jest teraz niedostępny."
 }

@@ -6,7 +6,6 @@ import {
   loadTrackReviewQueueViewModel,
 } from "./reviewQueueQueries";
 import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
-import { loadCanonicalRuntimeCatalog } from "../content/canonical/runtimeCatalog";
 import { createResolvedContentRef, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, type ReviewQueueEntry } from "../domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../infrastructure/storage/mmkvClient";
 import {
@@ -56,7 +55,9 @@ test("stored unavailable reviews are readable without resolving content metadata
 
 test("a future manual request is available in the real review queue without being labeled due", async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
-  const track = (await loadCanonicalRuntimeCatalog()).getTrack(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
+  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, "certification");
+  assert.ok(resolved.planningPolicyIdentity, "the policy successor pin is separate from the review source ref");
+  const track = resolved.track;
   const question = track.getPool("certification-focus-practice")[0]!;
   const sourceItem = createResolvedContentRef({
     trackId: track.trackId,

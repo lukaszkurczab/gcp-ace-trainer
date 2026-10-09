@@ -183,6 +183,25 @@ test("selection pools are non-empty, local, and large enough for every requested
   }
 });
 
+test("product-mode artifact boundary accepts exact v1 and v2 shapes and rejects schema crossovers", () => {
+  assert.deepEqual(validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, artifacts), PRODUCT_MODE_CONFIGS);
+
+  const v1Artifacts = structuredClone(artifacts) as unknown as Array<Record<string, unknown>>;
+  for (const artifact of v1Artifacts) {
+    delete artifact.planningPolicy;
+    artifact.schemaVersion = "patternly-content-artifact-v1";
+  }
+  assert.deepEqual(validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, v1Artifacts as unknown as ProductModeArtifact[]), PRODUCT_MODE_CONFIGS);
+
+  const v1WithPlanningPolicy = structuredClone(v1Artifacts) as Array<Record<string, unknown>>;
+  v1WithPlanningPolicy[0]!.planningPolicy = { unexpected: true };
+  assert.throws(() => validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, v1WithPlanningPolicy as unknown as ProductModeArtifact[]), /nine exact/u);
+
+  const v2WithUnknownField = structuredClone(artifacts) as unknown as Array<Record<string, unknown>>;
+  v2WithUnknownField[0]!.unexpected = true;
+  assert.throws(() => validateProductModeConfigsAgainstArtifacts(PRODUCT_MODE_CONFIGS, v2WithUnknownField as unknown as ProductModeArtifact[]), /nine exact/u);
+});
+
 test("simulation mode is bound to the exact GCP profile, family, and mode", () => {
   const profile = (gcpArtifact as typeof gcpArtifact & { simulationProfiles: readonly unknown[] }).simulationProfiles[0] as CanonicalSimulationProfile;
   const resolved = getProductSimulationModeConfig(gcp, [profile]);

@@ -4,8 +4,12 @@ import test, { beforeEach } from "node:test";
 import { createPatternlyApiClient, PatternlyApiClientError, type AdoptionPreviewResponseDto, type PatternlyApiClient, type ProgressMutationDto, type ProgressRecordDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { AccountDataFailure } from "../../storage/errors";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
-import { clearAccountDeletionOwnedLocalData, clearAccountIdentityDenialAfterProof, confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, loadAccountDataSession, readLocalAccountDataSession, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion } from "./accountDataService";
-import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
+import { clearAccountDeletionOwnedLocalData, clearAccountIdentityDenialAfterProof, confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, inspectAccountSyncConflict, loadAccountDataSession, readLocalAccountDataSession, resolveAccountSyncConflict, retryAccountDataSync, retryPendingAccountDataSync, retryPendingAccountDeletion } from "./accountDataService";
+import { activatePreparedProfile, captureActiveProfileStorageLease, closeActiveProfileStorage, MemoryKeyValueStorage, prepareProfileStorage, selectPreparedAccountProfile, setProfileStoragePreparationFactoryForTests, installKeyValueStorageForTests, writeActiveAccountIdentityBinding } from "../../infrastructure/storage/mmkvClient";
+import { openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
+import type { StorageManifestStore } from "../../infrastructure/storage/encryptedStorageBootstrap";
+import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
+import { getTrackRegistration } from "../../domain/tracks/trackRegistry";
 import {
   beginAccountDeletion,
   getAccountDeletionState,
@@ -73,6 +77,39 @@ beforeEach(async () => {
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   await provisionGuestInstallation({ async create() { return { installationId: "66666666-6666-4666-8666-666666666666", localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
   await bindGuestInstallationToAccount(accountId);
+});
+
+test("new registered profile marker is consumed by the canonical account-data sync path", async () => {
+  const base = new MemoryKeyValueStorage();
+  const controlValues = new Map<string, string>();
+  const control: StorageManifestStore = {
+    async get(key) { return controlValues.get(key) ?? null; },
+    async set(key, value) { controlValues.set(key, value); },
+    async remove(key) { controlValues.delete(key); },
+  };
+  let identityIndex = 0;
+  const router = await openProfileStorageRouter(base, control, {
+    identity: { async create() { identityIndex += 1; return { installationId: `00000000-0000-4000-8000-${String(900 + identityIndex).padStart(12, "0")}`, localDatasetId: `00000000-0000-4000-8000-${String(100 + identityIndex).padStart(12, "0")}` }; } },
+  });
+  setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
+  try {
+    await prepareProfileStorage();
+    const selected = await selectPreparedAccountProfile(accountId);
+    const localDatasetBefore = [...base.snapshot()].filter(([key]) => key.startsWith("patternly:profile:v1:"));
+    const activeStorage = activatePreparedProfile(selected.profile.id, selected.profile.kind);
+    const marker = JSON.parse(activeStorage.getString("patternly:canonical:v1:guest-installation")!);
+    assert.equal(marker.payload.localDatasetId, selected.profile.id);
+    assert.equal(marker.payload.accountId, accountId);
+    assert.equal(marker.payload.bindingState, "account_bound");
+
+    const result = await loadAccountDataSession(api(), accountId);
+    assert.equal(result.status, "synced");
+    assert.deepEqual([...base.snapshot()].filter(([key]) => key.startsWith("patternly:profile:v1:") && !key.startsWith(`patternly:profile:v1:${selected.profile.id}:`)),
+      localDatasetBefore.filter(([key]) => !key.startsWith(`patternly:profile:v1:${selected.profile.id}:`)), "the initial Guest profile remains unchanged");
+  } finally {
+    closeActiveProfileStorage();
+    setProfileStoragePreparationFactoryForTests(null);
+  }
 });
 
 test("account sync preserves known validation failures without persisting arbitrary error messages", async () => {
@@ -546,7 +583,6 @@ import { commitTrainingSessionStart } from "../learningMutations/commitTrainingS
 import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { discardGuestDataAndLoadAccount, retryLearningPlanRecovery } from "./accountDataService";
-import { persistGoal } from "../learningReadModels";
 import { LearningPlanEditorCoordinator } from "../learningPlan/LearningPlanEditorCoordinator";
 import type { LearningPlanProposalCoordinator } from "../learningPlan/LearningPlanProposalCoordinator";
 import { getActiveTrackId, saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
@@ -555,7 +591,7 @@ import { addTrainingAttempt, getTrainingAttempts } from "../../storage/repositor
 import { getTrainingSessionResult } from "../../storage/repositories/trainingSessionResultRepository";
 import { clearActiveTrainingSessionDraft, getActiveTrainingSessionDraft, saveTrainingSessionDraft as persistTrainingSessionDraft } from "../../storage/repositories/trainingSessionDraftRepository";
 import { accountDataRecordFingerprint, buildAccountDataSnapshot, ensureAccountOutboxFromLocalDataset, getAccountSyncState, isCanonicalAccountSyncState, saveAccountSyncState, saveGuestAdoptionChoice } from "../../storage/repositories/accountDataRepository";
-import { persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
+import { getActiveMutationJournal, persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
 import { getGoalSnapshot, readGoalSnapshot, saveGoal, saveGoalSnapshot } from "../../storage/repositories/goalRepository";
 import { getLearningPlanSnapshot, saveLearningPlanAtomically } from "../../storage/repositories/learningPlanRepository";
 import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
@@ -564,6 +600,7 @@ import { CanonicalTrainingRuntime } from "../canonical/CanonicalTrainingRuntime"
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import type { Question } from "../../content/canonical/questionTypes";
 import { commitSessionAbandonment, commitTrainingOutcome } from "../learningMutations";
+import { recoverPendingMutation } from "../learningMutations/recoverPendingMutation";
 import { getReviewQueueItems } from "../../storage/repositories/reviewQueueRepository";
 
 const guestTrack = "coding-interview-dsa-problem-solving" as const;
@@ -640,12 +677,18 @@ function apiWithAppliedUpload(readRemote: () => Promise<{ accountRevision: numbe
   });
 }
 
-function realPlanEditorForTest(): LearningPlanEditorCoordinator {
+function realPlanEditorForTest(content: Awaited<ReturnType<typeof contentPackageRuntimeOwner.resolveForDiscovery>>): LearningPlanEditorCoordinator {
   let editorSequence = 0;
   const contentContext = (trackId: typeof guestTrack) => {
     const snapshot = getLearningPlanSnapshot(trackId);
     if (!snapshot) throw new Error("P18 plan fixture is missing.");
-    return Object.freeze({ contentVersion: snapshot.plan.contentVersion, artifactSha256: snapshot.plan.artifactSha256, timezone: snapshot.plan.timezone });
+    if (!content.planningPolicyIdentity) throw new Error("P18 planning policy is unavailable.");
+    return Object.freeze({
+      contentVersion: content.track.contentVersion,
+      artifactSha256: content.track.artifactSha256,
+      planningPolicyIdentity: content.planningPolicyIdentity,
+      timezone: snapshot.plan.timezone,
+    });
   };
   return new LearningPlanEditorCoordinator({
     proposalCoordinator: {} as unknown as LearningPlanProposalCoordinator,
@@ -656,6 +699,7 @@ function realPlanEditorForTest(): LearningPlanEditorCoordinator {
     loadLearningPlanSnapshot: getLearningPlanSnapshot,
     loadContentContext: async (trackId) => contentContext(trackId as typeof guestTrack),
     saveLearningPlan: saveLearningPlanAtomically,
+    acceptGoalPlan: async () => { throw new Error("Proposal acceptance is not used by the accepted-plan account fixture."); },
     createEditorId: () => `p18-editor:${++editorSequence}`,
     now: () => "2026-10-08T10:00:00.000Z",
   });
@@ -702,6 +746,31 @@ async function prepareBoundSyncedAccount(): Promise<void> {
   await prepareGuest();
   await bindGuestInstallationToAccount(accountId);
   saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
+}
+
+async function activateFreshAccountStorage(account: string): Promise<Readonly<{ base: MemoryKeyValueStorage; profileId: string; restore(): void }>> {
+  const base = new MemoryKeyValueStorage();
+  const controlValues = new Map<string, string>();
+  const control: StorageManifestStore = {
+    async get(key) { return controlValues.get(key) ?? null; },
+    async set(key, value) { controlValues.set(key, value); },
+    async remove(key) { controlValues.delete(key); },
+  };
+  let identityIndex = 0;
+  const router = await openProfileStorageRouter(base, control, {
+    identity: { async create() { identityIndex += 1; return { installationId: `00000000-0000-4000-8000-${String(800 + identityIndex).padStart(12, "0")}`, localDatasetId: `00000000-0000-4000-8000-${String(700 + identityIndex).padStart(12, "0")}` }; } },
+  });
+  setProfileStoragePreparationFactoryForTests(async () => ({ base, router }));
+  await prepareProfileStorage();
+  const selected = await selectPreparedAccountProfile(account);
+  activatePreparedProfile(selected.profile.id, selected.profile.kind);
+  const lease = captureActiveProfileStorageLease();
+  if (!lease) throw new Error("Account profile did not publish an active storage lease.");
+  await writeActiveAccountIdentityBinding({ lease, accountId: account, firebaseUid: uid, canContinue: () => true });
+  return Object.freeze({ base, profileId: selected.profile.id, restore() {
+    closeActiveProfileStorage();
+    setProfileStoragePreparationFactoryForTests(null);
+  } });
 }
 
 async function prepareBoundLearningDatasetWithOutbox() {
@@ -805,6 +874,30 @@ test("a durable terminal learning commit uploads once when Home retries pending 
   assert.ok(Object.values((await getAccountSyncState()).acknowledged).some((record) => record.remoteVersion === 7), "a duplicate is acknowledged only from its exact server record/version");
 });
 
+test("an ambiguous account-sync timeout retries the exact persisted batch request", async () => {
+  await prepareBoundLearningDatasetWithOutbox();
+  const requests: unknown[] = [];
+  let uploaded: ProgressRecordDto[] = [];
+  let calls = 0;
+  const client = api({
+    syncProgress: async (input) => {
+      requests.push(structuredClone(input));
+      calls += 1;
+      if (calls === 1) throw new PatternlyApiClientError("request_timeout");
+      uploaded = makeAppliedRecords(input.mutations);
+      return { accountRevision: 1, applied: uploaded, duplicates: [], conflicts: [] };
+    },
+    getProgress: async () => ({ accountRevision: 1, records: uploaded }),
+  });
+  const first = await retryPendingAccountDataSync(client, accountId);
+  assert.equal(first?.status, "offlinePending");
+  assert.equal(first?.lastFailureCode, "offline");
+  const second = await retryPendingAccountDataSync(client, accountId);
+  assert.equal(second?.status, "synced");
+  assert.equal(calls, 2);
+  assert.deepEqual(requests[1], requests[0]);
+});
+
 test("concurrent Home retries share one offline attempt and preserve durable pending state", async () => {
   await prepareBoundSyncedAccount();
   await commitTerminalLearningOutcome();
@@ -855,6 +948,8 @@ test("an unconfirmed duplicate upload stays explicit and keeps its outbox", asyn
 });
 
 test("bound sync stops on an account revision conflict before acknowledging, downloading, or materializing", async () => {
+  const profileFixture = await activateFreshAccountStorage(accountId);
+  try {
   const { snapshot, state: beforeState } = await prepareBoundLearningDatasetWithOutbox();
   let uploads = 0;
   let downloads = 0;
@@ -879,6 +974,7 @@ test("bound sync stops on an account revision conflict before acknowledging, dow
   assert.equal(downloads, 0);
   const afterState = await getAccountSyncState();
   assert.equal(afterState.status, "conflict");
+  assert.equal(afterState.syncConflict?.code, "account_revision_conflict");
   assert.equal(afterState.materialization, null);
   assert.deepEqual(afterState.outbox, beforeState.outbox);
   assert.ok(afterState.outbox.length > 0);
@@ -887,6 +983,160 @@ test("bound sync stops on an account revision conflict before acknowledging, dow
   assert.equal((await getTrainingSessions()).value.some((session) => session.id === "resumable-session" && session.status === "completed"), true);
   assert.equal(getLearningPlanSnapshot(guestTrack)?.plan.planId, "plan:p18-ack-coverage");
   assert.equal((await getGoalSnapshot(guestTrack))?.record.trackId, guestTrack);
+
+  // A restarted app may load the account or run its ordinary pending-sync
+  // retry, but a confirmed 409 is durable user-choice state. Neither path may
+  // issue another POST or silently replace the local snapshot.
+  let restartUploads = 0;
+  let restartReads = 0;
+  const blockedClient = api({
+    syncProgress: async () => { restartUploads++; throw new Error("confirmed 409 must block automatic POST"); },
+    getProgress: async () => { restartReads++; throw new Error("conflict marker must require explicit latest-state review"); },
+  });
+  const restored = await loadAccountDataSession(blockedClient, accountId);
+  const automaticRetry = await retryPendingAccountDataSync(blockedClient, accountId);
+  assert.equal(restored.syncConflict?.conflictId, afterState.syncConflict?.conflictId);
+  assert.equal(automaticRetry?.syncConflict?.conflictId, afterState.syncConflict?.conflictId);
+  assert.equal(restartUploads, 0);
+  assert.equal(restartReads, 0);
+  assert.deepEqual((await getAccountSyncState()).outbox, afterState.outbox);
+
+  const latestUnchanged = api({ getProgress: async () => ({ accountRevision: 8, records: [] }) });
+  const beforeStaleChoice = await getAccountSyncState();
+  await assert.rejects(() => resolveAccountSyncConflict({
+    api: api({ getProgress: async () => {
+      const concurrent = await getAccountSyncState();
+      saveAccountSyncState({ ...concurrent, lastFailureCode: "remote_failure" });
+      return { accountRevision: 8, records: [] };
+    } }),
+    accountId,
+    conflictId: beforeStaleChoice.syncConflict!.conflictId,
+    resolution: "rebase",
+  }), (error: unknown) => error instanceof Error && error.message === "account_sync_conflict_stale");
+  assert.deepEqual((await getAccountSyncState()).outbox, beforeState.outbox);
+  const afterStaleAttempt = await getAccountSyncState();
+  saveAccountSyncState({ ...afterStaleAttempt, lastFailureCode: afterStaleAttempt.syncConflict!.code });
+  const preview = await inspectAccountSyncConflict(latestUnchanged, accountId);
+  assert.equal(preview.kind, "rebase_available");
+  const rebased = await resolveAccountSyncConflict({ api: latestUnchanged, accountId, conflictId: preview.conflictId, resolution: "rebase" });
+  assert.equal(rebased.syncConflict, null);
+  assert.equal(rebased.status, "offlinePending");
+  assert.equal((await getAccountSyncState()).remoteAccountRevision, 8);
+
+  const second409 = await retryPendingAccountDataSync(api({
+    syncProgress: async () => ({ accountRevision: 8, applied: [], duplicates: [], conflicts: [], accountRevisionConflict: { code: "account_revision_conflict", currentAccountRevision: 10 } }),
+    getProgress: async () => { throw new Error("confirmed 409 must stop before its explicit review action"); },
+  }), accountId);
+  assert.equal(second409?.syncConflict?.expectedAccountRevision, 8);
+  const currentSnapshot = await buildAccountDataSnapshot();
+  const localGoal = (await getGoalSnapshot(guestTrack))!;
+  const localPlan = getLearningPlanSnapshot(guestTrack)!;
+  const remoteGoalRecord = Object.freeze({ ...localGoal.record, preferredDays: Object.freeze(["tue", "thu"] as const), weeklySessionTarget: 2 });
+  const remoteGoalState = Object.freeze({ schemaVersion: 1 as const, revision: 2, record: remoteGoalRecord });
+  const remotePlan = Object.freeze({ ...localPlan.plan, goalRevision: 2, acceptedTarget: acceptedTargetFromGoal(remoteGoalRecord) });
+  const remotePair = currentSnapshot.records.filter((record) => record.trackId === guestTrack && (record.recordType === "goal" || record.recordType === "learning_plan")).map((record) => {
+    const state = record.recordType === "goal" ? remoteGoalState : Object.freeze({ schemaVersion: 1 as const, revision: 2, plan: remotePlan });
+    const withState = { ...record, state, version: 2 };
+    return { ...withState, fingerprint: accountDataRecordFingerprint(withState), kind: "node" as const, targetId: record.recordId, lastMutationId: `latest-${record.recordId}`, updatedAt: "2026-10-09T00:00:00.000Z" };
+  });
+  const latestChangedPair = api({ getProgress: async () => ({ accountRevision: 10, records: remotePair }) });
+  const pairPreview = await inspectAccountSyncConflict(latestChangedPair, accountId);
+  assert.equal(pairPreview.kind, "pair_choice_required");
+  assert.equal(pairPreview.remoteAccountRevision, 10);
+  const beforePairChoice = await getAccountSyncState();
+  const unrelatedPendingIds = beforePairChoice.outbox.filter((entry) => entry.trackId !== guestTrack || (entry.recordType !== "goal" && entry.recordType !== "learning_plan")).map((entry) => entry.mutationId).sort();
+  const selectedPairRecordKeys = new Set(beforePairChoice.outbox.filter((entry) => entry.trackId === guestTrack && (entry.recordType === "goal" || entry.recordType === "learning_plan")).map((entry) => JSON.stringify({ recordId: entry.recordId, recordType: entry.recordType, trackId: entry.trackId })));
+  const unrelatedAcknowledged = Object.fromEntries(Object.entries(beforePairChoice.acknowledged).filter(([key]) => !selectedPairRecordKeys.has(key)));
+  const previousPairMutationIds = beforePairChoice.outbox.filter((entry) => entry.trackId === guestTrack && (entry.recordType === "goal" || entry.recordType === "learning_plan")).map((entry) => entry.mutationId);
+  const originalLocalGoal = (await getGoalSnapshot(guestTrack))!.record;
+  const keptLocal = await resolveAccountSyncConflict({ api: latestChangedPair, accountId, conflictId: pairPreview.conflictId, resolution: "keep_local", trackId: guestTrack });
+  assert.equal(keptLocal.syncConflict, null);
+  assert.deepEqual((await getGoalSnapshot(guestTrack))?.record, originalLocalGoal);
+  const localPairOutbox = (await getAccountSyncState()).outbox.filter((entry) => entry.trackId === guestTrack && (entry.recordType === "goal" || entry.recordType === "learning_plan"));
+  assert.equal(localPairOutbox.length, 2);
+  assert.ok(localPairOutbox.every((entry) => entry.expectedVersion === 2));
+  assert.ok(localPairOutbox.every((entry) => !previousPairMutationIds.includes(entry.mutationId)), "keep-local creates fresh mutations against the latest pair versions");
+  assert.deepEqual((await getAccountSyncState()).outbox.filter((entry) => entry.trackId !== guestTrack || (entry.recordType !== "goal" && entry.recordType !== "learning_plan")).map((entry) => entry.mutationId).sort(), unrelatedPendingIds);
+
+  const third409 = await retryPendingAccountDataSync(api({
+    syncProgress: async () => ({ accountRevision: 10, applied: [], duplicates: [], conflicts: [], accountRevisionConflict: { code: "account_revision_conflict", currentAccountRevision: 11 } }),
+    getProgress: async () => { throw new Error("second confirmed 409 must stop before its explicit review action"); },
+  }), accountId);
+  assert.equal(third409?.syncConflict?.expectedAccountRevision, 10);
+  const remoteGoalState3 = Object.freeze({ schemaVersion: 1 as const, revision: 3, record: remoteGoalRecord });
+  const remotePlan3 = Object.freeze({ ...localPlan.plan, goalRevision: 3, acceptedTarget: acceptedTargetFromGoal(remoteGoalRecord) });
+  const remotePair3 = currentSnapshot.records.filter((record) => record.trackId === guestTrack && (record.recordType === "goal" || record.recordType === "learning_plan")).map((record) => {
+    const state = record.recordType === "goal" ? remoteGoalState3 : Object.freeze({ schemaVersion: 1 as const, revision: 3, plan: remotePlan3 });
+    const withState = { ...record, state, version: 3 };
+    return { ...withState, fingerprint: accountDataRecordFingerprint(withState), kind: "node" as const, targetId: record.recordId, lastMutationId: `latest-v3-${record.recordId}`, updatedAt: "2026-10-09T00:01:00.000Z" };
+  });
+  const latestPairV3 = api({ getProgress: async () => ({ accountRevision: 11, records: remotePair3 }) });
+  const latestPreview = await inspectAccountSyncConflict(latestPairV3, accountId);
+  assert.equal(latestPreview.kind, "pair_choice_required");
+  profileFixture.base.setFailurePlan({ kind: "fail_on_key_write", key: `patternly:profile:v1:${profileFixture.profileId}:${encodeURIComponent(STORAGE_KEYS.learningPlan(guestTrack))}` });
+  await assert.rejects(() => resolveAccountSyncConflict({ api: latestPairV3, accountId, conflictId: latestPreview.conflictId, resolution: "keep_account", trackId: guestTrack }));
+  profileFixture.base.setFailurePlan(null);
+  assert.equal((await getActiveMutationJournal())?.operation, "resolve_account_sync_conflict");
+  assert.throws(() => readGoalSnapshot(guestTrack));
+  assert.throws(() => getLearningPlanSnapshot(guestTrack));
+  await assert.rejects(() => buildAccountDataSnapshot());
+  let fencedUploads = 0;
+  await retryPendingAccountDataSync(api({ syncProgress: async () => { fencedUploads++; throw new Error("pending resolver journal must block upload"); } }), accountId);
+  assert.equal(fencedUploads, 0);
+  const profileKey = (key: string) => `patternly:profile:v1:${profileFixture.profileId}:${encodeURIComponent(key)}`;
+  // Recovery must roll forward across the sync-state write too. The first
+  // resolver attempt already failed after the goal write; this fault therefore
+  // exercises the later boundary after the plan has been materialized.
+  profileFixture.base.setFailurePlan({ kind: "fail_on_key_write", key: profileKey(STORAGE_KEYS.ACCOUNT_SYNC) });
+  await assert.rejects(() => recoverPendingMutation());
+  profileFixture.base.setFailurePlan(null);
+  assert.equal((await getActiveMutationJournal())?.operation, "resolve_account_sync_conflict");
+  assert.throws(() => readGoalSnapshot(guestTrack));
+  assert.throws(() => getLearningPlanSnapshot(guestTrack));
+  await assert.rejects(() => buildAccountDataSnapshot());
+
+  // A phase-write failure leaves the fully materialized exact pair and sync
+  // state hidden behind the same journal. Retrying is idempotent.
+  profileFixture.base.setFailurePlan({ kind: "fail_on_key_write", key: profileKey(STORAGE_KEYS.ACTIVE_JOURNAL) });
+  await assert.rejects(() => recoverPendingMutation());
+  profileFixture.base.setFailurePlan(null);
+  assert.equal((await getActiveMutationJournal())?.operation, "resolve_account_sync_conflict");
+  assert.throws(() => readGoalSnapshot(guestTrack));
+  assert.throws(() => getLearningPlanSnapshot(guestTrack));
+  await assert.rejects(() => buildAccountDataSnapshot());
+
+  // Failure clearing the verified journal is also recoverable without another
+  // goal/plan/sync-state revision or loss of unrelated queued/acknowledged data.
+  profileFixture.base.setFailurePlan({ kind: "fail_on_key_remove", key: profileKey(STORAGE_KEYS.ACTIVE_JOURNAL) });
+  await assert.rejects(() => recoverPendingMutation());
+  profileFixture.base.setFailurePlan(null);
+  assert.equal((await getActiveMutationJournal())?.operation, "resolve_account_sync_conflict");
+  await recoverPendingMutation();
+  const finalGoal = await getGoalSnapshot(guestTrack);
+  const finalPlan = getLearningPlanSnapshot(guestTrack);
+  const finalSync = await getAccountSyncState();
+  assert.equal(await getActiveMutationJournal(), null);
+  assert.deepEqual(finalGoal?.record, remoteGoalRecord);
+  assert.equal(finalPlan?.plan.goalRevision, finalGoal?.revision);
+  assert.equal(finalPlan?.plan.planRevision, remotePlan3.planRevision);
+  assert.equal(finalSync.syncConflict, null);
+  assert.deepEqual(finalSync.outbox.filter((entry) => entry.trackId !== guestTrack || (entry.recordType !== "goal" && entry.recordType !== "learning_plan")).map((entry) => entry.mutationId).sort(), unrelatedPendingIds);
+  assert.deepEqual(Object.fromEntries(Object.entries(finalSync.acknowledged).filter(([key]) => !selectedPairRecordKeys.has(key))), unrelatedAcknowledged);
+  const resolvedGoalRevision = finalGoal?.revision;
+  const resolvedPlanRevision = finalPlan?.revision;
+  const resolvedSync = finalSync;
+  await recoverPendingMutation();
+  assert.equal(await getActiveMutationJournal(), null);
+  assert.equal((await getGoalSnapshot(guestTrack))?.revision, resolvedGoalRevision);
+  assert.equal(getLearningPlanSnapshot(guestTrack)?.revision, resolvedPlanRevision);
+  assert.deepEqual(await getAccountSyncState(), resolvedSync);
+  assert.equal(finalSync.syncConflict, null);
+  assert.deepEqual(finalGoal?.record, remoteGoalRecord);
+  assert.equal(finalPlan?.plan.goalRevision, finalGoal?.revision);
+  assert.deepEqual(finalPlan?.plan.acceptedTarget, acceptedTargetFromGoal(remoteGoalRecord));
+  } finally {
+    profileFixture.restore();
+  }
 });
 
 test("bound sync rejects incomplete applied and duplicate ACK coverage before GET or local ACK writes", async () => {
@@ -995,17 +1245,22 @@ test("a concurrent local session start during download keeps the interrupted Hom
 
 test("bound sync keeps session, goal, and plan commits made during GET and carries exact upload versions forward", async () => {
   await prepareBoundSyncedAccount();
+  const runtime = await contentPackageRuntimeOwner.resolveForDiscovery(guestTrack, getTrackRegistration(guestTrack).familyId);
+  if (!runtime.planningPolicyIdentity) throw new Error("Canonical planning policy identity is unavailable.");
   const initialGoal = createDefaultGoal(guestTrack);
   const goalSnapshot = await saveGoalSnapshot(initialGoal, null);
   const initialPlan = createLearningPlan({
-    schemaVersion: 1,
+    schemaVersion: 2,
+    minutesPerStudyDay: 25,
+    executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: null, practice: { modeId: "coding-interview-guided-practice", requestedLength: 10 } },
+    planningPolicyIdentity: runtime.planningPolicyIdentity,
     planId: "plan:p18-race",
     trackId: guestTrack,
     goalRevision: goalSnapshot.revision,
     status: "accepted",
     timezone: "Europe/Warsaw",
-    contentVersion: "p18-fixture",
-    artifactSha256: TEST_ARTIFACT_SHA256,
+    contentVersion: runtime.track.contentVersion,
+    artifactSha256: runtime.track.artifactSha256,
     acceptedTarget: acceptedTargetFromGoal(initialGoal),
     createdAt: "2026-10-08T09:00:00.000Z",
     updatedAt: "2026-10-08T09:00:00.000Z",
@@ -1058,7 +1313,7 @@ test("bound sync keeps session, goal, and plan commits made during GET and carri
   });
   await commitSessionCompletion(completed, result, completed.completedAt!);
 
-  const editor = realPlanEditorForTest();
+  const editor = realPlanEditorForTest(runtime);
   const started = await editor.startExistingEdit(guestTrack);
   assert.equal(started.kind, "ready", started.kind === "stale" ? started.reason : started.kind);
   if (started.kind !== "ready") throw new Error("P18 plan editor fixture did not open.");
@@ -1067,11 +1322,18 @@ test("bound sync keeps session, goal, and plan commits made during GET and carri
   assert.equal(planCommit.kind, "saved");
 
   const changedGoal = Object.freeze({ ...initialGoal, preferredDays: Object.freeze(["tue", "thu"] as const), weeklySessionTarget: 2 });
-  await persistGoal(changedGoal);
+  const beforeGoal = (await getGoalSnapshot(guestTrack))!;
+  const beforePlan = getLearningPlanSnapshot(guestTrack)!;
+  const changedGoalSnapshot = await saveGoalSnapshot(changedGoal, beforeGoal.revision);
+  saveLearningPlanAtomically({
+    plan: Object.freeze({ ...beforePlan.plan, goalRevision: changedGoalSnapshot.revision, acceptedTarget: acceptedTargetFromGoal(changedGoal), updatedAt: "2026-10-08T10:02:00.000Z", commandId: "p18-goal-during-get" }),
+    expectedGoalRevision: changedGoalSnapshot.revision,
+    expectedPlanStorageRevision: beforePlan.revision,
+  });
   releaseGet();
 
   const syncResult = await sync;
-  assert.equal(syncResult?.status, "offlinePending");
+  assert.equal(syncResult?.status, "offlinePending", JSON.stringify(syncResult));
   assert.equal(syncResult?.lastFailureCode, "local_dataset_changed_during_sync");
   assert.equal(await getActiveTrainingSession(), null);
   assert.ok((await getTrainingSessions()).value.some((session) => session.id === completed.id && session.status === "completed"));

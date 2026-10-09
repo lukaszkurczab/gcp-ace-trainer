@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
-import { loadCanonicalRuntimeCatalog, type CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
+import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
 import { scoreCanonicalQuestion } from "../../content/canonical/questionScoring";
 import type { CanonicalQuestionResponse, Question } from "../../content/canonical/questionTypes";
 import { createTrainingAttempt, type ReviewQueueEntry, type TrackId } from "../../domain";
@@ -15,7 +15,10 @@ import { TrainingApplicationFailure } from "../trainingLifecycle";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 const NOW = "2026-10-03T12:00:00.000Z";
-const catalogPromise = loadCanonicalRuntimeCatalog();
+const trackPromise = contentPackageRuntimeOwner.resolveForDiscovery(TRACK_ID, "coding_interview").then((resolved) => {
+  assert.ok(resolved.planningPolicyIdentity, "planning policy remains separately pinned from training identity");
+  return resolved.track;
+});
 
 function wrongResponse(question: Question): CanonicalQuestionResponse {
   if (question.interaction.type === "choice_single") {
@@ -73,8 +76,7 @@ async function actualLifecycle(sessionId: string) {
 }
 
 test("Coding weak-area review with explicit due_queue does not use a historical miss as fallback evidence", async () => {
-  const catalog = await catalogPromise;
-  const track = catalog.getTrack(TRACK_ID);
+  const track = await trackPromise;
   const mode = track.getMode("coding-interview-weak-area-review");
   assert.equal(mode.selection.kind, "evidence_conditioned");
   const question = track.getPool(mode.modeId)[0]!;
@@ -117,8 +119,7 @@ test("Coding weak-area review with explicit due_queue does not use a historical 
 
 test("actual lifecycle persists only due current refs, shortens to available due content, and does not append miss fallback", async () => {
   const storage = installMemoryStorage();
-  const catalog = await catalogPromise;
-  const track = catalog.getTrack(TRACK_ID);
+  const track = await trackPromise;
   const mode = track.getMode("coding-interview-weak-area-review");
   const pool = track.getPool(mode.modeId);
   assert.ok(pool.length >= 4, "fixture needs distinct due and historical-miss questions");
@@ -152,8 +153,7 @@ test("actual lifecycle persists only due current refs, shortens to available due
 
 test("actual lifecycle prepares and consumes one future manual request without changing its automatic cycle", async () => {
   installMemoryStorage();
-  const catalog = await catalogPromise;
-  const track = catalog.getTrack(TRACK_ID);
+  const track = await trackPromise;
   const mode = track.getMode("coding-interview-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
   const original = {
@@ -201,8 +201,7 @@ test("actual lifecycle prepares and consumes one future manual request without c
 
 test("actual lifecycle rejects empty due evidence with no session write and preserves the historical attempt", async () => {
   const storage = installMemoryStorage();
-  const catalog = await catalogPromise;
-  const track = catalog.getTrack(TRACK_ID);
+  const track = await trackPromise;
   const mode = track.getMode("coding-interview-weak-area-review");
   const miss = historicalMiss(track, track.getPool(mode.modeId)[0]!, "lifecycle-empty");
   await addTrainingAttempt(miss);
@@ -224,8 +223,7 @@ test("actual lifecycle rejects empty due evidence with no session write and pres
 
 test("explicit session_misses is unavailable before lifecycle persistence", async () => {
   const storage = installMemoryStorage();
-  const catalog = await catalogPromise;
-  const track = catalog.getTrack(TRACK_ID);
+  const track = await trackPromise;
   const mode = track.getMode("coding-interview-weak-area-review");
   storage.resetCounters();
   const lifecycle = await actualLifecycle("coding-session-misses-unsupported");
@@ -240,8 +238,7 @@ test("explicit session_misses is unavailable before lifecycle persistence", asyn
 });
 
 test("a single-source Design weak-area review keeps its existing due-only default without reviewSource", async () => {
-  const catalog = await catalogPromise;
-  const track = catalog.getTrack("backend-system-design-interview");
+  const track = (await contentPackageRuntimeOwner.resolveForDiscovery("backend-system-design-interview", "design_interview")).track;
   const mode = track.getMode("design-interview-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
   const prepared = await new CanonicalTrainingRuntime(track).prepare({
@@ -253,8 +250,7 @@ test("a single-source Design weak-area review keeps its existing due-only defaul
 });
 
 test("single-source Certification weak-area review also keeps its due-only default without reviewSource", async () => {
-  const catalog = await catalogPromise;
-  const track = catalog.getTrack("google-cloud-associate-cloud-engineer");
+  const track = (await contentPackageRuntimeOwner.resolveForDiscovery("google-cloud-associate-cloud-engineer", "certification")).track;
   const mode = track.getMode("certification-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
   const prepared = await new CanonicalTrainingRuntime(track).prepare({
@@ -266,8 +262,7 @@ test("single-source Certification weak-area review also keeps its due-only defau
 });
 
 test("due review selection rejects future and stale artifact/version/track references without fallback", async () => {
-  const catalog = await catalogPromise;
-  const track = catalog.getTrack(TRACK_ID);
+  const track = await trackPromise;
   const mode = track.getMode("coding-interview-weak-area-review");
   const question = track.getPool(mode.modeId)[0]!;
   const current = dueReview(track, question, "matrix-current");
@@ -292,8 +287,7 @@ test("due review selection rejects future and stale artifact/version/track refer
 });
 
 test("invalid review sources and refs are rejected on practice and simulation before selection", async () => {
-  const catalog = await catalogPromise;
-  const track = catalog.getTrack(TRACK_ID);
+  const track = await trackPromise;
   const runtime = new CanonicalTrainingRuntime(track);
   const modeId = "coding-interview-weak-area-review";
   const question = track.getPool(modeId)[0]!;
@@ -309,8 +303,7 @@ test("invalid review sources and refs are rejected on practice and simulation be
 
 test("actual lifecycle rejects review source on a simulation before any durable session write", async () => {
   const storage = installMemoryStorage();
-  const catalog = await catalogPromise;
-  const track = catalog.getTrack(TRACK_ID);
+  const track = await trackPromise;
   storage.resetCounters();
   const lifecycle = await actualLifecycle("coding-simulation-review-source-invalid");
 

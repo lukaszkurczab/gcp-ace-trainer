@@ -23,7 +23,7 @@ import type { Edge } from "react-native-safe-area-context";
 import * as Google from "expo-auth-session/providers/google";
 import { StatusBar } from "expo-status-bar";
 import GoogleIcon from "../../assets/icons/google.svg";
-import { getTrackDisplay } from "../../domain";
+import { getTrackDisplay, type TrackId } from "../../domain";
 
 import {
   Button,
@@ -44,7 +44,7 @@ import {
   usePatternlyAccount,
   type AccountCommandResult,
 } from "../../application/account/AccountSessionProvider";
-import type { AccountDataSession } from "../../application/account/accountDataService";
+import type { AccountDataSession, AccountSyncConflictPreview } from "../../application/account/accountDataService";
 import {
   getFirebaseGoogleClientId,
   readFirebaseClientConfiguration,
@@ -59,6 +59,7 @@ import {
 import { useAccountCommand } from "./useAccountCommand";
 import { RecoveryOperationPanel } from "./RecoveryOperationPanel";
 import { getRecoveryOperationPresentation } from "./recoveryOperationPresentation";
+import { accountSyncAutomaticRetryAllowed, getAccountSyncConflictPresentation } from "./accountSyncConflictPresentation";
 
 type AccountEntryProps = NativeStackScreenProps<
   RootStackParamList,
@@ -191,6 +192,14 @@ export function AccountEntryScreen({ navigation, route }: AccountEntryProps) {
   profileTransitionDescription: t("profileTransitionDescription"),
   profileTransitionRetry: t("profileTransitionRetry"),
   accountRecoveryDescription: t("accountRecoveryDescription"),
+  syncConflictReview: t("syncConflictReview"),
+  syncConflictReviewDescription: t("syncConflictReviewDescription"),
+  syncConflictDescription: t("syncConflictDescription"),
+  syncConflictRebase: t("syncConflictRebase"),
+  syncConflictKeepLocal: t("syncConflictKeepLocal"),
+  syncConflictKeepAccount: t("syncConflictKeepAccount"),
+  syncConflictUnsupported: t("syncConflictUnsupported"),
+  syncConflictStale: t("syncConflictStale"),
   retrySync: t("retrySync"),
   syncing: t("syncing"),
   syncComplete: t("syncComplete"),
@@ -1155,6 +1164,9 @@ function AccountRecoveryScreen({
   const { busyAction, runCommand } = useAccountCommand();
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [feedbackAction, setFeedbackAction] = useState<"retry" | "signOut" | null>(null);
+  const [conflictPreview, setConflictPreview] = useState<AccountSyncConflictPreview | null>(null);
+  const [conflictBusy, setConflictBusy] = useState(false);
+  const { t: tCommon } = useTranslation("common");
   const previousStatusRef = useRef(accountData.status);
   useEffect(() => {
     if (previousStatusRef.current === accountData.status) return;
@@ -1180,7 +1192,29 @@ function AccountRecoveryScreen({
       else setFeedbackAction(null);
     });
   };
+  const inspectConflict = async () => {
+    setFeedback(null);
+    setConflictBusy(true);
+    try {
+      const result = await account.inspectAccountSyncConflict();
+      if (result.kind === "success") setConflictPreview(result.preview);
+      else setFeedback({ kind: "failure", failure: result.failure });
+    } finally { setConflictBusy(false); }
+  };
+  const resolveConflict = async (resolution: "rebase" | "keep_local" | "keep_account", trackId?: TrackId) => {
+    if (!conflictPreview || !accountData.syncConflict) return;
+    setConflictBusy(true);
+    setFeedback(null);
+    const result = await account.resolveAccountSyncConflict({ conflictId: conflictPreview.conflictId, resolution, ...(trackId ? { trackId } : {}) });
+    if (result.kind === "failure") {
+      setConflictPreview(null);
+      setFeedback(result);
+    }
+    else setConflictPreview(null);
+    setConflictBusy(false);
+  };
   const status = getAccountRecoveryPresentation(accountData, text);
+  const conflictAction = getAccountSyncConflictPresentation(accountData, conflictPreview);
   const actionFailure = feedback?.kind === "failure" && !(feedbackAction === "retry" && isRetryFailureCoveredByStatus(accountData, feedback.failure))
     ? { body: text[feedback.failure], testID: `account-feedback-${feedback.failure}`, title: text.accountRecoveryTitle }
     : null;
@@ -1209,7 +1243,7 @@ function AccountRecoveryScreen({
           <AuthText accessibilityRole="header" style={[styles.accountHeading, showCloudRecovery && !largeText ? styles.accountRecoveryCenteredText : null]}>{presentation.title}</AuthText>
           <AuthText style={[styles.accountBody, showCloudRecovery && !largeText ? styles.accountRecoveryCenteredText : null]}>{presentation.body}</AuthText>
         </View>
-        {status.retry ? (
+        {status.retry && accountSyncAutomaticRetryAllowed(accountData) ? (
           <Button
             disabled={busyAction !== null}
             loading={busyAction === "retry"}
@@ -1220,6 +1254,34 @@ function AccountRecoveryScreen({
           >
             {text.retrySync}
           </Button>
+        ) : null}
+        {conflictAction.kind !== "none" ? (
+          <View style={styles.conflictResolution} testID="account-sync-conflict-resolution">
+            <AuthText accessibilityRole="header" style={styles.accountHeading}>{text.syncConflictReview}</AuthText>
+            <AuthText style={styles.accountBody}>{text.syncConflictReviewDescription}</AuthText>
+            {conflictAction.kind === "inspect" ? (
+              <Button disabled={conflictBusy || busyAction !== null} loading={conflictBusy} onPress={() => { void inspectConflict(); }} testID="account-sync-conflict-inspect" variant="primary">
+                {text.syncConflictReview}
+              </Button>
+            ) : conflictAction.kind === "rebase" ? (
+              <Button disabled={conflictBusy || busyAction !== null} loading={conflictBusy} onPress={() => { void resolveConflict("rebase"); }} testID="account-sync-conflict-rebase" variant="primary">
+                {text.syncConflictRebase}
+              </Button>
+            ) : conflictAction.kind === "unsupported" ? (
+              <AuthText accessibilityRole="alert" style={styles.accountBody}>{text.syncConflictUnsupported}</AuthText>
+            ) : (
+              <View style={styles.conflictResolutionTracks}>
+                {conflictAction.trackIds.map((trackId) => (
+                  <View key={trackId} style={styles.conflictResolutionTrack} testID={`account-sync-conflict-track-${trackId}`}>
+                    <AuthText accessibilityRole="header" style={styles.accountHeading}>{tCommon(getTrackDisplay(trackId).shortTitle)}</AuthText>
+                    <Button disabled={conflictBusy || busyAction !== null} loading={conflictBusy} onPress={() => { void resolveConflict("keep_local", trackId); }} testID={`account-sync-conflict-local-${trackId}`} variant="secondary">{text.syncConflictKeepLocal}</Button>
+                    <Button disabled={conflictBusy || busyAction !== null} loading={conflictBusy} onPress={() => { void resolveConflict("keep_account", trackId); }} testID={`account-sync-conflict-account-${trackId}`} variant="secondary">{text.syncConflictKeepAccount}</Button>
+                  </View>
+                ))}
+              </View>
+            )}
+            {feedback?.kind === "failure" ? <AuthText accessibilityRole="alert" style={styles.accountBody}>{text[feedback.failure] ?? text.syncConflictStale}</AuthText> : null}
+          </View>
         ) : null}
       </View>
     </Screen>
@@ -1235,6 +1297,7 @@ type AccountRecoveryPresentation = Readonly<{
 }>;
 
 function getAccountRecoveryPresentation(accountData: AccountDataSession, text: AccountCopy): AccountRecoveryPresentation {
+  if (accountData.syncConflict) return { body: text.syncConflictDescription, cloudRecovery: false, retry: false, testID: "account-sync-conflict", title: text.conflict };
   if (accountData.status === "resumeRequired") return { body: text.resumeRequiredDescription, cloudRecovery: true, retry: true, testID: "account-sync-resume-required", title: text.resumeRequired };
   if (accountData.status === "offlinePending") return { body: text.pendingDescription, cloudRecovery: true, retry: true, testID: "account-sync-pending", title: text.pending };
   if (accountData.status === "signOutPending") return { body: text.signOutPendingDescription, cloudRecovery: false, retry: false, testID: "account-sign-out-pending", title: text.signOutPending };
@@ -2200,6 +2263,9 @@ function isAuthFieldFailure(
     accountRecoveryContainer: { flex: 1, gap: spacing.md },
     accountRecoveryCentered: { justifyContent: "center" },
     accountRecoveryStatus: { gap: spacing.md },
+    conflictResolution: { gap: spacing.md, borderTopColor: palette.border, borderTopWidth: 1, paddingTop: spacing.md },
+    conflictResolutionTracks: { gap: spacing.md },
+    conflictResolutionTrack: { gap: spacing.sm, paddingVertical: spacing.sm },
     accountRecoveryCenteredContent: { alignItems: "center" },
     accountRecoveryCenteredText: { textAlign: "center" },
     accountRecoveryAction: { alignSelf: "stretch" },

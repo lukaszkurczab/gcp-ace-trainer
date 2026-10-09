@@ -698,6 +698,42 @@ async function ensureGuestInstallation(base: KeyValueStorage, profile: StoragePr
   }
 }
 
+async function ensureAccountInstallation(
+  base: KeyValueStorage,
+  profile: StorageProfile,
+  identity: GuestInstallationIdentityPort,
+  knownInstallationId?: string,
+): Promise<void> {
+  if (profile.kind !== "account" || !profile.accountId) throw new ProfileStorageError("profile_scope_unavailable");
+  const key = physicalKey(profile.id, STORAGE_KEYS.GUEST_INSTALLATION, false);
+  const scoped = createProfileScopedStorage(base, profile);
+  const raw = base.getString(key);
+  if (raw !== undefined) {
+    const existing = parseStoredGuestInstallation(raw);
+    if (!existing || existing.bindingState !== "account_bound" || existing.accountId !== profile.accountId || existing.localDatasetId !== profile.id) {
+      throw new ProfileStorageError("profile_scope_unavailable");
+    }
+    return;
+  }
+  // Provisioning a missing marker is safe only for a newly registered, empty
+  // account scope. Existing data without its owner marker is ambiguous.
+  if (scoped.getAllKeys().length !== 0) throw new ProfileStorageError("profile_scope_unavailable");
+  const installationId = knownInstallationId ?? (await identity.create()).installationId;
+  if (!uuid(installationId) || installationId === profile.id) throw new ProfileStorageError("profile_scope_unavailable");
+  if (base.getString(key) !== undefined || scoped.getAllKeys().length !== 0) throw new ProfileStorageError("profile_scope_unavailable");
+  const value = JSON.stringify({
+    schemaIdentity: CANONICAL_ENVELOPE,
+    revision: 1,
+    payload: { installationId, localDatasetId: profile.id, bindingState: "account_bound", accountId: profile.accountId },
+  });
+  base.setString(key, value);
+  const verified = parseStoredGuestInstallation(base.getString(key));
+  if (!verified || verified.installationId !== installationId || verified.localDatasetId !== profile.id
+    || verified.bindingState !== "account_bound" || verified.accountId !== profile.accountId) {
+    throw new ProfileStorageError("profile_scope_unavailable");
+  }
+}
+
 export function createProfileScopedStorage(base: KeyValueStorage, profile: StorageProfile, isTransitionActive: () => boolean = () => false): KeyValueStorage {
   const legacy = profile.kind === "legacy_owner" || profile.kind === "legacy_guest";
   const map = (key: string) => physicalKey(profile.id, key, legacy);
@@ -1092,8 +1128,13 @@ export async function openProfileStorageRouter(
         return promoted;
       }
       const existing = registry.profiles.find((candidate) => candidate.accountId === accountId && (candidate.kind === "legacy_owner" || candidate.kind === "account"));
-      if (existing?.id === registry.selectedProfileId) return existing;
-      const account = existing ?? Object.freeze({ id: (await identity.create()).localDatasetId, kind: "account" as const, accountId });
+      if (existing?.id === registry.selectedProfileId) {
+        if (existing.kind === "account") await ensureAccountInstallation(base, existing, identity);
+        if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
+        return existing;
+      }
+      const generated = existing ? null : await identity.create();
+      const account = existing ?? Object.freeze({ id: generated!.localDatasetId, kind: "account" as const, accountId });
       if (account.id !== registry.selectedProfileId) {
         if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
         claimTransition();
@@ -1101,6 +1142,8 @@ export async function openProfileStorageRouter(
         const next = withChecksum({ ...registryBody(registry, registry.generation + 1), profiles, selectedProfileId: account.id });
         await commitRegistry(control, registry, next);
       }
+      if (account.kind === "account") await ensureAccountInstallation(base, account, identity, generated?.installationId);
+      if (!canContinue()) throw new ProfileStorageError("profile_transition_cancelled");
       return account;
     },
   });

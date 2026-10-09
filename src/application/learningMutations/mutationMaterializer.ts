@@ -19,11 +19,13 @@ import {
   saveTrainingSession,
   saveTrainingSessionResult,
 } from "../../storage/repositories";
-import { assertMutationJournalIntegrity, type MutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
+import { assertMutationJournalIntegrity, readActiveMutationJournal, type MutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
+import { materializeGoalPlanAcceptance, type GoalPlanAcceptanceInterruptionHook } from "../../storage/repositories/goalPlanAcceptanceRepository";
+import { materializeAccountSyncConflictResolution } from "../../storage/repositories/accountSyncConflictResolutionRepository";
 
 function unsupportedWrite(write: never): never { throw new Error(`Unsupported journal write kind: ${String((write as { kind?: unknown }).kind)}.`); }
 
-export async function materializeMutation(record: MutationJournalRecord): Promise<void> {
+export async function materializeMutation(record: MutationJournalRecord, beforeGoalPlanWrite?: GoalPlanAcceptanceInterruptionHook): Promise<void> {
   try {
     assertMutationJournalIntegrity(record);
     await assertDraftDeletePreflight(record);
@@ -31,6 +33,18 @@ export async function materializeMutation(record: MutationJournalRecord): Promis
     await assertReviewDeletePreflight(record);
     for (const write of record.writes) {
       switch (write.kind) {
+        case "accept_goal_plan": {
+          if (beforeGoalPlanWrite && (record.operation !== "accept_goal_plan" || !isGoalPlanAcceptanceJournal(record))) throw new JournalMaterializationError(new Error("A goal-plan interruption hook cannot attach to a training mutation."));
+          materializeGoalPlanAcceptance(write.record, record, beforeGoalPlanWrite ? (context) => {
+            const active = readActiveMutationJournal();
+            if (!active || canonicalSerialize(active) !== canonicalSerialize(record)) throw new Error("The exact durable goal-plan journal is no longer current.");
+            beforeGoalPlanWrite(Object.freeze({ ...context, journal: active }));
+          } : undefined);
+          break;
+        }
+        case "resolve_account_sync_conflict":
+          materializeAccountSyncConflictResolution(write.record, record);
+          break;
         case "put_attempt": await addTrainingAttempt(write.record); break;
         case "put_review_entry":
         case "put_review_entry_for_attempt": await addReviewQueueItems([write.record]); break;
@@ -72,6 +86,10 @@ export async function materializeMutation(record: MutationJournalRecord): Promis
   } catch (error) {
     throw new JournalMaterializationError(error);
   }
+}
+
+function isGoalPlanAcceptanceJournal(record: MutationJournalRecord): record is Extract<MutationJournalRecord, { operation: "accept_goal_plan" }> {
+  return record.operation === "accept_goal_plan";
 }
 
 async function assertDraftClearPreflight(record: MutationJournalRecord): Promise<void> {

@@ -434,7 +434,14 @@
   "Choose at least one practice day.": "Vali vähemalt üks harjutamispäev.",
   "Reminders": "Meeldetuletused",
   "Reminder draft": "Meeldetuletuste kavand",
-  "Exact reminder times and activation are available only after you accept a learning plan.": "Meeldetuletuste täpsed kellaajad ja aktiveerimine on saadaval alles pärast õppekava kinnitamist.",
+  "Accept a learning plan first.": "Kõigepealt kinnita õppekava.",
+  "Choose exact reminder times next.": "Vali\njärgmisena täpsed\nmeeldetuletusajad.",
+  "Then you can turn reminders on.": "Seejärel saad meeldetuletused sisse lülitada.",
+  "Time available for this track": "Selle õpitee jaoks saadaolev aeg",
+  "Minutes on each chosen study day. This applies to this track only.": "Minutid igal valitud õppepäeval. See kehtib ainult selle õpitee kohta.",
+  "{{count}} min": "{{count}} minutit",
+  "Custom minutes per study day for this track": "Selle õpitee kohandatud minutid õppepäeva kohta",
+  "Or enter 1–1440 minutes": "Või sisesta 1–1440 minutit",
   "Save goal": "Salvesta eesmärk",
   "Save changes": "Salvesta muudatused",
   "Loading goal": "Eesmärgi laadimine",
@@ -775,5 +782,6 @@
   "This recommended practice scope is no longer available for the current content package.": "Soovitatud harjutusala pole praeguses sisupaketis enam saadaval.",
   "This recommended practice scope does not have enough available questions.": "Soovitatud harjutusalal pole piisavalt küsimusi.",
   "{{correct}} correct, {{partial}} partly correct, {{incorrect}} incorrect, and {{unanswered}} unanswered from {{sampled}} sampled questions.": "{{correct}} õiget, {{partial}} osaliselt õiget, {{incorrect}} valet ja {{unanswered}} vastamata vastust {{sampled}} valimisse kuulunud küsimusest.",
-  "Next practice: {{topic}} — learning unit {{number}}. This diagnostic sampled {{sampled}} of {{eligible}} Focus questions for this unit, with {{partial}} partly correct and {{incorrect}} incorrect answers.": "Järgmine harjutus: {{topic}} — õpiüksus {{number}}. Diagnostika hõlmas {{sampled}} küsimust selle üksuse {{eligible}} Focus-küsimusest; {{partial}} vastust olid osaliselt õiged ja {{incorrect}} valed."
+  "Next practice: {{topic}} — learning unit {{number}}. This diagnostic sampled {{sampled}} of {{eligible}} Focus questions for this unit, with {{partial}} partly correct and {{incorrect}} incorrect answers.": "Järgmine harjutus: {{topic}} — õpiüksus {{number}}. Diagnostika hõlmas {{sampled}} küsimust selle üksuse {{eligible}} Focus-küsimusest; {{partial}} vastust olid osaliselt õiged ja {{incorrect}} valed.",
+  "Choose how much time you can spend on this track each study day.": "Vali, kui palju aega saad selle õpitee jaoks igal õppepäeval pühendada."
 }

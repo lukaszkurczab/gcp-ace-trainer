@@ -85,5 +85,9 @@
   "schedulerFailureTitle": "Meeldetuletusi ei õnnestunud ajastada",
   "schedulerFailureDetail": "Sinu plaan on salvestatud. Proovi selle meeldetuletused uuesti ajastada.",
   "concurrentChangeTitle": "Plaan muutus",
-  "concurrentChangeDetail": "Plaan muutus meeldetuletuste uuendamise ajal. Proovi uuesti."
+  "concurrentChangeDetail": "Plaan muutus meeldetuletuste uuendamise ajal. Proovi uuesti.",
+  "activeReminderDetail": "Meeldetuletused on kinnitatud õppeplaani jaoks ajastatud.",
+  "disabledReminderDetail": "Kinnitatud õppeplaani meeldetuletused on välja lülitatud.",
+  "draftPlanReminderDetail": "Need muudatused on mustand. Kinnitatud plaan jääb kehtima, kuni kinnitad uue plaani.",
+  "reminderStatusUnavailableDetail": "Selle õpitee meeldetuletuste olek pole praegu saadaval."
 }

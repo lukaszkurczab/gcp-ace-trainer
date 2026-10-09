@@ -9,7 +9,7 @@ import type { PaceForecast } from "../../domain/learning/paceForecast";
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 const ARTIFACT_SHA256 = "a".repeat(64);
 
-function plan(overrides: Partial<LearningPlan> = {}): LearningPlan {
+function plan(overrides: Partial<Extract<LearningPlan, { schemaVersion: 1 }>> = {}): LearningPlan {
   return normalizeLearningPlan({
     schemaVersion: 1,
     planId: "plan:guidance",

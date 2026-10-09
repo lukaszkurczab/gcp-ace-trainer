@@ -27,7 +27,7 @@ export async function recoverPendingMutation(): Promise<void> {
   }
   if (record.status === "verified_pending_clear") {
     try {
-      await markAccountDataPending();
+      if (record.operation !== "resolve_account_sync_conflict") await markAccountDataPending();
       await clearMutationJournal(record.commandIdentity.fingerprint);
     } catch (error) {
       throw new MutationCommitFailure("journal_clear", "verified_pending_clear", error);

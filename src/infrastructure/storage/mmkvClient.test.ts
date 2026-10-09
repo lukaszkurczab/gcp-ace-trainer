@@ -130,6 +130,61 @@ test("prepared storage lease fences the exact already-prepared profile without o
   setProfileStoragePreparationFactoryForTests(null);
 });
 
+test("account marker readback failure refreshes prepared state and permits a same-process exact retry", async () => {
+  const fixture = await preparedFixture();
+  setProfileStoragePreparationFactoryForTests(async () => fixture);
+  try {
+    await prepareProfileStorage();
+    const accountId = "account-marker-retry";
+    const expectedProfileId = "00000000-0000-4000-8000-000000000023";
+    const markerKey = `patternly:profile:v1:${expectedProfileId}:${encodeURIComponent(STORAGE_KEYS.GUEST_INSTALLATION)}`;
+    fixture.base.setFailurePlan({ kind: "fail_on_key_read_occurrence", key: markerKey, occurrence: 3 });
+
+    await assert.rejects(() => selectPreparedAccountProfile(accountId));
+    const failedAttemptState = await inspectPreparedProfileState();
+    assert.equal(failedAttemptState.selectedProfile.id, expectedProfileId, "registry-first selection remains explicit after marker verification failure");
+    assert.equal(getActiveStorageProfileOrNull(), null, "failed marker verification never activates the account");
+    assert.equal(JSON.parse(fixture.base.getString(markerKey)!).payload.accountId, accountId, "the durable marker is retained for exact retry");
+
+    const retry = await selectPreparedAccountProfile(accountId);
+    assert.equal(retry.profile.id, expectedProfileId);
+    assert.equal(retry.changed, false);
+    assert.equal(getActiveStorageProfileOrNull(), null, "same-process retry remains prepared until explicit activation");
+  } finally {
+    closeActiveProfileStorage();
+    setProfileStoragePreparationFactoryForTests(null);
+  }
+});
+
+test("account marker write failure leaves the committed registry safe and retries without replacing Guest data", async () => {
+  const fixture = await preparedFixture();
+  setProfileStoragePreparationFactoryForTests(async () => fixture);
+  try {
+    await prepareProfileStorage();
+    const guestKey = `patternly:profile:v1:${GUEST_ID}:${encodeURIComponent(STORAGE_KEYS.METADATA)}`;
+    fixture.base.setString(guestKey, "guest-preserved");
+    const accountId = "account-marker-write-retry";
+    const expectedProfileId = "00000000-0000-4000-8000-000000000023";
+    const markerKey = `patternly:profile:v1:${expectedProfileId}:${encodeURIComponent(STORAGE_KEYS.GUEST_INSTALLATION)}`;
+    const guestBefore = fixture.base.getString(guestKey);
+    fixture.base.setFailurePlan({ kind: "fail_on_key_write", key: markerKey });
+
+    await assert.rejects(() => selectPreparedAccountProfile(accountId));
+    assert.equal((await inspectPreparedProfileState()).selectedProfile.id, expectedProfileId);
+    assert.equal(fixture.base.getString(markerKey), undefined, "failed marker write stays absent");
+    assert.equal(getActiveStorageProfileOrNull(), null);
+
+    fixture.base.setFailurePlan(null);
+    const retry = await selectPreparedAccountProfile(accountId);
+    assert.equal(retry.profile.id, expectedProfileId);
+    assert.equal(JSON.parse(fixture.base.getString(markerKey)!).payload.localDatasetId, expectedProfileId);
+    assert.equal(fixture.base.getString(guestKey), guestBefore, "Guest data remains untouched across account provisioning and retry");
+  } finally {
+    closeActiveProfileStorage();
+    setProfileStoragePreparationFactoryForTests(null);
+  }
+});
+
 test("a prepared-profile tombstone readback failure prevents every following proof call", async () => {
   const fixture = await preparedFixture();
   const accountId = "prepared-proof-account";

@@ -213,7 +213,14 @@ test("account recovery owns one status message, a truthful retry, and a sign-out
   assert.match(recovery, /<AuthText accessibilityRole="header" style=\{\[styles\.accountHeading/);
   assert.match(recovery, /<AuthText style=\{\[styles\.accountBody/);
   assert.doesNotMatch(recovery, /<InfoBlock/);
-  assert.match(recovery, /status\.retry \? \(/);
+  assert.match(recovery, /status\.retry && accountSyncAutomaticRetryAllowed\(accountData\) \? \(/);
+  assert.match(recovery, /conflictAction\.kind === "inspect"/);
+  assert.match(recovery, /testID="account-sync-conflict-inspect"/);
+  const resolveStart = recovery.indexOf("const resolveConflict = async");
+  const resolveEnd = recovery.indexOf("const status = getAccountRecoveryPresentation", resolveStart);
+  const resolve = recovery.slice(resolveStart, resolveEnd);
+  assert.ok(resolveStart >= 0 && resolveEnd > resolveStart);
+  assert.match(resolve, /if \(result\.kind === "failure"\) \{\s*setConflictPreview\(null\);\s*setFeedback\(result\);/);
   assert.match(recovery, /loading=\{busyAction === "retry"\}/);
   assert.match(recovery, /testID="account-sync-retry"/);
   assert.match(recovery, /loading=\{busyAction === "signOut"\}/);

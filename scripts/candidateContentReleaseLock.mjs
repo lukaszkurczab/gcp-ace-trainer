@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { EXPECTED_TRACK_IDS, validateBuiltContent } from "./syncBundledContentRelease.mjs";
+import { EXPECTED_TRACK_IDS, SUCCESSOR_LEDGER_FILE_NAME, historicalTrainingProjection, validateBuiltContent } from "./syncBundledContentRelease.mjs";
 
 const APP_ROOT = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 const DEFAULT_CONTENT_ROOT = path.resolve(APP_ROOT, "../patternly-content");
@@ -11,6 +11,7 @@ const RELEASE_PATH = "reports/candidate-reconciliation/AWS-02-DRAFT/release/rele
 const BUNDLED_LOCK_PATH = "src/content/generated/canonical-content/content-lock.json";
 const OUTPUT_PATH = "integration/contracts/content-release/release.lock.json";
 const HISTORICAL_PATH = "integration/contracts/content-release/release.lock.historical-0024.json";
+const TRAINING_LOCK_SCHEMA_VERSION = "patternly-content-lock-v1";
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const canonical = (value) => value === null || ["boolean", "number", "string"].includes(typeof value)
   ? JSON.stringify(value)
@@ -21,6 +22,26 @@ const bytes = (value) => Buffer.from(`${canonical(value)}\n`);
 
 async function json(root, relativePath) {
   return JSON.parse(await readFile(path.join(root, relativePath), "utf8"));
+}
+
+function verifiedTrainingPredecessor(built) {
+  const ledgerBytes = built.files.get(SUCCESSOR_LEDGER_FILE_NAME);
+  if (!ledgerBytes) throw new Error("Candidate release lock requires a verified training predecessor ledger.");
+  const ledger = JSON.parse(ledgerBytes.toString("utf8"));
+  const byTrack = new Map(ledger.tracks.map((entry) => [entry.trackId, entry.training]));
+  const tracks = EXPECTED_TRACK_IDS.map((trackId) => {
+    const training = byTrack.get(trackId);
+    const artifactBytes = built.files.get(`${trackId}.json`);
+    if (!training || !artifactBytes) throw new Error(`Candidate training predecessor is missing ${trackId}.`);
+    const artifact = JSON.parse(artifactBytes.toString("utf8"));
+    const projection = historicalTrainingProjection(artifact, training.contentVersion);
+    if (sha256(projection) !== training.artifactSha256 || JSON.parse(projection.toString("utf8")).questions.length !== training.questionCount) {
+      throw new Error(`Candidate v2 artifact does not reconstruct its exact v1 training predecessor for ${trackId}.`);
+    }
+    return Object.freeze({ trackId, contentVersion: training.contentVersion, questionCount: training.questionCount, sha256: training.artifactSha256 });
+  });
+  const lock = Object.freeze({ schemaVersion: TRAINING_LOCK_SCHEMA_VERSION, tracks: Object.freeze(tracks) });
+  return Object.freeze({ lock, bytes: Buffer.from(canonical(lock)) });
 }
 
 // Bootstrap only: bind the checkout pin to the app's current immutable bytes.
@@ -39,12 +60,13 @@ export async function readCandidateContentProducerPin({ appRoot = APP_ROOT } = {
   for (const artifact of lock.artifacts) {
     if (!keys(artifact, ["releaseId", "producerCommit", "sourceRepositoryCommit", "trackId", "contentVersion", "checksumSha256"]) || !commit(pin) || artifact.producerCommit !== pin || artifact.sourceRepositoryCommit !== pin || artifact.releaseId !== lock.artifacts[0].releaseId || typeof artifact.releaseId !== "string" || !/^[a-z][a-z0-9-]*$/u.test(artifact.releaseId) || typeof artifact.contentVersion !== "string" || !artifact.contentVersion.trim() || artifact.contentVersion.trim() !== artifact.contentVersion || !hash(artifact.checksumSha256)) throw new Error("Candidate release lock bootstrap artifact metadata is invalid.");
   }
-  const bundledBytes = await readFile(path.join(appRoot, BUNDLED_LOCK_PATH));
-  if (sha256(bundledBytes) !== lock.bundledContentLockSha256) throw new Error("Candidate release lock bootstrap bundled lock hash differs.");
   const built = await validateBuiltContent(path.join(appRoot, path.dirname(BUNDLED_LOCK_PATH)));
+  const predecessor = verifiedTrainingPredecessor(built);
+  if (sha256(predecessor.bytes) !== lock.bundledContentLockSha256) throw new Error("Candidate release lock bootstrap bundled training lock hash differs.");
+  const trainingByTrack = new Map(predecessor.lock.tracks.map((entry) => [entry.trackId, entry]));
   for (const artifact of lock.artifacts) {
-    const track = built.lock.tracks.find(entry => entry.trackId === artifact.trackId);
-    if (!track || track.sha256 !== artifact.checksumSha256 || track.contentVersion !== artifact.contentVersion) throw new Error("Candidate release lock bootstrap bundled artifact differs.");
+    const track = trainingByTrack.get(artifact.trackId);
+    if (!track || track.sha256 !== artifact.checksumSha256 || track.contentVersion !== artifact.contentVersion || track.questionCount !== built.lock.tracks.find(entry => entry.trackId === artifact.trackId)?.questionCount) throw new Error("Candidate release lock bootstrap bundled training artifact differs.");
   }
   return pin;
 }
@@ -59,18 +81,19 @@ export async function readHistoricalContentProducerPin({ appRoot = APP_ROOT } = 
 }
 
 export async function createCandidateContentReleaseLock({ appRoot = APP_ROOT, contentRoot = DEFAULT_CONTENT_ROOT } = {}) {
-  const [candidate, release, bundled] = await Promise.all([
+  const [candidate, release, built] = await Promise.all([
     json(contentRoot, CANDIDATE_PATH),
     json(contentRoot, RELEASE_PATH),
-    json(appRoot, BUNDLED_LOCK_PATH),
+    validateBuiltContent(path.join(appRoot, path.dirname(BUNDLED_LOCK_PATH))),
   ]);
   if (candidate.status !== "draft_not_admitted" || candidate.release.releaseId !== release.manifest.releaseId) throw new Error("Candidate release identity is invalid.");
   if (candidate.release.checksumSha256 !== sha256(bytes(release))) throw new Error("Candidate release checksum is stale.");
-  const bundledByTrack = new Map(bundled.tracks.map((track) => [track.trackId, track]));
+  const predecessor = verifiedTrainingPredecessor(built);
+  const bundledByTrack = new Map(predecessor.lock.tracks.map((track) => [track.trackId, track]));
   const artifacts = release.artifacts.map((artifact) => {
     const track = bundledByTrack.get(artifact.trackId);
     if (!track || track.sha256 !== artifact.checksumSha256 || track.contentVersion !== artifact.contentVersion || track.questionCount !== artifact.questionCount) {
-      throw new Error(`Bundled content differs from candidate artifact ${artifact.trackId}.`);
+      throw new Error(`Reconstructed training content differs from candidate artifact ${artifact.trackId}.`);
     }
     return {
       releaseId: release.manifest.releaseId,
@@ -90,7 +113,7 @@ export async function createCandidateContentReleaseLock({ appRoot = APP_ROOT, co
     candidateManifestPath: CANDIDATE_PATH,
     releaseManifestPath: RELEASE_PATH,
     releaseManifestSha256: sha256(bytes(release)),
-    bundledContentLockSha256: sha256(await readFile(path.join(appRoot, BUNDLED_LOCK_PATH))),
+    bundledContentLockSha256: sha256(predecessor.bytes),
     artifacts,
   };
 }

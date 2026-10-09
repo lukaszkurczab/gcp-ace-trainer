@@ -85,5 +85,9 @@
   "schedulerFailureTitle": "Reminders could not be scheduled",
   "schedulerFailureDetail": "Your plan is saved. Try scheduling its reminders again.",
   "concurrentChangeTitle": "Plan changed",
-  "concurrentChangeDetail": "The plan changed while reminders were being updated. Try again."
+  "concurrentChangeDetail": "The plan changed while reminders were being updated. Try again.",
+  "activeReminderDetail": "Reminders are scheduled for the accepted plan.",
+  "disabledReminderDetail": "Reminders are turned off for the accepted plan.",
+  "draftPlanReminderDetail": "These changes are a draft. The accepted plan remains in effect until you accept the new plan.",
+  "reminderStatusUnavailableDetail": "Reminder status is unavailable for this track right now."
 }

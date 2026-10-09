@@ -75,8 +75,10 @@ export function normalizeGoalRecord(value: GoalRecord): GoalRecord {
   const trackId = value.trackId;
   if (!isGoalRecordShapeForTrack(value, trackId)) throw new Error(`Goal record for ${trackId} is invalid.`);
   const preferredDays = GOAL_DAY_IDS.filter((day) => value.preferredDays.includes(day));
+  const { targetDate, ...requiredFields } = value;
   return Object.freeze({
-    ...value,
+    ...requiredFields,
+    ...(targetDate === undefined ? {} : { targetDate }),
     preferredDays: Object.freeze(preferredDays),
     weeklySessionTarget: preferredDays.length,
   });

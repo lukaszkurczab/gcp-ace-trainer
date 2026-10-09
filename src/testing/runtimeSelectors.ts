@@ -24,8 +24,10 @@ export type LearningPlanPrimaryState =
   | "stale"
   | "no_goal"
   | "goal_paused"
+  | "budget_required"
   | "package_error"
   | "package_unavailable"
+  | "active_session_unavailable"
   | "generator_error"
   | "shortfall"
   | "shortened"
@@ -206,6 +208,7 @@ export const runtimeSelectors = Object.freeze({
   }),
   learningPlan: Object.freeze({
     root: () => selector("learning-plan", "root"),
+    proposalIdentity: (proposalId: string) => selector("learning-plan", "proposal-identity", proposalId),
     create: () => selector("learning-plan", "create"),
     state: (state: LearningPlanPrimaryState) => selector("learning-plan", "state", learningPlanStateSegment(state)),
     slot: (slotId: LearningPlanSlotId) => selector("learning-plan", "slot", slotId),
@@ -299,7 +302,7 @@ export type TargetDateGuidanceFactKind = "required-pace" | "actual-pace" | "fore
 export type ProgressPlanCompletionState = "unknown" | "in_progress" | "completed";
 
 const LEARNING_PLAN_PRIMARY_STATES: ReadonlySet<LearningPlanPrimaryState> = new Set([
-  "loading", "stale", "no_goal", "goal_paused", "package_error", "package_unavailable", "generator_error",
+  "loading", "stale", "no_goal", "goal_paused", "budget_required", "package_error", "package_unavailable", "active_session_unavailable", "generator_error",
   "shortfall", "shortened", "ready", "accepted",
 ]);
 

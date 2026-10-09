@@ -4,6 +4,7 @@ export * from "./commitTrainingSessionFinalization";
 export * from "./commitTrainingSessionStart";
 export * from "./commitTrainingSessionAdvance";
 export * from "./commitReviewEntryChange";
+export * from "./commitGoalPlanAcceptance";
 export * from "./commitLearningStateReset";
 export * from "./recoverPendingMutation";
 export * from "./mutationJournalBuilder";

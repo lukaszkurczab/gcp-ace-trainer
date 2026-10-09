@@ -20,7 +20,8 @@ test("goal cadence is a reachable root route backed by the canonical repository"
   assert.match(navigator, /name=\{ROUTES\.GOAL_CADENCE\}[\s\S]*?component=\{GoalCadenceScreen\}/);
   assert.match(repositoryIndex, /export \* from "\.\/goalRepository"/);
   assert.match(screen, /loadGoal\(savedTrackId\)/);
-  assert.match(screen, /persistGoal\(nextGoal\)/);
+  assert.match(screen, /persistGoalPlanStatus\(goal\.trackId\)/);
+  assert.doesNotMatch(screen, /persistGoal\(nextGoal\)/);
   assert.match(screen, /style=\{styles\.title\}[^>]*>\{t\("Set learning rhythm for this track"\)\}/);
   assert.match(navigator, /title: t\("Goal"\)/);
   assert.doesNotMatch(screen + navigator, /Goal & cadence|Goal and cadence/);
@@ -35,10 +36,13 @@ test("goal cadence is a reachable root route backed by the canonical repository"
   assert.match(screen, /weeklySessionTarget: preferredDays\.length/);
   assert.doesNotMatch(screen, /No preferred days/);
   assert.doesNotMatch(screen, /stepper|onSetWeeklyTarget|Weekly cadence|Sessions per week|Decrease sessions per week|Increase sessions per week/);
-  assert.match(screen, /<ReminderDraft preferredDays=\{selectedDays\} t=\{t\} \/>/);
-  assert.match(screen, /<ReminderDraft preferredDays=\{goal\.preferredDays\} t=\{t\} \/>/);
+  assert.match(screen, /<ReminderDraft preferredDays=\{selectedDays\} state=\{reminderState\} t=\{t\} tNotifications=\{tNotifications\} \/>/);
+  assert.match(screen, /<ReminderDraft preferredDays=\{goal\.preferredDays\} state=\{reminderState\} t=\{t\} tNotifications=\{tNotifications\} \/>/);
   assert.match(screen, /testID="goal-reminder-draft"/);
-  assert.match(screen, /Exact reminder times and activation are available only after you accept a learning plan\./);
+  assert.match(screen, /Accept a learning plan first\./);
+  assert.match(screen, /Choose exact reminder times next\./);
+  assert.match(screen, /Then you can turn reminders on\./);
+  assert.match(screen, /!state\.acceptedPlan \?/);
   assert.doesNotMatch(screen, /onOpenNotifications|ROUTES\.NOTIFICATION_SETTINGS|goal-summary-reminders/);
   assert.doesNotMatch(screen, /Managed in notification settings|Notification settings/);
   assert.match(screen, /status === "paused"/);
@@ -77,20 +81,23 @@ test("Settings opens the shared goal screen with its return context", () => {
   assert.match(screen, /navigation\.navigate\(ROUTES\.HOME, \{ initialTab: returnTo \}\)/);
   assert.match(screen, /<GoalLoadingSkeleton context=\{context\} onBack=\{handleBack\} \/>/);
   assert.match(screen, /style=\{styles\.context\}\>\{context\}</);
-  assert.match(screen, /await createAndOpenPlan\(track\.id\)/);
+  assert.match(screen, /await createAndOpenPlan\(track\.id, nextGoal, minutesPerStudyDay\)/);
   assert.match(screen, /navigation\.navigate\(ROUTES\.LEARNING_PLAN_PROPOSAL, \{ proposalId: result\.proposal\.proposalId, trackId: selectedTrackId \}\)/);
 });
 
 test("active goal summary only exposes Save while editing", () => {
   assert.match(screen, /footer=\{editing \? \([\s\S]*?\) : null\}/);
-  assert.match(screen, /\{t\(goal \? "Save changes" : "Save goal"\)\}/);
+  assert.match(screen, /tLearningPlan\("Review your learning plan"\)/);
   assert.match(screen, /onEdit=\{\(\) => \{ setDraft/);
   assert.match(screen, /onTogglePause=\{\(\) => \{ void togglePause\(\); \}\}/);
 });
 
 test("active goal summary keeps the reminder draft noninteractive", () => {
   const summary = screen.slice(screen.indexOf("function ActiveGoalSummary"), screen.indexOf("function isCreatedProposal"));
-  assert.match(summary, /<ReminderDraft preferredDays=\{goal\.preferredDays\} t=\{t\} \/>/);
+  assert.match(summary, /<ReminderDraft preferredDays=\{goal\.preferredDays\} state=\{reminderState\} t=\{t\} tNotifications=\{tNotifications\} \/>/);
+  assert.match(summary, /reminderStatusCopy\(state\)/);
+  assert.match(screen, /useNotificationSettings\(reminderCopy\)/);
+  assert.match(screen, /await notificationSettings\.refresh\(\)/);
   assert.doesNotMatch(summary, /onOpenNotifications|goal-summary-reminders/);
   assert.doesNotMatch(screen, /summaryReminderRowLarge|summaryReminderLabelLarge|summaryReminderActionLarge|summaryLink/);
 });
@@ -101,6 +108,25 @@ test("goal status and selected day labels use onPrimary on filled backgrounds", 
   assert.match(screen, /statusBadgeLabel: \{ color: palette\.onPrimary,/);
   assert.match(screen, /dayButtonSelected: \{ backgroundColor: palette\.success,/);
   assert.match(screen, /dayLabelSelected: \{ color: palette\.onPrimary \}/);
+});
+
+test("large text keeps every day choice tappable and reminder copy inside the card", () => {
+  assert.match(screen, /daysRow: \{[^}]*flexWrap: "wrap"/);
+  assert.match(screen, /dayButton: \{[^}]*flexBasis: "20%"[^}]*minHeight: 44[^}]*minWidth: 44/);
+  assert.doesNotMatch(screen, /dayButton: \{[^}]*\b(?:width|height): 44|dayButton: \{[^}]*\bheight: 36/);
+  assert.match(screen, /reminderDraft: \{[^}]*width: "100%"/);
+  assert.match(screen, /reminderDetail: \{ \.\.\.typography\.small, color: palette\.textSecondary \}/);
+});
+
+test("proposal creation uses the canonical coordinator without temporary diagnostics", () => {
+  assert.match(screen, /learningPlanProposalCoordinator\.create\(selectedTrackId, \{ goal: goalToPropose, minutesPerStudyDay: availableMinutes \}\)/);
+  assert.doesNotMatch(screen, /proposalFailureDiagnostic|goal-proposal-diagnostic|observeDevelopmentFailure/);
+});
+
+test("budget choices update the selected per-track minutes without diagnostic event state", () => {
+  assert.match(screen, /onSelectMinutes=\{setMinutesPerStudyDay\}/);
+  assert.match(screen, /const validValue = \/\^\\d\{1,4\}\$\/u\.test\(value\)[\s\S]*?onSelectMinutes\(validValue\)/);
+  assert.doesNotMatch(screen, /BudgetDiagnostic|goal-budget-diagnostic|onBudgetTextChange/);
 });
 
 test("preferred-day shortcuts preserve domain ids and translate every EN/PL label", () => {
@@ -127,13 +153,16 @@ test("preferred-day shortcuts preserve domain ids and translate every EN/PL labe
   assert.match(activeGoalSummary, /\{t\(DAY_SHORT_LABELS\[day\]\)\}/);
   assert.match(screen, /preferredDays\.filter\(\(candidate\) => candidate !== day\)/);
   assert.match(screen, /preferredDays, weeklySessionTarget: preferredDays\.length/);
-  assert.match(screen, /persistGoal\(nextGoal\)/);
+  assert.match(screen, /createAndOpenPlan\(track\.id, nextGoal, minutesPerStudyDay\)/);
+  assert.doesNotMatch(screen.slice(screen.indexOf("async function save()"), screen.indexOf("async function createAndOpenPlan")), /persistGoal|reconcileDeviceReminder/);
 });
 
 test("goal reminders are a read-only preferred-day draft in both create and active summary", () => {
   const required = [
     "Reminder draft",
-    "Exact reminder times and activation are available only after you accept a learning plan.",
+    "Accept a learning plan first.",
+    "Choose exact reminder times next.",
+    "Then you can turn reminders on.",
   ];
   for (const [index, locale] of targetDateLocaleCopy.entries()) {
     for (const key of required) {
@@ -142,9 +171,45 @@ test("goal reminders are a read-only preferred-day draft in both create and acti
       if (index > 0) assert.notEqual(locale[key], targetDateLocaleCopy[0]![key], `locale index ${index} must translate ${key}`);
     }
   }
-  assert.match(screen, /function ReminderDraft\(\{ preferredDays, t \}: Readonly/);
+  assert.match(screen, /function ReminderDraft\(\{ preferredDays, state, t, tNotifications \}: Readonly/);
   assert.match(screen, /const days = preferredDays\.map\(\(day\) => t\(DAY_SHORT_LABELS\[day\]\)\)\.join\(", "\)/);
+  const reminderDraft = screen.slice(screen.indexOf("function ReminderDraft"), screen.indexOf("function reminderStatusCopy"));
+  assert.match(reminderDraft, /reminderSteps\.map\(\(step, index\) => \([\s\S]*?index === 1 \? \([\s\S]*?accessible accessibilityLabel=\{step\.replace\(\/\\n\/gu, " "\)\}[\s\S]*?accessibilityElementsHidden[\s\S]*?step\.split\("\\n"\)\.map\(\(fragment\) => \([\s\S]*?<Text key=\{fragment\} maxFontSizeMultiplier=\{2\} style=\{styles\.reminderDetail\}>\{fragment\}<\/Text>[\s\S]*?\)\)[\s\S]*?\) : \([\s\S]*?\{step\}[\s\S]*?\)\)/);
+  assert.doesNotMatch(reminderDraft, /numberOfLines|onTextLayout|reminder-layout-probe/);
   assert.doesNotMatch(screen, /onOpenNotifications|ROUTES\.NOTIFICATION_SETTINGS/, "goal screen must not navigate to global notification settings");
+});
+
+test("the reminder-time instruction preserves its full translation across authored fragments", () => {
+  const expected = [
+    "Choose exact reminder times next.",
+    "Następnie wybierz dokładne godziny przypomnień.",
+    "Wähle als Nächstes genaue Erinnerungszeiten.",
+    "Choisissez ensuite les horaires précis des rappels.",
+    "Después, elige las horas exactas de los recordatorios.",
+    "Poi scegli gli orari esatti dei promemoria.",
+    "Vali järgmisena täpsed meeldetuletusajad.",
+  ];
+  for (const [index, locale] of targetDateLocaleCopy.entries()) {
+    const value = locale["Choose exact reminder times next."]!;
+    const fragments = value.split("\n");
+    assert.ok(fragments.length >= 2, `locale index ${index} should have authored fragments`);
+    assert.ok(fragments.every((fragment) => fragment.trim().length > 0), `locale index ${index} should not contain empty fragments`);
+    assert.equal(value.replace(/\s+/gu, " "), expected[index]);
+  }
+  assert.doesNotMatch(screen, /ReminderProbe|probeFrame|isPatternlySmokeRuntime|reminder-layout-probe/);
+});
+
+test("time-budget translations use the canonical source keys in every locale", () => {
+  const timeKey = "Choose how much time you can spend on this track each study day.";
+  const minuteKey = "{{count}} min";
+  for (const [index, locale] of targetDateLocaleCopy.entries()) {
+    assert.equal(typeof locale[timeKey], "string", `locale index ${index} missing canonical time key`);
+    assert.ok(locale[timeKey]!.trim().length > 0);
+    assert.equal(typeof locale[minuteKey], "string", `locale index ${index} missing canonical minute key`);
+    assert.ok(locale[minuteKey]!.includes("{{count}}"));
+  }
+  assert.equal(targetDateLocaleCopy[0]![minuteKey], targetDateLocaleCopy[3]![minuteKey], "French uses the same abbreviated minute label as English");
+  assert.equal("Wähle, wie viel Zeit du an jedem Lerntag für diesen Lernpfad hast." in targetDateLocaleCopy[2]!, false);
 });
 
 test("target dates use the shared localized calendar with cancellable drafts and an explicit ISO commit", () => {
@@ -169,10 +234,11 @@ test("target dates use the shared localized calendar with cancellable drafts and
   assert.match(form, /function applyTargetDate\(\): void \{\s*onChangeDate\(targetDateToLocalIso\(pendingDate\)\);\s*setDatePickerVisible\(false\);/);
   assert.match(form, /testID="goal-target-date-set"\s*>\{t\("Set date"\)\}/);
   assert.match(form, /function clearTargetDate\(\): void \{\s*onChangeDate\(""\);/);
-  assert.doesNotMatch(screen, /TextInput|Keyboard\.dismiss|isIsoDate|dateError|YYYY-MM-DD \(optional\)|Use a valid date in YYYY-MM-DD format\./);
+  assert.doesNotMatch(form, /Keyboard\.dismiss|isIsoDate|dateError|YYYY-MM-DD \(optional\)|Use a valid date in YYYY-MM-DD format\./);
   assert.match(screen, /onChangeDate=\{setDateInput\}/);
   assert.match(save, /targetDate: dateInput\.length > 0 \? dateInput : undefined/);
-  assert.match(save, /await persistGoal\(nextGoal\)/);
+  assert.match(save, /await createAndOpenPlan\(track\.id, nextGoal, minutesPerStudyDay\)/);
+  assert.doesNotMatch(save, /persistGoal|reconcileDeviceReminder/);
   assert.match(screen, /selectedGoalType === "learn_at_own_pace"[\s\S]*?This goal type does not use a target date\./);
   for (const key of ["Add target date", "Change target date", "Clear date", "Choose an optional target date.", "Previous month", "Next month", "Set date"]) {
     const translations = targetDateLocaleCopy.map((copy) => copy[key]);

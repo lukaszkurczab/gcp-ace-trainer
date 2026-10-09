@@ -1,11 +1,12 @@
 import { execFile } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
-import { lstat, mkdtemp, readFile, readdir, realpath, rename, rm } from "node:fs/promises";
+import { lstat, mkdtemp, readFile, readdir, realpath, rename, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { validatePackageCompletionRule } from "../../patternly-content/scripts/content/question-contract.mjs";
+import { PlanningPolicyError, validatePlanningPolicy } from "../../patternly-content/scripts/content/planning-policy.mjs";
 
 export const EXPECTED_TRACK_IDS = Object.freeze([
   "aws-certified-solutions-architect-associate",
@@ -21,8 +22,10 @@ export const EXPECTED_TRACK_IDS = Object.freeze([
 export const EXPECTED_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 943, questionCount: 16_622 });
 export const GENERATED_DIRECTORY = "src/content/generated/canonical-content";
 export const LOCK_FILE_NAME = "content-lock.json";
+export const SUCCESSOR_LEDGER_FILE_NAME = "content-successor-ledger.json";
 const LOCK_SCHEMA_VERSION = "patternly-content-lock-v1";
-const ARTIFACT_SCHEMA_VERSION = "patternly-content-artifact-v1";
+const ARTIFACT_SCHEMA_VERSION = "patternly-content-artifact-v2";
+const SUCCESSOR_LEDGER_SCHEMA_VERSION = "patternly-content-successor-ledger-v1";
 const HASH = /^[a-f0-9]{64}$/u;
 const TRACK_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 const SAFE_CONTENT_VERSION = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u;
@@ -238,9 +241,10 @@ export async function validateBuiltContent(directory, { expectedInventory = EXPE
   await inspectDirectory(directory, directory, "built content directory");
   const entries = await readdir(directory, { withFileTypes: true });
   for (const entry of entries) if (entry.isSymbolicLink() || !entry.isFile()) fail(`Built content contains a non-regular entry: ${entry.name}`);
-  const expectedNames = [...EXPECTED_TRACK_IDS.map((id) => `${id}.json`), LOCK_FILE_NAME];
   const names = entries.map((entry) => entry.name);
-  if (!equalStringSets(names, expectedNames) || names.length !== expectedNames.length) fail(`Built content must contain exactly the nine registered artifacts and ${LOCK_FILE_NAME}`);
+  const hasSuccessorLedger = names.includes(SUCCESSOR_LEDGER_FILE_NAME);
+  const expectedNames = [...EXPECTED_TRACK_IDS.map((id) => `${id}.json`), LOCK_FILE_NAME, ...(hasSuccessorLedger ? [SUCCESSOR_LEDGER_FILE_NAME] : [])];
+  if (!equalStringSets(names, expectedNames) || names.length !== expectedNames.length) fail(`Built content must contain exactly the nine registered artifacts, ${LOCK_FILE_NAME}, and optional ${SUCCESSOR_LEDGER_FILE_NAME}`);
 
   const lockPath = path.join(directory, LOCK_FILE_NAME);
   const lockBytes = await inspectRegularFile(lockPath, directory, "content lock");
@@ -255,6 +259,7 @@ export async function validateBuiltContent(directory, { expectedInventory = EXPE
   const mentalUnitIds = new Set();
   const questionIds = new Set();
   const files = new Map();
+  const parsedArtifacts = new Map();
   for (const entry of lock.tracks) {
     if (!exactKeys(entry, ["trackId", "contentVersion", "questionCount", "sha256"])) fail(`Invalid lock entry for ${entry?.trackId ?? "unknown"}`);
     if (!TRACK_ID.test(entry.trackId) || !EXPECTED_TRACK_IDS.includes(entry.trackId)) fail(`Unsafe or unknown trackId in lock: ${entry.trackId}`);
@@ -265,14 +270,19 @@ export async function validateBuiltContent(directory, { expectedInventory = EXPE
     if (sha256(artifactBytes) !== entry.sha256) fail(`SHA-256 mismatch for ${entry.trackId}`);
     const artifact = parseJson(artifactBytes, artifactPath);
     const artifactShapes = [
-      ["schemaVersion", "trackId", "contentVersion", "questions"],
-      ["schemaVersion", "trackId", "contentVersion", "questions", "simulationProfiles"],
-      ["schemaVersion", "trackId", "contentVersion", "questions", "completionRule"],
-      ["schemaVersion", "trackId", "contentVersion", "questions", "simulationProfiles", "completionRule"],
+      ["schemaVersion", "trackId", "contentVersion", "questions", "planningPolicy"],
+      ["schemaVersion", "trackId", "contentVersion", "questions", "planningPolicy", "simulationProfiles"],
+      ["schemaVersion", "trackId", "contentVersion", "questions", "planningPolicy", "completionRule"],
+      ["schemaVersion", "trackId", "contentVersion", "questions", "planningPolicy", "simulationProfiles", "completionRule"],
     ];
     if (!isRecord(artifact) || !artifactShapes.some((keys) => exactKeys(artifact, keys))) fail(`Invalid artifact shape for ${entry.trackId}`);
     if (artifact.schemaVersion !== ARTIFACT_SCHEMA_VERSION || artifact.trackId !== entry.trackId || artifact.contentVersion !== entry.contentVersion) fail(`Artifact identity mismatch for ${entry.trackId}`);
     if (!Array.isArray(artifact.questions) || artifact.questions.length !== entry.questionCount) fail(`Question count mismatch for ${entry.trackId}`);
+    try { validatePlanningPolicy(artifact.planningPolicy, artifact.questions); }
+    catch (error) {
+      if (error instanceof PlanningPolicyError) fail(`Invalid planning policy for ${entry.trackId}: ${error.message}`);
+      throw error;
+    }
     if (Object.hasOwn(artifact, "completionRule")) {
       const completion = validatePackageCompletionRule(artifact.completionRule, "completionRule", artifact.questions);
       if (!completion.valid) fail(`Invalid chapter completion rule for ${entry.trackId}: ${completion.errors.join("; ")}`);
@@ -291,8 +301,24 @@ export async function validateBuiltContent(directory, { expectedInventory = EXPE
     }
     if (Object.hasOwn(artifact, "simulationProfiles")) validateSimulationProfiles(artifact.simulationProfiles, { trackId: entry.trackId, contentVersion: entry.contentVersion, questions: artifact.questions });
     files.set(`${entry.trackId}.json`, artifactBytes);
+    parsedArtifacts.set(`${entry.trackId}.json`, artifact);
   }
   files.set(LOCK_FILE_NAME, lockBytes);
+  if (hasSuccessorLedger) {
+    const ledgerPath = path.join(directory, SUCCESSOR_LEDGER_FILE_NAME);
+    const ledgerBytes = await inspectRegularFile(ledgerPath, directory, "content successor ledger");
+    const ledger = parseSuccessorLedger(parseJson(ledgerBytes, ledgerPath));
+    const lockByTrack = new Map(lock.tracks.map((entry) => [entry.trackId, entry]));
+    for (const entry of ledger.tracks) {
+      const artifact = parsedArtifacts.get(`${entry.trackId}.json`);
+      const currentLock = lockByTrack.get(entry.trackId);
+      const current = artifact && currentLock ? trackIdentityFromArtifact(artifact, currentLock.sha256) : null;
+      if (!current || current.contentVersion !== entry.planningPolicy.contentVersion || current.artifactSha256 !== entry.planningPolicy.artifactSha256 || current.policyVersion !== entry.planningPolicy.policyVersion) fail(`Content successor ledger is stale for ${entry.trackId}`);
+      const reconstructed = historicalTrainingProjection(artifact, entry.training.contentVersion);
+      if (sha256(reconstructed) !== entry.training.artifactSha256 || JSON.parse(reconstructed.toString("utf8")).questions.length !== entry.training.questionCount) fail(`Content successor ledger training pin does not match ${entry.trackId}`);
+    }
+    files.set(SUCCESSOR_LEDGER_FILE_NAME, ledgerBytes);
+  }
   const inventory = { trackCount: lock.tracks.length, nodeCount: nodeIds.size, mentalUnitCount: mentalUnitIds.size, questionCount: questionIds.size };
   if (JSON.stringify(inventory) !== JSON.stringify(expectedInventory)) fail(`Inventory mismatch: expected ${JSON.stringify(expectedInventory)}, received ${JSON.stringify(inventory)}`);
   return { lock, inventory, files };
@@ -322,6 +348,79 @@ async function compareDirectories(actualDirectory, expectedDirectory, options) {
   const [actual, expected] = await Promise.all([validateBuiltContent(actualDirectory, options), validateBuiltContent(expectedDirectory, options)]);
   for (const fileName of [...EXPECTED_TRACK_IDS.map((id) => `${id}.json`), LOCK_FILE_NAME]) if (!actual.files.get(fileName)?.equals(expected.files.get(fileName))) fail(`Canonical content parity mismatch: ${fileName}`);
   return expected;
+}
+
+function parseSuccessorLedger(value) {
+  if (!exactKeys(value, ["schemaVersion", "tracks"]) || value.schemaVersion !== SUCCESSOR_LEDGER_SCHEMA_VERSION || !Array.isArray(value.tracks) || value.tracks.length !== EXPECTED_TRACK_IDS.length) fail("Content successor ledger has an invalid shape");
+  const ids = value.tracks.map((entry) => entry?.trackId);
+  if (!equalStringSets(ids, EXPECTED_TRACK_IDS) || new Set(ids).size !== EXPECTED_TRACK_IDS.length || JSON.stringify(ids) !== JSON.stringify([...ids].sort())) fail("Content successor ledger has missing, extra, duplicate, or unsorted tracks");
+  for (const entry of value.tracks) {
+    requireExactKeys(entry, ["trackId", "training", "planningPolicy"], `successor ledger ${entry.trackId}`);
+    if (!TRACK_ID.test(entry.trackId) || !EXPECTED_TRACK_IDS.includes(entry.trackId)) fail("Content successor ledger has an unknown track");
+    requireExactKeys(entry.training, ["contentVersion", "artifactSha256", "questionCount"], `successor ledger ${entry.trackId}.training`);
+    if (!SAFE_CONTENT_VERSION.test(entry.training.contentVersion) || !HASH.test(entry.training.artifactSha256) || !Number.isSafeInteger(entry.training.questionCount) || entry.training.questionCount < 1) fail(`Invalid training predecessor identity for ${entry.trackId}`);
+    requireExactKeys(entry.planningPolicy, ["contentVersion", "artifactSha256", "policyVersion"], `successor ledger ${entry.trackId}.planningPolicy`);
+    if (!SAFE_CONTENT_VERSION.test(entry.planningPolicy.contentVersion) || !HASH.test(entry.planningPolicy.artifactSha256) || typeof entry.planningPolicy.policyVersion !== "string" || !entry.planningPolicy.policyVersion.trim()) fail(`Invalid planning policy successor identity for ${entry.trackId}`);
+  }
+  return value;
+}
+
+export function historicalTrainingProjection(artifact, contentVersion) {
+  const projection = structuredClone(artifact);
+  delete projection.planningPolicy;
+  projection.schemaVersion = "patternly-content-artifact-v1";
+  projection.contentVersion = contentVersion;
+  return Buffer.from(JSON.stringify(projection));
+}
+
+function trackIdentityFromArtifact(artifact, sha256Value) {
+  if (artifact.schemaVersion !== ARTIFACT_SCHEMA_VERSION || !artifact.planningPolicy || artifact.planningPolicy.schemaVersion !== "patternly-learning-planning-policy-v1") fail(`Track ${artifact.trackId} is not a versioned v2 planning-policy successor`);
+  return Object.freeze({ contentVersion: artifact.contentVersion, artifactSha256: sha256Value, policyVersion: artifact.planningPolicy.policyVersion });
+}
+
+function deriveSuccessorLedger({ artifacts, lock, previousLedger, predecessor }) {
+  const lockByTrack = new Map(lock.tracks.map((entry) => [entry.trackId, entry]));
+  const previousByTrack = previousLedger ? new Map(previousLedger.tracks.map((entry) => [entry.trackId, entry])) : null;
+  const predecessorByTrack = predecessor ? new Map(predecessor.lock.tracks.map((entry) => [entry.trackId, entry])) : null;
+  const tracks = [];
+  for (const trackId of EXPECTED_TRACK_IDS) {
+    const artifact = artifacts.get(`${trackId}.json`);
+    const currentLock = lockByTrack.get(trackId);
+    if (!artifact || !currentLock) fail(`Cannot derive content successor identity for ${trackId}`);
+    const currentIdentity = trackIdentityFromArtifact(artifact, currentLock.sha256);
+    let training;
+    if (previousByTrack) {
+      const previous = previousByTrack.get(trackId);
+      const projection = historicalTrainingProjection(artifact, previous.training.contentVersion);
+      if (sha256(projection) !== previous.training.artifactSha256 || JSON.parse(projection.toString("utf8")).questions.length !== previous.training.questionCount) {
+        fail(`Training material changed for ${trackId}; the v1 training predecessor cannot be silently replaced`);
+      }
+      training = previous.training;
+    } else {
+      const oldLock = predecessorByTrack?.get(trackId);
+      const oldBytes = predecessor?.artifacts.get(`${trackId}.json`);
+      if (!oldLock || !oldBytes || oldLock.contentVersion === currentIdentity.contentVersion || !HASH.test(oldLock.sha256)) fail(`Exact v1 training predecessor is unavailable for ${trackId}`);
+      const oldArtifact = parseJson(oldBytes, `HEAD:${GENERATED_DIRECTORY}/${trackId}.json`);
+      if (oldArtifact.schemaVersion !== "patternly-content-artifact-v1" || oldArtifact.trackId !== trackId || oldArtifact.contentVersion !== oldLock.contentVersion || oldLock.sha256 !== sha256(oldBytes)) fail(`HEAD training predecessor identity is invalid for ${trackId}`);
+      const reconstructed = historicalTrainingProjection(artifact, oldLock.contentVersion);
+      if (!reconstructed.equals(oldBytes) || sha256(reconstructed) !== oldLock.sha256 || oldArtifact.questions.length !== artifact.questions.length) fail(`v2 successor is not a byte-exact policy-only successor of APP HEAD for ${trackId}`);
+      training = Object.freeze({ contentVersion: oldLock.contentVersion, artifactSha256: oldLock.sha256, questionCount: oldLock.questionCount });
+    }
+    tracks.push(Object.freeze({ trackId, training, planningPolicy: Object.freeze({ contentVersion: currentIdentity.contentVersion, artifactSha256: currentIdentity.artifactSha256, policyVersion: currentIdentity.policyVersion }) }));
+  }
+  return parseSuccessorLedger(Object.freeze({ schemaVersion: SUCCESSOR_LEDGER_SCHEMA_VERSION, tracks: Object.freeze(tracks) }));
+}
+
+async function defaultBootstrapPredecessor(appRoot) {
+  const prefix = `HEAD:${GENERATED_DIRECTORY}/`;
+  const [lockResult, ...artifactResults] = await Promise.all([
+    execFileAsync("git", ["-C", appRoot, "show", `${prefix}${LOCK_FILE_NAME}`], { encoding: "buffer", maxBuffer: 32 * 1024 * 1024 }),
+    ...EXPECTED_TRACK_IDS.map((trackId) => execFileAsync("git", ["-C", appRoot, "show", `${prefix}${trackId}.json`], { encoding: "buffer", maxBuffer: 32 * 1024 * 1024 })),
+  ]).catch((error) => { fail(`Cannot load the one-time APP HEAD predecessor for the training ledger: ${error.message}`); });
+  const lockBytes = Buffer.from(lockResult.stdout);
+  const lock = parseJson(lockBytes, `HEAD:${prefix}${LOCK_FILE_NAME}`);
+  const artifacts = new Map(EXPECTED_TRACK_IDS.map((trackId, index) => [`${trackId}.json`, Buffer.from(artifactResults[index].stdout)]));
+  return { lock, artifacts };
 }
 
 async function pathKind(candidate) {
@@ -363,7 +462,7 @@ async function replaceDirectory({ stagedDirectory, targetDirectory, expectedInve
   if (movedOld) await remove(backupDirectory, { recursive: true, force: false });
 }
 
-export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot, producerRoot = path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, getProducerHead = producerHead, verifyProducer = verifyProducerState, expectedInventory = EXPECTED_INVENTORY, remove = rm, move = rename } = {}) {
+export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot, producerRoot = path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, getProducerHead = producerHead, getBootstrapPredecessor = defaultBootstrapPredecessor, verifyProducer = verifyProducerState, expectedInventory = EXPECTED_INVENTORY, remove = rm, move = rename } = {}) {
   if (mode !== "sync" && mode !== "check") fail(`Unknown mode: ${mode}`);
   const resolvedAppRoot = path.resolve(appRoot);
   const resolvedProducerRoot = path.resolve(producerRoot);
@@ -379,14 +478,41 @@ export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot
   try {
     await runBuild({ producerRoot: resolvedProducerRoot, outputRoot: temporaryDirectory });
     const built = await validateBuiltContent(temporaryDirectory, { expectedInventory });
+    const stagedArtifacts = new Map(EXPECTED_TRACK_IDS.map((trackId) => [`${trackId}.json`, parseJson(built.files.get(`${trackId}.json`), `${trackId}.json`)]));
+    const targetKind = await pathKind(resolvedTarget);
+    let previousLedger = null;
+    let predecessor = null;
+    if (targetKind === "directory") {
+      const existing = await validateBuiltContent(resolvedTarget, { expectedInventory });
+      const existingLedgerBytes = existing.files.get(SUCCESSOR_LEDGER_FILE_NAME);
+      if (existingLedgerBytes) previousLedger = parseSuccessorLedger(parseJson(existingLedgerBytes, path.join(resolvedTarget, SUCCESSOR_LEDGER_FILE_NAME)));
+    }
+    if (!previousLedger) predecessor = await getBootstrapPredecessor(resolvedAppRoot);
+    if (!previousLedger && targetKind === "directory") {
+      const existing = await validateBuiltContent(resolvedTarget, { expectedInventory });
+      const oldLockByTrack = new Map(predecessor.lock.tracks.map((entry) => [entry.trackId, entry]));
+      for (const trackId of EXPECTED_TRACK_IDS) {
+        const oldLock = oldLockByTrack.get(trackId);
+        const oldBytes = predecessor.artifacts.get(`${trackId}.json`);
+        const currentBytes = existing.files.get(`${trackId}.json`);
+        const currentArtifact = parseJson(currentBytes, `${trackId}.json`);
+        const compatible = currentArtifact.schemaVersion === "patternly-content-artifact-v1"
+          ? currentBytes.equals(oldBytes)
+          : currentArtifact.schemaVersion === ARTIFACT_SCHEMA_VERSION && historicalTrainingProjection(currentArtifact, oldLock.contentVersion).equals(oldBytes);
+        if (!compatible) fail(`Existing bundled content does not match the exact APP HEAD training predecessor for ${trackId}`);
+      }
+    }
+    const ledger = deriveSuccessorLedger({ artifacts: stagedArtifacts, lock: built.lock, previousLedger, predecessor });
+    await writeFile(path.join(temporaryDirectory, SUCCESSOR_LEDGER_FILE_NAME), JSON.stringify(ledger));
+    const staged = await validateBuiltContent(temporaryDirectory, { expectedInventory });
     if (mode === "check") {
       await compareDirectories(resolvedTarget, temporaryDirectory, { expectedInventory });
-      return { mode, head, ...built };
+      return { mode, head, ...staged, ledger };
     }
     await replaceDirectory({ stagedDirectory: temporaryDirectory, targetDirectory: resolvedTarget, expectedInventory, remove, move });
     const installed = await validateBuiltContent(resolvedTarget, { expectedInventory });
-    for (const [fileName, bytes] of built.files) if (!installed.files.get(fileName)?.equals(bytes)) fail(`Installed canonical content differs from producer bytes: ${fileName}`);
-    return { mode, head, ...built };
+    for (const [fileName, bytes] of staged.files) if (!installed.files.get(fileName)?.equals(bytes)) fail(`Installed canonical content differs from staged canonical bytes: ${fileName}`);
+    return { mode, head, ...staged, ledger };
   } finally {
     if (await pathKind(temporaryDirectory) === "directory") await remove(temporaryDirectory, { recursive: true, force: false });
   }

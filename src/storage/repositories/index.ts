@@ -19,4 +19,5 @@ export * from "./goalOnboardingPreferenceRepository";
 export * from "./contentReportOutboxRepository";
 export * from "./contentIdentityUnavailableRepository";
 export * from "./accountDataRepository";
+export * from "./accountSyncConflictResolutionRepository";
 export * from "./accountLifecycleRepository";

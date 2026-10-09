@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CanonicalTrainingRuntime } from "./CanonicalTrainingRuntime";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
+import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
 import { installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { commitTrainingSessionStart } from "../learningMutations";
@@ -21,8 +21,10 @@ const CASES = [
 ] as const;
 
 for (const config of CASES) test(`${config.trackId} actual practice facade presents persisted choice order across submit and memory rebind`, async () => {
-  const track = (await loadCanonicalRuntimeCatalog()).getTrack(config.trackId);
-  const runtime = new CanonicalTrainingRuntime(track);
+  const familyId = config.trackId === "google-cloud-associate-cloud-engineer" ? "certification" : "design_interview";
+  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(config.trackId, familyId);
+  assert.ok(resolved.planningPolicyIdentity, "planning policy uses its own exact successor pin");
+  const { track, runtime } = resolved;
   for (const correct of [false, true]) {
     const storage = installMemoryStorage();
     const sessionId = `bizq24-ui-order:${config.trackId}`;

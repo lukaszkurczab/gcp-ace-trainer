@@ -26,6 +26,10 @@ export function getTrainingLifecycleUseCases(): TrainingLifecycleUseCases {
   return lifecycle;
 }
 
+export function getApplicationCurrentTime(): string {
+  return getTrainingLifecycleUseCases().currentTime();
+}
+
 export async function startTrainingSession(command: StartTrainingSessionCommand): Promise<PreparedSession> {
   return getTrainingLifecycleUseCases().startSession(command);
 }

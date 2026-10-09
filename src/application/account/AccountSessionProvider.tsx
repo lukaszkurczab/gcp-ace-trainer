@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 import { PatternlyApiClientError, createPatternlyApiClient, type AccountDataExportDto, type AccountRegistrationInputDto, type LegalRequestDto, type LegalRequestKindDto, type MeResponseDto, type PrivacyRequestListItemDto, type PrivacyRequestResponseDto, type PrivacyRequestRightDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { PREMIUM_ENTITLEMENT, isPremiumAccessConfirmedOnline } from "../../domain/entitlements";
+import type { TrackId } from "../../domain";
 import { clearPremiumCache, clearPremiumCacheForAccountInProfile, clearPremiumCacheUnlessBoundTo, hasOfflinePremiumAccess, readCachedPremiumAccess, replacePremiumCacheFromFreshResponse } from "../../storage/repositories/premiumEntitlementCacheRepository";
 import { createPremiumRefreshQueue } from "./premiumRefreshQueue";
 import { resolvePremiumSessionAdmission } from "./premiumSessionAdmission";
@@ -16,7 +17,7 @@ import { readLocalSmokeAppCheckToken } from "../../infrastructure/clients/localS
 import { createContentReportTransport, registerContentReportRuntimeTransport, type ContentReportRuntimeRegistration } from "../contentReports";
 import { createFirebaseAuthClient, firebaseAuthErrorCode, FirebaseAuthClientError, type AppleCredentialDependencies, type FirebaseAuthClient, type FirebaseAuthCredentials, type FirebaseAuthUserSnapshot } from "../../infrastructure/firebase/firebaseAuthClient";
 import { readDevelopmentFirebaseAuthEmulatorOrigin, readFirebaseClientConfiguration, readPublicEnvironmentFromRuntime } from "../../infrastructure/firebase/publicConfig";
-import { clearAccountIdentityDenialAfterProof, confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, discardGuestDataAndLoadAccount, loadAccountDataSession, readLocalAccountDataSession, resetAccountLocalLearningHistory, retryAccountDataSync, retryLearningPlanRecovery, retryPendingAccountDataSync, retryPendingAccountDeletion, saveGuestAdoptionChoice, type AccountDataSession } from "./accountDataService";
+import { clearAccountIdentityDenialAfterProof, confirmAccountDataAdoption, deleteBoundAccount, dismissAccountLearningPlanRecovery, discardGuestDataAndLoadAccount, inspectAccountSyncConflict, loadAccountDataSession, readLocalAccountDataSession, resetAccountLocalLearningHistory, resolveAccountSyncConflict, retryAccountDataSync, retryLearningPlanRecovery, retryPendingAccountDataSync, retryPendingAccountDeletion, saveGuestAdoptionChoice, type AccountDataSession, type AccountSyncConflictPreview } from "./accountDataService";
 import { commitLearningStateReset } from "../learningMutations";
 import { activatePreparedProfile, beginAccountIdentityProofBarrier, captureActiveProfileStorageLease, capturePreparedProfileStorageLease, closeActiveProfileStorage, continueAsGuestInNewProfile, getActiveStorageProfile, getActiveStorageProfileOrNull, inspectPreparedProfileState, invalidateActiveAccountIdentityBinding, invalidatePreparedAccountIdentityBinding, isActiveProfileStorageLeaseCurrent, isPreparedProfileStorageLeaseCurrent, notifyProfileStorageReady, prepareProfileStorage, readActiveAccountIdentityBinding, readPreparedAccountIdentityBinding, resolveAccountIdentityProofBarrier, selectAccountProfileAndRestart, selectPreparedAccountProfile, selectPreparedGuestProfile, validatePreparedGuestAccess, writeActiveAccountIdentityBinding, type AccountIdentityBinding, type AccountIdentityBindingRead, type AccountIdentityProofBarrier, type ActiveProfileStorageLease, type PreparedProfileStorageLease } from "../../storage/repositories/profileStorageRepository";
 import type { StorageProfile } from "../../infrastructure/storage/profileStorageRouter";
@@ -366,6 +367,8 @@ export type AccountSessionContextValue = Readonly<{
   continueAsGuest: () => Promise<AccountCommandResult>;
   retryAccountSync: () => Promise<AccountCommandResult>;
   retryPendingAccountSync: () => Promise<AccountCommandResult>;
+  inspectAccountSyncConflict: () => Promise<Readonly<{ kind: "success"; preview: AccountSyncConflictPreview } | { kind: "failure"; failure: AccountFailure }>>;
+  resolveAccountSyncConflict: (input: Readonly<{ conflictId: string; resolution: "rebase" | "keep_local" | "keep_account"; trackId?: TrackId }>) => Promise<AccountCommandResult>;
   dismissLearningPlanRecovery: (incidentId: string) => void;
   retryPendingDeletion: () => Promise<AccountCommandResult>;
   prepareDeletion: (credentials: FirebaseAuthCredentials) => Promise<AccountCommandResult>;
@@ -3063,6 +3066,27 @@ export function PatternlyAccountProvider({ children }: Readonly<{ children: Reac
       if (!sessionCoordinator.isCurrent(generation) || auth.getSnapshot()?.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
       setState({ kind: "authenticated", backendUser: state.backendUser, user: current, accountData: next });
       return next.status === "synced" ? { kind: "success", next: "authenticated" } : { kind: "failure", failure: next.lastFailureCode === "offline" ? "offline" : "remoteFailure" };
+    }),
+    inspectAccountSyncConflict: async () => {
+      const current = authClient?.getSnapshot();
+      const live = stateRef.current;
+      if (!apiClient || !current || live.kind !== "authenticated" || live.user.uid !== current.uid) return { kind: "failure", failure: "providerUnavailable" };
+      try {
+        const preview = await inspectAccountSyncConflict(apiClient, live.backendUser.id);
+        const after = stateRef.current;
+        if (authClient?.getSnapshot()?.uid !== current.uid || after.kind !== "authenticated" || after.user.uid !== current.uid || after.backendUser.id !== live.backendUser.id) return { kind: "failure", failure: "revokedSession" };
+        return { kind: "success", preview };
+      } catch (error) { return { kind: "failure", failure: classifyAccountFailure(error) }; }
+    },
+    resolveAccountSyncConflict: (input) => runWithAuth(async (auth, api) => {
+      const current = auth.getSnapshot();
+      const live = stateRef.current;
+      if (!current || live.kind !== "authenticated" || live.user.uid !== current.uid) return { kind: "failure", failure: "revokedSession" };
+      const next = await resolveAccountSyncConflict({ api, accountId: live.backendUser.id, ...input });
+      const after = stateRef.current;
+      if (auth.getSnapshot()?.uid !== current.uid || after.kind !== "authenticated" || after.user.uid !== current.uid || after.backendUser.id !== live.backendUser.id) return { kind: "failure", failure: "revokedSession" };
+      setState({ ...after, accountData: next });
+      return { kind: "success", next: "authenticated" };
     }),
     signOut: () => runAuthMutationWithAuth(async (auth) => {
       const user = auth.getSnapshot();

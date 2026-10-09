@@ -21,9 +21,17 @@ export function createLearningPlanProposalFixtureRuntime(scenario: LearningPlanP
     ? Object.freeze({ kind: "stale" as const })
     : scenario === "unavailable"
       ? Object.freeze({ kind: "package_unavailable" as const })
-      : Object.freeze({ kind: outcome.kind, proposal: Object.freeze({ proposalId: PROPOSAL_ID, trackId: TRACK_ID, outcome }) });
+      : Object.freeze({ kind: outcome.kind, proposal: Object.freeze({
+        proposalId: PROPOSAL_ID, trackId: TRACK_ID, outcome,
+        nextSessionTimeEstimate: Object.freeze({ kind: "unavailable" as const, reason: "missing_scope_estimate" as const, scopeRefs: Object.freeze([]) }),
+        nextSessionCalendar: Object.freeze({ kind: "unavailable" as const, reason: "no_legal_session_estimate" as const }),
+        fullGoalCalendar: Object.freeze({ kind: "unavailable" as const, reason: "no_legal_session_estimate" as const }),
+        fullGoalScopeAvailability: Object.freeze({ kind: "completion_contract_unavailable" as const, requiredChapterCount: null, costedChapterCount: null, minimumRemainingResponses: null, unavailableScopeRefs: Object.freeze([]), unavailableChapterIds: Object.freeze([]) }),
+        fullGoalWorkload: Object.freeze({ kind: "completion_unknown" as const, chapters: Object.freeze([]), dueReviews: Object.freeze([]), sessionDemands: Object.freeze([]), activeContinuation: null, nextPractice: null, requiredResponses: null, dueReviewResponses: 0, newResponses: null, knownMinMinutes: 0, knownTypicalMinutes: 0, knownMaxMinutes: null, unknownChapterIds: Object.freeze([]), uncostedDueReviewIds: Object.freeze([]), qualityUncertainChapterIds: Object.freeze([]), distribution: "median_scope_typical_with_conservative_extremes" as const, provenance: "unavailable" as const, observationCount: 0 }),
+        fullGoalTimeCapacity: Object.freeze({ kind: "unavailable" as const, availableMinutes: null, workMinMinutes: null, workTypicalMinutes: null, workMaxMinutes: null, unknownCapacityDates: Object.freeze([]), unscheduledReviewObligationIds: Object.freeze([]), unknownReviewObligationIds: Object.freeze([]) }),
+      }) });
 
-  const runtime: LearningPlanProposalScreenRuntime = Object.freeze({
+  const runtime: LearningPlanProposalScreenRuntime = {
     ...(onExit ? { exitFixture: onExit } : {}),
     async resolve(proposalId, trackId) {
       if (scenario === "delayed-loading") await delay(DELAY_MS);
@@ -58,8 +66,8 @@ export function createLearningPlanProposalFixtureRuntime(scenario: LearningPlanP
       return { kind: "scheduler_failure", status: "pending" };
     },
     getFixtureInvocationCounts: () => Object.freeze({ ...counts }),
-  });
-  return runtime;
+  };
+  return Object.freeze(runtime);
 }
 
 function createOutcome(scenario: LearningPlanProposalFixtureCase) {
@@ -85,9 +93,15 @@ function createOutcome(scenario: LearningPlanProposalFixtureCase) {
       ? { kind: "shortfall" as const, requestedLength: 10, eligibleItemCount: 2, missingItemCount: 8 }
       : { kind: "exact" as const, actualLength: 10 };
   return generateLearningPlanProposal({
-    goalSnapshot,
+    goalRecord: goalSnapshot.record,
+    expectedGoalRevision: goalSnapshot.revision,
+    minutesPerStudyDay: 60,
+    executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: null, practice: { modeId: "coding-interview-guided-practice", requestedLength: 10 } },
+    nextSession: { kind: "practice", modeId: "coding-interview-guided-practice", requestedLength: 10 },
+    diagnosisStatus: "not_available",
     artifactSha256: ARTIFACT_SHA256,
     contentVersion: "ui11-runtime-fixture-v1",
+    planningPolicyIdentity: { contentVersion: "ui11-runtime-fixture-v1", artifactSha256: ARTIFACT_SHA256, policyVersion: "fixture-v1" },
     primaryModeId: "coding-interview-guided-practice",
     requestedLength: 10,
     sessionCapacity: capacity,

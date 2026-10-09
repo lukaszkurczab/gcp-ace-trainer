@@ -18,6 +18,7 @@ import { readCanonicalEnvelope, writeCanonicalJson } from "../../storage/reposit
 import { UnsupportedStoredRecordError } from "../../storage/errors";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { getGoal, saveGoal } from "../../storage/repositories";
+import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 
 beforeEach(() => installMemoryStorage());
 
@@ -80,6 +81,17 @@ test("goal normalizer derives ordered cadence from legacy targets and every day 
     assert.deepEqual(normalized.preferredDays, GOAL_DAY_IDS.filter((day) => days.includes(day)));
     assert.equal(normalized.weeklySessionTarget, days.length);
   }
+});
+
+test("goal normalizer omits an explicitly unset optional date from canonical records", () => {
+  const goal = createDefaultGoal(CODING_TRACK);
+  const explicitlyUnset = normalizeGoalRecord({ ...goal, targetDate: undefined });
+  assert.equal(Object.hasOwn(explicitlyUnset, "targetDate"), false);
+  assert.equal(canonicalSerialize(explicitlyUnset), canonicalSerialize(goal));
+
+  const dated = normalizeGoalRecord({ ...goal, targetDate: "2027-01-15" });
+  assert.equal(dated.targetDate, "2027-01-15");
+  assert.equal(Object.hasOwn(dated, "targetDate"), true);
 });
 
 test("goal repository normalizes legacy records on read without repairing storage", async () => {

@@ -3,7 +3,6 @@ import test from "node:test";
 
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { setQuestionNeedsReview } from "./certificationReviewCommands";
-import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import { createResolvedContentRef, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, type ReviewQueueEntry } from "../../domain";
 import { installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { addReviewQueueItems, getActiveMutationJournal, getReviewQueueItems } from "../../storage/repositories";
@@ -15,7 +14,9 @@ import { installMemoryStorage } from "../../testing/journalTestSupport";
 
 async function fixture() {
   await contentPackageRuntimeOwner.verifyBundledPackages();
-  const track = (await loadCanonicalRuntimeCatalog()).getTrack(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
+  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, "certification");
+  assert.ok(resolved.planningPolicyIdentity, "planning policy identity is independent of persisted review refs");
+  const track = resolved.track;
   const question = track.getPool("certification-focus-practice")[0]!;
   const sourceItem = createResolvedContentRef({
     trackId: track.trackId,

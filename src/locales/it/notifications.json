@@ -85,5 +85,9 @@
   "schedulerFailureTitle": "Impossibile programmare i promemoria",
   "schedulerFailureDetail": "Il piano è salvato. Prova a programmare di nuovo i relativi promemoria.",
   "concurrentChangeTitle": "Piano modificato",
-  "concurrentChangeDetail": "Il piano è cambiato durante l’aggiornamento dei promemoria. Riprova."
+  "concurrentChangeDetail": "Il piano è cambiato durante l’aggiornamento dei promemoria. Riprova.",
+  "activeReminderDetail": "I promemoria sono programmati per il piano accettato.",
+  "disabledReminderDetail": "I promemoria del piano accettato sono disattivati.",
+  "draftPlanReminderDetail": "Queste modifiche sono una bozza. Il piano accettato resta valido finché non accetti quello nuovo.",
+  "reminderStatusUnavailableDetail": "Lo stato dei promemoria per questo percorso non è disponibile al momento."
 }

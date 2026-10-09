@@ -70,7 +70,7 @@ class PlatformSpy implements NotificationPlatform {
   }
 }
 
-function plan(overrides: Partial<LearningPlan> = {}): LearningPlan {
+function plan(overrides: Partial<Extract<LearningPlan, { schemaVersion: 1 }>> = {}): LearningPlan {
   return {
     schemaVersion: 1,
     planId: "plan:one",

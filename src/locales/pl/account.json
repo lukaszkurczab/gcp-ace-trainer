@@ -96,6 +96,7 @@
   "pendingDescription": "Zmiany są zapisane na tym urządzeniu. Połącz się z internetem i spróbuj ponownie zapisać je na koncie.",
   "conflict": "Konflikt danych konta",
   "conflictDescription": "Nie udało się uzgodnić postępów między tym urządzeniem a kontem. Spróbuj ponownie, aby sprawdzić stan. Postępy pozostają zapisane na tym urządzeniu. Jeśli konflikt pozostanie, skontaktuj się z pomocą w sekcji Informacje prawne.",
+  "syncConflictDescription": "Twoje postępy pozostają zapisane na tym urządzeniu. Sprawdź najnowszy stan konta, zanim wybierzesz, którą pełną parę celu i planu zachować.",
   "dataFailure": "Dane konta są niedostępne",
   "dataFailureDescription": "Nie udało się wczytać postępów z konta. Twoje postępy pozostają zapisane na tym urządzeniu.",
   "resumeRequired": "Sesja zapisana na tym urządzeniu",
@@ -216,5 +217,12 @@
   "recoveryOperationReplaceDescription": "Zaloguj się ponownie, aby otrzymać nowy zestaw. Gdy zostanie wydany, poprzednie kody przestaną działać.",
   "recoveryOperationReplaceCancel": "Anuluj",
   "recoveryOperationReplaceConfirm": "Zaloguj się ponownie",
-  "recoveryOperationFinishReplacement": "Dokończ wymianę kodów"
+  "recoveryOperationFinishReplacement": "Dokończ wymianę kodów",
+  "syncConflictReview": "Sprawdź konflikt konta",
+  "syncConflictReviewDescription": "Ostatni zapis został odrzucony, ponieważ konto zmieniło się na innym urządzeniu. Sprawdź najnowszy stan przed wyborem danych.",
+  "syncConflictRebase": "Użyj najnowszego konta i ponów niezmienione zapisy",
+  "syncConflictKeepLocal": "Zachowaj cel i plan z tego urządzenia",
+  "syncConflictKeepAccount": "Użyj celu i planu z konta",
+  "syncConflictUnsupported": "Zmieniły się też inne dane konta. Nie ma bezpiecznego automatycznego wyboru; dane na tym urządzeniu pozostają bez zmian. Skontaktuj się z pomocą.",
+  "syncConflictStale": "Konto zmieniło się ponownie. Sprawdź najnowszy stan przed wyborem."
 }

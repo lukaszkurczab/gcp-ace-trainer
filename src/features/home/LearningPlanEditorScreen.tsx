@@ -1,5 +1,6 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
@@ -79,6 +80,10 @@ export function LearningPlanEditorScreen({ navigation, route }: Props) {
     setBusy(true);
     const result = await commitPlanWithReminders(editorId, trackId, notification);
     setBusy(false);
+    if (result.kind === "staged") {
+      navigation.goBack();
+      return;
+    }
     if (result.kind === "plan_saved_reminders_synced" || result.kind === "plan_saved_reminders_pending" || result.kind === "plan_saved_reminders_cleared") {
       setSavedPlan(result.snapshot.plan);
       setSavedReminderPending(result.kind === "plan_saved_reminders_pending");

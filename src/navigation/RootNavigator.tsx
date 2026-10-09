@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer, NavigationIndependentTree, useTheme } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
-import { Linking, StyleSheet } from "react-native";
+import { Alert, Linking, StyleSheet } from "react-native";
 
 import { AppShellHeader, LoadingState, Screen } from "../components";
 import { usePatternlyAccount } from "../application/account/AccountSessionProvider";
@@ -54,6 +54,7 @@ import type { RootStackParamList } from "./types";
 import { isPatternlySmokeRuntime } from "../infrastructure/runtime/runtimeMode";
 import { isLanguageSettingsAuditCommand } from "./languageSettingsAuditCommand";
 import { handleCodingMockCountdownAuditUrl, isCodingMockCountdownAuditCommand } from "../application/runtimeAuditability/codingMockCountdownCommand";
+import { clearGoalPlanAcceptanceInterruptionArm, DEVELOPMENT_INTERRUPT_GOAL_PLAN_ACCEPTANCE_URL, handleGoalPlanAcceptanceInterruptionUrl } from "../application/runtimeAuditability/goalPlanAcceptanceInterruptionCommand";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -61,7 +62,8 @@ export function RootNavigator() {
   const navigationTheme = useTheme();
   const { colors } = useAppPreferences();
   const { t } = useTranslation("common");
-  const { state, accountEntryMode } = usePatternlyAccount();
+  const account = usePatternlyAccount();
+  const { state, accountEntryMode } = account;
   const [auditLanguageSettings, setAuditLanguageSettings] = useState(false);
   const [auditExamReviewFixture, setAuditExamReviewFixture] = useState<CertificationExamReviewFixtureLaunch | null>(null);
   const [auditLearningPlanFixture, setAuditLearningPlanFixture] = useState<LearningPlanProposalFixtureLaunch | null>(null);
@@ -83,6 +85,38 @@ export function RootNavigator() {
     });
     return () => { subscription.remove(); };
   }, []);
+
+  useEffect(() => {
+    if (!__DEV__ || !isPatternlySmokeRuntime()) {
+      clearGoalPlanAcceptanceInterruptionArm();
+      return;
+    }
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      if (!url.startsWith(DEVELOPMENT_INTERRUPT_GOAL_PLAN_ACCEPTANCE_URL)) {
+        clearGoalPlanAcceptanceInterruptionArm();
+        return;
+      }
+      const authenticatedState = state.kind === "authenticated" ? state : null;
+      void handleGoalPlanAcceptanceInterruptionUrl(url, {
+        development: __DEV__,
+        smoke: isPatternlySmokeRuntime(),
+        authenticated: authenticatedState !== null,
+        accountSynced: authenticatedState?.accountData.status === "synced",
+        firebaseUid: authenticatedState?.user.uid ?? null,
+        accountId: authenticatedState?.backendUser.id ?? null,
+        captureActorFence: account.captureCurrentAuthenticatedActorFence,
+      }).then((result) => {
+        Alert.alert(result === "armed" ? "Goal and plan interruption armed" : "Goal and plan interruption not armed",
+          result === "armed" ? "Accept the exact prepared goal proposal to exercise recovery." : "The current account, proposal or storage state did not meet the safety checks.");
+      }).catch(() => {
+        Alert.alert("Goal and plan interruption not armed", "The current account, proposal or storage state did not meet the safety checks.");
+      });
+    });
+    return () => {
+      subscription.remove();
+      clearGoalPlanAcceptanceInterruptionArm();
+    };
+  }, [account.captureCurrentAuthenticatedActorFence, state]);
 
   useEffect(() => {
     if (!__DEV__ || !isPatternlySmokeRuntime()) return;

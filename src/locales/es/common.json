@@ -434,7 +434,14 @@
   "Choose at least one practice day.": "Elige al menos un día de práctica.",
   "Reminders": "Recordatorios",
   "Reminder draft": "Borrador de recordatorios",
-  "Exact reminder times and activation are available only after you accept a learning plan.": "Los horarios exactos y la activación estarán disponibles después de aceptar un plan de aprendizaje.",
+  "Accept a learning plan first.": "Primero, acepta un plan de aprendizaje.",
+  "Choose exact reminder times next.": "Después, elige\nlas horas exactas\nde los recordatorios.",
+  "Then you can turn reminders on.": "Luego podrás activar los recordatorios.",
+  "Time available for this track": "Tiempo disponible para esta ruta",
+  "Minutes on each chosen study day. This applies to this track only.": "Minutos en cada día de estudio elegido. Solo se aplican a esta ruta.",
+  "{{count}} min": "{{count}} minutos",
+  "Custom minutes per study day for this track": "Minutos personalizados por día para esta ruta",
+  "Or enter 1–1440 minutes": "O introduce entre 1 y 1440 minutos",
   "Save goal": "Guardar objetivo",
   "Save changes": "Guardar cambios",
   "Loading goal": "Cargando objetivo",
@@ -775,5 +782,6 @@
   "This recommended practice scope is no longer available for the current content package.": "El ámbito de práctica recomendado ya no está disponible en el paquete de contenido actual.",
   "This recommended practice scope does not have enough available questions.": "El ámbito de práctica recomendado no tiene suficientes preguntas disponibles.",
   "{{correct}} correct, {{partial}} partly correct, {{incorrect}} incorrect, and {{unanswered}} unanswered from {{sampled}} sampled questions.": "{{correct}} correctas, {{partial}} parcialmente correctas, {{incorrect}} incorrectas y {{unanswered}} sin responder de {{sampled}} preguntas de la muestra.",
-  "Next practice: {{topic}} — learning unit {{number}}. This diagnostic sampled {{sampled}} of {{eligible}} Focus questions for this unit, with {{partial}} partly correct and {{incorrect}} incorrect answers.": "Siguiente práctica: {{topic}} — unidad de aprendizaje {{number}}. Este diagnóstico incluyó {{sampled}} de {{eligible}} preguntas Focus de esta unidad; {{partial}} respuestas fueron parcialmente correctas y {{incorrect}} incorrectas."
+  "Next practice: {{topic}} — learning unit {{number}}. This diagnostic sampled {{sampled}} of {{eligible}} Focus questions for this unit, with {{partial}} partly correct and {{incorrect}} incorrect answers.": "Siguiente práctica: {{topic}} — unidad de aprendizaje {{number}}. Este diagnóstico incluyó {{sampled}} de {{eligible}} preguntas Focus de esta unidad; {{partial}} respuestas fueron parcialmente correctas y {{incorrect}} incorrectas.",
+  "Choose how much time you can spend on this track each study day.": "Elige cuánto tiempo puedes dedicar a este recorrido cada día de estudio."
 }

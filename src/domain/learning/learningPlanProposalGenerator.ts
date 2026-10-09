@@ -1,9 +1,10 @@
-import type { GoalDay, GoalRecord, GoalSnapshot } from "../goals/goalContracts";
+import type { GoalDay, GoalRecord } from "../goals/goalContracts";
 import { GOAL_DAY_IDS, isGoalDay, isGoalRecordForTrack, normalizeGoalRecord } from "../goals/goalContracts";
 import { projectGoalTargetDate } from "../goals/goalTargetDateSemantics";
 import { createArtifactSha256 } from "./contentItemRef";
 import { minimumAttemptsForMentalUnits, type ChapterCompletionStatus, type PackageCompletionState } from "./packageCompletionRule";
 import { createProposalSlotId, type ProposalSlotId } from "./slotIdentity";
+import type { LearningPlanExecutionPolicy, LearningPlanPolicyIdentity } from "./learningPlan";
 import type { TrackId } from "./trackIdentity";
 
 export type ProposalSessionCapacity =
@@ -15,16 +16,18 @@ export type ProposalSessionCapacity =
 export type ProposalSlot = Readonly<{
   slotId: ProposalSlotId;
   day: GoalDay;
-  localTime: "18:00";
+  localTime: string;
   sessionLength: number;
 }>;
 
 /** The context that must remain equal before a proposal can be consumed. */
 export type ProposalIdentity = Readonly<{
   trackId: TrackId;
-  goalRevision: number;
+  /** Null means the goal is a draft and no canonical goal exists yet. */
+  goalRevision: number | null;
   contentVersion: string;
   artifactSha256: string;
+  planningPolicyIdentity: LearningPlanPolicyIdentity;
   timezone: string;
 }>;
 
@@ -39,7 +42,7 @@ export type TargetAssessment =
   | Readonly<{ kind: "unknown_completion_rule" }>
   | Readonly<{ kind: "quality_requirement_unmet" }>
   | Readonly<{
-      kind: "achievable" | "unreachable";
+      kind: "minimum_volume_fits" | "minimum_volume_exceeds_capacity";
       occurrences: number;
       actualLength: number;
       remainingAttempts: number;
@@ -50,6 +53,11 @@ export type ProposalOutcome = Readonly<{
   kind: "ready" | "shortened" | "shortfall";
   identity: ProposalIdentity;
   goal: GoalRecord;
+  minutesPerStudyDay: number;
+  executionPolicy: LearningPlanExecutionPolicy;
+  nextSession: Readonly<{ kind: "diagnosis" | "practice" | "review"; modeId: string; requestedLength: number }> |
+    Readonly<{ kind: "continue_existing"; modeId: string; requestedLength: number; sessionId: string }>;
+  diagnosisStatus: "scheduled" | "active" | "completed" | "abandoned" | "not_available";
   primaryModeId: string;
   requestedLength: number;
   sessionCapacity: ProposalSessionCapacity;
@@ -61,8 +69,15 @@ export type ProposalOutcome = Readonly<{
 
 /** Inputs are read-only by contract; the generator defensively clones every value it returns. */
 export type GeneratorInput = Readonly<{
-  goalSnapshot: GoalSnapshot;
+  goalRecord: GoalRecord;
+  expectedGoalRevision: number | null;
+  minutesPerStudyDay: number;
+  executionPolicy: LearningPlanExecutionPolicy;
+  nextSession: Readonly<{ kind: "diagnosis" | "practice" | "review"; modeId: string; requestedLength: number }> |
+    Readonly<{ kind: "continue_existing"; modeId: string; requestedLength: number; sessionId: string }>;
+  diagnosisStatus: "scheduled" | "active" | "completed" | "abandoned" | "not_available";
   artifactSha256: string;
+  planningPolicyIdentity: LearningPlanPolicyIdentity;
   contentVersion: string;
   primaryModeId: string;
   requestedLength: number;
@@ -120,12 +135,22 @@ export function generateLearningPlanProposal(input: GeneratorInput): ProposalOut
 
 function generate(input: GeneratorInput): ProposalOutcome {
   const value = asRecord(input);
-  if (!hasOnlyKeys(value, ["goalSnapshot", "artifactSha256", "contentVersion", "primaryModeId", "requestedLength", "sessionCapacity", "completionState", "dueReviewCount", "primaryScopeLabel", "localToday", "timezone"])) fail("invalid_input");
-  const goalSnapshot = validateGoalSnapshot(value.goalSnapshot);
+  if (!hasOnlyKeys(value, ["goalRecord", "expectedGoalRevision", "minutesPerStudyDay", "executionPolicy", "nextSession", "diagnosisStatus", "artifactSha256", "planningPolicyIdentity", "contentVersion", "primaryModeId", "requestedLength", "sessionCapacity", "completionState", "dueReviewCount", "primaryScopeLabel", "localToday", "timezone"])) fail("invalid_input");
+  const goalRecord = validateGoalRecord(value.goalRecord);
+  const expectedGoalRevision = value.expectedGoalRevision === null ? null : validatePositiveInteger(value.expectedGoalRevision, "invalid_goal_snapshot");
+  const minutesPerStudyDay = validatePositiveInteger(value.minutesPerStudyDay, "invalid_input");
+  if (minutesPerStudyDay > 1440) fail("invalid_input");
   const artifactSha256 = validateArtifactSha256(value.artifactSha256);
+  const planningPolicyIdentity = validatePlanningPolicyIdentity(value.planningPolicyIdentity);
   const contentVersion = validateNonEmptyText(value.contentVersion, "invalid_content_version");
   const primaryModeId = validateNonEmptyText(value.primaryModeId, "invalid_mode");
   const requestedLength = validatePositiveInteger(value.requestedLength, "invalid_requested_length");
+  const executionPolicy = validateExecutionPolicy(value.executionPolicy, primaryModeId, requestedLength);
+  const nextSession = validateNextSession(value.nextSession);
+  if (!(["scheduled", "active", "completed", "abandoned", "not_available"] as const).includes(value.diagnosisStatus)) fail("invalid_input");
+  const diagnosisStatus = value.diagnosisStatus as ProposalOutcome["diagnosisStatus"];
+  if (nextSession.kind === "diagnosis" && (executionPolicy.initialDiagnosis?.modeId !== nextSession.modeId || executionPolicy.initialDiagnosis.requestedLength !== nextSession.requestedLength)) fail("invalid_input");
+  if (nextSession.kind !== "diagnosis" && nextSession.kind !== "continue_existing" && (nextSession.modeId !== executionPolicy.practice.modeId && nextSession.kind !== "review")) fail("invalid_input");
   const sessionCapacity = validateSessionCapacity(value.sessionCapacity, requestedLength);
   const completionState = validateCompletionState(value.completionState);
   const dueReviewCount = validateNonNegativeInteger(value.dueReviewCount, "invalid_due_review_count");
@@ -135,14 +160,15 @@ function generate(input: GeneratorInput): ProposalOutcome {
 
   // GoalRecord validation already checks targetDate shape. Keeping this check
   // separate gives callers one explicit code for a malformed legacy snapshot.
-  const targetDateValue = goalSnapshot.record.targetDate;
+  const targetDateValue = goalRecord.targetDate;
   if (targetDateValue !== undefined && !isStrictIsoDate(targetDateValue)) fail("invalid_target_date");
 
   const identity: ProposalIdentity = Object.freeze({
-    trackId: goalSnapshot.record.trackId,
-    goalRevision: goalSnapshot.revision,
+    trackId: goalRecord.trackId,
+    goalRevision: expectedGoalRevision,
     contentVersion,
     artifactSha256,
+    planningPolicyIdentity,
     timezone,
   });
 
@@ -151,15 +177,19 @@ function generate(input: GeneratorInput): ProposalOutcome {
     : Object.freeze({ kind: "package_primary_scope", label: primaryScopeLabel });
 
   const resolution = resolveCapacity(sessionCapacity);
-  const targetAssessment = buildTargetAssessment(goalSnapshot.record, completionState, localToday, resolution);
+  const targetAssessment = buildTargetAssessment(goalRecord, completionState, localToday, resolution);
   const slots = resolution.kind === "shortfall"
     ? Object.freeze([] as readonly ProposalSlot[])
-    : createSlots(goalSnapshot.record.preferredDays, resolution.actualLength);
+    : createSlots(goalRecord.preferredDays, resolution.actualLength);
 
   return Object.freeze({
     kind: sessionCapacity.kind === "shortfall" ? "shortfall" : sessionCapacity.kind === "shortened" ? "shortened" : "ready",
     identity,
-    goal: Object.freeze({ ...goalSnapshot.record, preferredDays: Object.freeze([...goalSnapshot.record.preferredDays]) }),
+    goal: Object.freeze({ ...goalRecord, preferredDays: Object.freeze([...goalRecord.preferredDays]) }),
+    minutesPerStudyDay,
+    executionPolicy,
+    nextSession,
+    diagnosisStatus,
     primaryModeId,
     requestedLength,
     sessionCapacity: cloneCapacity(sessionCapacity),
@@ -170,10 +200,39 @@ function generate(input: GeneratorInput): ProposalOutcome {
   });
 }
 
-function validateGoalSnapshot(value: unknown): GoalSnapshot {
-  const snapshot = asRecord(value, "invalid_goal_snapshot");
-  if (!hasOnlyKeys(snapshot, ["record", "revision"]) || !positiveInteger(snapshot.revision)) fail("invalid_goal_snapshot");
-  const record = asRecord(snapshot.record, "invalid_goal_snapshot");
+function validatePlanningPolicyIdentity(value: unknown): LearningPlanPolicyIdentity {
+  const record = asRecord(value, "invalid_input");
+  if (!hasOnlyKeys(record, ["contentVersion", "artifactSha256", "policyVersion"]) || typeof record.contentVersion !== "string" || !record.contentVersion.trim() || typeof record.policyVersion !== "string" || !record.policyVersion.trim()) fail("invalid_input");
+  return Object.freeze({ contentVersion: record.contentVersion, artifactSha256: validateArtifactSha256(record.artifactSha256), policyVersion: record.policyVersion });
+}
+
+function validateExecutionPolicy(value: unknown, primaryModeId: unknown, requestedLength: unknown): LearningPlanExecutionPolicy {
+  const policy = asRecord(value, "invalid_input");
+  if (!hasOnlyKeys(policy, ["policyVersion", "initialDiagnosis", "practice"]) || policy.policyVersion !== "patternly-learning-execution-v1") fail("invalid_input");
+  const mode = (candidate: unknown) => {
+    const record = asRecord(candidate, "invalid_input");
+    if (!hasOnlyKeys(record, ["modeId", "requestedLength"]) || typeof record.modeId !== "string" || !record.modeId.trim() || !positiveInteger(record.requestedLength)) fail("invalid_input");
+    return Object.freeze({ modeId: record.modeId, requestedLength: record.requestedLength });
+  };
+  const practice = mode(policy.practice);
+  const initialDiagnosis = policy.initialDiagnosis === null ? null : mode(policy.initialDiagnosis);
+  if (practice.modeId !== primaryModeId || practice.requestedLength !== requestedLength) fail("invalid_input");
+  return Object.freeze({ policyVersion: "patternly-learning-execution-v1", initialDiagnosis, practice });
+}
+
+function validateNextSession(value: unknown): ProposalOutcome["nextSession"] {
+  const record = asRecord(value, "invalid_input");
+  if (!hasOnlyKeys(record, ["kind", "modeId", "requestedLength", ...(record.kind === "continue_existing" ? ["sessionId"] : [])]) ||
+    !["diagnosis", "practice", "review", "continue_existing"].includes(String(record.kind)) || typeof record.modeId !== "string" || !record.modeId.trim() || !positiveInteger(record.requestedLength)) fail("invalid_input");
+  if (record.kind === "continue_existing") {
+    if (typeof record.sessionId !== "string" || !record.sessionId.trim()) fail("invalid_input");
+    return Object.freeze({ kind: "continue_existing", modeId: record.modeId, requestedLength: record.requestedLength, sessionId: record.sessionId });
+  }
+  return Object.freeze({ kind: record.kind as "diagnosis" | "practice" | "review", modeId: record.modeId, requestedLength: record.requestedLength });
+}
+
+function validateGoalRecord(value: unknown): GoalRecord {
+  const record = asRecord(value, "invalid_goal_snapshot");
   if (typeof record.trackId !== "string" || !record.trackId.trim()) fail("invalid_track_identity");
 
   let normalized: GoalRecord;
@@ -186,7 +245,7 @@ function validateGoalSnapshot(value: unknown): GoalSnapshot {
   // empty-day record cannot silently become a proposal with no slots.
   if (!isGoalRecordForTrack(normalized, normalized.trackId) || normalized.preferredDays.length === 0 || normalized.status !== "active") fail("invalid_goal_snapshot");
   if (normalized.preferredDays.some((day) => !isGoalDay(day))) fail("invalid_goal_snapshot");
-  return Object.freeze({ record: normalized, revision: snapshot.revision });
+  return normalized;
 }
 
 function validateArtifactSha256(value: unknown): string {
@@ -278,8 +337,8 @@ function buildTargetAssessment(record: GoalRecord, completion: PackageCompletion
     ? addCalendarDays(target.targetDate, -1)
     : target.targetDate;
   const occurrences = countPreferredDayOccurrences(localToday, boundary, record.preferredDays);
-  const achievable = occurrences * capacity.actualLength >= remainingAttempts;
-  return Object.freeze({ kind: achievable ? "achievable" : "unreachable", occurrences, actualLength: capacity.actualLength, remainingAttempts });
+  const minimumVolumeFits = occurrences * capacity.actualLength >= remainingAttempts;
+  return Object.freeze({ kind: minimumVolumeFits ? "minimum_volume_fits" : "minimum_volume_exceeds_capacity", occurrences, actualLength: capacity.actualLength, remainingAttempts });
 }
 
 type ResolvedCapacity =
@@ -292,7 +351,7 @@ function resolveCapacity(capacity: ProposalSessionCapacity): ResolvedCapacity {
 }
 
 function createSlots(days: readonly GoalDay[], actualLength: number): readonly ProposalSlot[] {
-  return Object.freeze(days.map((day) => Object.freeze({ slotId: createProposalSlotId(`proposal-slot:v1:${day}:18-00`), day, localTime: "18:00" as const, sessionLength: actualLength })));
+  return Object.freeze(days.map((day) => Object.freeze({ slotId: createProposalSlotId(`proposal-slot:v1:${day}:18-00`), day, localTime: "18:00", sessionLength: actualLength })));
 }
 
 function cloneCapacity(capacity: ProposalSessionCapacity): ProposalSessionCapacity {

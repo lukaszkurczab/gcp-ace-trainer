@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { normalizeLearningPlan, type LearningPlan } from "./learningPlan";
+import { normalizeLearningPlan, type LearningPlan, type LearningPlanV1 } from "./learningPlan";
 import { createLearningPlanSlotId } from "./slotIdentity";
 import {
   calculatePaceForecast,
@@ -14,7 +14,7 @@ import {
 const TRACK_ID = "coding-interview-dsa-problem-solving";
 const ZONE = "Europe/Warsaw";
 
-function plan(overrides: Partial<LearningPlan> = {}): LearningPlan {
+function plan(overrides: Partial<LearningPlanV1> = {}): LearningPlan {
   const createdAt = overrides.createdAt ?? "2026-01-01T10:00:00.000Z";
   const updatedAt = overrides.updatedAt ?? createdAt;
   return normalizeLearningPlan({

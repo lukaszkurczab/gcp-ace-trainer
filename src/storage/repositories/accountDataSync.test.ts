@@ -60,6 +60,34 @@ test("canonical account records round trip through remote materialization", asyn
   assert.equal(isCanonicalAccountSyncState(await getAccountSyncState()), true);
 });
 
+test("account sync requires a v2 accepted goal-plan pair, including exact target and revision", async () => {
+  const goal = { ...createDefaultGoal(TRACK_ID), goalType: "prepare_for_an_interview" as const, targetDate: "2026-12-01" };
+  await saveGoalSnapshot(goal, null);
+  const plan = createLearningPlan({
+    schemaVersion: 2, planId: "plan:v2-bundle", trackId: TRACK_ID, goalRevision: 1, status: "accepted", timezone: "Europe/Warsaw",
+    contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256, acceptedTarget: { meaning: "event", targetDate: "2026-12-01" },
+    createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z", planRevision: 1, commandId: "command:v2-bundle",
+    slots: [{ slotId: createLearningPlanSlotId("slot:v2-mon"), day: "mon", localTime: "18:00", sessionLength: 10 }], minutesPerStudyDay: 30,
+    executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: null, practice: { modeId: "coding-interview-guided-practice", requestedLength: 10 } },
+    planningPolicyIdentity: { contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256, policyVersion: "policy-v3" },
+  });
+  saveLearningPlanAtomically({ plan, expectedGoalRevision: 1, expectedPlanStorageRevision: null });
+  const snapshot = await buildAccountDataSnapshot();
+  assertValidAccountDataRecords(snapshot.records);
+  const current = snapshot.records.find((record) => record.recordType === "learning_plan")!;
+  const state = current.state as Record<string, unknown>;
+  const planState = state.plan as Record<string, unknown>;
+  for (const changedPlan of [
+    { ...planState, goalRevision: 2 },
+    { ...planState, acceptedTarget: { meaning: "event", targetDate: null } },
+  ]) {
+    const changedState = { ...state, plan: changedPlan };
+    const payload = { recordId: current.recordId, recordType: current.recordType, state: changedState, trackId: current.trackId };
+    const changed = { ...payload, fingerprint: accountDataRecordFingerprint(payload), version: current.version };
+    assert.throws(() => assertValidAccountDataRecords(snapshot.records.map((record) => record === current ? changed : record)), { code: "account_data_goal_plan_invalid" });
+  }
+});
+
 test("review cycle history and active obligations survive account snapshot materialization without advancing", async () => {
   const item = createResolvedContentRef({ trackId: TRACK_ID, questionId: "sync-review-item", contentVersion: "sync-fixture-v1", artifactSha256: TEST_ARTIFACT_SHA256 });
   const shared = {

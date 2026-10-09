@@ -7,7 +7,7 @@ import {
   handleRuntimeAuditabilityUrl,
   parseRuntimeAuditabilityCommand,
 } from "../runtimeAuditability/developmentResetCommand";
-import { installTrainingLifecycleUseCases, type TrainingLifecycleUseCases } from "./";
+import { getApplicationCurrentTime, installTrainingLifecycleUseCases, type TrainingLifecycleUseCases } from "./";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
 import { installLearningStateResetBarrier } from "../learningMutations";
 
@@ -16,11 +16,17 @@ const developmentFlag = globalThis as typeof globalThis & { __DEV__?: boolean };
 function installLifecycleThatCountsResets() {
   let resetCalls = 0;
   let advancedMilliseconds = 0;
+  let currentTime = "2026-07-22T00:00:00.000Z";
   installTrainingLifecycleUseCases({
     async resetLearningState() { resetCalls += 1; },
-    advanceRuntimeAuditabilityClock(milliseconds: number) { advancedMilliseconds += milliseconds; return "2026-07-29T00:00:00.000Z"; },
+    currentTime() { return currentTime; },
+    advanceRuntimeAuditabilityClock(milliseconds: number) {
+      advancedMilliseconds += milliseconds;
+      currentTime = new Date(Date.parse(currentTime) + milliseconds).toISOString();
+      return currentTime;
+    },
   } as TrainingLifecycleUseCases);
-  return { advancedMilliseconds: () => advancedMilliseconds, resetCalls: () => resetCalls };
+  return { advancedMilliseconds: () => advancedMilliseconds, currentTime: () => currentTime, resetCalls: () => resetCalls };
 }
 
 function setDevelopment(value: boolean | undefined) {
@@ -62,6 +68,7 @@ test("runtime-audit reset is unavailable in production and reaches only the life
   try {
     const lifecycle = installLifecycleThatCountsResets();
     setDevelopment(false);
+    assert.equal(getApplicationCurrentTime(), "2026-07-22T00:00:00.000Z");
     assert.deepEqual(await handleRuntimeAuditabilityUrl(DEVELOPMENT_RESET_LEARNING_STATE_URL), { kind: "unavailable_in_production" });
     assert.deepEqual(await handleRuntimeAuditabilityUrl(`${DEVELOPMENT_ADVANCE_AUDIT_CLOCK_URL}?milliseconds=604800000`), { kind: "unavailable_in_production" });
     assert.equal(lifecycle.resetCalls(), 0);
@@ -70,6 +77,7 @@ test("runtime-audit reset is unavailable in production and reaches only the life
     setDevelopment(true);
     assert.deepEqual(await handleRuntimeAuditabilityUrl(DEVELOPMENT_RESET_LEARNING_STATE_URL), { kind: "reset_learning_state" });
     assert.deepEqual(await handleRuntimeAuditabilityUrl(`${DEVELOPMENT_ADVANCE_AUDIT_CLOCK_URL}?milliseconds=604800000`), { kind: "advance_clock", now: "2026-07-29T00:00:00.000Z" });
+    assert.equal(getApplicationCurrentTime(), "2026-07-29T00:00:00.000Z");
     assert.equal(lifecycle.resetCalls(), 1);
     assert.equal(lifecycle.advancedMilliseconds(), 604800000);
   } finally {
