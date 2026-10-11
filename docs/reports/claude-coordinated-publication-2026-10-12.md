@@ -1,6 +1,6 @@
 # CC-05 — skoordynowana publikacja 12.10.2026
 
-Status: w przygotowaniu; bez deklaracji ukończenia publikacji.
+Status: zakończone — główne gałęzie opublikowane, wszystkie trzy bramki hosted CI SUCCESS.
 
 Właściciel zatwierdził użycie Backend z 11.10 i Claude z 918 pytaniami oraz scalenie gałęzi z bieżącej sesji pracy (11.10, przed północą). Zakres publikacji obejmuje Git i pakiet treści aplikacji; nie obejmuje wysłania binarnego wydania do sklepu.
 
@@ -41,10 +41,35 @@ Frontend obejmuje wcześniej zatwierdzone i opublikowane 162 poprawki; obecny sp
 
 Formalny sync i zapis release lock wykonano. Wszystkie dziewięć artefaktów odpowiada kandydatowi; zmieniły się dokładne piny Claude i Frontend, pozostałe siedem zachowano. Niezależna kontrola potwierdziła zgodność hashy, liczby pytań i historii następców.
 
-Weryfikacja źródeł: scoring wszystkich dziewięciu banków PASS, migration PASS, tamper5/5 PASS. Pierwszy pełny test CONTENT: 252 PASS, 7 FAIL, 1 opcjonalny skip; poprawiono nieaktualne oczekiwania wersji/inwentarza i odświeżono rzeczywistą proweniencję primary-strata bez podnoszenia deklaracji jakości. Powtórne pełne pliki testów: 45/45 oraz primary-strata10/10 PASS. Kolejny pełny przebieg trwa.
+Weryfikacja źródeł: scoring wszystkich dziewięciu banków PASS, migration PASS, tamper5/5 PASS. Pierwszy pełny test CONTENT: 252 PASS, 7 FAIL, 1 opcjonalny skip; poprawiono nieaktualne oczekiwania wersji/inwentarza i odświeżono rzeczywistą proweniencję primary-strata bez podnoszenia deklaracji jakości. Powtórne pełne pliki testów: 45/45 oraz primary-strata10/10 PASS. Dodatkowy pełny lokalny przebieg przerwano przy ograniczonej przestrzeni dyskowej i obciążeniu fixture migracji; nie jest PASS. Pełny przebieg wymaga wyniku hosted CI.
 
 APP: typecheck i sync28/28 PASS. Pełna diagnostyka nowej paczki: 2410 PASS, 16 FAIL, 5 skip. Wynik nie jest deklarowany jako odbiór. Wykryte różnice obejmują stare admission, lokalny symlink backendu, nieaktualne oczekiwania V2/inwentarza/fixtures oraz kontrakty selektorów i ekranów Practice; wymagają korekt i ponownego sprawdzenia. Backend recovery4/4 PASS przy wskazaniu fizycznego checkoutu. Brak zgody na osłabienie bramek lub zmianę admission w testach.
 
-Pozostaje: poprawki i sprawdzenie APP, commit paczki, nowe admission, niezależny odbiór, publikacja main/master i wymagane hosted CI. Dokładne dowody historycznego lokalnego kandydata z 11.10 pozostają niezmienione.
+Końcowe korekty APP: `f5fd2466`. Typecheck i content boundary PASS; quality6/6, parserV3/selektory26/26, practice copy4/4, locale parity PASS. Wcześniej błędne przypadki projection przeszły: oba tryby celu, P01 oraz zgodność aktualnego producenta. Test P01 sprawdza najpierw deficyt pokrycia jednostek, a dopiero bez niego tekst pozostałych prób. Niezależny przegląd źródeł PASS.
+
+Końcowe lokalne bramki: nowe admission na rzeczywistym runtime, release gate i niezmienny readiness PASS; admitted export/readiness2/2, crossrepo3/3 i sync9/117/958/16695 PASS. Te wyniki nie zastępują pełnego hosted CI. Historyczny lokalny kandydat z11.10 pozostaje niezmieniony.
 
 Korekta ścieżki walidatora: `producerValidationModules` wskazywał katalog o jeden poziom za wysoko i wczytywał starszy kontrakt. Domyślna ścieżka została zrównana z istniejącą ścieżką synchronizacji; jawny override zachowano. Niezależny przegląd zaakceptował korektę path-only, ocena fit0,94/simplicity0,95/risk0,90/maintainability0,92. Rzeczywista paczka918/V3 przeszła content boundary; runtime privacy boundary również PASS.
+
+## Scalenie i publikacja
+
+W trakcie publikacji `origin/main` wzrósł do `81ec9aa0` (PERSIST12). Zachowano tę pracę w merge `4e018fd10d62a60a26fa17581ec1d61f3f2989d2`; konflikty tylko w bieżącym stanie i siedmiu plikach common.json rozwiązano zachowując obie grupy zmian. Testy copy/parity8/8 PASS. Niezależne porównanie base/rodzice/merge14localeJSON: brak utraconych lub nierozwiązanych zmienionych kluczy.
+
+Dopuszczenie ponownie wygenerowano rzeczywistym testem runtime dla merge4e018fd1. CONTENT `e57f32a743f8b8afbdf7fbddb215322239bceffa` wiąże ten exact commit; wcześniejszy dowód f5fd2466 zachowano historycznie. Niezależny przegląd wszystkich dziewięciu artifactSHA, locka, ledger, readiness/admission i runtime-evidence PASS; granica `local_verified_artifacts_no_deployment`.
+
+Push: APP gałąź integracyjna4e018fd1 → CONTENT master e57f32a → APP main4e018fd1. Pierwsza próba push gałęzi została odrzucona bez szczegółowego powodu; po sprawdzeniu stanu zdalnego, zachowaniu równoległej aktualizacji i merge ponowny zwykły push przeszedł. Bez force push.
+
+Każda lokalna i zdalna gałąź sesji20261011 w APP i CONTENT jest przodkiem opublikowanej integracji. Snapshot Backend/SAA dołączono bez zmiany drzewa; nie cofnięto nowszych źródeł. Oryginalne dirty checkouty zachowano, nie resetowano lokalnych main/master.
+
+Bramki hosted dla dokładnych commitów publikacji:
+- [APP QA4e018fd1](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/38183098775) — SUCCESS:2445total/2440PASS/0FAIL/5SKIP; qa:staticexit0, recovery486source/363files/2331cases, typecheck/platform/content/privacyPASS; crossrepo3/3.
+- [CONTENT publishing e57f32a](https://github.com/lukaszkurczab/patternly-content/actions/runs/38183087512) — SUCCESS:260total/259PASS/0FAIL/1optionalSKIP; build/scoring9banków, identyczny draft9a1/source802, readiness/no-diff i bundledFreePASS.
+- [Real content release e57f32a](https://github.com/lukaszkurczab/patternly-content/actions/runs/38183098499) — SUCCESS:260total/259PASS/0FAIL/1optionalSKIP; migration, exact draft, readiness/no-diff i RELEASE_READY PASS.
+
+Nie wykonano publikacji sklepowej ani OTA. Nie deklarowano pełnego semantycznego audytu wszystkich pytań. Cowork pozostaje dodatkowym materiałem poza runtime; partner-only wyłączony. Wcześniejsze odpowiedzi są zachowane, bez automatycznego zaliczenia wymagań nowego pinu.
+
+APP full gate sprawdził formalny bundled artefakt918, V3,7rozdziałów/53jednostki, linki documentation/course i account flag dla każdego pytania oraz przygotowanie/wznowienie sesji każdej jednostki. Pięć skipów: cztery opcjonalne real-HTTP recovery oraz dodatkowy probe `.temp/cc04-final-dist`; wymagane sprawdzenie formalnej paczki wykonało się. CONTENT jeden skip: opcjonalny test warunkowany PATTERNLY_FRONTEND_ROOT; APP crossrepo/runtime wykonały się oddzielnie.
+
+Końcowy zapis dokumentacji zmienia wyłącznie raport, plan i bieżący stan. Kod/runtime, paczki, zależności, konfiguracja i locki pozostają identyczne z odebranym4e018fd1; obowiązuje dowód full CI tego commitu, a admission nadal wskazuje dokładny wykonany runtime. Nowy commit dokumentacji nie jest nowym wydaniem banku.
+
+Końcowy niezależny odbiór trzech pełnych logów hosted: PASS, bez blokujących ustaleń; exact commity/piny, transparentne skipy i granica bez deployment/store potwierdzone.
