@@ -6,6 +6,7 @@ import { ContentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { createFamilyEnvelope, createTrainingAttempt, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult, getTrackRegistration, initialForegroundTimerForSession, type TrainingSessionConfigurationSnapshot } from "../../domain";
 import { composeTrainingLifecycleUseCases } from "./trainingLifecycleComposition";
 import { TrainingApplicationFailure } from "../trainingLifecycle/contracts";
+import { NodePackageStorageIntegrityError } from "../../content/runtime/nodeContentPackage";
 import { commitTrainingOutcome } from "../learningMutations/commitTrainingOutcome";
 import { commitTrainingSessionStart } from "../learningMutations/commitTrainingSessionStart";
 import { commitSessionCompletion } from "../learningMutations/commitSessionLifecycle";
@@ -83,6 +84,19 @@ test("bootstrap surfaces unavailable active sessions before content preparation 
 
   assert.deepEqual(result, { kind: "content_identity_unavailable", sessionIds: [sessionId] });
   assert.deepEqual(events, ["recovery"]);
+});
+
+test("stored package integrity failure blocks bootstrap before resume and is not presented as exact missing content", async () => {
+  let resumeCalled = false;
+  const result = await bootstrapApplication(
+    async () => { throw new NodePackageStorageIntegrityError("corrupt", "pointer_decode"); },
+    async () => { resumeCalled = true; },
+  );
+  assert.deepEqual(result, {
+    kind: "blocking",
+    reason: "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.",
+  });
+  assert.equal(resumeCalled, false);
 });
 
 test("bootstrap replays a pending journal before surfacing an unrelated unavailable active session", async () => {

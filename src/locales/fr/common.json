@@ -801,5 +801,10 @@
   "This older save can't be retried over a newer response.": "Cette ancienne sauvegarde ne peut pas remplacer une réponse plus récente.",
   "Review the saved response before continuing.": "Relisez la réponse enregistrée avant de continuer.",
   "This response could not be saved.": "Cette réponse n’a pas pu être enregistrée.",
-  "The saved response state is unavailable.": "L’état de la réponse enregistrée est indisponible."
+  "The saved response state is unavailable.": "L’état de la réponse enregistrée est indisponible.",
+  "This app version can't read the saved Premium package format. The data was left in place. Update Patternly to continue.": "Cette version de l’application ne peut pas lire le format du contenu Premium enregistré. Les données ont été conservées. Mettez Patternly à jour pour continuer.",
+  "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.": "Le contenu Premium enregistré ne correspond pas à ce sujet. L’opération est bloquée et les fichiers enregistrés ont été conservés.",
+  "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.": "Patternly n’a pas pu vérifier le contenu Premium enregistré sur cet appareil. L’opération est bloquée et les fichiers enregistrés ont été conservés.",
+  "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.": "Patternly n’a pas pu confirmer l’état du contenu Premium enregistré. Cette opération est bloquée ; réessayez plus tard.",
+  "Patternly couldn't read saved Premium content. Try again later.": "Patternly n’a pas pu lire le contenu Premium enregistré. Réessayez plus tard."
 }

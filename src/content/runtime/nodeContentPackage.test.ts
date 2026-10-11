@@ -3,7 +3,8 @@ import { createHash } from "node:crypto";
 import { gzipSync } from "node:zlib";
 import test from "node:test";
 import { ContentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
-import { createMemoryNodePackageStore, installNodePackage, NodePackageError, validateNodePayload, verifyNodePackage, type BinaryPackageResponse, type NodePackageHash } from "./nodeContentPackage";
+import { ExactContentArtifactUnavailableError } from "../../application/trainingLifecycle/contracts";
+import { createMemoryNodePackageStore, installNodePackage, NodePackageError, NodePackageStorageIntegrityError, NodePackageStorageUnavailableError, validateNodePayload, verifyNodePackage, type BinaryPackageResponse, type NodePackageHash } from "./nodeContentPackage";
 
 const sha256Bytes = async (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const hash: NodePackageHash = { sha256Bytes };
@@ -118,6 +119,71 @@ test("install keeps old exact package resolvable after new activation and rolls 
   await assert.rejects(installNodePackage({ trackId: TRACK, nodeId: NODE, appVersion: "0.1.0", transport: { getNodePackage: async () => response(source("3.0.0")) }, hash, store: corruptingStore, activateRuntime }), (error: unknown) => error instanceof NodePackageError && error.code === "package_storage_failed");
   assert.deepEqual(await store.getActive(TRACK, NODE), before);
   assert.deepEqual(installed, ["1.0.0", "2.0.0"]);
+});
+
+test("installer preserves typed storage integrity and uncertain pointer effects without transport or runtime activation", async () => {
+  const baseStore = createMemoryNodePackageStore();
+  let transportCalls = 0;
+  let runtimeActivations = 0;
+  const corruptInventory = {
+    ...baseStore,
+    async listActive() { throw new NodePackageStorageIntegrityError("corrupt", "pointer_decode"); },
+  };
+  await assert.rejects(installNodePackage({
+    trackId: TRACK, nodeId: NODE, appVersion: "0.1.0",
+    transport: { async getNodePackage() { transportCalls += 1; return response(source("1.0.0")); } },
+    hash, store: corruptInventory, activateRuntime() { runtimeActivations += 1; },
+  }), (error: unknown) => error instanceof NodePackageStorageIntegrityError && error.code === "corrupt");
+  assert.equal(transportCalls, 0, "corrupt retained storage must block before any package download");
+  assert.equal(runtimeActivations, 0);
+
+  const uncertainActivation = {
+    ...baseStore,
+    async activate() { throw new NodePackageStorageUnavailableError("pointer_readback", "unknown"); },
+  };
+  await assert.rejects(installNodePackage({
+    trackId: TRACK, nodeId: NODE, appVersion: "0.1.0",
+    transport: { async getNodePackage() { transportCalls += 1; return response(source("2.0.0")); } },
+    hash, store: uncertainActivation, activateRuntime() { runtimeActivations += 1; },
+  }), (error: unknown) => error instanceof NodePackageStorageUnavailableError && error.stage === "pointer_readback" && error.effect === "unknown");
+  assert.equal(transportCalls, 1);
+  assert.equal(runtimeActivations, 0, "an uncertain pointer is not published into the runtime cache");
+});
+
+test("fresh installed inventory replaces cached records and fences a late hydration", async () => {
+  const retainedResponse = response(source("1.0.0"));
+  const retained = await verifyNodePackage({ trackId: TRACK, nodeId: NODE, packageBytes: retainedResponse.bytes, headers: retainedResponse.headers, appVersion: "0.1.0", hash });
+  const ref = { trackId: TRACK, contentVersion: retained.identity.contentVersion, artifactSha256: retained.identity.artifactSha256, questionId: retained.payload.items[0]!.questionId } as const;
+  let scope = "scope-a";
+  let inventory: readonly Awaited<ReturnType<typeof verifyNodePackage>>[] = [retained];
+  const owner = new ContentPackageRuntimeOwner(() => scope, async () => inventory);
+  await owner.verifyBundledPackages();
+  await owner.verifyInstalledPackages();
+  assert.equal((await owner.resolveItem(ref)).questionId, ref.questionId);
+  inventory = [];
+  await owner.verifyInstalledPackages();
+  await assert.rejects(owner.resolveItem(ref), ExactContentArtifactUnavailableError, "fresh proven inventory absence must replace stale cache entries");
+
+  let calls = 0;
+  let releaseFirst!: (records: readonly Awaited<ReturnType<typeof verifyNodePackage>>[]) => void;
+  let signalLoadStarted!: () => void;
+  const firstLoad = new Promise<readonly Awaited<ReturnType<typeof verifyNodePackage>>[]>((resolve) => { releaseFirst = resolve; });
+  const loadStarted = new Promise<void>((resolve) => { signalLoadStarted = resolve; });
+  const racingOwner = new ContentPackageRuntimeOwner(() => scope, async () => {
+    calls += 1;
+    signalLoadStarted();
+    return calls === 1 ? firstLoad : [];
+  });
+  await racingOwner.verifyBundledPackages();
+  const oldResolution = racingOwner.resolveItem(ref);
+  await loadStarted;
+  assert.equal(calls, 1, "the first exact lookup is suspended in the old hydration");
+  await racingOwner.verifyInstalledPackages();
+  releaseFirst([retained]);
+  await assert.rejects(oldResolution, ExactContentArtifactUnavailableError);
+  await assert.rejects(racingOwner.resolveItem(ref), ExactContentArtifactUnavailableError, "the old hydration cannot resurrect a package after fresh absence verification");
+  assert.equal(calls, 2);
+  scope = "scope-b";
 });
 
 test("installed exact cache is isolated across profile changes and lazily rehydrates on return", async () => {

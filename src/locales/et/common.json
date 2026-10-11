@@ -801,5 +801,10 @@
   "This older save can't be retried over a newer response.": "Seda vanemat salvestust ei saa uuema vastuse peale uuesti proovida.",
   "Review the saved response before continuing.": "Vaata salvestatud vastus enne jätkamist üle.",
   "This response could not be saved.": "Seda vastust ei saanud salvestada.",
-  "The saved response state is unavailable.": "Salvestatud vastuse olek pole saadaval."
+  "The saved response state is unavailable.": "Salvestatud vastuse olek pole saadaval.",
+  "This app version can't read the saved Premium package format. The data was left in place. Update Patternly to continue.": "See rakenduse versioon ei saa lugeda salvestatud Premium-paketi vormingut. Andmed jäid alles. Jätkamiseks uuenda Patternlyt.",
+  "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.": "Salvestatud Premium-sisu ei vasta sellele teemale. Toiming on blokeeritud ja salvestatud failid jäid alles.",
+  "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.": "Patternly ei saanud selle seadme salvestatud Premium-sisu kontrollida. Toiming on blokeeritud ja salvestatud failid jäid alles.",
+  "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.": "Patternly ei saanud salvestatud Premium-sisu olekut kinnitada. See toiming on blokeeritud; proovi hiljem uuesti.",
+  "Patternly couldn't read saved Premium content. Try again later.": "Patternly ei saanud salvestatud Premium-sisu lugeda. Proovi hiljem uuesti."
 }

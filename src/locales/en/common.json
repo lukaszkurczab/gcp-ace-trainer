@@ -801,5 +801,10 @@
   "This older save can't be retried over a newer response.": "This older save can't be retried over a newer response.",
   "Review the saved response before continuing.": "Review the saved response before continuing.",
   "This response could not be saved.": "This response could not be saved.",
-  "The saved response state is unavailable.": "The saved response state is unavailable."
+  "The saved response state is unavailable.": "The saved response state is unavailable.",
+  "This app version can't read the saved Premium package format. The data was left in place. Update Patternly to continue.": "This app version can't read the saved Premium package format. The data was left in place. Update Patternly to continue.",
+  "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.": "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.",
+  "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.": "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.",
+  "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.": "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.",
+  "Patternly couldn't read saved Premium content. Try again later.": "Patternly couldn't read saved Premium content. Try again later."
 }
