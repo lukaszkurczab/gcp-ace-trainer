@@ -27,6 +27,28 @@ export type VerifiedNodePackage = Readonly<{ identity: NodePackageIdentity; payl
 
 export type NodePackageFailureCode = "invalid_response" | "package_unavailable" | "package_identity_mismatch" | "package_corrupt" | "minimum_app_version" | "package_storage_failed" | "entitlement_required" | "entitlement_unavailable" | "not_found" | "authentication_required" | "app_check_unavailable" | "reauthentication_required";
 
+export type NodePackageStorageIntegrityCode = "corrupt" | "unsupported" | "identity_mismatch";
+export type NodePackageStorageStage = "pointer_read" | "pointer_decode" | "pointer_identity" | "inventory_read" | "package_read" | "manifest_decode" | "artifact_verify" | "package_write" | "package_readback" | "artifact_move" | "manifest_move" | "pointer_write" | "pointer_readback";
+
+/** Safe persisted-content diagnosis; never includes stored bytes or payload details. */
+export class NodePackageStorageIntegrityError extends Error {
+  constructor(readonly code: NodePackageStorageIntegrityCode, readonly stage: NodePackageStorageStage) {
+    super(`node_package_storage_${code}`);
+    this.name = "NodePackageStorageIntegrityError";
+  }
+}
+
+/** An I/O failure whose effect is known or cannot be established without changing storage. */
+export class NodePackageStorageUnavailableError extends Error {
+  constructor(readonly stage: NodePackageStorageStage, readonly effect: "not_applied" | "unknown" = "unknown") {
+    super("node_package_storage_unavailable");
+    this.name = "NodePackageStorageUnavailableError";
+  }
+  get requiresReadOnlyReconciliation(): boolean {
+    return this.effect === "unknown" && ["package_write", "package_readback", "artifact_move", "manifest_move", "pointer_write", "pointer_readback"].includes(this.stage);
+  }
+}
+
 export class NodePackageError extends Error {
   constructor(readonly code: NodePackageFailureCode, cause?: unknown) {
     super(code, cause === undefined ? undefined : { cause });
@@ -111,6 +133,12 @@ export function createMemoryNodePackageStore(): NodePackageStore {
 }
 
 export async function installNodePackage(input: Readonly<{ trackId: string; nodeId: string; appVersion: string; expectedContentVersion?: string; expectedArtifactSha256?: string; transport: NodePackageTransport; hash: NodePackageHash; store: NodePackageStore; assertActivationAllowed?: () => void; activateRuntime: (record: VerifiedNodePackage) => void }>): Promise<VerifiedNodePackage> {
+  // A malformed retained index is a local integrity failure, not a reason to
+  // attempt another download or substitute a package version.
+  await input.store.listActive();
+  if (input.expectedContentVersion !== undefined && input.expectedArtifactSha256 !== undefined) {
+    await input.store.read({ trackId: input.trackId, nodeId: input.nodeId, contentVersion: input.expectedContentVersion, artifactSha256: input.expectedArtifactSha256 });
+  }
   let response: BinaryPackageResponse;
   try { response = await input.transport.getNodePackage(input.trackId, input.nodeId); } catch (error) { throw mapTransportFailure(error); }
   if (response.status !== 200) throw mapPackageResponseFailure(response.status, response.serverCode);
@@ -124,7 +152,10 @@ export async function installNodePackage(input: Readonly<{ trackId: string; node
     await input.store.activate(input.trackId, input.nodeId, verified.identity);
     input.activateRuntime(stored);
     return stored;
-  } catch (error) { throw error instanceof NodePackageError ? error : new NodePackageError("package_storage_failed", error); }
+  } catch (error) {
+    if (error instanceof NodePackageError || error instanceof NodePackageStorageIntegrityError || error instanceof NodePackageStorageUnavailableError) throw error;
+    throw new NodePackageError("package_storage_failed", error);
+  }
 }
 
 function mapTransportFailure(error: unknown): NodePackageError {

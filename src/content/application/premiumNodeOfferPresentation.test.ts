@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { describePremiumNodeOfferFailure } from "./premiumNodeOfferPresentation";
-import { NodePackageError } from "../runtime/nodeContentPackage";
+import { NodePackageError, NodePackageStorageIntegrityError, NodePackageStorageUnavailableError } from "../runtime/nodeContentPackage";
 
 test("Premium package errors have distinct localized-copy keys and actionable recovery policy", () => {
   const entries = [
@@ -20,5 +21,33 @@ test("Premium package errors have distinct localized-copy keys and actionable re
   ] as const;
   for (const [code, message, retry, freeAlternative] of entries) {
     assert.deepEqual(describePremiumNodeOfferFailure(new NodePackageError(code)), { message, retry, freeAlternative });
+  }
+});
+
+test("stored integrity and uncertain write outcomes block unsafe retry and free fallback", () => {
+  assert.deepEqual(describePremiumNodeOfferFailure(new NodePackageStorageIntegrityError("corrupt", "manifest_decode")), {
+    message: "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.", retry: false, freeAlternative: false,
+  });
+  assert.deepEqual(describePremiumNodeOfferFailure(new NodePackageStorageUnavailableError("pointer_readback", "unknown")), {
+    message: "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.", retry: false, freeAlternative: false,
+  });
+  assert.deepEqual(describePremiumNodeOfferFailure(new NodePackageStorageUnavailableError("inventory_read", "unknown")), {
+    message: "Patternly couldn't read saved Premium content. Try again later.", retry: true, freeAlternative: false,
+  });
+});
+
+test("safe stored-package failure copy is available in every supported locale", () => {
+  const locales = ["en", "et", "es", "fr", "de", "it", "pl"] as const;
+  const errors = [
+    new NodePackageStorageIntegrityError("unsupported", "pointer_decode"),
+    new NodePackageStorageIntegrityError("identity_mismatch", "pointer_identity"),
+    new NodePackageStorageIntegrityError("corrupt", "manifest_decode"),
+    new NodePackageStorageUnavailableError("pointer_readback", "unknown"),
+    new NodePackageStorageUnavailableError("inventory_read", "unknown"),
+  ];
+  const messages = errors.map((error) => describePremiumNodeOfferFailure(error).message);
+  for (const locale of locales) {
+    const dictionary = JSON.parse(readFileSync(`src/locales/${locale}/common.json`, "utf8")) as Record<string, string>;
+    for (const message of messages) assert.ok(Object.hasOwn(dictionary, message), `${locale} is missing Premium storage copy: ${message}`);
   }
 });

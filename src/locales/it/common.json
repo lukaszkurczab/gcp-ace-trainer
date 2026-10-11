@@ -811,5 +811,10 @@
   "Premium access is required to continue covering the remaining exam topics.": "Per continuare a esercitarti sugli argomenti d’esame rimanenti, verifica il tuo accesso Premium.",
   "Review Premium access": "Verifica accesso Premium",
   "Required topic questions remaining: {{count}}": "Domande rimanenti sugli argomenti obbligatori: {{count}}",
-  "Recent accuracy is not yet measurable": "L’accuratezza recente non è ancora misurabile"
+  "Recent accuracy is not yet measurable": "L’accuratezza recente non è ancora misurabile",
+  "This app version can't read the saved Premium package format. The data was left in place. Update Patternly to continue.": "Questa versione dell’app non può leggere il formato del pacchetto Premium salvato. I dati sono stati conservati. Aggiorna Patternly per continuare.",
+  "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.": "Il contenuto Premium salvato non corrisponde a questo argomento. L’operazione è bloccata e i file salvati sono stati conservati.",
+  "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.": "Patternly non è riuscito a verificare il contenuto Premium salvato su questo dispositivo. L’operazione è bloccata e i file salvati sono stati conservati.",
+  "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.": "Patternly non è riuscito a confermare lo stato del contenuto Premium salvato. Questa operazione è bloccata; riprova più tardi.",
+  "Patternly couldn't read saved Premium content. Try again later.": "Patternly non è riuscito a leggere il contenuto Premium salvato. Riprova più tardi."
 }

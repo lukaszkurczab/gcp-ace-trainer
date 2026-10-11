@@ -811,5 +811,10 @@
   "Premium access is required to continue covering the remaining exam topics.": "Ülejäänud eksamiteemade harjutamiseks kontrolli oma Premiumi ligipääsu.",
   "Review Premium access": "Vaata Premiumi ligipääsu",
   "Required topic questions remaining: {{count}}": "Nõutud teemade järelejäänud küsimusi: {{count}}",
-  "Recent accuracy is not yet measurable": "Hiljutist täpsust ei saa veel mõõta"
+  "Recent accuracy is not yet measurable": "Hiljutist täpsust ei saa veel mõõta",
+  "This app version can't read the saved Premium package format. The data was left in place. Update Patternly to continue.": "See rakenduse versioon ei saa lugeda salvestatud Premium-paketi vormingut. Andmed jäid alles. Jätkamiseks uuenda Patternlyt.",
+  "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.": "Salvestatud Premium-sisu ei vasta sellele teemale. Toiming on blokeeritud ja salvestatud failid jäid alles.",
+  "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.": "Patternly ei saanud selle seadme salvestatud Premium-sisu kontrollida. Toiming on blokeeritud ja salvestatud failid jäid alles.",
+  "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.": "Patternly ei saanud salvestatud Premium-sisu olekut kinnitada. See toiming on blokeeritud; proovi hiljem uuesti.",
+  "Patternly couldn't read saved Premium content. Try again later.": "Patternly ei saanud salvestatud Premium-sisu lugeda. Proovi hiljem uuesti."
 }

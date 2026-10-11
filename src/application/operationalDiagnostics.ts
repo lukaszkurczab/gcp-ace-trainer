@@ -5,8 +5,9 @@ import { isPatternlySmokeRuntime } from "../infrastructure/runtime/runtimeMode";
 import { encryptedStorageFailureCode, type EncryptedStorageFailureCode } from "../infrastructure/storage/encryptedStorageBootstrap";
 import type { LocalLogoutControlError } from "../infrastructure/storage/localLogoutControl";
 import type { ProfileStorageError } from "../infrastructure/storage/profileStorageRouter";
+import { NodePackageStorageIntegrityError, NodePackageStorageUnavailableError } from "../content/runtime/nodeContentPackage";
 
-export type OperationalDiagnosticCode = "CONTENT_UNAVAILABLE" | "CONTENT_INVALID" | "STORAGE_READ_FAILED" | "STORAGE_WRITE_FAILED" | "STORAGE_DELETE_FAILED" | "STORAGE_RECORD_INVALID" | "JOURNAL_WRITE_FAILED" | "JOURNAL_MATERIALIZATION_FAILED" | "JOURNAL_VERIFICATION_FAILED" | "LOCAL_OPERATION_FAILED";
+export type OperationalDiagnosticCode = "CONTENT_UNAVAILABLE" | "CONTENT_INVALID" | "NODE_PACKAGE_STORAGE_CORRUPT" | "NODE_PACKAGE_STORAGE_UNSUPPORTED" | "NODE_PACKAGE_IDENTITY_MISMATCH" | "NODE_PACKAGE_STORAGE_UNAVAILABLE" | "STORAGE_READ_FAILED" | "STORAGE_WRITE_FAILED" | "STORAGE_DELETE_FAILED" | "STORAGE_RECORD_INVALID" | "JOURNAL_WRITE_FAILED" | "JOURNAL_MATERIALIZATION_FAILED" | "JOURNAL_VERIFICATION_FAILED" | "LOCAL_OPERATION_FAILED";
 
 /** Ordered application bootstrap stages exposed to the diagnostic boundary. */
 export enum ApplicationBootstrapStage {
@@ -337,6 +338,10 @@ const bootstrapDiagnosticHost = (): BootstrapDiagnosticHost => globalThis as Boo
 const OPERATIONAL_DIAGNOSTIC_CODES: readonly OperationalDiagnosticCode[] = [
   "CONTENT_UNAVAILABLE",
   "CONTENT_INVALID",
+  "NODE_PACKAGE_STORAGE_CORRUPT",
+  "NODE_PACKAGE_STORAGE_UNSUPPORTED",
+  "NODE_PACKAGE_IDENTITY_MISMATCH",
+  "NODE_PACKAGE_STORAGE_UNAVAILABLE",
   "STORAGE_READ_FAILED",
   "STORAGE_WRITE_FAILED",
   "STORAGE_DELETE_FAILED",
@@ -446,6 +451,12 @@ export function observeBootstrapFailure(
 /** The sole learner-visible projection of an operational failure. */
 export function operationalDiagnosticCode(error: unknown): OperationalDiagnosticCode {
   if (error instanceof ContentError) return error.code === "unavailable" ? "CONTENT_UNAVAILABLE" : "CONTENT_INVALID";
+  if (error instanceof NodePackageStorageIntegrityError) {
+    if (error.code === "unsupported") return "NODE_PACKAGE_STORAGE_UNSUPPORTED";
+    if (error.code === "identity_mismatch") return "NODE_PACKAGE_IDENTITY_MISMATCH";
+    return "NODE_PACKAGE_STORAGE_CORRUPT";
+  }
+  if (error instanceof NodePackageStorageUnavailableError) return "NODE_PACKAGE_STORAGE_UNAVAILABLE";
   if (error instanceof StorageReadError) return "STORAGE_READ_FAILED";
   if (error instanceof StorageWriteError) return "STORAGE_WRITE_FAILED";
   if (error instanceof StorageDeleteError) return "STORAGE_DELETE_FAILED";
@@ -457,5 +468,13 @@ export function operationalDiagnosticCode(error: unknown): OperationalDiagnostic
 }
 
 export function describeOperationalFailure(error: unknown, fallback: string): string {
+  if (error instanceof NodePackageStorageIntegrityError) {
+    if (error.code === "unsupported") return "This app version can't read the saved Premium package format. The data was left in place. Update Patternly to continue.";
+    if (error.code === "identity_mismatch") return "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.";
+    return "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.";
+  }
+  if (error instanceof NodePackageStorageUnavailableError) return error.requiresReadOnlyReconciliation
+    ? "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later."
+    : "Patternly couldn't read saved Premium content. Try again later.";
   return fallback + " [" + operationalDiagnosticCode(error) + "]";
 }

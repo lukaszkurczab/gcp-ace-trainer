@@ -1,8 +1,16 @@
-import { NodePackageError } from "../runtime/nodeContentPackage";
+import { NodePackageError, NodePackageStorageIntegrityError, NodePackageStorageUnavailableError } from "../runtime/nodeContentPackage";
 
 export type PremiumNodeOfferFailurePresentation = Readonly<{ message: string; retry: boolean; freeAlternative: boolean }>;
 
 export function describePremiumNodeOfferFailure(error: unknown): PremiumNodeOfferFailurePresentation {
+  if (error instanceof NodePackageStorageIntegrityError) {
+    if (error.code === "unsupported") return Object.freeze({ message: "This app version can't read the saved Premium package format. The data was left in place. Update Patternly to continue.", retry: false, freeAlternative: false });
+    if (error.code === "identity_mismatch") return Object.freeze({ message: "Saved Premium content doesn't match this topic. The operation is blocked and the stored files were left in place.", retry: false, freeAlternative: false });
+    return Object.freeze({ message: "Patternly couldn't verify saved Premium content on this device. The operation is blocked and the stored files were left in place.", retry: false, freeAlternative: false });
+  }
+  if (error instanceof NodePackageStorageUnavailableError) return error.requiresReadOnlyReconciliation
+    ? Object.freeze({ message: "Patternly couldn't confirm the saved Premium content state. This operation is blocked; try again later.", retry: false, freeAlternative: false })
+    : Object.freeze({ message: "Patternly couldn't read saved Premium content. Try again later.", retry: true, freeAlternative: false });
   if (!(error instanceof NodePackageError)) return Object.freeze({ message: "We couldn't prepare this Premium topic. Try again later.", retry: true, freeAlternative: false });
   switch (error.code) {
     case "entitlement_required": return Object.freeze({ message: "Premium access is required for this topic. Choose a free topic or check your subscription.", retry: false, freeAlternative: true });

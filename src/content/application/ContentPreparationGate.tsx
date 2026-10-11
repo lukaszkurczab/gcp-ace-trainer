@@ -155,7 +155,10 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
       return bootstrapApplication(
         () => {
           setPhase("verifying-content");
-          return contentPackageRuntimeOwner.verifyBundledPackages();
+          return (async () => {
+            await contentPackageRuntimeOwner.verifyBundledPackages();
+            await contentPackageRuntimeOwner.verifyInstalledPackages();
+          })();
         },
         async () => {
           setPhase("resuming-session");
@@ -344,6 +347,6 @@ export function ContentPreparationGate({ children, completeAccountPreparation, h
               : <Button onPress={() => setConfirmUnavailableActiveAbandon(true)} testID={runtimeSelectors.content.unavailableActiveAbandon()} variant="destructive">{t("Abandon unavailable session")}</Button>}
             {!confirmUnavailableActiveAbandon ? <Button onPress={retry} testID={runtimeSelectors.content.unavailableActiveRetry()} variant="secondary">{t("Try again")}</Button> : null}
           </Screen></View>
-      : <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><Screen><EmptyState actionLabel={t("Try again")} description={developmentResetUnavailable ? `${state.reason} Development reset is unavailable because lifecycle preparation did not complete.` : state.reason} onActionPress={retry} title={t("Application unavailable")} /></Screen></View>;
+      : <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><Screen><EmptyState actionLabel={t("Try again")} description={developmentResetUnavailable ? `${t(state.reason)} Development reset is unavailable because lifecycle preparation did not complete.` : t(state.reason)} onActionPress={retry} title={t("Application unavailable")} /></Screen></View>;
   return <View style={{ backgroundColor: colors.background, flex: 1 }}>{body}</View>;
 }
