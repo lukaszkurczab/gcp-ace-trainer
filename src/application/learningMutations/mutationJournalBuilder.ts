@@ -1,5 +1,6 @@
 import {
   captureMutationExpectedRevisions,
+  captureMutationPhysicalWrites,
   createMutationPlanFingerprint,
   type JournalWrite,
   type MutationJournalPlan,
@@ -29,6 +30,7 @@ export async function buildMutationJournal(input: { operation: MutationOperation
       artifactSha256: input.writes[0].record.plan.artifactSha256,
       commandIdentity: { version: 1, fingerprint: commandFingerprint },
       expectedRevisions: captureMutationExpectedRevisions(input.writes),
+      physicalWrites: [],
       writes: input.writes,
     };
     return { journalId: `journal:${commandFingerprint}`, ...plan, planFingerprint: createMutationPlanFingerprint(plan) };
@@ -46,6 +48,7 @@ export async function buildMutationJournal(input: { operation: MutationOperation
       artifactSha256: write.record.afterPlan?.artifactSha256 ?? null,
       commandIdentity: { version: 1, fingerprint: commandFingerprint },
       expectedRevisions: captureMutationExpectedRevisions(input.writes),
+      physicalWrites: [],
       writes: input.writes,
     };
     return { journalId: `journal:${commandFingerprint}`, ...plan, planFingerprint: createMutationPlanFingerprint(plan) };
@@ -70,6 +73,7 @@ export async function buildMutationJournal(input: { operation: MutationOperation
     artifactSha256,
     commandIdentity: { version: 1, fingerprint: commandFingerprint },
     expectedRevisions: captureMutationExpectedRevisions(input.writes, input.expectedRevisionOverrides),
+    physicalWrites: input.operation === "reset_learning_state" ? [] : captureMutationPhysicalWrites(input.writes),
     writes: input.writes,
   };
   return {

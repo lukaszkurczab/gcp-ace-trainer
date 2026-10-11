@@ -451,7 +451,7 @@ test("bootstrap remains blocking when a terminal session pointer has no recovery
   assert.deepEqual((await getTrainingSessions()).value, [terminal]);
 });
 
-test("bootstrap reconstructs a still-active session after replaying a pending submit", async () => {
+test("bootstrap reconstructs a still-active session after replaying a submit interrupted before its attempt index", async () => {
   const artifactSha256 = "b".repeat(64);
   const active = createTrainingSession({
     id: "bootstrap-pending-submit",
@@ -483,10 +483,12 @@ test("bootstrap reconstructs a still-active session after replaying a pending su
     committedAt: active.startedAt,
   });
   await saveTrainingSession(active);
-  testStorage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.trainingAttempt(attempt.id) });
+  testStorage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.TRAINING_ATTEMPT_INDEX });
   await assert.rejects(commitTrainingOutcome({ attempt, session: active, reviews: [], createdAt: active.startedAt }));
   testStorage.setFailurePlan(null);
-  assert.equal((await getTrainingAttempts()).value.length, 0);
+  assert.ok(testStorage.getString(STORAGE_KEYS.trainingAttempt(attempt.id)), "the attempt record is durable before the interrupted index write");
+  assert.equal(testStorage.getString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX), undefined);
+  assert.notEqual(await getActiveMutationJournal(), null, "the exact journal survives the physical write failure");
 
   let lifecycle!: ReturnType<typeof composeTrainingLifecycleUseCases>;
   const result = await bootstrapApplication(

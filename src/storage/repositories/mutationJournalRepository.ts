@@ -5,10 +5,11 @@ import { resolvedContentRefKey, resolvedContentRefsEqual } from "../../domain/le
 import { canonicalFingerprintPayload, canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { STORAGE_KEYS } from "../keys";
-import { isCanonicalWriteAttemptCurrent, readCanonicalEnvelope, readCanonicalJson, reconcileCanonicalWriteAttempt, removeCanonicalValue, writeCanonicalJson, writeCanonicalJsonWithOutcome, type CanonicalRecordEnvelope, type CanonicalWriteAttempt } from "./canonicalRecordCodec";
+import { canonicalPhysicalWriteRelation, captureCanonicalPhysicalWrite, isCanonicalWriteAttemptCurrent, readCanonicalEnvelope, readCanonicalJson, reconcileCanonicalWriteAttempt, removeCanonicalValue, writeCanonicalJson, writeCanonicalJsonWithOutcome, type CanonicalPhysicalAfter, type CanonicalPhysicalState, type CanonicalPhysicalWrite, type CanonicalRecordEnvelope, type CanonicalWriteAttempt } from "./canonicalRecordCodec";
 import { CanonicalWriteOutcomeError, JournalWriteError } from "../errors";
 import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
 import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionDraft, isTrainingSessionResult } from "./trainingModelGuards";
+import { isForegroundTimerState } from "./trainingModelGuards";
 import { getReviewQueueItems } from "./reviewQueueRepository";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
 import { isCanonicalAccountSyncState, type AccountSyncState } from "./accountDataRepository";
@@ -79,6 +80,7 @@ type MutationJournalPlanFields = Readonly<{
   artifactSha256: string | null;
   commandIdentity: MutationCommandIdentity;
   expectedRevisions: readonly MutationExpectedRevision[];
+  physicalWrites: readonly CanonicalPhysicalWrite[];
   writes: readonly JournalWrite[];
 }>;
 export type TrainingMutationJournalPlan = MutationJournalPlanFields & Readonly<{ operation: TrainingMutationOperation; sessionId: string }>;
@@ -271,6 +273,178 @@ function targetStorageKey(target: string): string {
   throw new Error(`Unknown mutation precondition target ${target}.`);
 }
 
+type PhysicalDesired = Readonly<{ kind: "write"; payload: unknown }> | Readonly<{ kind: "remove" }>;
+type PhysicalSpec = Readonly<{ target: string; desired: PhysicalDesired | ((before: CanonicalPhysicalState) => PhysicalDesired); retainBeforeEnvelope?: boolean }>;
+const idsGuard = (value: unknown): value is string[] => Array.isArray(value) && value.every((id) => typeof id === "string" && id.trim().length > 0) && new Set(value).size === value.length;
+
+function physicalWriteSpecs(writes: readonly JournalWrite[]): readonly PhysicalSpec[] {
+  const attempts = writes.filter((write): write is Extract<JournalWrite, { kind: "put_attempt" }> => write.kind === "put_attempt");
+  const reviewPuts = writes.filter((write): write is Extract<JournalWrite, { kind: "put_review_entry" | "put_review_entry_for_attempt" | "update_review_entry" }> => write.kind === "put_review_entry" || write.kind === "put_review_entry_for_attempt" || write.kind === "update_review_entry");
+  const reviewDeletes = writes.filter((write): write is Extract<JournalWrite, { kind: "delete_review_entry" | "delete_review_entry_for_attempt" }> => write.kind === "delete_review_entry" || write.kind === "delete_review_entry_for_attempt");
+  const specs: PhysicalSpec[] = [];
+
+  for (const write of attempts) specs.push({ target: `attempt:${write.record.id}`, desired: { kind: "write", payload: write.record } });
+  if (attempts.length > 0) specs.push({ target: "attempt_index", retainBeforeEnvelope: true, desired: (before) => {
+    const ids = before.kind === "present" ? readPriorIndex(before, "attempt_index") : [];
+    for (const attempt of attempts) if (!ids.includes(attempt.record.id)) ids.unshift(attempt.record.id);
+    return { kind: "write", payload: ids };
+  } });
+
+  for (const write of reviewPuts) specs.push({ target: `review:${write.record.id}`, desired: { kind: "write", payload: write.record } });
+  if (reviewPuts.length > 0 || reviewDeletes.length > 0) specs.push({ target: "review_index", retainBeforeEnvelope: true, desired: (before) => {
+    const ids = before.kind === "present" ? readPriorIndex(before, "review_index") : [];
+    for (const review of reviewPuts) if (review.kind === "put_review_entry" || review.kind === "put_review_entry_for_attempt") if (!ids.includes(review.record.id)) ids.push(review.record.id);
+    const deletedIds = new Set(reviewDeletes.map((write) => write.record.id));
+    return { kind: "write", payload: ids.filter((id) => !deletedIds.has(id)) };
+  } });
+  for (const write of reviewDeletes) specs.push({ target: `review:${write.record.id}`, desired: { kind: "remove" } });
+
+  const clearSession = writes.find((write): write is Extract<JournalWrite, { kind: "clear_active_session" }> => write.kind === "clear_active_session");
+  let sessionIndexWritten = false;
+  for (const write of writes) {
+    switch (write.kind) {
+      case "put_session":
+        specs.push({ target: `session:${write.record.id}`, desired: { kind: "write", payload: write.record } });
+        if (!sessionIndexWritten) {
+          specs.push({ target: "session_index", retainBeforeEnvelope: true, desired: (before) => {
+            const ids = before.kind === "present" ? readPriorIndex(before, "session_index") : [];
+            if (!ids.includes(write.record.id)) ids.unshift(write.record.id);
+            return { kind: "write", payload: ids };
+          } });
+          sessionIndexWritten = true;
+        }
+        if (!clearSession) specs.push({ target: "active_session", retainBeforeEnvelope: true, desired: (before) => {
+          if (write.record.status === "active") return { kind: "write", payload: write.record.id };
+          const activeId = readPriorString(before, "active_session");
+          return activeId === write.record.id ? { kind: "remove" } : preservePriorValue(before);
+        } });
+        break;
+      case "put_session_result": specs.push({ target: `result:${write.record.sessionId}`, desired: { kind: "write", payload: write.record } }); break;
+      case "put_active_session_draft": specs.push({ target: "active_session_draft", desired: { kind: "write", payload: write.record } }); break;
+      case "clear_active_session":
+        specs.push({ target: "active_session", retainBeforeEnvelope: true, desired: (before) => readPriorString(before, "active_session") === write.sessionId ? { kind: "remove" } : preservePriorValue(before) });
+        specs.push({ target: "active_foreground_timer", retainBeforeEnvelope: true, desired: (before) => {
+          const timer = readPriorTimer(before);
+          if (!timer) return { kind: "remove" };
+          const owner = writes.find((candidate): candidate is Extract<JournalWrite, { kind: "put_session" }> => candidate.kind === "put_session" && candidate.record.id === write.sessionId);
+          if (!owner || timer.sessionId !== write.sessionId || timer.trackId !== owner.record.trackId) throw new Error("The active foreground timer is not owned by the terminal session in this journal.");
+          return { kind: "remove" };
+        } });
+        break;
+      case "clear_active_session_draft":
+        specs.push({ target: "active_session_draft", retainBeforeEnvelope: true, desired: (before) => readPriorScopedSessionId(before, "active_session_draft") === write.sessionId ? { kind: "remove" } : preservePriorValue(before) });
+        break;
+      case "delete_active_session_draft":
+        specs.push({ target: "active_session_draft", retainBeforeEnvelope: true, desired: (before) => readPriorScopedSessionId(before, "active_session_draft") === write.record.sessionId ? { kind: "remove" } : preservePriorValue(before) });
+        break;
+      default: break;
+    }
+  }
+  return Object.freeze(specs);
+}
+
+function readPriorIndex(before: CanonicalPhysicalState, target: string): string[] {
+  if (before.kind !== "present" || !before.envelope || !idsGuard(before.envelope.payload) || before.envelope.revision !== before.revision ||
+    sha256Utf8(JSON.stringify(before.envelope)) !== before.digest || sha256Utf8(JSON.stringify(before.envelope.payload)) !== before.payloadDigest) {
+    throw new Error(`The captured ${target} envelope is unavailable or invalid.`);
+  }
+  return [...before.envelope.payload];
+}
+
+function readPriorString(before: CanonicalPhysicalState, target: string): string | null {
+  if (before.kind === "absent") return null;
+  if (!before.envelope || before.envelope.revision !== before.revision || sha256Utf8(JSON.stringify(before.envelope)) !== before.digest || sha256Utf8(JSON.stringify(before.envelope.payload)) !== before.payloadDigest || typeof before.envelope.payload !== "string") {
+    throw new Error(`The captured ${target} envelope is unavailable or invalid.`);
+  }
+  return before.envelope.payload;
+}
+
+function readPriorScopedSessionId(before: CanonicalPhysicalState, target: string): string | null {
+  if (before.kind === "absent") return null;
+  if (!before.envelope || before.envelope.revision !== before.revision || sha256Utf8(JSON.stringify(before.envelope)) !== before.digest || sha256Utf8(JSON.stringify(before.envelope.payload)) !== before.payloadDigest || !isRecord(before.envelope.payload) || !isNonEmptyString(before.envelope.payload.sessionId)) {
+    throw new Error(`The captured ${target} envelope is unavailable or invalid.`);
+  }
+  return before.envelope.payload.sessionId;
+}
+
+function readPriorTimer(before: CanonicalPhysicalState): Readonly<{ sessionId: string; trackId: string }> | null {
+  if (before.kind === "absent") return null;
+  if (!before.envelope || before.envelope.revision !== before.revision || sha256Utf8(JSON.stringify(before.envelope)) !== before.digest || sha256Utf8(JSON.stringify(before.envelope.payload)) !== before.payloadDigest || !isForegroundTimerState(before.envelope.payload)) {
+    throw new Error("The captured foreground timer envelope is invalid.");
+  }
+  return { sessionId: before.envelope.payload.sessionId, trackId: before.envelope.payload.trackId };
+}
+
+function preservePriorValue(before: CanonicalPhysicalState): PhysicalDesired {
+  if (before.kind === "absent") return { kind: "remove" };
+  if (!before.envelope || before.envelope.revision !== before.revision || sha256Utf8(JSON.stringify(before.envelope)) !== before.digest || sha256Utf8(JSON.stringify(before.envelope.payload)) !== before.payloadDigest) {
+    throw new Error("The exact prior envelope is unavailable for preserving a conditional target.");
+  }
+  return { kind: "write", payload: before.envelope.payload };
+}
+
+function derivePhysicalAfter(before: CanonicalPhysicalState, desired: PhysicalDesired): CanonicalPhysicalAfter {
+  if (desired.kind === "remove") return Object.freeze({ kind: "absent" });
+  const unchanged = before.kind === "present" && before.payloadDigest === sha256Utf8(JSON.stringify(desired.payload));
+  const envelope: CanonicalRecordEnvelope<unknown> = Object.freeze({
+    schemaIdentity: "patternly:canonical:v1",
+    revision: unchanged ? before.revision : (before.kind === "present" ? before.revision : 0) + 1,
+    payload: desired.payload,
+  });
+  return Object.freeze({ kind: "present", envelope, digest: unchanged && before.kind === "present" ? before.digest : sha256Utf8(JSON.stringify(envelope)) });
+}
+
+/** Builds the closed physical operation list from one exact set of typed journal writes. */
+export function captureMutationPhysicalWrites(writes: readonly JournalWrite[]): readonly CanonicalPhysicalWrite[] {
+  return Object.freeze(physicalWriteSpecs(writes).map((spec) => captureCanonicalPhysicalWrite(
+    spec.target,
+    targetStorageKey(spec.target),
+    (envelope) => {
+      const before: CanonicalPhysicalState = envelope === null
+        ? Object.freeze({ kind: "absent" })
+        : Object.freeze({ kind: "present", revision: envelope.revision, digest: sha256Utf8(JSON.stringify(envelope)), payloadDigest: sha256Utf8(JSON.stringify(envelope.payload)), ...(spec.retainBeforeEnvelope ? { envelope } : {}) });
+      return typeof spec.desired === "function" ? spec.desired(before) : spec.desired;
+    },
+    Boolean(spec.retainBeforeEnvelope),
+  )));
+}
+
+function hasValidPhysicalWrites(plan: MutationJournalPlan): boolean {
+  const specs = physicalWriteSpecs(plan.writes);
+  const physical = plan.physicalWrites;
+  if (!Array.isArray(physical) || physical.length !== specs.length) return false;
+  for (let index = 0; index < specs.length; index += 1) {
+    const step = physical[index];
+    const spec = specs[index]!;
+    if (!isCanonicalPhysicalWriteShape(step) || step.target !== spec.target || step.key !== targetStorageKey(spec.target)) return false;
+    if (spec.retainBeforeEnvelope) {
+      if (step.before.kind === "present" && (!step.before.envelope || step.before.envelope.revision !== step.before.revision ||
+        sha256Utf8(JSON.stringify(step.before.envelope)) !== step.before.digest || sha256Utf8(JSON.stringify(step.before.envelope.payload)) !== step.before.payloadDigest)) return false;
+    } else if (step.before.kind === "present" && step.before.envelope !== undefined) return false;
+    let desired: PhysicalDesired;
+    try { desired = typeof spec.desired === "function" ? spec.desired(step.before) : spec.desired; } catch { return false; }
+    const after = derivePhysicalAfter(step.before, desired);
+    if (JSON.stringify(after) !== JSON.stringify(step.after)) return false;
+  }
+  return true;
+}
+
+function isCanonicalPhysicalWriteShape(value: unknown): value is CanonicalPhysicalWrite {
+  if (!isRecord(value) || !hasExactKeys(value, ["target", "key", "before", "after"]) || !isNonEmptyString(value.target) || !isNonEmptyString(value.key) || !isRecord(value.before) || !isRecord(value.after)) return false;
+  const before = value.before;
+  const after = value.after;
+  if (before.kind === "absent") {
+    if (!hasExactKeys(before, ["kind"])) return false;
+  } else if (before.kind === "present") {
+    const keys = Object.hasOwn(before, "envelope") ? ["kind", "revision", "digest", "payloadDigest", "envelope"] : ["kind", "revision", "digest", "payloadDigest"];
+    if (!hasExactKeys(before, keys) || !Number.isSafeInteger(before.revision) || Number(before.revision) < 1 || !SHA_256.test(String(before.digest)) || !SHA_256.test(String(before.payloadDigest)) ||
+      (Object.hasOwn(before, "envelope") && !isStoredEnvelope(before.envelope, (_candidate): _candidate is unknown => true))) return false;
+  } else return false;
+  if (after.kind === "absent") return hasExactKeys(after, ["kind"]);
+  return after.kind === "present" && hasExactKeys(after, ["kind", "envelope", "digest"]) && SHA_256.test(String(after.digest)) &&
+    isStoredEnvelope(after.envelope, (_candidate): _candidate is unknown => true);
+}
+
 function isKnownPreconditionTarget(target: string): boolean {
   try { targetStorageKey(target); return true; } catch { return false; }
 }
@@ -306,7 +480,9 @@ function hasExpectedRevisionPlan(record: MutationJournalPlan): boolean {
     return RESET_STATIC_TARGETS.every((target) => targets.includes(target));
   }
   const expectedTargets = [...new Set(record.writes.flatMap(writePreconditionTargets))];
-  return targets.length === expectedTargets.length && expectedTargets.every((target) => targets.includes(target));
+  if (targets.length !== expectedTargets.length || !expectedTargets.every((target) => targets.includes(target))) return false;
+  if (record.operation === "accept_goal_plan" || record.operation === "resolve_account_sync_conflict") return record.physicalWrites.length === 0;
+  return record.physicalWrites.length === expectedTargets.length && record.physicalWrites.every((write) => expectedTargets.includes(write.target));
 }
 
 function hasValidOperationPlan(record: MutationJournalPlan): boolean {
@@ -400,7 +576,8 @@ function hasValidOperationPlan(record: MutationJournalPlan): boolean {
     case "set_review_entry":
       return only("put_review_entry", "update_review_entry") && count("put_review_entry") + count("update_review_entry") === 1;
     case "remove_review_entry":
-      return only("delete_review_entry") && count("delete_review_entry") === 1;
+      return only("delete_review_entry") && count("delete_review_entry") === 1 &&
+        record.writes[0]?.kind === "delete_review_entry" && record.writes[0].record.sourceSessionId === record.sessionId;
     case "reset_learning_state":
       return only("clear_learning_state") && count("clear_learning_state") === 1;
   }
@@ -451,19 +628,20 @@ function persistedPlan(record: MutationJournalRecord): MutationJournalPlan {
 export function hasValidMutationJournalIntegrity(value: unknown): value is MutationJournalRecord {
   if (!isRecord(value) || !isNonEmptyString(value.operation)) return false;
   const expectedKeys = value.operation === "accept_goal_plan"
-    ? ["journalId", "operation", "status", "createdAt", "proposalId", "trackId", "artifactSha256", "commandIdentity", "expectedRevisions", "planFingerprint", "writes"]
+    ? ["journalId", "operation", "status", "createdAt", "proposalId", "trackId", "artifactSha256", "commandIdentity", "expectedRevisions", "physicalWrites", "planFingerprint", "writes"]
     : value.operation === "resolve_account_sync_conflict"
-      ? ["journalId", "operation", "status", "createdAt", "conflictId", "trackId", "artifactSha256", "commandIdentity", "expectedRevisions", "planFingerprint", "writes"]
-      : ["journalId", "operation", "status", "createdAt", "sessionId", "trackId", "artifactSha256", "commandIdentity", "expectedRevisions", "planFingerprint", "writes"];
+      ? ["journalId", "operation", "status", "createdAt", "conflictId", "trackId", "artifactSha256", "commandIdentity", "expectedRevisions", "physicalWrites", "planFingerprint", "writes"]
+      : ["journalId", "operation", "status", "createdAt", "sessionId", "trackId", "artifactSha256", "commandIdentity", "expectedRevisions", "physicalWrites", "planFingerprint", "writes"];
   if (!hasExactKeys(value, expectedKeys)) return false;
   if (!isRecord(value.commandIdentity) || !hasExactKeys(value.commandIdentity, ["version", "fingerprint"]) || value.commandIdentity.version !== 1 || !isNonEmptyString(value.commandIdentity.fingerprint) || !SHA_256.test(value.commandIdentity.fingerprint) || value.journalId !== `journal:${value.commandIdentity.fingerprint}` ||
     !isNonEmptyString(value.planFingerprint) || !PLAN_FINGERPRINT.test(value.planFingerprint) ||
     !(value.operation === "accept_goal_plan" || value.operation === "resolve_account_sync_conflict" || (TRAINING_OPERATIONS as readonly unknown[]).includes(value.operation)) ||
     !["journal_durable", "materialized", "verified_pending_clear"].includes(value.status as string) || !isTimestamp(value.createdAt) ||
     (value.operation === "accept_goal_plan" ? !isNonEmptyString(value.proposalId) : value.operation === "resolve_account_sync_conflict" ? !SHA_256.test(String(value.conflictId)) : !isNonEmptyString(value.sessionId)) || !isNonEmptyString(value.trackId) ||
-    !isRegisteredTrackId(value.trackId) || !(value.artifactSha256 === null || isArtifactSha256(value.artifactSha256)) || !Array.isArray(value.expectedRevisions) || !value.expectedRevisions.every(isExpectedRevision) || !Array.isArray(value.writes) || !value.writes.every(isJournalWrite)) return false;
+    !isRegisteredTrackId(value.trackId) || !(value.artifactSha256 === null || isArtifactSha256(value.artifactSha256)) || !Array.isArray(value.expectedRevisions) || !value.expectedRevisions.every(isExpectedRevision) ||
+    !Array.isArray(value.physicalWrites) || !Array.isArray(value.writes) || !value.writes.every(isJournalWrite)) return false;
   const record = value as MutationJournalRecord;
-  return hasConsistentScope(record) && hasExpectedRevisionPlan(record) && createMutationPlanFingerprint(persistedPlan(record)) === record.planFingerprint;
+  return hasConsistentScope(record) && hasExpectedRevisionPlan(record) && hasValidPhysicalWrites(record) && createMutationPlanFingerprint(persistedPlan(record)) === record.planFingerprint;
 }
 
 export function isMutationJournalRecord(value: unknown): value is MutationJournalRecord {
@@ -545,6 +723,8 @@ export async function persistMutationJournal(record: MutationJournalRecord, expe
       }
       const staleTarget = record.expectedRevisions.find((condition) => revisionForTarget(condition.target) !== condition.revision)?.target;
       if (staleTarget) throw new StaleMutationRevisionError(staleTarget);
+      const stalePhysicalTarget = record.physicalWrites.find((write) => canonicalPhysicalWriteRelation(write) !== "before")?.target;
+      if (stalePhysicalTarget) throw new StaleMutationRevisionError(stalePhysicalTarget);
     }
     if (record.operation === "start_training_session") {
       const activeSession = await getActiveTrainingSession();
@@ -552,6 +732,10 @@ export async function persistMutationJournal(record: MutationJournalRecord, expe
         const message = `Active session ${activeSession.id} was claimed before this start command.`;
         throw new JournalWriteError(new Error(message), message);
       }
+    }
+    if (!current) {
+      const stalePhysicalTarget = record.physicalWrites.find((write) => canonicalPhysicalWriteRelation(write) !== "before")?.target;
+      if (stalePhysicalTarget) throw new StaleMutationRevisionError(stalePhysicalTarget);
     }
     const outcome = writeCanonicalJsonWithOutcome(STORAGE_KEYS.ACTIVE_JOURNAL, record, null, expectedLease);
     if (outcome.kind !== "verified") throw new JournalWriteError(new CanonicalWriteOutcomeError(STORAGE_KEYS.ACTIVE_JOURNAL, outcome));

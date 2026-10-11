@@ -19,7 +19,7 @@ Wyjątek właściciela z 11.10.2026: autoryzowano przed iOS naprawę i publikacj
 
 ## Plan przed pierwszym wydaniem iOS
 
-**Teraz: PERSIST-04/08 — source/native odebrane niezależnie; dostarczenie i rzeczywiste CI w toku.** Po zakończeniu tego wątku przekazanie następnej zależności: 07/05/06 → 01/14 → 09/10 → 11/12 → końcowa macierz13, według [specyfikacji](specs/engineering/persistence.md).
+**Aktywny obszar: PERSIST-07/05/06 — source/logical i local gate odebrane; commit/push/hosted CI w toku.** Obowiązująca kolejność zależności: 07/05/06 → 01/14 → 09/10 → 11/12 → końcowa macierz13, według [specyfikacji](specs/engineering/persistence.md).
 
 Pozostałe zadania techniczne i wydania pozostają poniżej. Przed ich implementacją sprawdzić aktualność wskazanego problemu w bieżącym kodzie. Nie przenosić zadania po iOS tylko dlatego, że jest refaktorem, ani nie tworzyć bramki z samej etykiety HIGH; decydują istniejące wymagania i konkretny wpływ na poprawność, bezpieczeństwo lub dane. Utrzymywać jeden główny obszar pracy, z wyjątkiem rzeczywistej zależności, kolizji, decyzji właściciela lub jego polecenia. Bieżąca autoryzacja autonomicznej pracy przed iOS pozostaje w mocy.
 
@@ -31,11 +31,9 @@ Zadanie znika z planu po odbiorze jego pełnego zakresu. Przy zadaniu częściow
 | --- | --- | --- |
 | [CH-06–08 — pozostałe zadania utrzymania kodu](specs/engineering/code-health.md) | Do wykonania | Usunąć starą ścieżkę przypomnień, uporządkować przestrzenie danych profili i finalizację konta. |
 | [PERSIST-01 — Recovery przed odczytem active/content](specs/engineering/persistence.md) | W toku | Domknąć exact-envelope/replay kryteria po PERSIST-05/06 i natywny kill na pointer-clear boundary przez PERSIST-13. Kolejność recovery przed strict active/unavailable/content jest już wdrożona i testowana w źródłach; nie implementować ponownie. |
-| [PERSIST-04 — Niepewny zapis dziennika](specs/engineering/persistence.md) | Odbiór source/native PASS WITH ISSUES; CI w toku | Exact attempted J, opaque operation-bound retry/original lease/preflight, readonly reconcile i blokady; [odbiór](reports/persist04-08-acceptance-2026-10-11.md). Usunąć z kolejki po odczycie rzeczywistego CI i klasyfikacji odrębnego FESD block. |
-| [PERSIST-05 — Replay guards i rewizje](specs/engineering/persistence.md) | Do wykonania | Idempotentny replay i identyczne canonical revisions; scope guard standalone remove_review_entry według specyfikacji. |
-| [PERSIST-06 — Weryfikacja przed journal clear](specs/engineering/persistence.md) | Do wykonania | Ponowna weryfikacja postconditions po restarcie przed usunięciem dziennika. |
-| [PERSIST-07 — Dokładne targets powtórek](specs/engineering/persistence.md) | Do wykonania | Materializacja review zmienia wyłącznie zadeklarowane rekordy. |
-| [PERSIST-08 — Niepewny zapis szkicu](specs/engineering/persistence.md) | Odbiór source/native PASS WITH ISSUES; CI w toku | Exact D receipt/revision, brak false Saved/Unsaved, blocked finalizer/input; [odbiór](reports/persist04-08-acceptance-2026-10-11.md). P09/P10/full13 osobno. |
+| [PERSIST-05 — Replay guards i rewizje](specs/engineering/persistence.md) | W toku | Idempotentny replay i identyczne canonical revisions; scope guard standalone remove_review_entry według specyfikacji. |
+| [PERSIST-06 — Weryfikacja przed journal clear](specs/engineering/persistence.md) | W toku | Ponowna weryfikacja postconditions po restarcie przed usunięciem dziennika. |
+| [PERSIST-07 — Dokładne targets powtórek](specs/engineering/persistence.md) | W toku | Materializacja review zmienia wyłącznie zadeklarowane rekordy. |
 | [PERSIST-09 — Trwały freeze finalizacji](specs/engineering/persistence.md) | Do wykonania | Freeze i tożsamość finalizacji przeżywają restart; bez utraty lub zmiany odpowiedzi. |
 | [PERSIST-10 — Save/manual/timeout](specs/engineering/persistence.md) | Do wykonania | Deterministyczna macierz wyścigów, zwłaszcza Design; zacząć od testu z opóźnioną operacją, zależności 08/09. |
 | [PERSIST-11 — Granica utraty czasu](specs/engineering/persistence.md) | Do wykonania — limit zatwierdzony | Maksymalnie 5 sekund utraty aktywnego czasu po nagłym zamknięciu i wznowieniu, także przy opóźnieniu wykonania. Implementacja i pomiar; absolutny termin egzaminu bez zmian. |

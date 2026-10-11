@@ -1,7 +1,6 @@
 import { canPersistTrainingSessionDraft, createTrainingSessionDraft, StaleDraftRevisionError, type TrainingSessionDraft } from "../../domain";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalEnvelope, readCanonicalJson, reconcileCanonicalWriteAttempt, removeCanonicalValue, writeCanonicalJson, writeCanonicalJsonWithOutcome, type CanonicalWriteAttempt } from "./canonicalRecordCodec";
+import { applyCanonicalPhysicalWrite, readCanonicalEnvelope, readCanonicalJson, reconcileCanonicalWriteAttempt, removeCanonicalValue, writeCanonicalJsonWithOutcome, type CanonicalPhysicalWrite, type CanonicalWriteAttempt } from "./canonicalRecordCodec";
 import { CanonicalWriteOutcomeError, StorageReadError } from "../errors";
 import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
@@ -93,25 +92,14 @@ export async function reconcileTrainingSessionDraftWrite(attempt: CanonicalWrite
   } catch { return "unknown"; }
 }
 
-export async function materializeActiveTrainingSessionDraft(draft: TrainingSessionDraft): Promise<void> {
-  if (!isTrainingSessionDraft(draft)) throw new Error("Training session draft is invalid.");
-  const journal = await getActiveMutationJournal();
-  const planned = journal?.writes.find((write) => write.kind === "put_active_session_draft");
-  if (!planned || canonicalSerialize(planned.record) !== canonicalSerialize(draft)) {
-    throw new Error("Active training session draft is not owned by the pending mutation journal.");
-  }
-  const activeSession = await getActiveTrainingSession();
-  if (!activeSession || activeSession.status !== "active" || activeSession.id !== draft.sessionId || activeSession.trackId !== draft.trackId || !canPersistTrainingSessionDraft(activeSession)) {
-    throw new Error("Journaled training session draft does not match the active session.");
-  }
-  const existing = await getActiveTrainingSessionDraft();
-  if (existing && canonicalSerialize(existing) !== canonicalSerialize(draft)) {
-    throw new Error("A conflicting active training session draft is already durable.");
-  }
-  if (!existing) writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, createTrainingSessionDraft(draft));
-}
-
 export async function clearActiveTrainingSessionDraft(sessionId: string): Promise<void> {
   const draft = await getActiveTrainingSessionDraft();
   if (draft?.sessionId === sessionId) removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
+}
+
+/** Applies the single journal-owned draft target through the draft repository. */
+export function materializeTrainingSessionDraftJournalStep(hasDraftWrite: boolean, steps: readonly CanonicalPhysicalWrite[]): void {
+  const expected = hasDraftWrite ? ["active_session_draft"] : [];
+  if (steps.length !== expected.length || steps.some((step, index) => step.target !== expected[index])) throw new Error("Training session draft step does not match its exact journal plan.");
+  for (const step of steps) applyCanonicalPhysicalWrite(step);
 }

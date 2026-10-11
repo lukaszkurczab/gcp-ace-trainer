@@ -33,7 +33,9 @@ export async function recoverPendingMutation(): Promise<void> {
         if (reset?.kind !== "clear_learning_state") throw new Error("A reset journal has no exact physical target plan.");
         assertLearningStateResetMaterialized(reset.targetPlan);
       }
+      await verifyMutation(record);
       if (record.operation !== "resolve_account_sync_conflict" && record.operation !== "reset_learning_state") await markAccountDataPending();
+      await verifyMutation(record);
       await clearMutationJournal(record.commandIdentity.fingerprint);
     } catch (error) {
       throw new MutationCommitFailure("journal_clear", "verified_pending_clear", error);

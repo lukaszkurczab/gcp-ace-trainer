@@ -185,7 +185,6 @@ test("practice submission recovers identically after every durable write boundar
     { kind: "fail_on_key_write", key: STORAGE_KEYS.reviewEntry(review.id) },
     { kind: "fail_on_key_write", key: STORAGE_KEYS.REVIEW_INDEX },
     { kind: "fail_on_key_write", key: STORAGE_KEYS.trainingSession(session.id) },
-    { kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION },
     { kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_JOURNAL },
   ] as const;
   for (const boundary of boundaries) {
@@ -206,6 +205,36 @@ test("practice submission recovers identically after every durable write boundar
     assert.deepEqual((await getReviewQueueItems()).value, [review], boundary.key);
     assert.deepEqual((await getTrainingSessions()).value, [submittedSession], boundary.key);
   }
+});
+
+test("practice submission keeps the unchanged active-session pointer as an exact-after no-op", async () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  await saveTrainingSession(session);
+  const pointerRawBefore = storage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION);
+  const pointerBefore = readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, (value): value is string => typeof value === "string");
+  assert.equal(pointerBefore?.payload, session.id);
+  const pointerWritesBefore = storage.operations.filter((operation) => operation.kind === "write" && operation.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION).length;
+  const pointerRemovesBefore = storage.operations.filter((operation) => operation.kind === "remove" && operation.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION).length;
+  const submittedAttempt = { ...attempt, id: "practice-noop-pointer-attempt", result: { kind: "incorrect" as const, earnedPoints: 0, maxPoints: 1 } };
+  const review = {
+    id: "practice-noop-pointer-review", trackId: session.trackId, sourceAttemptId: submittedAttempt.id, sourceSessionId: session.id,
+    sourceItem: submittedAttempt.item, taxonomyOrSkillRefs: submittedAttempt.reviewEvidence.taxonomyOrSkillRefs,
+    reasons: ["incorrect"] as const, dueAt: session.startedAt, createdAt: session.startedAt,
+    consecutiveAfterDueSuccesses: 0, persistent: true,
+  };
+
+  assert.equal(await commitTrainingOutcome({ attempt: submittedAttempt, session, reviews: [review], createdAt: session.startedAt }), false);
+
+  const pointerAfter = readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, (value): value is string => typeof value === "string");
+  assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), pointerRawBefore, "the exact pointer bytes remain unchanged");
+  assert.equal(pointerAfter?.revision, pointerBefore?.revision, "an exact-after pointer does not advance its revision");
+  assert.equal(pointerAfter?.payload, session.id);
+  assert.equal(storage.operations.filter((operation) => operation.kind === "write" && operation.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION).length, pointerWritesBefore);
+  assert.equal(storage.operations.filter((operation) => operation.kind === "remove" && operation.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION).length, pointerRemovesBefore);
+  assert.equal(await getActiveMutationJournal(), null);
+  assert.deepEqual((await getTrainingAttempts()).value, [submittedAttempt]);
+  assert.deepEqual((await getReviewQueueItems()).value, [review]);
 });
 
 test("a review revision race preserves the graded attempt and leaves the concurrent cycle untouched", async () => {

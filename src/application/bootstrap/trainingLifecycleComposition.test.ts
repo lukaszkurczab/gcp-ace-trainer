@@ -56,9 +56,12 @@ test("real composition retains its opaque D receipt for exact readback reconcili
   });
 
   const prewriteReadsBefore = storage.operations.filter((operation) => operation.kind === "read" && operation.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT).length;
-  storage.setFailurePlan({ kind: "fail_on_key_read_occurrence", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, occurrence: prewriteReadsBefore + 3 });
+  const draftRawBeforePrewriteFailure = storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
+  // The timer checkpoint runs three exact journal verifications first; fail at the draft command's own preflight read.
+  storage.setFailurePlan({ kind: "fail_on_key_read_occurrence", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, occurrence: prewriteReadsBefore + 4 });
   await assert.rejects(lifecycle.saveSimulationDraft({ draft: retryDraft, expectedPreviousRevision: savedDraft.revision }), /before it changed/u);
   storage.setFailurePlan(null);
+  assert.equal(storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT), draftRawBeforePrewriteFailure, "preflight failure leaves the exact prior draft bytes untouched");
   const retryable = await lifecycle.getSimulationOperationState(prepared.session);
   assert.equal("error" in retryable ? retryable.error.allowedAction : null, "retry_same_command");
   await lifecycle.retrySimulationDraftSave();
@@ -75,7 +78,8 @@ test("real composition retains its opaque D receipt for exact readback reconcili
   });
 
   const draftReadsBefore = storage.operations.filter((operation) => operation.kind === "read" && operation.key === STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT).length;
-  storage.setFailurePlan({ kind: "fail_on_key_read_occurrence", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, occurrence: draftReadsBefore + 4 });
+  // Three timer-checkpoint verifications plus the draft repository and canonical-write preflight precede readback.
+  storage.setFailurePlan({ kind: "fail_on_key_read_occurrence", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, occurrence: draftReadsBefore + 6 });
   await assert.rejects(lifecycle.saveSimulationDraft({ draft: attemptedDraft, expectedPreviousRevision: savedDraft.revision }), /result is uncertain/u);
   storage.setFailurePlan(null);
 

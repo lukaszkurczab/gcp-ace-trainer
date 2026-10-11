@@ -1,7 +1,7 @@
 import type { ReviewQueueEntry, TrackId } from "../../domain";
 import { resolvedContentRefKey } from "../../domain/learning/resolvedContentRef";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
+import { applyCanonicalPhysicalWrite, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
 import { isReviewQueueEntry } from "./trainingModelGuards";
 import type { StorageRepositoryResult } from "./result";
 import { isActiveReviewQueueEntry } from "../../domain/learning/reviewQueueEntry";
@@ -27,6 +27,30 @@ export async function addReviewQueueItems(items: ReviewQueueEntry[]): Promise<St
 /** Journal replay entry point; the caller must first run the journal preflight. */
 export async function materializeReviewQueueItems(items: ReviewQueueEntry[]): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
   return writeReviewQueueItems(items, readReviewQueueForJournal(items));
+}
+
+/** Journal batch replay: changed records, one exact derived index, then deletes. */
+export function materializeReviewQueueBatch(puts: readonly ReviewQueueEntry[], deletes: readonly ReviewQueueEntry[], physicalWrites: readonly CanonicalPhysicalWrite[]): void {
+  if (![...puts, ...deletes].every((entry) => isReviewQueueEntry(entry) && entry.trackId === entry.sourceItem.trackId)) throw new Error("Review queue batch is invalid.");
+  const current = readReviewQueueForJournal([...puts, ...deletes]);
+  const byId = new Map(current.map((entry) => [entry.id, entry]));
+  for (const item of puts) {
+    const existing = byId.get(item.id);
+    if (existing) {
+      const immutableExisting = { id: existing.id, trackId: existing.trackId, sourceAttemptId: existing.sourceAttemptId, sourceSessionId: existing.sourceSessionId, sourceItem: existing.sourceItem, taxonomyOrSkillRefs: existing.taxonomyOrSkillRefs, createdAt: existing.createdAt };
+      const immutableNext = { id: item.id, trackId: item.trackId, sourceAttemptId: item.sourceAttemptId, sourceSessionId: item.sourceSessionId, sourceItem: item.sourceItem, taxonomyOrSkillRefs: item.taxonomyOrSkillRefs, createdAt: item.createdAt };
+      if (JSON.stringify(immutableExisting) !== JSON.stringify(immutableNext)) throw new Error(`Review entry ${item.id} has conflicting immutable evidence.`);
+    }
+    if (isActiveReviewQueueEntry(item) && [...byId.values()].some((entry) => entry.id !== item.id && isActiveReviewQueueEntry(entry) && reviewQueueItemIdentity(entry) === reviewQueueItemIdentity(item))) throw new Error(`Review item ${item.id} would create a second active cycle for its exact content reference.`);
+    byId.set(item.id, item);
+  }
+  for (const item of deletes) {
+    const existing = byId.get(item.id);
+    if (existing && JSON.stringify(existing) !== JSON.stringify(item)) throw new Error(`Review delete ${item.id} conflicts with its durable review identity.`);
+  }
+  const expectedTargets = [...puts.map((entry) => `review:${entry.id}`), ...(puts.length || deletes.length ? ["review_index"] : []), ...deletes.map((entry) => `review:${entry.id}`)];
+  if (physicalWrites.length !== expectedTargets.length || physicalWrites.some((write, index) => write.target !== expectedTargets[index])) throw new Error("Review queue batch does not match its exact journal physical plan.");
+  for (const write of physicalWrites) applyCanonicalPhysicalWrite(write);
 }
 
 async function writeReviewQueueItems(items: ReviewQueueEntry[], current: readonly ReviewQueueEntry[]): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
@@ -57,18 +81,6 @@ async function writeReviewQueueItems(items: ReviewQueueEntry[], current: readonl
 }
 export async function getDueReviewQueueItems(trackId: TrackId, now: string): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { return { ok: true, value: (await getReviewQueueItems()).value.filter((entry) => isActiveReviewQueueEntry(entry) && entry.trackId === trackId && entry.dueAt !== undefined && entry.dueAt <= now).sort((a,b) => a.dueAt!.localeCompare(b.dueAt!) || a.createdAt.localeCompare(b.createdAt)) }; }
 export async function removeReviewQueueEntry(id: string): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { const values = (await getReviewQueueItems()).value.filter((entry) => entry.id !== id); writeCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, values.map((entry) => entry.id)); removeCanonicalValue(STORAGE_KEYS.reviewEntry(id)); return { ok: true, value: values }; }
-/** Journal replay entry point for the index-before-record-delete prefix. */
-export async function materializeReviewQueueRemoval(entry: ReviewQueueEntry): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
-  const current = readReviewQueueForJournal([entry]);
-  const existing = current.find((candidate) => candidate.id === entry.id);
-  if (existing && JSON.stringify(existing) !== JSON.stringify(entry)) throw new Error(`Review delete ${entry.id} conflicts with its durable review identity.`);
-  const values = current.filter((candidate) => candidate.id !== entry.id);
-  const nextIds = values.map((candidate) => candidate.id);
-  const currentIds = readCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, (value): value is string[] => Array.isArray(value) && value.every((id) => typeof id === "string" && id.trim().length > 0));
-  if (JSON.stringify(currentIds ?? []) !== JSON.stringify(nextIds)) writeCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, nextIds);
-  if (existing) removeCanonicalValue(STORAGE_KEYS.reviewEntry(entry.id));
-  return { ok: true, value: values };
-}
 export async function hasReviewQueueEntryRecord(id: string): Promise<boolean> { return readCanonicalJson(STORAGE_KEYS.reviewEntry(id), isReviewQueueEntry) !== null; }
 export async function clearReviewQueueItems(): Promise<void> { const ids = readReviewQueueStrict().result.value.map((entry) => entry.id); ids.forEach((id) => removeCanonicalValue(STORAGE_KEYS.reviewEntry(id))); removeCanonicalValue(STORAGE_KEYS.REVIEW_INDEX); }
 

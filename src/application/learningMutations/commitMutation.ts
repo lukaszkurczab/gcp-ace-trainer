@@ -76,7 +76,12 @@ async function commitMutationUnlocked(record: MutationJournalRecord, beforeGoalP
   catch (error) { throw new MutationCommitFailure("materialization", "journal_durable", error); }
   try { await verifyMutation(prepared); await updateMutationJournalPhase(prepared, "verified_pending_clear"); }
   catch (error) { throw new MutationCommitFailure("verification", "materialized", error); }
-  try { if (prepared.operation !== "resolve_account_sync_conflict" && prepared.operation !== "reset_learning_state") await markAccountDataPending(); await clearMutationJournal(prepared.commandIdentity.fingerprint); }
+  try {
+    await verifyMutation(prepared);
+    if (prepared.operation !== "resolve_account_sync_conflict" && prepared.operation !== "reset_learning_state") await markAccountDataPending();
+    await verifyMutation(prepared);
+    await clearMutationJournal(prepared.commandIdentity.fingerprint);
+  }
   catch (error) { throw new MutationCommitFailure("journal_clear", "verified_pending_clear", error); }
 }
 

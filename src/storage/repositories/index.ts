@@ -8,6 +8,7 @@ export * from "./settingsRepository";
 export * from "./notificationSettingsRepository";
 export * from "./result";
 export * from "./mutationJournalRepository";
+export * from "./mutationPhysicalWriteRepository";
 export * from "./trainingAttemptRepository";
 export * from "./trainingSessionRepository";
 export * from "./trainingSessionResultRepository";

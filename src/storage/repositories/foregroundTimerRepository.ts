@@ -1,7 +1,7 @@
 import { createForegroundTimerState, type ForegroundTimerState } from "../../domain";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
+import { applyCanonicalPhysicalWrite, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
 import { isForegroundTimerState } from "./trainingModelGuards";
 
@@ -40,4 +40,14 @@ export async function saveActiveForegroundTimer(
 export async function clearActiveForegroundTimer(sessionId: string): Promise<void> {
   const timer = await getActiveForegroundTimer();
   if (timer?.sessionId === sessionId) removeCanonicalValue(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER);
+}
+
+/** Exact journal-owned timer removal; terminal verification requires absence. */
+export function materializeActiveForegroundTimerJournalStep(hasClearSession: boolean, step: CanonicalPhysicalWrite | undefined): void {
+  if (!hasClearSession) {
+    if (step) throw new Error("A timer physical step has no clear-session owner.");
+    return;
+  }
+  if (!step || step.target !== "active_foreground_timer" || step.after.kind !== "absent") throw new Error("The clear-session journal has no exact timer-removal step.");
+  applyCanonicalPhysicalWrite(step);
 }

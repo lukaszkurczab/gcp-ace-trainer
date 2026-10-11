@@ -1,6 +1,7 @@
 import { captureActiveProfileStorageLease, getKeyValueStorage, isActiveProfileStorageLeaseCurrent, MemoryKeyValueStorage, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
 import { CanonicalWriteConflictError, CorruptStoredRecordError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "../errors";
 import { STORAGE_NAMESPACE } from "../keys";
+import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 
 /**
  * The sole MMKV access boundary.  It intentionally lives with repository
@@ -13,6 +14,26 @@ export type CanonicalRecordEnvelope<T> = Readonly<{
   schemaIdentity: typeof CANONICAL_RECORD_SCHEMA;
   revision: number;
   payload: T;
+}>;
+
+export type CanonicalPhysicalState = Readonly<{ kind: "absent" }> | Readonly<{
+  kind: "present";
+  revision: number;
+  digest: string;
+  payloadDigest: string;
+  /** Retained only for ordered index derivation and small ownership keys. */
+  envelope?: CanonicalRecordEnvelope<unknown>;
+}>;
+export type CanonicalPhysicalAfter = Readonly<{ kind: "absent" }> | Readonly<{
+  kind: "present";
+  envelope: CanonicalRecordEnvelope<unknown>;
+  digest: string;
+}>;
+export type CanonicalPhysicalWrite = Readonly<{
+  target: string;
+  key: string;
+  before: CanonicalPhysicalState;
+  after: CanonicalPhysicalAfter;
 }>;
 
 /**
@@ -73,6 +94,116 @@ export function readCanonicalEnvelope<T>(key: string, guard: StorageValueGuard<T
   try { value = JSON.parse(raw); } catch { throw new CorruptStoredRecordError(key); }
   if (!isEnvelope(value) || !guard(value.payload)) throw new UnsupportedStoredRecordError(key);
   return value as CanonicalRecordEnvelope<T>;
+}
+
+/** Capture an immutable physical write description at command preflight. */
+export function captureCanonicalPhysicalWrite(
+  target: string,
+  key: string,
+  desiredInput: Readonly<{ kind: "write"; payload: unknown }> | Readonly<{ kind: "remove" }> |
+    ((before: CanonicalRecordEnvelope<unknown> | null) => Readonly<{ kind: "write"; payload: unknown }> | Readonly<{ kind: "remove" }>),
+  retainBeforeEnvelope = false,
+): CanonicalPhysicalWrite {
+  let raw: string | undefined;
+  try { raw = getKeyValueStorage().getString(key); } catch (error) { throw new StorageReadError(key, error); }
+  const current = parseEnvelope(raw, key);
+  const before: CanonicalPhysicalState = current === null
+    ? Object.freeze({ kind: "absent" })
+    : Object.freeze({ kind: "present", revision: current.revision, digest: sha256Utf8(raw!), payloadDigest: sha256Utf8(JSON.stringify(current.payload)), ...(retainBeforeEnvelope ? { envelope: current } : {}) });
+  const desired = typeof desiredInput === "function" ? desiredInput(current) : desiredInput;
+  let after: CanonicalPhysicalAfter;
+  if (desired.kind === "remove") {
+    after = Object.freeze({ kind: "absent" });
+  } else {
+    const unchanged = current !== null && JSON.stringify(current.payload) === JSON.stringify(desired.payload);
+    const envelope = Object.freeze({
+      schemaIdentity: CANONICAL_RECORD_SCHEMA,
+      revision: unchanged ? current.revision : (current?.revision ?? 0) + 1,
+      payload: desired.payload,
+    });
+    after = Object.freeze({ kind: "present", envelope, digest: unchanged ? (before.kind === "present" ? before.digest : "") : sha256Utf8(JSON.stringify(envelope)) });
+  }
+  return Object.freeze({ target, key, before, after });
+}
+
+export function canonicalPhysicalWriteRelation(write: CanonicalPhysicalWrite): "before" | "after" | "conflict" {
+  let raw: string | undefined;
+  try { raw = getKeyValueStorage().getString(write.key); } catch (error) { throw new StorageReadError(write.key, error); }
+  const isBeforeState = (state: CanonicalPhysicalState): boolean => {
+    if (state.kind === "absent") return raw === undefined;
+    if (raw === undefined || sha256Utf8(raw) !== state.digest) return false;
+    try {
+      const envelope = parseEnvelope(raw, write.key);
+      return envelope !== null && envelope.revision === state.revision && sha256Utf8(JSON.stringify(envelope.payload)) === state.payloadDigest;
+    } catch { return false; }
+  };
+  const beforeMatches = isBeforeState(write.before);
+  const afterMatches = isAfterState(raw, write.after);
+  if (beforeMatches) return "before";
+  if (afterMatches) return "after";
+  return "conflict";
+}
+
+/** Fresh exact-after check, including raw digest, revision and required absence. */
+export function isCanonicalPhysicalWriteAfter(write: CanonicalPhysicalWrite): boolean {
+  let raw: string | undefined;
+  try { raw = getKeyValueStorage().getString(write.key); } catch (error) { throw new StorageReadError(write.key, error); }
+  return isAfterState(raw, write.after);
+}
+
+/** All physical keys must represent a legal ordered prefix before a replay writes anything. */
+export function assertCanonicalPhysicalPrefix(writes: readonly CanonicalPhysicalWrite[]): void {
+  let firstUnapplied = false;
+  for (const write of writes) {
+    const relation = canonicalPhysicalWriteRelation(write);
+    if (relation === "conflict") throw new CanonicalWriteConflictError(write.key);
+    const isNoop = samePhysicalStates(write.before, write.after);
+    if (isNoop) continue;
+    if (relation === "before") firstUnapplied = true;
+    else if (firstUnapplied) throw new CanonicalWriteConflictError(write.key);
+  }
+}
+
+/** Apply one exact step. An exact-after state is a no-op and keeps its revision. */
+export function applyCanonicalPhysicalWrite(write: CanonicalPhysicalWrite): void {
+  withCanonicalWriteLocks([write.key], () => {
+    const relation = canonicalPhysicalWriteRelation(write);
+    if (samePhysicalStates(write.before, write.after)) {
+      if (relation !== "before") throw new CanonicalWriteConflictError(write.key);
+      return;
+    }
+    if (relation === "after") return;
+    if (relation !== "before") throw new CanonicalWriteConflictError(write.key);
+    const storage = getKeyValueStorage();
+    if (write.after.kind === "absent") {
+      try { storage.remove(write.key); } catch (error) { throw new StorageDeleteError(write.key, error); }
+      let observed: string | undefined;
+      try { observed = storage.getString(write.key); } catch (error) { throw new StorageReadError(write.key, error); }
+      if (observed !== undefined) throw new StorageDeleteError(write.key, new Error("Canonical removal did not reach its exact absent state."));
+      return;
+    }
+    const raw = JSON.stringify(write.after.envelope);
+    try { storage.setString(write.key, raw); } catch (error) { throw new StorageWriteError(write.key, error); }
+    let observed: string | undefined;
+    try { observed = storage.getString(write.key); } catch (error) { throw new StorageReadError(write.key, error); }
+    if (observed !== raw) throw new StorageWriteError(write.key, new Error("Canonical write did not reach its exact intended envelope."));
+  });
+}
+
+function isAfterState(raw: string | undefined, state: CanonicalPhysicalAfter): boolean {
+  if (state.kind === "absent") return raw === undefined;
+  if (raw === undefined || sha256Utf8(raw) !== state.digest) return false;
+  try {
+    const envelope = parseEnvelope(raw, "physical-after");
+    return envelope?.revision === state.envelope.revision && JSON.stringify(envelope.payload) === JSON.stringify(state.envelope.payload);
+  } catch { return false; }
+}
+
+function samePhysicalStates(before: CanonicalPhysicalState, after: CanonicalPhysicalAfter): boolean {
+  if (before.kind !== after.kind) return false;
+  if (before.kind === "absent" && after.kind === "absent") return true;
+  if (before.kind === "present" && after.kind === "present") return before.revision === after.envelope.revision && before.digest === after.digest;
+  return false;
 }
 
 export function readCanonicalJson<T>(key: string, guard: StorageValueGuard<T>): T | null {

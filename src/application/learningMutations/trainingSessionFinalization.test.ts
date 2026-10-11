@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { commitTrainingSessionFinalization, recoverPendingMutation } from "./";
+import { MutationCommitFailure } from "../mutationBoundary";
+import { materializeMutation } from "./mutationMaterializer";
 import { completeTrainingSession, createTrainingAttempt, createTrainingSessionDraft, type TrainingSessionDraft } from "../../domain";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
@@ -13,6 +15,7 @@ import {
   getTrainingSessions,
   addReviewQueueItems,
   persistMutationJournal,
+  updateMutationJournalPhase,
   removeReviewQueueEntry,
   saveTrainingSession,
   saveTrainingSessionDraft as persistTrainingSessionDraft,
@@ -237,13 +240,15 @@ test("journaled transition delete rejects a same-id review conflict before outco
   await saveTrainingSession(active);
   await saveTrainingSessionDraft(draft);
   await addReviewQueueItems([existing]);
+  const exactExistingReviewBytes = storage.getString(STORAGE_KEYS.reviewEntry(existing.id));
   storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.trainingAttempt(correctAttempt.id) });
   await assert.rejects(commitTrainingSessionFinalization({ session: completed, attempts: [correctAttempt], reviewMutations: [{ action: "delete", record: existing, transitionAttemptId: correctAttempt.id }], cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [correctAttempt.occurrenceId] }, createdAt: timestamp }));
   storage.setFailurePlan(null);
   writeCanonicalJson(STORAGE_KEYS.reviewEntry(existing.id), { ...existing, dueAt: "2026-07-16T10:00:00.000Z" });
   await assert.rejects(recoverPendingMutation(), /materialize/);
   assert.deepEqual((await getTrainingAttempts()).value, []);
-  writeCanonicalJson(STORAGE_KEYS.reviewEntry(existing.id), existing);
+  assert.ok(exactExistingReviewBytes);
+  storage.setString(STORAGE_KEYS.reviewEntry(existing.id), exactExistingReviewBytes);
   await recoverPendingMutation();
   assert.deepEqual((await getReviewQueueItems()).value, []);
 
@@ -336,4 +341,27 @@ test("a draft save started before journal persistence rechecks immediately befor
   assert.equal(persistResult.status, "fulfilled");
   assert.equal(saveResult.status, "rejected");
   assert.deepEqual(await getActiveTrainingSessionDraft(), draft);
+});
+
+test("verified finalization refuses a reappearing draft and retains the journal", async () => {
+  const storage = installMemoryStorage();
+  const { active, completed, draft, attempt } = setup();
+  await saveTrainingSession(active);
+  await saveTrainingSessionDraft(draft);
+  const record = journal([
+    { kind: "put_attempt", record: attempt },
+    { kind: "put_session", record: completed },
+    { kind: "clear_active_session", sessionId: completed.id },
+    { kind: "delete_active_session_draft", record: draft, submittedOccurrenceIds: [attempt.occurrenceId] },
+  ], "finalize_training_session");
+  await persistMutationJournal(record);
+  await materializeMutation(record);
+  const materialized = await updateMutationJournalPhase(record, "materialized");
+  await updateMutationJournalPhase(materialized, "verified_pending_clear");
+
+  writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, draft);
+  const unexpectedDraftBytes = storage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
+  await assert.rejects(() => recoverPendingMutation(), (error: unknown) => error instanceof MutationCommitFailure && error.phase === "journal_clear");
+  assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT), unexpectedDraftBytes);
+  assert.equal((await getActiveMutationJournal())?.journalId, record.journalId);
 });

@@ -11,6 +11,7 @@ import {
   clearReviewQueueItems,
   getDueReviewQueueItems,
   getReviewQueueItems,
+  materializeReviewQueueItems,
   removeReviewQueueEntry,
 } from "./reviewQueueRepository";
 
@@ -91,6 +92,31 @@ test("preserves index order while updating and removing canonical entries", asyn
 
   await removeReviewQueueEntry(first.id);
   assert.deepEqual((await getReviewQueueItems()).value.map((entry) => entry.id), [second.id]);
+});
+
+test("materializing the middle of three reviews writes only its changed envelope", async () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  const first = review("review:first", "attempt:first", "session:first", item(OLD_SHA256, "gcp-core-0004"));
+  const middle = review("review:middle", "attempt:middle", "session:middle", item(CURRENT_SHA256));
+  const last = review("review:last", "attempt:last", "session:last", item("c".repeat(64), "gcp-core-0007"));
+  await addReviewQueueItems([first, middle, last]);
+
+  const before = storage.snapshot();
+  const beforeFirst = before.get(STORAGE_KEYS.reviewEntry(first.id));
+  const beforeMiddle = JSON.parse(before.get(STORAGE_KEYS.reviewEntry(middle.id))!);
+  const beforeLast = before.get(STORAGE_KEYS.reviewEntry(last.id));
+  const beforeIndex = before.get(STORAGE_KEYS.REVIEW_INDEX);
+  storage.resetCounters();
+
+  await materializeReviewQueueItems([{ ...middle, dueAt: "2026-09-04T08:00:00.000Z" }]);
+
+  assert.deepEqual(storage.operations.filter((operation) => operation.kind === "write").map((operation) => operation.key), [STORAGE_KEYS.reviewEntry(middle.id)]);
+  const after = storage.snapshot();
+  assert.equal(after.get(STORAGE_KEYS.reviewEntry(first.id)), beforeFirst);
+  assert.equal(JSON.parse(after.get(STORAGE_KEYS.reviewEntry(middle.id))!).revision, beforeMiddle.revision + 1);
+  assert.equal(after.get(STORAGE_KEYS.reviewEntry(last.id)), beforeLast);
+  assert.equal(after.get(STORAGE_KEYS.REVIEW_INDEX), beforeIndex);
 });
 
 test("rejects legacy identity fields, mixed records, tombstones, and non-lowercase artifact hashes", async () => {

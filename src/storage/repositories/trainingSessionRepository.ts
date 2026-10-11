@@ -1,6 +1,6 @@
 import type { TrainingSession } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
+import { applyCanonicalPhysicalWrite, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
 import { isTrainingSession } from "./trainingModelGuards";
 import { clearTrainingSessionResults } from "./trainingSessionResultRepository";
 import { clearContentIdentityUnavailableRecords } from "./contentIdentityUnavailableRepository";
@@ -15,15 +15,32 @@ export async function getActiveTrainingSession(): Promise<TrainingSession | null
 export async function getActiveTrainingSessionId(): Promise<string | null> { return readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, (value): value is string => typeof value === "string"); }
 export async function clearActiveTrainingSession(sessionId: string): Promise<void> { const activeSessionId = await getActiveTrainingSessionId(); if (activeSessionId === sessionId) removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION); }
 export async function saveTrainingSession(session: TrainingSession): Promise<void> {
-  await writeTrainingSession(session, true);
+  await writeTrainingSession(session);
 }
 
-/** Journal replay entry point; the caller must first run the journal preflight. */
-export async function materializeTrainingSession(session: TrainingSession): Promise<void> {
-  await writeTrainingSession(session, false);
+/** Read-only equivalent used before the journal executor applies captured exact writes. */
+export async function assertTrainingSessionJournalWrite(session: TrainingSession): Promise<void> {
+  await validateTrainingSessionWrite(session, false);
 }
 
-async function writeTrainingSession(session: TrainingSession, requireStrictRead: boolean): Promise<void> {
+/** Applies the session family steps owned by this repository after journal preflight. */
+export function materializeTrainingSessionJournalSteps(sessionIds: readonly string[], clearSessionIds: readonly string[], steps: readonly CanonicalPhysicalWrite[]): void {
+  const expected = sessionIds.flatMap((id) => [`session:${id}`, "session_index"]);
+  if (sessionIds.length > 0 || clearSessionIds.length > 0) expected.push("active_session");
+  if (new Set(expected).size !== expected.length || steps.length !== 1 || !expected.includes(steps[0]!.target)) throw new Error("Training session step does not match its exact journal plan.");
+  for (const step of steps) applyCanonicalPhysicalWrite(step);
+}
+
+async function writeTrainingSession(session: TrainingSession): Promise<void> {
+  const { active, existing } = await validateTrainingSessionWrite(session, true);
+  if (!existing || JSON.stringify(existing) !== JSON.stringify(session)) writeCanonicalJson(STORAGE_KEYS.trainingSession(session.id), session);
+  const ids = readCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, isIds) ?? [];
+  if (!ids.includes(session.id)) writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [session.id, ...ids]);
+  if (session.status === "active") writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, session.id);
+  else if (active?.id === session.id) removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION);
+}
+
+async function validateTrainingSessionWrite(session: TrainingSession, requireStrictRead: boolean): Promise<{ active: TrainingSession | null; existing: TrainingSession | null }> {
   if (!isTrainingSession(session)) throw new Error("Training session is invalid.");
   if (requireStrictRead) readTrainingSessionsStrict();
   // A journal can materialize a terminal session before it clears its pointer.
@@ -49,11 +66,7 @@ async function writeTrainingSession(session: TrainingSession, requireStrictRead:
       }
     }
   }
-  if (!existing || JSON.stringify(existing) !== JSON.stringify(session)) writeCanonicalJson(STORAGE_KEYS.trainingSession(session.id), session);
-  const ids = readCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, isIds) ?? [];
-  if (!ids.includes(session.id)) writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [session.id, ...ids]);
-  if (session.status === "active") writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, session.id);
-  else if (active?.id === session.id) removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION);
+  return { active, existing };
 }
 
 function assertConditionalReinsertResolution(existing: TrainingSession, next: TrainingSession): void {
