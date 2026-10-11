@@ -4,6 +4,8 @@ Status i kolejność: [plan główny](../../../PATTERNLY-WORKING-PLAN.md). Wspó
 
 ## FCA-EDIT-658fa75523 — aws-certified-solutions-architect-associate/api_messaging_event_and_workflow_decoupling/amazon_mq_protocol_preserving_integration
 
+**Status: ZAMKNIĘTE — PASS (11.10.2026).** Niezależne semantic/integration QA, świeże AWS-02 admission i release gate PASS; szczegóły oraz rzeczywiste testy są w raporcie.
+
 Wykonanie 11.10.2026: właściciel w aktywnej rozmowie dopuścił ten zakres oraz dokładne pakiety SAA-20261010-01…12 przed pierwszym iOS, z ochroną Q13 i cudzych zmian. Bieżący odbiór i publikacja: [raport napraw](../../../reports/aws-saa-fixes-2026-10-11.md). Poniższe findings i hashe opisują stan BEFORE; nie są dowodem dla poprawionego pakietu. Zakres zachowuje jedno istniejące zadanie FCA, bez konkurencyjnej kolejki.
 
 Plik: `content/aws-certified-solutions-architect-associate/api_messaging_event_and_workflow_decoupling/amazon_mq_protocol_preserving_integration.json`. Badana wersja: `aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096`.

@@ -22,7 +22,7 @@ Doprowadź spójnie zmianę źródeł, wersję i migrację, zatwierdzenie i dopu
 
 ## Szczegóły według banku
 
-- [aws-certified-solutions-architect-associate](content-maintenance/aws-certified-solutions-architect-associate.md): 1 zakres.
+- [aws-certified-solutions-architect-associate](content-maintenance/aws-certified-solutions-architect-associate.md): 1 zachowany zakres; `FCA-EDIT-658fa75523` rozwiązany 11.10.2026 (PASS).
 - [backend-system-design-interview](content-maintenance/backend-system-design-interview.md): 34 zakresy.
 - [coding-interview-dsa-problem-solving](content-maintenance/coding-interview-dsa-problem-solving.md): 18 zakresów.
 - [google-cloud-associate-cloud-engineer](content-maintenance/google-cloud-associate-cloud-engineer.md): 23 zakresy.
@@ -32,3 +32,7 @@ Doprowadź spójnie zmianę źródeł, wersję i migrację, zatwierdzenie i dopu
 ## Celowany zakres Claude — autoryzowany 11.10.2026
 
 [Weryfikacja 37 kluczy P1 + korekta P2 Claude](content-maintenance/claude-certified-architect-professional-certification.md): PO autoryzował wykonanie i publikację przed iOS. Niezależne QA wykazało poprawność wszystkich 37 kluczy już w wskazanym source SHA; błędne były litery ID z raportu. W źródle zmieniono tylko P2, z testem regresji dokładnych 38 przypadków. Niezależne QA, runtime admission i release gate PASS; publikacja Git autoryzowana przez PO. Q13 bez zmian. Nie jest to pełny odbiór 845 pytań ani przywrócenie dawnych rozstrzygniętych findingów.
+
+## Celowane naprawy AWS SAA — odebrane 11.10.2026
+
+[Raport wykonania](../../reports/aws-saa-fixes-2026-10-11.md): PO autoryzował przed iOS dokładne SAA-20261010-01…12 oraz istniejące FCA-EDIT-658fa75523. Naprawiono 28 pytań w 12 plikach, z niezależnym semantic/integration QA PASS, nowym kandydatem, runtime admission i release gate. FCA jest zamknięte; dawne opisy poniżej linku służą jako BEFORE. Pozostały audyt banku jest PARTIAL. Q13 i równolegle opublikowane naprawy Claude zachowano.
