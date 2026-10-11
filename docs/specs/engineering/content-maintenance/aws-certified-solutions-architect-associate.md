@@ -1,11 +1,15 @@
 # FCA — aws-certified-solutions-architect-associate
 
-Status i kolejność: [plan główny](../../../PATTERNLY-WORKING-PLAN.md). Wspólne AC i procedura: [utrzymanie banków](../content-maintenance.md). Zakres przeliczono z pełnych zachowanych rekordów ocen, a nie z dawnego podsumowania. Każdy opisany problem nadal dotyczy identycznej treści pytania i tej samej taksonomii w źródłach z 07.10.
+Status i kolejność: [plan główny](../../../PATTERNLY-WORKING-PLAN.md). Wspólne AC i procedura: [utrzymanie banków](../content-maintenance.md). Zakres przeliczono z pełnych zachowanych rekordów ocen, a nie z dawnego podsumowania. Zachowane opisy problemów i wersje poniżej przedstawiają stan BEFORE ze źródeł z 07.10; bieżący status napraw wskazuje raport wykonania.
 
 ## FCA-EDIT-658fa75523 — aws-certified-solutions-architect-associate/api_messaging_event_and_workflow_decoupling/amazon_mq_protocol_preserving_integration
 
+**Status: ZAMKNIĘTE — PASS (11.10.2026).** Niezależne semantic/integration QA, świeże AWS-02 admission i release gate PASS; szczegóły oraz rzeczywiste testy są w raporcie.
+
+Wykonanie 11.10.2026: właściciel w aktywnej rozmowie dopuścił ten zakres oraz dokładne pakiety SAA-20261010-01…12 przed pierwszym iOS, z ochroną Q13 i cudzych zmian. Bieżący odbiór i publikacja: [raport napraw](../../../reports/aws-saa-fixes-2026-10-11.md). Poniższe findings i hashe opisują stan BEFORE; nie są dowodem dla poprawionego pakietu. Zakres zachowuje jedno istniejące zadanie FCA, bez konkurencyjnej kolejki.
+
 Plik: `content/aws-certified-solutions-architect-associate/api_messaging_event_and_workflow_decoupling/amazon_mq_protocol_preserving_integration.json`. Badana wersja: `aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096`.
-Aktualny SHA-256 pliku: `6d13a60fda5a12581896bb87945ab0e5e0815c29682578e5ec8efd140ee014f4`.
+SHA-256 pliku BEFORE: `6d13a60fda5a12581896bb87945ab0e5e0815c29682578e5ec8efd140ee014f4`.
 Kategorie: `IMPLAUSIBLE_DISTRACTORS`, `MENTAL_UNIT_ALIGNMENT`, `MISSING_CONCRETE_MECHANISM`, `NEAR_DUPLICATE_DECISION`, `SHALLOW_DISTRACTOR_EXPLANATION`, `WEAK_DIFFICULTY_COGNITIVE_LOAD`, `WEAK_FAMILY_SPECIFIC_QUALITY`, `WEAK_TRANSFER_VALUE`.
 
 Wymagane korekty: Differentiate the tested decision or boundary from the named peer; do not remove shared-unit questions solely for common vocabulary. Make the identified item-specific mechanism, contrast or misconception explicit; replace only the defective authored parts and re-review the full item. Reconcile the primary competency within the owning node; preserve frozen node boundaries.

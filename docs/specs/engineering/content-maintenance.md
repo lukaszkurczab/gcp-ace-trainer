@@ -22,7 +22,7 @@ Doprowadź spójnie zmianę źródeł, wersję i migrację, zatwierdzenie i dopu
 
 ## Szczegóły według banku
 
-- [aws-certified-solutions-architect-associate](content-maintenance/aws-certified-solutions-architect-associate.md): 1 zakres.
+- [aws-certified-solutions-architect-associate](content-maintenance/aws-certified-solutions-architect-associate.md): 1 zachowany zakres; `FCA-EDIT-658fa75523` rozwiązany 11.10.2026 (PASS).
 - [backend-system-design-interview](content-maintenance/backend-system-design-interview.md): 34 zakresy.
 - [coding-interview-dsa-problem-solving](content-maintenance/coding-interview-dsa-problem-solving.md): 18 zakresów.
 - [google-cloud-associate-cloud-engineer](content-maintenance/google-cloud-associate-cloud-engineer.md): 23 zakresy.
@@ -36,3 +36,7 @@ Doprowadź spójnie zmianę źródeł, wersję i migrację, zatwierdzenie i dopu
 ## Celowany zakres BESD — autoryzowany 11.10.2026
 
 [134 naprawy N02-B02–B09 i dowód rodziny BESD-09-04](content-maintenance/backend-system-design-interview.md): osiem istniejących FCA-EDIT otrzymało nowe tożsamości pytań i opcji, pełny mapping before/after oraz niezależny semantic QA PASS 134/134. B01 N02/N04 pozostają niezmienione. Aktualny statyczny alert obejmuje 1401 pytań w 79 plikach, z dokładnym ledgerem ścieżek, ID i hashy w tej samej specyfikacji; to nie jest odbiór semantyczny pozostałego banku. Końcowy stan dopuszczenia i publikacji znajduje się w sekcji autoryzowanego wyjątku.
+
+## Celowane naprawy AWS SAA — odebrane 11.10.2026
+
+[Raport wykonania](../../reports/aws-saa-fixes-2026-10-11.md): PO autoryzował przed iOS dokładne SAA-20261010-01…12 oraz istniejące FCA-EDIT-658fa75523. Naprawiono 28 pytań w 12 plikach, z niezależnym semantic/integration QA PASS, nowym kandydatem, runtime admission i release gate. FCA jest zamknięte; dawne opisy poniżej linku służą jako BEFORE. Pozostały audyt banku jest PARTIAL. Q13 i równolegle opublikowane naprawy Claude zachowano.

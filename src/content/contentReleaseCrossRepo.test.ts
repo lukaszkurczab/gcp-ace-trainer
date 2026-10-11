@@ -175,9 +175,9 @@ test("current canonical builder adds the planning policy while preserving the ex
     const awsSuccessor = successorLedger.tracks.find((entry) => entry.trackId === "aws-certified-solutions-architect-associate")!;
     const awsQuestions = [...aws.questions].sort((left, right) => left.questionId < right.questionId ? -1 : left.questionId > right.questionId ? 1 : 0);
     const awsNodeQuestions = awsQuestions.filter((question) => question.nodeId === "aws_secure_architecture_foundations");
-    assert.equal(aws.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096-bizq02-v2-bizq03-planning-v2");
+    assert.equal(aws.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.10.11-saa-fixes-v1-bizq03-planning-v2");
     assert.equal(aws.planningPolicy?.policyVersion, awsSuccessor.planningPolicy.policyVersion);
-    assert.equal(awsSuccessor.training.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.09.21-odk096-bizq02-v2");
+    assert.equal(awsSuccessor.training.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.10.11-saa-fixes-v1-bizq03-planning-v2-training");
     assert.equal(awsSuccessor.training.questionCount, awsQuestions.length);
     const emittedAws = JSON.parse(readFileSync(join(outputRoot, "aws-certified-solutions-architect-associate.json"), "utf8")) as { schemaVersion: string; contentVersion: string; planningPolicy?: unknown } & Record<string, unknown>;
     const trainingProjection = structuredClone(emittedAws);
@@ -188,7 +188,7 @@ test("current canonical builder adds the planning policy while preserving the ex
     assert.equal((aws as unknown as { completionRule: { ruleVersion: number; chapters: readonly unknown[] } }).completionRule.ruleVersion, 2);
     assert.equal(awsNodeQuestions.length, 40);
     assert.equal(builder.sha256(builder.canonicalJson(awsNodeQuestions)), "8dd16df1d7c6741b373026547c35255aea97869542bbb8897a4f36c73730bc33");
-    assert.equal(builder.sha256(builder.canonicalJson(awsQuestions)), "46697d0c4e395455084d5dc28206b83e9207109b6f803eb94a47d4b4b981ac45");
+    assert.equal(builder.sha256(builder.canonicalJson(awsQuestions)), "f745d5ea27b753a3fae1143c079086fb2bab99dacfbb89a08744925030eeed42");
   } finally {
     await rm(outputRoot, { recursive: true, force: true });
   }

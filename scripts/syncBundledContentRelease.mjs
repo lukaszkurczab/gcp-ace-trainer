@@ -388,7 +388,7 @@ async function producerContentSourceCommit(producerRoot) {
 async function verifyProducerState(producerRoot) {
   const { stdout } = await execFileAsync("git", [
     "-C", producerRoot, "status", "--porcelain", "--untracked-files=all", "--",
-    "content", "schemas", "scripts/build.mjs", "scripts/content", "evidence/business-quality/bizq-01-besd-cohort-15.json",
+    "content", "schemas", "scripts/build.mjs", "scripts/content", "scripts/review", "evidence/business-quality/bizq-01-besd-cohort-15.json",
   ], { encoding: "utf8" });
   if (stdout.trim()) fail("Canonical producer inputs differ from patternly-content HEAD");
 }

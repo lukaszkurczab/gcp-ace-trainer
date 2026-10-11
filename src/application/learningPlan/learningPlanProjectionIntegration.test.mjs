@@ -4,11 +4,10 @@ import { cp, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import { renderProgressPlanSection } from '../../features/home/tabs/progressPlanSectionTestHarness.mjs';
 const require = createRequire(import.meta.url);
-import { buildTrack, buildAll } from '../../../../patternly-content/scripts/build.mjs';
 const { contentPackageRuntimeOwner } = require('../contentPackageRuntimeOwner.ts');
 const { HomePlanSnapshotReader } = require('../homePlanSnapshotReader.ts');
 const { createDefaultGoal, acceptedTargetFromGoal, normalizeLearningPlan } = require('../../domain/index.ts');
@@ -24,7 +23,9 @@ const { getTrackRegistration } = require('../../domain/tracks/trackRegistry.ts')
 const LOCALES = ['en', 'pl', 'de', 'fr', 'es', 'it', 'et'];
 
 const TRACK = 'aws-certified-solutions-architect-associate';
-const CONTENT = fileURLToPath(new URL('../../../../patternly-content/', import.meta.url));
+const CONTENT = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? fileURLToPath(new URL('../../../../patternly-content/', import.meta.url)));
+const APP_ROOT = path.resolve(fileURLToPath(new URL('../../../', import.meta.url)));
+const { buildTrack, buildAll } = await import(pathToFileURL(path.join(CONTENT, 'scripts/build.mjs')).href);
 const RULE = JSON.parse(readFileSync(path.join(CONTENT, 'content/catalog.json'), 'utf8')).tracks.find(track => track.trackId === TRACK).completionRule;
 
 async function sourceWorkspace(t) {
@@ -81,7 +82,7 @@ const { loadCanonicalRuntimeCatalog } = require('../../content/canonical/runtime
 const { LearningPlanProposalCoordinator } = require('./LearningPlanProposalCoordinator.ts');
 const { projectLearningEvidence } = require('./learningEvidenceProjection.ts');
 const { createHash } = await import('node:crypto');
-const { validatePackageCompletionRule } = await import('../../../../patternly-content/scripts/content/question-contract.mjs');
+const { validatePackageCompletionRule } = await import(pathToFileURL(path.join(CONTENT, 'scripts/content/question-contract.mjs')).href);
 
 async function verifiedProducerRuntime(t) {
   const built = await buildTrack(await sourceWorkspace(t));
@@ -600,19 +601,29 @@ test('clock rollback blocks real proposal resolve and acceptance before goal-pla
   assert.equal((await f.proposal.resolve(id, TRACK)).kind, 'ready');
 });
 
-test('current producer rebuild preserves all nine v2 artifact bytes and exact app lock', async t => {
+test('current producer remains buildable while app bundle matches the admitted candidate exactly', async t => {
   const outputRoot = await mkdtemp(path.join(os.tmpdir(), 'patternly-bizq02-current-parity-'));
   t.after(() => rm(outputRoot, { recursive: true, force: true }));
   const built = await buildAll({ rootDirectory: CONTENT, outputRoot });
   const bundleRoot = fileURLToPath(new URL('../../content/generated/canonical-content/', import.meta.url));
   const bundledLock = JSON.parse(await readFile(path.join(bundleRoot, 'content-lock.json'), 'utf8'));
-  assert.deepEqual(built.lock, bundledLock);
+  const releaseLock = JSON.parse(await readFile(path.join(APP_ROOT, 'integration/contracts/content-release/release.lock.json'), 'utf8'));
+  const candidateRelease = JSON.parse(await readFile(path.join(CONTENT, releaseLock.releaseManifestPath), 'utf8'));
+  const candidateLockApi = await import(pathToFileURL(path.join(APP_ROOT, 'scripts/candidateContentReleaseLock.mjs')).href);
+  await candidateLockApi.updateCandidateContentReleaseLock({ mode: 'check', appRoot: APP_ROOT, contentRoot: CONTENT });
   assert.equal(built.artifacts.length, 9);
+  assert.equal(built.lock.tracks.length, 9);
+  assert.deepEqual(
+    bundledLock.tracks.map(({ trackId, contentVersion, questionCount, sha256 }) => ({ trackId, contentVersion, questionCount, sha256 })),
+    candidateRelease.artifacts.map(({ trackId, contentVersion, questionCount, checksumSha256 }) => ({
+      trackId, contentVersion, questionCount, sha256: checksumSha256,
+    })),
+    'all nine app artifacts must match the active candidate release, including counts',
+  );
   for (const artifact of built.artifacts) {
-    const expected = await readFile(path.join(bundleRoot, `${artifact.trackId}.json`), 'utf8');
     const bytes = await readFile(path.join(outputRoot, `${artifact.trackId}.json`), 'utf8');
-    assert.equal(bytes, expected);
     const parsedArtifact = JSON.parse(bytes);
+    assert.equal(parsedArtifact.schemaVersion, 'patternly-content-artifact-v2');
     assert.equal(parsedArtifact.completionRule.ruleVersion, 2);
     assert.ok(parsedArtifact.completionRule.chapters.length > 0);
   }

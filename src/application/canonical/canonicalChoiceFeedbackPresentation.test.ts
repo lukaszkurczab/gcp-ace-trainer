@@ -3,7 +3,8 @@ import test from "node:test";
 
 import type { ChoiceSingleQuestion, Question } from "../../content/canonical";
 import { loadCanonicalRuntimeCatalog, scoreCanonicalQuestion } from "../../content/canonical";
-import { composeCanonicalFeedback, projectCanonicalChoiceFeedbackControls, projectCanonicalChoiceFeedbackMessages } from "./canonicalInteractionPresentation";
+import { buildCanonicalInteractionViewModel, composeCanonicalFeedback, projectCanonicalChoiceFeedbackControls, projectCanonicalChoiceFeedbackMessages } from "./canonicalInteractionPresentation";
+import { prepareCanonicalOptionOrder, projectCanonicalQuestionInSessionOrder } from "./canonicalOptionOrder";
 
 const single = {
   answer: { optionId: "c", type: "choice_single" },
@@ -93,6 +94,57 @@ test("real GCP and Coding artifacts deliver exact selected-wrong authored messag
     assert.ok(expected.length > 0, `${entry.questionId} must have reviewed authored feedback for ${entry.selectedId}`);
     assert.deepEqual(projectCanonicalChoiceFeedbackMessages(question, response), expected);
     assert.deepEqual(composeCanonicalFeedback(question, response).messages, expected);
+  }
+});
+
+test("the 28 repaired AWS SAA items retain scoring and authored feedback after deterministic option shuffle", async () => {
+  const track = (await loadCanonicalRuntimeCatalog()).getTrack("aws-certified-solutions-architect-associate");
+  const suffixes = [
+    "N07-B06-012", "N07-B04-005", "N07-B04-006", "N04-B02-006", "N04-B05-011", "N04-B01-015",
+    "N07-B01-007", "N07-B01-010", "N07-B02-013", "N07-B07-006",
+    "N07-B05-001", "N07-B05-002", "N07-B05-003", "N07-B05-004", "N07-B05-005-saa20261011", "N07-B05-006",
+    "N04-B01-011", "N04-B05-015", "N04-B03-016",
+    "N04-B06-010", "N04-B06-011", "N04-B06-012", "N04-B06-013", "N04-B06-014", "N04-B06-015", "N04-B06-016", "N04-B06-018", "N04-B07-012",
+  ];
+  assert.equal(suffixes.length, 28);
+  assert.equal(track.getQuestion("aws-saa-c03-AWSSAA-N07-B05-005"), undefined, "the replaced service-fit question cannot be silently rebound to cutover semantics");
+  for (const suffix of suffixes) {
+    const question = track.getQuestion(`aws-saa-c03-AWSSAA-${suffix}`)!;
+    assert.ok(question, suffix);
+    assert.equal(question.answer.type, "choice_single");
+    if (question.answer.type !== "choice_single") throw new Error(`Unexpected answer type: ${suffix}`);
+    assert.equal(question.answer.optionId, "A");
+    const orders = new Set<string>();
+    const correctPositions = new Set<number>();
+    for (let seed = 0; seed < 16; seed += 1) {
+      const order = prepareCanonicalOptionOrder(question, `saa-fixes-${suffix}-${seed}`, track);
+      orders.add(order.join(","));
+      correctPositions.add(order.indexOf("A"));
+      assert.deepEqual(order, prepareCanonicalOptionOrder(question, `saa-fixes-${suffix}-${seed}`, track));
+      const displayed = projectCanonicalQuestionInSessionOrder(question, order);
+      const beforeAnswer = buildCanonicalInteractionViewModel(displayed, null);
+      assert.equal(beforeAnswer.renderer.kind, "choice");
+      if (beforeAnswer.renderer.kind !== "choice") throw new Error(`Unexpected renderer: ${suffix}`);
+      assert.deepEqual(beforeAnswer.renderer.options.map(option => option.id), order);
+      assert.ok(beforeAnswer.renderer.options.every(option => !option.selected));
+      assert.deepEqual(Object.keys(beforeAnswer).sort(), ["accessibility", "renderer"], "pre-answer model contains no answer or feedback");
+      assert.ok("options" in displayed.interaction);
+      if (!("options" in displayed.interaction)) throw new Error(`Unexpected interaction: ${suffix}`);
+      for (const option of displayed.interaction.options) {
+        const response = { type: "choice_single" as const, optionId: option.optionId };
+        const score = scoreCanonicalQuestion(displayed, response);
+        assert.equal(score.earnedPoints, option.optionId === "A" ? 1 : 0, `${suffix}/${option.optionId}`);
+        const expected = question.feedback.messages!.filter(message => message.kind === "wrong_option" && message.targetId === option.optionId);
+        if (option.optionId !== "A") assert.equal(expected.length, 1, `${suffix}/${option.optionId} authored feedback`);
+        assert.deepEqual(projectCanonicalChoiceFeedbackMessages(displayed, response), expected);
+        const feedback = composeCanonicalFeedback(displayed, response);
+        assert.equal(feedback.reason, question.feedback.reason);
+        assert.deepEqual(feedback.details, question.feedback.details);
+        assert.deepEqual(feedback.messages, expected);
+      }
+    }
+    assert.ok(orders.size > 1, `${suffix} must exercise different orders`);
+    assert.ok(correctPositions.size > 1, `${suffix} must move the correct option between displayed positions`);
   }
 });
 
