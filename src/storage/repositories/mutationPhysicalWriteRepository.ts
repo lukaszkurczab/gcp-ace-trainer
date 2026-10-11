@@ -5,7 +5,7 @@ import { materializeReviewQueueBatch } from "./reviewQueueRepository";
 import { materializeTrainingSessionJournalSteps } from "./trainingSessionRepository";
 import { materializeTrainingSessionResultJournalSteps } from "./trainingSessionResultRepository";
 import { materializeTrainingSessionDraftJournalStep } from "./trainingSessionDraftRepository";
-import { materializeActiveForegroundTimerJournalStep } from "./foregroundTimerRepository";
+import { materializeActiveForegroundTimerJournalStep, materializeStartedForegroundTimerJournalStep } from "./foregroundTimerRepository";
 
 /** Checks every captured key before the first physical write of a replay. */
 export function assertMutationPhysicalWritePrefix(steps: readonly CanonicalPhysicalWrite[]): void {
@@ -31,11 +31,18 @@ export function materializeMutationPhysicalWrites(record: MutationJournalRecord)
   const reviewPuts = record.writes.filter((write) => write.kind === "put_review_entry" || write.kind === "put_review_entry_for_attempt" || write.kind === "update_review_entry").map((write) => write.record);
   const reviewDeletes = record.writes.filter((write) => write.kind === "delete_review_entry" || write.kind === "delete_review_entry_for_attempt").map((write) => write.record);
   const sessionIds = record.writes.filter((write) => write.kind === "put_session").map((write) => write.record.id);
+  const startSession = record.operation === "start_training_session"
+    ? record.writes.find((write): write is Extract<MutationJournalRecord["writes"][number], { kind: "put_session" }> => write.kind === "put_session")?.record ?? null
+    : null;
   const clearSessionIds = record.writes.filter((write) => write.kind === "clear_active_session").map((write) => write.sessionId);
   const results = record.writes.filter((write) => write.kind === "put_session_result").map((write) => write.record);
   const hasDraftWrite = record.writes.some((write) => write.kind === "put_active_session_draft" || write.kind === "clear_active_session_draft" || write.kind === "delete_active_session_draft");
   const timer = select(steps, (step) => step.target === "active_foreground_timer");
-  if (timer.length > 1 || (clearSessionIds.length === 0) !== (timer.length === 0)) throw new Error("The timer physical steps do not match the clear-session operation.");
+  const hasStartTimer = record.writes.some((write) => write.kind === "put_active_foreground_timer");
+  if (timer.length > 1 || (clearSessionIds.length === 0 && !hasStartTimer && timer.length !== 0) ||
+    (clearSessionIds.length > 0 && (timer.length !== 1 || hasStartTimer)) || (hasStartTimer && (timer.length !== 1 || !startSession))) {
+    throw new Error("The timer physical steps do not match their exact session owner.");
+  }
   const reviewSteps = select(steps, (step) => step.target.startsWith("review:") || step.target === "review_index");
   materializeReviewQueueBatch(reviewPuts, reviewDeletes, reviewSteps);
 
@@ -54,7 +61,8 @@ export function materializeMutationPhysicalWrites(record: MutationJournalRecord)
       continue;
     }
     if (step.target === "active_foreground_timer") {
-      materializeActiveForegroundTimerJournalStep(clearSessionIds.length > 0, step);
+      if (hasStartTimer) materializeStartedForegroundTimerJournalStep(startSession, step);
+      else materializeActiveForegroundTimerJournalStep(clearSessionIds.length > 0, step);
       continue;
     }
     throw new Error(`No owning repository can apply physical target ${step.target}.`);

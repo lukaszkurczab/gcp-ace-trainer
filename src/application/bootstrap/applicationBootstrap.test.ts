@@ -3,18 +3,22 @@ import test, { beforeEach } from "node:test";
 
 import { ApplicationBootstrapStage, bootstrapApplication } from "./applicationBootstrap";
 import { ContentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
-import { createTrainingAttempt, createTrainingSession } from "../../domain";
+import { createFamilyEnvelope, createTrainingAttempt, createTrainingSession, createTrainingSessionDraft, createTrainingSessionResult, getTrackRegistration, initialForegroundTimerForSession, type TrainingSessionConfigurationSnapshot } from "../../domain";
 import { composeTrainingLifecycleUseCases } from "./trainingLifecycleComposition";
 import { TrainingApplicationFailure } from "../trainingLifecycle/contracts";
 import { commitTrainingOutcome } from "../learningMutations/commitTrainingOutcome";
+import { commitTrainingSessionStart } from "../learningMutations/commitTrainingSessionStart";
+import { commitSessionCompletion } from "../learningMutations/commitSessionLifecycle";
+import { commitTrainingSessionFinalization } from "../learningMutations/commitTrainingSessionFinalization";
 import { buildMutationJournal } from "../learningMutations/mutationJournalBuilder";
 import { captureExactMissingActorAnchor, captureExactMissingActorFenceAtConfirmation } from "../exactMissingActorFence";
 import { MemoryKeyValueStorage, getKeyValueStorage, installKeyValueStorageForTests, setActiveProfileLeaseForTests } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../../storage/keys";
+import { writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
 import { captureLearningStateResetTargetPlan } from "../../storage/repositories/learningStateResetRepository";
 import { persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
 import { saveSettings } from "../../storage/repositories/settingsRepository";
-import { installMemoryStorage, attempt, session } from "../../testing/journalTestSupport";
+import { installMemoryStorage, attempt, review, session, timestamp } from "../../testing/journalTestSupport";
 import { createContentIdentityUnavailableActiveRecord, saveUnavailableActiveRecord } from "../../storage/repositories/contentIdentityUnavailableRepository";
 import { CanonicalRepositoryBootstrapStep } from "../../storage/repositories/canonicalRepositories";
 import { initializeStorageMetadata } from "../../storage/repositories/storageMetadataRepository";
@@ -23,6 +27,8 @@ import {
   getActiveMutationJournal,
   getActiveTrainingSession,
   getActiveTrainingSessionDraft,
+  getActiveForegroundTimer,
+  getTrainingSessionResult,
   getTrainingAttempts,
   getTrainingSessions,
   getGuestInstallation,
@@ -77,6 +83,39 @@ test("bootstrap surfaces unavailable active sessions before content preparation 
 
   assert.deepEqual(result, { kind: "content_identity_unavailable", sessionIds: [sessionId] });
   assert.deepEqual(events, ["recovery"]);
+});
+
+test("bootstrap replays a pending journal before surfacing an unrelated unavailable active session", async () => {
+  testStorage = installMemoryStorage();
+  const historical = session("completed");
+  await saveTrainingSession(historical);
+  await addTrainingAttempt(attempt());
+  await saveUnavailableActiveRecord(createContentIdentityUnavailableActiveRecord({
+    schemaVersion: 1,
+    kind: "unavailable_active",
+    sessionId: "bootstrap-unavailable-with-pending-journal",
+    session: { id: "bootstrap-unavailable-with-pending-journal", itemOrder: [{ occurrenceId: "unavailable:0", item: {
+      kind: "unavailable_active", trackId: TRACK_ID, questionId: "missing-question", contentVersion: "missing-v0", reason: "unknown_artifact_hash",
+      sessionId: "bootstrap-unavailable-with-pending-journal",
+    } }], status: "active", trackId: TRACK_ID },
+    attempts: [], results: [],
+  }));
+  const pendingReview = review();
+  const pending = await buildMutationJournal({ operation: "set_review_entry", sessionId: historical.id, trackId: historical.trackId,
+    identity: pendingReview, writes: [{ kind: "put_review_entry", record: pendingReview }], createdAt: timestamp });
+  await persistMutationJournal(pending);
+
+  let contentReached = false;
+  const result = await bootstrapApplication(
+    async () => { contentReached = true; },
+    async () => assert.fail("Unavailable active identity is surfaced before resume."),
+    async () => { composeTrainingLifecycleUseCases(); },
+  );
+  assert.deepEqual(result, { kind: "content_identity_unavailable", sessionIds: ["bootstrap-unavailable-with-pending-journal"] });
+  assert.equal(contentReached, false);
+  assert.equal(await getActiveMutationJournal(), null, "the unrelated pending review journal was verified and cleared first");
+  assert.deepEqual((await getTrainingSessions()).value, [historical]);
+  assert.equal(testStorage.getString(STORAGE_KEYS.reviewEntry(pendingReview.id)) !== undefined, true, "the pending journal took effect before unavailable state was presented");
 });
 
 test("a first Guest-access write is allowed before empty canonical metadata is initialized", async () => {
@@ -504,6 +543,149 @@ test("bootstrap reconstructs a still-active session after replaying a submit int
   assert.equal(lifecycle.getOperationProjection(active.id)?.kind, "feedback", "active-session projection is reconstructed from the replayed attempt");
 });
 
+test("production bootstrap recovers every start physical, phase, and clear cut without envelope churn", async () => {
+  const cuts = [
+    { name: "session", failure: (id: string) => ({ kind: "fail_on_key_write", key: STORAGE_KEYS.trainingSession(id) } as const), applied: [] as string[] },
+    { name: "session index", failure: () => ({ kind: "fail_on_key_write", key: STORAGE_KEYS.TRAINING_SESSION_INDEX } as const), applied: ["session"] },
+    { name: "active pointer", failure: () => ({ kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION } as const), applied: ["session", "session_index"] },
+    { name: "draft", failure: () => ({ kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT } as const), applied: ["session", "session_index", "active_session"] },
+    { name: "timer", failure: () => ({ kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER } as const), applied: ["session", "session_index", "active_session", "active_session_draft"] },
+    { name: "materialized phase", failure: () => ({ kind: "fail_on_key_write_occurrence", key: STORAGE_KEYS.ACTIVE_JOURNAL, occurrence: 2 } as const), applied: ["session", "session_index", "active_session", "active_session_draft", "active_foreground_timer"] },
+    { name: "verified phase", failure: () => ({ kind: "fail_on_key_write_occurrence", key: STORAGE_KEYS.ACTIVE_JOURNAL, occurrence: 3 } as const), applied: ["session", "session_index", "active_session", "active_session_draft", "active_foreground_timer"] },
+    { name: "journal clear", failure: () => ({ kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_JOURNAL } as const), applied: ["session", "session_index", "active_session", "active_session_draft", "active_foreground_timer"] },
+  ];
+
+  for (const cut of cuts) {
+    testStorage = installMemoryStorage();
+    const active = createTrainingSession({ ...session("active", `bootstrap-foreground-start-${cut.name.replaceAll(" ", "-")}`), configurationSnapshot: {
+      kind: "algorithmsInterviewSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", navigation: "free",
+      submission: "manualOrForegroundTimeout", timer: "countdownForeground", timerDurationMs: 2_700_000,
+    } });
+    const expectedTimer = initialForegroundTimerForSession(active, getTrackRegistration(active.trackId).familyId);
+    assert.ok(expectedTimer);
+    const draft = createTrainingSessionDraft({ schemaVersion: 1, familyId: getTrackRegistration(active.trackId).familyId, draftVersion: 1,
+      revision: 0, sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: active.startedAt });
+
+    testStorage.setFailurePlan(cut.failure(active.id));
+    await assert.rejects(() => commitTrainingSessionStart({ session: active, draft, createdAt: active.startedAt }), cut.name);
+    assert.notEqual(testStorage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), undefined, `${cut.name}: failed start retains its exact journal`);
+    const hasRaw = (key: string) => testStorage.getString(key) !== undefined;
+    assert.equal(hasRaw(STORAGE_KEYS.trainingSession(active.id)), cut.applied.includes("session"), `${cut.name}: session boundary`);
+    assert.equal(hasRaw(STORAGE_KEYS.TRAINING_SESSION_INDEX), cut.applied.includes("session_index"), `${cut.name}: index boundary`);
+    assert.equal(hasRaw(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), cut.applied.includes("active_session"), `${cut.name}: active pointer boundary`);
+    assert.equal(hasRaw(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT), cut.applied.includes("active_session_draft"), `${cut.name}: draft boundary`);
+    assert.equal(hasRaw(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER), cut.applied.includes("active_foreground_timer"), `${cut.name}: timer boundary`);
+    testStorage.setFailurePlan(null);
+
+    const bootstrap = () => bootstrapApplication(
+      async () => {
+        assert.equal(await getActiveMutationJournal(), null, `${cut.name}: content follows recovery and journal clear`);
+        assert.deepEqual(await getActiveForegroundTimer(), expectedTimer, `${cut.name}: exact initial timer verified before content`);
+      },
+      async (sessionId) => { assert.equal(sessionId, active.id); },
+      async () => { composeTrainingLifecycleUseCases(); },
+    );
+    assert.deepEqual(await bootstrap(), { kind: "ready", activeSessionId: active.id }, `${cut.name}: first production launch`);
+    const keys = [STORAGE_KEYS.trainingSession(active.id), STORAGE_KEYS.TRAINING_SESSION_INDEX, STORAGE_KEYS.ACTIVE_TRAINING_SESSION,
+      STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER, STORAGE_KEYS.ACTIVE_JOURNAL];
+    const first = keys.map((key) => testStorage.getString(key));
+    assert.deepEqual(await bootstrap(), { kind: "ready", activeSessionId: active.id }, `${cut.name}: second production launch`);
+    assert.deepEqual(keys.map((key) => testStorage.getString(key)), first, `${cut.name}: second launch preserves exact envelopes and revisions`);
+  }
+});
+
+test("bootstrap recovers completion and finalization interrupted at active-pointer clear before content/resume", async () => {
+  const workflows = ["completion", "finalization"] as const;
+  for (const workflow of workflows) {
+    testStorage = installMemoryStorage();
+    const id = `bootstrap-terminal-${workflow}`;
+    const configuration = (workflow === "finalization"
+      ? { kind: "algorithmsInterviewSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", navigation: "free", submission: "manualOrForegroundTimeout", timer: "countdownForeground", timerDurationMs: 2_700_000 } as const
+      : { kind: "practice", timer: "elapsedForeground" } as const) as TrainingSessionConfigurationSnapshot;
+    const active = createTrainingSession({ ...session("active", id), configurationSnapshot: configuration });
+    let cleanupDraft: ReturnType<typeof createTrainingSessionDraft> | null = null;
+    if (workflow === "finalization") {
+      cleanupDraft = createTrainingSessionDraft({ schemaVersion: 1, familyId: getTrackRegistration(active.trackId).familyId, draftVersion: 1,
+        revision: 0, sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: active.startedAt });
+      await commitTrainingSessionStart({ session: active, draft: cleanupDraft, createdAt: active.startedAt });
+    } else {
+      await commitTrainingSessionStart({ session: active, draft: null, createdAt: active.startedAt });
+    }
+    const completed = createTrainingSession({ ...active, status: "completed", completedAt: "2026-10-11T12:00:01.000Z" });
+    const result = createTrainingSessionResult({ id: `${id}:result`, sessionId: id, trackId: active.trackId, totalOccurrences: active.itemOrder.length,
+      answeredOccurrenceIds: [], unansweredOccurrenceIds: active.itemOrder.map((item) => item.occurrenceId), completedAt: completed.completedAt!,
+      evidence: createFamilyEnvelope({ familyId: getTrackRegistration(active.trackId).familyId, details: {} }) });
+
+    if (workflow === "completion") {
+      await assert.rejects(() => (async () => {
+        testStorage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION });
+        await commitSessionCompletion(completed, result, completed.completedAt!);
+      })());
+    } else {
+      assert.ok(cleanupDraft);
+      await assert.rejects(() => (async () => {
+        testStorage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION });
+        await commitTrainingSessionFinalization({ session: completed, attempts: [], reviewMutations: [], result,
+          cleanup: { kind: "training_session_draft", draft: cleanupDraft!, submittedOccurrenceIds: [] }, createdAt: completed.completedAt! });
+      })());
+    }
+    assert.equal(testStorage.getString(STORAGE_KEYS.ACTIVE_JOURNAL) !== undefined, true, `${workflow}: terminal clear failure retains the journal`);
+    assert.equal(testStorage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION) !== undefined, true, `${workflow}: injected pointer clear did not report success`);
+    testStorage.setFailurePlan(null);
+
+    const bootstrap = () => bootstrapApplication(
+      async () => { assert.equal(await getActiveMutationJournal(), null, `${workflow}: recover and verify before content`); },
+      async () => assert.fail(`${workflow}: terminal replay clears ownership before resume`),
+      async () => { composeTrainingLifecycleUseCases(); },
+    );
+    assert.deepEqual(await bootstrap(), { kind: "ready", activeSessionId: null });
+    assert.deepEqual((await getTrainingSessions()).value.find((candidate) => candidate.id === id), completed);
+    assert.deepEqual(await getTrainingSessionResult(id), result);
+    assert.equal(await getActiveForegroundTimer(), null);
+    if (workflow === "finalization") assert.equal(await getActiveTrainingSessionDraft(), null);
+    const keys = [STORAGE_KEYS.trainingSession(id), STORAGE_KEYS.TRAINING_SESSION_INDEX, STORAGE_KEYS.ACTIVE_TRAINING_SESSION,
+      STORAGE_KEYS.trainingSessionResult(id), STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, STORAGE_KEYS.ACTIVE_JOURNAL];
+    const first = keys.map((key) => testStorage.getString(key));
+    assert.deepEqual(await bootstrap(), { kind: "ready", activeSessionId: null });
+    assert.deepEqual(keys.map((key) => testStorage.getString(key)), first, `${workflow}: repeated bootstrap preserves canonical envelopes`);
+  }
+});
+
+test("bootstrap keeps malformed journal bytes blocking and recovers a start before a missing-content failure", async () => {
+  testStorage = installMemoryStorage();
+  writeCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, { malformed: true });
+  const malformedRaw = testStorage.getString(STORAGE_KEYS.ACTIVE_JOURNAL);
+  let malformedContentReached = false;
+  const malformed = await bootstrapApplication(async () => { malformedContentReached = true; }, async () => undefined,
+    async () => { composeTrainingLifecycleUseCases(); });
+  assert.equal(malformed.kind, "blocking");
+  assert.equal(malformedContentReached, false, "unsupported journal bytes block before content preparation");
+  assert.equal(testStorage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), malformedRaw, "bootstrap preserves malformed journal bytes for diagnosis/recovery");
+
+  testStorage = installMemoryStorage();
+  const active = createTrainingSession({ ...session("active", "bootstrap-missing-content-after-start"), configurationSnapshot: { kind: "practice", timer: "elapsedForeground" } });
+  const expectedTimer = initialForegroundTimerForSession(active, getTrackRegistration(active.trackId).familyId);
+  assert.ok(expectedTimer);
+  testStorage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER });
+  await assert.rejects(() => commitTrainingSessionStart({ session: active, draft: null, createdAt: active.startedAt }));
+  testStorage.setFailurePlan(null);
+  let contentReached = false;
+  const missingContent = await bootstrapApplication(
+    async () => {
+      contentReached = true;
+      assert.equal(await getActiveMutationJournal(), null, "the pending start recovers before content resolution");
+      assert.deepEqual(await getActiveForegroundTimer(), expectedTimer);
+      throw new Error("exact content artifact unavailable");
+    },
+    async () => assert.fail("missing content blocks before session resume"),
+    async () => { composeTrainingLifecycleUseCases(); },
+  );
+  assert.equal(missingContent.kind, "blocking");
+  assert.equal(contentReached, true);
+  assert.equal(testStorage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), undefined, "verified recovery clears J even when following content resolution fails");
+  assert.deepEqual(await getActiveForegroundTimer(), expectedTimer, "the source timer survives a later content preparation failure");
+});
+
 test("a local Free Guest can confirm exact-missing abandonment and recover its real journal on bootstrap", async () => {
   grantGuestAccess();
   const installation = await provisionGuestInstallation({ async create() {
@@ -869,6 +1051,7 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
   assert.deepEqual((await getTrainingSessions()).value, [abandoned]);
   assert.deepEqual((await getTrainingAttempts()).value, [attempt]);
   assert.equal(await getActiveTrainingSessionDraft(), null);
+  const recoveredCanonicalRaw = testStorage.snapshot();
   const replayBootstrap = await bootstrapApplication(
     () => owner.verifyBundledPackages(),
     async () => assert.fail("A completed recovery replay must not resurrect or resume the session."),
@@ -881,4 +1064,5 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
   );
   assert.deepEqual(replayBootstrap, { kind: "ready", activeSessionId: null });
   assert.deepEqual((await getTrainingSessions()).value, [abandoned]);
+  assert.deepEqual(testStorage.snapshot(), recoveredCanonicalRaw, "a second fresh production composition preserves every canonical envelope and revision exactly");
 });

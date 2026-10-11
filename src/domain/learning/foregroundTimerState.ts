@@ -1,4 +1,5 @@
-import type { TrackId } from "./trackIdentity";
+import type { TrackFamilyId, TrackId } from "./trackIdentity";
+import type { TrainingSession } from "./trainingSession";
 
 /**
  * The sole durable clock for a foreground-timed session. Wall-clock time
@@ -19,6 +20,26 @@ export type ForegroundTimerState = Readonly<{
 
 export const FOREGROUND_TIMER_CHECKPOINT_INTERVAL_MS = 15_000;
 export const FOREGROUND_TIMER_MAX_DRIFT_MS = 1_000;
+
+/** Canonical initial timer derived from a new foreground-timed session; deadline sessions have no foreground timer. */
+export function initialForegroundTimerForSession(
+  session: Pick<TrainingSession, "id" | "trackId" | "activeForegroundMs" | "startedAt" | "configurationSnapshot">,
+  familyId: TrackFamilyId,
+): ForegroundTimerState | null {
+  const timer = session.configurationSnapshot.timer;
+  if (timer !== "elapsedForeground" && timer !== "countdownForeground") return null;
+  return createForegroundTimerState({
+    schemaVersion: 1,
+    timerVersion: 1,
+    familyId,
+    sessionId: session.id,
+    trackId: session.trackId,
+    accumulatedForegroundMs: session.activeForegroundMs,
+    checkpointRevision: 1,
+    lastCheckpointAt: session.startedAt,
+    running: false,
+  });
+}
 
 export function createForegroundTimerState(state: ForegroundTimerState): ForegroundTimerState {
   if (state.schemaVersion !== 1 || state.timerVersion !== 1) throw new Error("Foreground timer schema is unsupported.");

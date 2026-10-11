@@ -1,6 +1,6 @@
 # PERSIST-07/05/06 — exact replay i weryfikacja przed clear
 
-Stan: **niezależny source/logical PASS WITH ISSUES; pełny lokalny gate PASS; dostarczenie i hosted CI w toku**. Jedyna kolejka: [plan](../PATTERNLY-WORKING-PLAN.md); jedyny bieżący stan: [WORKING_STATE](../../.agent/WORKING_STATE.md). Kryteria wynikają z [persistence.md](../specs/engineering/persistence.md) oraz workspace docs04/08/11/17. Pełna natywna macierz PERSIST-13 jest osobnym zakresem.
+Stan: **końcowy niezależny source/logical + exact CI PASS; pełny lokalny gate PASS; zwykły push i hosted CI SUCCESS**. Jedyna kolejka: [plan](../PATTERNLY-WORKING-PLAN.md); jedyny bieżący stan: [WORKING_STATE](../../.agent/WORKING_STATE.md). Kryteria wynikają z [persistence.md](../specs/engineering/persistence.md) oraz workspace docs04/08/11/17. Pełna natywna macierz PERSIST-13 jest osobnym zakresem.
 
 ## Cel i zakres
 
@@ -44,4 +44,10 @@ Root uruchomił pełny qa:static na frozen source z czystym currentCONTENT3b0a3e
 
 ## Granice
 
-Pełny native PERSIST-13, PremiumUI/finalizer, provider/device/release pozostają osobno. Ten pakiet dowodzi logicznego exact replay na istniejącym memory adapterze i produkcyjnego bootstrap wiring; nie przedstawia memory faults jako nativekill/tornwrite. Profile12/Guest, obce zmiany i stashe oraz procesy użytkownika nietknięte. Pozostałe kryterium7: rzeczywiste hosted CI dokładnego commitu. Bez GO.
+Pełny native PERSIST-13, PremiumUI/finalizer, provider/device/release pozostają osobno. Ten pakiet dowodzi logicznego exact replay na istniejącym memory adapterze i produkcyjnego bootstrap wiring; nie przedstawia memory faults jako nativekill/tornwrite. Profile12/Guest, obce zmiany i stashe oraz procesy użytkownika nietknięte. Kryterium7: hosted CI exact SHA SUCCESS, niezależnie potwierdzone przez persist_design LunaHigh. Końcowy bounded PASS; pełny native13 pozostaje osobny. Bez GO.
+
+## Dostarczenie
+
+Zwykły push commitu `e74298fe2b9abb2b534fc82d2d197dfc0a9f0d96`, 30plików, upstream a8eac121→e74298fe. [CI38167526087](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/38167526087) **SUCCESS obu jobs dla exact SHA**:2374total/2370PASS/0FAIL/4SKIP, recovery487/358/2260, TC/platform/content/privacy PASS; contracts3/3. CurrentCONTENT3b0a3e8b i BACKEND4d8efbd6. Pełny prywatny log artifacts/private/persist05-07-20261011/ci-38167526087-full.log.
+
+Niezależny persist_design LunaHigh potwierdził dokładny checkout, qa:static exit0 i oba completejobs, bez error. Inventory487sources/358tests/2260cases; końcowy baseline report sourceFiles485. Końcowy bounded source/logical+CI **PASS**.05/06/07 usunięto z jedynej kolejki po odbiorze; bieżący obszar01/14.

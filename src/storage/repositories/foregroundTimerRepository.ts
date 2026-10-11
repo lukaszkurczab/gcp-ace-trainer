@@ -1,5 +1,5 @@
-import { createForegroundTimerState, type ForegroundTimerState } from "../../domain";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { createForegroundTimerState, getTrackRegistration, initialForegroundTimerForSession, type ForegroundTimerState, type TrainingSession } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
 import { applyCanonicalPhysicalWrite, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
@@ -49,5 +49,18 @@ export function materializeActiveForegroundTimerJournalStep(hasClearSession: boo
     return;
   }
   if (!step || step.target !== "active_foreground_timer" || step.after.kind !== "absent") throw new Error("The clear-session journal has no exact timer-removal step.");
+  applyCanonicalPhysicalWrite(step);
+}
+
+/** Exact start-owned timer put; ordinary timer checkpoint and terminal-clear APIs keep their own contracts. */
+export function materializeStartedForegroundTimerJournalStep(session: TrainingSession | null, step: CanonicalPhysicalWrite | undefined): void {
+  if (!session || !step || step.target !== "active_foreground_timer" || step.before.kind !== "absent" || step.after.kind !== "present" || step.after.envelope.revision !== 1) {
+    throw new Error("A foreground-timed session start has no exact initial timer step.");
+  }
+  const expected = initialForegroundTimerForSession(session, getTrackRegistration(session.trackId).familyId);
+  const timer = step.after.envelope.payload;
+  if (!expected || !isForegroundTimerState(timer) || canonicalSerialize(timer) !== canonicalSerialize(expected)) {
+    throw new Error("The initial foreground timer does not match its active session.");
+  }
   applyCanonicalPhysicalWrite(step);
 }

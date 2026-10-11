@@ -44,6 +44,7 @@ export async function verifyMutation(record: MutationJournalRecord): Promise<voi
       case "accept_goal_plan": throw new JournalVerificationError();
       case "resolve_account_sync_conflict": throw new JournalVerificationError();
       case "put_session": if (!equal(sessions.value.find((entry) => entry.id === write.record.id), write.record)) throw new JournalVerificationError(); break;
+      case "put_active_foreground_timer": if (!equal(timer, write.record)) throw new JournalVerificationError(); break;
       case "put_session_result": if (!equal(await getTrainingSessionResult(write.record.sessionId), write.record)) throw new JournalVerificationError(); break;
       case "put_attempt": if (!equal(attempts.value.find((entry) => entry.id === write.record.id), write.record)) throw new JournalVerificationError(); break;
       case "put_review_entry":

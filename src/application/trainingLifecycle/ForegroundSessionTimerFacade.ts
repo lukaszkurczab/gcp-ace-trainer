@@ -1,5 +1,4 @@
 import {
-  createForegroundTimerState,
   type ForegroundTimerState,
   type TrainingSession,
 } from "../../domain";
@@ -117,7 +116,7 @@ export class ForegroundSessionTimerFacade {
   async initialize(session: TrainingSession): Promise<void> {
     return this.serialize(session.id, async () => {
       assertForegroundTimedSession(session);
-      try { await this.restore(session, true); }
+      try { await this.restore(session); }
       catch (error) { throw this.fail(session.id, error, "Session timer could not be initialized."); }
     });
   }
@@ -125,7 +124,7 @@ export class ForegroundSessionTimerFacade {
   async restoreForResume(session: TrainingSession): Promise<void> {
     return this.serialize(session.id, async () => {
       assertForegroundTimedSession(session);
-      try { await this.restore(session, false); }
+      try { await this.restore(session); }
       catch (error) { throw this.fail(session.id, error, "Session timer recovery is required before this session can continue."); }
     });
   }
@@ -252,7 +251,7 @@ export class ForegroundSessionTimerFacade {
     });
   }
 
-  private async restore(session: TrainingSession, createWhenAbsent: boolean): Promise<ForegroundSessionTimer> {
+  private async restore(session: TrainingSession): Promise<ForegroundSessionTimer> {
     const familyId = this.dependencies.tracks.getTrackRegistration(session.trackId).familyId;
     const cached = this.timers.get(session.id);
     if (cached) {
@@ -270,18 +269,7 @@ export class ForegroundSessionTimerFacade {
       }
       state = existing;
     } else {
-      if (!createWhenAbsent) throw new Error("The persisted foreground timer is missing.");
-      state = await this.dependencies.repository.save(createForegroundTimerState({
-        schemaVersion: 1,
-        timerVersion: 1,
-        familyId,
-        sessionId: session.id,
-        trackId: session.trackId,
-        accumulatedForegroundMs: session.activeForegroundMs,
-        checkpointRevision: 1,
-        lastCheckpointAt: this.dependencies.wallClock.now(),
-        running: false,
-      }), null);
+      throw new Error("The persisted foreground timer is missing.");
     }
     if (state.accumulatedForegroundMs < session.activeForegroundMs) {
       throw new Error("Persisted foreground timer and session aggregate disagree.");
@@ -301,7 +289,7 @@ export class ForegroundSessionTimerFacade {
     const fault = this.faults.get(session.id);
     if (fault) throw fault;
     assertForegroundTimedSession(session);
-    return this.restore(session, false);
+    return this.restore(session);
   }
 
   private async leaveForegroundInLane(session: TrainingSession): Promise<ForegroundTimeProjection> {

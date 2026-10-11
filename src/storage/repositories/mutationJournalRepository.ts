@@ -1,5 +1,5 @@
-import type { GoalRecord, LearningPlan, ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
-import { acceptedTargetFromGoal, getTrainingSessionFinalizationCleanupKind, isArtifactSha256, isLearningPlanV1ForTrack, isRegisteredTrackId, normalizeLearningPlan } from "../../domain";
+import type { ForegroundTimerState, GoalRecord, LearningPlan, ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
+import { acceptedTargetFromGoal, getTrackRegistration, getTrainingSessionFinalizationCleanupKind, initialForegroundTimerForSession, isArtifactSha256, isLearningPlanV1ForTrack, isRegisteredTrackId, normalizeLearningPlan } from "../../domain";
 import { isGoalRecordShapeForTrack, normalizeGoalRecord } from "../../domain/goals/goalContracts";
 import { resolvedContentRefKey, resolvedContentRefsEqual } from "../../domain/learning/resolvedContentRef";
 import { canonicalFingerprintPayload, canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
@@ -23,6 +23,7 @@ export type JournalWrite =
   | { kind: "accept_goal_plan"; record: GoalPlanAcceptanceRecord }
   | { kind: "resolve_account_sync_conflict"; record: AccountSyncConflictResolutionRecord }
   | { kind: "put_session"; record: TrainingSession }
+  | { kind: "put_active_foreground_timer"; record: ForegroundTimerState }
   | { kind: "put_session_result"; record: TrainingSessionResult }
   | { kind: "put_attempt"; record: TrainingAttempt<unknown> }
   | { kind: "put_review_entry"; record: ReviewQueueEntry }
@@ -109,6 +110,7 @@ function isJournalWrite(value: unknown): value is JournalWrite {
     case "accept_goal_plan": return hasExactKeys(value, ["kind", "record"]) && isGoalPlanAcceptanceRecord(value.record);
     case "resolve_account_sync_conflict": return hasExactKeys(value, ["kind", "record"]) && isAccountSyncConflictResolutionRecord(value.record);
     case "put_session": return hasExactKeys(value, ["kind", "record"]) && isTrainingSession(value.record);
+    case "put_active_foreground_timer": return hasExactKeys(value, ["kind", "record"]) && isForegroundTimerState(value.record);
     case "put_session_result": return hasExactKeys(value, ["kind", "record"]) && isTrainingSessionResult(value.record);
     case "put_attempt": return hasExactKeys(value, ["kind", "record"]) && isTrainingAttempt(value.record);
     case "put_review_entry": return hasExactKeys(value, ["kind", "record"]) && isReviewQueueEntry(value.record);
@@ -221,6 +223,7 @@ function writeTarget(write: JournalWrite): string {
     case "accept_goal_plan": return `goal_plan:${write.record.trackId}`;
     case "resolve_account_sync_conflict": return `account_sync_conflict:${write.record.trackId}`;
     case "put_session": return `session:${write.record.id}`;
+    case "put_active_foreground_timer": return "active_foreground_timer";
     case "put_session_result": return `result:${write.record.sessionId}`;
     case "put_attempt": return `attempt:${write.record.id}`;
     case "put_review_entry": return `review:${write.record.id}`;
@@ -241,6 +244,7 @@ function writePreconditionTargets(write: JournalWrite): string[] {
     case "accept_goal_plan": return [`goal:${write.record.trackId}`, `learning_plan:${write.record.trackId}`];
     case "resolve_account_sync_conflict": return [`goal:${write.record.trackId}`, `learning_plan:${write.record.trackId}`, "account_sync"];
     case "put_session": return [`session:${write.record.id}`, "session_index", "active_session"];
+    case "put_active_foreground_timer": return ["active_foreground_timer"];
     case "put_session_result": return [`result:${write.record.sessionId}`];
     case "put_attempt": return [`attempt:${write.record.id}`, "attempt_index"];
     case "put_review_entry":
@@ -317,6 +321,12 @@ function physicalWriteSpecs(writes: readonly JournalWrite[]): readonly PhysicalS
           if (write.record.status === "active") return { kind: "write", payload: write.record.id };
           const activeId = readPriorString(before, "active_session");
           return activeId === write.record.id ? { kind: "remove" } : preservePriorValue(before);
+        } });
+        break;
+      case "put_active_foreground_timer":
+        specs.push({ target: "active_foreground_timer", desired: (before) => {
+          if (before.kind !== "absent") throw new Error("A foreground-timed session cannot start while a timer already exists.");
+          return { kind: "write", payload: write.record };
         } });
         break;
       case "put_session_result": specs.push({ target: `result:${write.record.sessionId}`, desired: { kind: "write", payload: write.record } }); break;
@@ -549,7 +559,13 @@ function hasValidOperationPlan(record: MutationJournalPlan): boolean {
     case "start_training_session": {
       const draftExpected = Boolean(sessionWrite && getTrainingSessionFinalizationCleanupKind(sessionWrite.record) === "session_draft");
       const draftMatches = !draftExpected || Boolean(draftPut && draftPut.record.sessionId === sessionWrite?.record.id && draftPut.record.trackId === sessionWrite.record.trackId && Object.keys(draftPut.record.responsesByOccurrenceId).length === 0 && draftPut.record.flaggedOccurrenceIds.length === 0);
-      return only("put_session", "put_active_session_draft") && count("put_session") === 1 && sessionWrite?.record.status === "active" && count("put_active_session_draft") === (draftExpected ? 1 : 0) && draftMatches;
+      let expectedTimer: ForegroundTimerState | null = null;
+      try { expectedTimer = sessionWrite ? initialForegroundTimerForSession(sessionWrite.record, getTrackRegistration(sessionWrite.record.trackId).familyId) : null; } catch { return false; }
+      const timerWrite = record.writes.find((write): write is Extract<JournalWrite, { kind: "put_active_foreground_timer" }> => write.kind === "put_active_foreground_timer");
+      const timerMatches = expectedTimer === null ? !timerWrite : Boolean(timerWrite && canonicalSerialize(timerWrite.record) === canonicalSerialize(expectedTimer));
+      const expectedWriteKinds = ["put_session", ...(draftExpected ? ["put_active_session_draft"] : []), ...(expectedTimer ? ["put_active_foreground_timer"] : [])];
+      const typedWriteOrderMatches = record.writes.length === expectedWriteKinds.length && record.writes.every((write, index) => write.kind === expectedWriteKinds[index]);
+      return only("put_session", "put_active_session_draft", "put_active_foreground_timer") && typedWriteOrderMatches && count("put_session") === 1 && sessionWrite?.record.status === "active" && count("put_active_session_draft") === (draftExpected ? 1 : 0) && draftMatches && count("put_active_foreground_timer") === (expectedTimer ? 1 : 0) && timerMatches;
     }
     case "advance_training_session":
       return only("put_session") && count("put_session") === 1 && sessionWrite?.record.status === "active";
@@ -604,6 +620,7 @@ function hasConsistentScope(record: MutationJournalPlan): boolean {
   const artifactSha256 = record.artifactSha256;
   return record.writes.every((write) => {
     if (write.kind === "put_session") return write.record.id === record.sessionId && write.record.trackId === record.trackId && write.record.artifactSha256 === artifactSha256;
+    if (write.kind === "put_active_foreground_timer") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId;
     if (write.kind === "put_session_result") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId;
     if (write.kind === "put_attempt") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId && write.record.item.artifactSha256 === artifactSha256;
     if (write.kind === "put_review_entry" || write.kind === "put_review_entry_for_attempt") return write.record.sourceSessionId === record.sessionId && write.record.trackId === record.trackId && write.record.sourceItem.artifactSha256 === artifactSha256;
