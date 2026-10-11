@@ -28,7 +28,7 @@ test("canonical launch catalog preserves immutable training release identity bes
   };
   const candidateLock = await candidateLockBuilder.createCandidateContentReleaseLock({ appRoot, contentRoot });
   assert.equal(releaseLock.schemaVersion, 3);
-  assert.deepEqual(releaseLock, candidateLock, "the immutable release lock must match the canonical reconstructed v1 training candidate");
+  assert.deepEqual(releaseLock, candidateLock, "the application release lock must bind the exact current v2 candidate artifacts");
 
   const contentLock = JSON.parse(await readFile(path.resolve("src/content/generated/canonical-content/content-lock.json"), "utf8")) as {
     tracks: { trackId: string; sha256: string; contentVersion: string }[];
@@ -51,9 +51,12 @@ test("canonical launch catalog preserves immutable training release identity bes
     const bundled = bundledByTrack.get(id);
     const successor = successorByTrack.get(id);
     assert.ok(candidate && bundled && successor, `all exact identities must exist for ${id}`);
-    assert.deepEqual(track.trainingIdentity, { contentVersion: candidate.contentVersion, artifactSha256: candidate.checksumSha256 });
-    assert.equal(successor.training.contentVersion, candidate.contentVersion);
-    assert.equal(successor.training.artifactSha256, candidate.checksumSha256);
+    assert.deepEqual(track.trainingIdentity, {
+      contentVersion: successor.training.contentVersion,
+      artifactSha256: successor.training.artifactSha256,
+    }, "runtime training identity remains the ledger's exact v1 projection");
+    assert.equal(candidate.contentVersion, bundled.contentVersion);
+    assert.equal(candidate.checksumSha256, bundled.sha256, "the candidate lock binds direct v2 bundle bytes");
     assert.equal(track.contentVersion, bundled.contentVersion, "the raw bundle identity is the planning-policy successor");
     assert.equal(track.artifactSha256, bundled.sha256);
     assert.deepEqual(track.planningPolicyIdentity, successor.planningPolicy);

@@ -333,6 +333,12 @@ async function producerHead(producerRoot) {
   if (!/^[a-f0-9]{40}$/u.test(head)) fail("Cannot resolve the current patternly-content HEAD");
   return head;
 }
+async function producerContentSourceCommit(producerRoot) {
+  const { stdout } = await execFileAsync("git", ["-C", producerRoot, "log", "-1", "--format=%H", "--", "content"], { encoding: "utf8" });
+  const commit = stdout.trim();
+  if (!/^[a-f0-9]{40}$/u.test(commit)) fail("Cannot resolve the canonical content source commit");
+  return commit;
+}
 async function verifyProducerState(producerRoot) {
   const { stdout } = await execFileAsync("git", [
     "-C", producerRoot, "status", "--porcelain", "--untracked-files=all", "--",
@@ -378,7 +384,7 @@ function trackIdentityFromArtifact(artifact, sha256Value) {
   return Object.freeze({ contentVersion: artifact.contentVersion, artifactSha256: sha256Value, policyVersion: artifact.planningPolicy.policyVersion });
 }
 
-function deriveSuccessorLedger({ artifacts, lock, previousLedger, predecessor }) {
+function deriveSuccessorLedger({ artifacts, lock, previousLedger, predecessor, reviewedCandidate }) {
   const lockByTrack = new Map(lock.tracks.map((entry) => [entry.trackId, entry]));
   const previousByTrack = previousLedger ? new Map(previousLedger.tracks.map((entry) => [entry.trackId, entry])) : null;
   const predecessorByTrack = predecessor ? new Map(predecessor.lock.tracks.map((entry) => [entry.trackId, entry])) : null;
@@ -393,9 +399,17 @@ function deriveSuccessorLedger({ artifacts, lock, previousLedger, predecessor })
       const previous = previousByTrack.get(trackId);
       const projection = historicalTrainingProjection(artifact, previous.training.contentVersion);
       if (sha256(projection) !== previous.training.artifactSha256 || JSON.parse(projection.toString("utf8")).questions.length !== previous.training.questionCount) {
-        fail(`Training material changed for ${trackId}; the v1 training predecessor cannot be silently replaced`);
+        const reviewed = reviewedCandidate?.get(trackId);
+        if (!reviewed || reviewed.artifactSha256 !== currentLock.sha256 || reviewed.contentVersion !== currentIdentity.contentVersion ||
+          currentIdentity.contentVersion === previous.planningPolicy.contentVersion || reviewed.questionCount !== previous.training.questionCount) {
+          fail(`Training material changed for ${trackId}; the v1 training predecessor cannot be silently replaced`);
+        }
+        const trainingVersion = `${currentIdentity.contentVersion}-training`;
+        if (!SAFE_CONTENT_VERSION.test(trainingVersion)) fail(`Reviewed training contentVersion is invalid for ${trackId}`);
+        training = Object.freeze({ contentVersion: trainingVersion, artifactSha256: sha256(historicalTrainingProjection(artifact, trainingVersion)), questionCount: previous.training.questionCount });
+      } else {
+        training = previous.training;
       }
-      training = previous.training;
     } else {
       const oldLock = predecessorByTrack?.get(trackId);
       const oldBytes = predecessor?.artifacts.get(`${trackId}.json`);
@@ -462,7 +476,52 @@ async function replaceDirectory({ stagedDirectory, targetDirectory, expectedInve
   if (movedOld) await remove(backupDirectory, { recursive: true, force: false });
 }
 
-export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot, producerRoot = path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, getProducerHead = producerHead, getBootstrapPredecessor = defaultBootstrapPredecessor, verifyProducer = verifyProducerState, expectedInventory = EXPECTED_INVENTORY, remove = rm, move = rename } = {}) {
+const CANDIDATE_PATH = "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json";
+const RELEASE_PATH = "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json";
+const READINESS_PATH = "evidence/readiness/current-candidate-readiness-v2.json";
+function canonicalJson(value) {
+  if (value === null || ["boolean", "number", "string"].includes(typeof value)) return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`;
+}
+export async function validateReviewedCandidate({ producerRoot, sourceCommit, artifacts, files, lock }) {
+  const { createCandidateReadinessV2 } = await import(pathToFileURL(path.join(producerRoot, "scripts/review/candidate-readiness-v2.mjs")).href);
+  const readiness = parseJson(await readFile(path.join(producerRoot, READINESS_PATH)), READINESS_PATH);
+  const expectedReadiness = await createCandidateReadinessV2({ root: producerRoot });
+  if (canonicalJson(readiness) !== canonicalJson(expectedReadiness)) fail("Reviewed candidate readiness is stale or invalid");
+  const candidate = parseJson(await readFile(path.join(producerRoot, CANDIDATE_PATH)), CANDIDATE_PATH);
+  const release = parseJson(await readFile(path.join(producerRoot, RELEASE_PATH)), RELEASE_PATH);
+  if (candidate.status !== "draft_not_admitted" || readiness.candidateApproval?.status !== "approved" || readiness.publishingAdmission !== "not_granted" || readiness.runtimeAdmission !== "not_granted" || readiness.appReleaseLockUpdated !== false) fail("Reviewed candidate must have approved readiness without publishing/runtime admission");
+  if (candidate.release?.sourceRepositoryCommit !== sourceCommit || readiness.sourceRepositoryCommit !== sourceCommit || release.manifest?.sourceRepositoryCommit !== sourceCommit) fail("Reviewed candidate source commit differs from the committed canonical content snapshot");
+  if (candidate.release?.releaseId !== release.manifest?.releaseId || candidate.release?.checksumSha256 !== createHash("sha256").update(Buffer.from(`${canonicalJson(release)}\n`)).digest("hex")) fail("Reviewed candidate release identity or checksum is stale");
+  const releaseTracks = new Map(release.artifacts.map((entry) => [entry.trackId, entry]));
+  const readinessTracks = new Map(readiness.tracks.map((entry) => [entry.trackId, entry]));
+  const lockTracks = new Map(lock.tracks.map((entry) => [entry.trackId, entry]));
+  if (releaseTracks.size !== EXPECTED_TRACK_IDS.length || readinessTracks.size !== EXPECTED_TRACK_IDS.length ||
+    JSON.stringify(release.artifacts.map((entry) => entry.trackId)) !== JSON.stringify(EXPECTED_TRACK_IDS) ||
+    JSON.stringify(readiness.tracks.map((entry) => entry.trackId)) !== JSON.stringify(EXPECTED_TRACK_IDS)) fail("Reviewed candidate does not bind the exact nine sorted canonical tracks");
+  const reviewed = new Map();
+  for (const trackId of EXPECTED_TRACK_IDS) {
+    const artifact = artifacts.get(`${trackId}.json`);
+    const actualLock = lockTracks.get(trackId);
+    const candidateTrack = releaseTracks.get(trackId);
+    const readyTrack = readinessTracks.get(trackId);
+    if (!candidateTrack || typeof candidateTrack.artifactPath !== "string") fail(`Reviewed candidate artifact path is missing for ${trackId}`);
+    const artifactBytes = await readFile(path.join(producerRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/release", candidateTrack.artifactPath));
+    const actualSha = actualLock?.sha256;
+    if (!artifact || !actualLock || !candidateTrack || !readyTrack || !HASH.test(actualSha ?? "") ||
+      candidateTrack.checksumSha256 !== actualSha || candidateTrack.artifactBytes !== artifactBytes.length || sha256(artifactBytes) !== actualSha ||
+      !artifactBytes.equals(files.get(`${trackId}.json`)) || candidateTrack.contentVersion !== artifact.contentVersion ||
+      candidateTrack.questionCount !== artifact.questions.length || readyTrack.artifactSha256 !== actualSha ||
+      readyTrack.questionCount !== artifact.questions.length || readyTrack.trackId !== trackId) {
+      fail(`Reviewed candidate artifact does not exactly match the committed build for ${trackId}`);
+    }
+    reviewed.set(trackId, Object.freeze({ artifactSha256: actualSha, contentVersion: artifact.contentVersion, questionCount: artifact.questions.length }));
+  }
+  return reviewed;
+}
+
+export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot, producerRoot = path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, getProducerHead = producerHead, getProducerContentSourceCommit = producerContentSourceCommit, getBootstrapPredecessor = defaultBootstrapPredecessor, verifyProducer = verifyProducerState, expectedInventory = EXPECTED_INVENTORY, reviewedCandidate = false, verifyReviewedCandidate: verifyCandidate = validateReviewedCandidate, remove = rm, move = rename } = {}) {
   if (mode !== "sync" && mode !== "check") fail(`Unknown mode: ${mode}`);
   const resolvedAppRoot = path.resolve(appRoot);
   const resolvedProducerRoot = path.resolve(producerRoot);
@@ -479,6 +538,8 @@ export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot
     await runBuild({ producerRoot: resolvedProducerRoot, outputRoot: temporaryDirectory });
     const built = await validateBuiltContent(temporaryDirectory, { expectedInventory });
     const stagedArtifacts = new Map(EXPECTED_TRACK_IDS.map((trackId) => [`${trackId}.json`, parseJson(built.files.get(`${trackId}.json`), `${trackId}.json`)]));
+    const sourceCommit = reviewedCandidate ? await getProducerContentSourceCommit(resolvedProducerRoot) : undefined;
+    const reviewedBindings = reviewedCandidate ? await verifyCandidate({ producerRoot: resolvedProducerRoot, sourceCommit, artifacts: stagedArtifacts, files: built.files, lock: built.lock }) : undefined;
     const targetKind = await pathKind(resolvedTarget);
     let previousLedger = null;
     let predecessor = null;
@@ -502,7 +563,7 @@ export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot
         if (!compatible) fail(`Existing bundled content does not match the exact APP HEAD training predecessor for ${trackId}`);
       }
     }
-    const ledger = deriveSuccessorLedger({ artifacts: stagedArtifacts, lock: built.lock, previousLedger, predecessor });
+    const ledger = deriveSuccessorLedger({ artifacts: stagedArtifacts, lock: built.lock, previousLedger, predecessor, reviewedCandidate: reviewedBindings });
     await writeFile(path.join(temporaryDirectory, SUCCESSOR_LEDGER_FILE_NAME), JSON.stringify(ledger));
     const staged = await validateBuiltContent(temporaryDirectory, { expectedInventory });
     if (mode === "check") {
@@ -518,15 +579,19 @@ export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot
   }
 }
 
-function usage() { return "Usage: node scripts/syncBundledContentRelease.mjs [sync|check] [--content-root <patternly-content checkout>]"; }
+function usage() { return "Usage: node scripts/syncBundledContentRelease.mjs [sync|check] [--content-root <patternly-content checkout>] [--reviewed-candidate]"; }
 export function parseArgs(argv = process.argv.slice(2)) {
   const options = { mode: "sync" };
   let index = 0;
   if (argv[0] === "sync" || argv[0] === "check") options.mode = argv[index++];
   while (index < argv.length) {
-    if (argv[index] !== "--content-root" || index + 1 >= argv.length) fail(usage());
-    options.producerRoot = path.resolve(argv[index + 1]);
-    index += 2;
+    if (argv[index] === "--content-root" && index + 1 < argv.length) {
+      options.producerRoot = path.resolve(argv[index + 1]);
+      index += 2;
+    } else if (argv[index] === "--reviewed-candidate" && !options.reviewedCandidate) {
+      options.reviewedCandidate = true;
+      index += 1;
+    } else fail(usage());
   }
   return options;
 }

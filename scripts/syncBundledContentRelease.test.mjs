@@ -4,11 +4,16 @@ import { cp, lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, symlink, writ
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { execFileSync } from "node:child_process";
+import { pathToFileURL } from "node:url";
 
 import {
   EXPECTED_TRACK_IDS,
   GENERATED_DIRECTORY,
   SUCCESSOR_LEDGER_FILE_NAME,
+  historicalTrainingProjection,
+  parseArgs,
+  validateReviewedCandidate,
   syncCanonicalContent,
   validateBuiltContent,
 } from "./syncBundledContentRelease.mjs";
@@ -18,6 +23,17 @@ const HEAD = "1".repeat(40);
 const DESIGN_TRACK_IDS = ["backend-system-design-interview", "frontend-system-design-interview", "object-oriented-design-interview"];
 
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
+function canonical(value) {
+  if (value === null || ["boolean", "number", "string"].includes(typeof value)) return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(",")}}`;
+}
+
+test("reviewed-candidate sync is an explicit opt-in while ordinary mode keeps its default", () => {
+  assert.deepEqual(parseArgs([]), { mode: "sync" });
+  assert.deepEqual(parseArgs(["check", "--reviewed-candidate"]), { mode: "check", reviewedCandidate: true });
+  assert.throws(() => parseArgs(["--reviewed-candidate", "--reviewed-candidate"]), /Usage:/u);
+});
 
 function validGcpSimulationProfile(contentVersion, nodeId, evidenceVersion = "gcp-published-2026.08.01") {
   return {
@@ -245,6 +261,158 @@ test("sync admits a policy-only canonical version while retaining the historical
   assert.equal(evidence.contentVersion, "gcp-published-2026.08.01");
   assert.equal(evidence.artifactPath, `artifacts/tracks/${gcp.trackId}/${evidence.contentVersion}/track-artifact.json`);
   assert.equal(result.inventory.questionCount, SMALL_INVENTORY.questionCount);
+});
+
+test("training changes remain rejected by default and require exact reviewed candidate bindings to reset one track", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  await syncCanonicalContent(state.options);
+  const trackId = "claude-certified-architect-professional-certification";
+  const artifactPath = path.join(state.producerOutput, `${trackId}.json`);
+  const artifact = JSON.parse(await readFile(artifactPath, "utf8"));
+  artifact.questions[0].questionId += "-reviewed-fix";
+  artifact.contentVersion = "2026.09.13-reviewed";
+  const artifactBytes = Buffer.from(JSON.stringify(artifact));
+  await writeFile(artifactPath, artifactBytes);
+  const lockPath = path.join(state.producerOutput, "content-lock.json");
+  const lock = JSON.parse(await readFile(lockPath, "utf8"));
+  const changedLockEntry = lock.tracks.find((entry) => entry.trackId === trackId);
+  changedLockEntry.contentVersion = artifact.contentVersion;
+  changedLockEntry.sha256 = sha256(artifactBytes);
+  await writeFile(lockPath, JSON.stringify(lock));
+  const before = await snapshot(state.targetDirectory);
+
+  await assert.rejects(syncCanonicalContent(state.options), /v1 training predecessor cannot be silently replaced/u);
+  assert.deepEqual(await snapshot(state.targetDirectory), before, "unreviewed changes must leave the installed bundle untouched");
+
+  const reviewed = new Map([[trackId, { artifactSha256: sha256(artifactBytes), contentVersion: artifact.contentVersion, questionCount: artifact.questions.length }]]);
+  const result = await syncCanonicalContent({
+    ...state.options,
+    reviewedCandidate: true,
+    getProducerContentSourceCommit: async () => HEAD,
+    verifyReviewedCandidate: async ({ artifacts: staged, lock: stagedLock }) => {
+      const entry = stagedLock.tracks.find((item) => item.trackId === trackId);
+      assert.equal(entry.sha256, reviewed.get(trackId).artifactSha256);
+      assert.deepEqual(staged.get(`${trackId}.json`).questions, artifact.questions);
+      return reviewed;
+    },
+  });
+  const training = result.ledger.tracks.find((entry) => entry.trackId === trackId).training;
+  assert.equal(training.contentVersion, `${artifact.contentVersion}-training`);
+  assert.equal(training.artifactSha256, sha256(historicalTrainingProjection(artifact, training.contentVersion)));
+  assert.equal(result.ledger.tracks.find((entry) => entry.trackId !== trackId).training.contentVersion, `legacy-2026.09.12-current`);
+});
+
+test("reviewed training changes still require a new contentVersion", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  await syncCanonicalContent(state.options);
+  const trackId = "claude-certified-architect-professional-certification";
+  const previousEntry = JSON.parse(await readFile(path.join(state.targetDirectory, SUCCESSOR_LEDGER_FILE_NAME), "utf8"))
+    .tracks.find((entry) => entry.trackId === trackId);
+  const artifactPath = path.join(state.producerOutput, `${trackId}.json`);
+  const artifact = JSON.parse(await readFile(artifactPath, "utf8"));
+  artifact.questions[0].questionId += "-reviewed-fix";
+  artifact.contentVersion = previousEntry.planningPolicy.contentVersion;
+  const artifactBytes = Buffer.from(JSON.stringify(artifact));
+  await writeFile(artifactPath, artifactBytes);
+  const lockPath = path.join(state.producerOutput, "content-lock.json");
+  const lock = JSON.parse(await readFile(lockPath, "utf8"));
+  const lockEntry = lock.tracks.find((entry) => entry.trackId === trackId);
+  lockEntry.contentVersion = artifact.contentVersion;
+  lockEntry.sha256 = sha256(artifactBytes);
+  await writeFile(lockPath, JSON.stringify(lock));
+  const reviewed = new Map([[trackId, { artifactSha256: sha256(artifactBytes), contentVersion: artifact.contentVersion, questionCount: artifact.questions.length }]]);
+  await assert.rejects(syncCanonicalContent({
+    ...state.options,
+    reviewedCandidate: true,
+    getProducerContentSourceCommit: async () => HEAD,
+    verifyReviewedCandidate: async () => reviewed,
+  }), /v1 training predecessor cannot be silently replaced/u);
+});
+
+test("reviewed candidate validator reuses readiness v2 and rejects stale source, bytes, version, or readiness", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  const realProducerRoot = path.resolve(import.meta.dirname, "../../patternly-content");
+  const fixtureRoot = path.join(state.root, "reviewed-producer");
+  await mkdir(path.join(fixtureRoot, "scripts"), { recursive: true });
+  await cp(path.join(realProducerRoot, "scripts/review"), path.join(fixtureRoot, "scripts/review"), { recursive: true });
+  await cp(path.join(realProducerRoot, "scripts/content"), path.join(fixtureRoot, "scripts/content"), { recursive: true });
+  await cp(path.join(realProducerRoot, "scripts/build.mjs"), path.join(fixtureRoot, "scripts/build.mjs"));
+  await cp(path.join(realProducerRoot, "schemas/review"), path.join(fixtureRoot, "schemas/review"), { recursive: true });
+  const sourceCommit = execFileSync("git", ["log", "-1", "--format=%H", "--", "content"], { cwd: realProducerRoot, encoding: "utf8" }).trim();
+  const releaseId = "patternly-candidate-reviewed-test";
+  const artifactRoot = path.join(fixtureRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/release");
+  const candidatePath = path.join(fixtureRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json");
+  const releasePath = "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json";
+  const decisionPath = "evidence/candidate-decisions/current-candidate-decision-v2.json";
+  const readinessPath = "evidence/readiness/current-candidate-readiness-v2.json";
+  await mkdir(path.join(artifactRoot, "artifacts"), { recursive: true });
+  await mkdir(path.dirname(candidatePath), { recursive: true });
+  await mkdir(path.join(fixtureRoot, "evidence/candidate-decisions"), { recursive: true });
+  await mkdir(path.join(fixtureRoot, "evidence/readiness"), { recursive: true });
+  const releases = [];
+  const candidateTracks = [];
+  const lockTracks = [];
+  const artifactBytesByTrack = new Map();
+  const questionSetSha256 = "a".repeat(64);
+  for (const trackId of EXPECTED_TRACK_IDS) {
+    const contentVersion = `2026.10.11-${trackId === "claude-certified-architect-professional-certification" ? "claude" : "stable"}`;
+    const artifact = { schemaVersion: "patternly-content-artifact-v2", trackId, contentVersion, questions: [{ questionId: `${trackId}-q1` }] };
+    const bytes = Buffer.from(JSON.stringify(artifact));
+    const artifactPath = `artifacts/${trackId}.json`;
+    const digest = sha256(bytes);
+    await writeFile(path.join(artifactRoot, artifactPath), bytes);
+    artifactBytesByTrack.set(trackId, bytes);
+    releases.push({ trackId, sourcePath: `content/${trackId}`, artifactPath, artifactBytes: bytes.length, checksumSha256: digest, contentVersion, questionCount: 1, questionSetSha256 });
+    candidateTracks.push({ trackId, sourcePath: `content/${trackId}`, artifactPath, checksumSha256: digest, contentVersion, questionCount: 1, questionSetSha256 });
+    lockTracks.push({ trackId, contentVersion, questionCount: 1, sha256: digest });
+  }
+  const release = { schemaVersion: "patternly-content-release-envelope-v2", manifest: { envelopeVersion: 2, releaseId, sourceRepositoryCommit: sourceCommit }, artifacts: releases };
+  const releaseChecksum = sha256(Buffer.from(`${canonical(release)}\n`));
+  await writeFile(path.join(artifactRoot, "release.json"), `${canonical(release)}\n`);
+  const candidate = { schemaVersion: "patternly-content-candidate-draft-v2", candidateId: "pending", status: "draft_not_admitted", release: { releaseId, releasePath: "release/release.json", checksumSha256: releaseChecksum, sourceRepositoryCommit: sourceCommit }, review: { candidateApproval: "not_granted", publishingAdmission: "not_granted", runtimeAdmission: "not_granted", appReleaseLockUpdated: false }, tracks: candidateTracks };
+  candidate.candidateId = sha256(Buffer.from(canonical(Object.fromEntries(Object.entries(candidate).filter(([key]) => key !== "candidateId")))));
+  await writeFile(candidatePath, `${canonical(candidate)}\n`);
+  await writeFile(path.join(fixtureRoot, releasePath), `${canonical(release)}\n`);
+  const bindings = releases.map(({ trackId, sourcePath, artifactPath, questionCount, questionSetSha256, checksumSha256 }) => ({ trackId, sourcePath, artifactPath, questionCount, questionSetSha256, artifactSha256: checksumSha256 }));
+  const decision = {
+    schemaVersion: "patternly-content-candidate-decision-v2",
+    decisionId: `codex-content-candidate-review-v2:${candidate.candidateId}`,
+    decisionAuthority: "delegated_codex", taskId: "BIZQ-05/CANDIDATE", decision: "approved_for_candidate_readiness",
+    decisionRationale: "Synthetic fixture for the existing readiness v2 validator.", candidatePath: "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json",
+    candidateId: candidate.candidateId, sourceRepositoryCommit: sourceCommit,
+    release: { releaseId, releasePath, checksumSha256: releaseChecksum },
+    trackIds: [...EXPECTED_TRACK_IDS], tracks: bindings,
+    basis: { odk096: "passed", nineTrackBuild: "passed", repositoryTests: "passed", migrationVerification: "passed" },
+    boundaries: { publishingAdmission: "not_granted", runtimeAdmission: "not_granted", appReleaseLockUpdated: false },
+  };
+  await writeFile(path.join(fixtureRoot, decisionPath), `${canonical(decision)}\n`);
+  const readinessModule = await import(pathToFileURL(path.join(fixtureRoot, "scripts/review/candidate-readiness-v2.mjs")).href);
+  const readiness = await readinessModule.createCandidateReadinessV2({ root: fixtureRoot });
+  await writeFile(path.join(fixtureRoot, readinessPath), `${canonical(readiness)}\n`);
+  const artifacts = new Map(EXPECTED_TRACK_IDS.map((trackId) => [
+    `${trackId}.json`, JSON.parse(artifactBytesByTrack.get(trackId).toString("utf8")),
+  ]));
+  const files = new Map(EXPECTED_TRACK_IDS.map((trackId) => [`${trackId}.json`, artifactBytesByTrack.get(trackId)]));
+  const lock = { tracks: lockTracks };
+  const validate = (overrides = {}) => validateReviewedCandidate({ producerRoot: fixtureRoot, sourceCommit, artifacts, files, lock, ...overrides });
+  const approved = await validate();
+  assert.equal(approved.size, EXPECTED_TRACK_IDS.length);
+  assert.equal(approved.get("claude-certified-architect-professional-certification").contentVersion, "2026.10.11-claude");
+  await rm(path.join(fixtureRoot, readinessPath));
+  await assert.rejects(validate(), /ENOENT/u, "missing readiness must fail closed");
+  await writeFile(path.join(fixtureRoot, readinessPath), `${canonical(readiness)}\n`);
+  await assert.rejects(validate({ sourceCommit: "b".repeat(40) }), /source commit differs/u);
+  const alteredLock = structuredClone(lock);
+  alteredLock.tracks[2].sha256 = "0".repeat(64);
+  await assert.rejects(validate({ lock: alteredLock }), /exactly match the committed build/u);
+  const alteredVersionArtifacts = new Map(artifacts);
+  alteredVersionArtifacts.set("claude-certified-architect-professional-certification.json", { ...artifacts.get("claude-certified-architect-professional-certification.json"), contentVersion: "stale-version" });
+  await assert.rejects(validate({ artifacts: alteredVersionArtifacts }), /exactly match the committed build/u);
+  await writeFile(path.join(fixtureRoot, readinessPath), `${canonical({ ...readiness, candidateId: "c".repeat(64) })}\n`);
+  await assert.rejects(validate(), /stale or invalid/u, "stale readiness must fail closed");
 });
 
 test("sync accepts a complete GCP Exam envelope inside the artifact lock boundary", async (t) => {
