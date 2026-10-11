@@ -3,7 +3,7 @@
 Aktualizacja: 11.10.2026. Zakres: aplikacja, backend, content i web. Ten dokument zawiera wyłącznie pracę pozostałą do wykonania i jej obowiązujące statusy. [Bieżący stan pracy](../.agent/WORKING_STATE.md) podaje wykonane sprawdzenia, ograniczenia dowodów i następny krok. Specyfikacje podlinkowane przy zadaniach określają szczegółowy zakres i kryteria odbioru.
 
 Cel: odebrać wymagane funkcje lokalnie, a następnie przygotować i opublikować zatwierdzony kandydat iOS. Decyzją właściciela z 07.10 Android, EPIC-09 oraz dokończenie pełnego audytu contentu i jego poprawki należą do prac po pierwszym wydaniu iOS. Nie ma realnych użytkowników ani danych produkcyjnych; zgodność wsteczna lokalnych wersji aplikacji nie jest wymagana.
-Wyjątek właściciela z 11.10.2026: autoryzowano przed iOS naprawę i publikację 134 pytań BESD N02-B02–B09 oraz jawny następnik treści w narzędziach synchronizacji aplikacji; wymagane testy i niezależny QA, bez zmiany Q13 i cudzych prac. [Zakres i dowody](specs/engineering/content-maintenance/backend-system-design-interview.md). Pozostałe FCA-EDIT pozostają po iOS.
+Wyjątek właściciela z 11.10.2026: autoryzowano przed iOS naprawę i publikację 134 pytań BESD N02-B02–B09 oraz jawny następnik treści w narzędziach synchronizacji aplikacji; wymagane testy i niezależny QA, bez zmiany Q13 i cudzych prac. **Zrealizowane i opublikowane: 134/134, osiem FCA-EDIT zamkniętych; niezależny QA, admission i pełne hosted CI PASS.** [Zakres i dowody](specs/engineering/content-maintenance/backend-system-design-interview.md). Pozostałe FCA-EDIT pozostają po iOS.
 
 ## Obowiązujące ustalenia
 

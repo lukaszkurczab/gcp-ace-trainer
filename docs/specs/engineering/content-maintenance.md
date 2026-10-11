@@ -35,7 +35,7 @@ Doprowadź spójnie zmianę źródeł, wersję i migrację, zatwierdzenie i dopu
 
 ## Celowany zakres BESD — autoryzowany 11.10.2026
 
-[134 naprawy N02-B02–B09 i dowód rodziny BESD-09-04](content-maintenance/backend-system-design-interview.md): osiem istniejących FCA-EDIT otrzymało nowe tożsamości pytań i opcji, pełny mapping before/after oraz niezależny semantic QA PASS 134/134. B01 N02/N04 pozostają niezmienione. Aktualny statyczny alert obejmuje 1401 pytań w 79 plikach, z dokładnym ledgerem ścieżek, ID i hashy w tej samej specyfikacji; to nie jest odbiór semantyczny pozostałego banku. Końcowy stan dopuszczenia i publikacji znajduje się w sekcji autoryzowanego wyjątku.
+[134 naprawy N02-B02–B09 i dowód rodziny BESD-09-04](content-maintenance/backend-system-design-interview.md): osiem istniejących FCA-EDIT otrzymało nowe tożsamości pytań i opcji, pełny mapping before/after oraz niezależny semantic QA PASS 134/134. B01 N02/N04 pozostają niezmienione. Aktualny statyczny alert obejmuje 1401 pytań w 79 plikach, z dokładnym ledgerem ścieżek, ID i hashy w tej samej specyfikacji; to nie jest odbiór semantyczny pozostałego banku. Osiem zadań jest zamkniętych: source i app opublikowane, niezależny QA, runtime admission oraz pełne hosted CI PASS. Końcowe commity i dowody znajdują się w sekcji autoryzowanego wyjątku.
 
 ## Celowane naprawy AWS SAA — odebrane 11.10.2026
 
