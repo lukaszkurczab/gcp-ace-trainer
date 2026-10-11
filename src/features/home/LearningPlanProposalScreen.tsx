@@ -245,7 +245,11 @@ function GoalContext({ outcome, t, tCommon }: Readonly<{ outcome: ProposalOutcom
 
 function ExecutionSummary({ outcome, estimate, t }: Readonly<{ outcome: ProposalOutcome; estimate: PlanningWorkEstimateResult; t: Translate }>) {
   const styles = useThemedStyles(createStyles);
-  const next = outcome.nextSession.kind === "continue_existing"
+  const awaitingRequiredTopicAccess = outcome.nextSession.kind !== "continue_existing" && outcome.completionState.kind === "in_progress" &&
+    outcome.completionState.chapters.some((chapter) => chapter.coverage.length > 0);
+  const next = awaitingRequiredTopicAccess
+    ? t("The next practice topic and session length will be confirmed after checking access to the required topics.")
+    : outcome.nextSession.kind === "continue_existing"
     ? t("Continue your existing {{length}}-question session.", { length: outcome.nextSession.requestedLength })
     : outcome.nextSession.kind === "diagnosis"
     ? t("The first session is a one-time diagnostic with {{count}} questions.", { count: outcome.nextSession.requestedLength })
@@ -256,11 +260,16 @@ function ExecutionSummary({ outcome, estimate, t }: Readonly<{ outcome: Proposal
     : outcome.diagnosisStatus === "completed" ? t("Your initial diagnostic is complete.")
       : outcome.diagnosisStatus === "abandoned" ? t("Your diagnostic stopped before completion. It will not restart automatically; you can start it manually.")
         : null;
-  const estimateCopy = estimate.kind === "estimated"
+  const estimateCopy = awaitingRequiredTopicAccess
+    ? t("An estimate for the next session is not available yet.")
+    : estimate.kind === "estimated"
     ? t("Estimated time: {{min}}–{{max}} min. {{source}}.", { min: estimate.minMinutes, max: estimate.maxMinutes, source: t(estimate.provenance === "authored" ? "Based on an authored estimate" : estimate.provenance === "observed" ? "Based on your completed sessions" : "Combines authored and observed estimates") })
-    : t(estimate.reason === "empty_pool" ? "Time estimate unavailable because no eligible material was selected." : "Time estimate unavailable because no authored estimate covers this session.");
+    : t(estimate.reason === "empty_pool" ? "Time estimate unavailable because no eligible material was selected." : "An estimate for the next session is not available yet.");
   const remaining = estimate.kind === "estimated" ? estimate.newResponses + estimate.dueReviewResponses : null;
-  return <Card><Text maxFontSizeMultiplier={2} style={styles.body}>{next}</Text>{outcome.nextSession.kind === "continue_existing" && remaining !== null ? <Text maxFontSizeMultiplier={2} style={styles.body}>{t("{{count}} responses remain in this session.", { count: remaining })}</Text> : null}<Text maxFontSizeMultiplier={2} style={styles.body}>{estimateCopy}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{t("Recurring practice: {{count}} questions in each scheduled session.", { count: outcome.executionPolicy.practice.requestedLength })}</Text>{diagnosisNote ? <Text maxFontSizeMultiplier={2} style={styles.body}>{diagnosisNote}</Text> : null}</Card>;
+  const recurringPractice = awaitingRequiredTopicAccess
+    ? t("Practice sessions contain up to {{count}} questions, depending on the selected topic.", { count: outcome.executionPolicy.practice.requestedLength })
+    : t("Recurring practice: {{count}} questions in each scheduled session.", { count: outcome.executionPolicy.practice.requestedLength });
+  return <Card><Text maxFontSizeMultiplier={2} style={styles.body}>{next}</Text>{outcome.nextSession.kind === "continue_existing" && remaining !== null ? <Text maxFontSizeMultiplier={2} style={styles.body}>{t("{{count}} responses remain in this session.", { count: remaining })}</Text> : null}<Text maxFontSizeMultiplier={2} style={styles.body}>{estimateCopy}</Text><Text maxFontSizeMultiplier={2} style={styles.body}>{recurringPractice}</Text>{diagnosisNote ? <Text maxFontSizeMultiplier={2} style={styles.body}>{diagnosisNote}</Text> : null}</Card>;
 }
 
 function CalendarAndScopeSummary({ calendar, locale, t }: Readonly<{
@@ -270,7 +279,7 @@ function CalendarAndScopeSummary({ calendar, locale, t }: Readonly<{
 }>) {
   const styles = useThemedStyles(createStyles);
   let calendarText: string;
-  if (calendar.kind === "unavailable") calendarText = t("No authored time estimate is available for a legal session.");
+  if (calendar.kind === "unavailable") calendarText = t("An estimate for the next session is not available yet.");
   else {
     const selectedDay = calendar.calendar.availableDays.find((day) => day.selectedSession !== null);
     if (calendar.calendar.kind === "capacity_unknown") calendarText = t("Today’s remaining time is unknown because an active session spans a local-day boundary.");

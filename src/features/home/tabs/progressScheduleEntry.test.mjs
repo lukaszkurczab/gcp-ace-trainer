@@ -73,8 +73,11 @@ test('Progress chapter rows humanize unknown IDs and keep curated titles first',
       qualifyingAttemptCount: 0,
       requiredAttemptCount: 20,
       remainingAttemptCount: 20,
+      coverageDeficit: 0,
+      minimumAdditionalAttemptCount: 20,
       chapters: [
-        { nodeId: 'api_contracts_service_boundaries_and_request_flows', status: 'in_progress', reason: 'minimum_attempts_unmet', qualifyingAttemptCount: 0, requiredAttemptCount: 20 },
+        { nodeId: 'api_contracts_service_boundaries_and_request_flows', mentalUnitCount: 1, status: 'in_progress', reason: 'minimum_attempts_unmet', qualifyingAttemptCount: 0, requiredAttemptCount: 20,
+          remainingAttemptCount: 20, coverageDeficit: 0, minimumAdditionalAttemptCount: 20, coverage: [], qualityRequirementUnmet: null, rollingWindowSize: 20, qualityThreshold: 0.8, quality: null },
       ],
     },
     chapterAccess: [
@@ -89,11 +92,45 @@ test('Progress chapter rows humanize unknown IDs and keep curated titles first',
 
   const curated = renderProgressPlanSection(ready({
     trackId: 'coding-interview-dsa-problem-solving',
-    completion: { kind: 'in_progress', completedChapterCount: 0, requiredChapterCount: 1, qualifyingAttemptCount: 0, requiredAttemptCount: 20, remainingAttemptCount: 20, chapters: [{ nodeId: 'complexity_and_constraints', status: 'in_progress', reason: 'minimum_attempts_unmet', qualifyingAttemptCount: 0, requiredAttemptCount: 20 }] },
+    completion: { kind: 'in_progress', completedChapterCount: 0, requiredChapterCount: 1, qualifyingAttemptCount: 0, requiredAttemptCount: 20, remainingAttemptCount: 20, coverageDeficit: 0, minimumAdditionalAttemptCount: 20,
+      chapters: [{ nodeId: 'complexity_and_constraints', mentalUnitCount: 1, status: 'in_progress', reason: 'minimum_attempts_unmet', qualifyingAttemptCount: 0, requiredAttemptCount: 20, remainingAttemptCount: 20,
+        coverageDeficit: 0, minimumAdditionalAttemptCount: 20, coverage: [], qualityRequirementUnmet: null, rollingWindowSize: 20, qualityThreshold: 0.8, quality: null }] },
     chapterAccess: [{ nodeId: 'complexity_and_constraints', access: 'free' }],
   }));
   const curatedList = curated.byTestId('patternly:progress-plan:chapter-list');
   assert.ok(curatedList);
   assert.ok(curated.textOf(curatedList).includes('Complexity and constraints'));
   assert.ok(!curated.textOf(curatedList).includes('Complexity And Constraints'));
+});
+
+test('Progress shows an explicit unit-coverage deficit and keeps unmeasured quality distinct', () => {
+  const coverage = renderProgressPlanSection(ready({
+    trackId: 'coding-interview-dsa-problem-solving',
+    completion: {
+      kind: 'in_progress', completedChapterCount: 0, requiredChapterCount: 1, qualifyingAttemptCount: 20,
+      requiredAttemptCount: 20, remainingAttemptCount: 0, coverageDeficit: 1, minimumAdditionalAttemptCount: 1,
+      chapters: [{ nodeId: 'complexity_and_constraints', mentalUnitCount: 1, status: 'in_progress', reason: 'coverage_unmet',
+        qualifyingAttemptCount: 20, requiredAttemptCount: 20, remainingAttemptCount: 0, coverageDeficit: 1, minimumAdditionalAttemptCount: 1,
+        coverage: [{ mentalUnitId: 'private-internal-unit-id', requiredCorrectQuestionCount: 4, latestCorrectQuestionCount: 3, deficit: 1 }],
+        rollingWindowSize: 20, qualityThreshold: 0.8, quality: null, qualityRequirementUnmet: null }],
+    },
+    chapterAccess: [{ nodeId: 'complexity_and_constraints', access: 'free' }],
+  }));
+  const chapterText = coverage.textOf(coverage.byTestId('patternly:progress-plan:chapter-list'));
+  assert.match(chapterText, /Required topic questions remaining: 1/u);
+  assert.doesNotMatch(chapterText, /Chapter attempts remaining: 0/u);
+  assert.doesNotMatch(chapterText, /private-internal-unit-id/u);
+
+  const unknownQuality = renderProgressPlanSection(ready({
+    completion: {
+      kind: 'in_progress', completedChapterCount: 0, requiredChapterCount: 1, qualifyingAttemptCount: 20,
+      requiredAttemptCount: 20, remainingAttemptCount: 0, coverageDeficit: 0, minimumAdditionalAttemptCount: 0,
+      chapters: [{ nodeId: 'chapter', mentalUnitCount: 1, status: 'in_progress', reason: 'quality_unmet',
+        qualifyingAttemptCount: 20, requiredAttemptCount: 20, remainingAttemptCount: 0, coverageDeficit: 0, minimumAdditionalAttemptCount: 0,
+        coverage: [], rollingWindowSize: 20, qualityThreshold: 0.8, quality: null, qualityRequirementUnmet: null }],
+    }, chapterAccess: [{ nodeId: 'chapter', access: 'free' }],
+  }));
+  const unknownText = unknownQuality.textOf(unknownQuality.byTestId('patternly:progress-plan:chapter-list'));
+  assert.match(unknownText, /Recent accuracy is not yet measurable/u);
+  assert.doesNotMatch(unknownText, /Recent chapter accuracy is below/u);
 });

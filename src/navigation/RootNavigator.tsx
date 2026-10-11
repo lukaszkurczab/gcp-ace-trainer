@@ -32,7 +32,7 @@ import { SelectTrackScreen } from "../features/home/SelectTrackScreen";
 import { GoalCadenceScreen } from "../features/home/GoalCadenceScreen";
 import { LearningPlanProposalScreen } from "../features/home/LearningPlanProposalScreen";
 import { createLearningPlanProposalFixtureRuntime } from "../features/home/learningPlanProposalFixtureRuntime";
-import { nextLearningPlanProposalFixtureLaunch, parseLearningPlanProposalFixtureUrl, type LearningPlanProposalFixtureLaunch } from "../features/home/learningPlanProposalFixtureCommand";
+import { learningPlanProposalFixtureTrackId, nextLearningPlanProposalFixtureLaunch, parseLearningPlanProposalFixtureUrl, type LearningPlanProposalFixtureLaunch } from "../features/home/learningPlanProposalFixtureCommand";
 import { LearningPlanEditorScreen } from "../features/home/LearningPlanEditorScreen";
 import { MistakesReviewScreen } from "../features/review/MistakesReviewScreen";
 import { PracticeHubScreen } from "../features/practice/PracticeHubScreen";
@@ -131,10 +131,12 @@ export function RootNavigator() {
 
   useEffect(() => {
     if (!__DEV__ || !isPatternlySmokeRuntime()) return;
-    const subscription = Linking.addEventListener("url", ({ url }) => {
+    const acceptFixtureUrl = (url: string | null) => {
       const scenario = parseLearningPlanProposalFixtureUrl(url, __DEV__ && isPatternlySmokeRuntime());
       if (scenario) setAuditLearningPlanFixture((previous) => nextLearningPlanProposalFixtureLaunch(previous, scenario));
-    });
+    };
+    void Linking.getInitialURL().then(acceptFixtureUrl).catch(() => undefined);
+    const subscription = Linking.addEventListener("url", ({ url }) => acceptFixtureUrl(url));
     return () => { subscription.remove(); };
   }, []);
 
@@ -180,7 +182,7 @@ export function RootNavigator() {
       <NavigationIndependentTree>
         <NavigationContainer key={auditLearningPlanFixture.launchId} theme={navigationTheme}>
           <Stack.Navigator initialRouteName={ROUTES.LEARNING_PLAN_PROPOSAL} screenOptions={{ contentStyle: { backgroundColor: colors.background } }}>
-            <Stack.Screen name={ROUTES.LEARNING_PLAN_PROPOSAL} initialParams={{ proposalId: "ui11-fixture-proposal", trackId: "coding-interview-dsa-problem-solving" }} options={{ headerShown: false, title: t("Learning plan") }}>
+            <Stack.Screen name={ROUTES.LEARNING_PLAN_PROPOSAL} initialParams={{ proposalId: "ui11-fixture-proposal", trackId: learningPlanProposalFixtureTrackId(auditLearningPlanFixture.scenario) }} options={{ headerShown: false, title: t("Learning plan") }}>
               {(screenProps) => <LearningPlanProposalScreen {...screenProps} runtime={proposalFixtureRuntime} />}
             </Stack.Screen>
           </Stack.Navigator>

@@ -801,5 +801,12 @@
   "This older save can't be retried over a newer response.": "No se puede volver a guardar esta respuesta anterior sobre una más reciente.",
   "Review the saved response before continuing.": "Revisa la respuesta guardada antes de continuar.",
   "This response could not be saved.": "No se pudo guardar esta respuesta.",
-  "The saved response state is unavailable.": "El estado de la respuesta guardada no está disponible."
+  "The saved response state is unavailable.": "El estado de la respuesta guardada no está disponible.",
+  "Documentation": "Documentación",
+  "Course module": "Módulo del curso",
+  "Requires an Anthropic Partner Academy account": "Se requiere una cuenta de Anthropic Partner Academy",
+  "Premium access is required to continue covering the remaining exam topics.": "Para seguir practicando los temas restantes del examen, verifica tu acceso Premium.",
+  "Review Premium access": "Revisar acceso Premium",
+  "Required topic questions remaining: {{count}}": "Preguntas pendientes de temas obligatorios: {{count}}",
+  "Recent accuracy is not yet measurable": "La precisión reciente aún no se puede medir"
 }

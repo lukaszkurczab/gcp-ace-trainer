@@ -185,7 +185,9 @@ export function HomeTab({
   const decisionDetail = hasActiveSession
     ? `${t(modeLabel(activeSession.modeId))}${resumeUnavailableReason ? ` · ${tPlan(resumeUnavailableReason === "premium_entitlement_denied" ? "Premium access required" : "Premium access unavailable")}` : ""}`
     : homePlanPresentation && readyHomePlan
-      ? tPlan("homePlan.todayDetail", {
+      ? readyHomePlan.guidance.home.primary.kind === "access_premium"
+        ? tPlan("Premium access is required to continue covering the remaining exam topics.")
+        : tPlan("homePlan.todayDetail", {
         area: localizeHomePlanArea(readyHomePlan, t),
         count: readyHomePlan.session.sessionLength,
         message: [homePlanPresentation.message,
@@ -194,7 +196,7 @@ export function HomeTab({
         ].filter(Boolean).join(" "),
         reviews: readyHomePlan.dueReviewCount,
         status: tPlan(`homePlan.day.${readyHomePlan.day.status}`),
-      })
+        })
       : homePlanUnavailable
         ? tPlan(`homePlan.unavailable.${homePlan.reason}`)
     : isReviewRecommendation

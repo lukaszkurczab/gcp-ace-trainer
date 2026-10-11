@@ -368,7 +368,11 @@ function ProgressPlanSection({ model, onAction, onRetry }: Readonly<{
                     const access = model.chapterAccess.find((entry) => entry.nodeId === chapter.nodeId)?.access ?? "unavailable";
                     const title = getTrackRoadmapCatalog(model.trackId).find((node) => node.id === chapter.nodeId)?.title ?? titleForNode(chapter.nodeId);
                     const accessCopy = access === "locked" ? t("Premium access required") : access === "unavailable" ? t("Premium access unavailable") : null;
-                    const statusCopy = chapter.status === "completed" ? t("Chapter complete") : chapter.reason === "quality_unmet" ? t("Recent chapter accuracy is below the required level") : t("Chapter attempts remaining: {{count}}", { count: Math.max(0, chapter.requiredAttemptCount - chapter.qualifyingAttemptCount) });
+                    const statusCopy = chapter.status === "completed" ? t("Chapter complete")
+                      : chapter.coverageDeficit > 0 ? t("Required topic questions remaining: {{count}}", { count: chapter.coverageDeficit })
+                        : chapter.qualityRequirementUnmet === true ? t("Recent chapter accuracy is below the required level")
+                          : chapter.qualityRequirementUnmet === null && chapter.remainingAttemptCount === 0 ? t("Recent accuracy is not yet measurable")
+                            : t("Chapter attempts remaining: {{count}}", { count: chapter.remainingAttemptCount });
                     return <Text key={chapter.nodeId} maxFontSizeMultiplier={2} style={styles.planFactValue}>{`${title} · ${statusCopy}${accessCopy ? ` · ${accessCopy}` : ""}`}</Text>;
                   })}
                 </View>

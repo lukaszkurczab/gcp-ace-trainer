@@ -87,6 +87,8 @@ const GUIDANCE_MESSAGE_KEYS = [
   "targetDateGuidance.openEnded",
   "targetDateGuidance.unavailable.unknownCompletionRule",
   "targetDateGuidance.unavailable.qualityRequirementUnmet",
+  "targetDateGuidance.unavailable.qualityOutcomeUnknown",
+  "targetDateGuidance.unavailable.premiumAccessRequired",
   "targetDateGuidance.unavailable.insufficientElapsedEvidence",
   "targetDateGuidance.unavailable.calculationError",
   "targetDateGuidance.unavailable.noTarget",
@@ -124,6 +126,8 @@ const GUIDANCE_REASONS = [
   "no_target",
   "unknown_completion_rule",
   "quality_requirement_unmet",
+  "quality_outcome_unknown",
+  "premium_access_required",
   "insufficient_elapsed_evidence",
   "calculation_error",
 ] as const satisfies readonly TargetDateGuidanceReason[];
@@ -137,6 +141,8 @@ const FACT_UNAVAILABLE_REASONS = [
   "completed",
   "unknown_completion_rule",
   "quality_requirement_unmet",
+  "quality_outcome_unknown",
+  "premium_access_required",
   "no_target",
   "no_future_slots",
   "insufficient_elapsed_evidence",
@@ -146,6 +152,7 @@ const FACT_UNAVAILABLE_REASONS = [
 const FORECAST_UNAVAILABLE_REASONS = [
   "unknown_completion_rule",
   "quality_requirement_unmet",
+  "quality_outcome_unknown",
   "no_target",
   "no_future_slots",
   "insufficient_elapsed_evidence",
@@ -186,6 +193,8 @@ const REASON_LABEL_KEYS: Record<TargetDateGuidanceReason, string> = {
   no_target: "targetDateGuidance.reason.noTarget",
   unknown_completion_rule: "targetDateGuidance.reason.unknownCompletionRule",
   quality_requirement_unmet: "targetDateGuidance.reason.qualityRequirementUnmet",
+  quality_outcome_unknown: "targetDateGuidance.reason.qualityOutcomeUnknown",
+  premium_access_required: "targetDateGuidance.reason.premiumAccessRequired",
   insufficient_elapsed_evidence: "targetDateGuidance.reason.insufficientElapsedEvidence",
   calculation_error: "targetDateGuidance.reason.calculationError",
 };
@@ -201,6 +210,7 @@ const ACTION_LABEL_KEYS: Record<GuidanceAction["kind"], string> = {
   start_next_session: "targetDateGuidance.action.startNextSession",
   continue_plan: "targetDateGuidance.action.continuePlan",
   try_again: "targetDateGuidance.action.tryAgain",
+  access_premium: "targetDateGuidance.action.accessPremium",
 };
 
 const ACTION_DESTINATIONS: Record<GuidanceAction["kind"], GuidanceAction["destination"]> = {
@@ -214,6 +224,7 @@ const ACTION_DESTINATIONS: Record<GuidanceAction["kind"], GuidanceAction["destin
   start_next_session: "Practice",
   continue_plan: "Practice",
   try_again: "TargetDateGuidanceRecompute",
+  access_premium: "PremiumPurchase",
 };
 
 const FACT_LABEL_KEYS: Record<TargetDateGuidanceFactKey, string> = {
@@ -239,6 +250,8 @@ const UNAVAILABLE_FACT_LABEL_KEYS: Record<GuidanceFactUnavailableReason, string>
   completed: "targetDateGuidance.fact.unavailable.completed",
   unknown_completion_rule: "targetDateGuidance.fact.unavailable.unknownCompletionRule",
   quality_requirement_unmet: "targetDateGuidance.fact.unavailable.qualityRequirementUnmet",
+  quality_outcome_unknown: "targetDateGuidance.fact.unavailable.qualityOutcomeUnknown",
+  premium_access_required: "targetDateGuidance.fact.unavailable.premiumAccessRequired",
   no_target: "targetDateGuidance.fact.unavailable.noTarget",
   no_future_slots: "targetDateGuidance.fact.unavailable.noFutureSlots",
   insufficient_elapsed_evidence: "targetDateGuidance.fact.unavailable.insufficientElapsedEvidence",
@@ -299,6 +312,8 @@ const EXPECTED_MESSAGE_KEYS: Record<TargetDateGuidanceState, Partial<Record<Targ
   unavailable: {
     unknown_completion_rule: "targetDateGuidance.unavailable.unknownCompletionRule",
     quality_requirement_unmet: "targetDateGuidance.unavailable.qualityRequirementUnmet",
+    quality_outcome_unknown: "targetDateGuidance.unavailable.qualityOutcomeUnknown",
+    premium_access_required: "targetDateGuidance.unavailable.premiumAccessRequired",
     insufficient_elapsed_evidence: "targetDateGuidance.unavailable.insufficientElapsedEvidence",
     calculation_error: "targetDateGuidance.unavailable.calculationError",
     no_target: "targetDateGuidance.unavailable.noTarget",
@@ -417,7 +432,8 @@ function assertGuidance(guidance: unknown): asserts guidance is TargetDateGuidan
 
 function expectedPrimaryKind(guidance: TargetDateGuidance): GuidanceAction["kind"] {
   if (guidance.state !== "unavailable") return EXPECTED_PRIMARY[guidance.state];
-  return guidance.reason === "calculation_error" ? "try_again" : guidance.reason === "insufficient_elapsed_evidence" || guidance.reason === "quality_requirement_unmet" ? "continue_plan" : "adjust_goal";
+  if (guidance.reason === "premium_access_required") return "access_premium";
+  return guidance.reason === "calculation_error" ? "try_again" : guidance.reason === "insufficient_elapsed_evidence" || guidance.reason === "quality_requirement_unmet" || guidance.reason === "quality_outcome_unknown" ? "continue_plan" : "adjust_goal";
 }
 
 function expectedSecondaryKind(state: TargetDateGuidanceState): GuidanceAction["kind"] | null {

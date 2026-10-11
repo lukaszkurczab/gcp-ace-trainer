@@ -2,7 +2,7 @@ import { CanonicalTrainingRuntime } from "../application/canonical/CanonicalTrai
 import { projectCertificationPracticeFeedback, projectCertificationPracticeQuestion } from "../application/certification/certificationSessionFacade";
 import { projectCertificationPracticeReview, type CertificationPracticeReviewProjection } from "../application/certification/certificationPracticeReviewProjection";
 import { createContentSessionPlanFingerprint } from "../content/application/contentSessionIdentity";
-import { loadCanonicalRuntimeCatalog, type CanonicalQuestionResponse, type Question } from "../content/canonical";
+import { loadCanonicalRuntimeCatalog, type CanonicalCourseSource, type CanonicalQuestionResponse, type Question } from "../content/canonical";
 import { createTrainingSession, type CompletedTrainingSession, type TrainingAttempt, type TrainingSessionResult } from "../domain";
 import type { CertificationPracticeQuestion } from "../application/certification/certificationSessionFacade";
 import type { PracticeFeedback } from "../features/practice/practiceSessionPresentation";
@@ -12,6 +12,20 @@ const TRACK_ID = "claude-certified-architect-professional-certification";
 const MODE_ID = "certification-focus-practice";
 const NOW = "2026-09-30T12:00:00.000Z";
 const TAXONOMY_VERSION = "canonical-content-v1";
+const COURSE_PREVIEW_BY_QUESTION_ID: Readonly<Record<string, CanonicalCourseSource>> = Object.freeze({
+  "CCARP-D01-O01-boundary": Object.freeze({
+    title: "Module 1 · Claude Platform & Solution Design: Architect",
+    url: "https://anthropic-partners.skilljar.com/path/claude-certified-architect-professional/claude-platform-solution-design",
+    section: "M1-S10 · Decompose the request",
+    requiresAccount: true,
+  }),
+  "CCARP-D01-O01-diagnosis": Object.freeze({
+    title: "Enterprise Integration & Production: Architect Module 2",
+    url: "https://anthropic-partners.skilljar.com/path/claude-certified-architect-professional/enterprise-integration-production",
+    section: "M2-S02 · Evals as acceptance criteria: building quality into the build process",
+    requiresAccount: true,
+  }),
+});
 
 export type CertificationPracticeAnswerPreview = Readonly<{
   feedback: PracticeFeedback;
@@ -66,8 +80,12 @@ export async function createCertificationPracticeAnswerFixture(): Promise<Certif
     const submission = await runtime.submitPractice({ session: positioned, response, attempts, reviews: [], now: NOW });
     attempts.push(submission.attempt);
     if (index < replacements.length) {
-      const projected = projectCertificationPracticeQuestion(question);
-      const feedback = projectCertificationPracticeFeedback("afterEachAnswer", submission.attempt, question);
+      // The isolated smoke preview exercises the production source projector
+      // with one in-memory course-backed question without changing canonical
+      // artifacts, attempt evidence, or the runtime content release.
+      const previewQuestion = addCoursePreview(question);
+      const projected = projectCertificationPracticeQuestion(previewQuestion);
+      const feedback = projectCertificationPracticeFeedback("afterEachAnswer", submission.attempt, previewQuestion);
       if (!feedback) throw new Error("Canonical practice fixture did not produce immediate answer feedback.");
       previews.push(Object.freeze({
         feedback: Object.freeze({ details: feedback.details, reason: feedback.reason, result: feedback.result, sources: feedback.sources }),
@@ -91,12 +109,19 @@ export async function createCertificationPracticeAnswerFixture(): Promise<Certif
       if (item.trackId !== TRACK_ID || item.contentVersion !== track.contentVersion || item.artifactSha256 !== track.artifactSha256) throw new Error("Canonical practice fixture received a foreign immutable content reference.");
       const question = track.getQuestion(item.questionId);
       if (!question || question.questionId !== item.questionId) throw new Error("Canonical practice fixture could not resolve the exact question reference.");
-      return question;
+      return addCoursePreview(question);
     },
     result: finalized.result,
     session: finalized.session as CompletedTrainingSession,
   });
   return Object.freeze({ attempts: Object.freeze(attempts), previews: Object.freeze(previews), projection, result: finalized.result, session: finalized.session as CompletedTrainingSession });
+}
+
+function addCoursePreview(question: Question): Question {
+  const course = COURSE_PREVIEW_BY_QUESTION_ID[question.questionId];
+  return course
+    ? ({ ...question, feedback: Object.freeze({ ...question.feedback, course }) } as Question)
+    : question;
 }
 
 async function fingerprintSession(session: ReturnType<typeof createTrainingSession>) {

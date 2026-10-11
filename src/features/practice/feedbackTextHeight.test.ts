@@ -105,7 +105,7 @@ test("both feedback text paths preserve outer sibling identity and use the share
   const source = feedbackNodes.map((node) => node.getText(file)).join("\n");
   assert.match(source, /key=\{`\$\{message\.kind\}:\$\{message\.targetId\}`\}/);
   assert.match(source, /key=\{`detail:\$\{index\}`\}/);
-  assert.equal((source.match(/textMeasurementKey\(/g) ?? []).length, 5);
+  assert.equal((source.match(/textMeasurementKey\(/g) ?? []).length, 6);
   assert.doesNotMatch(practiceFeedbackSource, /native28-layout-probe|gcp-ace-gcpace-n01-b03-001|minHeight:\s*221/);
 });
 
@@ -120,7 +120,7 @@ test("Source text adapters reset measured layout by geometry and retain the actu
     ts.forEachChild(node, visit);
   };
   visit(file);
-  assert.equal(texts.length, 3);
+  assert.equal(texts.length, 4);
   const expression = (node: ts.JsxSelfClosingElement | ts.JsxOpeningElement, name: string) => {
     const attribute = node.attributes.properties.find((p): p is ts.JsxAttribute => ts.isJsxAttribute(p) && p.name.getText(file) === name);
     assert.ok(attribute?.initializer);
@@ -128,7 +128,7 @@ test("Source text adapters reset measured layout by geometry and retain the actu
     assert.ok(ts.isJsxExpression(attribute.initializer) && attribute.initializer.expression);
     return attribute.initializer.expression.getText(file);
   };
-  const source = { host: "www.omg.org", url: "https://www.omg.org/spec/UML/2.5.1/PDF" };
+  const source = { host: "www.omg.org", url: "https://www.omg.org/spec/UML/2.5.1/PDF", role: "documentation" as const };
   for (const node of texts) {
     const evaluate = (name: string, fontScale: number) => new Function("t", "source", "windowWidth", "fontScale", "windowScale", "textMeasurementKey", `return (${expression(node, name)});`)((s: string) => s, source, 328, fontScale, 3, textMeasurementKey);
     const text = evaluate("text", 1);
@@ -139,7 +139,7 @@ test("Source text adapters reset measured layout by geometry and retain the actu
   assert.ok(link);
   const evaluateLink = (name: string) => new Function("t", "source", "itemId", "index", `return (${expression(link!, name)});`)((s: string) => s, source, "item", 0);
   assert.equal(evaluateLink("accessibilityRole"), "link");
-  assert.equal(evaluateLink("accessibilityLabel"), "Open source www.omg.org");
+  assert.equal(evaluateLink("accessibilityLabel"), "Open source Documentation www.omg.org");
   assert.equal(evaluateLink("testID"), "question-source-link-item-0");
   const changes: boolean[] = [];
   const opened: string[] = [];

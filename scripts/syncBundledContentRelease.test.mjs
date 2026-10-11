@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { cp, lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -7,11 +8,13 @@ import test from "node:test";
 
 import {
   EXPECTED_TRACK_IDS,
+  CLAUDE_TRACK_ID,
   GENERATED_DIRECTORY,
   SUCCESSOR_LEDGER_FILE_NAME,
   historicalTrainingProjection,
   parseArgs,
   readApprovedBESDSuccessorProof,
+  validateReviewedCandidate,
   syncCanonicalContent,
   validateBuiltContent,
   verifyApprovedTrainingSuccessor,
@@ -19,6 +22,7 @@ import {
 
 const SMALL_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 9, mentalUnitCount: 9, questionCount: 48 });
 const HEAD = "1".repeat(40);
+const FROZEN_APP_CONTENT_BASE = "07881c44f26ffbbe84d80d4b123e709eef884c06";
 const DESIGN_TRACK_IDS = ["backend-system-design-interview", "frontend-system-design-interview", "object-oriented-design-interview"];
 const TEST_BESD_DESCRIPTOR_BASE = Object.freeze({
   path: "evidence/business-quality/test-besd-successor.json",
@@ -35,9 +39,14 @@ function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex")
 
 test("reviewed candidate sync is explicit and rejects duplicate or malformed opt-in", () => {
   assert.deepEqual(parseArgs([]), { mode: "sync" });
+  assert.deepEqual(parseArgs(["check", "--reviewed-candidate"]), { mode: "check", reviewedCandidate: true });
   assert.deepEqual(parseArgs(["check", "--reviewed-candidate", "--content-root", "/tmp/patternly-content"]), {
     mode: "check", reviewedCandidate: true, producerRoot: path.resolve("/tmp/patternly-content"),
   });
+  assert.deepEqual(parseArgs(["check", "--local-reviewed-candidate", "acceptance.json"]), { mode: "check", localReviewedCandidate: path.resolve("acceptance.json") });
+  assert.deepEqual(parseArgs(["prepare-local-candidate", "--track", CLAUDE_TRACK_ID]), { command: "prepare-local-candidate", trackId: CLAUDE_TRACK_ID });
+  assert.throws(() => parseArgs(["prepare-local-candidate", "--track", "other-track"]), /prepare-local-candidate requires/u);
+  assert.throws(() => parseArgs(["sync", "--reviewed-candidate", "--local-reviewed-candidate", "acceptance.json"]), /cannot be combined/u);
   assert.throws(() => parseArgs(["--reviewed-candidate", "--reviewed-candidate"]), /Usage:/u);
 });
 
@@ -246,7 +255,7 @@ async function fixture() {
   const producerOutput = path.join(root, "producer-output");
   const predecessorOutput = path.join(root, "predecessor-output");
   const targetDirectory = path.join(appRoot, GENERATED_DIRECTORY);
-  const contractRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(appRoot, "../patternly-content"));
+  const contractRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(import.meta.dirname, "../../patternly-content"));
   await mkdir(path.dirname(targetDirectory), { recursive: true });
   await mkdir(path.join(producerRoot, "scripts"), { recursive: true });
   await writeFile(path.join(producerRoot, "scripts", "build.mjs"), "// fixture\n");
@@ -257,7 +266,9 @@ async function fixture() {
   )));
   await createBuiltSet(producerOutput);
   await createPredecessorFromBuiltSet(producerOutput, predecessorOutput);
-  const runBuild = async ({ outputRoot }) => cp(producerOutput, outputRoot, { recursive: true });
+  const runBuild = async ({ outputRoot }) => {
+    for (const name of await readdir(producerOutput)) await cp(path.join(producerOutput, name), path.join(outputRoot, name), { recursive: true });
+  };
   const getBootstrapPredecessor = async () => {
     const lock = JSON.parse(await readFile(path.join(predecessorOutput, "content-lock.json"), "utf8"));
     const artifacts = new Map(await Promise.all(EXPECTED_TRACK_IDS.map(async (trackId) => [`${trackId}.json`, await readFile(path.join(predecessorOutput, `${trackId}.json`))])));
@@ -271,6 +282,53 @@ async function snapshot(directory) {
   const names = (await readdir(directory)).sort();
   return Promise.all(names.map(async (name) => [name, sha256(await readFile(path.join(directory, name)))]));
 }
+
+test("historical local Claude acceptance is not silently retargeted after producer source drift", async (t) => {
+  const root = await mkdtemp(path.join(tmpdir(), "patternly-local-claude-sync-test-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const realAppRoot = path.resolve(import.meta.dirname, "..");
+  const producerRoot = path.resolve(realAppRoot, "../patternly-content");
+  const appRoot = path.join(root, "patternly");
+  const targetDirectory = path.join(appRoot, GENERATED_DIRECTORY);
+  await mkdir(targetDirectory, { recursive: true });
+  await mkdir(appRoot, { recursive: true });
+  for (const name of [...EXPECTED_TRACK_IDS.map((trackId) => `${trackId}.json`), "content-lock.json", SUCCESSOR_LEDGER_FILE_NAME]) {
+    const bytes = execFileSync("git", ["show", `${FROZEN_APP_CONTENT_BASE}:${GENERATED_DIRECTORY}/${name}`], { cwd: realAppRoot, encoding: "buffer", maxBuffer: 32 * 1024 * 1024 });
+    await writeFile(path.join(targetDirectory, name), bytes);
+  }
+  const appEvidencePaths = [
+    "docs/reports/claude-course-alignment-acceptance-2026-10-11.md",
+    "docs/reports/claude-unit-coverage-acceptance-2026-10-11.md",
+    "integration/contracts/content-release/release.lock.json",
+  ];
+  for (const relativePath of appEvidencePaths) {
+    const destination = path.join(appRoot, relativePath);
+    await mkdir(path.dirname(destination), { recursive: true });
+    await cp(path.join(realAppRoot, relativePath), destination);
+  }
+  const contentPinPaths = [
+    "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json",
+    "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json",
+    "evidence/readiness/current-candidate-readiness-v2.json",
+    "evidence/candidate-decisions/current-candidate-decision-v2.json",
+    "evidence/admissions/candidate-admission-v3.json",
+    "docs/evidence/content-audits/2026-10-11-claude-course-map.md",
+    "docs/evidence/content-audits/2026-10-11-claude-course-map.json",
+    "docs/evidence/content-audits/2026-10-11-cc02-content-coverage.md",
+    "docs/evidence/content-audits/2026-10-11-cc02-content-coverage.json",
+  ];
+  for (const relativePath of contentPinPaths) await lstat(path.join(producerRoot, relativePath));
+
+  const before = Object.fromEntries(await snapshot(targetDirectory));
+  const acceptancePath = path.join(root, "local-acceptance.json");
+  await cp(path.join(realAppRoot, "docs/reports/claude-local-candidate-2026-10-11.json"), acceptancePath);
+  await assert.rejects(
+    syncCanonicalContent({ appRoot, producerRoot, targetDirectory, localReviewedCandidate: acceptancePath }),
+    /acceptance record is stale for current producer inputs/u,
+    "the immutable CC-05 evidence must not be silently retargeted to changed producer bytes",
+  );
+  assert.deepEqual(Object.fromEntries(await snapshot(targetDirectory)), before, "changed candidate bytes must be rejected before changing the bundle");
+});
 
 test("sync replaces the whole generated directory with an exact validated set", async (t) => {
   const state = await fixture();
@@ -424,6 +482,69 @@ test("only an explicitly reviewed Claude candidate may advance its training proj
   assert.notEqual(successor.training.artifactSha256, originalLedger.tracks.find((track) => track.trackId === trackId)?.training.artifactSha256);
   assert.deepEqual(result.ledger.tracks.filter((track) => track.trackId !== trackId).map((track) => track.training),
     originalLedger.tracks.filter((track) => track.trackId !== trackId).map((track) => track.training));
+});
+
+test("exact reviewed candidate resets mixed-track training identity when a track gains questions", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  await syncCanonicalContent(state.options);
+  const originalLedger = JSON.parse(await readFile(path.join(state.targetDirectory, SUCCESSOR_LEDGER_FILE_NAME), "utf8"));
+  const changedTrackIds = [CLAUDE_TRACK_ID, "frontend-system-design-interview"];
+  const changedArtifacts = new Map();
+  for (const trackId of changedTrackIds) {
+    const artifactPath = path.join(state.producerOutput, `${trackId}.json`);
+    const artifact = JSON.parse(await readFile(artifactPath, "utf8"));
+    artifact.contentVersion = `${trackId}-reviewed-count-successor-v2`;
+    artifact.questions.push({ ...artifact.questions[0], questionId: `${trackId}-reviewed-added-question` });
+    const artifactBytes = Buffer.from(JSON.stringify(artifact));
+    await writeFile(artifactPath, artifactBytes);
+    changedArtifacts.set(trackId, artifact);
+    const lockPath = path.join(state.producerOutput, "content-lock.json");
+    const lock = JSON.parse(await readFile(lockPath, "utf8"));
+    const entry = lock.tracks.find((track) => track.trackId === trackId);
+    entry.contentVersion = artifact.contentVersion;
+    entry.questionCount = artifact.questions.length;
+    entry.sha256 = sha256(artifactBytes);
+    await writeFile(lockPath, JSON.stringify(lock));
+  }
+  const expectedInventory = { ...SMALL_INVENTORY, questionCount: SMALL_INVENTORY.questionCount + changedTrackIds.length };
+  const syncOptions = { ...state.options, expectedInventory, previousExpectedInventory: SMALL_INVENTORY };
+  await assert.rejects(syncCanonicalContent(syncOptions), /cannot be silently replaced/u, "unreviewed track count changes are rejected");
+
+  const bindingFor = async (trackId, artifact) => {
+    const lock = JSON.parse(await readFile(path.join(state.producerOutput, "content-lock.json"), "utf8"));
+    return { artifactSha256: lock.tracks.find((track) => track.trackId === trackId).sha256, contentVersion: artifact.contentVersion, questionCount: artifact.questions.length };
+  };
+  await assert.rejects(syncCanonicalContent({
+    ...syncOptions,
+    reviewedCandidate: true,
+    verifyReviewedCandidate: async () => new Map([[CLAUDE_TRACK_ID, await bindingFor(CLAUDE_TRACK_ID, changedArtifacts.get(CLAUDE_TRACK_ID))]]),
+  }), /cannot be silently replaced/u, "review binding for one changed track cannot authorize another");
+  await assert.rejects(syncCanonicalContent({
+    ...syncOptions,
+    reviewedCandidate: true,
+    verifyReviewedCandidate: async () => new Map(await Promise.all(changedTrackIds.map(async (trackId) => [trackId, { ...await bindingFor(trackId, changedArtifacts.get(trackId)), questionCount: 1 }]))),
+  }), /cannot be silently replaced/u, "stale question-count binding is rejected");
+
+  const result = await syncCanonicalContent({
+    ...syncOptions,
+    reviewedCandidate: true,
+    verifyReviewedCandidate: async () => new Map(await Promise.all(changedTrackIds.map(async (trackId) => [trackId, await bindingFor(trackId, changedArtifacts.get(trackId))]))),
+  });
+  for (const trackId of changedTrackIds) {
+    const artifact = changedArtifacts.get(trackId);
+    const previous = originalLedger.tracks.find((entry) => entry.trackId === trackId).training;
+    const current = result.ledger.tracks.find((entry) => entry.trackId === trackId).training;
+    assert.equal(current.contentVersion, `${artifact.contentVersion}-training`);
+    assert.equal(current.questionCount, artifact.questions.length);
+    assert.equal(current.artifactSha256, sha256(historicalTrainingProjection(artifact, current.contentVersion)));
+    assert.notDeepEqual(current, previous, "a changed reviewed track starts a fresh training identity with no predecessor credit");
+  }
+  for (const trackId of EXPECTED_TRACK_IDS.filter((id) => !changedTrackIds.includes(id))) {
+    assert.deepEqual(result.ledger.tracks.find((entry) => entry.trackId === trackId).training, originalLedger.tracks.find((entry) => entry.trackId === trackId).training, `${trackId} retains its unchanged training identity`);
+  }
+  const installed = await validateBuiltContent(state.targetDirectory, { expectedInventory });
+  assert.deepEqual(installed.inventory, expectedInventory);
 });
 
 test("sync accepts a complete GCP Exam envelope inside the artifact lock boundary", async (t) => {

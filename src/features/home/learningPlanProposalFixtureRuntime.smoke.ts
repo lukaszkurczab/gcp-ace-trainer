@@ -1,4 +1,6 @@
-import { generateLearningPlanProposal, type GoalSnapshot, type TrackId } from "../../domain";
+import { createClaudeCoverageFixtureCompletion } from "../../testing/claudeCoverageFixture";
+import { learningPlanProposalFixtureTrackId } from "./learningPlanProposalFixtureCommand";
+import { generateLearningPlanProposal, type GoalSnapshot } from "../../domain";
 import type { LearningPlanEditorStartResult } from "../../application/learningPlan/LearningPlanEditorCoordinator";
 import type { LearningPlanAcceptRuntimeResult } from "../../application/learningPlan/learningPlanMutationRuntime";
 import type { LearningPlanProposalResult } from "../../application/learningPlan/LearningPlanProposalCoordinator";
@@ -6,12 +8,12 @@ import type { LearningPlanReminderResult } from "../../application/notificationP
 import type { LearningPlanProposalFixtureCase } from "./learningPlanProposalFixtureCommand";
 import type { LearningPlanProposalFixtureAction, LearningPlanProposalScreenRuntime } from "./learningPlanProposalRuntime";
 
-const TRACK_ID = "coding-interview-dsa-problem-solving" as TrackId;
 const PROPOSAL_ID = "ui11-fixture-proposal";
 const ARTIFACT_SHA256 = "a".repeat(64);
 const DELAY_MS = 3_000;
 
 export function createLearningPlanProposalFixtureRuntime(scenario: LearningPlanProposalFixtureCase, onExit?: () => void): LearningPlanProposalScreenRuntime {
+  const fixtureTrackId = learningPlanProposalFixtureTrackId(scenario);
   const counts: Record<LearningPlanProposalFixtureAction, number> = {
     accept: 0, create: 0, "edit-proposal": 0, "edit-existing": 0, "retry-reminders": 0,
   };
@@ -22,7 +24,7 @@ export function createLearningPlanProposalFixtureRuntime(scenario: LearningPlanP
     : scenario === "unavailable"
       ? Object.freeze({ kind: "package_unavailable" as const })
       : Object.freeze({ kind: outcome.kind, proposal: Object.freeze({
-        proposalId: PROPOSAL_ID, trackId: TRACK_ID, outcome,
+        proposalId: PROPOSAL_ID, trackId: fixtureTrackId, outcome,
         nextSessionTimeEstimate: Object.freeze({ kind: "unavailable" as const, reason: "missing_scope_estimate" as const, scopeRefs: Object.freeze([]) }),
         nextSessionCalendar: Object.freeze({ kind: "unavailable" as const, reason: "no_legal_session_estimate" as const }),
         fullGoalCalendar: Object.freeze({ kind: "unavailable" as const, reason: "no_legal_session_estimate" as const }),
@@ -35,7 +37,7 @@ export function createLearningPlanProposalFixtureRuntime(scenario: LearningPlanP
     ...(onExit ? { exitFixture: onExit } : {}),
     async resolve(proposalId, trackId) {
       if (scenario === "delayed-loading") await delay(DELAY_MS);
-      if (proposalId !== PROPOSAL_ID || trackId !== TRACK_ID) return Object.freeze({ kind: "stale" as const });
+      if (proposalId !== PROPOSAL_ID || trackId !== fixtureTrackId) return Object.freeze({ kind: "stale" as const });
       return result;
     },
     async create() {
@@ -44,7 +46,7 @@ export function createLearningPlanProposalFixtureRuntime(scenario: LearningPlanP
     },
     async startProposalEdit(proposalId, trackId): Promise<LearningPlanEditorStartResult> {
       increment("edit-proposal");
-      if (proposalId !== PROPOSAL_ID || trackId !== TRACK_ID) return { kind: "stale", reason: "proposal" };
+      if (proposalId !== PROPOSAL_ID || trackId !== fixtureTrackId) return { kind: "stale", reason: "proposal" };
       if (scenario === "edit-storage") await delay(DELAY_MS);
       if (scenario === "edit-stale") return { kind: "stale", reason: "proposal" };
       return { kind: "storage_error" };
@@ -55,7 +57,7 @@ export function createLearningPlanProposalFixtureRuntime(scenario: LearningPlanP
     },
     async accept(proposalId, trackId): Promise<LearningPlanAcceptRuntimeResult> {
       increment("accept");
-      if (proposalId !== PROPOSAL_ID || trackId !== TRACK_ID) return { kind: "stale", reason: "proposal" };
+      if (proposalId !== PROPOSAL_ID || trackId !== fixtureTrackId) return { kind: "stale", reason: "proposal" };
       if (scenario === "ready3-no-target") await delay(DELAY_MS);
       if (scenario === "accept-validation") return { kind: "validation_error", code: "invalid_schedule" };
       if (scenario === "accept-stale") return { kind: "stale", reason: "proposal" };
@@ -71,6 +73,8 @@ export function createLearningPlanProposalFixtureRuntime(scenario: LearningPlanP
 }
 
 function createOutcome(scenario: LearningPlanProposalFixtureCase) {
+  const trackId = learningPlanProposalFixtureTrackId(scenario);
+  const modeId = scenario.startsWith("cc04-") ? "certification-focus-practice" : "coding-interview-guided-practice";
   const preferredDays = scenario === "ready1-target" ? ["mon"] as const
     : scenario === "ready7-target" ? ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const
       : ["mon", "wed", "sat"] as const;
@@ -81,7 +85,7 @@ function createOutcome(scenario: LearningPlanProposalFixtureCase) {
       goalType: scenario === "ready7-target" ? "prepare_for_an_interview" : "build_foundations",
       preferredDays,
       status: "active",
-      trackId: TRACK_ID,
+      trackId,
       weeklySessionTarget: preferredDays.length,
       ...(hasTarget ? { targetDate: "2026-10-31" } : {}),
     }),
@@ -96,17 +100,17 @@ function createOutcome(scenario: LearningPlanProposalFixtureCase) {
     goalRecord: goalSnapshot.record,
     expectedGoalRevision: goalSnapshot.revision,
     minutesPerStudyDay: 60,
-    executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: null, practice: { modeId: "coding-interview-guided-practice", requestedLength: 10 } },
-    nextSession: { kind: "practice", modeId: "coding-interview-guided-practice", requestedLength: 10 },
+    executionPolicy: { policyVersion: "patternly-learning-execution-v1", initialDiagnosis: null, practice: { modeId: modeId, requestedLength: 10 } },
+    nextSession: { kind: "practice", modeId: modeId, requestedLength: 10 },
     diagnosisStatus: "not_available",
     artifactSha256: ARTIFACT_SHA256,
     contentVersion: "ui11-runtime-fixture-v1",
     planningPolicyIdentity: { contentVersion: "ui11-runtime-fixture-v1", artifactSha256: ARTIFACT_SHA256, policyVersion: "fixture-v1" },
-    primaryModeId: "coding-interview-guided-practice",
+    primaryModeId: modeId,
     requestedLength: 10,
     sessionCapacity: capacity,
     // Explicit presentation fixture only: actual production rules remain package-owned/absent.
-    completionState: qualityUnmet
+    completionState: scenario.startsWith("cc04-") ? createClaudeCoverageFixtureCompletion(scenario === "cc04-completed") : qualityUnmet
       ? fixtureCompletion(20, 0.75)
       : hasTarget
       ? fixtureCompletion(0)
@@ -121,9 +125,9 @@ function createOutcome(scenario: LearningPlanProposalFixtureCase) {
 function fixtureCompletion(qualifyingAttemptCount: number, quality: number | null = null) {
   const requiredAttemptCount = 20;
   const completed = qualifyingAttemptCount >= requiredAttemptCount && quality !== null && quality >= 0.8;
-  const chapter = Object.freeze({ nodeId: "fixture-chapter", mentalUnitCount: 1, qualifyingAttemptCount, requiredAttemptCount, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality, status: completed ? "completed" as const : "in_progress" as const, reason: completed ? null : qualifyingAttemptCount >= requiredAttemptCount ? "quality_unmet" as const : "minimum_attempts_unmet" as const });
-  const common = { chapters: Object.freeze([chapter]), completedChapterCount: completed ? 1 : 0, requiredChapterCount: 1, qualifyingAttemptCount, requiredAttemptCount, remainingAttemptCount: Math.max(0, requiredAttemptCount - qualifyingAttemptCount) };
-  return completed ? Object.freeze({ kind: "completed" as const, ...common, remainingAttemptCount: 0 as const }) : Object.freeze({ kind: "in_progress" as const, ...common });
+  const chapter = Object.freeze({ nodeId: "fixture-chapter", mentalUnitCount: 1, qualifyingAttemptCount, requiredAttemptCount, remainingAttemptCount: Math.max(0, requiredAttemptCount - qualifyingAttemptCount), coverageDeficit: 0, minimumAdditionalAttemptCount: Math.max(0, requiredAttemptCount - qualifyingAttemptCount), coverage: Object.freeze([]), qualityRequirementUnmet: quality === null ? null : quality < 0.8, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const, quality, status: completed ? "completed" as const : "in_progress" as const, reason: completed ? null : qualifyingAttemptCount >= requiredAttemptCount ? "quality_unmet" as const : "minimum_attempts_unmet" as const });
+  const common = { chapters: Object.freeze([chapter]), completedChapterCount: completed ? 1 : 0, requiredChapterCount: 1, qualifyingAttemptCount, requiredAttemptCount, coverageDeficit: 0, minimumAdditionalAttemptCount: Math.max(0, requiredAttemptCount - qualifyingAttemptCount), remainingAttemptCount: Math.max(0, requiredAttemptCount - qualifyingAttemptCount) };
+  return completed ? Object.freeze({ kind: "completed" as const, ...common, coverageDeficit: 0 as const, minimumAdditionalAttemptCount: 0 as const, remainingAttemptCount: 0 as const }) : Object.freeze({ kind: "in_progress" as const, ...common });
 }
 
 function delay(milliseconds: number): Promise<void> {

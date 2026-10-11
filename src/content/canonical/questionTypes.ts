@@ -1,4 +1,4 @@
-import type { PackageCompletionRuleV2 } from "../../domain/learning/packageCompletionRule";
+import type { PackageCompletionRule } from "../../domain/learning/packageCompletionRule";
 export type JsonValue = string | number | boolean | null | readonly JsonValue[] | Readonly<{ [key: string]: JsonValue }>;
 
 export type CanonicalOption = Readonly<{ optionId: string; text: string; explanation?: string }>;
@@ -13,10 +13,17 @@ export type CanonicalDimension = Readonly<{
 export type CanonicalComplexityDimension = CanonicalDimension & Readonly<{ aliases?: Readonly<Record<string, string>> }>;
 
 export type CanonicalFeedbackMessage = Readonly<{ kind: string; targetId: string; text: string }>;
+export type CanonicalCourseSource = Readonly<{
+  title: string;
+  url: string;
+  section?: string;
+  requiresAccount: boolean;
+}>;
 export type CanonicalFeedback<T extends QuestionInteractionType> = Readonly<{
   type: T;
   reason: string;
   details: JsonValue;
+  course?: CanonicalCourseSource;
   messages?: readonly CanonicalFeedbackMessage[];
 }>;
 
@@ -173,7 +180,7 @@ export type CanonicalArtifact = Readonly<{
   trackId: string;
   contentVersion: string;
   questions: readonly Question[];
-  completionRule?: PackageCompletionRuleV2;
+  completionRule?: PackageCompletionRule;
   simulationProfiles?: readonly CanonicalProductSimulationProfile[];
   planningPolicy?: unknown;
 }>;

@@ -13,6 +13,7 @@ import type {
   TargetDateGuidanceReason,
   TargetDateGuidanceState,
 } from "./targetDateGuidance";
+import { requirePremiumForRemainingCoverage } from "./targetDateGuidance";
 import {
   presentTargetDateGuidance,
   TargetDateGuidancePresentationError,
@@ -37,6 +38,9 @@ const messageKeys: Record<string, GuidanceMessageKey> = {
   on_track: "targetDateGuidance.onTrack",
   no_target: "targetDateGuidance.openEnded",
   unknown_completion_rule: "targetDateGuidance.unavailable.unknownCompletionRule",
+  quality_requirement_unmet: "targetDateGuidance.unavailable.qualityRequirementUnmet",
+  quality_outcome_unknown: "targetDateGuidance.unavailable.qualityOutcomeUnknown",
+  premium_access_required: "targetDateGuidance.unavailable.premiumAccessRequired",
   insufficient_elapsed_evidence: "targetDateGuidance.unavailable.insufficientElapsedEvidence",
   calculation_error: "targetDateGuidance.unavailable.calculationError",
 };
@@ -67,6 +71,7 @@ const destinations: Record<GuidanceAction["kind"], GuidanceAction["destination"]
   start_next_session: "Practice",
   continue_plan: "Practice",
   try_again: "TargetDateGuidanceRecompute",
+  access_premium: "PremiumPurchase",
 };
 
 const tones: Record<TargetDateGuidanceState, TargetDateGuidance["tone"]> = {
@@ -117,7 +122,7 @@ function guidance(
   overrides: Partial<Pick<TargetDateGuidance, "tone" | "messageKey">> = {},
 ): TargetDateGuidance {
   const primaryKind = state === "unavailable"
-    ? reason === "calculation_error" ? "try_again" : reason === "insufficient_elapsed_evidence" ? "continue_plan" : "adjust_goal"
+    ? reason === "calculation_error" ? "try_again" : reason === "premium_access_required" ? "access_premium" : reason === "insufficient_elapsed_evidence" || reason === "quality_requirement_unmet" || reason === "quality_outcome_unknown" ? "continue_plan" : "adjust_goal"
     : primaryKinds[state];
   const primary = { kind: primaryKind, destination: destinations[primaryKind] } as GuidanceAction;
   const secondary = state === "at_risk"
@@ -154,6 +159,9 @@ function allGuidances(): readonly TargetDateGuidance[] {
     guidance("open_ended", "no_target", { requiredPace: text("flexible"), actualPace: text("flexible"), forecast: text("flexible"), target: text("no_target_date") }),
     guidance("unavailable", "unknown_completion_rule", { requiredPace: unavailable("unknown_completion_rule"), actualPace: unavailable("unknown_completion_rule"), forecast: unavailable("unknown_completion_rule"), target: date() }),
     guidance("unavailable", "insufficient_elapsed_evidence", { requiredPace: unavailable("insufficient_elapsed_evidence"), actualPace: unavailable("insufficient_elapsed_evidence"), forecast: unavailable("insufficient_elapsed_evidence"), target: date() }),
+    guidance("unavailable", "quality_requirement_unmet", { requiredPace: unavailable("quality_requirement_unmet"), actualPace: unavailable("quality_requirement_unmet"), forecast: unavailable("quality_requirement_unmet"), target: date() }),
+    guidance("unavailable", "quality_outcome_unknown", { requiredPace: unavailable("quality_outcome_unknown"), actualPace: unavailable("quality_outcome_unknown"), forecast: unavailable("quality_outcome_unknown"), target: date() }),
+    guidance("unavailable", "premium_access_required", { requiredPace: unavailable("premium_access_required"), actualPace: unavailable("premium_access_required"), forecast: unavailable("premium_access_required"), target: date() }),
     guidance("unavailable", "calculation_error", { requiredPace: unavailable("calculation_error"), actualPace: unavailable("calculation_error"), forecast: unavailable("calculation_error"), target: date() }),
     guidance("unavailable", "no_target", { requiredPace: unavailable("no_target"), actualPace: unavailable("no_target"), forecast: unavailable("no_target"), target: date() }),
   ];
@@ -185,6 +193,18 @@ test("maps every guidance state, reason, message key, action and fact variant", 
       assert.equal(value.state === "at_risk" || value.state === "unreachable", output.secondaryLabel !== null);
     }
   }
+});
+
+test("Premium coverage override presents a typed purchase action without starting practice", () => {
+  const source = guidance("unavailable", "quality_outcome_unknown", {
+    requiredPace: unavailable("quality_outcome_unknown"), actualPace: unavailable("quality_outcome_unknown"),
+    forecast: unavailable("quality_outcome_unknown"), target: date(),
+  });
+  const access = requirePremiumForRemainingCoverage(source);
+  assert.equal(access.home.primary.kind, "access_premium");
+  assert.equal(access.home.primary.destination, "PremiumPurchase");
+  assert.deepEqual(access.progress.primary, access.home.primary);
+  assert.equal(present(access).primaryLabel.length > 0, true);
 });
 
 test("accepts canonical overdue guidance with an unavailable forecast", () => {

@@ -1,10 +1,11 @@
 import type { AcceptedTargetMeaning } from "./learningPlan";
+import type { PlanningScopeRef } from "./planningWorkEstimate";
 import { GOAL_DAY_IDS, type GoalDay } from "../goals/goalContracts";
 
 export type LegalSessionOption = Readonly<{ sessionLength: number; minMinutes: number; typicalMinutes: number; maxMinutes: number }>;
 export type PlanningDueObligation = Readonly<{ id: string; dueAt: string; minMinutes: number; typicalMinutes: number; maxMinutes: number }>;
 /** A forecast of selectable work in one real mode. It is an aggregate pool bound, not a list of future attempts. */
-export type PlanningSessionDemand = Readonly<{ id: string; modeId: string; phase: "diagnosis" | "practice" | "review" | "quality_repair"; responseCount: number; legalOptions: readonly LegalSessionOption[]; canResumeAcrossWindows?: boolean; isExistingSession?: boolean;
+export type PlanningSessionDemand = Readonly<{ id: string; modeId: string; phase: "diagnosis" | "practice" | "review" | "quality_repair"; responseCount: number; legalOptions: readonly LegalSessionOption[]; scopeRefs?: readonly PlanningScopeRef[]; canResumeAcrossWindows?: boolean; isExistingSession?: boolean;
   kind?: "continue_existing"; sessionId?: string; reviewEntryIds?: readonly string[] }>;
 export type TodayActiveTime = Readonly<{ kind: "known"; minutes: number }> | Readonly<{ kind: "unknown"; reason: "session_started_before_today" | "active_interval_crosses_today_boundary" | "unavailable" }>;
 export type PlanningCalendarDay = Readonly<{
@@ -17,7 +18,7 @@ export type PlanningCalendarDay = Readonly<{
   remainingMinutesForNewWork: number;
   reviewShortfallMinutes: number;
   selectedSession: LegalSessionOption | null;
-  selectedWork: Readonly<{ demandId: string; modeId: string; phase: PlanningSessionDemand["phase"]; plannedMinutes: number; continuation: boolean; responsesRemaining: number }> | null;
+  selectedWork: Readonly<{ demandId: string; modeId: string; phase: PlanningSessionDemand["phase"]; plannedMinutes: number; continuation: boolean; responsesRemaining: number; scopeRefs?: readonly PlanningScopeRef[] }> | null;
   reason: "scheduled" | "no_planned_work" | "active_time_reduces_capacity" | "active_time_unknown" | "review_obligation_exceeds_budget" | "no_legal_session_fits";
 }>;
 export type PlanningCalendarResult = Readonly<{
@@ -152,7 +153,8 @@ export function buildPlanningCalendar(input: Readonly<{
       : 0;
     const responsesRemaining = fitting && workDemand ? Math.max(0, workDemand.responseCount - (scheduledResponsesByDemand.get(workDemand.id) ?? 0)) : 0;
     const selectedWork = fitting && workDemand ? Object.freeze({ demandId: workDemand.id, modeId: workDemand.modeId, phase: workDemand.phase,
-      plannedMinutes, continuation: activeDemand !== undefined || workDemand.isExistingSession === true, responsesRemaining }) : null;
+      plannedMinutes, continuation: activeDemand !== undefined || workDemand.isExistingSession === true, responsesRemaining,
+      ...(workDemand.scopeRefs ? { scopeRefs: workDemand.scopeRefs } : {}) }) : null;
     if (availableMinutes === null) unknownCapacityDates.push(localDate);
     else totalAvailableMinutes += availableMinutes;
     if (!fitting && assignedReviews.length === 0 && demandRemains && !todayUnknown) {
@@ -256,6 +258,7 @@ function validateInput(input: Parameters<typeof buildPlanningCalendar>[0]): void
       (demand.isExistingSession === true && demand.canResumeAcrossWindows !== true) ||
       (demand.kind === "continue_existing" && (demand.isExistingSession !== true || typeof demand.sessionId !== "string" || !demand.sessionId.trim())) ||
       (demand.reviewEntryIds !== undefined && (new Set(demand.reviewEntryIds).size !== demand.reviewEntryIds.length || demand.reviewEntryIds.some((id) => !id.trim()))) ||
+      (demand.scopeRefs !== undefined && (!Array.isArray(demand.scopeRefs) || demand.scopeRefs.length === 0 || demand.scopeRefs.some((scope) => !scope.nodeId.trim() || !scope.mentalUnitId.trim()) || new Set(demand.scopeRefs.map((scope) => `${scope.nodeId}\0${scope.mentalUnitId}`)).size !== demand.scopeRefs.length)) ||
       demand.legalOptions.some((option) => !Number.isSafeInteger(option.sessionLength) || option.sessionLength < 1 || (demand.isExistingSession !== true && option.sessionLength > demand.responseCount) || option.minMinutes < 0 || option.minMinutes > option.typicalMinutes || option.typicalMinutes > option.maxMinutes)) throw new RangeError("Planning session demand is invalid.");
     demandIds.add(demand.id);
   }

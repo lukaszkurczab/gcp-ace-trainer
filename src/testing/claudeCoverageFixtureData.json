@@ -1,0 +1,1347 @@
+{
+  "trackId": "claude-certified-architect-professional-certification",
+  "contentVersion": "ccarp-2026.10.11-capacity-v1-bizq02-v2-bizq03-planning-v2-cc02-v1-cc03-v1-cc04-v3",
+  "artifactSha256": "12e6c8637b112af9e48ca870bb80d89f9db6ad7d1949c51efceb37572a6cd0bd",
+  "completionRule": {
+    "chapters": [
+      {
+        "mentalUnitCount": 10,
+        "minimumAttemptCount": 40,
+        "nodeId": "enterprise_tools_retrieval_and_integration",
+        "qualityThreshold": 0.8,
+        "rollingWindowSize": 20,
+        "units": [
+          {
+            "mentalUnitId": "CCARP-D03-O01",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D03-O02",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D03-O03",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D03-O04",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D03-O05",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D03-O06",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D03-O07",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D03-O08",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D03-O09",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D03-O10",
+            "requiredCorrectQuestionCount": 4
+          }
+        ]
+      },
+      {
+        "mentalUnitCount": 7,
+        "minimumAttemptCount": 40,
+        "nodeId": "evaluation_diagnosis_and_optimization",
+        "qualityThreshold": 0.8,
+        "rollingWindowSize": 20,
+        "units": [
+          {
+            "mentalUnitId": "CCARP-D04-O01",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D04-O02",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D04-O03",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D04-O04",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D04-O05",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D04-O06",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D04-O07",
+            "requiredCorrectQuestionCount": 4
+          }
+        ]
+      },
+      {
+        "mentalUnitCount": 9,
+        "minimumAttemptCount": 40,
+        "nodeId": "governance_safety_and_risk_controls",
+        "qualityThreshold": 0.8,
+        "rollingWindowSize": 20,
+        "units": [
+          {
+            "mentalUnitId": "CCARP-D05-O01",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D05-O02",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D05-O03",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D05-O04",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D05-O05",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D05-O06",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D05-O07",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D05-O08",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D05-O09",
+            "requiredCorrectQuestionCount": 4
+          }
+        ]
+      },
+      {
+        "mentalUnitCount": 5,
+        "minimumAttemptCount": 20,
+        "nodeId": "model_prompt_and_context_decisions",
+        "qualityThreshold": 0.8,
+        "rollingWindowSize": 20,
+        "units": [
+          {
+            "mentalUnitId": "CCARP-D02-O01",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D02-O02",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D02-O03",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D02-O04",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D02-O05",
+            "requiredCorrectQuestionCount": 4
+          }
+        ]
+      },
+      {
+        "mentalUnitCount": 9,
+        "minimumAttemptCount": 40,
+        "nodeId": "solution_design_and_architecture",
+        "qualityThreshold": 0.8,
+        "rollingWindowSize": 20,
+        "units": [
+          {
+            "mentalUnitId": "CCARP-D01-O01",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D01-O02",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D01-O03",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D01-O04",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D01-O05",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D01-O06",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D01-O07",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D01-O08",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D01-O09",
+            "requiredCorrectQuestionCount": 4
+          }
+        ]
+      },
+      {
+        "mentalUnitCount": 7,
+        "minimumAttemptCount": 40,
+        "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+        "qualityThreshold": 0.8,
+        "rollingWindowSize": 20,
+        "units": [
+          {
+            "mentalUnitId": "CCARP-D06-O01",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D06-O02",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D06-O03",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D06-O04",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D06-O05",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D06-O06",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D06-O07",
+            "requiredCorrectQuestionCount": 4
+          }
+        ]
+      },
+      {
+        "mentalUnitCount": 6,
+        "minimumAttemptCount": 40,
+        "nodeId": "team_workflows_and_operational_enablement",
+        "qualityThreshold": 0.8,
+        "rollingWindowSize": 20,
+        "units": [
+          {
+            "mentalUnitId": "CCARP-D07-O01",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D07-O02",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D07-O03",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D07-O04",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D07-O05",
+            "requiredCorrectQuestionCount": 4
+          },
+          {
+            "mentalUnitId": "CCARP-D07-O06",
+            "requiredCorrectQuestionCount": 4
+          }
+        ]
+      }
+    ],
+    "ruleVersion": 3
+  },
+  "questions": [
+    {
+      "questionId": "CCARP-D03-O01-boundary",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O01"
+    },
+    {
+      "questionId": "CCARP-D03-O01-diagnosis",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O01"
+    },
+    {
+      "questionId": "CCARP-D03-O01-expansion-09",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O01"
+    },
+    {
+      "questionId": "CCARP-D03-O01-expansion-12",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O01"
+    },
+    {
+      "questionId": "CCARP-D03-O02-boundary",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O02"
+    },
+    {
+      "questionId": "CCARP-D03-O02-diagnosis",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O02"
+    },
+    {
+      "questionId": "CCARP-D03-O02-expansion-12",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O02"
+    },
+    {
+      "questionId": "CCARP-D03-O02-expansion-17",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O02"
+    },
+    {
+      "questionId": "CCARP-D03-O03-boundary",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O03"
+    },
+    {
+      "questionId": "CCARP-D03-O03-depth-26",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O03"
+    },
+    {
+      "questionId": "CCARP-D03-O03-depth-27",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O03"
+    },
+    {
+      "questionId": "CCARP-D03-O03-depth-28",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O03"
+    },
+    {
+      "questionId": "CCARP-D03-O04-boundary",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O04"
+    },
+    {
+      "questionId": "CCARP-D03-O04-depth-18",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O04"
+    },
+    {
+      "questionId": "CCARP-D03-O04-depth-19",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O04"
+    },
+    {
+      "questionId": "CCARP-D03-O04-depth-20",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O04"
+    },
+    {
+      "questionId": "CCARP-D03-O05-boundary",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O05"
+    },
+    {
+      "questionId": "CCARP-D03-O05-depth-01",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O05"
+    },
+    {
+      "questionId": "CCARP-D03-O05-depth-02",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O05"
+    },
+    {
+      "questionId": "CCARP-D03-O05-depth-03",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O05"
+    },
+    {
+      "questionId": "CCARP-D03-O06-boundary",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O06"
+    },
+    {
+      "questionId": "CCARP-D03-O06-diagnosis",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O06"
+    },
+    {
+      "questionId": "CCARP-D03-O06-expansion-17",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O06"
+    },
+    {
+      "questionId": "CCARP-D03-O06-expansion-18",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O06"
+    },
+    {
+      "questionId": "CCARP-D03-O07-boundary",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O07"
+    },
+    {
+      "questionId": "CCARP-D03-O07-depth-10",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O07"
+    },
+    {
+      "questionId": "CCARP-D03-O07-depth-11",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O07"
+    },
+    {
+      "questionId": "CCARP-D03-O07-depth-12",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O07"
+    },
+    {
+      "questionId": "CCARP-D03-O08-boundary",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O08"
+    },
+    {
+      "questionId": "CCARP-D03-O08-diagnosis",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O08"
+    },
+    {
+      "questionId": "CCARP-D03-O08-expansion-04",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O08"
+    },
+    {
+      "questionId": "CCARP-D03-O08-expansion-12",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O08"
+    },
+    {
+      "questionId": "CCARP-D03-O09-scenario-01",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O09"
+    },
+    {
+      "questionId": "CCARP-D03-O09-scenario-02",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O09"
+    },
+    {
+      "questionId": "CCARP-D03-O09-scenario-03",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O09"
+    },
+    {
+      "questionId": "CCARP-D03-O09-scenario-04",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O09"
+    },
+    {
+      "questionId": "CCARP-D03-O10-scenario-01",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O10"
+    },
+    {
+      "questionId": "CCARP-D03-O10-scenario-02",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O10"
+    },
+    {
+      "questionId": "CCARP-D03-O10-scenario-03",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O10"
+    },
+    {
+      "questionId": "CCARP-D03-O10-scenario-04",
+      "nodeId": "enterprise_tools_retrieval_and_integration",
+      "mentalUnitId": "CCARP-D03-O10"
+    },
+    {
+      "questionId": "CCARP-D04-O01-boundary",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O01"
+    },
+    {
+      "questionId": "CCARP-D04-O01-diagnosis",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O01"
+    },
+    {
+      "questionId": "CCARP-D04-O01-expansion-09",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O01"
+    },
+    {
+      "questionId": "CCARP-D04-O01-expansion-10",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O01"
+    },
+    {
+      "questionId": "CCARP-D04-O02-boundary",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O02"
+    },
+    {
+      "questionId": "CCARP-D04-O02-cc02-01",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O02"
+    },
+    {
+      "questionId": "CCARP-D04-O02-cc02-02",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O02"
+    },
+    {
+      "questionId": "CCARP-D04-O02-cc02-03",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O02"
+    },
+    {
+      "questionId": "CCARP-D04-O03-boundary",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O03"
+    },
+    {
+      "questionId": "CCARP-D04-O03-diagnosis",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O03"
+    },
+    {
+      "questionId": "CCARP-D04-O03-expansion-16",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O03"
+    },
+    {
+      "questionId": "CCARP-D04-O03-expansion-17",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O03"
+    },
+    {
+      "questionId": "CCARP-D04-O04-boundary",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O04"
+    },
+    {
+      "questionId": "CCARP-D04-O04-diagnosis",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O04"
+    },
+    {
+      "questionId": "CCARP-D04-O04-expansion-04",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O04"
+    },
+    {
+      "questionId": "CCARP-D04-O04-expansion-06",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O04"
+    },
+    {
+      "questionId": "CCARP-D04-O05-boundary",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O05"
+    },
+    {
+      "questionId": "CCARP-D04-O05-depth-41",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O05"
+    },
+    {
+      "questionId": "CCARP-D04-O05-depth-42",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O05"
+    },
+    {
+      "questionId": "CCARP-D04-O05-depth-44",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O05"
+    },
+    {
+      "questionId": "CCARP-D04-O06-boundary",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O06"
+    },
+    {
+      "questionId": "CCARP-D04-O06-depth-32",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O06"
+    },
+    {
+      "questionId": "CCARP-D04-O06-depth-33",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O06"
+    },
+    {
+      "questionId": "CCARP-D04-O06-depth-34",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O06"
+    },
+    {
+      "questionId": "CCARP-D04-O07-scenario-01",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O07"
+    },
+    {
+      "questionId": "CCARP-D04-O07-scenario-02",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O07"
+    },
+    {
+      "questionId": "CCARP-D04-O07-scenario-03",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O07"
+    },
+    {
+      "questionId": "CCARP-D04-O07-scenario-04",
+      "nodeId": "evaluation_diagnosis_and_optimization",
+      "mentalUnitId": "CCARP-D04-O07"
+    },
+    {
+      "questionId": "CCARP-D05-O01-boundary",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O01"
+    },
+    {
+      "questionId": "CCARP-D05-O01-diagnosis",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O01"
+    },
+    {
+      "questionId": "CCARP-D05-O01-expansion-01",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O01"
+    },
+    {
+      "questionId": "CCARP-D05-O01-expansion-02",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O01"
+    },
+    {
+      "questionId": "CCARP-D05-O02-boundary",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O02"
+    },
+    {
+      "questionId": "CCARP-D05-O02-diagnosis",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O02"
+    },
+    {
+      "questionId": "CCARP-D05-O02-expansion-07",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O02"
+    },
+    {
+      "questionId": "CCARP-D05-O02-expansion-08",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O02"
+    },
+    {
+      "questionId": "CCARP-D05-O03-boundary",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O03"
+    },
+    {
+      "questionId": "CCARP-D05-O03-diagnosis",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O03"
+    },
+    {
+      "questionId": "CCARP-D05-O03-expansion-06",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O03"
+    },
+    {
+      "questionId": "CCARP-D05-O03-expansion-07",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O03"
+    },
+    {
+      "questionId": "CCARP-D05-O04-boundary",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O04"
+    },
+    {
+      "questionId": "CCARP-D05-O04-diagnosis",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O04"
+    },
+    {
+      "questionId": "CCARP-D05-O04-expansion-16",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O04"
+    },
+    {
+      "questionId": "CCARP-D05-O04-expansion-17",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O04"
+    },
+    {
+      "questionId": "CCARP-D05-O05-boundary",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O05"
+    },
+    {
+      "questionId": "CCARP-D05-O05-diagnosis",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O05"
+    },
+    {
+      "questionId": "CCARP-D05-O05-expansion-16",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O05"
+    },
+    {
+      "questionId": "CCARP-D05-O05-expansion-17",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O05"
+    },
+    {
+      "questionId": "CCARP-D05-O06-scenario-01",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O06"
+    },
+    {
+      "questionId": "CCARP-D05-O06-scenario-02",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O06"
+    },
+    {
+      "questionId": "CCARP-D05-O06-scenario-03",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O06"
+    },
+    {
+      "questionId": "CCARP-D05-O06-scenario-04",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O06"
+    },
+    {
+      "questionId": "CCARP-D05-O07-scenario-01",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O07"
+    },
+    {
+      "questionId": "CCARP-D05-O07-scenario-02",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O07"
+    },
+    {
+      "questionId": "CCARP-D05-O07-scenario-03",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O07"
+    },
+    {
+      "questionId": "CCARP-D05-O07-scenario-04",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O07"
+    },
+    {
+      "questionId": "CCARP-D05-O08-scenario-01",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O08"
+    },
+    {
+      "questionId": "CCARP-D05-O08-scenario-02",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O08"
+    },
+    {
+      "questionId": "CCARP-D05-O08-scenario-03",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O08"
+    },
+    {
+      "questionId": "CCARP-D05-O08-scenario-04",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O08"
+    },
+    {
+      "questionId": "CCARP-D05-O09-scenario-01",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O09"
+    },
+    {
+      "questionId": "CCARP-D05-O09-scenario-02",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O09"
+    },
+    {
+      "questionId": "CCARP-D05-O09-scenario-03",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O09"
+    },
+    {
+      "questionId": "CCARP-D05-O09-scenario-04",
+      "nodeId": "governance_safety_and_risk_controls",
+      "mentalUnitId": "CCARP-D05-O09"
+    },
+    {
+      "questionId": "CCARP-D02-O01-boundary",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O01"
+    },
+    {
+      "questionId": "CCARP-D02-O01-diagnosis",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O01"
+    },
+    {
+      "questionId": "CCARP-D02-O01-expansion-01",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O01"
+    },
+    {
+      "questionId": "CCARP-D02-O01-expansion-02",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O01"
+    },
+    {
+      "questionId": "CCARP-D02-O02-boundary",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O02"
+    },
+    {
+      "questionId": "CCARP-D02-O02-diagnosis",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O02"
+    },
+    {
+      "questionId": "CCARP-D02-O02-expansion-01",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O02"
+    },
+    {
+      "questionId": "CCARP-D02-O02-expansion-02",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O02"
+    },
+    {
+      "questionId": "CCARP-D02-O03-boundary",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O03"
+    },
+    {
+      "questionId": "CCARP-D02-O03-diagnosis",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O03"
+    },
+    {
+      "questionId": "CCARP-D02-O03-expansion-01",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O03"
+    },
+    {
+      "questionId": "CCARP-D02-O03-expansion-02",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O03"
+    },
+    {
+      "questionId": "CCARP-D02-O04-boundary",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O04"
+    },
+    {
+      "questionId": "CCARP-D02-O04-diagnosis",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O04"
+    },
+    {
+      "questionId": "CCARP-D02-O04-expansion-01",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O04"
+    },
+    {
+      "questionId": "CCARP-D02-O04-expansion-02",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O04"
+    },
+    {
+      "questionId": "CCARP-D02-O05-boundary",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O05"
+    },
+    {
+      "questionId": "CCARP-D02-O05-diagnosis",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O05"
+    },
+    {
+      "questionId": "CCARP-D02-O05-expansion-01",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O05"
+    },
+    {
+      "questionId": "CCARP-D02-O05-expansion-02",
+      "nodeId": "model_prompt_and_context_decisions",
+      "mentalUnitId": "CCARP-D02-O05"
+    },
+    {
+      "questionId": "CCARP-D01-O01-boundary",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O01"
+    },
+    {
+      "questionId": "CCARP-D01-O01-diagnosis",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O01"
+    },
+    {
+      "questionId": "CCARP-D01-O01-expansion-01",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O01"
+    },
+    {
+      "questionId": "CCARP-D01-O01-expansion-02",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O01"
+    },
+    {
+      "questionId": "CCARP-D01-O02-diagnosis",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O02"
+    },
+    {
+      "questionId": "CCARP-D01-O02-expansion-01",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O02"
+    },
+    {
+      "questionId": "CCARP-D01-O02-expansion-02",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O02"
+    },
+    {
+      "questionId": "CCARP-D01-O02-expansion-03",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O02"
+    },
+    {
+      "questionId": "CCARP-D01-O03-boundary",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O03"
+    },
+    {
+      "questionId": "CCARP-D01-O03-diagnosis",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O03"
+    },
+    {
+      "questionId": "CCARP-D01-O03-expansion-01",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O03"
+    },
+    {
+      "questionId": "CCARP-D01-O03-expansion-02",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O03"
+    },
+    {
+      "questionId": "CCARP-D01-O04-boundary",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O04"
+    },
+    {
+      "questionId": "CCARP-D01-O04-diagnosis",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O04"
+    },
+    {
+      "questionId": "CCARP-D01-O04-expansion-01",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O04"
+    },
+    {
+      "questionId": "CCARP-D01-O04-expansion-02",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O04"
+    },
+    {
+      "questionId": "CCARP-D01-O05-boundary",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O05"
+    },
+    {
+      "questionId": "CCARP-D01-O05-diagnosis",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O05"
+    },
+    {
+      "questionId": "CCARP-D01-O05-expansion-01",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O05"
+    },
+    {
+      "questionId": "CCARP-D01-O05-expansion-02",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O05"
+    },
+    {
+      "questionId": "CCARP-D01-O06-boundary",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O06"
+    },
+    {
+      "questionId": "CCARP-D01-O06-diagnosis",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O06"
+    },
+    {
+      "questionId": "CCARP-D01-O06-expansion-01",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O06"
+    },
+    {
+      "questionId": "CCARP-D01-O06-expansion-02",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O06"
+    },
+    {
+      "questionId": "CCARP-D01-O07-scenario-01",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O07"
+    },
+    {
+      "questionId": "CCARP-D01-O07-scenario-02",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O07"
+    },
+    {
+      "questionId": "CCARP-D01-O07-scenario-03",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O07"
+    },
+    {
+      "questionId": "CCARP-D01-O07-scenario-04",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O07"
+    },
+    {
+      "questionId": "CCARP-D01-O08-scenario-01",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O08"
+    },
+    {
+      "questionId": "CCARP-D01-O08-scenario-02",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O08"
+    },
+    {
+      "questionId": "CCARP-D01-O08-scenario-03",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O08"
+    },
+    {
+      "questionId": "CCARP-D01-O08-scenario-04",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O08"
+    },
+    {
+      "questionId": "CCARP-D01-O09-scenario-01",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O09"
+    },
+    {
+      "questionId": "CCARP-D01-O09-scenario-02",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O09"
+    },
+    {
+      "questionId": "CCARP-D01-O09-scenario-03",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O09"
+    },
+    {
+      "questionId": "CCARP-D01-O09-scenario-04",
+      "nodeId": "solution_design_and_architecture",
+      "mentalUnitId": "CCARP-D01-O09"
+    },
+    {
+      "questionId": "CCARP-D06-O01-boundary",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O01"
+    },
+    {
+      "questionId": "CCARP-D06-O01-diagnosis",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O01"
+    },
+    {
+      "questionId": "CCARP-D06-O01-expansion-16",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O01"
+    },
+    {
+      "questionId": "CCARP-D06-O01-expansion-17",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O01"
+    },
+    {
+      "questionId": "CCARP-D06-O02-boundary",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O02"
+    },
+    {
+      "questionId": "CCARP-D06-O02-diagnosis",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O02"
+    },
+    {
+      "questionId": "CCARP-D06-O02-expansion-16",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O02"
+    },
+    {
+      "questionId": "CCARP-D06-O02-expansion-17",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O02"
+    },
+    {
+      "questionId": "CCARP-D06-O03-boundary",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O03"
+    },
+    {
+      "questionId": "CCARP-D06-O03-diagnosis",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O03"
+    },
+    {
+      "questionId": "CCARP-D06-O03-expansion-16",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O03"
+    },
+    {
+      "questionId": "CCARP-D06-O03-expansion-17",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O03"
+    },
+    {
+      "questionId": "CCARP-D06-O04-boundary",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O04"
+    },
+    {
+      "questionId": "CCARP-D06-O04-diagnosis",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O04"
+    },
+    {
+      "questionId": "CCARP-D06-O04-expansion-16",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O04"
+    },
+    {
+      "questionId": "CCARP-D06-O04-expansion-17",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O04"
+    },
+    {
+      "questionId": "CCARP-D06-O05-boundary",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O05"
+    },
+    {
+      "questionId": "CCARP-D06-O05-diagnosis",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O05"
+    },
+    {
+      "questionId": "CCARP-D06-O05-expansion-17",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O05"
+    },
+    {
+      "questionId": "CCARP-D06-O05-expansion-18",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O05"
+    },
+    {
+      "questionId": "CCARP-D06-O06-scenario-01",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O06"
+    },
+    {
+      "questionId": "CCARP-D06-O06-scenario-02",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O06"
+    },
+    {
+      "questionId": "CCARP-D06-O06-scenario-03",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O06"
+    },
+    {
+      "questionId": "CCARP-D06-O06-scenario-04",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O06"
+    },
+    {
+      "questionId": "CCARP-D06-O07-scenario-01",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O07"
+    },
+    {
+      "questionId": "CCARP-D06-O07-scenario-02",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O07"
+    },
+    {
+      "questionId": "CCARP-D06-O07-scenario-03",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O07"
+    },
+    {
+      "questionId": "CCARP-D06-O07-scenario-04",
+      "nodeId": "stakeholder_decisions_and_delivery_lifecycle",
+      "mentalUnitId": "CCARP-D06-O07"
+    },
+    {
+      "questionId": "CCARP-D07-O01-boundary",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O01"
+    },
+    {
+      "questionId": "CCARP-D07-O01-diagnosis",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O01"
+    },
+    {
+      "questionId": "CCARP-D07-O01-expansion-16",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O01"
+    },
+    {
+      "questionId": "CCARP-D07-O01-expansion-17",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O01"
+    },
+    {
+      "questionId": "CCARP-D07-O02-boundary",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O02"
+    },
+    {
+      "questionId": "CCARP-D07-O02-cc02-01",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O02"
+    },
+    {
+      "questionId": "CCARP-D07-O02-cc02-02",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O02"
+    },
+    {
+      "questionId": "CCARP-D07-O02-cc02-03",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O02"
+    },
+    {
+      "questionId": "CCARP-D07-O03-boundary",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O03"
+    },
+    {
+      "questionId": "CCARP-D07-O03-cc02-01",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O03"
+    },
+    {
+      "questionId": "CCARP-D07-O03-cc02-02",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O03"
+    },
+    {
+      "questionId": "CCARP-D07-O03-cc02-03",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O03"
+    },
+    {
+      "questionId": "CCARP-D07-O04-scenario-01",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O04"
+    },
+    {
+      "questionId": "CCARP-D07-O04-scenario-02",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O04"
+    },
+    {
+      "questionId": "CCARP-D07-O04-scenario-03",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O04"
+    },
+    {
+      "questionId": "CCARP-D07-O04-scenario-04",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O04"
+    },
+    {
+      "questionId": "CCARP-D07-O05-scenario-01",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O05"
+    },
+    {
+      "questionId": "CCARP-D07-O05-scenario-02",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O05"
+    },
+    {
+      "questionId": "CCARP-D07-O05-scenario-03",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O05"
+    },
+    {
+      "questionId": "CCARP-D07-O05-scenario-04",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O05"
+    },
+    {
+      "questionId": "CCARP-D07-O06-scenario-01",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O06"
+    },
+    {
+      "questionId": "CCARP-D07-O06-scenario-02",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O06"
+    },
+    {
+      "questionId": "CCARP-D07-O06-scenario-03",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O06"
+    },
+    {
+      "questionId": "CCARP-D07-O06-scenario-04",
+      "nodeId": "team_workflows_and_operational_enablement",
+      "mentalUnitId": "CCARP-D07-O06"
+    }
+  ]
+}

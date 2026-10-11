@@ -12,6 +12,7 @@ export function selectPracticeQuestions(
   attempts: readonly TrainingAttempt<unknown>[],
   contentPin: ContentPin,
   count: number,
+  coverageTargetQuestionIds?: ReadonlySet<string>,
 ): readonly Question[] {
   if (!Number.isSafeInteger(count) || count < 0) throw new Error("Practice selection count is invalid.");
   if (count === 0 || pool.length === 0) return Object.freeze([]);
@@ -57,7 +58,7 @@ export function selectPracticeQuestions(
     let best: Question | undefined;
     for (const candidate of pool) {
       if (selectedIds.has(candidate.questionId)) continue;
-      if (!best || compareCandidates(candidate, best, unitQuestions, historicalSeenByUnit, questionAttempts, selectedByUnit, poolIndex, exactPinAttemptedQuestionIds, selectedIds) < 0) best = candidate;
+      if (!best || compareCandidates(candidate, best, unitQuestions, historicalSeenByUnit, questionAttempts, selectedByUnit, poolIndex, exactPinAttemptedQuestionIds, selectedIds, coverageTargetQuestionIds) < 0) best = candidate;
     }
     if (!best) break;
     selected.push(best);
@@ -78,7 +79,13 @@ function compareCandidates(
   poolIndex: ReadonlyMap<string, number>,
   exactPinAttemptedQuestionIds: ReadonlySet<string>,
   selectedIds: ReadonlySet<string>,
+  coverageTargetQuestionIds?: ReadonlySet<string>,
 ): number {
+  if (coverageTargetQuestionIds?.size) {
+    const leftTargeted = coverageTargetQuestionIds.has(left.questionId);
+    const rightTargeted = coverageTargetQuestionIds.has(right.questionId);
+    if (leftTargeted !== rightTargeted) return leftTargeted ? -1 : 1;
+  }
   const leftUnitSize = unitQuestions.get(left.mentalUnitId)!.length;
   const rightUnitSize = unitQuestions.get(right.mentalUnitId)!.length;
   const leftUnitSeen = (historicalSeenByUnit.get(left.mentalUnitId) ?? 0) + (selectedByUnit.get(left.mentalUnitId) ?? 0);

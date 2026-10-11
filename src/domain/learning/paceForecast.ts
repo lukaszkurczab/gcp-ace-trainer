@@ -7,6 +7,7 @@ export type C3Result = "unknown" | "in_progress" | "completed";
 export type PaceForecastUnavailableReason =
   | "unknown_completion_rule"
   | "quality_requirement_unmet"
+  | "quality_outcome_unknown"
   | "no_target"
   | "no_future_slots"
   | "insufficient_elapsed_evidence"
@@ -62,6 +63,10 @@ export type PaceForecastInput = Readonly<{
   acceptedPlan: LearningPlan;
   c3Result: C3Result;
   remainingAttemptCount: number;
+  /** V3 lower bound includes the larger of volume and distinct-unit coverage deficits. */
+  minimumAdditionalAttemptCount?: number;
+  /** Tri-state evidence: null means the quality window is not measured yet. */
+  qualityRequirementUnmet?: boolean | null;
   today: string;
   timezone: string;
   completedFacts: ImmutableCompletedFacts;
@@ -110,11 +115,13 @@ export function calculatePaceForecast(input: PaceForecastInput): PaceForecast {
     const localDate = localDateForInstant(attempt.answeredAt, value.timezone);
     return attempt.countsTowardCompletion && localDate >= value.observationStart && localDate <= value.today;
   });
-  const remaining = value.c3Result === "completed" ? 0 : value.remainingAttemptCount;
+  const remaining = value.c3Result === "completed" ? 0 : value.minimumAdditionalAttemptCount ?? value.remainingAttemptCount;
 
   // Zero missing volume cannot predict when the rolling quality rule will be met.
   // Only a current completed C3 result permits the zero-work path below.
-  if (value.c3Result === "in_progress" && remaining === 0) return unavailable("quality_requirement_unmet");
+  if (value.c3Result === "in_progress" && remaining === 0) {
+    return unavailable(value.qualityRequirementUnmet === null ? "quality_outcome_unknown" : "quality_requirement_unmet");
+  }
 
   const lastAllowedDate = target.meaning === "event" ? tryAddDays(target.targetDate, -1) : target.targetDate;
   if (lastAllowedDate === null) return unavailable("calculation_error");
@@ -165,6 +172,8 @@ type ValidatedInput = Readonly<{
   acceptedPlan: LearningPlan;
   c3Result: C3Result;
   remainingAttemptCount: number;
+  minimumAdditionalAttemptCount?: number;
+  qualityRequirementUnmet?: boolean | null;
   today: string;
   timezone: string;
   facts: ImmutableCompletedFacts;
@@ -175,7 +184,7 @@ type ValidatedInput = Readonly<{
 
 function validateInput(input: PaceForecastInput): ValidatedInput {
   const value = asRecord(input, "invalid_shape");
-  if (!hasOnlyKeys(value, ["acceptedPlan", "c3Result", "remainingAttemptCount", "today", "timezone", "completedFacts"])) fail("invalid_shape");
+  if (!hasOnlyKeys(value, ["acceptedPlan", "c3Result", "remainingAttemptCount", "minimumAdditionalAttemptCount", "qualityRequirementUnmet", "today", "timezone", "completedFacts"])) fail("invalid_shape");
   const planValue = value.acceptedPlan;
   let acceptedPlan: LearningPlan;
   try {
@@ -194,11 +203,25 @@ function validateInput(input: PaceForecastInput): ValidatedInput {
 
   if (!isNonNegativeInteger(value.remainingAttemptCount)) fail("invalid_completion_requirement");
   const remainingAttemptCount = value.remainingAttemptCount;
+  const hasMinimumAdditional = Object.hasOwn(value, "minimumAdditionalAttemptCount");
+  const hasQualityState = Object.hasOwn(value, "qualityRequirementUnmet");
+  if (hasMinimumAdditional !== hasQualityState) fail("invalid_completion_requirement");
+  let minimumAdditionalAttemptCount: number | undefined;
+  let qualityRequirementUnmet: boolean | null | undefined;
+  if (hasMinimumAdditional) {
+    if (!isNonNegativeInteger(value.minimumAdditionalAttemptCount) || (value.qualityRequirementUnmet !== null && typeof value.qualityRequirementUnmet !== "boolean")) fail("invalid_completion_requirement");
+    if (value.minimumAdditionalAttemptCount < remainingAttemptCount) fail("invalid_completion_requirement");
+    if (c3Result === "completed" && (value.minimumAdditionalAttemptCount !== 0 || value.qualityRequirementUnmet !== false)) fail("inconsistent_fact");
+    if (c3Result === "unknown" && value.minimumAdditionalAttemptCount !== 0) fail("inconsistent_fact");
+    if (value.c3Result === "in_progress" && value.minimumAdditionalAttemptCount === 0 && value.qualityRequirementUnmet === false) fail("inconsistent_fact");
+    minimumAdditionalAttemptCount = value.minimumAdditionalAttemptCount;
+    qualityRequirementUnmet = value.qualityRequirementUnmet;
+  }
   const facts = validateFacts(value.completedFacts, timezone, today);
   const observationWindowStart = tryAddDays(today, -27);
   const observationStart = observationWindowStart === null ? null : maxDate(createdLocalDate, observationWindowStart);
   const observationDays = observationStart === null ? 0 : daysBetween(observationStart, today) + 1;
-  return Object.freeze({ acceptedPlan, c3Result, remainingAttemptCount, today, timezone, facts, observationStart, observationDays, ageDays });
+  return Object.freeze({ acceptedPlan, c3Result, remainingAttemptCount, ...(minimumAdditionalAttemptCount !== undefined ? { minimumAdditionalAttemptCount, qualityRequirementUnmet } : {}), today, timezone, facts, observationStart, observationDays, ageDays });
 }
 
 function validateFacts(value: unknown, timezone: string, today: string): ValidatedFacts {

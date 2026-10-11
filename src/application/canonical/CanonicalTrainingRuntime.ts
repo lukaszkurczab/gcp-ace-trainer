@@ -4,11 +4,12 @@ import type { PreparedSession, PracticeFinalization, PracticeSubmission, Simulat
 import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
 import { isCanonicalResponseComplete, scoreCanonicalQuestion } from "../../content/canonical/questionScoring";
 import type { CanonicalProductSimulationProfile, Question } from "../../content/canonical/questionTypes";
-import { getProductSimulationModeConfig, ProductModeUnavailableError, type ProductFeedbackTiming, type ProductModeConfig } from "../../content/canonical/productModeConfig";
+import { getProductSimulationModeConfig, ProductModeUnavailableError, resolveRequiredUnitFocusMode, type ProductFeedbackTiming, type ProductModeConfig } from "../../content/canonical/productModeConfig";
 import { retainReviewQueueEntryIdentity } from "../../domain/learning/reviewQueueEntry";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { createResolvedContentRef, resolvedContentRefsEqual, type ResolvedContentRef } from "../../domain/learning/resolvedContentRef";
 import { selectPracticeQuestions } from "./practiceQuestionSelector";
+import { qualifyPackageAttempts } from "../../domain/learning/packageCompletionRule";
 import { isCanonicalOptionOrder, prepareCanonicalOptionOrder } from "./canonicalOptionOrder";
 import { allocateWeightedBlueprintQuotas } from "../../content/canonical/weightedBlueprintAllocation";
 
@@ -50,13 +51,22 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
     if (req.reviewSource === "session_misses") throw new Error("Canonical session_misses is unavailable without verified completed-session evidence.");
     const effectiveReviewSource = req.reviewSource ?? (mode.selection.kind === "evidence_conditioned" && mode.selection.evidenceSources.length === 1 && mode.selection.evidenceSources[0] === "due_queue" ? "due_queue" : undefined);
     const baseSource = mode.selection.kind === "evidence_conditioned" ? eligibleEvidence(this.catalog, mode, input.reviews, input.now, effectiveReviewSource) : this.catalog.getPool(mode.modeId);
-    const selectedNodeId = mode.selection.kind === "node" ? mode.selection.nodeId : undefined;
+    const selectedNodeId = req.mentalUnitId === undefined
+      ? mode.selection.kind === "node" ? mode.selection.nodeId : undefined
+      : this.catalog.completionRule?.ruleVersion === 3
+        ? requiredUnitNodeId(this.catalog.completionRule, req.mentalUnitId)
+        : mode.selection.kind === "node" ? mode.selection.nodeId : undefined;
+    const v3UnitTarget = req.mentalUnitId !== undefined && isRequiredV3Unit(this.catalog.completionRule, selectedNodeId, req.mentalUnitId);
+    const unitSource = v3UnitTarget ? this.catalog.questions : baseSource;
     const source = req.mentalUnitId === undefined ? baseSource : selectedNodeId
-      ? Object.freeze(baseSource.filter((question) => question.nodeId === selectedNodeId && question.mentalUnitId === req.mentalUnitId))
+      ? Object.freeze(unitSource.filter((question) => question.nodeId === selectedNodeId && question.mentalUnitId === req.mentalUnitId))
       : (() => { throw new Error("Canonical mental unit scope requires a node-selected mode."); })();
-    const count = Math.min(req.requestedLength, source.length); if (count === 0 || (mode.selection.kind !== "evidence_conditioned" && count < mode.minimumActualLength)) throw new Error("Canonical mode has insufficient eligible content.");
+    const coverageTargets = v3UnitTarget ? latestUncoveredQuestionIds(this.catalog, source, input.attempts) : undefined;
+    const scopedMode = v3UnitTarget ? resolveRequiredUnitFocusMode(mode, this.catalog.completionRule, selectedNodeId!, req.mentalUnitId!) : mode;
+    const count = Math.min(req.requestedLength, source.length);
+    if (count === 0 || (mode.selection.kind !== "evidence_conditioned" && count < scopedMode.minimumActualLength)) throw new Error("Canonical mode has insufficient eligible content.");
     const questions = mode.selection.kind === "node"
-      ? selectPracticeQuestions(source, input.attempts, { trackId: this.catalog.trackId, contentVersion: this.catalog.contentVersion, artifactSha256: this.catalog.artifactSha256 }, count)
+      ? selectPracticeQuestions(source, input.attempts, { trackId: this.catalog.trackId, contentVersion: this.catalog.contentVersion, artifactSha256: this.catalog.artifactSha256 }, count, coverageTargets?.size ? coverageTargets : undefined)
       : source.slice(0, count);
     const feedback = feedbackValue(mode.feedbackTiming, req.feedbackTiming);
     const usesReviewQueue = mode.selection.kind === "evidence_conditioned" && (effectiveReviewSource === "due_queue" || effectiveReviewSource === "manual_request");
@@ -84,12 +94,21 @@ export class CanonicalTrainingRuntime implements TrainingFamilyRuntime {
     const feedbackMode = input.session.configurationSnapshot.feedbackMode;
     const allowedFeedbackModes = mode.feedbackTiming.kind === "fixed" ? ["afterEachAnswer"] : ["afterEachAnswer", "atSessionEnd"];
     if (!allowedFeedbackModes.includes(String(feedbackMode))) throw new Error("Canonical session feedback timing is invalid.");
-    const mentalUnitId = input.session.configurationSnapshot.mentalUnitId;
-    const selectedNodeId = mode.selection.kind === "node" ? mode.selection.nodeId : undefined;
-    if (mentalUnitId !== undefined && (input.session.modeId !== "certification-focus-practice" || !selectedNodeId || typeof mentalUnitId !== "string" || !mentalUnitId.trim())) throw new Error("Canonical focused practice scope is invalid.");
+    const rawMentalUnitId = input.session.configurationSnapshot.mentalUnitId;
+    if (rawMentalUnitId !== undefined && (typeof rawMentalUnitId !== "string" || !rawMentalUnitId.trim())) throw new Error("Canonical focused practice scope is invalid.");
+    const mentalUnitId = typeof rawMentalUnitId === "string" ? rawMentalUnitId : undefined;
+    const selectedNodeId = mentalUnitId === undefined
+      ? mode.selection.kind === "node" ? mode.selection.nodeId : undefined
+      : this.catalog.completionRule?.ruleVersion === 3
+        ? requiredUnitNodeId(this.catalog.completionRule, mentalUnitId)
+        : mode.selection.kind === "node" ? mode.selection.nodeId : undefined;
+    if (mentalUnitId !== undefined && (input.session.modeId !== "certification-focus-practice" || !selectedNodeId)) throw new Error("Canonical focused practice scope is invalid.");
+    const scopedMode = mentalUnitId !== undefined && this.catalog.completionRule?.ruleVersion === 3
+      ? resolveRequiredUnitFocusMode(mode, this.catalog.completionRule, selectedNodeId!, mentalUnitId)
+      : mode;
     const expectedSnapshot = { kind: "practice", timer: "elapsedForeground", feedbackMode, answerChanges: "none", submission: "perItem", reinsertEnabled: mode.reinsertPolicy === "conditional_after_incorrect", ...(mentalUnitId === undefined ? {} : { mentalUnitId }) };
     if (JSON.stringify(input.session.configurationSnapshot) !== JSON.stringify(expectedSnapshot)) throw new Error("Canonical session configuration snapshot is invalid.");
-    if (input.session.actualLength !== input.session.itemOrder.length || input.session.actualLength > input.session.requestedLength || input.session.itemOrder.some((o) => { const question = this.catalog.getQuestion(o.item.questionId); return o.item.trackId !== this.catalog.trackId || o.item.questionId !== question?.questionId || o.item.contentVersion !== this.catalog.contentVersion || o.item.artifactSha256 !== this.catalog.artifactSha256 || !question || (mentalUnitId !== undefined && (question.nodeId !== selectedNodeId || question.mentalUnitId !== mentalUnitId)); })) throw new Error("Canonical session item reference is unavailable.");
+    if (input.session.actualLength !== input.session.itemOrder.length || input.session.actualLength > input.session.requestedLength || (mode.selection.kind !== "evidence_conditioned" && input.session.actualLength < scopedMode.minimumActualLength) || input.session.itemOrder.some((o) => { const question = this.catalog.getQuestion(o.item.questionId); return o.item.trackId !== this.catalog.trackId || o.item.questionId !== question?.questionId || o.item.contentVersion !== this.catalog.contentVersion || o.item.artifactSha256 !== this.catalog.artifactSha256 || !question || (mentalUnitId !== undefined && (question.nodeId !== selectedNodeId || question.mentalUnitId !== mentalUnitId)); })) throw new Error("Canonical session item reference is unavailable.");
     if (mode.selection.kind === "exact_ordered_questions" && JSON.stringify(input.session.itemOrder.map((entry) => entry.item.questionId)) !== JSON.stringify(mode.selection.questionIds.slice(0, input.session.actualLength))) throw new Error("Canonical exact-order session plan is invalid.");
     if (!hasValidPreparedOrders(input.session, this.catalog)) throw new Error("Canonical session option order is invalid.");
     if (await createContentSessionPlanFingerprint(input.session as TrainingSession & { taxonomyVersion: string }) !== input.session.planFingerprint) throw new Error("Canonical session plan fingerprint is invalid.");
@@ -369,6 +388,31 @@ function requestOf(value: unknown, fallback: number): { requestedLength: number;
   if ("expectedContentVersion" in r && (typeof r.expectedContentVersion !== "string" || !r.expectedContentVersion.trim())) throw new Error("Canonical expected contentVersion is invalid.");
   if ("expectedArtifactSha256" in r && (typeof r.expectedArtifactSha256 !== "string" || !/^[a-f0-9]{64}$/i.test(r.expectedArtifactSha256))) throw new Error("Canonical expected artifact checksum is invalid.");
   return { requestedLength: typeof r.requestedLength === "number" ? r.requestedLength : fallback, feedbackTiming: typeof r.feedbackTiming === "string" ? r.feedbackTiming : undefined, reviewSource, mentalUnitId: typeof r.mentalUnitId === "string" ? r.mentalUnitId : undefined, expectedContentVersion: typeof r.expectedContentVersion === "string" ? r.expectedContentVersion : undefined, expectedArtifactSha256: typeof r.expectedArtifactSha256 === "string" ? r.expectedArtifactSha256 : undefined };
+}
+
+function requiredUnitNodeId(rule: CanonicalTrackRuntime["completionRule"], mentalUnitId: string): string | undefined {
+  if (rule?.ruleVersion !== 3) return undefined;
+  const matches = rule.chapters.filter((chapter) => chapter.units.some((unit) => unit.mentalUnitId === mentalUnitId));
+  if (matches.length > 1) throw new Error("Canonical completion unit is ambiguous across required chapters.");
+  return matches[0]?.nodeId;
+}
+
+function isRequiredV3Unit(rule: CanonicalTrackRuntime["completionRule"], nodeId: string | undefined, mentalUnitId: string): boolean {
+  return rule?.ruleVersion === 3 && nodeId !== undefined && rule.chapters.some((chapter) => chapter.nodeId === nodeId && chapter.units.some((unit) => unit.mentalUnitId === mentalUnitId));
+}
+
+function latestUncoveredQuestionIds(
+  profile: CanonicalTrackRuntime,
+  pool: readonly Question[],
+  attempts: readonly TrainingAttempt<unknown>[],
+): ReadonlySet<string> | undefined {
+  if (profile.completionRule?.ruleVersion !== 3) return undefined;
+  const poolIds = new Set(pool.map((question) => question.questionId));
+  const latestByQuestion = new Map<string, TrainingAttempt<unknown>>();
+  for (const attempt of qualifyPackageAttempts(profile, attempts)) {
+    if (poolIds.has(attempt.item.questionId)) latestByQuestion.set(attempt.item.questionId, attempt);
+  }
+  return new Set(pool.filter((question) => latestByQuestion.get(question.questionId)?.result.kind !== "correct").map((question) => question.questionId));
 }
 
 function reviewSnapshotMatches(snapshot: ReviewSourceSnapshot, entry: ReviewQueueEntry): boolean {

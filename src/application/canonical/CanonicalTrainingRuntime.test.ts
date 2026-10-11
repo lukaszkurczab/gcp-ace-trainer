@@ -7,6 +7,7 @@ import type { ReviewQueueEntry, TrainingAttempt } from "../../domain";
 import { createTrainingSession, createTrainingSessionDraft } from "../../domain";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { prepareCanonicalOptionOrder } from "./canonicalOptionOrder";
+import { qualifyPackageAttempts } from "../../domain/learning/packageCompletionRule";
 
 const NOW = "2026-01-01T00:00:00.000Z";
 const catalogPromise = loadCanonicalRuntimeCatalog();
@@ -29,6 +30,20 @@ test("real loader prepares all 29 modes across nine tracks", async () => {
     assert.ok(prepared.session.actualLength > 0); await new CanonicalTrainingRuntime(track).validateResume({ session: prepared.session, draft: null }); modes += 1;
   }
   assert.equal(modes, 29);
+});
+
+test("short evidence-conditioned sessions remain resumable below the node-mode minimum", async () => {
+  const catalog = await catalogPromise;
+  const track = catalog.getTrack("claude-certified-architect-professional-certification");
+  const mode = track.modes.find((candidate) => candidate.selection.kind === "evidence_conditioned")!;
+  const question = track.getPool(mode.modeId)[0]!;
+  const runtime = new CanonicalTrainingRuntime(track);
+  const prepared = await runtime.prepare({ trackId: track.trackId, modeId: mode.modeId,
+    request: { sessionId: "short-review-resume", requestedLength: mode.requestedLengths[0]!, reviewSource: "due_queue" },
+    attempts: [], reviews: [reviewFor(itemRef(track, question.questionId), NOW)], now: NOW });
+  assert.equal(prepared.session.actualLength, 1);
+  assert.ok(prepared.session.actualLength < mode.minimumActualLength);
+  await runtime.validateResume({ session: prepared.session, draft: null });
 });
 
 test("diagnostic recommendation prepares a pinned single-unit Focus pool and refuses out-of-scope resume", async () => {
@@ -79,6 +94,53 @@ test("diagnostic recommendation prepares a pinned single-unit Focus pool and ref
   const fingerprint = await createContentSessionPlanFingerprint({ ...tamperedBase, taxonomyVersion: "canonical-content-v1" });
   const tampered = createTrainingSession({ ...tamperedBase, taxonomyVersion: "canonical-content-v1", planFingerprint: fingerprint });
   await assert.rejects(runtime.validateResume({ session: tampered, draft: null }), /session item reference is unavailable/i);
+});
+
+test("V3 unit target resolves a Premium chapter, selects a latest-noncorrect question and resumes under the exact pin", async () => {
+  const catalog = await catalogPromise;
+  const sourceTrack = catalog.getTrack("claude-certified-architect-professional-certification");
+  const freeMode = sourceTrack.getMode("certification-focus-practice");
+  assert.equal(freeMode.selection.kind, "node");
+  const freeNodeId = freeMode.selection.nodeId;
+  const targetQuestion = sourceTrack.questions.find((question) => question.nodeId !== freeNodeId)!;
+  const targetUnitPool = sourceTrack.questions.filter((question) => question.nodeId === targetQuestion.nodeId && question.mentalUnitId === targetQuestion.mentalUnitId);
+  assert.ok(targetUnitPool.length >= 4, "the required Premium unit must have four reachable source questions");
+  const selectedUnitQuestions = targetUnitPool.slice(0, 4);
+  const rule = {
+    ruleVersion: 3 as const,
+    chapters: [{ nodeId: targetQuestion.nodeId, mentalUnitCount: 1, minimumAttemptCount: 20, rollingWindowSize: 20 as const, qualityThreshold: 0.8 as const,
+      units: [{ mentalUnitId: targetQuestion.mentalUnitId, requiredCorrectQuestionCount: 4 as const }] }],
+  };
+  const track = { ...sourceTrack, completionRule: rule } as typeof sourceTrack;
+  const runtime = new CanonicalTrainingRuntime(track);
+  const attempts = [
+    ...selectedUnitQuestions.map((question, index) => ({
+      id: `v3-correct-${index}`, sessionId: `v3-correct-${index}`, trackId: track.trackId, modeId: "prior", occurrenceId: `v3-correct-${index}:occurrence`,
+      item: itemRef(track, question.questionId), response: question.answer, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 },
+      reviewEvidence: { sourceItem: itemRef(track, question.questionId), taxonomyOrSkillRefs: [] }, answeredAt: NOW, committedAt: NOW,
+    } as TrainingAttempt<unknown>)),
+    {
+      id: "v3-latest-wrong", sessionId: "v3-latest-wrong", trackId: track.trackId, modeId: "prior", occurrenceId: "v3-latest-wrong:occurrence",
+      item: itemRef(track, selectedUnitQuestions[2]!.questionId), response: {}, result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 },
+      reviewEvidence: { sourceItem: itemRef(track, selectedUnitQuestions[2]!.questionId), taxonomyOrSkillRefs: [] }, answeredAt: "2026-01-02T00:00:00.000Z", committedAt: "2026-01-02T00:00:00.000Z",
+    } as TrainingAttempt<unknown>,
+  ];
+  const prepared = await runtime.prepare({ trackId: track.trackId, modeId: freeMode.modeId, request: {
+    sessionId: "v3-premium-unit-target", requestedLength: freeMode.defaultRequestedLength, mentalUnitId: targetQuestion.mentalUnitId,
+    expectedContentVersion: track.contentVersion, expectedArtifactSha256: track.artifactSha256,
+  }, attempts, reviews: [], now: NOW });
+  assert.equal(prepared.session.configurationSnapshot.mentalUnitId, targetQuestion.mentalUnitId);
+  assert.equal(prepared.session.actualLength, Math.min(freeMode.defaultRequestedLength, targetUnitPool.length));
+  assert.ok(prepared.session.actualLength >= 4);
+  const latestByQuestion = new Map<string, TrainingAttempt<unknown>>();
+  for (const attempt of qualifyPackageAttempts(track, attempts)) latestByQuestion.set(attempt.item.questionId, attempt);
+  assert.notEqual(latestByQuestion.get(prepared.session.itemOrder[0]!.item.questionId)?.result.kind, "correct",
+    "the first selected Premium-unit question must have no latest correct answer");
+  assert.ok(prepared.session.itemOrder.every((occurrence) => track.getQuestion(occurrence.item.questionId)?.nodeId === targetQuestion.nodeId && track.getQuestion(occurrence.item.questionId)?.mentalUnitId === targetQuestion.mentalUnitId));
+  await runtime.validateResume({ session: prepared.session, draft: null });
+  await assert.rejects(runtime.prepare({ trackId: track.trackId, modeId: freeMode.modeId,
+    request: { sessionId: "v3-stale-unit-pin", requestedLength: freeMode.defaultRequestedLength, mentalUnitId: targetQuestion.mentalUnitId, expectedContentVersion: "stale", expectedArtifactSha256: track.artifactSha256 },
+    attempts, reviews: [], now: NOW }), /content identity is unavailable/i);
 });
 
 test("canonical dashboard independently counts due and future manual review entries", async () => {

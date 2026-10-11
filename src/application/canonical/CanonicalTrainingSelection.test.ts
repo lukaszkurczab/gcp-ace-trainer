@@ -80,6 +80,32 @@ test("a never-attempted question stays uncovered even when its unit has attempt 
   assert.equal(selectPracticeQuestions(pool, attempts, track, 1)[0]!.questionId, freshInSameUnit.questionId);
 });
 
+test("coverage-deficit targeting selects only required-unit questions without a latest correct answer", async () => {
+  const track = (await catalogPromise).getTrack("claude-certified-architect-professional-certification");
+  const pool = track.getPool("certification-focus-practice");
+  const unitQuestions = pool.filter((question) => question.mentalUnitId === pool[0]!.mentalUnitId);
+  assert.ok(unitQuestions.length >= 4, "fixture needs four distinct questions in the required unit");
+  const targetQuestion = unitQuestions[2]!;
+  const otherUnitQuestion = pool.find((question) => question.mentalUnitId !== targetQuestion.mentalUnitId)!;
+  const attempts = [
+    ...unitQuestions.slice(0, 4).filter((question) => question.questionId !== targetQuestion.questionId).map((question, index) => attemptFor(track, question.questionId, `coverage-correct-${index}`)),
+    attemptFor(track, targetQuestion.questionId, "coverage-latest-wrong", { result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 }, answeredAt: "2026-09-24T00:00:00.000Z" } as Partial<TrainingAttempt<unknown>>),
+    attemptFor(track, otherUnitQuestion.questionId, "coverage-other-unit"),
+  ];
+  const ordinary = selectPracticeQuestions(pool, attempts, track, 1);
+  assert.notEqual(ordinary[0]!.questionId, targetQuestion.questionId, "global balance deprioritizes the required latest-wrong question behind another unit");
+  const selected = selectPracticeQuestions(
+    unitQuestions,
+    attempts,
+    track,
+    4,
+    new Set([targetQuestion.questionId]),
+  );
+  assert.equal(selected.length, 4);
+  assert.equal(selected[0]!.questionId, targetQuestion.questionId, "coverage deficits lead the focused session");
+  assert.ok(selected.every((question) => question.mentalUnitId === targetQuestion.mentalUnitId), "the selector fills only from the requested unit pool");
+});
+
 test("near-variant penalty is an exact-pin final tie-break for history and the current ordered plan", async () => {
   const catalog = await catalogPromise;
   const track = catalog.getTrack("google-cloud-associate-cloud-engineer");

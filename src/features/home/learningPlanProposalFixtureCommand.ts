@@ -4,7 +4,7 @@ export const LEARNING_PLAN_PROPOSAL_FIXTURE_CASES = Object.freeze([
   "ready3-no-target", "ready1-target", "ready7-target", "shortened", "shortfall",
   "quality-unmet-target", "quality-unmet-open-ended",
   "delayed-loading", "stale", "unavailable", "accept-validation", "accept-stale",
-  "edit-storage", "edit-stale",
+  "edit-storage", "edit-stale", "cc04-missing-unit", "cc04-completed",
 ] as const);
 export type LearningPlanProposalFixtureCase = (typeof LEARNING_PLAN_PROPOSAL_FIXTURE_CASES)[number];
 
@@ -23,4 +23,8 @@ export function nextLearningPlanProposalFixtureLaunch(
   scenario: LearningPlanProposalFixtureCase,
 ): LearningPlanProposalFixtureLaunch {
   return Object.freeze({ scenario, launchId: (previous?.launchId ?? 0) + 1 });
+}
+
+export function learningPlanProposalFixtureTrackId(scenario: LearningPlanProposalFixtureCase) {
+  return scenario.startsWith("cc04-") ? "claude-certified-architect-professional-certification" as const : "coding-interview-dsa-problem-solving" as const;
 }

@@ -166,7 +166,7 @@ test("current canonical builder adds the planning policy while preserving the ex
         mentalUnits.add(`${question.trackId}\0${question.nodeId}\0${question.mentalUnitId}`);
       }
     }
-    assert.deepEqual({ tracks: built.artifacts.length, nodes: nodes.size, mentalUnits: mentalUnits.size, questions }, { tracks: 9, nodes: 117, mentalUnits: 943, questions: 16_622 });
+    assert.deepEqual({ tracks: built.artifacts.length, nodes: nodes.size, mentalUnits: mentalUnits.size, questions }, { tracks: 9, nodes: 117, mentalUnits: 958, questions: 16_695 });
 
     const aws = built.artifacts.find((entry) => entry.trackId === "aws-certified-solutions-architect-associate")!.artifact;
     const successorLedger = JSON.parse(readFileSync(join(appRoot, "src/content/generated/canonical-content/content-successor-ledger.json"), "utf8")) as {

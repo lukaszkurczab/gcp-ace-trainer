@@ -35,6 +35,8 @@ export type GuidanceFactUnavailableReason =
   | "update_required"
   | "plan_paused"
   | "completed"
+  | "quality_outcome_unknown"
+  | "premium_access_required"
   | PaceForecastUnavailableReason;
 
 export type GuidanceFact =
@@ -72,6 +74,8 @@ export type TargetDateGuidanceReason =
   | "at_risk"
   | "on_track"
   | "no_target"
+  | "quality_outcome_unknown"
+  | "premium_access_required"
   | PaceForecastUnavailableReason;
 
 export type GuidanceAction =
@@ -84,7 +88,8 @@ export type GuidanceAction =
   | Readonly<{ kind: "view_progress"; destination: "Progress" }>
   | Readonly<{ kind: "start_next_session"; destination: "Practice" }>
   | Readonly<{ kind: "continue_plan"; destination: "Practice" }>
-  | Readonly<{ kind: "try_again"; destination: "TargetDateGuidanceRecompute" }>;
+  | Readonly<{ kind: "try_again"; destination: "TargetDateGuidanceRecompute" }>
+  | Readonly<{ kind: "access_premium"; destination: "PremiumPurchase" }>;
 
 export type GuidanceMessageKey =
   | "targetDateGuidance.noGoal"
@@ -103,6 +108,8 @@ export type GuidanceMessageKey =
   | "targetDateGuidance.openEnded"
   | "targetDateGuidance.unavailable.unknownCompletionRule"
   | "targetDateGuidance.unavailable.qualityRequirementUnmet"
+  | "targetDateGuidance.unavailable.qualityOutcomeUnknown"
+  | "targetDateGuidance.unavailable.premiumAccessRequired"
   | "targetDateGuidance.unavailable.insufficientElapsedEvidence"
   | "targetDateGuidance.unavailable.calculationError"
   | "targetDateGuidance.unavailable.noTarget";
@@ -177,6 +184,21 @@ export function projectTargetDateGuidance(input: TargetDateGuidanceInput): Targe
   }
   if (forecast.value.status === "at_risk") return buildAtRisk(forecast.value);
   return buildOnTrack(forecast.value);
+}
+
+/** Overrides a next-practice CTA when all remaining exam coverage is behind Premium access. */
+export function requirePremiumForRemainingCoverage(guidance: TargetDateGuidance): TargetDateGuidance {
+  const accessAction: GuidanceAction = Object.freeze({ kind: "access_premium", destination: "PremiumPurchase" });
+  const unavailable: GuidanceFact = Object.freeze({ kind: "unavailable", reason: "premium_access_required" });
+  return Object.freeze({
+    state: "unavailable",
+    reason: "premium_access_required",
+    tone: "neutral",
+    messageKey: "targetDateGuidance.unavailable.premiumAccessRequired",
+    home: Object.freeze({ primary: accessAction }),
+    progress: Object.freeze({ primary: accessAction, secondary: null }),
+    facts: Object.freeze({ requiredPace: unavailable, actualPace: unavailable, forecast: unavailable, target: guidance.facts.target }),
+  });
 }
 
 function getFreshnessReason(
@@ -284,7 +306,7 @@ function buildOpenEnded(): TargetDateGuidance {
 
 function buildUnavailable(reason: PaceForecastUnavailableReason, targetDate: string): TargetDateGuidance {
   if (reason === "calculation_error") return buildCalculationError(targetDate);
-  if (reason === "insufficient_elapsed_evidence" || reason === "quality_requirement_unmet") {
+  if (reason === "insufficient_elapsed_evidence" || reason === "quality_requirement_unmet" || reason === "quality_outcome_unknown") {
     return buildGuidance("unavailable", reason, "neutral", unavailableMessageKey(reason), action("continue_plan", "Practice"), null, Object.freeze({ requiredPace: unavailableFact(reason), actualPace: unavailableFact(reason), forecast: unavailableFact(reason), target: dateFact(targetDate) }));
   }
   return buildGuidance("unavailable", reason, "neutral", unavailableMessageKey(reason), action("adjust_goal", "GoalCadence"), null, Object.freeze({ requiredPace: unavailableFact(reason), actualPace: unavailableFact(reason), forecast: unavailableFact(reason), target: dateFact(targetDate) }));
@@ -331,6 +353,7 @@ function action(kind: GuidanceAction["kind"], destination: GuidanceAction["desti
 function unavailableMessageKey(reason: PaceForecastUnavailableReason): GuidanceMessageKey {
   if (reason === "unknown_completion_rule") return "targetDateGuidance.unavailable.unknownCompletionRule";
   if (reason === "quality_requirement_unmet") return "targetDateGuidance.unavailable.qualityRequirementUnmet";
+  if (reason === "quality_outcome_unknown") return "targetDateGuidance.unavailable.qualityOutcomeUnknown";
   if (reason === "insufficient_elapsed_evidence") return "targetDateGuidance.unavailable.insufficientElapsedEvidence";
   if (reason === "no_target") return "targetDateGuidance.unavailable.noTarget";
   return "targetDateGuidance.unavailable.calculationError";

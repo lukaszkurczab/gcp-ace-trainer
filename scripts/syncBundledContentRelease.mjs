@@ -17,7 +17,10 @@ export const EXPECTED_TRACK_IDS = Object.freeze([
   "microsoft-azure-ai-fundamentals-ai-901",
   "object-oriented-design-interview",
 ]);
-export const EXPECTED_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 943, questionCount: 16_622 });
+export const EXPECTED_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 958, questionCount: 16_695 });
+export const FROZEN_BASELINE_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 117, mentalUnitCount: 943, questionCount: 16_622 });
+export const CLAUDE_TRACK_ID = "claude-certified-architect-professional-certification";
+export const LOCAL_CLAUDE_INVENTORY = EXPECTED_INVENTORY;
 export const GENERATED_DIRECTORY = "src/content/generated/canonical-content";
 export const LOCK_FILE_NAME = "content-lock.json";
 export const SUCCESSOR_LEDGER_FILE_NAME = "content-successor-ledger.json";
@@ -25,7 +28,6 @@ const LOCK_SCHEMA_VERSION = "patternly-content-lock-v1";
 const ARTIFACT_SCHEMA_VERSION = "patternly-content-artifact-v2";
 const SUCCESSOR_LEDGER_SCHEMA_VERSION = "patternly-content-successor-ledger-v1";
 const BESD_TRACK_ID = "backend-system-design-interview";
-const CLAUDE_TRACK_ID = "claude-certified-architect-professional-certification";
 const BESD_SUCCESSOR_PROOF = Object.freeze({
   path: "evidence/business-quality/bizq-01-besd-cohort-15.json",
   sha256: "548e65b0ec000419d719f7ba5da3ae7c3e1225fe5bb09917a11edef803af4cb3",
@@ -49,6 +51,31 @@ const READINESS_PATH = "evidence/readiness/current-candidate-readiness-v2.json";
 const HASH = /^[a-f0-9]{64}$/u;
 const TRACK_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 const SAFE_CONTENT_VERSION = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u;
+export const LOCAL_CANDIDATE_SCHEMA_VERSION = "patternly-local-content-candidate-acceptance-v1";
+const LOCAL_CLAUDE_EXPECTED = Object.freeze({
+  contentVersion: "ccarp-2026.10.11-capacity-v1-bizq02-v2-bizq03-planning-v2-cc02-v1-cc03-v1-cc04-v3",
+  artifactSha256: "12e6c8637b112af9e48ca870bb80d89f9db6ad7d1949c51efceb37572a6cd0bd",
+  questionCount: 918,
+  nodeCount: 7,
+  mentalUnitCount: 53,
+  ruleVersion: 3,
+});
+const LOCAL_REVIEW_EVIDENCE = Object.freeze([
+  Object.freeze({ repository: "patternly", path: "docs/reports/claude-course-alignment-acceptance-2026-10-11.md" }),
+  Object.freeze({ repository: "patternly", path: "docs/reports/claude-unit-coverage-acceptance-2026-10-11.md" }),
+  Object.freeze({ repository: "patternly-content", path: "docs/evidence/content-audits/2026-10-11-claude-course-map.md" }),
+  Object.freeze({ repository: "patternly-content", path: "docs/evidence/content-audits/2026-10-11-claude-course-map.json" }),
+  Object.freeze({ repository: "patternly-content", path: "docs/evidence/content-audits/2026-10-11-cc02-content-coverage.md" }),
+  Object.freeze({ repository: "patternly-content", path: "docs/evidence/content-audits/2026-10-11-cc02-content-coverage.json" }),
+]);
+const LOCAL_FROZEN_RELEASE_PINS = Object.freeze([
+  Object.freeze({ repository: "patternly", path: "integration/contracts/content-release/release.lock.json" }),
+  Object.freeze({ repository: "patternly-content", path: "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json" }),
+  Object.freeze({ repository: "patternly-content", path: "reports/candidate-reconciliation/AWS-02-DRAFT/release/release.json" }),
+  Object.freeze({ repository: "patternly-content", path: "evidence/readiness/current-candidate-readiness-v2.json" }),
+  Object.freeze({ repository: "patternly-content", path: "evidence/candidate-decisions/current-candidate-decision-v2.json" }),
+  Object.freeze({ repository: "patternly-content", path: "evidence/admissions/candidate-admission-v3.json" }),
+]);
 const CODING_TRACK_ID = "coding-interview-dsa-problem-solving";
 const CODING_PROFILE_ID = "algorithms-interview-simulation-v1";
 const DESIGN_TRACK_IDS = Object.freeze(["backend-system-design-interview", "frontend-system-design-interview", "object-oriented-design-interview"]);
@@ -275,7 +302,7 @@ function parseJson(bytes, filePath) {
   try { return JSON.parse(bytes.toString("utf8")); } catch (error) { fail(`Invalid JSON in ${filePath}: ${error.message}`); }
 }
 
-export async function validateBuiltContent(directory, { expectedInventory = EXPECTED_INVENTORY, producerRoot } = {}) {
+export async function validateBuiltContent(directory, { expectedInventory = EXPECTED_INVENTORY, acceptedInventories = [], producerRoot } = {}) {
   const { validatePackageCompletionRule, PlanningPolicyError, validatePlanningPolicy } = await producerValidationModules(producerRoot);
   await inspectDirectory(directory, directory, "built content directory");
   const entries = await readdir(directory, { withFileTypes: true });
@@ -283,7 +310,7 @@ export async function validateBuiltContent(directory, { expectedInventory = EXPE
   const names = entries.map((entry) => entry.name);
   const hasSuccessorLedger = names.includes(SUCCESSOR_LEDGER_FILE_NAME);
   const expectedNames = [...EXPECTED_TRACK_IDS.map((id) => `${id}.json`), LOCK_FILE_NAME, ...(hasSuccessorLedger ? [SUCCESSOR_LEDGER_FILE_NAME] : [])];
-  if (!equalStringSets(names, expectedNames) || names.length !== expectedNames.length) fail(`Built content must contain exactly the nine registered artifacts, ${LOCK_FILE_NAME}, and optional ${SUCCESSOR_LEDGER_FILE_NAME}`);
+  if (!equalStringSets(names, expectedNames) || names.length !== expectedNames.length) fail(`Built content must contain exactly the nine registered artifacts, ${LOCK_FILE_NAME}, and optional ${SUCCESSOR_LEDGER_FILE_NAME}; received ${names.sort().join(", ")}`);
 
   const lockPath = path.join(directory, LOCK_FILE_NAME);
   const lockBytes = await inspectRegularFile(lockPath, directory, "content lock");
@@ -366,12 +393,284 @@ export async function validateBuiltContent(directory, { expectedInventory = EXPE
     files.set(SUCCESSOR_LEDGER_FILE_NAME, ledgerBytes);
   }
   const inventory = { trackCount: lock.tracks.length, nodeCount: nodeIds.size, mentalUnitCount: mentalUnitIds.size, questionCount: questionIds.size };
-  if (JSON.stringify(inventory) !== JSON.stringify(expectedInventory)) fail(`Inventory mismatch: expected ${JSON.stringify(expectedInventory)}, received ${JSON.stringify(inventory)}`);
+  const accepted = [expectedInventory, ...acceptedInventories];
+  if (!accepted.some((entry) => JSON.stringify(inventory) === JSON.stringify(entry))) fail(`Inventory mismatch: expected ${canonicalJson(accepted)}, received ${JSON.stringify(inventory)}`);
   return { lock, inventory, files };
 }
 
 async function defaultRunBuild({ producerRoot, outputRoot }) {
   await execFileAsync(process.execPath, [path.join(producerRoot, "scripts", "build.mjs"), "build-all", "--root", producerRoot, "--output-root", outputRoot], { cwd: producerRoot, maxBuffer: 32 * 1024 * 1024 });
+}
+async function runTrackBuild({ producerRoot, outputRoot, trackId }) {
+  await execFileAsync(process.execPath, [path.join(producerRoot, "scripts", "build.mjs"), "build", "--track", trackId, "--root", producerRoot, "--output-root", outputRoot], { cwd: producerRoot, maxBuffer: 32 * 1024 * 1024 });
+}
+
+async function collectRegularFiles(root, relativePath, output = []) {
+  const absolutePath = path.join(root, relativePath);
+  const info = await lstat(absolutePath).catch((error) => { fail(`Cannot inspect canonical producer input ${relativePath}: ${error.message}`); });
+  if (info.isSymbolicLink()) fail(`Symbolic links are not allowed in canonical producer inputs: ${relativePath}`);
+  if (info.isFile()) {
+    output.push(relativePath.split(path.sep).join("/"));
+    return output;
+  }
+  if (!info.isDirectory()) fail(`Canonical producer input is not a regular file or directory: ${relativePath}`);
+  const entries = await readdir(absolutePath, { withFileTypes: true });
+  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+    if (entry.name === ".git" || entry.name === "node_modules") continue;
+    await collectRegularFiles(root, path.join(relativePath, entry.name), output);
+  }
+  return output;
+}
+
+async function localProducerInputFingerprint(producerRoot) {
+  const roots = [
+    "content/catalog.json",
+    `content/${CLAUDE_TRACK_ID}`,
+    "config",
+    "schemas",
+    "package.json",
+    "package-lock.json",
+    "scripts/build.mjs",
+    "scripts/content",
+    "scripts/review",
+  ];
+  const paths = [];
+  for (const relativePath of roots) await collectRegularFiles(producerRoot, relativePath, paths);
+  const uniquePaths = [...new Set(paths)].sort();
+  const inputs = [];
+  for (const relativePath of uniquePaths) {
+    const bytes = await inspectRegularFile(path.join(producerRoot, relativePath), producerRoot, "canonical producer input");
+    inputs.push({ path: relativePath, sha256: sha256(bytes) });
+  }
+  return { sha256: sha256(Buffer.from(canonicalJson(inputs))), inputs };
+}
+
+function localTrackStats(artifact) {
+  const nodeIds = new Set(artifact.questions.map((question) => question.nodeId));
+  const mentalUnitIds = new Set(artifact.questions.map((question) => `${question.nodeId}\0${question.mentalUnitId}`));
+  return { questionCount: artifact.questions.length, nodeCount: nodeIds.size, mentalUnitCount: mentalUnitIds.size, ruleVersion: artifact.completionRule?.ruleVersion };
+}
+
+async function localReviewEvidenceHashes({ appRoot, producerRoot }) {
+  const output = [];
+  for (const evidence of LOCAL_REVIEW_EVIDENCE) {
+    const repositoryRoot = evidence.repository === "patternly" ? appRoot : producerRoot;
+    const bytes = await inspectRegularFile(path.join(repositoryRoot, evidence.path), repositoryRoot, "local candidate review evidence");
+    output.push({ ...evidence, sha256: sha256(bytes) });
+  }
+  return output;
+}
+
+async function localFrozenReleasePins({ appRoot, producerRoot }) {
+  const output = [];
+  for (const pin of LOCAL_FROZEN_RELEASE_PINS) {
+    const repositoryRoot = pin.repository === "patternly" ? appRoot : producerRoot;
+    const bytes = await inspectRegularFile(path.join(repositoryRoot, pin.path), repositoryRoot, "frozen release/admission pin");
+    output.push({ ...pin, sha256: sha256(bytes) });
+  }
+  return output;
+}
+
+async function localBaseSnapshot({ targetDirectory }) {
+  const loaded = await loadCurrentLocalBundle(targetDirectory);
+  const built = loaded.built;
+  const fileSha256s = Object.fromEntries([...built.files].map(([name, bytes]) => [name, sha256(bytes)]).sort(([left], [right]) => left.localeCompare(right)));
+  if (!built.files.has(SUCCESSOR_LEDGER_FILE_NAME)) fail("Local scoped candidate sync requires the current bundle successor ledger");
+  const ledger = parseSuccessorLedger(parseJson(built.files.get(SUCCESSOR_LEDGER_FILE_NAME), SUCCESSOR_LEDGER_FILE_NAME));
+  const priorClaudeTraining = ledger.tracks.find((entry) => entry.trackId === CLAUDE_TRACK_ID)?.training;
+  if (!priorClaudeTraining) fail("Current bundle has no Claude training predecessor pin");
+  return {
+    built,
+    fileSha256s,
+    priorClaudeTraining: structuredClone(priorClaudeTraining),
+    preservedLedgerEntries: structuredClone(ledger.tracks.filter((entry) => entry.trackId !== CLAUDE_TRACK_ID)),
+  };
+}
+
+async function buildLocalClaudeCandidateDescriptor({ appRoot = scriptRoot, producerRoot = path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), runBuild = runTrackBuild } = {}) {
+  const resolvedAppRoot = path.resolve(appRoot);
+  const resolvedProducerRoot = path.resolve(producerRoot);
+  const resolvedTarget = path.resolve(targetDirectory);
+  if (resolvedTarget !== path.join(resolvedAppRoot, GENERATED_DIRECTORY)) fail(`Target must be exactly ${GENERATED_DIRECTORY} within the application root`);
+  await assertSafeTargetBoundary(resolvedAppRoot, resolvedTarget);
+  await assertProducerRoot(resolvedProducerRoot);
+  const base = await localBaseSnapshot({ targetDirectory: resolvedTarget });
+  const sourceFingerprint = await localProducerInputFingerprint(resolvedProducerRoot);
+  const releasePins = await localFrozenReleasePins({ appRoot: resolvedAppRoot, producerRoot: resolvedProducerRoot });
+  const temporaryDirectory = await mkdtemp(path.join(path.dirname(resolvedTarget), `.claude-candidate-${process.pid}-`));
+  try {
+    await runBuild({ producerRoot: resolvedProducerRoot, outputRoot: temporaryDirectory, trackId: CLAUDE_TRACK_ID });
+    const verifiedFingerprint = await localProducerInputFingerprint(resolvedProducerRoot);
+    if (verifiedFingerprint.sha256 !== sourceFingerprint.sha256 || canonicalJson(verifiedFingerprint.inputs) !== canonicalJson(sourceFingerprint.inputs)) fail("Canonical producer inputs changed while the local candidate was being built");
+    const candidateArtifactPath = path.join(temporaryDirectory, `${CLAUDE_TRACK_ID}.json`);
+    const candidateLockPath = path.join(temporaryDirectory, LOCK_FILE_NAME);
+    const artifactBytes = await inspectRegularFile(candidateArtifactPath, temporaryDirectory, "built Claude candidate artifact");
+    const artifact = parseJson(artifactBytes, candidateArtifactPath);
+    const candidateLock = parseJson(await inspectRegularFile(candidateLockPath, temporaryDirectory, "built Claude candidate lock"), candidateLockPath);
+    const candidateLockTrack = candidateLock.tracks?.find((entry) => entry.trackId === CLAUDE_TRACK_ID);
+    if (!candidateLockTrack || candidateLockTrack.sha256 !== sha256(artifactBytes) || candidateLockTrack.contentVersion !== artifact.contentVersion || candidateLockTrack.questionCount !== artifact.questions?.length) fail("Built Claude candidate lock does not match its artifact");
+    const stats = localTrackStats(artifact);
+    const expectedStats = { questionCount: LOCAL_CLAUDE_EXPECTED.questionCount, nodeCount: LOCAL_CLAUDE_EXPECTED.nodeCount, mentalUnitCount: LOCAL_CLAUDE_EXPECTED.mentalUnitCount, ruleVersion: LOCAL_CLAUDE_EXPECTED.ruleVersion };
+    if (artifact.trackId !== CLAUDE_TRACK_ID || JSON.stringify(stats) !== JSON.stringify(expectedStats) || artifact.contentVersion !== LOCAL_CLAUDE_EXPECTED.contentVersion || sha256(artifactBytes) !== LOCAL_CLAUDE_EXPECTED.artifactSha256) fail(`Claude candidate does not satisfy the accepted local inventory: ${JSON.stringify(stats)}`);
+    const reviewEvidence = await localReviewEvidenceHashes({ appRoot: resolvedAppRoot, producerRoot: resolvedProducerRoot });
+    return {
+      descriptor: {
+        schemaVersion: "patternly-local-content-candidate-descriptor-v1",
+        scope: "local_only",
+        trackId: CLAUDE_TRACK_ID,
+        sourceFingerprint,
+        artifact: { contentVersion: artifact.contentVersion, artifactSha256: sha256(artifactBytes), ...stats },
+        base: { fileSha256s: base.fileSha256s, priorClaudeTraining: base.priorClaudeTraining, preservedLedgerEntries: base.preservedLedgerEntries },
+        reviewEvidence,
+        releasePins,
+      },
+      artifact,
+      artifactBytes,
+    };
+  } finally {
+    await rm(temporaryDirectory, { recursive: true, force: true });
+  }
+}
+
+export async function prepareLocalClaudeCandidate(options = {}) {
+  return (await buildLocalClaudeCandidateDescriptor(options)).descriptor;
+}
+
+function localCandidateSemanticDescriptor(value) {
+  const { base: _base, ...semantic } = value;
+  return semantic;
+}
+
+function validateLocalCandidateDescriptorShape(descriptor) {
+  requireExactKeys(descriptor, ["schemaVersion", "scope", "trackId", "sourceFingerprint", "artifact", "base", "reviewEvidence", "releasePins"], "local candidate descriptor");
+  if (descriptor.schemaVersion !== "patternly-local-content-candidate-descriptor-v1" || descriptor.scope !== "local_only" || descriptor.trackId !== CLAUDE_TRACK_ID) fail("Local candidate descriptor has an unsupported scope or track");
+  requireExactKeys(descriptor.artifact, Object.keys(LOCAL_CLAUDE_EXPECTED), "local Claude artifact identity");
+  if (canonicalJson(descriptor.artifact) !== canonicalJson(LOCAL_CLAUDE_EXPECTED)) fail("Local Claude artifact identity does not match the reviewed CC-05 candidate");
+  requireExactKeys(descriptor.sourceFingerprint, ["sha256", "inputs"], "local producer input fingerprint");
+  if (!HASH.test(descriptor.sourceFingerprint.sha256) || !Array.isArray(descriptor.sourceFingerprint.inputs) || descriptor.sourceFingerprint.inputs.length < 1) fail("Local producer input fingerprint is invalid");
+  let previousPath = "";
+  for (const input of descriptor.sourceFingerprint.inputs) {
+    requireExactKeys(input, ["path", "sha256"], "local producer input fingerprint entry");
+    if (typeof input.path !== "string" || !input.path || input.path.startsWith("/") || input.path.split("/").includes("..") || input.path <= previousPath || !HASH.test(input.sha256)) fail("Local producer input fingerprint paths or hashes are invalid");
+    previousPath = input.path;
+  }
+  if (sha256(Buffer.from(canonicalJson(descriptor.sourceFingerprint.inputs))) !== descriptor.sourceFingerprint.sha256) fail("Local producer input fingerprint digest is inconsistent");
+  for (const [field, expected] of [["reviewEvidence", LOCAL_REVIEW_EVIDENCE], ["releasePins", LOCAL_FROZEN_RELEASE_PINS]]) {
+    const actual = descriptor[field];
+    if (!Array.isArray(actual) || actual.length !== expected.length) fail(`Local candidate ${field} has an invalid shape`);
+    actual.forEach((entry, index) => {
+      requireExactKeys(entry, ["repository", "path", "sha256"], `local candidate ${field}[${index}]`);
+      if (entry.repository !== expected[index].repository || entry.path !== expected[index].path || !HASH.test(entry.sha256)) fail(`Local candidate ${field}[${index}] does not match the approved path set`);
+    });
+  }
+}
+
+async function buildLocalMergedCandidate({ appRoot, producerRoot, targetDirectory, acceptanceRecord, runBuild = runTrackBuild }) {
+  const recordPath = acceptanceRecord;
+  const recordBytes = await inspectRegularFile(recordPath, path.dirname(path.resolve(recordPath)), "local candidate acceptance record");
+  const record = parseJson(recordBytes, recordPath);
+  requireExactKeys(record, ["schemaVersion", "scope", "decision", "publication", "releaseLockUpdate", "candidate"], "local candidate acceptance record");
+  if (record.schemaVersion !== LOCAL_CANDIDATE_SCHEMA_VERSION || record.scope !== "local_only" || record.decision !== "accepted_for_local_runtime" || record.publication !== "not_granted" || record.releaseLockUpdate !== false) fail("Local candidate acceptance record does not explicitly limit acceptance to local runtime");
+  const descriptor = record.candidate;
+  validateLocalCandidateDescriptorShape(descriptor);
+  const prepared = await buildLocalClaudeCandidateDescriptor({ appRoot, producerRoot, targetDirectory, runBuild });
+  const current = prepared.descriptor;
+  if (canonicalJson(localCandidateSemanticDescriptor(descriptor)) !== canonicalJson(localCandidateSemanticDescriptor(current))) fail("Local candidate acceptance record is stale for current producer inputs, artifact, review evidence, or release pins");
+  if (!isRecord(descriptor.base) || !exactKeys(descriptor.base, ["fileSha256s", "priorClaudeTraining", "preservedLedgerEntries"])) fail("Local candidate base snapshot has an invalid shape");
+  const baseNames = [...EXPECTED_TRACK_IDS.map((id) => `${id}.json`), LOCK_FILE_NAME, SUCCESSOR_LEDGER_FILE_NAME].sort();
+  if (!isRecord(descriptor.base.fileSha256s) || !equalStringSets(Object.keys(descriptor.base.fileSha256s), baseNames) || Object.values(descriptor.base.fileSha256s).some((digest) => !HASH.test(digest))) fail("Local candidate base snapshot must bind every generated file");
+  requireExactKeys(descriptor.base.priorClaudeTraining, ["contentVersion", "artifactSha256", "questionCount"], "local candidate prior Claude training pin");
+  if (!SAFE_CONTENT_VERSION.test(descriptor.base.priorClaudeTraining.contentVersion) || !HASH.test(descriptor.base.priorClaudeTraining.artifactSha256) || !Number.isSafeInteger(descriptor.base.priorClaudeTraining.questionCount) || descriptor.base.priorClaudeTraining.questionCount < 1) fail("Local candidate prior Claude training pin is invalid");
+  if (!Array.isArray(descriptor.base.preservedLedgerEntries) || descriptor.base.preservedLedgerEntries.length !== EXPECTED_TRACK_IDS.length - 1) fail("Local candidate must preserve the eight other ledger entries");
+  const currentBundle = await loadCurrentLocalBundle(targetDirectory);
+  const currentFileSha256s = Object.fromEntries([...currentBundle.files].map(([name, bytes]) => [name, sha256(bytes)]));
+  const baseMatches = canonicalJson(currentFileSha256s) === canonicalJson(descriptor.base.fileSha256s);
+
+  const temporaryDirectory = await mkdtemp(path.join(path.dirname(targetDirectory), `.claude-candidate-merge-${process.pid}-`));
+  {
+    try {
+    const claudeArtifactBytes = prepared.artifactBytes;
+    const claudeArtifact = prepared.artifact;
+    const claudeEntry = { trackId: CLAUDE_TRACK_ID, contentVersion: claudeArtifact.contentVersion, questionCount: claudeArtifact.questions.length, sha256: sha256(claudeArtifactBytes) };
+    const existingLock = parseJson(currentBundle.files.get(LOCK_FILE_NAME), LOCK_FILE_NAME);
+    const lock = { schemaVersion: LOCK_SCHEMA_VERSION, tracks: existingLock.tracks.filter((entry) => entry.trackId !== CLAUDE_TRACK_ID).concat(claudeEntry).sort((left, right) => left.trackId.localeCompare(right.trackId)) };
+    const previousLedger = parseSuccessorLedger(parseJson(currentBundle.files.get(SUCCESSOR_LEDGER_FILE_NAME), SUCCESSOR_LEDGER_FILE_NAME));
+    const preservedLedger = descriptor.base.preservedLedgerEntries;
+    const currentPreservedLedger = previousLedger.tracks.filter((entry) => entry.trackId !== CLAUDE_TRACK_ID);
+    if (canonicalJson(currentPreservedLedger) !== canonicalJson(preservedLedger)) fail("A non-Claude successor ledger entry changed after candidate review");
+    const priorClaudeTraining = previousLedger.tracks.find((entry) => entry.trackId === CLAUDE_TRACK_ID)?.training;
+    const newClaudeTraining = {
+      contentVersion: `${claudeArtifact.contentVersion}-training`,
+      artifactSha256: sha256(historicalTrainingProjection(claudeArtifact, `${claudeArtifact.contentVersion}-training`)),
+      questionCount: claudeArtifact.questions.length,
+    };
+    if (!SAFE_CONTENT_VERSION.test(newClaudeTraining.contentVersion)) fail("Local Claude training contentVersion is invalid");
+    const expectedCurrentTraining = {
+      contentVersion: newClaudeTraining.contentVersion,
+      artifactSha256: newClaudeTraining.artifactSha256,
+      questionCount: newClaudeTraining.questionCount,
+    };
+    const alreadyInstalled = canonicalJson(priorClaudeTraining) === canonicalJson(expectedCurrentTraining);
+    if (baseMatches && canonicalJson(priorClaudeTraining) !== canonicalJson(descriptor.base.priorClaudeTraining)) fail("Current Claude training pin differs from the reviewed predecessor");
+    if (!baseMatches && !alreadyInstalled) fail("Current bundle is neither the reviewed base nor the accepted local candidate");
+    const ledger = parseSuccessorLedger({
+      schemaVersion: SUCCESSOR_LEDGER_SCHEMA_VERSION,
+      tracks: previousLedger.tracks.map((entry) => entry.trackId === CLAUDE_TRACK_ID
+        ? { trackId: CLAUDE_TRACK_ID, training: newClaudeTraining, planningPolicy: { contentVersion: claudeArtifact.contentVersion, artifactSha256: claudeEntry.sha256, policyVersion: claudeArtifact.planningPolicy.policyVersion } }
+        : entry),
+    });
+    const mergedFiles = new Map(currentBundle.files);
+    mergedFiles.set(`${CLAUDE_TRACK_ID}.json`, claudeArtifactBytes);
+    mergedFiles.set(LOCK_FILE_NAME, Buffer.from(canonicalJson(lock)));
+    mergedFiles.set(SUCCESSOR_LEDGER_FILE_NAME, Buffer.from(JSON.stringify(ledger)));
+    for (const [name, bytes] of mergedFiles) await writeFile(path.join(temporaryDirectory, name), bytes);
+    const validated = await validateBuiltContent(temporaryDirectory, { expectedInventory: LOCAL_CLAUDE_INVENTORY });
+    const expectedFileSha256s = Object.fromEntries([...validated.files].map(([name, bytes]) => [name, sha256(bytes)]));
+    for (const trackId of EXPECTED_TRACK_IDS.filter((id) => id !== CLAUDE_TRACK_ID)) {
+      const name = `${trackId}.json`;
+      if (!validated.files.get(name).equals(currentBundle.files.get(name))) fail(`Scoped local candidate changed an unrelated artifact: ${name}`);
+    }
+    for (const entry of descriptor.base.preservedLedgerEntries) {
+      const actual = ledger.tracks.find((candidate) => candidate.trackId === entry.trackId);
+      if (canonicalJson(actual) !== canonicalJson(entry)) fail(`Scoped local candidate changed an unrelated ledger entry: ${entry.trackId}`);
+    }
+    return { record, descriptor, currentBundle, baseMatches, alreadyInstalled, mergedFiles: validated.files, inventory: validated.inventory, ledger, expectedFileSha256s };
+    } finally {
+      await rm(temporaryDirectory, { recursive: true, force: true });
+    }
+  }
+}
+
+async function loadCurrentLocalBundle(targetDirectory) {
+  const oldValidation = await validateBuiltContent(targetDirectory, { expectedInventory: FROZEN_BASELINE_INVENTORY }).then((built) => ({ built, inventory: FROZEN_BASELINE_INVENTORY })).catch(() => undefined);
+  if (oldValidation) return { ...oldValidation, files: oldValidation.built.files };
+  const acceptedValidation = await validateBuiltContent(targetDirectory, { expectedInventory: LOCAL_CLAUDE_INVENTORY }).then((built) => ({ built, inventory: LOCAL_CLAUDE_INVENTORY })).catch((error) => { fail(`Current local bundle is not a valid accepted base or candidate: ${error.message}`); });
+  return { ...acceptedValidation, files: acceptedValidation.built.files };
+}
+async function recoverLocalTransaction({ targetDirectory, remove = rm, move = rename }) {
+  const backupDirectory = `${targetDirectory}.backup`;
+  const [targetKind, backupKind] = await Promise.all([pathKind(targetDirectory), pathKind(backupDirectory)]);
+  if (targetKind === "other" || backupKind === "other") fail("Local canonical bundle transaction paths must be directories");
+  if (targetKind === "missing" && backupKind === "directory") {
+    await loadCurrentLocalBundle(backupDirectory);
+    await move(backupDirectory, targetDirectory);
+    return;
+  }
+  if (targetKind !== "directory" || backupKind !== "directory") return;
+  let targetError;
+  try {
+    await loadCurrentLocalBundle(targetDirectory);
+  } catch (error) { targetError = error; }
+  if (!targetError) {
+    await remove(backupDirectory, { recursive: true, force: false });
+    return;
+  }
+  try { await loadCurrentLocalBundle(backupDirectory); }
+    catch (backupError) { fail(`Local bundle recovery failed for target (${targetError.message}) and backup (${backupError.message})`); }
+  const failedDirectory = `${targetDirectory}.failed-${randomUUID()}`;
+  await move(targetDirectory, failedDirectory);
+  await move(backupDirectory, targetDirectory);
+  await remove(failedDirectory, { recursive: true, force: false });
 }
 async function producerHead(producerRoot) {
   const { stdout } = await execFileAsync("git", ["-C", producerRoot, "rev-parse", "HEAD"], { encoding: "utf8" });
@@ -511,14 +810,14 @@ function deriveSuccessorLedger({ artifacts, lock, previousLedger, predecessor, p
             descriptor: BESD_SUCCESSOR_PROOF,
           });
         } else {
-          const reviewed = trackId === CLAUDE_TRACK_ID ? reviewedCandidate?.get(trackId) : undefined;
+          const reviewed = reviewedCandidate?.get(trackId);
           if (!reviewed || reviewed.artifactSha256 !== currentLock.sha256 || reviewed.contentVersion !== currentIdentity.contentVersion ||
-            currentIdentity.contentVersion === previous.planningPolicy.contentVersion || reviewed.questionCount !== previous.training.questionCount) {
+            currentIdentity.contentVersion === previous.planningPolicy.contentVersion || reviewed.questionCount !== artifact.questions.length) {
             fail(`Training material changed for ${trackId}; the v1 training predecessor cannot be silently replaced`);
           }
           const trainingVersion = `${currentIdentity.contentVersion}-training`;
           if (!SAFE_CONTENT_VERSION.test(trainingVersion)) fail(`Reviewed training contentVersion is invalid for ${trackId}`);
-          training = Object.freeze({ contentVersion: trainingVersion, artifactSha256: sha256(historicalTrainingProjection(artifact, trainingVersion)), questionCount: previous.training.questionCount });
+          training = Object.freeze({ contentVersion: trainingVersion, artifactSha256: sha256(historicalTrainingProjection(artifact, trainingVersion)), questionCount: artifact.questions.length });
         }
       } else {
         training = previous.training;
@@ -594,18 +893,18 @@ async function pathKind(candidate) {
     return info.isDirectory() ? "directory" : "other";
   } catch (error) { if (error?.code === "ENOENT") return "missing"; throw error; }
 }
-async function recoverTransaction({ targetDirectory, backupDirectory, expectedInventory, producerRoot, remove = rm, move = rename }) {
+async function recoverTransaction({ targetDirectory, backupDirectory, expectedInventory, previousExpectedInventory = expectedInventory, producerRoot, remove = rm, move = rename }) {
   const [targetKind, backupKind] = await Promise.all([pathKind(targetDirectory), pathKind(backupDirectory)]);
   if (targetKind === "other" || backupKind === "other") fail("Canonical content transaction paths must be directories");
   if (targetKind === "missing" && backupKind === "directory") await move(backupDirectory, targetDirectory);
   else if (targetKind === "directory" && backupKind === "directory") {
-    await validateBuiltContent(targetDirectory, { expectedInventory, producerRoot });
+    await validateBuiltContent(targetDirectory, { expectedInventory, acceptedInventories: [previousExpectedInventory], producerRoot });
     await remove(backupDirectory, { recursive: true, force: false });
   }
 }
-async function replaceDirectory({ stagedDirectory, targetDirectory, expectedInventory, producerRoot, remove = rm, move = rename }) {
+async function replaceDirectory({ stagedDirectory, targetDirectory, expectedInventory, previousExpectedInventory = expectedInventory, producerRoot, remove = rm, move = rename }) {
   const backupDirectory = `${targetDirectory}.backup`;
-  await recoverTransaction({ targetDirectory, backupDirectory, expectedInventory, producerRoot, remove, move });
+  await recoverTransaction({ targetDirectory, backupDirectory, expectedInventory, previousExpectedInventory, producerRoot, remove, move });
   const targetKind = await pathKind(targetDirectory);
   let movedOld = false;
   let installedNew = false;
@@ -626,13 +925,40 @@ async function replaceDirectory({ stagedDirectory, targetDirectory, expectedInve
   if (movedOld) await remove(backupDirectory, { recursive: true, force: false });
 }
 
-export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot, producerRoot = path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, getProducerHead = producerHead, getProducerContentSourceCommit = producerContentSourceCommit, getBootstrapPredecessor = defaultBootstrapPredecessor, verifyProducer = verifyProducerState, expectedInventory = EXPECTED_INVENTORY, reviewedCandidate = false, verifyReviewedCandidate: verifyCandidate = validateReviewedCandidate, remove = rm, move = rename } = {}) {
+export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot, producerRoot = path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, runTrackBuild: localTrackBuild = runTrackBuild, getProducerHead = producerHead, getProducerContentSourceCommit = producerContentSourceCommit, getBootstrapPredecessor = defaultBootstrapPredecessor, verifyProducer = verifyProducerState, expectedInventory = EXPECTED_INVENTORY, previousExpectedInventory = FROZEN_BASELINE_INVENTORY, reviewedCandidate = false, localReviewedCandidate, verifyReviewedCandidate: verifyCandidate = validateReviewedCandidate, remove = rm, move = rename } = {}) {
   if (mode !== "sync" && mode !== "check") fail(`Unknown mode: ${mode}`);
   const resolvedAppRoot = path.resolve(appRoot);
   const resolvedProducerRoot = path.resolve(producerRoot);
   const resolvedTarget = path.resolve(targetDirectory);
   if (!isWithin(resolvedAppRoot, resolvedTarget) || resolvedTarget !== path.join(resolvedAppRoot, GENERATED_DIRECTORY)) fail(`Target must be exactly ${GENERATED_DIRECTORY} within the application root`);
   await assertSafeTargetBoundary(resolvedAppRoot, resolvedTarget);
+  if (localReviewedCandidate) {
+    await recoverLocalTransaction({ targetDirectory: resolvedTarget, remove, move });
+    const local = await buildLocalMergedCandidate({ appRoot: resolvedAppRoot, producerRoot: resolvedProducerRoot, targetDirectory: resolvedTarget, acceptanceRecord: localReviewedCandidate, runBuild: localTrackBuild });
+    const actualSha256s = Object.fromEntries([...local.currentBundle.files].map(([name, bytes]) => [name, sha256(bytes)]));
+    const exactInstalled = canonicalJson(actualSha256s) === canonicalJson(local.expectedFileSha256s);
+    if (mode === "check") {
+      if (!exactInstalled) fail("Accepted local Claude candidate is not installed byte-for-byte");
+      return { mode, localOnly: true, inventory: local.inventory, ledger: local.ledger };
+    }
+    if (exactInstalled) return { mode, localOnly: true, inventory: local.inventory, ledger: local.ledger };
+    const latestFingerprint = await localProducerInputFingerprint(resolvedProducerRoot);
+    const latestPins = await localFrozenReleasePins({ appRoot: resolvedAppRoot, producerRoot: resolvedProducerRoot });
+    if (latestFingerprint.sha256 !== local.descriptor.sourceFingerprint.sha256 || canonicalJson(latestFingerprint.inputs) !== canonicalJson(local.descriptor.sourceFingerprint.inputs) || canonicalJson(latestPins) !== canonicalJson(local.descriptor.releasePins)) fail("Local candidate sources or frozen release pins changed before bundle replacement");
+    const targetBeforeReplace = await loadCurrentLocalBundle(resolvedTarget);
+    const targetBeforeReplaceSha256s = Object.fromEntries([...targetBeforeReplace.files].map(([name, bytes]) => [name, sha256(bytes)]));
+    if (canonicalJson(targetBeforeReplaceSha256s) !== canonicalJson(actualSha256s)) fail("Canonical bundle changed before local candidate replacement");
+    const stagedDirectory = await mkdtemp(path.join(path.dirname(resolvedTarget), `.claude-local-candidate-${process.pid}-`));
+    try {
+      for (const [name, bytes] of local.mergedFiles) await writeFile(path.join(stagedDirectory, name), bytes);
+      await replaceDirectory({ stagedDirectory, targetDirectory: resolvedTarget, expectedInventory: LOCAL_CLAUDE_INVENTORY, remove, move });
+      const installed = await validateBuiltContent(resolvedTarget, { expectedInventory: LOCAL_CLAUDE_INVENTORY });
+      for (const [name, bytes] of local.mergedFiles) if (!installed.files.get(name)?.equals(bytes)) fail(`Installed local candidate differs from accepted bytes: ${name}`);
+      return { mode, localOnly: true, inventory: installed.inventory, ledger: local.ledger };
+    } finally {
+      if (await pathKind(stagedDirectory) === "directory") await remove(stagedDirectory, { recursive: true, force: false });
+    }
+  }
   const safeCheckTemporaryRoot = mode === "check" ? await assertSafeCheckTemporaryRoot(resolvedAppRoot, temporaryRoot) : undefined;
   await assertProducerRoot(resolvedProducerRoot);
   const head = await getProducerHead(resolvedProducerRoot);
@@ -650,14 +976,14 @@ export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot
     let predecessor = null;
     let previousArtifacts = null;
     if (targetKind === "directory") {
-      const existing = await validateBuiltContent(resolvedTarget, { expectedInventory, producerRoot: resolvedProducerRoot });
+      const existing = await validateBuiltContent(resolvedTarget, { expectedInventory, acceptedInventories: [previousExpectedInventory], producerRoot: resolvedProducerRoot });
       const existingLedgerBytes = existing.files.get(SUCCESSOR_LEDGER_FILE_NAME);
       previousArtifacts = new Map(EXPECTED_TRACK_IDS.map((trackId) => [`${trackId}.json`, parseJson(existing.files.get(`${trackId}.json`), `${trackId}.json`)]));
       if (existingLedgerBytes) previousLedger = parseSuccessorLedger(parseJson(existingLedgerBytes, path.join(resolvedTarget, SUCCESSOR_LEDGER_FILE_NAME)));
     }
     if (!previousLedger) predecessor = await getBootstrapPredecessor(resolvedAppRoot);
     if (!previousLedger && targetKind === "directory") {
-      const existing = await validateBuiltContent(resolvedTarget, { expectedInventory, producerRoot: resolvedProducerRoot });
+      const existing = await validateBuiltContent(resolvedTarget, { expectedInventory, acceptedInventories: [previousExpectedInventory], producerRoot: resolvedProducerRoot });
       const oldLockByTrack = new Map(predecessor.lock.tracks.map((entry) => [entry.trackId, entry]));
       for (const trackId of EXPECTED_TRACK_IDS) {
         const oldLock = oldLockByTrack.get(trackId);
@@ -684,7 +1010,7 @@ export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot
       await compareDirectories(resolvedTarget, temporaryDirectory, { expectedInventory, producerRoot: resolvedProducerRoot });
       return { mode, head, ...staged, ledger };
     }
-    await replaceDirectory({ stagedDirectory: temporaryDirectory, targetDirectory: resolvedTarget, expectedInventory, producerRoot: resolvedProducerRoot, remove, move });
+    await replaceDirectory({ stagedDirectory: temporaryDirectory, targetDirectory: resolvedTarget, expectedInventory, previousExpectedInventory, producerRoot: resolvedProducerRoot, remove, move });
     const installed = await validateBuiltContent(resolvedTarget, { expectedInventory, producerRoot: resolvedProducerRoot });
     for (const [fileName, bytes] of staged.files) if (!installed.files.get(fileName)?.equals(bytes)) fail(`Installed canonical content differs from staged canonical bytes: ${fileName}`);
     return { mode, head, ...staged, ledger };
@@ -693,26 +1019,45 @@ export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot
   }
 }
 
-function usage() { return "Usage: node scripts/syncBundledContentRelease.mjs [sync|check] [--content-root <patternly-content checkout>] [--reviewed-candidate]"; }
+function usage() { return "Usage: node scripts/syncBundledContentRelease.mjs [sync|check] [--content-root <patternly-content checkout>] [--reviewed-candidate | --local-reviewed-candidate <acceptance.json>] | prepare-local-candidate --track <claude-track-id> [--content-root <patternly-content checkout>]"; }
 export function parseArgs(argv = process.argv.slice(2)) {
-  const options = { mode: "sync" };
+  const prepare = argv[0] === "prepare-local-candidate";
+  const options = prepare ? { command: "prepare-local-candidate" } : { mode: "sync" };
   let index = 0;
-  if (argv[0] === "sync" || argv[0] === "check") options.mode = argv[index++];
+  if (prepare) index += 1;
+  else if (argv[0] === "sync" || argv[0] === "check") options.mode = argv[index++];
   while (index < argv.length) {
     if (argv[index] === "--content-root" && index + 1 < argv.length) {
       options.producerRoot = path.resolve(argv[index + 1]);
       index += 2;
+    } else if (prepare && argv[index] === "--track" && index + 1 < argv.length && !options.trackId) {
+      options.trackId = argv[index + 1];
+      index += 2;
     } else if (argv[index] === "--reviewed-candidate" && !options.reviewedCandidate) {
       options.reviewedCandidate = true;
       index += 1;
+    } else if (!prepare && argv[index] === "--local-reviewed-candidate" && index + 1 < argv.length && !options.localReviewedCandidate) {
+      options.localReviewedCandidate = path.resolve(argv[index + 1]);
+      index += 2;
     } else fail(usage());
   }
+  if (prepare && options.trackId !== CLAUDE_TRACK_ID) fail(`prepare-local-candidate requires --track ${CLAUDE_TRACK_ID}`);
+  if (options.localReviewedCandidate && options.reviewedCandidate) fail("Local and release candidate modes cannot be combined");
   return options;
 }
 async function runCli() {
-  const result = await syncCanonicalContent(parseArgs());
+  const options = parseArgs();
+  if (options.command === "prepare-local-candidate") {
+    const descriptor = await prepareLocalClaudeCandidate({ producerRoot: options.producerRoot });
+    console.log(JSON.stringify(descriptor, null, 2));
+    return;
+  }
+  const result = await syncCanonicalContent(options);
   console.log(`CANONICAL_CONTENT_${result.mode.toUpperCase()}=passed`);
-  console.log(`PATTERNLY_CONTENT_HEAD=${result.head}`);
+  if (result.localOnly) {
+    console.log("LOCAL_ONLY=true");
+    console.log(`CLAUDE_ARTIFACT_SHA256=${result.ledger.tracks.find((entry) => entry.trackId === CLAUDE_TRACK_ID).planningPolicy.artifactSha256}`);
+  } else console.log(`PATTERNLY_CONTENT_HEAD=${result.head}`);
   console.log(`CONTENT_INVENTORY=${result.inventory.trackCount}/${result.inventory.nodeCount}/${result.inventory.mentalUnitCount}/${result.inventory.questionCount}`);
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) runCli().catch((error) => { console.error(error?.stack ?? error?.message ?? error); process.exitCode = 1; });
