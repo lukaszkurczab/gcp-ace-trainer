@@ -52,7 +52,7 @@ export function completionCopy(outcome: Pick<ProposalOutcome, "completionState">
     return t("{{count}} required exam topics still need practice: {{topics}}", { count: missingUnits.length, topics: labels.join("; ") });
   }
   if (completion.minimumAdditionalAttemptCount === 0) {
-    if (completion.chapters.some((chapter) => chapter.qualityRequirementUnmet === true)) return t("All required topics and attempt minimums are met, but recent accuracy is below the required level. Keep practising; completion timing is not predictable yet.");
+    if (completion.chapters.some((chapter) => chapter.qualityRequirementUnmet === true)) return t("Attempt minimums are met, but recent accuracy is below the required level. Keep practising; completion timing is not predictable yet.");
     return t("Recent accuracy is not measured yet, so the remaining completion effort is unknown.");
   }
   const remaining = completion.minimumAdditionalAttemptCount;
@@ -61,7 +61,7 @@ export function completionCopy(outcome: Pick<ProposalOutcome, "completionState">
 
 export function targetCopy(target: TargetAssessment, t: Translate): string {
   if (target.kind === "open_ended") return t("No target date. The plan stays open-ended.");
-  if (target.kind === "quality_requirement_unmet") return t("All chapter attempt minimums are met, but recent accuracy in at least one chapter is below the required level. Keep practising; completion timing is not predictable yet.");
+  if (target.kind === "quality_requirement_unmet") return t("Attempt minimums are met, but recent accuracy is below the required level. Keep practising; completion timing is not predictable yet.");
   if (target.kind === "quality_outcome_unknown") return t("Recent accuracy is not measured yet, so the remaining completion effort is unknown.");
   if (target.kind === "unknown_completion_rule") return t("The target outlook is unknown because the package has no completion rule.");
   if (target.kind === "unavailable_due_to_shortfall") return t("Target outlook is unavailable until the material shortfall is resolved.");

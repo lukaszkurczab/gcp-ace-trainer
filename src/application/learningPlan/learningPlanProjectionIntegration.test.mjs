@@ -243,14 +243,20 @@ async function assertProgressCompletion(state, count) {
         assert.ok(text.includes(translate('The package completion rule is currently met.')));
         assert.equal(model.primaryAction, null);
       } else if (model.completion.remainingAttemptCount === 0) {
-        const message = translate('All chapter attempt minimums are met, but recent accuracy in at least one chapter is below the required level. Keep practising; completion timing is not predictable yet.');
+        const message = translate('Attempt minimums are met, but recent accuracy is below the required level. Keep practising; completion timing is not predictable yet.');
         assert.ok(rendered.text.includes(message));
         assert.equal(rendered.nodes.filter(node => node.type === 'Text' && rendered.textOf(node) === message).length, 1, 'Keep quality status visible once, without repeating identical guidance');
         assert.ok(!text.includes(translate('The package completion rule is currently met.')));
       } else {
         const remaining = model.completion.remainingAttemptCount;
-        assert.ok(text.includes(translate('attemptsRemaining', { count: remaining, remaining })));
-        if (locale === 'en') assert.match(text, /to reach the minimum number of attempts/);
+        const uncoveredTopicCount = model.completion.chapters.reduce((count, chapter) => count + chapter.coverage.filter(unit => unit.deficit > 0).length, 0);
+        if (uncoveredTopicCount > 0) {
+          const topicPrefix = translate('{{count}} required exam topics still need practice: {{topics}}', { count: uncoveredTopicCount, topics: 'placeholder' }).replace('placeholder', '').trimEnd();
+          assert.ok(text.includes(topicPrefix), `Coverage deficits must remain visible before attempt volume: ${topicPrefix}`);
+        } else {
+          assert.ok(text.includes(translate('attemptsRemaining', { count: remaining, remaining })));
+          if (locale === 'en') assert.match(text, /to reach the minimum number of attempts/);
+        }
       }
     }
     for (const node of rendered.nodes.filter(node => node.type === 'Text')) assert.equal(node.props.maxFontSizeMultiplier, 2);
@@ -286,7 +292,7 @@ test('P01: all nine verified current artifacts report zero attempts and the full
     const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(trackId, familyId);
     assert.ok(resolved.planningPolicyIdentity);
     const track = resolved.track;
-    assert.equal(track.completionRule.ruleVersion, 2);
+    assert.equal(track.completionRule.ruleVersion, trackId === 'claude-certified-architect-professional-certification' ? 3 : 2);
     const expectedNodes = [...new Set(track.questions.map(question => question.nodeId))].sort();
     assert.deepEqual(track.completionRule.chapters.map(chapter => chapter.nodeId).sort(), expectedNodes);
     verifiedChapterCount += expectedNodes.length;
@@ -624,7 +630,7 @@ test('current producer remains buildable while app bundle matches the admitted c
     const bytes = await readFile(path.join(outputRoot, `${artifact.trackId}.json`), 'utf8');
     const parsedArtifact = JSON.parse(bytes);
     assert.equal(parsedArtifact.schemaVersion, 'patternly-content-artifact-v2');
-    assert.equal(parsedArtifact.completionRule.ruleVersion, 2);
+    assert.equal(parsedArtifact.completionRule.ruleVersion, artifact.trackId === 'claude-certified-architect-professional-certification' ? 3 : 2);
     assert.ok(parsedArtifact.completionRule.chapters.length > 0);
   }
 });

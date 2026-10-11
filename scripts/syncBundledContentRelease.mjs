@@ -92,7 +92,7 @@ const scriptRoot = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 const validationModulesByProducerRoot = new Map();
 
 async function producerValidationModules(producerRoot) {
-  const resolvedRoot = path.resolve(producerRoot ?? process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(scriptRoot, "../../patternly-content"));
+  const resolvedRoot = path.resolve(producerRoot ?? process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(scriptRoot, "../patternly-content"));
   let pending = validationModulesByProducerRoot.get(resolvedRoot);
   if (!pending) {
     pending = Promise.all([

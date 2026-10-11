@@ -94,7 +94,7 @@ function proposalFor(f: Awaited<ReturnType<typeof qualityFixture>>, completion: 
   });
 }
 
-const QUALITY_MESSAGE = "All chapter attempt minimums are met, but recent accuracy in at least one chapter is below the required level. Keep practising; completion timing is not predictable yet.";
+const QUALITY_MESSAGE = "Attempt minimums are met, but recent accuracy is below the required level. Keep practising; completion timing is not predictable yet.";
 
 test("P05 evaluator, proposal copy and canonical guidance presentation agree in all seven locales", async () => {
   const f = await qualityFixture();
