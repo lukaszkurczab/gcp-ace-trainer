@@ -12,10 +12,6 @@
       "title": "Kontodaten teilen oder herunterladen",
       "summary": "Eine JSON-Datei mit Kontodaten, synchronisierten Lerndaten und Kontoaktivitäten"
     },
-    "guestPrivacy": {
-      "title": "Hilfe zu deinen Daten anfordern",
-      "summary": "Sende über die App eine Datenschutzanfrage, ohne ein Konto zu erstellen"
-    },
     "openAccount": {
       "title": "Konto öffnen",
       "summary": "Melde dich an oder erstelle ein Konto, um Kontodaten zu verwalten"
@@ -39,6 +35,10 @@
     "none": {
       "title": "Datenaktionen nicht verfügbar",
       "summary": "In diesem Status ist keine Kontoaktion verfügbar"
+    },
+    "guestExport": {
+      "title": "Lokale Gastdaten exportieren",
+      "summary": "Speichere eine JSON-Kopie deiner Lernstände dieses Geräts. Konto und E-Mail sind nicht erforderlich."
     }
   },
   "localReset": {
@@ -70,7 +70,7 @@
     },
     "guest": {
       "title": "Gastdaten",
-      "body": "Lerndaten werden lokal auf diesem Gerät gespeichert. Du kannst Patternly ohne Konto verwenden. Wenn du Hilfe zu deinen Daten benötigst, nutze das Datenschutzformular in dieser App."
+      "body": "Deine Lernstände sind lokal auf diesem Gerät gespeichert. Exportiere eine JSON-Kopie ohne Anmeldung. Für Daten von Online-Diensten gibt es das separate Datenschutzformular."
     },
     "signedOut": {
       "title": "Melde dich an, um Kontodaten zu verwalten",
@@ -223,8 +223,8 @@
     "scopeTitle": "Umfang",
     "accountIntro": "Der Export ist eine JSON-Datei, die für das angemeldete Konto erstellt wurde.",
     "accountBody": "Der Export umfasst dein Kontoprofil; unterstützte synchronisierte Lerndatensätze wie den aktiven Lernpfad, Ziele und Lernpläne, Zusammenfassungen und Ergebnisse abgeschlossener Einheiten, Versuche und die Wiederholungswarteschlange; sowie verknüpfte Inhaltsmeldungen. Zu den Kontoaktivitäten und ihrem Kontext zählen der Zugriff auf Lernpfade, Berechtigungen, rechtliche Zustimmungen, Kaufbestätigungen, Verbraucherfälle, Gerätemetadaten, Synchronisierungsmetadaten und der Exportverlauf. Die Informationen zum Datenzugriff erläutern Zwecke, Datenkategorien, Empfänger, Speicherdauer, Quellen, Übermittlungen, automatisierte Entscheidungen und deine Rechte. Das Verzeichnis nennt enthaltene und ausgelassene Kategorien. Zugangsdaten, Geheimnisse, unverarbeitete Kennungen von Anbietern oder Geräten, Meldungen anderer Personen und anonyme Meldungen sind nicht enthalten. Aktive Einheiten, Entwürfe, Einstellungen und andere ausschließlich auf dem Gerät gespeicherte Daten werden nicht synchronisiert. Wenn du dich beim selben Konto anmeldest, kann die normale Synchronisierung unterstützte Datensätze aus der Kontocloud wiederherstellen. Die Übernahme von Gastdaten ist eine separate Auswahl, bei der geeigneter Lernfortschritt von diesem Gerät mit dem Konto zusammengeführt wird. Die JSON-Datei wird zum Zugriff und zur Datenübertragbarkeit über das systemeigene Teilen- oder Speichern-Menü bereitgestellt und kann nicht in Patternly importiert werden. Aus Sicherheitsgründen musst du deine Identität möglicherweise erneut bestätigen. Für Exporte gelten Häufigkeitsbeschränkungen.",
-    "guestIntro": "Du brauchst kein Konto, um uns wegen deiner Daten zu kontaktieren.",
-    "guestBody": "Du kannst Daten, die ausschließlich auf diesem Gerät gespeichert sind, lokal entfernen. Eine weitergehende Datenschutzanfrage kannst du über das Formular in dieser App senden. Die App fügt keine Konto-ID hinzu und prüft nicht, ob eine Adresse im System vorhanden ist."
+    "guestIntro": "Erstelle eine lokale Kopie deiner Gast-Lernstände – ohne Konto, E-Mail oder Netzwerkverbindung.",
+    "guestBody": "Die JSON-Datei enthält verfügbare Lernfortschritte, Sitzungen und Entwürfe, Antworten und Ergebnisse, Wiederholungen, Ziele und angenommene Pläne, App- und Erinnerungseinstellungen sowie auf diesem Gerät gespeicherte Meldungen. Das Manifest nennt enthaltene und ausgelassene Daten. Über das Systemfenster kannst du die Datei speichern oder teilen; Patternly kann nicht bestätigen, ob eine andere App sie gespeichert hat."
   },
   "status": {
     "title": "Aktion konnte nicht abgeschlossen werden",
@@ -240,6 +240,16 @@
     "fileFailure": "Die temporäre Datei konnte nicht sicher vorbereitet werden.",
     "sharingFailed": "Das systemeigene Speichern- oder Teilen-Menü konnte nicht geöffnet werden.",
     "cleanupFailed": "Die temporäre Datei konnte nicht entfernt werden. Beim nächsten Start versucht die App erneut, sie sicher zu löschen.",
-    "actionFailed": "Diese Kontoaktion konnte nicht abgeschlossen werden. Versuche es erneut."
+    "actionFailed": "Diese Kontoaktion konnte nicht abgeschlossen werden. Versuche es erneut.",
+    "guestExportTitle": "Export der Gastdaten",
+    "guestExportHandoff": "Die Exportdatei wurde an das Systemfenster zum Speichern oder Teilen übergeben. Patternly kann nicht bestätigen, ob eine andere App sie gespeichert hat.",
+    "guestExportDismissed": "Das Systemfenster zum Speichern oder Teilen wurde geschlossen. Eine Kopie wurde nicht bestätigt.",
+    "guestExportGuestProfileUnavailable": "Gastdaten können im aktuellen Profil nicht exportiert werden. Öffne das aktive Gastprofil und versuche es erneut.",
+    "guestExportSourcePending": "Eine Lernänderung wird noch abgeschlossen. Warte kurz und starte den Export erneut.",
+    "guestExportSourceInvalid": "Einige lokale Lerndaten sind unvollständig oder widersprüchlich. Patternly hat keinen Export erstellt.",
+    "guestExportSourceChanged": "Das aktive Profil oder seine Daten haben sich während des Exports geändert. Die temporäre Datei wurde entfernt; versuche es erneut.",
+    "guestExportFileFailure": "Eine temporäre Exportdatei konnte nicht sicher erstellt werden.",
+    "guestExportSharingFailed": "Das Systemfenster zum Speichern oder Teilen konnte nicht geöffnet werden. Die temporäre Datei wurde entfernt.",
+    "guestExportCleanupFailed": "Die temporäre Exportdatei konnte nicht entfernt werden. Patternly versucht die sichere Bereinigung beim nächsten Start erneut."
   }
 }

@@ -382,6 +382,26 @@ export type DeviceReminderSettingsSnapshot = Readonly<{
   settings: DeviceReminderSettings;
   revision: number;
 }>;
+export type ReminderPreferencesForExport = Readonly<{
+  revision: number | null;
+  preferences: Readonly<{
+    kind: "device";
+    enabled: boolean;
+    schedules: readonly Readonly<{ day: GoalDay; localTime: string }>[];
+    pending: Readonly<{ enabled: boolean; slots: readonly Readonly<{ day: GoalDay; localTime: string }>[]; reason: DeviceReminderPendingReason }> | null;
+  }> | Readonly<{
+    kind: "practice";
+    trackId: TrackId | null;
+    mode: PracticeReminderMode | null;
+    commonTime: string | null;
+    schedules: readonly Readonly<{ day: GoalDay; localTime: string }>[];
+  }> | Readonly<{
+    kind: "legacy_daily";
+    enabled: boolean;
+    localTime: string | null;
+  }> | null;
+  hasPendingJournal: boolean;
+}>;
 export type DeviceReminderJournal = Readonly<{
   schemaVersion: typeof DEVICE_REMINDER_JOURNAL_VERSION;
   transactionId: string;
@@ -392,6 +412,7 @@ export type DeviceReminderJournal = Readonly<{
   created: readonly DeviceReminderSchedule[];
   remainingOldIds: readonly string[];
 }>;
+export type CanonicalNotificationSettingsJournal = DeviceReminderJournal | RawPracticeReminderJournal;
 
 function isPositiveInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
@@ -514,8 +535,54 @@ export function isCanonicalNotificationSettings(value: unknown): boolean {
   return isAnyNotificationSettings(value);
 }
 
-export function isCanonicalNotificationSettingsJournal(value: unknown): boolean {
+export function isCanonicalNotificationSettingsJournal(value: unknown): value is CanonicalNotificationSettingsJournal {
   return isDeviceReminderJournal(value) || isPracticeReminderJournal(value);
+}
+
+function clockText(value: ReminderTime): string {
+  return `${String(value.hour).padStart(2, "0")}:${String(value.minute).padStart(2, "0")}`;
+}
+
+/** Pure export projection: no legacy migration, scheduler IDs, transaction IDs, or journal payload. */
+export function readReminderPreferencesForExport(): ReminderPreferencesForExport {
+  const envelope = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS, isAnyNotificationSettings);
+  const journal = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, isCanonicalNotificationSettingsJournal);
+  if (!envelope) return Object.freeze({ revision: null, preferences: null, hasPendingJournal: journal !== null });
+
+  const stored = envelope.payload;
+  if (isDeviceReminderSettings(stored)) {
+    const preferences = Object.freeze({
+      kind: "device" as const,
+      enabled: stored.enabled,
+      schedules: Object.freeze(normalizeDeviceSlots(stored.schedules).map((entry) => Object.freeze({ day: entry.day, localTime: entry.localTime }))),
+      pending: stored.pending ? Object.freeze({
+        enabled: stored.pending.enabled,
+        slots: Object.freeze(normalizeDeviceSlots(stored.pending.slots).map((entry) => Object.freeze({ day: entry.day, localTime: entry.localTime }))),
+        reason: stored.pending.reason,
+      }) : null,
+    });
+    return Object.freeze({ revision: envelope.revision, preferences, hasPendingJournal: journal !== null });
+  }
+  if (isLegacyNotificationSettings(stored)) {
+    const reminder = stored.dailyReminder;
+    return Object.freeze({ revision: envelope.revision, preferences: Object.freeze({ kind: "legacy_daily", enabled: reminder !== null, localTime: reminder ? clockText(reminder) : null }), hasPendingJournal: journal !== null });
+  }
+
+  const reminder = stored.practiceReminder;
+  if (reminder === null) {
+    return Object.freeze({ revision: envelope.revision, preferences: Object.freeze({ kind: "practice", trackId: null, mode: null, commonTime: null, schedules: Object.freeze([]) }), hasPendingJournal: journal !== null });
+  }
+  if (isLegacyPracticeReminder(reminder)) {
+    const localTime = clockText(reminder);
+    return Object.freeze({ revision: envelope.revision, preferences: Object.freeze({ kind: "practice", trackId: reminder.trackId, mode: "same-time", commonTime: localTime, schedules: Object.freeze(reminder.schedules.map((entry) => Object.freeze({ day: entry.day, localTime }))) }), hasPendingJournal: journal !== null });
+  }
+  return Object.freeze({ revision: envelope.revision, preferences: Object.freeze({
+    kind: "practice",
+    trackId: reminder.trackId,
+    mode: reminder.mode,
+    commonTime: reminder.commonTime ? clockText(reminder.commonTime) : null,
+    schedules: Object.freeze(reminder.schedules.map((entry) => Object.freeze({ day: entry.day, localTime: clockText(entry.time) }))),
+  }), hasPendingJournal: journal !== null });
 }
 
 function legacyNotificationIds(value: StoredNotificationSettings): readonly string[] {

@@ -2,7 +2,9 @@ import type { GuestInstallationIdentityPort } from "../../infrastructure/identit
 import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { hasGuestAccess } from "./guestAccessRepository";
 import { provisionGuestInstallation } from "./guestInstallationRepository";
-import { validateStorageMetadata } from "./storageMetadataRepository";
+import { initializeStorageMetadata, readStorageMetadata, StorageMetadataError } from "./storageMetadataRepository";
+import { readCanonicalNamespaceKeys } from "./canonicalRecordCodec";
+import { STORAGE_KEYS, STORAGE_NAMESPACE } from "../keys";
 import { purgeAcceptedContentReportOutboxEntries, purgeExpiredContentReportOutboxEntries } from "./contentReportOutboxRepository";
 
 export enum CanonicalRepositoryBootstrapStep {
@@ -35,9 +37,32 @@ function notifyStep(observer: CanonicalRepositoryBootstrapStepObserver | undefin
 
 /** Opens the canonical repository set only after the profile storage scope is active. */
 export async function openCanonicalRepositories(dependencies: CanonicalRepositoryBootstrapDependencies = {}): Promise<void> {
+  await inspectCanonicalRepositories(dependencies);
+  await finishCanonicalRepositories(dependencies);
+}
+
+/** Read-only open used before the mutation journal has been recovered. */
+export async function inspectCanonicalRepositories(dependencies: CanonicalRepositoryBootstrapDependencies = {}): Promise<void> {
   getKeyValueStorage();
   notifyStep(dependencies.onStep, CanonicalRepositoryBootstrapStep.StorageMetadataValidation);
-  await validateStorageMetadata();
+  const metadata = await readStorageMetadata();
+  if (!metadata) {
+    const evidencePrefixes = [
+      `${STORAGE_NAMESPACE}training-session:`, STORAGE_KEYS.TRAINING_SESSION_INDEX,
+      `${STORAGE_NAMESPACE}training-attempt:`, STORAGE_KEYS.TRAINING_ATTEMPT_INDEX,
+      `${STORAGE_NAMESPACE}review-entry:`, STORAGE_KEYS.REVIEW_INDEX,
+      `${STORAGE_NAMESPACE}training-session-result:`, STORAGE_KEYS.ACTIVE_JOURNAL,
+    ];
+    if (readCanonicalNamespaceKeys().some((key) => evidencePrefixes.some((prefix) => key.startsWith(prefix)))) {
+      throw new StorageMetadataError("storage_metadata_invalid");
+    }
+  }
+}
+
+/** Performs startup maintenance only after integrity preflight/recovery succeeds. */
+export async function finishCanonicalRepositories(dependencies: CanonicalRepositoryBootstrapDependencies = {}): Promise<void> {
+  getKeyValueStorage();
+  initializeStorageMetadata();
   notifyStep(dependencies.onStep, CanonicalRepositoryBootstrapStep.AcceptedReportOutboxPurge);
   purgeAcceptedContentReportOutboxEntries();
   notifyStep(dependencies.onStep, CanonicalRepositoryBootstrapStep.ExpiredReportOutboxPurge);

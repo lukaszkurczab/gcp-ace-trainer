@@ -3,7 +3,7 @@ import test, { beforeEach } from "node:test";
 
 import { getKeyValueStorage, installKeyValueStorageForTests, MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../keys";
-import { dismissGoalOnboarding, isGoalOnboardingDismissed } from "./goalOnboardingPreferenceRepository";
+import { dismissGoalOnboarding, isGoalOnboardingDismissed, readGoalOnboardingPreferencesForExport } from "./goalOnboardingPreferenceRepository";
 
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
 
@@ -23,6 +23,14 @@ test("goal onboarding dismissal is durable, idempotent, and scoped per track", (
   dismissGoalOnboarding(design);
   assert.equal(isGoalOnboardingDismissed(coding), true);
   assert.equal(isGoalOnboardingDismissed(design), true);
+});
+
+test("export preference read is typed, pure, and carries the canonical revision", () => {
+  assert.deepEqual(readGoalOnboardingPreferencesForExport(), { revision: null, dismissedTrackIds: null });
+  dismissGoalOnboarding("coding-interview-dsa-problem-solving");
+  const before = getKeyValueStorage().getString(STORAGE_KEYS.GOAL_ONBOARDING_PREFERENCES);
+  assert.deepEqual(readGoalOnboardingPreferencesForExport(), { revision: 1, dismissedTrackIds: ["coding-interview-dsa-problem-solving"] });
+  assert.equal(getKeyValueStorage().getString(STORAGE_KEYS.GOAL_ONBOARDING_PREFERENCES), before);
 });
 
 test("goal onboarding dismissal rejects unsupported stored records", () => {

@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import type { AccountState } from "../../application/account/AccountSessionProvider";
-import { getYourDataPresentation } from "./yourDataPresentation";
+import { getYourDataPresentation, isGuestExportFailureStatus } from "./yourDataPresentation";
 
 const user = { email: "learner@example.com", emailVerified: true, providers: ["password"] as const, uid: "firebase-user" };
 const accountData = { blockingConflictCode: null, lastFailureCode: null, pendingMutationCount: 0, status: "synced" };
@@ -45,7 +45,7 @@ test("Your data presents an explicit action/details/privacy matrix for every acc
   const expected: Readonly<Record<string, Readonly<{ action: string; icon: string; testID?: string; details: string; privacyRequests: boolean; reset: boolean; stateCopy: string }>>> = {
     authenticated: { action: "export", details: "account", icon: "database", privacyRequests: true, reset: true, stateCopy: "authenticated", testID: "account-data-export" },
     localOffline: { action: "none", details: "none", icon: "info-circle", privacyRequests: false, reset: false, stateCopy: "localOffline" },
-    guest: { action: "guestPrivacy", details: "guest", icon: "mail", privacyRequests: false, reset: true, stateCopy: "guest", testID: "data-privacy-request" },
+    guest: { action: "guestExport", details: "guest", icon: "database", privacyRequests: true, reset: true, stateCopy: "guest", testID: "guest-local-data-export" },
     signedOut: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "signedOut", testID: "data-open-account" },
     guestAccessBlocked: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "guestAccessBlocked", testID: "data-open-account" },
     recoveryPending: { action: "openAccount", details: "none", icon: "user", privacyRequests: false, reset: false, stateCopy: "recoveryPending", testID: "data-open-account" },
@@ -101,9 +101,9 @@ test("Your data keeps details and privacy access exclusive to authenticated and 
     stateCopy: "authenticated",
   });
   assert.deepEqual(getYourDataPresentation(state("guest")), {
-    action: { kind: "guestPrivacy", icon: "mail", testID: "data-privacy-request" },
+    action: { kind: "guestExport", icon: "database", testID: "guest-local-data-export" },
     details: "guest",
-    privacyRequests: false,
+    privacyRequests: true,
     reset: { kind: "localReset", icon: "trash", testID: "data-local-reset" },
     stateCopy: "guest",
   });
@@ -146,4 +146,35 @@ test("recovery-pending and local-offline copy exist in every supported data loca
     assert.ok(entry.state.localOffline.title.trim().length > 0, entry.locale);
     assert.ok(entry.state.localOffline.body.trim().length > 0, entry.locale);
   }
+});
+
+test("Guest local export and separate network privacy request are available in every data locale", () => {
+  const locales = ["en", "pl", "de", "es", "fr", "it", "et"] as const;
+  for (const locale of locales) {
+    const data = JSON.parse(readFileSync(`src/locales/${locale}/data.json`, "utf8")) as {
+      actions: { guestExport?: { title?: string; summary?: string } };
+      details: { guestIntro?: string; guestBody?: string };
+      state: { guest: { body?: string } };
+      status: Record<string, string | undefined>;
+    };
+    assert.ok(data.actions.guestExport?.title?.trim(), `${locale} export action title`);
+    assert.ok(data.actions.guestExport?.summary?.trim(), `${locale} export action summary`);
+    assert.ok(data.details.guestIntro?.trim(), `${locale} export details intro`);
+    assert.ok(data.details.guestBody?.trim(), `${locale} export scope`);
+    assert.ok(data.state.guest.body?.trim(), `${locale} guest state copy`);
+    for (const key of [
+      "guestExportTitle", "guestExportHandoff", "guestExportDismissed", "guestExportGuestProfileUnavailable",
+      "guestExportSourcePending", "guestExportSourceInvalid", "guestExportSourceChanged", "guestExportFileFailure",
+      "guestExportSharingFailed", "guestExportCleanupFailed",
+    ]) assert.ok(data.status[key]?.trim(), `${locale} ${key}`);
+  }
+});
+
+test("Guest export failures use warning semantics while handoff and cancellation remain neutral", () => {
+  assert.equal(isGuestExportFailureStatus("guestExportSourceInvalid"), true);
+  assert.equal(isGuestExportFailureStatus("guestExportCleanupFailed"), true);
+  assert.equal(isGuestExportFailureStatus("guestExportHandoff"), false);
+  assert.equal(isGuestExportFailureStatus("guestExportDismissed"), false);
+  assert.equal(isGuestExportFailureStatus("fileFailure"), false);
+  assert.equal(isGuestExportFailureStatus(null), false);
 });

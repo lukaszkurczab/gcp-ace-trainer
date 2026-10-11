@@ -469,6 +469,12 @@ export class ForegroundSessionTimerFacade {
 
 let canonicalTimerFacade: ForegroundSessionTimerFacade | null = null;
 
+/** Read-only startup assertion for the isolated PERSIST-13 fixture entry point. */
+export function isPersist13TimerOwnerCold(): boolean {
+  return typeof __DEV__ !== "undefined" && __DEV__ && process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "smoke"
+    && process.env.EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE !== undefined && canonicalTimerFacade === null;
+}
+
 export function installForegroundSessionTimerFacade(value: ForegroundSessionTimerFacade): void {
   canonicalTimerFacade = value;
 }

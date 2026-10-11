@@ -4,13 +4,14 @@ import { useTranslation } from "react-i18next";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { usePatternlyAccount } from "../../application/account/AccountSessionProvider";
+import { exportGuestLocalData, type GuestLocalDataExportFailure } from "../../application/guest/guestLocalDataExportService";
 import { Button, Icon, IconTile, InfoBlock, ListRow, Screen, ScreenHeader, SettingsBottomSheet, SettingsGroup } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
-import { getYourDataPresentation, type YourDataActionKind } from "./yourDataPresentation";
+import { getYourDataPresentation, isGuestExportFailureStatus, type YourDataActionKind } from "./yourDataPresentation";
 
 type YourDataScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.YOUR_DATA>;
-type ExportStatus = "authenticationRequired" | "sessionRevoked" | "offline" | "rateLimited" | "responseTooLarge" | "serverFailure" | "invalidResponse" | "sharingUnavailable" | "fileFailure" | "sharingFailed" | "cleanupFailed" | "actionFailed" | null;
+type ExportStatus = "authenticationRequired" | "sessionRevoked" | "offline" | "rateLimited" | "responseTooLarge" | "serverFailure" | "invalidResponse" | "sharingUnavailable" | "fileFailure" | "sharingFailed" | "cleanupFailed" | "guestExportHandoff" | "guestExportDismissed" | `guestExport${Capitalize<GuestLocalDataExportFailure>}` | "actionFailed" | null;
 
 export function YourDataScreen({ navigation }: YourDataScreenProps) {
   const { t } = useTranslation("data");
@@ -41,7 +42,7 @@ export function YourDataScreen({ navigation }: YourDataScreenProps) {
     return () => clearInterval(timer);
   }, [remainingSeconds, retryUntil]);
 
-  async function runAction(action: Exclude<YourDataActionKind, "none" | "openAccount" | "guestPrivacy">) {
+  async function runAction(action: Exclude<YourDataActionKind, "none" | "openAccount">) {
     if (busyRef.current || !activeRef.current) return;
     busyRef.current = true;
     setBusy(true);
@@ -60,6 +61,15 @@ export function YourDataScreen({ navigation }: YourDataScreenProps) {
           setStatus(result.failure);
           if (result.failure === "authenticationRequired") navigation.navigate(ROUTES.ACCOUNT_SECURITY, { screen: "export" });
         }
+        return;
+      }
+      if (action === "guestExport") {
+        if (account.state.kind !== "guest") return;
+        const result = await exportGuestLocalData(undefined, () => activeRef.current);
+        if (!activeRef.current) return;
+        setStatus(result.kind === "handoff"
+          ? result.disposition === "shared" ? "guestExportHandoff" : "guestExportDismissed"
+          : guestFailureStatus(result.failure));
         return;
       }
       if (action === "retryRestore") {
@@ -83,7 +93,6 @@ export function YourDataScreen({ navigation }: YourDataScreenProps) {
   function handleAction(action: YourDataActionKind): void {
     if (action === "none") return;
     if (action === "openAccount") { navigation.navigate(ROUTES.ACCOUNT_ENTRY); return; }
-    if (action === "guestPrivacy") { navigation.navigate(ROUTES.PRIVACY_REQUESTS); return; }
     void runAction(action);
   }
 
@@ -123,7 +132,9 @@ export function YourDataScreen({ navigation }: YourDataScreenProps) {
       ? t("status.rateLimited", { seconds: remainingSeconds })
       : t(`actions.${presentation.action.kind}.summary`);
   const statusBody = status && !(status === "rateLimited" && remainingSeconds > 0) ? t(`status.${status}`) : null;
-  const statusTestID = status === "actionFailed" ? "your-data-action-error" : status ? `account-data-export-${status}` : undefined;
+  const isGuestExportStatus = status?.startsWith("guestExport") ?? false;
+  const isGuestExportFailure = isGuestExportFailureStatus(status);
+  const statusTestID = status === "actionFailed" ? "your-data-action-error" : status ? `${isGuestExportStatus ? "guest-local-data-export" : "account-data-export"}-${status}` : undefined;
 
   useEffect(() => {
     const announcement = busy ? t("status.preparing") : status === "rateLimited" && remainingSeconds > 0
@@ -170,7 +181,7 @@ export function YourDataScreen({ navigation }: YourDataScreenProps) {
         /> : null}
       </SettingsGroup>
       {presentation.details !== "none" ? <Button disabled={busy} onPress={() => setDetailsVisible(true)} testID={presentation.details === "account" ? "account-data-export-details" : "data-guest-details"} variant="ghost">{t("details.action")}</Button> : null}
-      {statusBody ? <InfoBlock accessibilityAlert body={statusBody} title={t("status.title")} tone="warning" testID={statusTestID} /> : null}
+      {statusBody ? <InfoBlock accessibilityAlert={isGuestExportFailure || !isGuestExportStatus} body={statusBody} title={t(isGuestExportStatus ? "status.guestExportTitle" : "status.title")} tone={isGuestExportStatus && !isGuestExportFailure ? "neutral" : "warning"} testID={statusTestID} /> : null}
       {presentation.details !== "none" ? <SettingsBottomSheet closeLabel={t("close")} intro={t(`details.${presentation.details}Intro`)} onClose={() => setDetailsVisible(false)} title={t("details.title")} visible={detailsVisible}>
         <InfoBlock body={t(`details.${presentation.details}Body`)} title={t("details.scopeTitle")} />
       </SettingsBottomSheet> : null}
@@ -185,4 +196,16 @@ export function YourDataScreen({ navigation }: YourDataScreenProps) {
       </SettingsBottomSheet> : null}
     </Screen>
   );
+}
+
+function guestFailureStatus(failure: GuestLocalDataExportFailure): ExportStatus {
+  switch (failure) {
+    case "guestProfileUnavailable": return "guestExportGuestProfileUnavailable";
+    case "sourcePending": return "guestExportSourcePending";
+    case "sourceInvalid": return "guestExportSourceInvalid";
+    case "sourceChanged": return "guestExportSourceChanged";
+    case "fileFailure": return "guestExportFileFailure";
+    case "sharingFailed": return "guestExportSharingFailed";
+    case "cleanupFailed": return "guestExportCleanupFailed";
+  }
 }

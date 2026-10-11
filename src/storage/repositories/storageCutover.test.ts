@@ -97,9 +97,21 @@ test("bootstrap runs resolution only after recovery/content validation and expos
 test("one MMKV native adapter is infrastructure-owned and runtime access stays bounded", () => {
   const source = files("src").filter((path) => /\.(ts|tsx)$/.test(path));
   const imports = source.filter((path) => /react-native-mmkv/.test(readFileSync(path, "utf8")));
-  assert.deepEqual(imports, [join("src", "infrastructure", "storage", "encryptedStorageNative.ts")]);
+  const fixturePath = join("src", "application", "runtimeAuditability", "Persist13ResetFixtureRoot.tsx");
+  const encryptedAdapterPath = join("src", "infrastructure", "storage", "encryptedStorageNative.ts");
+  assert.deepEqual(imports.sort(), [encryptedAdapterPath, fixturePath].sort());
+  const productionSource = source.filter((path) => path !== fixturePath).map((path) => readFileSync(path, "utf8")).join("\n");
+  assert.equal((productionSource.match(/createMMKV\s*\(/g) ?? []).length, 1);
+  const selector = readFileSync("App.tsx", "utf8");
+  const fixture = readFileSync(fixturePath, "utf8");
+  assert.match(selector, /if \(entry\.kind === "regular"\)[\s\S]*?require\("\.\/src\/RegularApplicationRoot"\)[\s\S]*?require\("\.\/src\/application\/runtimeAuditability\/Persist13ResetFixtureRoot"\)/);
+  assert.doesNotMatch(selector, /from "\.\/src\/(?:application\/account|navigation|content\/application|preferences)/);
+  assert.match(fixture, /typeof __DEV__ !== "undefined" && __DEV__ && process\.env\.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "smoke"/);
+  assert.match(fixture, /require\("react-native-mmkv"\)/);
+  assert.equal((fixture.match(/createMMKV\s*\(/g) ?? []).length, 1);
   for (const path of source) {
     if (path.endsWith("src/infrastructure/storage/mmkvClient.ts")) continue;
+    if (path === fixturePath) continue;
     if (/infrastructure\/storage\/mmkvClient/.test(readFileSync(path, "utf8"))) assert.match(path, /src\/(?:application\/account|storage\/repositories|testing|content\/application|preferences)\//);
   }
 });

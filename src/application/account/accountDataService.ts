@@ -68,7 +68,7 @@ import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { withLocalLearningWriteOperation } from "../learningMutations/localLearningWriteOperation";
 import { readLearningPlanStorageScope } from "../../storage/repositories/learningPlanInputSnapshot";
-import { commitLearningStateReset } from "../learningMutations";
+import { commitLearningStateReset, preflightLearningStateReset, LearningStateResetPreflightError } from "../learningMutations";
 import type { TrackId } from "../../domain";
 import { getActiveTrackId, saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
 import { captureActiveProfileStorageLease, getActiveStorageProfileOrNull, isActiveProfileStorageLeaseCurrent, readActiveAccountIdentityBinding } from "../../storage/repositories/profileStorageRepository";
@@ -401,6 +401,9 @@ async function resetAccountLocalLearningHistoryUnlocked(api: PatternlyApiClient,
     if (state.accountId !== null && state.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
     let guard = state.resetGuard;
     if (!guard) {
+      await preflightLearningStateReset();
+      state = await getAccountSyncState();
+      if (state.accountId !== null && state.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");
       if (
         state.accountId !== accountId
         || state.status !== "synced"
@@ -421,6 +424,7 @@ async function resetAccountLocalLearningHistoryUnlocked(api: PatternlyApiClient,
     return await resumeAccountLocalHistoryReset(api, accountId, state);
   } catch (error) {
     const state = await getAccountSyncState().catch(() => null);
+    if (error instanceof LearningStateResetPreflightError) return explicitFailureSession(state, "local_reset_integrity_unavailable", false);
     const failure = classifyDataFailure(error);
     if (failure === "account_reset_requires_clean_sync") return explicitFailureSession(state, failure, false);
     return failureSession(state ? await recordFailure(state, failure) : null, false);

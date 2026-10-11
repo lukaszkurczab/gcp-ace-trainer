@@ -1,7 +1,12 @@
 import type { AccountState } from "../../application/account/AccountSessionProvider";
 import type { IconName } from "../../components/Icon";
 
-export type YourDataActionKind = "export" | "guestPrivacy" | "openAccount" | "retryRestore" | "retryDeletion" | "retryIdentity" | "signOut" | "none";
+export type YourDataActionKind = "export" | "guestExport" | "openAccount" | "retryRestore" | "retryDeletion" | "retryIdentity" | "signOut" | "none";
+
+export function isGuestExportFailureStatus(status: string | null): boolean {
+  return status !== null && status.startsWith("guestExport")
+    && status !== "guestExportHandoff" && status !== "guestExportDismissed";
+}
 export type YourDataDetailsAudience = "account" | "guest" | "none";
 export type YourDataStateCopy =
   | "authenticated"
@@ -52,7 +57,7 @@ export function getYourDataPresentation(state: AccountState): YourDataPresentati
     case "localOffline":
       return presentation("localOffline", "none", "info-circle", undefined, "none", false);
     case "guest":
-      return presentation("guest", "guestPrivacy", "mail", "data-privacy-request", "guest", false);
+      return presentation("guest", "guestExport", "database", "guest-local-data-export", "guest", true);
     case "signedOut":
       return presentation("signedOut", "openAccount", "user", "data-open-account", "none", false);
     case "guestAccessBlocked":

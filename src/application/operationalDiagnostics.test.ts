@@ -2,16 +2,23 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { StorageReadError } from "../storage/errors";
+import { EncryptedStorageBootstrapError } from "../infrastructure/storage/encryptedStorageBootstrap";
+import { LocalLogoutControlError } from "../infrastructure/storage/localLogoutControl";
+import { ProfileStorageError } from "../infrastructure/storage/profileStorageRouter";
 import {
   ApplicationBootstrapStage,
   BootstrapInvariantError,
   clearDevelopmentBootstrapDiagnostic,
   createBootstrapProgressObserver,
+  createAccountStartupDiagnosticWriter,
+  createProfileStoragePreparationDiagnosticWriter,
   describeOperationalFailure,
   observeBootstrapFailure,
   operationalDiagnosticCode,
   readDevelopmentBootstrapPendingStep,
   readDevelopmentBootstrapDiagnostic,
+  readDevelopmentProfileStoragePreparationDiagnostic,
+  readDevelopmentAccountStartupDiagnostic,
   type BootstrapDiagnosticEvent,
 } from "./operationalDiagnostics";
 
@@ -140,6 +147,141 @@ test("a new recovery attempt preserves the existing V1 failure receipt", () => w
   retry.dispose();
   clearDevelopmentBootstrapDiagnostic();
 }));
+
+test("profile preparation receipt is frozen, enum-bounded, and classifies only safe error categories", () => withDevelopmentSmokeRuntime(() => {
+  const writer = createProfileStoragePreparationDiagnosticWriter();
+  writer.pending("logout_control_read");
+  const pending = readDevelopmentProfileStoragePreparationDiagnostic();
+  assert.deepEqual(pending, { schema: "patternly.profile-storage-preparation-diagnostic.v1", status: "pending", stage: "logout_control_read" });
+  assert.ok(Object.isFrozen(pending));
+  writer.failed("profile_storage_prepare", new Error("secret profile id and key"));
+  assert.deepEqual(readDevelopmentProfileStoragePreparationDiagnostic(), {
+    schema: "patternly.profile-storage-preparation-diagnostic.v1", status: "failed", stage: "profile_storage_prepare", errorCategory: "LOCAL_OPERATION_FAILED",
+  });
+  assert.doesNotMatch(JSON.stringify(readDevelopmentProfileStoragePreparationDiagnostic()), /secret|profile id|key/u);
+  writer.ready();
+  assert.deepEqual(readDevelopmentProfileStoragePreparationDiagnostic(), { schema: "patternly.profile-storage-preparation-diagnostic.v1", status: "ready", stage: "complete" });
+  writer.dispose();
+  assert.deepEqual(readDevelopmentProfileStoragePreparationDiagnostic(), { schema: "patternly.profile-storage-preparation-diagnostic.v1", status: "ready", stage: "complete" });
+}));
+
+test("profile preparation classifies only allowlisted encrypted, logout-control, and profile errors", () => withDevelopmentSmokeRuntime(() => {
+  const writer = createProfileStoragePreparationDiagnosticWriter();
+  writer.failed("logout_control_read", new LocalLogoutControlError("local_logout_control_corrupt"));
+  assert.equal(readDevelopmentProfileStoragePreparationDiagnostic()?.errorCategory, "local_logout_control_corrupt");
+  writer.failed("profile_storage_prepare", new ProfileStorageError("profile_registry_corrupt"));
+  assert.equal(readDevelopmentProfileStoragePreparationDiagnostic()?.errorCategory, "profile_registry_corrupt");
+  writer.failed("profile_storage_prepare", new EncryptedStorageBootstrapError("storage_manifest_corrupt"));
+  assert.equal(readDevelopmentProfileStoragePreparationDiagnostic()?.errorCategory, "storage_manifest_corrupt");
+  writer.dispose();
+}));
+
+test("profile preparation receipt fences stale owners and removes only its own pending receipt", () => withDevelopmentSmokeRuntime(() => {
+  const first = createProfileStoragePreparationDiagnosticWriter();
+  first.pending("logout_control_create");
+  const second = createProfileStoragePreparationDiagnosticWriter();
+  second.pending("profile_state_inspect");
+  first.failed("logout_control_read", new Error("stale"));
+  first.dispose();
+  assert.deepEqual(readDevelopmentProfileStoragePreparationDiagnostic(), { schema: "patternly.profile-storage-preparation-diagnostic.v1", status: "pending", stage: "profile_state_inspect" });
+  second.dispose();
+  assert.equal(readDevelopmentProfileStoragePreparationDiagnostic(), null);
+
+  const settled = createProfileStoragePreparationDiagnosticWriter();
+  settled.failed("logout_control_read", { message: "do not expose" });
+  settled.dispose();
+  assert.deepEqual(readDevelopmentProfileStoragePreparationDiagnostic(), { schema: "patternly.profile-storage-preparation-diagnostic.v1", status: "failed", stage: "logout_control_read", errorCategory: "unknown" });
+}));
+
+test("profile preparation receipt is inert outside the combined dev-smoke gate", () => {
+  const global = globalThis as typeof globalThis & { __DEV__?: boolean };
+  const previousDev = global.__DEV__;
+  const previousMode = process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE;
+  Object.defineProperty(global, "__DEV__", { configurable: true, value: true });
+  delete process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE;
+  try {
+    const writer = createProfileStoragePreparationDiagnosticWriter();
+    writer.pending("logout_control_create");
+    assert.equal(readDevelopmentProfileStoragePreparationDiagnostic(), null);
+  } finally {
+    if (previousMode === undefined) delete process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE;
+    else process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE = previousMode;
+    if (previousDev === undefined) Reflect.deleteProperty(global, "__DEV__");
+    else Object.defineProperty(global, "__DEV__", { configurable: true, value: previousDev });
+  }
+});
+
+test("account startup receipt is frozen, closed, and contains only bounded account state kinds", () => withDevelopmentSmokeRuntime(() => {
+  const writer = createAccountStartupDiagnosticWriter();
+  writer.pending("profile_completion", "profilePreparing");
+  const pending = readDevelopmentAccountStartupDiagnostic();
+  assert.deepEqual(pending, {
+    schema: "patternly.account-startup-diagnostic.v1", status: "pending", stage: "profile_completion", accountStateKind: "profilePreparing",
+  });
+  assert.equal(Object.isFrozen(pending), true);
+  assert.deepEqual(Object.keys(pending!).sort(), ["accountStateKind", "schema", "stage", "status"]);
+  assert.doesNotMatch(JSON.stringify(pending), /secret|uid|profile id|raw error|password/u);
+  writer.failed("guest_state_inspect", new ProfileStorageError("profile_registry_corrupt"), "unavailable");
+  assert.deepEqual(readDevelopmentAccountStartupDiagnostic(), {
+    schema: "patternly.account-startup-diagnostic.v1", status: "failed", stage: "guest_state_inspect",
+    accountStateKind: "unavailable", errorCategory: "profile_registry_corrupt",
+  });
+  writer.ready("guest");
+  assert.deepEqual(readDevelopmentAccountStartupDiagnostic(), {
+    schema: "patternly.account-startup-diagnostic.v1", status: "ready", stage: "complete", accountStateKind: "guest",
+  });
+  writer.dispose();
+  assert.deepEqual(readDevelopmentAccountStartupDiagnostic(), {
+    schema: "patternly.account-startup-diagnostic.v1", status: "ready", stage: "complete", accountStateKind: "guest",
+  });
+}));
+
+test("account startup receipt fences replaced attempts and cleanup removes only its own pending receipt", () => withDevelopmentSmokeRuntime(() => {
+  const first = createAccountStartupDiagnosticWriter();
+  first.pending("auth_observer_wait", "loading");
+  const second = createAccountStartupDiagnosticWriter();
+  second.pending("guest_scope_prepare", "loading");
+  first.failed("auth_event", new Error("stale uid secret"), "signedOut");
+  first.dispose();
+  assert.deepEqual(readDevelopmentAccountStartupDiagnostic(), {
+    schema: "patternly.account-startup-diagnostic.v1", status: "pending", stage: "guest_scope_prepare", accountStateKind: "loading",
+  });
+  second.dispose();
+  assert.equal(readDevelopmentAccountStartupDiagnostic(), null);
+
+  const settled = createAccountStartupDiagnosticWriter();
+  settled.failed("account_profile_prepare", new Error("payload uid=secret"), "backendUnavailable");
+  settled.dispose();
+  assert.deepEqual(readDevelopmentAccountStartupDiagnostic(), {
+    schema: "patternly.account-startup-diagnostic.v1", status: "failed", stage: "account_profile_prepare",
+    accountStateKind: "backendUnavailable", errorCategory: "LOCAL_OPERATION_FAILED",
+  });
+}));
+
+test("account startup receipt rejects malformed fields and is inert outside the combined dev-smoke gate", () => {
+  const global = globalThis as typeof globalThis & { __DEV__?: boolean };
+  const previousDev = global.__DEV__;
+  const previousMode = process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE;
+  Object.defineProperty(global, "__DEV__", { configurable: true, value: true });
+  delete process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE;
+  try {
+    const inactive = createAccountStartupDiagnosticWriter();
+    inactive.pending("auth_event", "loading");
+    assert.equal(readDevelopmentAccountStartupDiagnostic(), null);
+    inactive.dispose();
+  } finally {
+    if (previousMode === undefined) delete process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE;
+    else process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE = previousMode;
+    if (previousDev === undefined) Reflect.deleteProperty(global, "__DEV__");
+    else Object.defineProperty(global, "__DEV__", { configurable: true, value: previousDev });
+  }
+  withDevelopmentSmokeRuntime(() => {
+    const symbol = Symbol.for("patternly.account-startup-diagnostic.v1");
+    Object.defineProperty(globalThis, symbol, { configurable: true, value: Object.freeze({ schema: "patternly.account-startup-diagnostic.v1", status: "pending", stage: "auth_event", accountStateKind: "loading", uid: "secret" }) });
+    assert.equal(readDevelopmentAccountStartupDiagnostic(), null);
+    Reflect.deleteProperty(globalThis, symbol);
+  });
+});
 
 test("progress diagnostics are absent outside development smoke and cleanup removes the owned step", () => {
   const global = globalThis as typeof globalThis & { __DEV__?: boolean };

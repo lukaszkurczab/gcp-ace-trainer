@@ -12,10 +12,6 @@
       "title": "Udostępnij lub pobierz dane konta",
       "summary": "Plik JSON z danymi konta, synchronizowaną nauką i aktywnością konta"
     },
-    "guestPrivacy": {
-      "title": "Złóż wniosek dotyczący danych",
-      "summary": "Wyślij wniosek w aplikacji bez zakładania konta"
-    },
     "openAccount": {
       "title": "Otwórz konto",
       "summary": "Zaloguj się lub załóż konto, aby zarządzać danymi konta"
@@ -39,6 +35,10 @@
     "none": {
       "title": "Działania na danych niedostępne",
       "summary": "W tym stanie nie ma dostępnego działania na koncie"
+    },
+    "guestExport": {
+      "title": "Eksportuj lokalne dane Gościa",
+      "summary": "Zapisz kopię danych nauki Gościa z tego urządzenia w pliku JSON. Konto ani e-mail nie są potrzebne."
     }
   },
   "localReset": {
@@ -70,7 +70,7 @@
     },
     "guest": {
       "title": "Dane gościa",
-      "body": "Dane nauki są zapisywane lokalnie na tym urządzeniu. Możesz korzystać z Patternly bez konta. Jeśli potrzebujesz pomocy w sprawie danych, użyj poniższego publicznego kanału pomocy."
+      "body": "Twoje dane nauki są zapisane lokalnie na tym urządzeniu. Wyeksportuj je do pliku JSON bez logowania. Z osobnego formularza prywatności skorzystaj w sprawie danych usług online."
     },
     "signedOut": {
       "title": "Zaloguj się, aby zarządzać danymi konta",
@@ -223,8 +223,8 @@
     "scopeTitle": "Zakres",
     "accountIntro": "Eksport jest plikiem JSON przygotowanym dla zalogowanego konta.",
     "accountBody": "Eksport obejmuje profil konta; obsługiwane synchronizowane rekordy nauki, takie jak aktywna ścieżka, cele i plany nauki, podsumowania i wyniki ukończonych sesji, próby oraz kolejka powtórek; a także powiązane zgłoszenia treści. Aktywność i kontekst konta obejmują dostęp do ścieżek, uprawnienia, akceptacje prawne, potwierdzenia zakupów, sprawy konsumenckie, metadane urządzeń, metadane synchronizacji i historię eksportów. Informacje o dostępie opisują cele, kategorie danych, odbiorców, retencję, źródła, transfery, zautomatyzowane decyzje i Twoje prawa. Manifest wskazuje kategorie ujęte i pominięte; dane logowania, sekrety, surowe identyfikatory dostawcy lub urządzenia, zgłoszenia innych osób i zgłoszenia anonimowe nie są dołączane. Aktywne sesje, szkice, ustawienia i inne dane dostępne tylko na urządzeniu nie są synchronizowane. Po zalogowaniu na to samo konto zwykła synchronizacja może przywrócić obsługiwane rekordy z chmury konta. Adopcja danych gościa jest osobną decyzją, która łączy kwalifikujący się postęp z tego urządzenia z kontem. Plik JSON jest przekazywany do systemowego arkusza udostępniania lub zapisu, służy dostępowi i przenoszeniu danych i nie można go zaimportować do Patternly. Ze względów bezpieczeństwa może być wymagane ponowne potwierdzenie tożsamości. Eksport podlega limitowi częstotliwości.",
-    "guestIntro": "Konto nie jest potrzebne, aby skontaktować się w sprawie swoich danych.",
-    "guestBody": "Dane zapisane wyłącznie na tym urządzeniu możesz usunąć lokalnie. Szerszy wniosek dotyczący prywatności wyślij przez formularz w aplikacji. Aplikacja nie dołącza identyfikatora konta ani nie sprawdza, czy adres występuje w systemie."
+    "guestIntro": "Utwórz lokalną kopię danych nauki Gościa bez konta, e-maila i połączenia z siecią.",
+    "guestBody": "Plik JSON zawiera dostępny postęp w nauce, sesje i zapisane szkice, odpowiedzi i wyniki, kolejkę powtórek, cele i zaakceptowane plany, ustawienia aplikacji i przypomnień oraz zapisane na tym urządzeniu zgłoszenia. Manifest wymienia dane uwzględnione i pominięte. Systemowe okno pozwala zapisać lub udostępnić plik; Patternly nie może potwierdzić, że inna aplikacja go zapisała."
   },
   "status": {
     "title": "Nie udało się dokończyć",
@@ -240,6 +240,16 @@
     "fileFailure": "Nie udało się bezpiecznie przygotować pliku tymczasowego.",
     "sharingFailed": "Nie udało się otworzyć systemowego arkusza zapisu lub udostępniania.",
     "cleanupFailed": "Nie udało się usunąć pliku tymczasowego. Aplikacja ponowi bezpieczne czyszczenie przy następnym uruchomieniu.",
-    "actionFailed": "Nie udało się wykonać działania na koncie. Spróbuj ponownie."
+    "actionFailed": "Nie udało się wykonać działania na koncie. Spróbuj ponownie.",
+    "guestExportTitle": "Eksport danych Gościa",
+    "guestExportHandoff": "Plik przekazano do systemowego okna zapisu lub udostępniania. Patternly nie może potwierdzić, czy inna aplikacja go zapisała.",
+    "guestExportDismissed": "Zamknięto systemowe okno zapisu lub udostępniania. Nie potwierdzono utworzenia kopii.",
+    "guestExportGuestProfileUnavailable": "W bieżącym profilu nie można wyeksportować danych Gościa. Wróć do aktywnego profilu Gościa i spróbuj ponownie.",
+    "guestExportSourcePending": "Trwa zapisywanie zmiany w nauce. Poczekaj na jej zakończenie i ponów eksport.",
+    "guestExportSourceInvalid": "Część lokalnych danych nauki jest niekompletna lub niespójna, dlatego Patternly nie utworzył eksportu.",
+    "guestExportSourceChanged": "Aktywny profil lub jego dane zmieniły się podczas eksportu. Plik tymczasowy usunięto; spróbuj ponownie.",
+    "guestExportFileFailure": "Nie udało się bezpiecznie przygotować tymczasowego pliku eksportu.",
+    "guestExportSharingFailed": "Nie udało się otworzyć systemowego okna zapisu lub udostępniania. Plik tymczasowy usunięto.",
+    "guestExportCleanupFailed": "Nie udało się usunąć tymczasowego pliku eksportu. Patternly ponowi bezpieczne sprzątanie przy następnym uruchomieniu."
   }
 }

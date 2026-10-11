@@ -4,7 +4,7 @@ import { LearningPlanProposalCoordinator } from "./LearningPlanProposalCoordinat
 import { recommendLearningPlanMode } from "./learningPlanModeRecommendation";
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { acceptedTargetFromGoal, createDefaultGoal, createLearningPlanSlotId, normalizeGoalRecord, normalizeLearningPlan, createResolvedContentRef, createTrainingAttempt, createTrainingSession, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
-import { installKeyValueStorageForTests, MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
+import { installKeyValueStorageForTests, MemoryKeyValueStorage, setActiveProfileLeaseForTests } from "../../infrastructure/storage/mmkvClient";
 import { saveGoalSnapshot } from "../../storage/repositories/goalRepository";
 import { readLearningPlanInputSnapshot } from "../../storage/repositories/learningPlanInputSnapshot";
 import { addReviewQueueItems } from "../../storage/repositories/reviewQueueRepository";
@@ -26,6 +26,7 @@ const TRACK = "google-cloud-associate-cloud-engineer" as const;
 async function fixture() {
   const storage = new MemoryKeyValueStorage();
   installKeyValueStorageForTests(storage);
+  setActiveProfileLeaseForTests({ id: "guest-test-profile", kind: "guest", accountId: null });
   await saveGoalSnapshot(createDefaultGoal(TRACK), null);
   const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK, "certification");
   let now = "2026-10-02T12:00:00.000Z";
@@ -614,7 +615,10 @@ test("corrupt, dangling, and journaled evidence reads are errors, never empty hi
     const f = await fixture();
     if (scenario === "corrupt-index") f.storage.setString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, "not-json");
     if (scenario === "dangling-attempt") f.storage.setString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, JSON.stringify({ schemaIdentity: "patternly:canonical:v1", revision: 1, payload: ["missing-attempt"] }));
-    if (scenario === "active-journal") await persistMutationJournal(journal([{ kind: "clear_learning_state" }], "reset_learning_state"));
+    if (scenario === "active-journal") {
+      const { captureLearningStateResetTargetPlan } = await import("../../storage/repositories/learningStateResetRepository");
+      await persistMutationJournal(journal([{ kind: "clear_learning_state", targetPlan: captureLearningStateResetTargetPlan() }], "reset_learning_state"));
+    }
     assert.deepEqual(await createProposal(f), { kind: "generator_error", classification: "retryable" });
   });
 });

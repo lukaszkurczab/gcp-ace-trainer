@@ -5,16 +5,27 @@ import { isTrainingSession } from "./trainingModelGuards";
 import { clearTrainingSessionResults } from "./trainingSessionResultRepository";
 import { clearContentIdentityUnavailableRecords } from "./contentIdentityUnavailableRepository";
 import type { StorageRepositoryResult } from "./result";
+import { readTrainingSessionsStrict } from "./trainingEvidenceIntegrityRepository";
 
-const isIds = (value: unknown): value is string[] => Array.isArray(value) && value.every((id) => typeof id === "string");
-export function readTrainingSessions(): StorageRepositoryResult<TrainingSession[]> { const ids = readCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, isIds) ?? []; return { ok: true, value: ids.map((id) => { const session = readCanonicalJson(STORAGE_KEYS.trainingSession(id), isTrainingSession); if (!session) throw new Error(`Session index references missing session ${id}.`); return session; }) }; }
+const isIds = (value: unknown): value is string[] => Array.isArray(value) && value.every((id) => typeof id === "string" && id.trim().length > 0);
+export function readTrainingSessions(): StorageRepositoryResult<TrainingSession[]> { return readTrainingSessionsStrict(); }
 export function readActiveTrainingSession(): TrainingSession | null { const id = readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, (value): value is string => typeof value === "string"); if (!id) return null; const session = readCanonicalJson(STORAGE_KEYS.trainingSession(id), isTrainingSession); if (!session) throw new Error(`Active session pointer references missing session ${id}.`); if (session.status !== "active") throw new Error(`Active session pointer references terminal session ${id}.`); return session; }
 export async function getTrainingSessions(): Promise<StorageRepositoryResult<TrainingSession[]>> { return readTrainingSessions(); }
 export async function getActiveTrainingSession(): Promise<TrainingSession | null> { return readActiveTrainingSession(); }
 export async function getActiveTrainingSessionId(): Promise<string | null> { return readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, (value): value is string => typeof value === "string"); }
 export async function clearActiveTrainingSession(sessionId: string): Promise<void> { const activeSessionId = await getActiveTrainingSessionId(); if (activeSessionId === sessionId) removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION); }
 export async function saveTrainingSession(session: TrainingSession): Promise<void> {
+  await writeTrainingSession(session, true);
+}
+
+/** Journal replay entry point; the caller must first run the journal preflight. */
+export async function materializeTrainingSession(session: TrainingSession): Promise<void> {
+  await writeTrainingSession(session, false);
+}
+
+async function writeTrainingSession(session: TrainingSession, requireStrictRead: boolean): Promise<void> {
   if (!isTrainingSession(session)) throw new Error("Training session is invalid.");
+  if (requireStrictRead) readTrainingSessionsStrict();
   // A journal can materialize a terminal session before it clears its pointer.
   // Preserve that recoverable intermediate state here; public reads stay strict.
   const activeId = await getActiveTrainingSessionId();
@@ -38,7 +49,7 @@ export async function saveTrainingSession(session: TrainingSession): Promise<voi
       }
     }
   }
-  writeCanonicalJson(STORAGE_KEYS.trainingSession(session.id), session);
+  if (!existing || JSON.stringify(existing) !== JSON.stringify(session)) writeCanonicalJson(STORAGE_KEYS.trainingSession(session.id), session);
   const ids = readCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, isIds) ?? [];
   if (!ids.includes(session.id)) writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [session.id, ...ids]);
   if (session.status === "active") writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, session.id);
@@ -80,4 +91,4 @@ function assertConditionalReinsertResolution(existing: TrainingSession, next: Tr
     throw new Error(`Session ${existing.id} has a conflicting conditional reinsert plan.`);
   }
 }
-export async function clearTrainingSessions(): Promise<void> { const ids = readCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, isIds) ?? []; await clearTrainingSessionResults(ids); ids.forEach((id) => removeCanonicalValue(STORAGE_KEYS.trainingSession(id))); removeCanonicalValue(STORAGE_KEYS.TRAINING_SESSION_INDEX); removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION); await clearContentIdentityUnavailableRecords(); }
+export async function clearTrainingSessions(): Promise<void> { const ids = readTrainingSessionsStrict().value.map((session) => session.id); await clearTrainingSessionResults(ids); ids.forEach((id) => removeCanonicalValue(STORAGE_KEYS.trainingSession(id))); removeCanonicalValue(STORAGE_KEYS.TRAINING_SESSION_INDEX); removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION); await clearContentIdentityUnavailableRecords(); }

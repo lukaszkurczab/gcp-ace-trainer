@@ -6,7 +6,7 @@ import { abandonUnavailableActiveTrainingSession, bootstrapApplication } from ".
 import { createBootstrapProgressObserver, describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
 import { getForegroundSessionTimerFacade } from "../../application/trainingLifecycle";
-import { handleRuntimeAuditabilityUrl } from "../../application/runtimeAuditability/developmentResetCommand";
+import { DEVELOPMENT_RESET_LEARNING_STATE_URL, handleRuntimeAuditabilityUrl } from "../../application/runtimeAuditability/developmentResetCommand";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { abandonUnavailableExactActiveTrainingSession } from "../../application/trainingLifecycle";
@@ -19,6 +19,7 @@ import { getGuestInstallation } from "../../storage/repositories/guestInstallati
 import { hasGuestAccess } from "../../storage/repositories/guestAccessRepository";
 import { captureExactMissingActorAnchor, captureExactMissingActorFenceAtConfirmation, type ExactMissingActorAnchor } from "../../application/exactMissingActorFence";
 import { prepareLifecycleAfterProfileCompletion } from "./profilePreparationBarrier";
+import type { ProfilePreparationHandoffToken } from "../../application/account/profilePreparationHandoff";
 
 export type ContentPreparationPhase =
   | "opening-storage"
@@ -70,15 +71,21 @@ export function ContentBootstrapLoadingSkeleton({ phase }: Readonly<{ phase: Con
   return <LoadingState description={phaseCopy} descriptionTestID="content-bootstrap-phase" showLogo testID="content-bootstrap-loading-skeleton" title={title} />;
 }
 
-export function ContentPreparationGate({ children, completeAccountPreparation }: { children: ReactNode; completeAccountPreparation: () => Promise<void> }) {
+export function ContentPreparationGate({ children, completeAccountPreparation, handoffToken }: { children: ReactNode; completeAccountPreparation: (token: ProfilePreparationHandoffToken) => Promise<void>; handoffToken: ProfilePreparationHandoffToken | null }) {
   const { colors } = useAppPreferences();
   const { t } = useTranslation("common");
   const account = usePatternlyAccount();
   const accountRef = useRef(account);
   accountRef.current = account;
+  const completeAccountPreparationRef = useRef(completeAccountPreparation);
+  completeAccountPreparationRef.current = completeAccountPreparation;
+  const lastHandoffTokenRef = useRef<ProfilePreparationHandoffToken | null>(handoffToken);
+  if (handoffToken) lastHandoffTokenRef.current = handoffToken;
+  const activeHandoffToken = lastHandoffTokenRef.current;
   const [state, setState] = useState<ContentPreparationState>({ kind: "loading", phase: "opening-storage" });
   const [bootstrapRevision, setBootstrapRevision] = useState(0);
   const [auditResetReady, setAuditResetReady] = useState(false);
+  const [developmentResetUnavailable, setDevelopmentResetUnavailable] = useState(false);
   const [confirmUnavailableActiveAbandon, setConfirmUnavailableActiveAbandon] = useState(false);
   const [abandoningUnavailableActive, setAbandoningUnavailableActive] = useState(false);
   const initialUrlHandled = useRef(false);
@@ -144,6 +151,7 @@ export function ContentPreparationGate({ children, completeAccountPreparation }:
     void (async () => {
       const initialUrl = __DEV__ && !initialUrlHandled.current ? await Linking.getInitialURL() : null;
       initialUrlHandled.current = true;
+      if (initialUrl && !pendingRuntimeAuditabilityUrl.current) pendingRuntimeAuditabilityUrl.current = initialUrl;
       return bootstrapApplication(
         () => {
           setPhase("verifying-content");
@@ -169,7 +177,7 @@ export function ContentPreparationGate({ children, completeAccountPreparation }:
         },
         async (observeRecoveryStep) => {
           setPhase("recovering-learning-state");
-          lifecycle = await prepareLifecycleAfterProfileCompletion(completeAccountPreparation, async () => composeTrainingLifecycleUseCases({
+          lifecycle = await prepareLifecycleAfterProfileCompletion(activeHandoffToken, (token) => completeAccountPreparationRef.current(token), async () => composeTrainingLifecycleUseCases({
             premiumSessionAdmission: {
               authorize: () => accountRef.current.authorizePremiumSessionStart(),
             },
@@ -185,12 +193,6 @@ export function ContentPreparationGate({ children, completeAccountPreparation }:
           } catch { exactMissingActorAnchor.current = null; }
           observeRecoveryStep?.(null);
           lifecycleReady.current = true;
-          const queuedUrl = pendingRuntimeAuditabilityUrl.current;
-          pendingRuntimeAuditabilityUrl.current = null;
-          observeRecoveryStep?.("auditability_command");
-          const handling = await handleRuntimeAuditabilityUrl(queuedUrl ?? initialUrl);
-          observeRecoveryStep?.(null);
-          if (handling.kind === "reset_learning_state") auditResetAwaitingBootstrap.current = true;
         },
         {
           diagnosticObserver: bootstrapProgress.observeFailure,
@@ -226,18 +228,22 @@ export function ContentPreparationGate({ children, completeAccountPreparation }:
       bootstrapProgress.dispose();
       if (timeoutId !== undefined) clearTimeout(timeoutId);
     };
-  }, [bootstrapRevision, completeAccountPreparation, t]);
+  }, [activeHandoffToken, bootstrapRevision, t]);
 
   useEffect(() => {
-    // A reset must also be available after bootstrap has reported a blocking
-    // persisted-state error; otherwise the development recovery command cannot
-    // restore the very state that prevents the app from becoming ready.
+    // Reset URLs can run only after lifecycle preparation has validated storage.
+    // A terminal bootstrap failure consumes the URL and reports reset as unavailable.
     if (!__DEV__) return;
     let live = true;
     const apply = async (url: string | null) => {
       if (!live) return;
-      if (state.kind === "loading" || !lifecycleReady.current) {
+      if (state.kind === "loading") {
         pendingRuntimeAuditabilityUrl.current = url;
+        return;
+      }
+      if (!lifecycleReady.current) {
+        pendingRuntimeAuditabilityUrl.current = null;
+        if (url === DEVELOPMENT_RESET_LEARNING_STATE_URL) setDevelopmentResetUnavailable(true);
         return;
       }
       if (resetInFlight.current) return;
@@ -255,6 +261,12 @@ export function ContentPreparationGate({ children, completeAccountPreparation }:
         resetInFlight.current = false;
       }
     };
+    if (state.kind !== "loading" && pendingRuntimeAuditabilityUrl.current) {
+      const queuedUrl = pendingRuntimeAuditabilityUrl.current;
+      pendingRuntimeAuditabilityUrl.current = null;
+      if (lifecycleReady.current) void apply(queuedUrl);
+      else if (queuedUrl === DEVELOPMENT_RESET_LEARNING_STATE_URL) setDevelopmentResetUnavailable(true);
+    }
     const subscription = Linking.addEventListener("url", ({ url }) => { void apply(url); });
     return () => { live = false; subscription.remove(); };
   }, [state.kind]);
@@ -332,6 +344,6 @@ export function ContentPreparationGate({ children, completeAccountPreparation }:
               : <Button onPress={() => setConfirmUnavailableActiveAbandon(true)} testID={runtimeSelectors.content.unavailableActiveAbandon()} variant="destructive">{t("Abandon unavailable session")}</Button>}
             {!confirmUnavailableActiveAbandon ? <Button onPress={retry} testID={runtimeSelectors.content.unavailableActiveRetry()} variant="secondary">{t("Try again")}</Button> : null}
           </Screen></View>
-      : <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><Screen><EmptyState actionLabel={t("Try again")} description={state.reason} onActionPress={retry} title={t("Application unavailable")} /></Screen></View>;
+      : <View style={{ flex: 1 }} testID={runtimeSelectors.content.unavailable()}><Screen><EmptyState actionLabel={t("Try again")} description={developmentResetUnavailable ? `${state.reason} Development reset is unavailable because lifecycle preparation did not complete.` : state.reason} onActionPress={retry} title={t("Application unavailable")} /></Screen></View>;
   return <View style={{ backgroundColor: colors.background, flex: 1 }}>{body}</View>;
 }

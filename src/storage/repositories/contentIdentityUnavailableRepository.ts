@@ -2,8 +2,8 @@ import { isContentIdentityTombstone, type ContentIdentityTombstone } from "../..
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import type { KeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
-import { CanonicalWriteConflictError, CorruptStoredRecordError, UnsupportedStoredRecordError } from "../errors";
+import { readCanonicalEnvelope, readCanonicalJson, readCanonicalNamespaceKeys, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
+import { CanonicalEvidenceIntegrityError, CanonicalWriteConflictError, CorruptStoredRecordError, UnsupportedStoredRecordError } from "../errors";
 import type { StorageRepositoryResult } from "./result";
 
 /**
@@ -139,6 +139,47 @@ export function createContentIdentityUnavailableReviewRecord(value: unknown): Co
 
 export { isArchivalHistoryRecord, isUnavailableActiveRecord, isUnavailableReviewRecord };
 
+export type ContentIdentityRetainedHistorySnapshot = Readonly<{
+  archivalSessions: readonly ContentIdentityArchivalHistoryRecord[];
+  unavailableActiveSessions: readonly ContentIdentityUnavailableActiveRecord[];
+  unavailableReviews: readonly ContentIdentityUnavailableReviewRecord[];
+}>;
+
+/** Strict read-only closure check used before a reset is authorized. */
+export function assertContentIdentityRecordIntegrity(): void {
+  const keys = readCanonicalNamespaceKeys();
+  const fail = (): never => { throw new CanonicalEvidenceIntegrityError(); };
+  const assertFamily = <T>(family: Readonly<{
+    index: string;
+    prefix: string;
+    keyFor: (id: string) => string;
+    id: (value: T) => string;
+    guard: (value: unknown) => value is T;
+  }>): void => {
+    const index = readCanonicalEnvelope(family.index, isStringArray);
+    const ids = index?.payload ?? [];
+    if (new Set(ids).size !== ids.length) fail();
+    const indexed = new Set(ids);
+    const physical = keys.filter((key) => key.startsWith(family.prefix));
+    for (const id of ids) {
+      const key = family.keyFor(id);
+      if (!physical.includes(key)) fail();
+      const envelope = readCanonicalEnvelope(key, family.guard);
+      if (!envelope || family.id(envelope.payload) !== id) fail();
+    }
+    for (const key of physical) {
+      const id = key.slice(family.prefix.length);
+      if (!id.trim() || family.keyFor(id) !== key || !indexed.has(id)) fail();
+    }
+  };
+  assertFamily({ index: STORAGE_KEYS.ARCHIVAL_HISTORY_INDEX, prefix: STORAGE_KEYS.archivalHistory(""), keyFor: STORAGE_KEYS.archivalHistory, id: (value: ContentIdentityArchivalHistoryRecord) => value.sessionId, guard: isArchivalHistoryRecord });
+  assertFamily({ index: STORAGE_KEYS.UNAVAILABLE_ACTIVE_INDEX, prefix: STORAGE_KEYS.unavailableActive(""), keyFor: STORAGE_KEYS.unavailableActive, id: (value: ContentIdentityUnavailableActiveRecord) => value.sessionId, guard: isUnavailableActiveRecord });
+  assertFamily({ index: STORAGE_KEYS.UNAVAILABLE_REVIEW_INDEX, prefix: STORAGE_KEYS.unavailableReview(""), keyFor: STORAGE_KEYS.unavailableReview, id: (value: ContentIdentityUnavailableReviewRecord) => value.reviewId, guard: isUnavailableReviewRecord });
+  const activeIds = new Set((readCanonicalEnvelope(STORAGE_KEYS.UNAVAILABLE_ACTIVE_INDEX, isStringArray)?.payload ?? []));
+  const archivedIds = new Set((readCanonicalEnvelope(STORAGE_KEYS.ARCHIVAL_HISTORY_INDEX, isStringArray)?.payload ?? []));
+  if ([...activeIds].some((id) => archivedIds.has(id))) fail();
+}
+
 function recordIds(key: string): readonly string[] {
   return readCanonicalJson(key, isStringArray) ?? [];
 }
@@ -195,6 +236,15 @@ export async function saveUnavailableActiveRecord(record: ContentIdentityUnavail
 
 export async function getUnavailableReviewRecords(): Promise<StorageRepositoryResult<readonly ContentIdentityUnavailableReviewRecord[]>> {
   return { ok: true, value: readByIndex(STORAGE_KEYS.UNAVAILABLE_REVIEW_INDEX, STORAGE_KEYS.unavailableReview, isUnavailableReviewRecord) };
+}
+
+/** Synchronous typed export projection; callers run the full closure gate first. */
+export function readContentIdentityRetainedHistory(): ContentIdentityRetainedHistorySnapshot {
+  return Object.freeze({
+    archivalSessions: Object.freeze([...readByIndex(STORAGE_KEYS.ARCHIVAL_HISTORY_INDEX, STORAGE_KEYS.archivalHistory, isArchivalHistoryRecord)]),
+    unavailableActiveSessions: Object.freeze([...readByIndex(STORAGE_KEYS.UNAVAILABLE_ACTIVE_INDEX, STORAGE_KEYS.unavailableActive, isUnavailableActiveRecord)]),
+    unavailableReviews: Object.freeze([...readByIndex(STORAGE_KEYS.UNAVAILABLE_REVIEW_INDEX, STORAGE_KEYS.unavailableReview, isUnavailableReviewRecord)]),
+  });
 }
 
 export async function getUnavailableReviewRecord(reviewId: string): Promise<ContentIdentityUnavailableReviewRecord | null> {

@@ -12,10 +12,6 @@
       "title": "Condividi o scarica i dati dell’account",
       "summary": "File JSON con i dati dell’account, i dati di apprendimento sincronizzati e l’attività dell’account"
     },
-    "guestPrivacy": {
-      "title": "Richiedi assistenza per i tuoi dati",
-      "summary": "Invia una richiesta relativa alla privacy dall’app senza creare un account"
-    },
     "openAccount": {
       "title": "Apri account",
       "summary": "Accedi o crea un account per gestire i dati dell’account"
@@ -39,6 +35,10 @@
     "none": {
       "title": "Azioni sui dati non disponibili",
       "summary": "In questo stato non è disponibile alcuna azione sull’account"
+    },
+    "guestExport": {
+      "title": "Esporta i dati locali ospite",
+      "summary": "Salva una copia JSON dei dati di apprendimento di questo dispositivo. Non servono account o e-mail."
     }
   },
   "localReset": {
@@ -70,7 +70,7 @@
     },
     "guest": {
       "title": "Dati ospite",
-      "body": "I dati di apprendimento sono salvati localmente su questo dispositivo. Puoi usare Patternly senza un account. Se hai bisogno di assistenza per i tuoi dati, usa il modulo privacy nell’app."
+      "body": "I tuoi dati di apprendimento sono salvati localmente su questo dispositivo. Esporta una copia JSON senza accedere. Usa il modulo privacy separato per i dati dei servizi online."
     },
     "signedOut": {
       "title": "Accedi per gestire i dati dell’account",
@@ -223,8 +223,8 @@
     "scopeTitle": "Ambito",
     "accountIntro": "L’esportazione è un file JSON preparato per l’account connesso.",
     "accountBody": "L’esportazione include il profilo dell’account; i record di apprendimento supportati e sincronizzati, come il percorso attivo, gli obiettivi e i piani di apprendimento, i riepiloghi e i risultati delle sessioni completate, i tentativi e la coda dei ripassi; nonché le segnalazioni di contenuti collegate. L’attività e il contesto dell’account comprendono l’accesso ai percorsi, le autorizzazioni, le accettazioni legali, le conferme di acquisto, le pratiche dei consumatori, i metadati del dispositivo e della sincronizzazione e la cronologia delle esportazioni. Le informazioni sull’accesso descrivono finalità, categorie di dati, destinatari, conservazione, fonti, trasferimenti, decisioni automatizzate e i tuoi diritti. Il manifesto indica le categorie incluse e omesse; non include credenziali, segreti, identificativi grezzi del provider o del dispositivo, segnalazioni di altre persone o segnalazioni anonime. Le sessioni attive, le bozze, le impostazioni e gli altri dati disponibili solo sul dispositivo non vengono sincronizzati. Dopo aver effettuato l’accesso allo stesso account, la normale sincronizzazione può ripristinare dal cloud dell’account i record supportati. L’adozione dei dati ospite è una scelta separata che unisce all’account i progressi idonei di questo dispositivo. Il file JSON viene condiviso tramite il pannello di sistema per condividere o salvare i dati ai fini dell’accesso e della portabilità e non può essere importato in Patternly. Per sicurezza, potrebbe essere necessario confermare di nuovo la tua identità. Le esportazioni sono soggette a limiti di frequenza.",
-    "guestIntro": "Non serve un account per contattarci riguardo ai tuoi dati.",
-    "guestBody": "Puoi rimuovere localmente i dati memorizzati solo su questo dispositivo. Invia una richiesta più ampia relativa alla privacy tramite il modulo nell’app. L’app non associa un identificativo dell’account né verifica se un indirizzo è presente nel sistema."
+    "guestIntro": "Crea una copia locale dei tuoi dati di apprendimento senza account, e-mail o connessione di rete.",
+    "guestBody": "Il file JSON include i progressi disponibili, le sessioni e le bozze salvate, le risposte e i risultati, il calendario dei ripassi, gli obiettivi e i piani accettati, le preferenze dell’app e dei promemoria e le segnalazioni salvate su questo dispositivo. Il manifesto elenca i dati inclusi ed esclusi. Il pannello di sistema consente di salvare o condividere il file; Patternly non può confermare che un’altra app lo abbia salvato."
   },
   "status": {
     "title": "Impossibile completare l’azione",
@@ -240,6 +240,16 @@
     "fileFailure": "Non è stato possibile preparare il file temporaneo in sicurezza.",
     "sharingFailed": "Non è stato possibile aprire il pannello di sistema per salvare o condividere.",
     "cleanupFailed": "Non è stato possibile rimuovere il file temporaneo. Al prossimo avvio l’app riproverà a completare la pulizia in sicurezza.",
-    "actionFailed": "Non è stato possibile completare questa operazione sull’account. Riprova."
+    "actionFailed": "Non è stato possibile completare questa operazione sull’account. Riprova.",
+    "guestExportTitle": "Esportazione dei dati ospite",
+    "guestExportHandoff": "Il file è stato passato al pannello di sistema per il salvataggio o la condivisione. Patternly non può confermare se un’altra app lo ha salvato.",
+    "guestExportDismissed": "Il pannello di sistema è stato chiuso. Nessuna copia è stata confermata.",
+    "guestExportGuestProfileUnavailable": "I dati ospite non sono disponibili nel profilo attuale. Torna al profilo ospite attivo e riprova.",
+    "guestExportSourcePending": "È in corso il salvataggio di una modifica di apprendimento. Attendi e riprova.",
+    "guestExportSourceInvalid": "Alcuni dati locali sono incompleti o incoerenti. Patternly non ha creato l’esportazione.",
+    "guestExportSourceChanged": "Il profilo attivo o i suoi dati sono cambiati durante l’esportazione. Il file temporaneo è stato rimosso; riprova.",
+    "guestExportFileFailure": "Impossibile preparare in sicurezza il file temporaneo di esportazione.",
+    "guestExportSharingFailed": "Impossibile aprire il pannello di sistema. Il file temporaneo è stato rimosso.",
+    "guestExportCleanupFailed": "Impossibile rimuovere il file temporaneo. Patternly riproverà alla prossima apertura."
   }
 }

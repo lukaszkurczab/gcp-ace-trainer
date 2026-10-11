@@ -12,10 +12,6 @@
       "title": "Jaga konto andmeid või laadi need alla",
       "summary": "JSON-fail kontoandmete, sünkroonitud õpiandmete ja kontotegevustega"
     },
-    "guestPrivacy": {
-      "title": "Küsi abi oma andmetega",
-      "summary": "Saada rakenduses privaatsustaotlus kontot loomata"
-    },
     "openAccount": {
       "title": "Ava konto",
       "summary": "Kontoandmete haldamiseks logi sisse või loo konto"
@@ -39,6 +35,10 @@
     "none": {
       "title": "Andmetoimingud pole saadaval",
       "summary": "Selles olekus pole kontotoimingud saadaval"
+    },
+    "guestExport": {
+      "title": "Ekspordi külalise kohalikud andmed",
+      "summary": "Salvesta selle seadme õpiandmetest JSON-koopia. Kontot ega e-posti pole vaja."
     }
   },
   "localReset": {
@@ -70,7 +70,7 @@
     },
     "guest": {
       "title": "Külalise andmed",
-      "body": "Õpiandmeid hoitakse kohalikult selles seadmes. Patternlyt saab kasutada kontota. Kui vajad oma andmetega abi, kasuta selles rakenduses olevat privaatsusvormi."
+      "body": "Sinu õpiandmed on salvestatud kohalikult sellesse seadmesse. Ekspordi JSON-koopia sisse logimata. Veebiteenuste andmete jaoks kasuta eraldi privaatsusvormi."
     },
     "signedOut": {
       "title": "Kontoandmete haldamiseks logi sisse",
@@ -223,8 +223,8 @@
     "scopeTitle": "Ulatus",
     "accountIntro": "Eksport on sisselogitud konto jaoks koostatud JSON-fail.",
     "accountBody": "Eksport sisaldab sinu kontoprofiili; toetatud sünkroonitud õpikirjeid, nagu aktiivne õpitee, eesmärgid ja õppeplaanid, lõpetatud sessioonide kokkuvõtted ja tulemused, katsed ning korduste järjekord; ning seotud sisuteateid. Konto tegevuste ja konteksti hulka kuuluvad õpiteede kasutamine, kasutusõigused, õiguslike tingimustega nõustumine, ostukinnitused, tarbijajuhtumid, seadme metaandmed, sünkroonimise metaandmed ja ekspordiajalugu. Andmetele juurdepääsu teave kirjeldab eesmärke, andmekategooriaid, saajaid, säilitamisaega, allikaid, edastamisi, automatiseeritud otsuseid ja sinu õigusi. Loend nimetab kaasatud ja välja jäetud kategooriad; sisselogimisandmeid, saladusi, teenusepakkuja või seadme töötlemata tunnuseid, teiste inimeste teateid ega anonüümseid teateid ei lisata. Aktiivseid sessioone, mustandeid, seadeid ega muid ainult seadmes olevaid andmeid ei sünkroonita. Kui logid sisse samale kontole, saab tavaline sünkroonimine konto pilvest toetatud kirjed taastada. Külalise andmete kasutuselevõtt on eraldi valik, millega liidetakse selle seadme sobiv edenemine kontoga. JSON-fail jagatakse juurdepääsu ja andmete ülekandmise eesmärgil süsteemi jagamis- või salvestusvaate kaudu ning seda ei saa Patternlysse importida. Turvalisuse huvides võidakse paluda sul oma isik uuesti kinnitada. Eksportidele kehtivad sageduspiirangud.",
-    "guestIntro": "Meiega oma andmete asjus ühenduse võtmiseks pole kontot vaja.",
-    "guestBody": "Ainult selles seadmes salvestatud andmed saad kohalikult eemaldada. Laiema privaatsustaotluse saad esitada selle rakenduse vormi kaudu. Rakendus ei lisa konto tunnust ega kontrolli, kas aadress on süsteemis olemas."
+    "guestIntro": "Loo oma õpiandmetest kohalik koopia ilma konto, e-posti ja võrguühenduseta.",
+    "guestBody": "JSON-fail sisaldab saadaolevaid õpitulemusi, seansse ja salvestatud mustandeid, vastuseid ja tulemusi, kordamisjärjekorda, eesmärke ja kinnitatud plaane, rakenduse ning meeldetuletuste seadeid ja selles seadmes salvestatud teateid. Manifest loetleb kaasatud ja välja jäetud andmed. Süsteemi jagamisvaates saad faili salvestada või jagada; Patternly ei saa kinnitada, kas teine rakendus selle salvestas."
   },
   "status": {
     "title": "Toimingut ei õnnestunud lõpetada",
@@ -240,6 +240,16 @@
     "fileFailure": "Ajutist faili ei õnnestunud turvaliselt ette valmistada.",
     "sharingFailed": "Süsteemi salvestus- või jagamisvaadet ei õnnestunud avada.",
     "cleanupFailed": "Ajutist faili ei õnnestunud eemaldada. Rakendus proovib järgmisel käivitamisel seda turvaliselt uuesti teha.",
-    "actionFailed": "Kontotoimingut ei õnnestunud lõpetada. Proovi uuesti."
+    "actionFailed": "Kontotoimingut ei õnnestunud lõpetada. Proovi uuesti.",
+    "guestExportTitle": "Külalise andmete eksport",
+    "guestExportHandoff": "Ekspordifail edastati süsteemi salvestus- või jagamisvaatele. Patternly ei saa kinnitada, kas teine rakendus faili salvestas.",
+    "guestExportDismissed": "Süsteemi salvestus- või jagamisvaade suleti. Koopia salvestamist ei kinnitatud.",
+    "guestExportGuestProfileUnavailable": "Külalise andmed pole praeguses profiilis ekspordiks saadaval. Ava aktiivne külalise profiil ja proovi uuesti.",
+    "guestExportSourcePending": "Õpimuudatuse salvestamine on pooleli. Oota selle lõppu ja proovi siis uuesti.",
+    "guestExportSourceInvalid": "Osa kohalikke õpiandmeid on puudulikud või vastuolulised. Patternly ei loonud eksporti.",
+    "guestExportSourceChanged": "Aktiivne profiil või selle andmed muutusid ekspordi ajal. Ajutine fail eemaldati; proovi uuesti.",
+    "guestExportFileFailure": "Ajutist ekspordifaili ei saanud turvaliselt ette valmistada.",
+    "guestExportSharingFailed": "Süsteemi salvestus- või jagamisvaadet ei saanud avada. Ajutine fail eemaldati.",
+    "guestExportCleanupFailed": "Ajutist ekspordifaili ei saanud eemaldada. Patternly proovib järgmisel käivitamisel uuesti."
   }
 }

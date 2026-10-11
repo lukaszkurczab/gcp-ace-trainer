@@ -65,8 +65,11 @@ test("practice submission recovers identically after every durable write boundar
     const storage = new MemoryKeyValueStorage();
     installKeyValueStorageForTests(storage);
     await saveTrainingSession(session);
+    const submittedSession = boundary.key === STORAGE_KEYS.trainingSession(session.id)
+      ? { ...session, activeForegroundMs: session.activeForegroundMs + 1 }
+      : session;
     storage.setFailurePlan(boundary);
-    const submit = () => commitTrainingOutcome({ attempt: submittedAttempt, session, reviews: [review], createdAt: session.startedAt });
+    const submit = () => commitTrainingOutcome({ attempt: submittedAttempt, session: submittedSession, reviews: [review], createdAt: session.startedAt });
     await assert.rejects(submit(), boundary.key);
     storage.setFailurePlan(null);
     if (boundary.key === STORAGE_KEYS.ACTIVE_JOURNAL && boundary.kind === "fail_on_key_write") await submit();
@@ -74,7 +77,7 @@ test("practice submission recovers identically after every durable write boundar
     assert.equal(await getActiveMutationJournal(), null, boundary.key);
     assert.deepEqual((await getTrainingAttempts()).value, [submittedAttempt], boundary.key);
     assert.deepEqual((await getReviewQueueItems()).value, [review], boundary.key);
-    assert.deepEqual((await getTrainingSessions()).value, [session], boundary.key);
+    assert.deepEqual((await getTrainingSessions()).value, [submittedSession], boundary.key);
   }
 });
 

@@ -73,6 +73,18 @@ function api(overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient {
   };
 }
 
+function apiWithAcknowledgedLocalSync(overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient {
+  let applied: ProgressRecordDto[] = [];
+  return api({
+    syncProgress: async (input) => {
+      applied = makeAppliedRecords(input.mutations);
+      return { accountRevision: input.expectedAccountRevision + applied.length, applied, duplicates: [], conflicts: [] };
+    },
+    getProgress: async () => ({ accountRevision: applied.length, records: applied }),
+    ...overrides,
+  });
+}
+
 beforeEach(async () => {
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   await provisionGuestInstallation({ async create() { return { installationId: "66666666-6666-4666-8666-666666666666", localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
@@ -383,12 +395,13 @@ test("a preflight journal failure does not create a deletion operation and pendi
 });
 
 test("response loss resolves a matching remote operation and rejects mismatched status without local cleanup", async () => {
+  await prepareBoundSyncedAccount();
   const storage = getKeyValueStorage() as MemoryKeyValueStorage;
-  const orphanKey = STORAGE_KEYS.trainingSession("response-loss-orphan");
-  storage.setString(orphanKey, "orphan");
+  const orphanSession = await persistDeletionFixtureSession("response-loss-orphan");
+  const orphanKey = STORAGE_KEYS.trainingSession(orphanSession.id);
   let operationId = "";
   let statusCalls = 0;
-  const client = api({
+  const client = apiWithAcknowledgedLocalSync({
     deleteAccount: async (requestedOperationId) => {
       operationId = requestedOperationId;
       throw new PatternlyApiClientError("transport_failed");
@@ -425,12 +438,13 @@ test("response loss resolves a matching remote operation and rejects mismatched 
 });
 
 test("local deletion cleanup resumes after a failed key removal without issuing another remote delete", async () => {
+  await prepareBoundSyncedAccount();
   const storage = getKeyValueStorage() as MemoryKeyValueStorage;
-  const orphanKey = STORAGE_KEYS.trainingSession("cleanup-retry-orphan");
-  storage.setString(orphanKey, "orphan");
+  const orphanSession = await persistDeletionFixtureSession("cleanup-retry-orphan");
+  const orphanKey = STORAGE_KEYS.trainingSession(orphanSession.id);
   let operationId = "";
   let deleteCalls = 0;
-  const client = api({
+  const client = apiWithAcknowledgedLocalSync({
     deleteAccount: async (requestedOperationId) => {
       deleteCalls++;
       operationId = requestedOperationId;
@@ -439,8 +453,11 @@ test("local deletion cleanup resumes after a failed key removal without issuing 
     getDeletionProof: async (proofId) => ({ status: "deleted", operationId, proofId }),
   });
 
-  storage.setFailurePlan({ kind: "fail_on_key_remove", key: orphanKey });
-  assert.deepEqual(await deleteBoundAccount(client, accountId, uid, prepareDeletionLocalState), { ok: false, failure: "localCleanupFailure" });
+  const prepareThenFailRemoval = async () => {
+    storage.setFailurePlan({ kind: "fail_on_key_remove", key: orphanKey });
+    return true;
+  };
+  assert.deepEqual(await deleteBoundAccount(client, accountId, uid, prepareThenFailRemoval), { ok: false, failure: "localCleanupFailure" });
   assert.equal(getAccountDeletionState()?.status, "localCleanupPending");
   storage.setFailurePlan(null);
   assert.deepEqual(await retryPendingAccountDeletion(client, accountId, uid, prepareDeletionLocalState), { ok: true, proofId: "proof_fixture_12345678901234567890" });
@@ -450,13 +467,14 @@ test("local deletion cleanup resumes after a failed key removal without issuing 
 });
 
 test("account deletion remains pending until reminders are disabled and retry does not repeat remote deletion", async () => {
+  await prepareBoundSyncedAccount();
   const storage = getKeyValueStorage() as MemoryKeyValueStorage;
-  const learningKey = STORAGE_KEYS.trainingSession("reminder-cleanup-session");
-  storage.setString(learningKey, "must-remain-until-reminders-are-disabled");
+  const learningSession = await persistDeletionFixtureSession("reminder-cleanup-session");
+  const learningKey = STORAGE_KEYS.trainingSession(learningSession.id);
   let operationId = "";
   let deleteCalls = 0;
   let preparationCalls = 0;
-  const client = api({
+  const client = apiWithAcknowledgedLocalSync({
     deleteAccount: async (requestedOperationId) => {
       deleteCalls++;
       operationId = requestedOperationId;
@@ -588,7 +606,7 @@ import type { LearningPlanProposalCoordinator } from "../learningPlan/LearningPl
 import { getActiveTrackId, saveActiveTrackId } from "../../storage/repositories/activeTrackRepository";
 import { clearTrainingSessions, getActiveTrainingSession, getTrainingSessions, saveTrainingSession } from "../../storage/repositories/trainingSessionRepository";
 import { addTrainingAttempt, getTrainingAttempts } from "../../storage/repositories/trainingAttemptRepository";
-import { getTrainingSessionResult } from "../../storage/repositories/trainingSessionResultRepository";
+import { getTrainingSessionResult, saveTrainingSessionResult } from "../../storage/repositories/trainingSessionResultRepository";
 import { clearActiveTrainingSessionDraft, getActiveTrainingSessionDraft, saveTrainingSessionDraft as persistTrainingSessionDraft } from "../../storage/repositories/trainingSessionDraftRepository";
 import { accountDataRecordFingerprint, buildAccountDataSnapshot, ensureAccountOutboxFromLocalDataset, getAccountSyncState, isCanonicalAccountSyncState, saveAccountSyncState, saveGuestAdoptionChoice } from "../../storage/repositories/accountDataRepository";
 import { getActiveMutationJournal, persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
@@ -604,6 +622,37 @@ import { recoverPendingMutation } from "../learningMutations/recoverPendingMutat
 import { getReviewQueueItems } from "../../storage/repositories/reviewQueueRepository";
 
 const guestTrack = "coding-interview-dsa-problem-solving" as const;
+async function persistDeletionFixtureSession(id: string) {
+  const session = createTrainingSession({
+    id, trackId: guestTrack, modeId: "guided", configurationSnapshot: { kind: "practice" },
+    requestedLength: 1, actualLength: 1, currentItemIndex: 0,
+    itemOrder: [{ occurrenceId: "deletion-fixture-occurrence", item: { trackId: guestTrack, questionId: "two-sum-001", contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256 } }],
+    optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256,
+    status: "abandoned", startedAt: "2026-01-01T00:00:00.000Z",
+  });
+  await saveTrainingSession(session);
+  return session;
+}
+
+function completedGuestSession(id: string) {
+  return createTrainingSession({
+    id, trackId: guestTrack, modeId: "guided", configurationSnapshot: { kind: "practice" },
+    requestedLength: 1, actualLength: 1, currentItemIndex: 0,
+    itemOrder: [{ occurrenceId: "completed-fixture-occurrence", item: { trackId: guestTrack, questionId: "two-sum-001", contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256 } }],
+    optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "test", artifactSha256: TEST_ARTIFACT_SHA256,
+    status: "completed", startedAt: "2026-01-01T00:00:00.000Z", completedAt: "2026-01-01T00:03:00.000Z",
+  });
+}
+
+function completedGuestResult(session: ReturnType<typeof completedGuestSession>) {
+  return createTrainingSessionResult({
+    id: `${session.id}:result`, sessionId: session.id, trackId: session.trackId,
+    totalOccurrences: session.actualLength, answeredOccurrenceIds: session.itemOrder.map((occurrence) => occurrence.occurrenceId),
+    unansweredOccurrenceIds: [], completedAt: session.completedAt!,
+    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: { source: "account-lifecycle-test" } }),
+  });
+}
+
 async function prepareGuest() {
   await clearGuestAccountBinding();
   await saveActiveTrackId(guestTrack);
@@ -662,7 +711,7 @@ function makeAppliedRecords(mutations: readonly ProgressMutationDto[]): Progress
   }));
 }
 
-function apiWithAppliedUpload(readRemote: () => Promise<{ accountRevision: number; generation?: number; records: readonly ProgressRecordDto[] }>): PatternlyApiClient {
+function apiWithAppliedUpload(readRemote: () => Promise<{ accountRevision: number; generation?: number; records: readonly ProgressRecordDto[] }>, overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient {
   let applied: ProgressRecordDto[] = [];
   return api({
     syncProgress: async (input) => {
@@ -674,6 +723,7 @@ function apiWithAppliedUpload(readRemote: () => Promise<{ accountRevision: numbe
       const acknowledgedByKey = new Map(applied.map((record) => [`${record.recordType}\u0000${record.trackId}\u0000${record.targetId}`, record]));
       return { ...remote, records: remote.records.map((record) => acknowledgedByKey.get(`${record.recordType}\u0000${record.trackId}\u0000${record.targetId}`) ?? record) };
     },
+    ...overrides,
   });
 }
 
@@ -1679,7 +1729,10 @@ test("a deferred upload state resumes locally and syncs idempotently after final
 test("discard deletes guest records and goals but preserves device preferences and performs no remote writes", async () => {
   const storage = await prepareGuest();
   await saveGoal(createDefaultGoal(guestTrack));
-  storage.setString(STORAGE_KEYS.trainingSessionResult("orphan"), "guest result");
+  const guestHistory = completedGuestSession("discard-history");
+  await saveTrainingSession(guestHistory);
+  const guestResult = completedGuestResult(guestHistory);
+  await saveTrainingSessionResult(guestResult);
   storage.setString(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, "guest reports");
   storage.setString(STORAGE_KEYS.SETTINGS, "device settings");
   storage.setString(STORAGE_KEYS.NOTIFICATION_SETTINGS, "device notifications");
@@ -1690,7 +1743,8 @@ test("discard deletes guest records and goals but preserves device preferences a
   assert.equal(await getActiveTrackId(), null);
   assert.equal((await buildAccountDataSnapshot()).records.length, 0);
   assert.equal(storage.contains(STORAGE_KEYS.goal(guestTrack)), false);
-  assert.equal(storage.contains(STORAGE_KEYS.trainingSessionResult("orphan")), false);
+  assert.equal(storage.contains(STORAGE_KEYS.trainingSession(guestHistory.id)), false);
+  assert.equal(storage.contains(STORAGE_KEYS.trainingSessionResult(guestHistory.id)), false);
   assert.equal(storage.contains(STORAGE_KEYS.CONTENT_REPORT_OUTBOX), false);
   assert.equal(storage.getString(STORAGE_KEYS.SETTINGS), "device settings");
   assert.equal(storage.getString(STORAGE_KEYS.NOTIFICATION_SETTINGS), "device notifications");
@@ -2173,7 +2227,9 @@ for (const fault of ["partial-index", "binding", "finish"] as const) {
   test(`discard resumes after ${fault} failure without reconstructing a guest upload`, async () => {
     const storage = await prepareGuest();
     await saveTrainingSession(guestSession("abandoned"));
-    storage.setString(STORAGE_KEYS.trainingSessionResult("backup-orphan"), "guest orphan result");
+    const backupSession = completedGuestSession("backup-orphan");
+    await saveTrainingSession(backupSession);
+    await saveTrainingSessionResult(completedGuestResult(backupSession));
     storage.setString(STORAGE_KEYS.CONTENT_REPORT_OUTBOX, "guest report outbox");
     storage.resetCounters();
     if (fault === "partial-index") storage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.TRAINING_SESSION_INDEX });
@@ -2190,7 +2246,7 @@ for (const fault of ["partial-index", "binding", "finish"] as const) {
     const first = await discardGuestDataAndLoadAccount(api(), accountId);
     assert.notEqual(first.status, "synced");
     storage.setFailurePlan(null);
-    assert.equal(storage.getString(STORAGE_KEYS.trainingSessionResult("backup-orphan")), "guest orphan result");
+    assert.notEqual(storage.getString(STORAGE_KEYS.trainingSessionResult("backup-orphan")), null);
     assert.equal(storage.getString(STORAGE_KEYS.CONTENT_REPORT_OUTBOX), "guest report outbox");
     const pendingMaterialization = (await getAccountSyncState()).materialization;
     assert.equal(pendingMaterialization && "kind" in pendingMaterialization ? pendingMaterialization.kind : null, "discardGuest");

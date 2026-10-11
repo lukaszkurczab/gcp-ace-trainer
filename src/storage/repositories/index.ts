@@ -11,6 +11,8 @@ export * from "./mutationJournalRepository";
 export * from "./trainingAttemptRepository";
 export * from "./trainingSessionRepository";
 export * from "./trainingSessionResultRepository";
+export * from "./trainingEvidenceIntegrityRepository";
+export * from "./learningStateResetRepository";
 export * from "./trainingSessionDraftRepository";
 export * from "./foregroundTimerRepository";
 export * from "./goalRepository";

@@ -391,8 +391,8 @@ test('Home rejects evidence changes and journal failure inside exact resolution'
     const home = new HomePlanSnapshotReader({ ...f.base, resolveExactArtifact: async () => {
       if (effect === 'attempt') await repositories.addTrainingAttempt(durableAttempt(resolved, 0));
       if (effect === 'journal') {
-        const { journal } = require('../../testing/journalTestSupport.ts');
-        repositories.persistMutationJournal(journal([{ kind: 'clear_learning_state' }], 'reset_learning_state'));
+        const { journal, session } = require('../../testing/journalTestSupport.ts');
+        await repositories.persistMutationJournal(journal([{ kind: 'put_session', record: session() }], 'start_training_session'));
       }
       return resolved;
     } });

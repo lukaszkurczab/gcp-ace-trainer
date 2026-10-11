@@ -1,19 +1,12 @@
 import type { AccountDataExportDto } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { getActiveStorageProfileOrNull } from "../../storage/repositories/profileStorageRepository";
+import { cleanupProfileExportFiles, createRuntimeProfileExportFileStore, type ProfileExportFile } from "./profileExportFileStore";
 
 export const ACCOUNT_DATA_EXPORT_FILE_PREFIX = "patternly-account-data-";
 
-type ExportFile = Readonly<{
-  delete: () => void;
-  exists: () => boolean;
-  name: string;
-  uri: string;
-  write: (contents: string) => void;
-}>;
-
 export type AccountDataExportFileDependencies = Readonly<{
-  createCacheFile: (name: string) => ExportFile;
-  listCacheFiles: () => readonly ExportFile[];
+  createCacheFile: (name: string) => ProfileExportFile;
+  listCacheFiles: () => readonly ProfileExportFile[];
   isSharingAvailable: () => Promise<boolean>;
   share: (uri: string) => Promise<void>;
 }>;
@@ -50,18 +43,10 @@ export function isValidAccountDataExport(value: unknown): value is AccountDataEx
 }
 
 function runtimeDependencies(): AccountDataExportFileDependencies {
-  const { Directory, File, Paths } = require("expo-file-system") as typeof import("expo-file-system");
+  const files = createRuntimeProfileExportFileStore();
   const Sharing = require("expo-sharing") as typeof import("expo-sharing");
-  const wrap = (file: InstanceType<typeof File>): ExportFile => ({
-    delete: () => file.delete(),
-    exists: () => file.exists,
-    name: file.name,
-    uri: file.uri,
-    write: (contents) => file.write(contents),
-  });
   return {
-    createCacheFile: (name) => wrap(new File(Paths.cache, name)),
-    listCacheFiles: () => new Directory(Paths.cache).list().flatMap((entry) => entry instanceof File ? [wrap(entry)] : []),
+    ...files,
     isSharingAvailable: Sharing.isAvailableAsync,
     share: (uri) => Sharing.shareAsync(uri, { dialogTitle: "Patternly account data", mimeType: "application/json", UTI: "public.json" }),
   };
@@ -83,7 +68,7 @@ export async function shareAccountDataExport(
   }
   if (!available) return { kind: "failure", failure: "sharingUnavailable" };
 
-  let file: ExportFile | null = null;
+  let file: ProfileExportFile | null = null;
   try {
     const scopedPrefix = profileId ? `${ACCOUNT_DATA_EXPORT_FILE_PREFIX}${profileId}-` : ACCOUNT_DATA_EXPORT_FILE_PREFIX;
     file = dependencies.createCacheFile(`${scopedPrefix}${data.exportId}.json`);
@@ -108,10 +93,5 @@ export function cleanupOrphanedAccountDataExports(
   dependencies: Pick<AccountDataExportFileDependencies, "listCacheFiles"> = runtimeDependencies(),
   profile = getActiveStorageProfileOrNull(),
 ): void {
-  if (!profile) return;
-  const scopedPrefix = `${ACCOUNT_DATA_EXPORT_FILE_PREFIX}${profile.id}-`;
-  for (const file of dependencies.listCacheFiles()) {
-    if (!file.name.startsWith(scopedPrefix)) continue;
-    try { if (file.exists()) file.delete(); } catch { /* retry on the next bootstrap */ }
-  }
+  cleanupProfileExportFiles(dependencies, [ACCOUNT_DATA_EXPORT_FILE_PREFIX], profile?.id ?? null);
 }

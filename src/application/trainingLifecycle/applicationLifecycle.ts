@@ -17,6 +17,12 @@ export type StartTrainingSessionCommand = Readonly<{
  */
 let lifecycle: TrainingLifecycleUseCases | null = null;
 
+/** Read-only startup assertion for the isolated PERSIST-13 fixture entry point. */
+export function isPersist13LifecycleOwnerCold(): boolean {
+  return typeof __DEV__ !== "undefined" && __DEV__ && process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "smoke"
+    && process.env.EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE !== undefined && lifecycle === null;
+}
+
 export function installTrainingLifecycleUseCases(value: TrainingLifecycleUseCases): void {
   lifecycle = value;
 }

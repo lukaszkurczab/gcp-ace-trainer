@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
 import { installMemoryStorage, attempt, journal, session } from "../../testing/journalTestSupport";
+import { captureLearningStateResetTargetPlan } from "./learningStateResetRepository";
 import {
   createMutationPlanFingerprint,
   hasValidMutationJournalIntegrity,
@@ -87,7 +88,7 @@ test("requires an exact lowercase artifact SHA and rejects legacy top-level iden
 });
 
 test("permits a reset journal only with a null artifact scope", () => {
-  const reset = journal([{ kind: "clear_learning_state" }], "reset_learning_state");
+  const reset = journal([{ kind: "clear_learning_state", targetPlan: captureLearningStateResetTargetPlan() }], "reset_learning_state");
   assert.equal(isMutationJournalRecord(reset), true);
   const nonReset = { ...reset, operation: "submit_training_outcome" as const };
   assert.equal(hasValidMutationJournalIntegrity(nonReset), false);

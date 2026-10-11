@@ -12,10 +12,6 @@
       "title": "Share or download account data",
       "summary": "A JSON file with account data, synced learning, and account activity"
     },
-    "guestPrivacy": {
-      "title": "Request help with your data",
-      "summary": "Send a privacy request in the app without creating an account"
-    },
     "openAccount": {
       "title": "Open account",
       "summary": "Sign in or create an account to manage account data"
@@ -39,6 +35,10 @@
     "none": {
       "title": "Data actions unavailable",
       "summary": "No account action is available in this state"
+    },
+    "guestExport": {
+      "title": "Export local Guest data",
+      "summary": "Save a JSON copy of this device’s Guest learning data. No account or email is needed."
     }
   },
   "localReset": {
@@ -70,7 +70,7 @@
     },
     "guest": {
       "title": "Guest data",
-      "body": "Learning data is stored locally on this device. You can use Patternly without an account. Use the privacy form in this app if you need help with your data."
+      "body": "Your learning data is stored locally on this device. Export a JSON copy without signing in. Use the separate privacy form for help with data held by online services."
     },
     "signedOut": {
       "title": "Sign in to manage account data",
@@ -223,8 +223,8 @@
     "scopeTitle": "Scope",
     "accountIntro": "The export is a JSON file prepared for the signed-in account.",
     "accountBody": "The export includes your account profile; supported synced learning records such as the active track, goals and learning plans, completed session summaries and results, attempts, and review queue; and linked content reports. Account activity and context include track access, entitlements, legal acceptances, purchase confirmations, consumer cases, device metadata, sync metadata, and export history. Access information explains purposes, data categories, recipients, retention, sources, transfers, automated decisions, and your rights. The manifest names included and omitted categories; credentials, secrets, raw provider or device identifiers, other people's reports, and anonymous reports are not included. Active sessions, drafts, settings, and other device-only data are not synced. After you sign in to the same account, normal sync can restore supported records from the account cloud. Guest-data adoption is a separate choice that merges eligible progress from this device into the account. The JSON is shared through the system share or save sheet for access and portability and cannot be imported into Patternly. For security, you may need to confirm your identity again. Exports are rate limited.",
-    "guestIntro": "You do not need an account to contact us about your data.",
-    "guestBody": "You can remove data stored only on this device locally. Send a broader privacy request from the form in this app. The app does not attach an account identifier or check whether an address exists in the system."
+    "guestIntro": "Create a local copy of your Guest learning data without an account, email, or network connection.",
+    "guestBody": "The JSON file includes available learning progress, sessions and saved drafts, answers and results, review schedule, goals and accepted plans, app and reminder preferences, and reports you saved on this device. The manifest lists what is included and omitted. The system sheet lets you save or share the file; choosing a destination completes the handoff, but Patternly cannot verify that another app saved it."
   },
   "status": {
     "title": "Could not complete the action",
@@ -240,6 +240,16 @@
     "fileFailure": "The temporary file could not be prepared safely.",
     "sharingFailed": "The system save or share sheet could not be opened.",
     "cleanupFailed": "The temporary file could not be removed. The app will retry safe cleanup on its next launch.",
-    "actionFailed": "We couldn't complete that account action. Try again."
+    "actionFailed": "We couldn't complete that account action. Try again.",
+    "guestExportTitle": "Guest data export",
+    "guestExportHandoff": "The export file was handed to the system save or share sheet. Patternly cannot confirm whether another app saved it.",
+    "guestExportDismissed": "The save or share sheet was closed. No copy was confirmed.",
+    "guestExportGuestProfileUnavailable": "Guest data is not available for export in the current profile. Return to the active Guest profile and try again.",
+    "guestExportSourcePending": "A learning change is still being completed. Wait for it to finish, then try the export again.",
+    "guestExportSourceInvalid": "Some local learning data is incomplete or inconsistent, so Patternly did not create an export.",
+    "guestExportSourceChanged": "The active profile or its data changed during export. The temporary file was removed; try again.",
+    "guestExportFileFailure": "A temporary export file could not be prepared safely.",
+    "guestExportSharingFailed": "The system save or share sheet could not be opened. The temporary file was removed.",
+    "guestExportCleanupFailed": "The temporary export file could not be removed. Patternly will retry safe cleanup on its next launch."
   }
 }

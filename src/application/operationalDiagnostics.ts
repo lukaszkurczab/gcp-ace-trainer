@@ -2,6 +2,9 @@ import { ContentError } from "../content/errors";
 import { CorruptStoredRecordError, JournalMaterializationError, JournalVerificationError, JournalWriteError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "../storage/errors";
 import { CANONICAL_REPOSITORY_BOOTSTRAP_STEP_ORDER, type CanonicalRepositoryBootstrapStep as CanonicalRepositoryBootstrapStepCode } from "../storage/repositories/canonicalRepositories";
 import { isPatternlySmokeRuntime } from "../infrastructure/runtime/runtimeMode";
+import { encryptedStorageFailureCode, type EncryptedStorageFailureCode } from "../infrastructure/storage/encryptedStorageBootstrap";
+import type { LocalLogoutControlError } from "../infrastructure/storage/localLogoutControl";
+import type { ProfileStorageError } from "../infrastructure/storage/profileStorageRouter";
 
 export type OperationalDiagnosticCode = "CONTENT_UNAVAILABLE" | "CONTENT_INVALID" | "STORAGE_READ_FAILED" | "STORAGE_WRITE_FAILED" | "STORAGE_DELETE_FAILED" | "STORAGE_RECORD_INVALID" | "JOURNAL_WRITE_FAILED" | "JOURNAL_MATERIALIZATION_FAILED" | "JOURNAL_VERIFICATION_FAILED" | "LOCAL_OPERATION_FAILED";
 
@@ -55,8 +58,45 @@ export type BootstrapRecoveryPendingStep =
 
 export type BootstrapRecoveryStepObserver = (step: BootstrapRecoveryPendingStep | null) => void;
 
+export type ProfileStoragePreparationDiagnosticStage = "logout_control_create" | "logout_control_read" | "profile_storage_prepare" | "profile_state_inspect" | "complete";
+export type ProfileStoragePreparationErrorCategory = OperationalDiagnosticCode | EncryptedStorageFailureCode
+  | LocalLogoutControlError["code"] | ProfileStorageError["code"] | "unknown";
+export type ProfileStoragePreparationDiagnostic = Readonly<{
+  schema: "patternly.profile-storage-preparation-diagnostic.v1";
+  status: "pending" | "ready" | "failed";
+  stage: ProfileStoragePreparationDiagnosticStage;
+  errorCategory?: ProfileStoragePreparationErrorCategory;
+}>;
+
+export type ProfileStoragePreparationDiagnosticWriter = Readonly<{
+  pending: (stage: Exclude<ProfileStoragePreparationDiagnosticStage, "complete">) => void;
+  ready: () => void;
+  failed: (stage: Exclude<ProfileStoragePreparationDiagnosticStage, "complete">, error: unknown) => void;
+  dispose: () => void;
+}>;
+
+export type AccountStartupDiagnosticStage = "auth_client_setup" | "auth_observer_wait" | "auth_event" | "recovery_guard" | "guest_storage_prepare" | "guest_state_inspect" | "guest_scope_prepare" | "account_profile_prepare" | "profile_preparing" | "profile_completion" | "complete";
+export type AccountStartupDiagnosticStateKind = "loading" | "profilePreparing" | "unavailable" | "signedOut" | "guest" | "guestAccessBlocked" | "recoveryPending" | "providerRegistrationRequired" | "verificationPending" | "authenticated" | "localOffline" | "deletionPending" | "signingOut" | "signOutPending" | "deleting" | "backendUnavailable" | "reauthenticationRequired" | "revokedSession";
+export type AccountStartupDiagnostic = Readonly<{
+  schema: "patternly.account-startup-diagnostic.v1";
+  status: "pending" | "ready" | "failed";
+  stage: AccountStartupDiagnosticStage;
+  accountStateKind?: AccountStartupDiagnosticStateKind;
+  errorCategory?: ProfileStoragePreparationErrorCategory;
+}>;
+export type AccountStartupDiagnosticWriter = Readonly<{
+  pending: (stage: Exclude<AccountStartupDiagnosticStage, "complete">, accountStateKind?: AccountStartupDiagnosticStateKind) => void;
+  ready: (accountStateKind?: AccountStartupDiagnosticStateKind) => void;
+  failed: (stage: Exclude<AccountStartupDiagnosticStage, "complete">, error: unknown, accountStateKind?: AccountStartupDiagnosticStateKind) => void;
+  dispose: () => void;
+}>;
+
 const BOOTSTRAP_PENDING_STEP_SYMBOL = Symbol.for("patternly.bootstrap.pending-step.v1");
 const BOOTSTRAP_PENDING_OWNER_SYMBOL = Symbol.for("patternly.bootstrap.pending-step-owner.v1");
+const PROFILE_STORAGE_PREPARATION_DIAGNOSTIC_SYMBOL = Symbol.for("patternly.profile-storage-preparation-diagnostic.v1");
+const PROFILE_STORAGE_PREPARATION_DIAGNOSTIC_OWNER_SYMBOL = Symbol.for("patternly.profile-storage-preparation-diagnostic-owner.v1");
+const ACCOUNT_STARTUP_DIAGNOSTIC_SYMBOL = Symbol.for("patternly.account-startup-diagnostic.v1");
+const ACCOUNT_STARTUP_DIAGNOSTIC_OWNER_SYMBOL = Symbol.for("patternly.account-startup-diagnostic-owner.v1");
 type BootstrapProgressHost = typeof globalThis & { [key: symbol]: unknown };
 const bootstrapProgressHost = (): BootstrapProgressHost => globalThis as BootstrapProgressHost;
 const BOOTSTRAP_RECOVERY_PENDING_STEPS: readonly BootstrapRecoveryPendingStep[] = Object.freeze([
@@ -71,6 +111,144 @@ const BOOTSTRAP_RECOVERY_PENDING_STEPS: readonly BootstrapRecoveryPendingStep[] 
 
 function developmentSmokeDiagnosticsEnabled(): boolean {
   return typeof __DEV__ !== "undefined" && __DEV__ && isPatternlySmokeRuntime();
+}
+
+const PROFILE_STORAGE_PREPARATION_STAGES: readonly ProfileStoragePreparationDiagnosticStage[] = ["logout_control_create", "logout_control_read", "profile_storage_prepare", "profile_state_inspect", "complete"];
+const ACCOUNT_STARTUP_STAGES: readonly AccountStartupDiagnosticStage[] = ["auth_client_setup", "auth_observer_wait", "auth_event", "recovery_guard", "guest_storage_prepare", "guest_state_inspect", "guest_scope_prepare", "account_profile_prepare", "profile_preparing", "profile_completion", "complete"];
+const ACCOUNT_STATE_KINDS: readonly AccountStartupDiagnosticStateKind[] = ["loading", "profilePreparing", "unavailable", "signedOut", "guest", "guestAccessBlocked", "recoveryPending", "providerRegistrationRequired", "verificationPending", "authenticated", "localOffline", "deletionPending", "signingOut", "signOutPending", "deleting", "backendUnavailable", "reauthenticationRequired", "revokedSession"];
+const ENCRYPTED_STORAGE_CATEGORIES: readonly EncryptedStorageFailureCode[] = ["secure_store_temporarily_unavailable", "encrypted_storage_key_missing", "encrypted_storage_unavailable", "storage_manifest_corrupt", "storage_migration_incomplete", "legacy_cleanup_failed"];
+const LOCAL_LOGOUT_CATEGORIES: readonly LocalLogoutControlError["code"][] = ["local_logout_control_corrupt", "local_logout_control_unavailable", "local_logout_control_verification_failed"];
+const PROFILE_STORAGE_CATEGORIES: readonly ProfileStorageError["code"][] = ["profile_registry_corrupt", "legacy_profile_unidentified", "profile_scope_unavailable", "profile_transition_cancelled", "prepared_guest_choice_required", "profile_removal_recovery_required", "account_binding_corrupt", "account_binding_ambiguous", "account_binding_conflict", "account_binding_commit_unverified"];
+
+function preparationErrorCategory(error: unknown): ProfileStoragePreparationErrorCategory {
+  const encrypted = encryptedStorageFailureCode(error);
+  if (encrypted && ENCRYPTED_STORAGE_CATEGORIES.includes(encrypted)) return encrypted;
+  if (typeof error === "object" && error !== null) {
+    const record = error as Readonly<{ name?: unknown; code?: unknown }>;
+    if (record.name === "LocalLogoutControlError" && typeof record.code === "string" && LOCAL_LOGOUT_CATEGORIES.includes(record.code as LocalLogoutControlError["code"])) return record.code as LocalLogoutControlError["code"];
+    if (record.name === "ProfileStorageError" && typeof record.code === "string" && PROFILE_STORAGE_CATEGORIES.includes(record.code as ProfileStorageError["code"])) return record.code as ProfileStorageError["code"];
+  }
+  if (!(error instanceof Error)) return "unknown";
+  const operational = operationalDiagnosticCode(error);
+  return OPERATIONAL_DIAGNOSTIC_CODES.includes(operational) ? operational : "unknown";
+}
+
+function isProfileStoragePreparationDiagnostic(value: unknown): value is ProfileStoragePreparationDiagnostic {
+  if (value === null || typeof value !== "object" || !Object.isFrozen(value)) return false;
+  const record = value as Record<string, unknown>;
+  const expectedKeys = ["schema", "stage", "status", ...(record.errorCategory === undefined ? [] : ["errorCategory"])].sort();
+  const categories = [...OPERATIONAL_DIAGNOSTIC_CODES, ...ENCRYPTED_STORAGE_CATEGORIES, ...LOCAL_LOGOUT_CATEGORIES, ...PROFILE_STORAGE_CATEGORIES, "unknown"];
+  return Object.keys(record).sort().join("\u0000") === expectedKeys.join("\u0000")
+    && record.schema === "patternly.profile-storage-preparation-diagnostic.v1"
+    && ["pending", "ready", "failed"].includes(record.status as string)
+    && PROFILE_STORAGE_PREPARATION_STAGES.includes(record.stage as ProfileStoragePreparationDiagnosticStage)
+    && (record.errorCategory === undefined || categories.includes(record.errorCategory as string));
+}
+
+/** Latest in-memory dev-smoke receipt only; this observes the existing gate awaits without starting work. */
+export function readDevelopmentProfileStoragePreparationDiagnostic(): ProfileStoragePreparationDiagnostic | null {
+  if (!developmentSmokeDiagnosticsEnabled()) return null;
+  try {
+    const value = bootstrapProgressHost()[PROFILE_STORAGE_PREPARATION_DIAGNOSTIC_SYMBOL];
+    if (!isProfileStoragePreparationDiagnostic(value)) return null;
+    return Object.freeze({ ...value });
+  } catch { return null; }
+}
+
+function isAccountStartupDiagnostic(value: unknown): value is AccountStartupDiagnostic {
+  if (value === null || typeof value !== "object" || !Object.isFrozen(value)) return false;
+  const record = value as Record<string, unknown>;
+  const expectedKeys = ["schema", "stage", "status", ...(record.accountStateKind === undefined ? [] : ["accountStateKind"]), ...(record.errorCategory === undefined ? [] : ["errorCategory"])].sort();
+  const categories = [...OPERATIONAL_DIAGNOSTIC_CODES, ...ENCRYPTED_STORAGE_CATEGORIES, ...LOCAL_LOGOUT_CATEGORIES, ...PROFILE_STORAGE_CATEGORIES, "unknown"];
+  return Object.keys(record).sort().join("\u0000") === expectedKeys.join("\u0000")
+    && record.schema === "patternly.account-startup-diagnostic.v1"
+    && ["pending", "ready", "failed"].includes(record.status as string)
+    && ACCOUNT_STARTUP_STAGES.includes(record.stage as AccountStartupDiagnosticStage)
+    && (record.accountStateKind === undefined || ACCOUNT_STATE_KINDS.includes(record.accountStateKind as AccountStartupDiagnosticStateKind))
+    && (record.errorCategory === undefined || categories.includes(record.errorCategory as string));
+}
+
+/** Latest closed account-startup receipt in RAM for dev-smoke diagnosis. */
+export function readDevelopmentAccountStartupDiagnostic(): AccountStartupDiagnostic | null {
+  if (!developmentSmokeDiagnosticsEnabled()) return null;
+  try {
+    const value = bootstrapProgressHost()[ACCOUNT_STARTUP_DIAGNOSTIC_SYMBOL];
+    if (!isAccountStartupDiagnostic(value)) return null;
+    return Object.freeze({ ...value });
+  } catch { return null; }
+}
+
+/** Attempt owner is replaced on every new startup event; cleanup removes only its own pending receipt. */
+export function createAccountStartupDiagnosticWriter(): AccountStartupDiagnosticWriter {
+  const inert = Object.freeze({ pending: () => undefined, ready: () => undefined, failed: () => undefined, dispose: () => undefined });
+  if (!developmentSmokeDiagnosticsEnabled()) return inert;
+  const host = bootstrapProgressHost();
+  const owner = Object.freeze({});
+  try {
+    Object.defineProperty(host, ACCOUNT_STARTUP_DIAGNOSTIC_OWNER_SYMBOL, { configurable: true, enumerable: false, value: owner, writable: false });
+  } catch { return inert; }
+  const write = (status: AccountStartupDiagnostic["status"], stage: AccountStartupDiagnosticStage, accountStateKind?: AccountStartupDiagnosticStateKind, error?: unknown) => {
+    try {
+      if (host[ACCOUNT_STARTUP_DIAGNOSTIC_OWNER_SYMBOL] !== owner) return;
+      const receipt: AccountStartupDiagnostic = Object.freeze({
+        schema: "patternly.account-startup-diagnostic.v1",
+        status,
+        stage,
+        ...(accountStateKind ? { accountStateKind } : {}),
+        ...(status === "failed" ? { errorCategory: preparationErrorCategory(error) } : {}),
+      });
+      Object.defineProperty(host, ACCOUNT_STARTUP_DIAGNOSTIC_SYMBOL, { configurable: true, enumerable: false, value: receipt, writable: false });
+    } catch { /* diagnostics never alter account startup */ }
+  };
+  return Object.freeze({
+    pending: (stage, accountStateKind) => write("pending", stage, accountStateKind),
+    ready: (accountStateKind) => write("ready", "complete", accountStateKind),
+    failed: (stage, error, accountStateKind) => write("failed", stage, accountStateKind, error),
+    dispose: () => {
+      try {
+        if (host[ACCOUNT_STARTUP_DIAGNOSTIC_OWNER_SYMBOL] !== owner) return;
+        const receipt = host[ACCOUNT_STARTUP_DIAGNOSTIC_SYMBOL];
+        if (isAccountStartupDiagnostic(receipt) && receipt.status === "pending") Reflect.deleteProperty(host, ACCOUNT_STARTUP_DIAGNOSTIC_SYMBOL);
+        Reflect.deleteProperty(host, ACCOUNT_STARTUP_DIAGNOSTIC_OWNER_SYMBOL);
+      } catch { /* stale or non-configurable bridge is harmless */ }
+    },
+  });
+}
+
+/** Per-gate writer fenced across retries and HMR; disposal clears only its own pending receipt. */
+export function createProfileStoragePreparationDiagnosticWriter(): ProfileStoragePreparationDiagnosticWriter {
+  const inert = Object.freeze({ pending: () => undefined, ready: () => undefined, failed: () => undefined, dispose: () => undefined });
+  if (!developmentSmokeDiagnosticsEnabled()) return inert;
+  const host = bootstrapProgressHost();
+  const owner = Object.freeze({});
+  try {
+    Object.defineProperty(host, PROFILE_STORAGE_PREPARATION_DIAGNOSTIC_OWNER_SYMBOL, { configurable: true, enumerable: false, value: owner, writable: false });
+  } catch { return inert; }
+  const write = (status: ProfileStoragePreparationDiagnostic["status"], stage: ProfileStoragePreparationDiagnosticStage, error?: unknown) => {
+    try {
+      if (host[PROFILE_STORAGE_PREPARATION_DIAGNOSTIC_OWNER_SYMBOL] !== owner) return;
+      const receipt: ProfileStoragePreparationDiagnostic = Object.freeze({
+        schema: "patternly.profile-storage-preparation-diagnostic.v1",
+        status,
+        stage,
+        ...(status === "failed" ? { errorCategory: preparationErrorCategory(error) } : {}),
+      });
+      Object.defineProperty(host, PROFILE_STORAGE_PREPARATION_DIAGNOSTIC_SYMBOL, { configurable: true, enumerable: false, value: receipt, writable: false });
+    } catch { /* diagnostic bridge is best-effort */ }
+  };
+  return Object.freeze({
+    pending: (stage) => write("pending", stage),
+    ready: () => write("ready", "complete"),
+    failed: (stage, error) => write("failed", stage, error),
+    dispose: () => {
+      try {
+        if (host[PROFILE_STORAGE_PREPARATION_DIAGNOSTIC_OWNER_SYMBOL] !== owner) return;
+        const receipt = host[PROFILE_STORAGE_PREPARATION_DIAGNOSTIC_SYMBOL];
+        if (isProfileStoragePreparationDiagnostic(receipt) && receipt.status === "pending") Reflect.deleteProperty(host, PROFILE_STORAGE_PREPARATION_DIAGNOSTIC_SYMBOL);
+        Reflect.deleteProperty(host, PROFILE_STORAGE_PREPARATION_DIAGNOSTIC_OWNER_SYMBOL);
+      } catch { /* stale or non-configurable bridge is harmless */ }
+    },
+  });
 }
 
 function currentBootstrapProgressOwner(host: BootstrapProgressHost): object | null {

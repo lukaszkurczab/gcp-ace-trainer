@@ -13,7 +13,7 @@ function tsxFiles(root: string): string[] {
   });
 }
 
-const genericPendingPaths = ["src/application/account/ProfileStoragePreparationGate.tsx", "src/content/application/ContentPreparationGate.tsx", "src/navigation/RootNavigator.tsx"] as const;
+const genericPendingPaths = ["src/RegularApplicationRoot.tsx", "src/application/account/ProfileStoragePreparationGate.tsx", "src/content/application/ContentPreparationGate.tsx", "src/navigation/RootNavigator.tsx"] as const;
 const specializedLoadingOwners = [
   "src/components/ReviewLoadingSkeleton.tsx#ReviewLoadingSkeleton",
   "src/content/application/ContentPreparationGate.tsx#ContentBootstrapLoadingSkeleton",
@@ -84,7 +84,7 @@ test("EmptyState is the centered retained-content/unavailable status primitive",
   assert.doesNotMatch(emptyState, /backgroundColor: palette\.elevatedSurface|borderRadius: radius/);
 });
 
-test("exactly the one remaining generic pending branch uses LoadingState", () => {
+test("generic pending and profile-transition surfaces use their owned LoadingState", () => {
   const consumers = tsxFiles("src")
     .filter((path) => path !== "src/features/practice/PracticeSessionSurface.tsx" && /<LoadingState\b/.test(source(path)))
     .sort();
@@ -93,6 +93,7 @@ test("exactly the one remaining generic pending branch uses LoadingState", () =>
   for (const path of genericPendingPaths) assert.match(source(path), /<LoadingState\b/, path);
 
   assert.match(source("src/navigation/RootNavigator.tsx"), /state\.kind === "loading"[\s\S]*?<LoadingState[^>]*title=\{t\("Restoring session"\)\}/);
+  assert.match(source("src/RegularApplicationRoot.tsx"), /function ProfileTransitionSurface\(\)[\s\S]*?<LoadingState[^>]*testID="profile-transition-required"/);
   assert.match(source("src/features/practice/PracticeSessionSurface.tsx"), /<LoadingState description=\{t\("Preparing your summary\."\)\}/);
 });
 

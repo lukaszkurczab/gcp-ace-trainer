@@ -7,6 +7,7 @@ export class CanonicalWriteConflictError extends Error { constructor(readonly ke
 export class JournalWriteError extends Error { constructor(cause?: unknown, message = "Unable to persist the pending mutation.") { super(message); this.name = "JournalWriteError"; this.cause = cause; } }
 export class JournalMaterializationError extends Error { constructor(cause?: unknown) { super("Unable to materialize the pending mutation."); this.name = "JournalMaterializationError"; this.cause = cause; } }
 export class JournalVerificationError extends Error { constructor() { super("The pending mutation could not be verified."); this.name = "JournalVerificationError"; } }
+export class CanonicalEvidenceIntegrityError extends Error { constructor() { super("Canonical learning evidence is inconsistent."); this.name = "CanonicalEvidenceIntegrityError"; } }
 
 export type AccountDataFailureCode =
   | "account_sync_state_invalid"

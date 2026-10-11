@@ -1,10 +1,15 @@
 import { isRegisteredTrackId } from "../../domain/tracks/trackRegistry";
 import type { TrackId } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalJson, writeCanonicalJson } from "./canonicalRecordCodec";
+import { readCanonicalEnvelope, readCanonicalJson, writeCanonicalJson } from "./canonicalRecordCodec";
 
 type GoalOnboardingPreferences = Readonly<{
   dismissedTrackIds: readonly TrackId[];
+}>;
+
+export type GoalOnboardingPreferencesForExport = Readonly<{
+  revision: number | null;
+  dismissedTrackIds: readonly TrackId[] | null;
 }>;
 
 function isGoalOnboardingPreferences(value: unknown): value is GoalOnboardingPreferences {
@@ -18,6 +23,15 @@ function isGoalOnboardingPreferences(value: unknown): value is GoalOnboardingPre
 export function isGoalOnboardingDismissed(trackId: TrackId): boolean {
   const preferences = readCanonicalJson(STORAGE_KEYS.GOAL_ONBOARDING_PREFERENCES, isGoalOnboardingPreferences);
   return preferences?.dismissedTrackIds.includes(trackId) ?? false;
+}
+
+/** Pure export projection: preserve the canonical revision for snapshot validation. */
+export function readGoalOnboardingPreferencesForExport(): GoalOnboardingPreferencesForExport {
+  const envelope = readCanonicalEnvelope(STORAGE_KEYS.GOAL_ONBOARDING_PREFERENCES, isGoalOnboardingPreferences);
+  return Object.freeze({
+    revision: envelope?.revision ?? null,
+    dismissedTrackIds: envelope ? Object.freeze([...envelope.payload.dismissedTrackIds]) : null,
+  });
 }
 
 export function dismissGoalOnboarding(trackId: TrackId): void {

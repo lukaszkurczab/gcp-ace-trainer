@@ -3,7 +3,7 @@ import { Linking, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { EmptyState, LoadingState, Screen } from "../../components";
-import { describeOperationalFailure, operationalDiagnosticCode } from "../../application/operationalDiagnostics";
+import { createProfileStoragePreparationDiagnosticWriter, describeOperationalFailure, operationalDiagnosticCode, type ProfileStoragePreparationDiagnosticStage } from "../../application/operationalDiagnostics";
 import { useAppPreferences } from "../../preferences";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { encryptedStorageFailureCode } from "../../infrastructure/storage/encryptedStorageBootstrap";
@@ -63,18 +63,33 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
 
   useEffect(() => {
     let active = true;
+    let stage: Exclude<ProfileStoragePreparationDiagnosticStage, "complete"> = "logout_control_create";
+    const diagnostic = createProfileStoragePreparationDiagnosticWriter();
     setState({ kind: "loading" });
     void Promise.resolve().then(() => {
+      diagnostic.pending(stage);
       const logoutControl = createNativeLocalLogoutControl();
+      stage = "logout_control_read";
+      diagnostic.pending(stage);
       return logoutControl.read().then((logoutControlSnapshot) => ({ logoutControl, logoutControlSnapshot }));
-    }).then(({ logoutControl, logoutControlSnapshot }) => prepareProfileStorage().then(() => inspectPreparedProfileState()).then((profileState) => ({ profileState, logoutControl, logoutControlSnapshot }))).then(({ profileState, logoutControl, logoutControlSnapshot }) => {
+    }).then(({ logoutControl, logoutControlSnapshot }) => {
+      stage = "profile_storage_prepare";
+      diagnostic.pending(stage);
+      return prepareProfileStorage().then(() => {
+        stage = "profile_state_inspect";
+        diagnostic.pending(stage);
+        return inspectPreparedProfileState();
+      }).then((profileState) => ({ profileState, logoutControl, logoutControlSnapshot }));
+    }).then(({ profileState, logoutControl, logoutControlSnapshot }) => {
       if (active) {
         settleManualRetry(manualRetry.current, true);
+        diagnostic.ready();
         setState({ kind: "ready", profile: profileState, logoutControl, logoutControlSnapshot });
       }
     }).catch((error: unknown) => {
       if (active) {
         settleManualRetry(manualRetry.current, false);
+        diagnostic.failed(stage, error);
         const storageFailureCode = encryptedStorageFailureCode(error) ?? undefined;
         const reason = error instanceof LocalLogoutControlError
           ? t("We couldn't check the local sign-out state. Your account data remains closed. Try again.")
@@ -82,7 +97,7 @@ export function ProfileStoragePreparationGate({ children }: { children: ReactNod
         setState({ kind: "unavailable", reason, ...(storageFailureCode ? { storageFailureCode } : {}) });
       }
     });
-    return () => { active = false; };
+    return () => { active = false; diagnostic.dispose(); };
   }, [revision]);
 
   const retry = () => {

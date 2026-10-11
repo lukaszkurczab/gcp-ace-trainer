@@ -217,7 +217,7 @@ test("pair intent excludes competing journal operations and clear failure retrie
   await persistMutationJournal(record);
   const competing = await buildMutationJournal({
     operation: "reset_learning_state", sessionId: "learning-state-reset", trackId: TRACK,
-    identity: "other-command", createdAt: NOW, writes: [{ kind: "clear_learning_state" }],
+    identity: "other-command", createdAt: NOW, writes: [{ kind: "clear_learning_state", targetPlan: (await import("../../storage/repositories/learningStateResetRepository")).captureLearningStateResetTargetPlan() }],
   });
   await assert.rejects(() => persistMutationJournal(competing), JournalWriteError);
   storage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_JOURNAL });

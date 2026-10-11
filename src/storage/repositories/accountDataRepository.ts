@@ -12,6 +12,7 @@ import { clearActiveTrackId, saveActiveTrackId } from "./activeTrackRepository";
 import { addReviewQueueItems, clearReviewQueueItems, getReviewQueueItems } from "./reviewQueueRepository";
 import { clearTrainingAttempts, getTrainingAttempts, addTrainingAttempt } from "./trainingAttemptRepository";
 import { getTrainingSessionResult, saveTrainingSessionResult } from "./trainingSessionResultRepository";
+import { assertTrainingEvidenceIntegrity } from "./trainingEvidenceIntegrityRepository";
 import { clearTrainingSessions, getActiveTrainingSessionId, getTrainingSessions, saveTrainingSession } from "./trainingSessionRepository";
 import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionResult } from "./trainingModelGuards";
 import { AccountDataFailure } from "../errors";
@@ -606,6 +607,7 @@ export function recordAccountMutationAcknowledgements(input: Readonly<{
   remoteAccountRevision: number;
   acknowledgements: readonly AccountMutationAcknowledgement[];
 }>): AccountSyncState {
+  assertTrainingEvidenceIntegrity();
   if (!input.accountId.trim() || !input.planId.trim() || !Number.isSafeInteger(input.remoteAccountRevision) || input.remoteAccountRevision < 0) {
     throw new AccountDataFailure("account_sync_state_invalid");
   }
@@ -749,6 +751,7 @@ function persistSnapshotDatasetVersion(state: AccountSyncState, records: readonl
 }
 
 export async function buildAccountDataSnapshot(): Promise<AccountDataSnapshot> {
+  assertTrainingEvidenceIntegrity();
   const installation = await getGuestInstallation();
   if (!installation) throw new AccountDataFailure("guest_installation_required");
   const state = await getAccountSyncState();
@@ -826,12 +829,14 @@ export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSync
   // A local-history reset intentionally removes local records before pulling
   // the account copy back. Never turn that temporary absence into tombstones.
   if (state.resetGuard || state.materialization) return state;
+  assertTrainingEvidenceIntegrity();
   const boundAccountId = installation?.accountId;
   if (boundAccountId !== null && boundAccountId !== undefined && state.accountId === null) {
     const localRecords = await readLocalAccountDataRecords(state);
     if (localRecords.length > 0) throw new AccountDataFailure("account_binding_mismatch");
   }
   if (!boundAccountId || state.accountId !== boundAccountId) return state;
+  const snapshot = await buildAccountDataSnapshot();
   if (state.lastFailureCode === "mutation_id_reuse" && state.outbox.length > 0) {
     const repairedOutbox = state.outbox.map((entry) => Object.freeze({
       ...entry,
@@ -841,7 +846,6 @@ export async function ensureAccountOutboxFromLocalDataset(): Promise<AccountSync
     }));
     state = saveAccountSyncState({ ...state, outbox: Object.freeze(repairedOutbox), pendingMutationCount: repairedOutbox.length });
   }
-  const snapshot = await buildAccountDataSnapshot();
   const latestState = await getAccountSyncState();
   if (latestState.resetGuard || latestState.materialization || latestState.accountId !== installation.accountId) return latestState;
   state = latestState;
@@ -1158,6 +1162,7 @@ function orderCurrentActiveTrackLast<T extends Readonly<{ recordType: string; tr
 }
 
 export async function applyRemoteAccountData(records: readonly AccountDataRecord[], options: Readonly<{ preserveLocalContext?: boolean }> = {}): Promise<void> {
+  assertTrainingEvidenceIntegrity();
   assertValidAccountDataRecords(records);
   if (await getActiveTrainingSessionId()) throw new AccountDataFailure("active_session_adoption_blocked");
   const preserveLocalContext = options.preserveLocalContext === true;
@@ -1254,6 +1259,7 @@ export async function finishAccountMaterialization(
   syncedAt: string,
   incomingRecovery: LearningPlanRecoveryIncident | null = null,
 ): Promise<AccountSyncState> {
+  assertTrainingEvidenceIntegrity();
   assertValidAccountDataRecords(records);
   const current = await getAccountSyncState();
   if (current.accountId !== null && current.accountId !== accountId) throw new AccountDataFailure("account_binding_mismatch");

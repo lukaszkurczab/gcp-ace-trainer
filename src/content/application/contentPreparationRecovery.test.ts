@@ -50,6 +50,16 @@ test("manual lost-key retries are process-local and automatic bootstrap does not
   assert.doesNotMatch(surface, /Hold for at least 3 seconds, then release[^<]*<\/Text>/u);
 });
 
+test("development URLs defer only during loading and terminal bootstrap consumes them as unavailable", () => {
+  const urlEffect = source.slice(source.indexOf("useEffect(() => {\n    // Reset URLs"), source.indexOf("const retry = () =>"));
+  assert.match(urlEffect, /if \(state\.kind === "loading"\) \{\s*pendingRuntimeAuditabilityUrl\.current = url;\s*return;\s*\}/u);
+  assert.match(urlEffect, /if \(!lifecycleReady\.current\) \{\s*pendingRuntimeAuditabilityUrl\.current = null;\s*if \(url === DEVELOPMENT_RESET_LEARNING_STATE_URL\) setDevelopmentResetUnavailable\(true\);\s*return;\s*\}/u);
+  assert.match(urlEffect, /if \(state\.kind !== "loading" && pendingRuntimeAuditabilityUrl\.current\) \{\s*const queuedUrl = pendingRuntimeAuditabilityUrl\.current;\s*pendingRuntimeAuditabilityUrl\.current = null;\s*if \(lifecycleReady\.current\) void apply\(queuedUrl\);\s*else if \(queuedUrl === DEVELOPMENT_RESET_LEARNING_STATE_URL\) setDevelopmentResetUnavailable\(true\);\s*\}/u);
+  assert.match(urlEffect, /Linking\.addEventListener\("url", \(\{ url \}\) => \{ void apply\(url\); \}\)/u);
+  assert.match(source, /Development reset is unavailable because lifecycle preparation did not complete\./u);
+  assert.doesNotMatch(urlEffect, /must also be available after bootstrap has reported a blocking/u);
+});
+
 test("recovery surface centers recovery states and gives success its own concise layout", () => {
   assert.match(surface, /status === "removing"/);
   assert.match(surface, /Animated\.timing\(removingOpacity/);

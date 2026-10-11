@@ -9,7 +9,6 @@ import {
 } from "../runtimeAuditability/developmentResetCommand";
 import { getApplicationCurrentTime, installTrainingLifecycleUseCases, type TrainingLifecycleUseCases } from "./";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
-import { installLearningStateResetBarrier } from "../learningMutations";
 
 const developmentFlag = globalThis as typeof globalThis & { __DEV__?: boolean };
 
@@ -85,18 +84,17 @@ test("runtime-audit reset is unavailable in production and reaches only the life
   }
 });
 
-test("development reset still restores a clean baseline when an interrupted journal cannot recover", async () => {
+test("development reset reports recovery failure without clearing the journal or indexed state directly", async () => {
   const previous = developmentFlag.__DEV__;
   setDevelopment(true);
   try {
-    installMemoryStorage();
-    let barrierCalls = 0;
-    installLearningStateResetBarrier(async (reset) => { barrierCalls += 1; await reset(); });
+    const storage = installMemoryStorage();
+    storage.setString("patternly:canonical:v1:journal:active", "preserve-me");
     installTrainingLifecycleUseCases({
       async resetLearningState() { throw new Error("interrupted journal cannot recover"); },
     } as unknown as TrainingLifecycleUseCases);
-    assert.deepEqual(await handleRuntimeAuditabilityUrl(DEVELOPMENT_RESET_LEARNING_STATE_URL), { kind: "reset_learning_state" });
-    assert.equal(barrierCalls, 1);
+    await assert.rejects(() => handleRuntimeAuditabilityUrl(DEVELOPMENT_RESET_LEARNING_STATE_URL), /interrupted journal cannot recover/);
+    assert.equal(storage.getString("patternly:canonical:v1:journal:active"), "preserve-me");
   } finally {
     setDevelopment(previous);
   }

@@ -1,37 +1,38 @@
 import type { ReviewQueueEntry, TrackId } from "../../domain";
 import { resolvedContentRefKey } from "../../domain/learning/resolvedContentRef";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalRecordEnvelope } from "./canonicalRecordCodec";
+import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 import { isReviewQueueEntry } from "./trainingModelGuards";
 import type { StorageRepositoryResult } from "./result";
 import { isActiveReviewQueueEntry } from "../../domain/learning/reviewQueueEntry";
-const isIds = (value: unknown): value is string[] => Array.isArray(value) && value.every((id) => typeof id === "string");
+import { readReviewQueueForJournal, readReviewQueueStrict } from "./trainingEvidenceIntegrityRepository";
 export type ReviewQueueSnapshot = Readonly<{ entries: readonly ReviewQueueEntry[]; revisions: Readonly<Record<string, number>>; indexRevision: number | null }>;
 function reviewQueueItemIdentity(entry: Pick<ReviewQueueEntry, "trackId" | "sourceItem">): string {
   return `${entry.trackId}:${resolvedContentRefKey(entry.sourceItem)}`;
 }
 export function readReviewQueueSnapshot(): StorageRepositoryResult<ReviewQueueSnapshot> {
-  const indexEnvelope = readCanonicalEnvelope(STORAGE_KEYS.REVIEW_INDEX, isIds);
-  const ids = indexEnvelope?.payload ?? [];
-  if (new Set(ids).size !== ids.length) throw new Error("Review index contains duplicate record IDs.");
-  const revisions: Record<string, number> = {};
-  const entries = ids.map((id) => {
-    const envelope = readCanonicalEnvelope(STORAGE_KEYS.reviewEntry(id), isReviewQueueEntry);
-    if (!envelope) throw new Error(`Review index references missing entry ${id}.`);
-    revisions[id] = envelope.revision;
-    return envelope.payload;
-  });
+  const { result, revisions, indexRevision } = readReviewQueueStrict();
+  const entries = result.value;
   validateActiveReviewIdentity(entries);
-  return { ok: true, value: Object.freeze({ entries: Object.freeze(entries), revisions: Object.freeze(revisions), indexRevision: indexEnvelope?.revision ?? null }) };
+  return { ok: true, value: Object.freeze({ entries: Object.freeze(entries), revisions, indexRevision }) };
 }
 export function readReviewQueueItems(): StorageRepositoryResult<ReviewQueueEntry[]> { return { ok: true, value: [...readReviewQueueSnapshot().value.entries] }; }
 export async function getReviewQueueItems(): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { return readReviewQueueItems(); }
 export async function getReviewQueueSnapshot(): Promise<StorageRepositoryResult<ReviewQueueSnapshot>> { return readReviewQueueSnapshot(); }
 export async function addReviewQueueItems(items: ReviewQueueEntry[]): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
+  const current = readReviewQueueStrict().result.value;
+  return writeReviewQueueItems(items, current);
+}
+
+/** Journal replay entry point; the caller must first run the journal preflight. */
+export async function materializeReviewQueueItems(items: ReviewQueueEntry[]): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
+  return writeReviewQueueItems(items, readReviewQueueForJournal(items));
+}
+
+async function writeReviewQueueItems(items: ReviewQueueEntry[], current: readonly ReviewQueueEntry[]): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
   if (!items.every((item) => isReviewQueueEntry(item) && item.trackId === item.sourceItem.trackId)) {
     throw new Error("Review queue entry is invalid.");
   }
-  const current = (await getReviewQueueItems()).value;
   const byId = new Map(current.map((entry) => [entry.id, entry]));
   for (const item of items) {
     const identity = reviewQueueItemIdentity(item);
@@ -45,14 +46,31 @@ export async function addReviewQueueItems(items: ReviewQueueEntry[]): Promise<St
     byId.set(item.id, item);
   }
   const values = [...byId.values()];
-  values.forEach((item) => writeCanonicalJson(STORAGE_KEYS.reviewEntry(item.id), item));
-  writeCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, values.map((item) => item.id));
+  const existingById = new Map(current.map((entry) => [entry.id, entry]));
+  values.forEach((item) => {
+    if (JSON.stringify(existingById.get(item.id)) !== JSON.stringify(item)) writeCanonicalJson(STORAGE_KEYS.reviewEntry(item.id), item);
+  });
+  const nextIds = values.map((item) => item.id);
+  const currentIds = readCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, (value): value is string[] => Array.isArray(value) && value.every((id) => typeof id === "string" && id.trim().length > 0));
+  if (JSON.stringify(currentIds ?? []) !== JSON.stringify(nextIds)) writeCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, nextIds);
   return { ok: true, value: values };
 }
 export async function getDueReviewQueueItems(trackId: TrackId, now: string): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { return { ok: true, value: (await getReviewQueueItems()).value.filter((entry) => isActiveReviewQueueEntry(entry) && entry.trackId === trackId && entry.dueAt !== undefined && entry.dueAt <= now).sort((a,b) => a.dueAt!.localeCompare(b.dueAt!) || a.createdAt.localeCompare(b.createdAt)) }; }
 export async function removeReviewQueueEntry(id: string): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { const values = (await getReviewQueueItems()).value.filter((entry) => entry.id !== id); writeCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, values.map((entry) => entry.id)); removeCanonicalValue(STORAGE_KEYS.reviewEntry(id)); return { ok: true, value: values }; }
+/** Journal replay entry point for the index-before-record-delete prefix. */
+export async function materializeReviewQueueRemoval(entry: ReviewQueueEntry): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
+  const current = readReviewQueueForJournal([entry]);
+  const existing = current.find((candidate) => candidate.id === entry.id);
+  if (existing && JSON.stringify(existing) !== JSON.stringify(entry)) throw new Error(`Review delete ${entry.id} conflicts with its durable review identity.`);
+  const values = current.filter((candidate) => candidate.id !== entry.id);
+  const nextIds = values.map((candidate) => candidate.id);
+  const currentIds = readCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, (value): value is string[] => Array.isArray(value) && value.every((id) => typeof id === "string" && id.trim().length > 0));
+  if (JSON.stringify(currentIds ?? []) !== JSON.stringify(nextIds)) writeCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, nextIds);
+  if (existing) removeCanonicalValue(STORAGE_KEYS.reviewEntry(entry.id));
+  return { ok: true, value: values };
+}
 export async function hasReviewQueueEntryRecord(id: string): Promise<boolean> { return readCanonicalJson(STORAGE_KEYS.reviewEntry(id), isReviewQueueEntry) !== null; }
-export async function clearReviewQueueItems(): Promise<void> { const ids = readCanonicalJson(STORAGE_KEYS.REVIEW_INDEX, isIds) ?? []; ids.forEach((id) => removeCanonicalValue(STORAGE_KEYS.reviewEntry(id))); removeCanonicalValue(STORAGE_KEYS.REVIEW_INDEX); }
+export async function clearReviewQueueItems(): Promise<void> { const ids = readReviewQueueStrict().result.value.map((entry) => entry.id); ids.forEach((id) => removeCanonicalValue(STORAGE_KEYS.reviewEntry(id))); removeCanonicalValue(STORAGE_KEYS.REVIEW_INDEX); }
 
 function validateActiveReviewIdentity(entries: readonly ReviewQueueEntry[]): void {
   const active = entries.filter(isActiveReviewQueueEntry);

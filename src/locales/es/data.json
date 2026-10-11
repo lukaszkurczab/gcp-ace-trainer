@@ -12,10 +12,6 @@
       "title": "Compartir o descargar los datos de la cuenta",
       "summary": "Archivo JSON con los datos de la cuenta, los datos de aprendizaje sincronizados y la actividad de la cuenta"
     },
-    "guestPrivacy": {
-      "title": "Solicitar ayuda con tus datos",
-      "summary": "Enviar una solicitud de privacidad desde la aplicación sin crear una cuenta"
-    },
     "openAccount": {
       "title": "Abrir cuenta",
       "summary": "Inicia sesión o crea una cuenta para gestionar los datos de la cuenta"
@@ -39,6 +35,10 @@
     "none": {
       "title": "Acciones sobre los datos no disponibles",
       "summary": "No hay ninguna acción de cuenta disponible en este estado"
+    },
+    "guestExport": {
+      "title": "Exportar datos locales de invitado",
+      "summary": "Guarda una copia JSON de tus datos de aprendizaje en este dispositivo. No necesitas cuenta ni correo."
     }
   },
   "localReset": {
@@ -70,7 +70,7 @@
     },
     "guest": {
       "title": "Datos de invitado",
-      "body": "Los datos de aprendizaje se guardan localmente en este dispositivo. Puedes usar Patternly sin una cuenta. Si necesitas ayuda con tus datos, utiliza el formulario de privacidad de esta aplicación."
+      "body": "Tus datos de aprendizaje se guardan localmente en este dispositivo. Exporta una copia JSON sin iniciar sesión. Usa el formulario de privacidad independiente para los datos de servicios en línea."
     },
     "signedOut": {
       "title": "Inicia sesión para gestionar los datos de la cuenta",
@@ -223,8 +223,8 @@
     "scopeTitle": "Alcance",
     "accountIntro": "La exportación es un archivo JSON preparado para la cuenta con sesión iniciada.",
     "accountBody": "La exportación incluye el perfil de tu cuenta; los registros de aprendizaje sincronizados compatibles, como la ruta activa, los objetivos y los planes de aprendizaje, los resúmenes y resultados de sesiones completadas, los intentos y la cola de repaso; además de los informes de contenido vinculados. La actividad y el contexto de la cuenta incluyen el acceso a las rutas, los derechos de acceso, las aceptaciones legales, las confirmaciones de compra, los casos de consumidores, los metadatos del dispositivo y de sincronización, y el historial de exportación. La información de acceso explica las finalidades, las categorías de datos, los destinatarios, los plazos de conservación, las fuentes, las transferencias, las decisiones automatizadas y tus derechos. El manifiesto enumera las categorías incluidas y omitidas; no se incluyen credenciales, secretos, identificadores sin procesar de proveedores o dispositivos, informes de otras personas ni informes anónimos. Las sesiones activas, los borradores, los ajustes y otros datos exclusivos del dispositivo no se sincronizan. Cuando inicies sesión en la misma cuenta, la sincronización habitual puede restaurar los registros compatibles desde la nube de la cuenta. La incorporación de datos de invitado es una opción independiente que combina con la cuenta el progreso admisible de este dispositivo. El archivo JSON se comparte mediante la hoja del sistema para compartir o guardar, para facilitar el acceso y la portabilidad, y no se puede importar a Patternly. Por seguridad, puede que tengas que volver a confirmar tu identidad. Las exportaciones están sujetas a límites de frecuencia.",
-    "guestIntro": "No necesitas una cuenta para ponerte en contacto con nosotros sobre tus datos.",
-    "guestBody": "Puedes eliminar localmente los datos almacenados solo en este dispositivo. Envía una solicitud de privacidad más amplia mediante el formulario de esta aplicación. La aplicación no adjunta un identificador de cuenta ni comprueba si una dirección existe en el sistema."
+    "guestIntro": "Crea una copia local de tus datos de aprendizaje sin cuenta, correo ni conexión de red.",
+    "guestBody": "El archivo JSON incluye el progreso disponible, sesiones y borradores guardados, respuestas y resultados, calendario de repasos, objetivos y planes aceptados, preferencias de la app y recordatorios, e informes guardados en este dispositivo. El manifiesto indica lo incluido y lo omitido. La hoja del sistema permite guardar o compartir el archivo; Patternly no puede confirmar que otra app lo haya guardado."
   },
   "status": {
     "title": "No se pudo completar la acción",
@@ -240,6 +240,16 @@
     "fileFailure": "No se pudo preparar el archivo temporal de forma segura.",
     "sharingFailed": "No se pudo abrir la hoja del sistema para guardar o compartir.",
     "cleanupFailed": "No se pudo eliminar el archivo temporal. La aplicación volverá a intentar limpiarlo de forma segura al iniciarse de nuevo.",
-    "actionFailed": "No se pudo completar esa acción de cuenta. Inténtalo de nuevo."
+    "actionFailed": "No se pudo completar esa acción de cuenta. Inténtalo de nuevo.",
+    "guestExportTitle": "Exportación de datos de invitado",
+    "guestExportHandoff": "El archivo se entregó a la hoja del sistema para guardarlo o compartirlo. Patternly no puede confirmar si otra app lo guardó.",
+    "guestExportDismissed": "Se cerró la hoja del sistema. No se confirmó ninguna copia.",
+    "guestExportGuestProfileUnavailable": "Los datos de invitado no están disponibles en el perfil actual. Vuelve al perfil de invitado activo e inténtalo de nuevo.",
+    "guestExportSourcePending": "Se está guardando un cambio de aprendizaje. Espera a que termine y vuelve a intentarlo.",
+    "guestExportSourceInvalid": "Algunos datos locales están incompletos o no son coherentes. Patternly no creó la exportación.",
+    "guestExportSourceChanged": "El perfil activo o sus datos cambiaron durante la exportación. Se eliminó el archivo temporal; inténtalo de nuevo.",
+    "guestExportFileFailure": "No se pudo preparar de forma segura el archivo temporal de exportación.",
+    "guestExportSharingFailed": "No se pudo abrir la hoja del sistema. Se eliminó el archivo temporal.",
+    "guestExportCleanupFailed": "No se pudo eliminar el archivo temporal. Patternly volverá a intentarlo al iniciar la próxima vez."
   }
 }

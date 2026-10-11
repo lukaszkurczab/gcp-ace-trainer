@@ -12,6 +12,8 @@ const isTestSourcePath = (path) => /\.test\.(?:[cm]?[jt]sx?)$/.test(path);
 const allSourcePaths = walk(join(root, "src")).filter((path) => /\.(?:ts|tsx|js|mjs)$/.test(path));
 const excludedTestSupportPaths = new Set([join(root, "src/testing/journalTestSupport.ts")]);
 const sourcePaths = allSourcePaths.filter((path) => !isTestSourcePath(path) && !excludedTestSupportPaths.has(path));
+const persist13FixtureRootPath = join(root, "src/application/runtimeAuditability/Persist13ResetFixtureRoot.tsx");
+const productionSourcePaths = sourcePaths.filter((path) => path !== persist13FixtureRootPath);
 const sourceCodePaths = sourcePaths;
 const activeSource = text(sourceCodePaths);
 const guardPath = join(root, "src/storage/repositories/trainingModelGuards.ts");
@@ -46,11 +48,24 @@ if (/type\s+TrackId\s*=\s*["']/.test(activeSource)) fail("TrackId is a closed co
 if (/type\s+TrackFamilyId\s*=\s*["']/.test(activeSource)) fail("TrackFamilyId is a closed concrete union.");
 if (sourcePaths.some((path) => /Adapter|Compatibility/.test(path) && !path.endsWith("src/infrastructure/clients/PatternlyApiClientAdapter.ts"))) fail("an adapter or compatibility source path remains.");
 const mmkvConsumers = sourcePaths.filter((path) => /react-native-mmkv/.test(readFileSync(path, "utf8")));
-if (mmkvConsumers.length !== 1 || !mmkvConsumers[0].endsWith("src/infrastructure/storage/encryptedStorageNative.ts")) fail("MMKV must have one infrastructure-only native adapter.");
-if ((activeSource.match(/createMMKV\s*\(/g) ?? []).length !== 1) fail("MMKV must have one production instance.");
+const productionMMKVConsumers = productionSourcePaths.filter((path) => /react-native-mmkv/.test(readFileSync(path, "utf8")));
+if (productionMMKVConsumers.length !== 1 || !productionMMKVConsumers[0].endsWith("src/infrastructure/storage/encryptedStorageNative.ts")) fail("MMKV must have one infrastructure-only production adapter.");
+if (mmkvConsumers.length !== 2 || !mmkvConsumers.includes(persist13FixtureRootPath)) fail("Only the encrypted adapter and the isolated PERSIST-13 fixture may reference MMKV.");
+if ((text(productionSourcePaths).match(/createMMKV\s*\(/g) ?? []).length !== 1) fail("MMKV must have one production instance.");
+if (!existsSync(persist13FixtureRootPath)) fail("the isolated PERSIST-13 fixture root is missing.");
+else {
+  const fixtureSource = readFileSync(persist13FixtureRootPath, "utf8");
+  const entrySelector = readFileSync(join(root, "App.tsx"), "utf8");
+  if ((fixtureSource.match(/createMMKV\s*\(/g) ?? []).length !== 1
+    || !/typeof __DEV__ !== "undefined" && __DEV__ && process\.env\.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "smoke"/.test(fixtureSource)
+    || !/require\("react-native-mmkv"\)/.test(fixtureSource)
+    || !/if \(entry\.kind === "regular"\)[\s\S]*?require\("\.\/src\/RegularApplicationRoot"\)[\s\S]*?require\("\.\/src\/application\/runtimeAuditability\/Persist13ResetFixtureRoot"\)/.test(entrySelector)) {
+    fail("PERSIST-13 native MMKV use must stay behind its one smoke-only fixture root and explicit entry selector.");
+  }
+}
 for (const path of sourcePaths) {
   const source = readFileSync(path, "utf8");
-  if (/infrastructure\/storage\/mmkvClient/.test(source) && !/src\/(?:storage\/repositories|content\/application|preferences)\//.test(path)) {
+  if (/infrastructure\/storage\/mmkvClient/.test(source) && path !== persist13FixtureRootPath && !/src\/(?:storage\/repositories|content\/application|preferences)\//.test(path)) {
     fail(`only repository implementations may import the MMKV client: ${path}`);
   }
   if (/(?:from\s+|import\s*\()\s*["'](?:[^"']*\/)?journalTestSupport["']/.test(source)) {

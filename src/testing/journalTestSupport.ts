@@ -1,6 +1,7 @@
 import { createTrainingAttempt, createTrainingSession, type ResolvedContentRef, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../domain";
-import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../infrastructure/storage/mmkvClient";
+import { MemoryKeyValueStorage, installKeyValueStorageForTests, setActiveProfileLeaseForTests } from "../infrastructure/storage/mmkvClient";
 import { captureMutationExpectedRevisions, createMutationPlanFingerprint, type MutationJournalPlan, type TrainingMutationJournalRecord, type TrainingMutationOperation } from "../storage/repositories/mutationJournalRepository";
+import { initializeStorageMetadata } from "../storage/repositories/storageMetadataRepository";
 
 export const timestamp = "2026-07-15T10:00:00.000Z";
 const artifactSha256 = "a".repeat(64);
@@ -12,6 +13,8 @@ function item(): ResolvedContentRef {
 export function installMemoryStorage(): MemoryKeyValueStorage {
   const storage = new MemoryKeyValueStorage();
   installKeyValueStorageForTests(storage);
+  setActiveProfileLeaseForTests({ id: "guest-test-profile", kind: "guest", accountId: null });
+  initializeStorageMetadata();
   return storage;
 }
 

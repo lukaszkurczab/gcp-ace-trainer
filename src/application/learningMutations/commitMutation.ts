@@ -6,6 +6,7 @@ import { MutationCommitFailure } from "../mutationBoundary";
 import { getAccountSyncState, markAccountDataPending } from "../../storage/repositories/accountDataRepository";
 import { withLocalLearningWriteOperation } from "./localLearningWriteOperation";
 import type { GoalPlanAcceptanceInterruptionHook } from "../../storage/repositories/goalPlanAcceptanceRepository";
+import { pausePersist13ResetAfterMaterialization } from "../runtimeAuditability/persist13ResetPauseHook";
 
 export async function commitMutation(record: MutationJournalRecord): Promise<void> {
   return withLocalLearningWriteOperation(() => commitMutationUnlocked(record));
@@ -27,10 +28,14 @@ async function commitMutationUnlocked(record: MutationJournalRecord, beforeGoalP
   let prepared: MutationJournalRecord;
   try { prepared = await persistMutationJournal(record); }
   catch (error) { throw new MutationCommitFailure("journal_write", "not_durable", error); }
-  try { await materializeMutation(prepared, beforeGoalPlanWrite); await updateMutationJournalPhase(prepared, "materialized"); }
+  try {
+    await materializeMutation(prepared, beforeGoalPlanWrite);
+    await pausePersist13ResetAfterMaterialization(prepared.operation);
+    await updateMutationJournalPhase(prepared, "materialized");
+  }
   catch (error) { throw new MutationCommitFailure("materialization", "journal_durable", error); }
   try { await verifyMutation(prepared); await updateMutationJournalPhase(prepared, "verified_pending_clear"); }
   catch (error) { throw new MutationCommitFailure("verification", "materialized", error); }
-  try { if (prepared.operation !== "resolve_account_sync_conflict") await markAccountDataPending(); await clearMutationJournal(prepared.commandIdentity.fingerprint); }
+  try { if (prepared.operation !== "resolve_account_sync_conflict" && prepared.operation !== "reset_learning_state") await markAccountDataPending(); await clearMutationJournal(prepared.commandIdentity.fingerprint); }
   catch (error) { throw new MutationCommitFailure("journal_clear", "verified_pending_clear", error); }
 }

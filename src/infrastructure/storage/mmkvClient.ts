@@ -34,9 +34,21 @@ const readyListeners = new Set<() => void>();
 const profileTransitionListeners = new Set<() => void>();
 let profileTransitionActive = false;
 let profileStorageReadyNotified = false;
+let testActiveProfileLease: ActiveProfileStorageLease | null = null;
+let testActiveProfileLeaseGeneration = 0;
 const MODERN_PROFILE_PREFIX = "patternly:profile:v1:";
 const BIZQ01_CANARY_FAMILY_PREFIX = `${MODERN_PROFILE_PREFIX}bizq01-canary-`;
 const BIZQ01_REMOVED_GUEST_ID_SHA256 = "b880a3a8d1530601f6f1ed2f244078468f09f51f9d68ba5f6d3cec95cfa5e52d";
+
+/** Read-only startup assertion for the isolated PERSIST-13 fixture entry point. */
+export function isPersist13StorageOwnerCold(): boolean {
+  return typeof __DEV__ !== "undefined" && __DEV__ && process.env.EXPO_PUBLIC_PATTERNLY_RUNTIME_MODE === "smoke"
+    && process.env.EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE !== undefined
+    && client === null && profileRouter === null && preparedStorage === null && activePreparedStorage === null
+    && preparation === null && testPreparationFactory === null && testProfileTransitionReload === null
+    && readyListeners.size === 0 && profileTransitionListeners.size === 0 && !profileTransitionActive
+    && !profileStorageReadyNotified && testActiveProfileLease === null;
+}
 
 export type GuestRemovalPostcoldPrefixReceipt = Readonly<{
   schemaVersion: "bizq01-guest-removal-postcold-prefix-v1";
@@ -757,6 +769,7 @@ export function getActiveStorageProfile(): StorageProfile {
 export function getActiveStorageProfileOrNull(): StorageProfile | null { return profileRouter?.profile ?? null; }
 
 export function captureActiveProfileStorageLease(): ActiveProfileStorageLease | null {
+  if (client instanceof MemoryKeyValueStorage && !profileRouter && testActiveProfileLease) return testActiveProfileLease;
   if (!client || !profileRouter || !activePreparedStorage || profileTransitionActive || activePreparedStorage.generation !== profileStorageGeneration) return null;
   return Object.freeze({ profile: Object.freeze({ ...profileRouter.profile }), generation: activePreparedStorage.generation });
 }
@@ -776,6 +789,9 @@ export function isPreparedProfileStorageLeaseCurrent(lease: PreparedProfileStora
 }
 
 export function isActiveProfileStorageLeaseCurrent(lease: ActiveProfileStorageLease): boolean {
+  if (client instanceof MemoryKeyValueStorage && !profileRouter && testActiveProfileLease) return testActiveProfileLease.generation === lease.generation
+    && testActiveProfileLease.profile.id === lease.profile.id && testActiveProfileLease.profile.kind === lease.profile.kind
+    && testActiveProfileLease.profile.accountId === lease.profile.accountId;
   const profile = profileRouter?.profile;
   return Boolean(client && activePreparedStorage && !profileTransitionActive && activePreparedStorage.generation === lease.generation
     && profile && profile.id === lease.profile.id && profile.kind === lease.profile.kind && profile.accountId === lease.profile.accountId
@@ -1153,6 +1169,15 @@ export function installKeyValueStorageForTests(storage: KeyValueStorage): void {
   activePreparedStorage = null;
   preparation = null;
   profileTransitionActive = false;
+  testActiveProfileLease = null;
+  testActiveProfileLeaseGeneration += 1;
+}
+
+/** Test-only profile fence for repository tests that use an in-memory adapter. */
+export function setActiveProfileLeaseForTests(profile: StorageProfile | null): void {
+  if (!(client instanceof MemoryKeyValueStorage) || profileRouter) throw new Error("The test profile lease requires an installed in-memory storage adapter.");
+  testActiveProfileLeaseGeneration += 1;
+  testActiveProfileLease = profile ? Object.freeze({ profile: Object.freeze({ ...profile }), generation: testActiveProfileLeaseGeneration }) : null;
 }
 
 /** Test-only bootstrap seam for exercising the prepare/activate boundary. */

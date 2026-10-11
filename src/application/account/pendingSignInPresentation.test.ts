@@ -12,6 +12,6 @@ test("automatic session revocation keeps sign-in on loading and exposes pending 
   assert.match(pending, /setState\(\{ kind: "loading" \}\)/u);
   assert.doesNotMatch(pending, /kind: "signOutPending"/u);
   const failure = branch.slice(branch.indexOf("} catch {"), branch.indexOf("} finally {"));
-  assert.match(failure, /if \(canContinue\(\)\) setState\(\{ kind: "signOutPending"/u);
-  assert.match(branch, /startAuthenticatedProfilePreparation\(configuredAuth, client, currentUser, generation\)/u);
+  assert.match(failure, /if \(canContinue\(\)\) \{\s*setState\(\{ kind: "signOutPending"[\s\S]*?\}\);\s*eventDiagnostic\.failed\("recovery_guard"[\s\S]*?\);\s*\}/u);
+  assert.match(branch, /startAuthenticatedProfilePreparation\(configuredAuth, client, currentUser, generation, eventDiagnostic\)/u);
 });

@@ -7,13 +7,20 @@ import { createTrainingAttempt, createTrainingSession } from "../../domain";
 import { composeTrainingLifecycleUseCases } from "./trainingLifecycleComposition";
 import { TrainingApplicationFailure } from "../trainingLifecycle/contracts";
 import { commitTrainingOutcome } from "../learningMutations/commitTrainingOutcome";
+import { buildMutationJournal } from "../learningMutations/mutationJournalBuilder";
 import { captureExactMissingActorAnchor, captureExactMissingActorFenceAtConfirmation } from "../exactMissingActorFence";
-import { MemoryKeyValueStorage, getKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
+import { MemoryKeyValueStorage, getKeyValueStorage, installKeyValueStorageForTests, setActiveProfileLeaseForTests } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../../storage/keys";
+import { captureLearningStateResetTargetPlan } from "../../storage/repositories/learningStateResetRepository";
+import { persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
+import { saveSettings } from "../../storage/repositories/settingsRepository";
+import { installMemoryStorage, attempt, session } from "../../testing/journalTestSupport";
 import { createContentIdentityUnavailableActiveRecord, saveUnavailableActiveRecord } from "../../storage/repositories/contentIdentityUnavailableRepository";
 import { CanonicalRepositoryBootstrapStep } from "../../storage/repositories/canonicalRepositories";
+import { initializeStorageMetadata } from "../../storage/repositories/storageMetadataRepository";
 import {
   addTrainingAttempt,
+  getActiveMutationJournal,
   getActiveTrainingSession,
   getActiveTrainingSessionDraft,
   getTrainingAttempts,
@@ -32,6 +39,7 @@ let testStorage: MemoryKeyValueStorage;
 beforeEach(() => {
   testStorage = new MemoryKeyValueStorage();
   installKeyValueStorageForTests(testStorage);
+  initializeStorageMetadata();
 });
 
 test("bootstrap surfaces unavailable active sessions before content preparation or resume", async () => {
@@ -64,11 +72,89 @@ test("bootstrap surfaces unavailable active sessions before content preparation 
   const result = await bootstrapApplication(
     async () => { events.push("content"); },
     async () => { events.push("resume"); },
-    async () => { events.push("recovery"); },
+    async () => { events.push("recovery"); composeTrainingLifecycleUseCases(); },
   );
 
   assert.deepEqual(result, { kind: "content_identity_unavailable", sessionIds: [sessionId] });
-  assert.deepEqual(events, []);
+  assert.deepEqual(events, ["recovery"]);
+});
+
+test("a first Guest-access write is allowed before empty canonical metadata is initialized", async () => {
+  testStorage.remove(STORAGE_KEYS.METADATA);
+  await grantGuestAccess();
+  const result = await bootstrapApplication(async () => undefined, async () => undefined);
+  assert.deepEqual(result, { kind: "ready", activeSessionId: null });
+  assert.equal(await hasGuestAccess(), true);
+  assert.ok(testStorage.getString(STORAGE_KEYS.METADATA));
+});
+
+test("bootstrap fails closed without writes when evidence exists but canonical metadata is missing", async () => {
+  testStorage.remove(STORAGE_KEYS.METADATA);
+  const record = createTrainingSession({
+    id: "missing-metadata-session", trackId: TRACK_ID, modeId: "practice",
+    configurationSnapshot: { kind: "practice", mode: "practice" }, requestedLength: 1, actualLength: 1,
+    currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: { trackId: TRACK_ID, questionId: "question-1", contentVersion: "v1", artifactSha256: "a".repeat(64) } }],
+    optionOrderByOccurrence: { "occurrence-1": ["a", "b"] }, activeForegroundMs: 0, contentVersion: "v1", artifactSha256: "a".repeat(64),
+    status: "active", startedAt: "2026-07-15T10:00:00.000Z",
+  });
+  const { writeCanonicalJson } = await import("../../storage/repositories/canonicalRecordCodec");
+  writeCanonicalJson(STORAGE_KEYS.trainingSession(record.id), record);
+  writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [record.id]);
+  const before = testStorage.snapshot();
+  const result = await bootstrapApplication(async () => undefined, async () => undefined);
+  assert.deepEqual(result, { kind: "blocking", reason: "storage_metadata_invalid" });
+  assert.deepEqual(testStorage.snapshot(), before);
+});
+
+test("bootstrap replays a durable reset from a record-deleted/index-retained prefix before maintenance and content", async () => {
+  testStorage = installMemoryStorage();
+  const profile = { id: "guest-test-profile", kind: "guest" as const, accountId: null };
+  await saveTrainingSession(session());
+  await addTrainingAttempt(attempt());
+  await saveSettings({ appearance: "dark", language: "en" });
+  const plan = captureLearningStateResetTargetPlan();
+  const resetJournal = await buildMutationJournal({
+    operation: "reset_learning_state", sessionId: "learning-state-reset", trackId: TRACK_ID,
+    identity: ["bootstrap-reset", "2026-10-11T00:00:00.000Z"],
+    writes: [{ kind: "clear_learning_state", targetPlan: plan }], createdAt: "2026-10-11T00:00:00.000Z",
+  });
+  await persistMutationJournal(resetJournal);
+  const attemptIndexBefore = testStorage.getString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX);
+  const settingsBefore = testStorage.getString(STORAGE_KEYS.SETTINGS);
+  testStorage.remove(STORAGE_KEYS.trainingAttempt("attempt-1"));
+  assert.equal(testStorage.getString(STORAGE_KEYS.trainingAttempt("attempt-1")), undefined);
+  assert.equal(testStorage.getString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX), attemptIndexBefore, "the authorized durable plan permits this record-deleted/index-retained prefix");
+
+  const events: string[] = [];
+  const bootstrap = () => bootstrapApplication(
+    async () => {
+      events.push("content");
+      assert.equal(await getActiveMutationJournal(), null);
+      assert.deepEqual(testStorage.getAllKeys().filter((key) => plan.targets.some((target) => target.key === key)), []);
+    },
+    async () => assert.fail("A reset must clear active-session ownership before resume."),
+    async () => { events.push("lifecycle"); composeTrainingLifecycleUseCases(); },
+    { repositories: { onStep: (step) => {
+      events.push(step);
+      if (step === CanonicalRepositoryBootstrapStep.AcceptedReportOutboxPurge) {
+        assert.equal(testStorage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), undefined, "repository maintenance runs only after reset recovery");
+        assert.deepEqual(testStorage.getAllKeys().filter((key) => plan.targets.some((target) => target.key === key)), []);
+      }
+    } } },
+  );
+
+  assert.deepEqual(await bootstrap(), { kind: "ready", activeSessionId: null });
+  assert.equal(testStorage.getString(STORAGE_KEYS.SETTINGS), settingsBefore);
+  assert.equal(events.indexOf("content") > events.indexOf("lifecycle"), true);
+  assert.equal(events.indexOf(CanonicalRepositoryBootstrapStep.AcceptedReportOutboxPurge) > events.indexOf("lifecycle"), true);
+
+  installKeyValueStorageForTests(testStorage);
+  setActiveProfileLeaseForTests(profile);
+  events.length = 0;
+  assert.deepEqual(await bootstrap(), { kind: "ready", activeSessionId: null });
+  assert.equal(testStorage.getString(STORAGE_KEYS.SETTINGS), settingsBefore);
+  assert.equal(await getActiveMutationJournal(), null);
+  assert.deepEqual(testStorage.getAllKeys().filter((key) => plan.targets.some((target) => target.key === key)), []);
 });
 
 test("bootstrap stays pending until verified content preparation finishes", async () => {

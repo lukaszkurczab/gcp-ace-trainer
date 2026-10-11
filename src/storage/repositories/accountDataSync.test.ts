@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 
-import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
+import { MemoryKeyValueStorage, getKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { saveActiveTrackId, getActiveTrackId } from "./activeTrackRepository";
 import { clearActiveTrackId } from "./activeTrackRepository";
 import { createDefaultGoal, createLearningPlan, createLearningPlanSlotId, createResolvedContentRef, type ReviewQueueEntry } from "../../domain";
@@ -25,6 +25,9 @@ import {
 import { AccountDataFailure } from "../errors";
 import { GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID } from "../../domain";
 import { addReviewQueueItems, getReviewQueueItems } from "./reviewQueueRepository";
+import { STORAGE_KEYS } from "../keys";
+import { writeCanonicalJson } from "./canonicalRecordCodec";
+import { attempt } from "../../testing/journalTestSupport";
 
 const ACCOUNT_ID = "55555555-5555-4555-8555-555555555555";
 const INSTALLATION_ID = "66666666-6666-4666-8666-666666666666";
@@ -48,6 +51,20 @@ test("active sessions stay local and block account snapshot export", async () =>
   assert.equal(snapshot.activeSession, false);
   assert.equal(snapshot.records[0]?.state.trackId, TRACK_ID);
   assert.equal(Object.prototype.hasOwnProperty.call(snapshot, "protocolVersion"), false);
+});
+
+test("corrupt training evidence blocks account snapshots, outbox reconciliation, and remote replacement without writes", async () => {
+  await bindSyncedAccount();
+  const orphan = attempt("account-orphan");
+  writeCanonicalJson(STORAGE_KEYS.trainingAttempt(orphan.id), orphan);
+  writeCanonicalJson(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, []);
+  const storage = getKeyValueStorage() as MemoryKeyValueStorage;
+  const before = storage.snapshot();
+
+  await assert.rejects(buildAccountDataSnapshot());
+  await assert.rejects(ensureAccountOutboxFromLocalDataset());
+  await assert.rejects(applyRemoteAccountData([]));
+  assert.deepEqual(storage.snapshot(), before);
 });
 
 test("canonical account records round trip through remote materialization", async () => {

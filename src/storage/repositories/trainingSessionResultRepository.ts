@@ -1,10 +1,11 @@
 import { createTrainingSessionResult, type TrainingSessionResult } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
+import { removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 import { isTrainingSessionResult } from "./trainingModelGuards";
+import { readTrainingSessionResultById } from "./trainingEvidenceIntegrityRepository";
 
 export function readTrainingSessionResult(sessionId: string): TrainingSessionResult | null {
-  const value = readCanonicalJson(STORAGE_KEYS.trainingSessionResult(sessionId), isTrainingSessionResult);
+  const value = readTrainingSessionResultById(sessionId);
   return value ? createTrainingSessionResult(value) : null;
 }
 

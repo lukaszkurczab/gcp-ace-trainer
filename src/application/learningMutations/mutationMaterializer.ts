@@ -1,25 +1,22 @@
 import { JournalMaterializationError } from "../../storage/errors";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import {
-  addReviewQueueItems,
-  addTrainingAttempt,
   clearActiveTrainingSession,
   clearActiveForegroundTimer,
   clearActiveTrainingSessionDraft,
-  clearForegroundTimers,
-  clearReviewQueueItems,
-  clearTrainingAttempts,
-  clearTrainingSessionDrafts,
-  clearTrainingSessions,
   getActiveTrainingSessionDraft,
-  getReviewQueueItems,
-  getTrainingSessions,
+  materializeReviewQueueItems,
+  materializeReviewQueueRemoval,
+  materializeTrainingAttempt,
+  materializeTrainingSession,
   materializeActiveTrainingSessionDraft,
-  removeReviewQueueEntry,
-  saveTrainingSession,
+  readReviewQueueForJournal,
+  readTrainingSessionForJournal,
   saveTrainingSessionResult,
 } from "../../storage/repositories";
 import { assertMutationJournalIntegrity, readActiveMutationJournal, type MutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
+import { assertTrainingEvidenceJournalPreflight } from "../../storage/repositories/trainingEvidenceIntegrityRepository";
+import { assertLearningStateResetReplayState, materializeLearningStateReset } from "../../storage/repositories/learningStateResetRepository";
 import { materializeGoalPlanAcceptance, type GoalPlanAcceptanceInterruptionHook } from "../../storage/repositories/goalPlanAcceptanceRepository";
 import { materializeAccountSyncConflictResolution } from "../../storage/repositories/accountSyncConflictResolutionRepository";
 
@@ -28,6 +25,13 @@ function unsupportedWrite(write: never): never { throw new Error(`Unsupported jo
 export async function materializeMutation(record: MutationJournalRecord, beforeGoalPlanWrite?: GoalPlanAcceptanceInterruptionHook): Promise<void> {
   try {
     assertMutationJournalIntegrity(record);
+    if (record.operation === "reset_learning_state") {
+      const reset = record.writes[0];
+      if (reset?.kind !== "clear_learning_state") throw new Error("A reset journal has no exact physical target plan.");
+      assertLearningStateResetReplayState(reset.targetPlan);
+    } else {
+      assertTrainingEvidenceJournalPreflight(record);
+    }
     await assertDraftDeletePreflight(record);
     await assertDraftClearPreflight(record);
     await assertReviewDeletePreflight(record);
@@ -45,21 +49,21 @@ export async function materializeMutation(record: MutationJournalRecord, beforeG
         case "resolve_account_sync_conflict":
           materializeAccountSyncConflictResolution(write.record, record);
           break;
-        case "put_attempt": await addTrainingAttempt(write.record); break;
+        case "put_attempt": await materializeTrainingAttempt(write.record); break;
         case "put_review_entry":
-        case "put_review_entry_for_attempt": await addReviewQueueItems([write.record]); break;
+        case "put_review_entry_for_attempt": await materializeReviewQueueItems([write.record]); break;
         case "update_review_entry": {
-          if (!(await getReviewQueueItems()).value.some((entry) => entry.id === write.record.id)) throw new Error(`Review update ${write.record.id} has no durable record to update.`);
-          await addReviewQueueItems([write.record]);
+          if (!readReviewQueueForJournal([write.record]).some((entry) => entry.id === write.record.id)) throw new Error(`Review update ${write.record.id} has no durable record to update.`);
+          await materializeReviewQueueItems([write.record]);
           break;
         }
-        case "delete_review_entry": await removeReviewQueueEntry(write.record.id); break;
+        case "delete_review_entry": await materializeReviewQueueRemoval(write.record); break;
         case "delete_review_entry_for_attempt": {
-          const durable = (await getReviewQueueItems()).value.find((entry) => entry.id === write.record.id);
-          if (durable) await removeReviewQueueEntry(write.record.id);
+          const durable = readReviewQueueForJournal([write.record]).find((entry) => entry.id === write.record.id);
+          if (durable) await materializeReviewQueueRemoval(write.record);
           break;
         }
-        case "put_session": await saveTrainingSession(write.record); break;
+        case "put_session": await materializeTrainingSession(write.record); break;
         case "put_session_result": await saveTrainingSessionResult(write.record); break;
         case "put_active_session_draft": await materializeActiveTrainingSessionDraft(write.record); break;
         case "clear_active_session":
@@ -74,11 +78,7 @@ export async function materializeMutation(record: MutationJournalRecord, beforeG
           break;
         }
         case "clear_learning_state":
-          await clearForegroundTimers();
-          await clearTrainingSessionDrafts();
-          await clearTrainingSessions();
-          await clearTrainingAttempts();
-          await clearReviewQueueItems();
+          materializeLearningStateReset(write.targetPlan);
           break;
         default: unsupportedWrite(write);
       }
@@ -103,7 +103,7 @@ async function assertDraftClearPreflight(record: MutationJournalRecord): Promise
     }
     return;
   }
-  const durableSession = sessionWrite ? (await getTrainingSessions()).value.find((session) => session.id === sessionWrite.record.id) : undefined;
+  const durableSession = sessionWrite ? readTrainingSessionForJournal(sessionWrite.record) ?? undefined : undefined;
   if (!sessionWrite || !durableSession || canonicalSerialize(durableSession) !== canonicalSerialize(sessionWrite.record)) {
     throw new Error(`Journaled draft cleanup for ${draftClear.sessionId} cannot replay before its terminal session is durable.`);
   }
@@ -112,7 +112,7 @@ async function assertDraftClearPreflight(record: MutationJournalRecord): Promise
 async function assertReviewDeletePreflight(record: MutationJournalRecord): Promise<void> {
   const deletes = record.writes.filter((write) => write.kind === "delete_review_entry_for_attempt");
   if (deletes.length === 0) return;
-  const durable = (await getReviewQueueItems()).value;
+  const durable = readReviewQueueForJournal(deletes.map((write) => write.record));
   for (const write of deletes) {
     const existing = durable.find((entry) => entry.id === write.record.id);
     if (existing && canonicalSerialize(existing) !== canonicalSerialize(write.record)) {
@@ -130,7 +130,7 @@ async function assertDraftDeletePreflight(record: MutationJournalRecord): Promis
     return;
   }
   const completedWrite = record.writes.find((write) => write.kind === "put_session");
-  const durableSession = completedWrite ? (await getTrainingSessions()).value.find((session) => session.id === completedWrite.record.id) : undefined;
+  const durableSession = completedWrite ? readTrainingSessionForJournal(completedWrite.record) ?? undefined : undefined;
   if (!completedWrite || !durableSession || canonicalSerialize(durableSession) !== canonicalSerialize(completedWrite.record)) {
     throw new Error(`Journaled draft deletion for ${draftDelete.record.sessionId} cannot replay before its completed session is durable.`);
   }

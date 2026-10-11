@@ -1,12 +1,26 @@
 import type { BootstrapRecoveryStepObserver } from "../../application/operationalDiagnostics";
 
+export type ProfilePreparationHandoff = Readonly<{ isCurrent(): boolean }>;
+
+export class ProfilePreparationHandoffSupersededError extends Error {
+  constructor() {
+    super("Profile preparation was superseded before lifecycle composition.");
+    this.name = "ProfilePreparationHandoffSupersededError";
+  }
+}
+
 export async function prepareLifecycleAfterProfileCompletion<T>(
-  completeProfilePreparation: () => Promise<void>,
+  handoff: ProfilePreparationHandoff | null,
+  completeProfilePreparation: (token: ProfilePreparationHandoff) => Promise<void>,
   prepareLifecycle: () => Promise<T>,
   observeRecoveryStep?: BootstrapRecoveryStepObserver,
 ): Promise<T> {
-  observeRecoveryStep?.("profile_completion");
-  await completeProfilePreparation();
+  if (handoff) {
+    if (!handoff.isCurrent()) throw new ProfilePreparationHandoffSupersededError();
+    observeRecoveryStep?.("profile_completion");
+    await completeProfilePreparation(handoff);
+    if (!handoff.isCurrent()) throw new ProfilePreparationHandoffSupersededError();
+  }
   observeRecoveryStep?.("lifecycle_composition");
   const lifecycle = await prepareLifecycle();
   observeRecoveryStep?.(null);

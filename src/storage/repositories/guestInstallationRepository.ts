@@ -29,8 +29,12 @@ function isGuestInstallation(value: unknown): value is GuestInstallation {
 
 let provisioning: Promise<GuestInstallation> | null = null;
 
-export async function getGuestInstallation(): Promise<GuestInstallation | null> {
+export function readGuestInstallation(): GuestInstallation | null {
   return readCanonicalJson(STORAGE_KEYS.GUEST_INSTALLATION, isGuestInstallation);
+}
+
+export async function getGuestInstallation(): Promise<GuestInstallation | null> {
+  return readGuestInstallation();
 }
 
 /** Synchronous guard for entering local-only mode without exposing an unknown or bound dataset. */

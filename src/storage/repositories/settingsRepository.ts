@@ -17,6 +17,7 @@ const isSettings = (value: unknown): value is Settings => {
     languagePreferences.includes(record.language as LanguagePreference) &&
     appearancePreferences.includes(record.appearance as AppearancePreference);
 };
-export async function getSettings(): Promise<Settings | null> { return readCanonicalJson(STORAGE_KEYS.SETTINGS, isSettings); }
+export function readSettings(): Settings | null { return readCanonicalJson(STORAGE_KEYS.SETTINGS, isSettings); }
+export async function getSettings(): Promise<Settings | null> { return readSettings(); }
 export async function saveSettings(settings: Settings): Promise<void> { writeCanonicalJson(STORAGE_KEYS.SETTINGS, settings); }
 export async function clearSettings(): Promise<void> { removeCanonicalValue(STORAGE_KEYS.SETTINGS); }

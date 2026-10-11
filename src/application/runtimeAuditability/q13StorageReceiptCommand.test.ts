@@ -120,10 +120,10 @@ test("initial URL buffering retains only the two exact local Q13 commands", () =
 });
 
 test("Q13 receipt host is mounted beside AppContent under the account provider", () => {
-  const app = readFileSync("App.tsx", "utf8");
+  const app = readFileSync("src/RegularApplicationRoot.tsx", "utf8");
   const host = readFileSync("src/application/runtimeAuditability/Q13StorageReceiptHost.tsx", "utf8");
   assert.match(app, /<PatternlyAccountProvider>[\s\S]*?<AccountForegroundRefreshSidecar \/>[\s\S]*?<Q13StorageReceiptHost \/>[\s\S]*?<AppContent \/>[\s\S]*?<\/PatternlyAccountProvider>/u);
-  assert.match(app, /import \{ Q13StorageReceiptHost \} from "\.\/src\/application\/runtimeAuditability\/Q13StorageReceiptHost";/u);
+  assert.match(app, /import \{ Q13StorageReceiptHost \} from "\.\/application\/runtimeAuditability\/Q13StorageReceiptHost";/u);
   assert.match(host, /inventory\.reason/u);
   assert.match(host, /packages\.reason/u);
   assert.match(host, /not assessed \(storage inventory:/u);

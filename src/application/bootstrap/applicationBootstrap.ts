@@ -13,6 +13,7 @@ import {
 } from "../operationalDiagnostics";
 import { encryptedStorageFailureCode, type EncryptedStorageFailureCode } from "../../infrastructure/storage/encryptedStorageBootstrap";
 import { cleanupOrphanedAccountDataExports } from "../account/accountDataExportService";
+import { cleanupOrphanedGuestLocalDataExports } from "../guest/guestLocalDataExportService";
 import {
   CanonicalRepositoryBootstrapStep,
   type CanonicalRepositoryBootstrapDependencies,
@@ -22,7 +23,13 @@ import {
   getTrainingSessions,
   getUnavailableActiveRecords,
   abandonUnavailableActiveSession,
-  openCanonicalRepositories,
+  finishCanonicalRepositories,
+  inspectCanonicalRepositories,
+  readActiveMutationJournal,
+  assertTrainingEvidenceIntegrity,
+  assertTrainingEvidenceJournalPreflight,
+  assertLearningStateResetReplayState,
+  assertContentIdentityRecordIntegrity,
 } from "../../storage/repositories";
 
 export type ApplicationBootstrapState =
@@ -62,24 +69,32 @@ export async function bootstrapApplication(
   };
   try {
     const repositoryDependencies = dependencies.repositories;
-    await openCanonicalRepositories({
+    const instrumentedRepositoryDependencies: CanonicalRepositoryBootstrapDependencies = {
       ...repositoryDependencies,
       onStep: (step) => {
         currentRepositoryStep = step;
         try { repositoryDependencies?.onStep?.(step); } catch { /* diagnostic observers are best-effort */ }
       },
-    });
-    // Profile storage is selected while opening repositories. Clean only after
-    // that selection so a launch never removes another profile's export.
-    try { cleanupOrphanedAccountDataExports(); } catch { /* cache cleanup is retried on the next launch */ }
-    currentRepositoryStep = undefined;
-    const unavailableActive = (await getUnavailableActiveRecords()).value;
-    if (unavailableActive.length > 0) {
-      return {
-        kind: "content_identity_unavailable",
-        sessionIds: Object.freeze(unavailableActive.map((record) => record.sessionId)),
-      };
+    };
+    await inspectCanonicalRepositories(instrumentedRepositoryDependencies);
+    const pendingJournal = await readActiveMutationJournal();
+    if (pendingJournal?.operation === "reset_learning_state") {
+      const reset = pendingJournal.writes[0];
+      if (reset?.kind !== "clear_learning_state") throw new Error("A reset journal has no exact physical target plan.");
+      assertLearningStateResetReplayState(reset.targetPlan);
+    } else if (pendingJournal) assertTrainingEvidenceJournalPreflight(pendingJournal);
+    else {
+      assertTrainingEvidenceIntegrity();
+      assertContentIdentityRecordIntegrity();
     }
+    // On a fresh profile, create metadata/identity only after proving the
+    // physical evidence namespace is genuinely empty and consistent.
+    if (!pendingJournal) await finishCanonicalRepositories(instrumentedRepositoryDependencies);
+    // Profile storage is selected while opening repositories. Clean only after
+    // read-only integrity preflight so a launch never hides retained evidence.
+    try { cleanupOrphanedAccountDataExports(); } catch { /* cache cleanup is retried on the next launch */ }
+    try { cleanupOrphanedGuestLocalDataExports(); } catch { /* cache cleanup is retried on the next launch */ }
+    currentRepositoryStep = undefined;
     stage = ApplicationBootstrapStage.RecoveringLearningState;
     if (prepareLifecycle) {
       await prepareLifecycle(reportRecoveryStep);
@@ -98,6 +113,16 @@ export async function bootstrapApplication(
     } else {
       // Test-only/headless bootstrap has no lifecycle composition to install.
       await recoverPendingMutation();
+    }
+    assertTrainingEvidenceIntegrity();
+    assertContentIdentityRecordIntegrity();
+    if (pendingJournal) await finishCanonicalRepositories(instrumentedRepositoryDependencies);
+    const unavailableActive = (await getUnavailableActiveRecords()).value;
+    if (unavailableActive.length > 0) {
+      return {
+        kind: "content_identity_unavailable",
+        sessionIds: Object.freeze(unavailableActive.map((record) => record.sessionId)),
+      };
     }
     stage = ApplicationBootstrapStage.VerifyingContent;
     await prepareContentPackages();

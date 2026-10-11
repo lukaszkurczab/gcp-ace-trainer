@@ -1,5 +1,6 @@
 import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
 import { CanonicalWriteConflictError, CorruptStoredRecordError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "../errors";
+import { STORAGE_NAMESPACE } from "../keys";
 
 /**
  * The sole MMKV access boundary.  It intentionally lives with repository
@@ -57,6 +58,29 @@ export function readCanonicalEnvelope<T>(key: string, guard: StorageValueGuard<T
 
 export function readCanonicalJson<T>(key: string, guard: StorageValueGuard<T>): T | null {
   return readCanonicalEnvelope(key, guard)?.payload ?? null;
+}
+
+/** Enumerates only current-profile keys owned by the canonical namespace. */
+export function readCanonicalNamespaceKeys(): readonly string[] {
+  try {
+    return Object.freeze(getKeyValueStorage().getAllKeys().filter((key) => key.startsWith(STORAGE_NAMESPACE)).sort());
+  } catch (error) {
+    throw new StorageReadError(STORAGE_NAMESPACE, error);
+  }
+}
+
+/** Read the exact raw values for one selected profile namespace through the codec owner. */
+export function readCanonicalNamespaceEntries(): readonly Readonly<{ key: string; rawValue: string }>[] {
+  try {
+    const storage = getKeyValueStorage();
+    return Object.freeze(storage.getAllKeys().filter((key) => key.startsWith(STORAGE_NAMESPACE)).sort().map((key) => {
+      const rawValue = storage.getString(key);
+      if (rawValue === undefined) throw new Error("Canonical namespace changed during snapshot.");
+      return Object.freeze({ key, rawValue });
+    }));
+  } catch (error) {
+    throw new StorageReadError(STORAGE_NAMESPACE, error);
+  }
 }
 
 export function writeCanonicalJson<T>(key: string, value: T, expectedRevision?: number | null): CanonicalRecordEnvelope<T> {

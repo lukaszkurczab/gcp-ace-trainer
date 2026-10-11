@@ -11,6 +11,9 @@ import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSes
 import { getReviewQueueItems } from "./reviewQueueRepository";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
 import { isCanonicalAccountSyncState, type AccountSyncState } from "./accountDataRepository";
+import { assertTrainingEvidenceIntegrity } from "./trainingEvidenceIntegrityRepository";
+import { assertContentIdentityRecordIntegrity } from "./contentIdentityUnavailableRepository";
+import { assertLearningStateResetPlanBeforeJournal, isLearningStateResetTargetPlan, type LearningStateResetTargetPlan } from "./learningStateResetRepository";
 
 export type JournalWrite =
   | { kind: "accept_goal_plan"; record: GoalPlanAcceptanceRecord }
@@ -27,7 +30,7 @@ export type JournalWrite =
   | { kind: "clear_active_session_draft"; sessionId: string }
   | { kind: "put_active_session_draft"; record: TrainingSessionDraft }
   | { kind: "delete_active_session_draft"; record: TrainingSessionDraft; submittedOccurrenceIds: readonly string[] }
-  | { kind: "clear_learning_state" };
+  | { kind: "clear_learning_state"; targetPlan: LearningStateResetTargetPlan };
 
 export type TrainingMutationOperation = "start_training_session" | "advance_training_session" | "submit_training_outcome" | "complete_training_session" | "abandon_training_session" | "finalize_training_session" | "set_review_entry" | "remove_review_entry" | "reset_learning_state";
 export type MutationOperation = TrainingMutationOperation | "accept_goal_plan" | "resolve_account_sync_conflict";
@@ -110,7 +113,7 @@ function isJournalWrite(value: unknown): value is JournalWrite {
     case "delete_review_entry_for_attempt": return hasExactKeys(value, ["kind", "record", "transitionId"]) && isReviewQueueEntry(value.record) && isNonEmptyString(value.transitionId);
     case "clear_active_session":
     case "clear_active_session_draft": return hasExactKeys(value, ["kind", "sessionId"]) && isNonEmptyString(value.sessionId);
-    case "clear_learning_state": return hasExactKeys(value, ["kind"]);
+    case "clear_learning_state": return hasExactKeys(value, ["kind", "targetPlan"]) && isLearningStateResetTargetPlan(value.targetPlan);
     case "put_active_session_draft": return hasExactKeys(value, ["kind", "record"]) && isTrainingSessionDraft(value.record);
     case "delete_active_session_draft": return hasExactKeys(value, ["kind", "record", "submittedOccurrenceIds"]) && isTrainingSessionDraft(value.record) && Array.isArray(value.submittedOccurrenceIds) && value.submittedOccurrenceIds.every(isNonEmptyString) && new Set(value.submittedOccurrenceIds).size === value.submittedOccurrenceIds.length;
     default: return false;
@@ -415,7 +418,8 @@ function hasConsistentScope(record: MutationJournalPlan): boolean {
     return write?.kind === "resolve_account_sync_conflict" && record.artifactSha256 === (write.record.afterPlan?.artifactSha256 ?? null)
       && write.record.trackId === record.trackId && write.record.conflictId === record.conflictId;
   }
-  if (record.operation === "reset_learning_state") return record.artifactSha256 === null && record.writes.every((write) => write.kind === "clear_learning_state");
+  if (record.operation === "reset_learning_state") return record.artifactSha256 === null && record.writes.length === 1
+    && record.writes[0]?.kind === "clear_learning_state" && isLearningStateResetTargetPlan(record.writes[0].targetPlan);
   if (!isArtifactSha256(record.artifactSha256)) return false;
   const artifactSha256 = record.artifactSha256;
   return record.writes.every((write) => {
@@ -493,6 +497,16 @@ export async function persistMutationJournal(record: MutationJournalRecord): Pro
     const current = await getActiveMutationJournal();
     if (current && current.commandIdentity.fingerprint !== record.commandIdentity.fingerprint) throw new Error("A different mutation is already pending.");
     if (!current) {
+      // A new journal cannot legitimize pre-existing orphan evidence. Existing
+      // durable journals instead use the narrower journal-aware replay gate.
+      if (record.operation === "reset_learning_state") {
+        const reset = record.writes[0];
+        if (reset?.kind !== "clear_learning_state") throw new Error("A learning-state reset requires one exact target plan.");
+        assertLearningStateResetPlanBeforeJournal(reset.targetPlan);
+      } else {
+        assertTrainingEvidenceIntegrity();
+        assertContentIdentityRecordIntegrity();
+      }
       const staleTarget = record.expectedRevisions.find((condition) => revisionForTarget(condition.target) !== condition.revision)?.target;
       if (staleTarget) throw new StaleMutationRevisionError(staleTarget);
     }

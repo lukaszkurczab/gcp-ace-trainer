@@ -6,9 +6,13 @@ import { getActiveTrainingSession } from "./trainingSessionRepository";
 import { isTrainingSessionDraft } from "./trainingModelGuards";
 import { getActiveMutationJournal } from "./mutationJournalRepository";
 
-export async function getActiveTrainingSessionDraft(): Promise<TrainingSessionDraft | null> {
+export function readActiveTrainingSessionDraft(): TrainingSessionDraft | null {
   const stored = readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, isTrainingSessionDraft);
   return stored ? createTrainingSessionDraft(stored) : null;
+}
+
+export async function getActiveTrainingSessionDraft(): Promise<TrainingSessionDraft | null> {
+  return readActiveTrainingSessionDraft();
 }
 
 export async function getActiveTrainingSessionDraftRevision(): Promise<number | null> {
@@ -70,8 +74,4 @@ export async function materializeActiveTrainingSessionDraft(draft: TrainingSessi
 export async function clearActiveTrainingSessionDraft(sessionId: string): Promise<void> {
   const draft = await getActiveTrainingSessionDraft();
   if (draft?.sessionId === sessionId) removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
-}
-
-export async function clearTrainingSessionDrafts(): Promise<void> {
-  removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
 }

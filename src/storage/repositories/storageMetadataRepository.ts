@@ -40,11 +40,10 @@ export const isCanonicalStorageMetadata = (value: unknown): value is CanonicalSt
   && value.namespace === STORAGE_NAMESPACE
   && value.schemaVersion === CANONICAL_STORAGE_SCHEMA_VERSION;
 
-/** Opens only the current namespace. Unsupported historical metadata fails closed. */
-export async function validateStorageMetadata(): Promise<CanonicalStorageMetadata> {
-  let metadata: CanonicalStorageMetadata | null;
+/** Validates existing metadata without creating or changing any storage. */
+export async function readStorageMetadata(): Promise<CanonicalStorageMetadata | null> {
   try {
-    metadata = readCanonicalJson(STORAGE_KEYS.METADATA, isCanonicalStorageMetadata);
+    return readCanonicalJson(STORAGE_KEYS.METADATA, isCanonicalStorageMetadata);
   } catch (error) {
     if (error instanceof StorageMetadataError) throw error;
     if (error instanceof CorruptStoredRecordError || error instanceof UnsupportedStoredRecordError) {
@@ -52,8 +51,19 @@ export async function validateStorageMetadata(): Promise<CanonicalStorageMetadat
     }
     throw error;
   }
-  if (metadata !== null) return metadata;
+}
+
+export function initializeStorageMetadata(): CanonicalStorageMetadata {
+  const existing = readCanonicalJson(STORAGE_KEYS.METADATA, isCanonicalStorageMetadata);
+  if (existing) return existing;
   const canonical: CanonicalStorageMetadata = { namespace: STORAGE_NAMESPACE, schemaVersion: CANONICAL_STORAGE_SCHEMA_VERSION };
-  writeCanonicalJson(STORAGE_KEYS.METADATA, canonical);
+  writeCanonicalJson(STORAGE_KEYS.METADATA, canonical, null);
   return canonical;
+}
+
+/** Opens only the current namespace. Unsupported historical metadata fails closed. */
+export async function validateStorageMetadata(): Promise<CanonicalStorageMetadata> {
+  const metadata = await readStorageMetadata();
+  if (metadata !== null) return metadata;
+  return initializeStorageMetadata();
 }

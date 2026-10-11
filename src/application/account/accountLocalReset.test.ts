@@ -3,7 +3,7 @@ import test from "node:test";
 
 import type { PatternlyApiClient } from "../../infrastructure/clients/PatternlyApiClientAdapter";
 import { MemoryKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
-import { installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
+import { installKeyValueStorageForTests, setActiveProfileLeaseForTests } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../../storage/keys";
 import {
   buildAccountDataSnapshot,
@@ -41,6 +41,7 @@ function client(overrides: Partial<PatternlyApiClient> = {}): PatternlyApiClient
 async function prepareBoundAccount(): Promise<MemoryKeyValueStorage> {
   const storage = new MemoryKeyValueStorage();
   installKeyValueStorageForTests(storage);
+  setActiveProfileLeaseForTests({ id: "account-reset-test-guest", kind: "guest", accountId: null });
   await provisionGuestInstallation({ async create() { return { installationId: "66666666-6666-4666-8666-666666666666", localDatasetId: "77777777-7777-4777-8777-777777777777" }; } });
   await bindGuestInstallationToAccount(accountId);
   saveAccountSyncState({ ...await getAccountSyncState(), accountId, status: "synced" });
@@ -115,6 +116,24 @@ test("authenticated reset rejects pending account context without changing state
   assert.deepEqual(await getAccountSyncState(), before);
   assert.equal((await getAccountSyncState()).resetGuard, null);
   assert.equal(await getActiveTrackId(), activeTrackBefore);
+});
+
+test("authenticated reset refuses corrupt evidence before creating its guard or touching local bytes", async () => {
+  const storage = await prepareBoundAccount();
+  storage.setString(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX, "not-json");
+  const before = storage.snapshot();
+  const stateBefore = await getAccountSyncState();
+  let getProgressCalls = 0;
+  const failed = await resetAccountLocalLearningHistory(client({
+    getProgress: async () => { getProgressCalls += 1; return { accountRevision: 2, records: [] }; },
+  }), accountId);
+
+  assert.equal(failed.status, "failed");
+  assert.equal(failed.lastFailureCode, "local_reset_integrity_unavailable");
+  assert.equal(getProgressCalls, 0);
+  assert.equal((await getAccountSyncState()).resetGuard, null);
+  assert.deepEqual(await getAccountSyncState(), stateBefore);
+  assert.deepEqual(storage.snapshot(), before);
 });
 
 test("canonical clean synced state remains eligible for the guarded reset", async () => {

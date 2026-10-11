@@ -477,7 +477,7 @@ test("queued identity refresh is rejected by the production guard after sign-out
 });
 
 test("email security composition delegates refresh to the global foreground owner", () => {
-  const app = readFileSync("App.tsx", "utf8");
+  const app = readFileSync("src/RegularApplicationRoot.tsx", "utf8");
   const sidecar = readFileSync("src/application/account/AccountForegroundRefreshSidecar.tsx", "utf8");
   const screen = readFileSync("src/features/account/AccountSecurityScreen.tsx", "utf8");
   const pendingScreen = readFileSync("src/features/account/AccountEmailChangePendingScreen.tsx", "utf8");
@@ -703,7 +703,7 @@ test("unconfigured account entry never composes Google OAuth without typed provi
 });
 
 test("a guest transition resets navigation into the application session", () => {
-  const app = readFileSync("App.tsx", "utf8");
+  const app = readFileSync("src/RegularApplicationRoot.tsx", "utf8");
   assert.match(app, /const \{ state \} = usePatternlyAccount\(\)/);
   assert.match(app, /<NavigationContainer key=\{sessionKey\} theme=\{navigationTheme\}>/);
   assert.match(app, /state\.kind === "authenticated" \|\| state\.kind === "guest"/);
@@ -790,7 +790,7 @@ test("secure auth persistence isolates Firebase metadata from the saved auth use
 test("startup waits for persisted auth resolution before choosing the entry screen or Home", () => {
   const authClient = readFileSync("src/infrastructure/firebase/firebaseAuthClient.ts", "utf8");
   const rootNavigator = readFileSync("src/navigation/RootNavigator.tsx", "utf8");
-  const app = readFileSync("App.tsx", "utf8");
+  const app = readFileSync("src/RegularApplicationRoot.tsx", "utf8");
   const accountProvider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
 
   assert.match(authClient, /onUserChanged: \(listener\) => onAuthStateChanged\(auth, \(user\) => \{\s*current = user;\s*listener\(user \? snapshot\(user\) : null\);/);
@@ -805,10 +805,24 @@ test("startup waits for persisted auth resolution before choosing the entry scre
   assert.match(app, /<AppPreferencesProvider>[\s\S]*?<ProfileStoragePreparationGate>[\s\S]*?<PatternlyAccountProvider>[\s\S]*?<AppContent/);
   assert.match(app, /const needsContent = [^;]*state\.kind === "localOffline"/);
   assert.match(app, /const sessionKey = [^\n]*state\.kind === "localOffline"/);
-  assert.match(app, /<ContentPreparationGate completeAccountPreparation=\{completeProfilePreparation\}><AppNavigation \/><\/ContentPreparationGate>/);
+  assert.match(app, /<ContentPreparationGate completeAccountPreparation=\{completeProfilePreparation\} handoffToken=\{profilePreparationHandoffToken\}><AppNavigation \/><\/ContentPreparationGate>/);
   assert.doesNotMatch(app, /AccountBootstrapCompletion/);
   assert.match(accountProvider, /createPatternlyApiClient\(\{ allowLocalHttpForSimulator:/);
   assert.doesNotMatch(accountProvider, /accountDataProtocolMode|protocolVersion|contentIdentitySchema/u);
+});
+
+test("the five ready profile preparation paths publish one opaque attempt handoff to the content gate", () => {
+  const provider = readFileSync("src/application/account/AccountSessionProvider.tsx", "utf8");
+  const app = readFileSync("src/RegularApplicationRoot.tsx", "utf8");
+  const gate = readFileSync("src/content/application/ContentPreparationGate.tsx", "utf8");
+  assert.equal((provider.match(/handoffToken: profilePreparationHandoffRef\.current!\.begin\(\)/gu) ?? []).length, 3);
+  assert.equal((provider.match(/attempt\.handoffReady = true;\s*(?:setState|publish)\(\{ kind: "profilePreparing"/gu) ?? []).length, 5);
+  assert.match(provider, /state\.kind === "profilePreparing"[\s\S]*?currentProfilePreparation\?\.handoffReady[\s\S]*?currentProfilePreparation\.profile\.id === state\.profile\.id[\s\S]*?currentProfilePreparation\.handoffToken/u);
+  assert.match(app, /handoffToken=\{profilePreparationHandoffToken\}/u);
+  assert.match(gate, /if \(handoffToken\) lastHandoffTokenRef\.current = handoffToken/u);
+  assert.match(gate, /const activeHandoffToken = lastHandoffTokenRef\.current/u);
+  assert.match(gate, /completeAccountPreparationRef\.current = completeAccountPreparation/u);
+  assert.doesNotMatch(gate, /\[activeHandoffToken, bootstrapRevision, completeAccountPreparation/u);
 });
 
 test("account finalization coordinator shares one in-flight and completed result per generation", async () => {
@@ -940,7 +954,7 @@ test("only exact current /me proof clears a persisted sync-denial marker before 
   assert.match(clearBlock, /latest\.binding\.accountId === response\.user\.id[\s\S]*?latest\.binding\.firebaseUid === user\.uid[\s\S]*?latest\.binding\.checksum === verifiedBinding\.checksum[\s\S]*?latest\.binding\.verificationRevision === verifiedBinding\.verificationRevision/u);
   assert.match(clearBlock, /if \(!cleared\) return \{ result: \{ kind: "failure", failure: "revokedSession" \}/u);
   const preparation = provider.slice(provider.indexOf("const startAuthenticatedProfilePreparation"), provider.indexOf("const completeProfilePreparation"));
-  assert.ok(preparation.indexOf("beginIdentityProofBarrier(auth, user, generation, true)") < preparation.indexOf("guardRecoveryBeforePreparation(auth, { generation, barrier: proofBarrier })"), "startup barrier precedes recovery checks that read Auth generations or exchange tokens");
+  assert.ok(preparation.indexOf("beginIdentityProofBarrier(auth, user, generation, true)") < preparation.indexOf("guardRecoveryBeforePreparation(auth, { generation, barrier: proofBarrier }"), "startup barrier precedes recovery checks that read Auth generations or exchange tokens");
   const explicitFinalize = provider.slice(provider.indexOf("const finalizeExplicitAuthentication"), provider.indexOf("// Firebase publishes a new credential"));
   assert.doesNotMatch(explicitFinalize, /guardRecoveryBeforePreparation\(auth\)/u, "explicit login delegates proof ordering to the barrier-first profile preparation path");
   const recoveryTransition = provider.slice(provider.indexOf("const completeExplicitRecoveryAccountTransition"), provider.indexOf("// Firebase publishes a new credential"));
@@ -954,7 +968,7 @@ test("recovery claim denials keep the durable barrier while local generation met
   assert.match(guard, /const revokeDeniedIdentity = async \(error: unknown,[\s\S]*?isAuthoritativeIdentityProofDenial\(error\)[\s\S]*?revokeBindingForAuthoritativeIdentityDenial\(error,[\s\S]*?setState\(\{ kind: "revokedSession", user \}\)/u);
   assert.match(guard, /catch \(error\) \{\s*proofScopeRef\.current\?\.assertCurrent\(\);\s*if \(await revokeDeniedIdentity\(error, user\)\) return false;/u);
   assert.match(guard, /catch \(error\) \{\s*if \(await revokeDeniedIdentity\(error, auth\?\.getSnapshot\(\) \?\? null\)\) return false;/u);
-  assert.match(guard, /setState\(\{ kind: "backendUnavailable", user \}\);\s*return false;/u);
+  assert.match(guard, /setState\(\{ kind: "backendUnavailable", user \}\);\s*onTerminalState\?\.\("backendUnavailable"\);\s*return false;/u);
   assert.doesNotMatch(guard, /auth\/authorization-generation-invalid" \? "revokedSession"/u);
   const firstClaimRead = guard.indexOf("await auth.getAuthorizationGeneration()");
   assert.ok(firstClaimRead > guard.indexOf("await ensureProofScope(user)"), "the prepared binding barrier precedes the first SDK claim read");

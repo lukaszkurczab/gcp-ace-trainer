@@ -20,6 +20,22 @@ test("preparation gate opens registry metadata without activating or reading a p
   assert.doesNotMatch(gate, /initializeKeyValueStorage|activatePreparedProfile|getActiveStorageProfile|getKeyValueStorage|bootstrapApplication|ContentPreparationGate/u);
 });
 
+test("dev-smoke preparation diagnostics mark the exact existing await boundaries and preserve the gate", () => {
+  const create = gate.indexOf('"logout_control_create"');
+  const createPending = gate.indexOf("diagnostic.pending(stage)", create);
+  const logoutRead = gate.indexOf('stage = "logout_control_read"');
+  const prepare = gate.indexOf('stage = "profile_storage_prepare"');
+  const inspect = gate.indexOf('stage = "profile_state_inspect"');
+  assert.ok(create >= 0 && createPending > create && logoutRead > createPending && prepare > logoutRead && inspect > prepare);
+  assert.match(gate, /createProfileStoragePreparationDiagnosticWriter\(\)/);
+  assert.match(gate, /diagnostic\.failed\(stage, error\)/);
+  assert.match(gate, /diagnostic\.ready\(\)/);
+  assert.match(gate, /diagnostic\.dispose\(\)/);
+  assert.match(gate, /createNativeLocalLogoutControl\(\)/);
+  assert.ok(gate.indexOf("logoutControl.read()") < gate.indexOf("prepareProfileStorage()"));
+  assert.doesNotMatch(gate, /initializeKeyValueStorage|activatePreparedProfile|bootstrapApplication|Linking\.getInitialURL|setTimeout/u);
+});
+
 test("logout-control corruption or storage failure fails closed with an explicit retry surface", () => {
   assert.match(gate, /error instanceof LocalLogoutControlError/);
   assert.match(gate, /We couldn't check the local sign-out state\. Your account data remains closed\. Try again\./);

@@ -3,6 +3,7 @@ import { clearMutationJournal, getActiveMutationJournal, updateMutationJournalPh
 import { materializeMutation } from "./mutationMaterializer";
 import { verifyMutation } from "./mutationVerifier";
 import { MutationCommitFailure } from "../mutationBoundary";
+import { assertLearningStateResetMaterialized } from "../../storage/repositories/learningStateResetRepository";
 
 /** Replays only the durable phase that remains.  The immutable journal plan is
  * deliberately reused so retry never creates new attempts, reviews or results. */
@@ -27,7 +28,12 @@ export async function recoverPendingMutation(): Promise<void> {
   }
   if (record.status === "verified_pending_clear") {
     try {
-      if (record.operation !== "resolve_account_sync_conflict") await markAccountDataPending();
+      if (record.operation === "reset_learning_state") {
+        const reset = record.writes[0];
+        if (reset?.kind !== "clear_learning_state") throw new Error("A reset journal has no exact physical target plan.");
+        assertLearningStateResetMaterialized(reset.targetPlan);
+      }
+      if (record.operation !== "resolve_account_sync_conflict" && record.operation !== "reset_learning_state") await markAccountDataPending();
       await clearMutationJournal(record.commandIdentity.fingerprint);
     } catch (error) {
       throw new MutationCommitFailure("journal_clear", "verified_pending_clear", error);

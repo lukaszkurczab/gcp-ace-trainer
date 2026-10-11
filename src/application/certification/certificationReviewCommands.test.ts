@@ -233,6 +233,8 @@ test("a profile change during the fresh in-lane snapshot is fenced before nonce 
   const { sourceItem } = await fixture();
   const replacementStorage = installMemoryStorage();
   installKeyValueStorageForTests(originalStorage);
+  originalStorage.resetCounters();
+  replacementStorage.resetCounters();
   let generated = 0;
   setIdentityNonceGeneratorForTests(() => { generated += 1; return "123e4567-e89b-42d3-a456-426614174007"; });
   const getString = originalStorage.getString.bind(originalStorage);
@@ -342,6 +344,7 @@ test("a manual request after a terminal cycle receives a fresh ID and retains hi
 
 test("a profile change while exact content resolves prevents a manual review write", async () => {
   const originalStorage = installMemoryStorage();
+  const originalSnapshot = originalStorage.snapshot();
   const { question, sourceItem } = await fixture();
   let generated = 0;
   setIdentityNonceGeneratorForTests(() => { generated += 1; return "123e4567-e89b-42d3-a456-426614174006"; });
@@ -360,11 +363,12 @@ test("a profile change while exact content resolves prevents a manual review wri
     const pending = setQuestionNeedsReview({ sourceItem, sourceSessionId: "session:profile-fence" }, true);
     await started;
     const nextStorage = installMemoryStorage();
+    const nextSnapshot = nextStorage.snapshot();
     release();
     await assert.rejects(pending, /Profile changed during read/u);
     assert.equal(generated, 0, "profile-fenced commands fail before acquiring command entropy");
-    assert.equal(originalStorage.getAllKeys().length, 0);
-    assert.equal(nextStorage.getAllKeys().length, 0);
+    assert.deepEqual(originalStorage.snapshot(), originalSnapshot);
+    assert.deepEqual(nextStorage.snapshot(), nextSnapshot);
   } finally {
     release();
     contentPackageRuntimeOwner.resolveItem = originalResolve;

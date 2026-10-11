@@ -5,10 +5,15 @@ import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./c
 import { getActiveTrainingSession } from "./trainingSessionRepository";
 import { isForegroundTimerState } from "./trainingModelGuards";
 
-/** Repository boundary for the one active session foreground timer. */
-export async function getActiveForegroundTimer(): Promise<ForegroundTimerState | null> {
+/** Pure canonical read used by snapshot consumers; performs no checkpoint or migration. */
+export function readActiveForegroundTimer(): ForegroundTimerState | null {
   const value = readCanonicalJson(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER, isForegroundTimerState);
   return value ? createForegroundTimerState(value) : null;
+}
+
+/** Repository boundary for the one active session foreground timer. */
+export async function getActiveForegroundTimer(): Promise<ForegroundTimerState | null> {
+  return readActiveForegroundTimer();
 }
 
 export async function saveActiveForegroundTimer(
@@ -35,8 +40,4 @@ export async function saveActiveForegroundTimer(
 export async function clearActiveForegroundTimer(sessionId: string): Promise<void> {
   const timer = await getActiveForegroundTimer();
   if (timer?.sessionId === sessionId) removeCanonicalValue(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER);
-}
-
-export async function clearForegroundTimers(): Promise<void> {
-  removeCanonicalValue(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER);
 }

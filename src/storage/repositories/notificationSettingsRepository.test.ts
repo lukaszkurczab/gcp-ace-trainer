@@ -5,6 +5,7 @@ import { createLearningPlanSlotId } from "../../domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalEnvelope, writeCanonicalJson } from "./canonicalRecordCodec";
+import { isCanonicalNotificationSettingsJournal } from "./notificationSettingsRepository";
 import { UnsupportedStoredRecordError } from "../errors";
 import {
   DEVICE_REMINDER_JOURNAL_VERSION,
@@ -122,6 +123,18 @@ test("legacy journals become cancellation-only journals and cannot restore their
   const persisted = readCanonicalEnvelope(STORAGE_KEYS.NOTIFICATION_SETTINGS_JOURNAL, (value): value is DeviceReminderJournal => Boolean(value && typeof value === "object" && (value as { schemaVersion?: unknown }).schemaVersion === DEVICE_REMINDER_JOURNAL_VERSION));
   assert.equal(persisted?.payload.commandId, "legacy:old-journal");
   assert.deepEqual(persisted?.payload.slots, []);
+});
+
+test("the canonical journal guard accepts the supported legacy journal shape and rejects malformed records", () => {
+  const legacy = {
+    created: [{ day: "sat", notificationId: "legacy-notification" }],
+    desired: null,
+    remainingOldIds: ["old-notification"],
+    transactionId: "legacy-reminder-transaction",
+  };
+  assert.equal(isCanonicalNotificationSettingsJournal(legacy), true);
+  assert.equal(isCanonicalNotificationSettingsJournal({ ...legacy, remainingOldIds: [""] }), false);
+  assert.equal(isCanonicalNotificationSettingsJournal({ ...legacy, unexpected: true }), false);
 });
 
 test("rejects duplicate days or slot IDs in a canonical settings record", () => {
