@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { EXPECTED_TRACK_IDS, SUCCESSOR_LEDGER_FILE_NAME, LOCK_FILE_NAME, validateBuiltContent } from "./syncBundledContentRelease.mjs";
 
 const APP_ROOT = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
@@ -72,8 +72,10 @@ export async function createCandidateContentReleaseLock({ appRoot = APP_ROOT, co
     json(contentRoot, RELEASE_PATH),
     validateBuiltContent(path.join(appRoot, path.dirname(BUNDLED_LOCK_PATH)), { producerRoot: contentRoot }),
   ]);
-  if (candidate.status !== "draft_not_admitted" || candidate.release.releaseId !== release.manifest.releaseId) throw new Error("Candidate release identity is invalid.");
+  const { candidateIdFor } = await import(pathToFileURL(path.join(contentRoot, "scripts/review/candidate-manifest.mjs")).href);
+  if (candidate.status !== "draft_not_admitted" || candidateIdFor(candidate) !== candidate.candidateId || candidate.release.releaseId !== release.manifest.releaseId || candidate.release.sourceRepositoryCommit !== release.manifest.sourceRepositoryCommit) throw new Error("Candidate release identity is invalid.");
   if (candidate.release.checksumSha256 !== sha256(bytes(release))) throw new Error("Candidate release checksum is stale.");
+  if (JSON.stringify(release.artifacts.map((artifact) => artifact.trackId)) !== JSON.stringify(EXPECTED_TRACK_IDS) || JSON.stringify(candidate.tracks.map((track) => track.trackId)) !== JSON.stringify(EXPECTED_TRACK_IDS)) throw new Error("Candidate release lock must bind exactly nine sorted canonical tracks.");
   const bundled = verifiedBundledArtifacts(built);
   const seenTrackIds = new Set();
   const artifacts = release.artifacts.map((artifact) => {
@@ -82,6 +84,8 @@ export async function createCandidateContentReleaseLock({ appRoot = APP_ROOT, co
       throw new Error(`Bundled candidate artifact differs from release artifact ${artifact.trackId}.`);
     }
     seenTrackIds.add(artifact.trackId);
+    const manifestTrack = candidate.tracks.find((entry) => entry.trackId === artifact.trackId);
+    if (!manifestTrack || manifestTrack.artifactPath !== artifact.artifactPath || manifestTrack.checksumSha256 !== artifact.checksumSha256 || manifestTrack.contentVersion !== artifact.contentVersion || manifestTrack.questionCount !== artifact.questionCount) throw new Error(`Candidate manifest track binding differs from release artifact ${artifact.trackId}.`);
     return {
       releaseId: release.manifest.releaseId,
       producerCommit: release.manifest.sourceRepositoryCommit,

@@ -68,6 +68,26 @@ test("CI bootstrap binds the actual current v3 lock to all nine verified bundled
   assert.equal(execFileSync(process.execPath, ["scripts/candidateContentReleaseLock.mjs", "producer-pin"], { cwd: appRoot, encoding: "utf8" }), `${lock.artifacts[0].producerCommit}\n`);
 });
 
+test("candidate bootstrap loads validation modules from the explicitly supplied producer root", async (t) => {
+  const fixture = await mkdtemp(path.join(os.tmpdir(), "patternly-candidate-explicit-root-"));
+  const producerRoot = path.join(fixture, "producer");
+  const appFixture = path.join(fixture, "app");
+  t.after(() => rm(fixture, { recursive: true, force: true }));
+  await mkdir(path.join(appFixture, "integration/contracts/content-release"), { recursive: true });
+  await cp(path.join(appRoot, "src/content/generated/canonical-content"), path.join(appFixture, "src/content/generated/canonical-content"), { recursive: true });
+  await cp(path.join(appRoot, "integration/contracts/content-release/release.lock.json"), path.join(appFixture, "integration/contracts/content-release/release.lock.json"));
+  await mkdir(path.join(producerRoot, "scripts/content"), { recursive: true });
+  for (const name of ["question-contract.mjs", "planning-policy.mjs"]) {
+    const source = await readFile(path.join(contentRoot, "scripts/content", name), "utf8");
+    const signature = name === "question-contract.mjs"
+      ? "export function validatePackageCompletionRule(rule, pathName = \"completionRule\", questions) {"
+      : "export function validatePlanningPolicy(policy, questions) {";
+    assert.ok(source.includes(signature), `producer validation fixture includes ${name}'s exported entry point`);
+    await writeFile(path.join(producerRoot, "scripts/content", name), source.replace(signature, `${signature}\n  throw new Error("explicit candidate producer root used");`));
+  }
+  await assert.rejects(readCandidateContentProducerPin({ appRoot: appFixture, contentRoot: producerRoot }), /explicit candidate producer root used/u);
+});
+
 test("CI bootstrap fails closed for malformed v3 metadata without an active v2 fallback", async t => {
   const actual = JSON.parse(await readFile(path.join(appRoot, "integration/contracts/content-release/release.lock.json"), "utf8"));
   const vectors = [

@@ -8,7 +8,7 @@ import "tsx/cjs";
 
 const require = createRequire(import.meta.url);
 const { contentPackageRuntimeOwner } = require("../src/application/contentPackageRuntimeOwner.ts");
-const { buildCanonicalRuntimeCatalog } = require("../src/content/canonical/runtimeCatalog.ts");
+const { buildCanonicalRuntimeCatalog, loadCanonicalRuntimeCatalog } = require("../src/content/canonical/runtimeCatalog.ts");
 const { validateQuestion } = require("../src/content/canonical/questionValidation.ts");
 const { projectCanonicalSourceLinks } = require("../src/application/canonical/canonicalSourceLinks.ts");
 const { detailLines } = require("../src/features/practice/feedbackDetails.ts");
@@ -173,10 +173,12 @@ export async function createPublicDemoCatalog() {
   const runtimeEvidence = JSON.parse(runtimeEvidenceBytes.toString("utf8"));
   const contentLockSha = sha256(lockBytes);
   const releaseLockSha = sha256(releaseBytes);
+  const canonicalCatalog = await loadCanonicalRuntimeCatalog();
   const projections = [];
   for (const selection of demos) {
-    const { track, runtime } = await contentPackageRuntimeOwner.resolveForDiscovery(selection.trackId, selection.familyId);
+    const { runtime } = await contentPackageRuntimeOwner.resolveForDiscovery(selection.trackId, selection.familyId);
     if (runtime.familyId !== selection.familyId) throw new Error("Public demo source is outside its admitted content package family.");
+    const track = canonicalCatalog.getTrack(selection.trackId);
     const question = track.getQuestion(selection.questionId);
     const sourceQuestionFile = readJson(resolve(contentRoot, selection.sourcePath), "canonical source");
     const sourceQuestion = Array.isArray(sourceQuestionFile) ? sourceQuestionFile.find((entry) => entry.questionId === selection.questionId) : undefined;

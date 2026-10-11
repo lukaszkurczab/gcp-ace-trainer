@@ -34,7 +34,6 @@ const backendRoot = resolve(root, "../patternly-backend");
 const HISTORICAL_APPLICATION_COMMIT = "e889b05d033d4cc4b7676d0ca3f224efc3fac115";
 const HISTORICAL_CONTENT_COMMIT = "8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03";
 const HISTORICAL_CANDIDATE_ID = "946d3589abf9bfb205b382e7ebb9205786c3e42e18fe733c3607ad836a6a80a4";
-const CURRENT_DRAFT_CANDIDATE_ID = "9112efcc6fd1d0a170a6a6c298291796be1bd650ac8c03a02328dc899c336b6e";
 let fixtureRoot;
 let applicationRoot;
 let backendFixtureRoot;
@@ -212,24 +211,29 @@ test("creates deterministic portable identity with repositories, locks, build, c
   assert.equal(readFileSync(secondPath, "utf8"), firstBytes);
 });
 
-test("current candidate draft is rejected while the immutable historical pair remains the admitted proof", async () => {
-  const currentContentFixture = makeWorkingTreeFixture("content-current-draft", contentRoot);
-  const currentApplicationFixture = makeGitRoot("application-current-draft", {
+test("immutable historical admission is rejected when paired with the current app content lock", async () => {
+  const historicalContentFixture = makeWorkingTreeFixture("content-historical-admission", contentRoot, HISTORICAL_CONTENT_COMMIT);
+  const currentApplicationFixture = makeGitRoot("application-current-admission", {
     "integration/contracts/content-release/release.lock.json": readFileSync(join(root, "integration/contracts/content-release/release.lock.json")),
   });
-  const currentCandidate = JSON.parse(readFileSync(join(currentContentFixture, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"), "utf8"));
-  const currentEvidenceRoot = join(fixtureRoot, "current-draft-evidence");
+  const historicalCandidate = JSON.parse(readFileSync(join(historicalContentFixture, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"), "utf8"));
+  const currentReleaseLock = JSON.parse(readFileSync(join(root, "integration/contracts/content-release/release.lock.json"), "utf8"));
+  const currentEvidenceRoot = join(fixtureRoot, "current-app-historical-content-evidence");
   mkdirSync(currentEvidenceRoot);
   const currentApplicationCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: currentApplicationFixture, encoding: "utf8" }).trim();
   writeFileSync(join(currentEvidenceRoot, "signing-and-builds.json"), JSON.stringify(signingEvidence(currentApplicationCommit)));
-  assert.equal(currentCandidate.candidateId, CURRENT_DRAFT_CANDIDATE_ID);
+  assert.equal(historicalCandidate.candidateId, HISTORICAL_CANDIDATE_ID);
+  assert.equal(currentReleaseLock.schemaVersion, 3);
+  assert.equal(currentReleaseLock.repository, "lukaszkurczab/patternly-content");
+  assert.equal(currentReleaseLock.artifacts.length, CANDIDATE_TRACK_IDS.length);
+  assert.notEqual(historicalCandidate.candidateId, currentReleaseLock.candidateId);
   await assert.rejects(
     createReleaseManifest({
-      roots: { ...roots(), application: currentApplicationFixture, content: currentContentFixture },
+      roots: { ...roots(), application: currentApplicationFixture, content: historicalContentFixture },
       evidenceRoot: currentEvidenceRoot,
-      outputPath: join(outputRoot, "current-draft-release-manifest.json"),
+      outputPath: join(outputRoot, "current-app-historical-content-release-manifest.json"),
     }),
-    /Candidate admission release binding is stale|Candidate.*admission|candidate admission validator rejected/u,
+    /Application release lock identity is invalid/u,
   );
 });
 

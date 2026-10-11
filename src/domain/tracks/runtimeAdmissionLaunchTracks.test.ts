@@ -23,13 +23,13 @@ test("canonical launch catalog preserves the exact training identity beside cand
     artifacts: { trackId: string; checksumSha256: string; contentVersion: string }[];
   };
   const appRoot = process.cwd();
-  const contentRoot = path.resolve(appRoot, "../patternly-content");
+  const contentRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(appRoot, "../patternly-content"));
   const candidateLockBuilder = await import("../../../scripts/candidateContentReleaseLock.mjs") as unknown as {
     createCandidateContentReleaseLock(options?: Readonly<{ appRoot?: string; contentRoot?: string }>): Promise<CandidateReleaseLock>;
   };
   const candidateLock = await candidateLockBuilder.createCandidateContentReleaseLock({ appRoot, contentRoot });
   assert.equal(releaseLock.schemaVersion, 3);
-  assert.deepEqual(releaseLock, candidateLock, "the immutable release lock must match the canonical reconstructed v1 training candidate");
+  assert.deepEqual(releaseLock, candidateLock, "the immutable release lock must match the canonical current v2 candidate");
 
   const contentLock = JSON.parse(await readFile(path.resolve("src/content/generated/canonical-content/content-lock.json"), "utf8")) as {
     tracks: { trackId: string; sha256: string; contentVersion: string }[];

@@ -10,6 +10,7 @@ import {
   GENERATED_DIRECTORY,
   SUCCESSOR_LEDGER_FILE_NAME,
   historicalTrainingProjection,
+  parseArgs,
   readApprovedBESDSuccessorProof,
   syncCanonicalContent,
   validateBuiltContent,
@@ -31,6 +32,14 @@ const TEST_BESD_DESCRIPTOR_BASE = Object.freeze({
 });
 
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
+
+test("reviewed candidate sync is explicit and rejects duplicate or malformed opt-in", () => {
+  assert.deepEqual(parseArgs([]), { mode: "sync" });
+  assert.deepEqual(parseArgs(["check", "--reviewed-candidate", "--content-root", "/tmp/patternly-content"]), {
+    mode: "check", reviewedCandidate: true, producerRoot: path.resolve("/tmp/patternly-content"),
+  });
+  assert.throws(() => parseArgs(["--reviewed-candidate", "--reviewed-candidate"]), /Usage:/u);
+});
 
 function besdMigrationFixture() {
   const oldVersion = "besd-training-v1";
@@ -254,7 +263,7 @@ async function fixture() {
     const artifacts = new Map(await Promise.all(EXPECTED_TRACK_IDS.map(async (trackId) => [`${trackId}.json`, await readFile(path.join(predecessorOutput, `${trackId}.json`))])));
     return { lock, artifacts };
   };
-  const options = { appRoot, producerRoot, targetDirectory, runBuild, getProducerHead: async () => HEAD, getBootstrapPredecessor, verifyProducer: async () => {}, expectedInventory: SMALL_INVENTORY };
+  const options = { appRoot, producerRoot, targetDirectory, runBuild, getProducerHead: async () => HEAD, getProducerContentSourceCommit: async () => HEAD, getBootstrapPredecessor, verifyProducer: async () => {}, expectedInventory: SMALL_INVENTORY };
   return { root, appRoot, producerRoot, producerOutput, predecessorOutput, targetDirectory, options };
 }
 
@@ -374,6 +383,47 @@ test("sync admits a policy-only canonical version while retaining the historical
   assert.equal(evidence.contentVersion, "gcp-published-2026.08.01");
   assert.equal(evidence.artifactPath, `artifacts/tracks/${gcp.trackId}/${evidence.contentVersion}/track-artifact.json`);
   assert.equal(result.inventory.questionCount, SMALL_INVENTORY.questionCount);
+});
+
+test("only an explicitly reviewed Claude candidate may advance its training projection", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  await syncCanonicalContent(state.options);
+  const originalLedger = JSON.parse(await readFile(path.join(state.targetDirectory, SUCCESSOR_LEDGER_FILE_NAME), "utf8"));
+
+  const trackId = "claude-certified-architect-professional-certification";
+  const artifactPath = path.join(state.producerOutput, `${trackId}.json`);
+  const artifact = JSON.parse(await readFile(artifactPath, "utf8"));
+  artifact.contentVersion = "claude-reviewed-successor-v2";
+  artifact.questions[0].prompt += " Reviewed clarification.";
+  const artifactBytes = Buffer.from(JSON.stringify(artifact));
+  await writeFile(artifactPath, artifactBytes);
+  const lockPath = path.join(state.producerOutput, "content-lock.json");
+  const lock = JSON.parse(await readFile(lockPath, "utf8"));
+  const entry = lock.tracks.find((track) => track.trackId === trackId);
+  entry.contentVersion = artifact.contentVersion;
+  entry.sha256 = sha256(artifactBytes);
+  await writeFile(lockPath, JSON.stringify(lock));
+
+  await assert.rejects(syncCanonicalContent(state.options), /cannot be silently replaced/u);
+  const result = await syncCanonicalContent({
+    ...state.options,
+    reviewedCandidate: true,
+    verifyReviewedCandidate: async ({ artifacts, lock: builtLock }) => {
+      const bundled = builtLock.tracks.find((track) => track.trackId === trackId);
+      const current = artifacts.get(`${trackId}.json`);
+      return new Map([[trackId, {
+        artifactSha256: bundled.sha256,
+        contentVersion: current.contentVersion,
+        questionCount: current.questions.length,
+      }]]);
+    },
+  });
+  const successor = result.ledger.tracks.find((track) => track.trackId === trackId);
+  assert.equal(successor.training.contentVersion, `${artifact.contentVersion}-training`);
+  assert.notEqual(successor.training.artifactSha256, originalLedger.tracks.find((track) => track.trackId === trackId)?.training.artifactSha256);
+  assert.deepEqual(result.ledger.tracks.filter((track) => track.trackId !== trackId).map((track) => track.training),
+    originalLedger.tracks.filter((track) => track.trackId !== trackId).map((track) => track.training));
 });
 
 test("sync accepts a complete GCP Exam envelope inside the artifact lock boundary", async (t) => {

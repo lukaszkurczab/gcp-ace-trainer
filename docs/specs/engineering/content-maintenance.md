@@ -28,3 +28,7 @@ Doprowadź spójnie zmianę źródeł, wersję i migrację, zatwierdzenie i dopu
 - [google-cloud-associate-cloud-engineer](content-maintenance/google-cloud-associate-cloud-engineer.md): 23 zakresy.
 - [microsoft-azure-administrator-associate-az-104](content-maintenance/microsoft-azure-administrator-associate-az-104.md): 18 zakresów.
 - [microsoft-azure-ai-fundamentals-ai-901](content-maintenance/microsoft-azure-ai-fundamentals-ai-901.md): 64 zakresy.
+
+## Celowany zakres Claude — autoryzowany 11.10.2026
+
+[Weryfikacja 37 kluczy P1 + korekta P2 Claude](content-maintenance/claude-certified-architect-professional-certification.md): PO autoryzował wykonanie i publikację przed iOS. Niezależne QA wykazało poprawność wszystkich 37 kluczy już w wskazanym source SHA; błędne były litery ID z raportu. W źródle zmieniono tylko P2, z testem regresji dokładnych 38 przypadków. Niezależne QA, runtime admission i release gate PASS; publikacja Git autoryzowana przez PO. Q13 bez zmian. Nie jest to pełny odbiór 845 pytań ani przywrócenie dawnych rozstrzygniętych findingów.
