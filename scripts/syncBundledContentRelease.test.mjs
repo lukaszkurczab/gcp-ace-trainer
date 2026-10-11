@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { cp, lstat, mkdir, mkdtemp, readFile, readdir, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import {
@@ -233,6 +235,60 @@ test("repeated sync and check preserve the validated training predecessor ledger
   const checked = await syncCanonicalContent({ ...state.options, mode: "check" });
   assert.deepEqual(await readFile(ledgerPath), initialLedger);
   assert.equal(checked.ledger.tracks.length, 9);
+});
+
+test("real reviewed SAA candidate revises only AWS training and rejects stale review, artifact and source", async (t) => {
+  const appSource = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+  const producerSource = path.resolve(appSource, "../patternly-content");
+  const root = await mkdtemp(path.join(tmpdir(), "saa-reviewed-sync-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const appRoot = path.join(root, "app");
+  const producerRoot = path.join(root, "producer");
+  execFileSync("git", ["clone", "--quiet", "--shared", producerSource, producerRoot]);
+  const targetDirectory = path.join(appRoot, GENERATED_DIRECTORY);
+  await mkdir(targetDirectory, { recursive: true });
+  const baseline = "8a591248c576b0d63f2df6331bd5ce8d83359bd5";
+  for (const name of [...EXPECTED_TRACK_IDS.map(id => `${id}.json`), "content-lock.json", SUCCESSOR_LEDGER_FILE_NAME]) {
+    await writeFile(path.join(targetDirectory, name), execFileSync("git", ["show", `${baseline}:${GENERATED_DIRECTORY}/${name}`], { cwd: appSource, maxBuffer: 32 * 1024 * 1024 }));
+  }
+  const old = await snapshot(targetDirectory);
+  const trackId = "aws-certified-solutions-architect-associate";
+  const options = { appRoot, producerRoot, approvedTrainingTrackIds: [trackId] };
+  const readinessPath = path.join(producerRoot, "evidence/readiness/current-candidate-readiness-v2.json");
+  const readinessBytes = await readFile(readinessPath);
+  const stale = JSON.parse(readinessBytes);
+  stale.candidateApproval.decisionSha256 = "0".repeat(64);
+  await writeFile(readinessPath, JSON.stringify(stale));
+  await assert.rejects(syncCanonicalContent(options), /readiness is stale/);
+  assert.deepEqual(await snapshot(targetDirectory), old);
+  await writeFile(readinessPath, readinessBytes);
+  const candidateArtifact = path.join(producerRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/release/artifacts", `${trackId}.json`);
+  const candidateBytes = await readFile(candidateArtifact);
+  await writeFile(candidateArtifact, Buffer.concat([candidateBytes, Buffer.from(" ")]));
+  await assert.rejects(syncCanonicalContent(options), /checksum mismatch/);
+  assert.deepEqual(await snapshot(targetDirectory), old);
+  await writeFile(candidateArtifact, candidateBytes);
+  await assert.rejects(syncCanonicalContent({ ...options, approvedTrainingTrackIds: [] }), /scope is invalid/);
+  await assert.rejects(syncCanonicalContent({ ...options, approvedTrainingTrackIds: [trackId, EXPECTED_TRACK_IDS[1]] }), /scope differs/);
+  assert.deepEqual(await snapshot(targetDirectory), old);
+  const result = await syncCanonicalContent(options);
+  const installed = Object.fromEntries(await snapshot(targetDirectory));
+  for (const [name, digest] of old) if (![`${trackId}.json`, "content-lock.json", SUCCESSOR_LEDGER_FILE_NAME].includes(name)) assert.equal(installed[name], digest);
+  const candidate = JSON.parse(candidateBytes);
+  const training = result.ledger.tracks.find(entry => entry.trackId === trackId).training;
+  assert.equal(training.contentVersion, candidate.contentVersion);
+  assert.equal(training.artifactSha256, sha256(candidateBytes));
+  assert.equal(training.questionCount, 2604);
+  await syncCanonicalContent({ appRoot, producerRoot, mode: "check" });
+  const after = await snapshot(targetDirectory);
+  const catalogPath = path.join(producerRoot, "content/catalog.json");
+  const catalog = JSON.parse(await readFile(catalogPath));
+  catalog.tracks.find(entry => entry.trackId === trackId).contentVersion += "-unreviewed";
+  await writeFile(catalogPath, JSON.stringify(catalog));
+  execFileSync("git", ["add", "content/catalog.json"], { cwd: producerRoot });
+  execFileSync("git", ["-c", "user.name=QA fixture", "-c", "user.email=qa@example.invalid", "commit", "--quiet", "-m", "unreviewed fixture source"], { cwd: producerRoot });
+  await assert.rejects(syncCanonicalContent(options), /committed source snapshot/);
+  assert.deepEqual(await snapshot(targetDirectory), after);
 });
 
 test("sync admits a policy-only canonical version while retaining the historical GCP evidence pin", async (t) => {

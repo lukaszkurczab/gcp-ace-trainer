@@ -336,7 +336,7 @@ async function producerHead(producerRoot) {
 async function verifyProducerState(producerRoot) {
   const { stdout } = await execFileAsync("git", [
     "-C", producerRoot, "status", "--porcelain", "--untracked-files=all", "--",
-    "content", "schemas", "scripts/build.mjs", "scripts/content",
+    "content", "schemas", "scripts/build.mjs", "scripts/content", "scripts/review",
   ], { encoding: "utf8" });
   if (stdout.trim()) fail("Canonical producer inputs differ from patternly-content HEAD");
 }
@@ -378,11 +378,12 @@ function trackIdentityFromArtifact(artifact, sha256Value) {
   return Object.freeze({ contentVersion: artifact.contentVersion, artifactSha256: sha256Value, policyVersion: artifact.planningPolicy.policyVersion });
 }
 
-function deriveSuccessorLedger({ artifacts, lock, previousLedger, predecessor }) {
+function deriveSuccessorLedger({ artifacts, lock, previousLedger, predecessor, approvedTraining }) {
   const lockByTrack = new Map(lock.tracks.map((entry) => [entry.trackId, entry]));
   const previousByTrack = previousLedger ? new Map(previousLedger.tracks.map((entry) => [entry.trackId, entry])) : null;
   const predecessorByTrack = predecessor ? new Map(predecessor.lock.tracks.map((entry) => [entry.trackId, entry])) : null;
   const tracks = [];
+  const revisedTracks = [];
   for (const trackId of EXPECTED_TRACK_IDS) {
     const artifact = artifacts.get(`${trackId}.json`);
     const currentLock = lockByTrack.get(trackId);
@@ -393,9 +394,17 @@ function deriveSuccessorLedger({ artifacts, lock, previousLedger, predecessor })
       const previous = previousByTrack.get(trackId);
       const projection = historicalTrainingProjection(artifact, previous.training.contentVersion);
       if (sha256(projection) !== previous.training.artifactSha256 || JSON.parse(projection.toString("utf8")).questions.length !== previous.training.questionCount) {
-        fail(`Training material changed for ${trackId}; the v1 training predecessor cannot be silently replaced`);
+        const approved = approvedTraining?.get(trackId);
+        if (!approved) fail(`Training material changed for ${trackId}; the v1 training predecessor cannot be silently replaced`);
+        if (approved.contentVersion === previous.training.contentVersion || currentIdentity.contentVersion === previous.planningPolicy.contentVersion) fail(`Training revision must use new immutable versions for ${trackId}`);
+        if (currentIdentity.contentVersion !== `${approved.contentVersion}-bizq03-planning-v2`) fail(`Approved training version does not match its planning-policy successor for ${trackId}`);
+        const revisedProjection = historicalTrainingProjection(artifact, approved.contentVersion);
+        if (sha256(revisedProjection) !== approved.checksumSha256 || artifact.questions.length !== approved.questionCount) fail(`Approved training candidate differs from canonical output for ${trackId}`);
+        training = Object.freeze({ contentVersion: approved.contentVersion, artifactSha256: approved.checksumSha256, questionCount: approved.questionCount });
+        revisedTracks.push(trackId);
+      } else {
+        training = previous.training;
       }
-      training = previous.training;
     } else {
       const oldLock = predecessorByTrack?.get(trackId);
       const oldBytes = predecessor?.artifacts.get(`${trackId}.json`);
@@ -408,7 +417,31 @@ function deriveSuccessorLedger({ artifacts, lock, previousLedger, predecessor })
     }
     tracks.push(Object.freeze({ trackId, training, planningPolicy: Object.freeze({ contentVersion: currentIdentity.contentVersion, artifactSha256: currentIdentity.artifactSha256, policyVersion: currentIdentity.policyVersion }) }));
   }
+  if (approvedTraining && !equalStringSets(revisedTracks, approvedTraining.keys())) fail("Approved training track scope differs from the actual revision");
   return parseSuccessorLedger(Object.freeze({ schemaVersion: SUCCESSOR_LEDGER_SCHEMA_VERSION, tracks: Object.freeze(tracks) }));
+}
+
+// A training revision is explicit and reviewed. Ordinary policy-only sync keeps
+// its original byte-exact predecessor guarantee; readiness is not admission.
+async function readApprovedTraining(producerRoot, trackIds) {
+  if (!Array.isArray(trackIds) || trackIds.length === 0 || new Set(trackIds).size !== trackIds.length || trackIds.some(id => !EXPECTED_TRACK_IDS.includes(id))) fail("Approved training track scope is invalid");
+  const review = await import(pathToFileURL(path.join(producerRoot, "scripts/review/candidate-readiness-v2.mjs")).href);
+  const source = await import(pathToFileURL(path.join(producerRoot, "scripts/review/candidate-draft-v2.mjs")).href);
+  const readiness = await review.createCandidateReadinessV2({ root: producerRoot });
+  const recorded = parseJson(await readFile(path.join(producerRoot, review.READINESS_PATH)), "candidate readiness");
+  if (JSON.stringify(recorded) !== JSON.stringify(readiness)) {
+    // Readiness files use canonical key order; compare values without depending
+    // on the insertion order of a reconstructed object.
+    const canonical = (await import(pathToFileURL(path.join(producerRoot, "scripts/review/candidate-manifest.mjs")).href)).canonicalJson;
+    if (canonical(recorded) !== canonical(readiness)) fail("Recorded candidate readiness is stale");
+  }
+  await source.assertCanonicalSourceSnapshot(producerRoot, readiness.sourceRepositoryCommit);
+  const release = parseJson(await readFile(path.join(producerRoot, review.RELEASE_PATH)), "approved training release");
+  return new Map(trackIds.map(id => {
+    const artifact = release.artifacts.find(entry => entry.trackId === id);
+    if (!artifact) fail(`Approved training candidate is missing ${id}`);
+    return [id, artifact];
+  }));
 }
 
 async function defaultBootstrapPredecessor(appRoot) {
@@ -462,7 +495,7 @@ async function replaceDirectory({ stagedDirectory, targetDirectory, expectedInve
   if (movedOld) await remove(backupDirectory, { recursive: true, force: false });
 }
 
-export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot, producerRoot = path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, getProducerHead = producerHead, getBootstrapPredecessor = defaultBootstrapPredecessor, verifyProducer = verifyProducerState, expectedInventory = EXPECTED_INVENTORY, remove = rm, move = rename } = {}) {
+export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot, producerRoot = path.resolve(scriptRoot, "../patternly-content"), targetDirectory = path.join(appRoot, GENERATED_DIRECTORY), temporaryRoot = tmpdir(), runBuild = defaultRunBuild, getProducerHead = producerHead, getBootstrapPredecessor = defaultBootstrapPredecessor, verifyProducer = verifyProducerState, expectedInventory = EXPECTED_INVENTORY, approvedTrainingTrackIds, remove = rm, move = rename } = {}) {
   if (mode !== "sync" && mode !== "check") fail(`Unknown mode: ${mode}`);
   const resolvedAppRoot = path.resolve(appRoot);
   const resolvedProducerRoot = path.resolve(producerRoot);
@@ -473,6 +506,7 @@ export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot
   await assertProducerRoot(resolvedProducerRoot);
   const head = await getProducerHead(resolvedProducerRoot);
   await verifyProducer(resolvedProducerRoot);
+  const approvedTraining = approvedTrainingTrackIds === undefined ? undefined : await readApprovedTraining(resolvedProducerRoot, approvedTrainingTrackIds);
   const temporaryParent = mode === "sync" ? path.dirname(resolvedTarget) : safeCheckTemporaryRoot;
   const temporaryDirectory = await mkdtemp(path.join(temporaryParent, `.canonical-content-build-${process.pid}-`));
   try {
@@ -502,7 +536,7 @@ export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot
         if (!compatible) fail(`Existing bundled content does not match the exact APP HEAD training predecessor for ${trackId}`);
       }
     }
-    const ledger = deriveSuccessorLedger({ artifacts: stagedArtifacts, lock: built.lock, previousLedger, predecessor });
+    const ledger = deriveSuccessorLedger({ artifacts: stagedArtifacts, lock: built.lock, previousLedger, predecessor, approvedTraining });
     await writeFile(path.join(temporaryDirectory, SUCCESSOR_LEDGER_FILE_NAME), JSON.stringify(ledger));
     const staged = await validateBuiltContent(temporaryDirectory, { expectedInventory });
     if (mode === "check") {
@@ -518,14 +552,16 @@ export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot
   }
 }
 
-function usage() { return "Usage: node scripts/syncBundledContentRelease.mjs [sync|check] [--content-root <patternly-content checkout>]"; }
+function usage() { return "Usage: node scripts/syncBundledContentRelease.mjs [sync|check] [--content-root <patternly-content checkout>] [--approve-training-track <trackId>]"; }
 export function parseArgs(argv = process.argv.slice(2)) {
   const options = { mode: "sync" };
   let index = 0;
   if (argv[0] === "sync" || argv[0] === "check") options.mode = argv[index++];
   while (index < argv.length) {
-    if (argv[index] !== "--content-root" || index + 1 >= argv.length) fail(usage());
-    options.producerRoot = path.resolve(argv[index + 1]);
+    if (index + 1 >= argv.length) fail(usage());
+    if (argv[index] === "--content-root") options.producerRoot = path.resolve(argv[index + 1]);
+    else if (argv[index] === "--approve-training-track") (options.approvedTrainingTrackIds ??= []).push(argv[index + 1]);
+    else fail(usage());
     index += 2;
   }
   return options;
