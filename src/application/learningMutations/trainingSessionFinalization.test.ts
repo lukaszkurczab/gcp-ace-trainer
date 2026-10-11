@@ -4,9 +4,13 @@ import test from "node:test";
 import { commitTrainingSessionFinalization, recoverPendingMutation } from "./";
 import { MutationCommitFailure } from "../mutationBoundary";
 import { materializeMutation } from "./mutationMaterializer";
+import { buildMutationJournal } from "./mutationJournalBuilder";
 import { completeTrainingSession, createTrainingAttempt, createTrainingSessionDraft, type TrainingSessionDraft } from "../../domain";
+import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
+import { captureMutationExpectedRevisions, captureMutationPhysicalWrites, createMutationPlanFingerprint, isMutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
+import { readActiveTrainingSessionDraftStateProof } from "../../storage/repositories/trainingSessionDraftRepository";
 import {
   getActiveMutationJournal,
   getActiveTrainingSessionDraft,
@@ -20,7 +24,7 @@ import {
   saveTrainingSession,
   saveTrainingSessionDraft as persistTrainingSessionDraft,
 } from "../../storage/repositories";
-import { installMemoryStorage, journal, review, session, timestamp } from "../../testing/journalTestSupport";
+import { acceptSimulationFinalizationForTest, installMemoryStorage, journal, review, session, timestamp } from "../../testing/journalTestSupport";
 
 const draftConfiguration = { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "coding_interview", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } as const;
 
@@ -74,7 +78,7 @@ test("Algorithms finalization commits exactly answered occurrences and deletes t
     session: completed,
     attempts: [attempt],
     reviewMutations: [],
-    cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [attempt.occurrenceId] },
+    cleanup: { kind: "training_session_draft", draft, acceptedFinalization: await acceptSimulationFinalizationForTest(active, draft), submittedOccurrenceIds: [attempt.occurrenceId] },
     createdAt: timestamp,
   });
 
@@ -93,7 +97,7 @@ test("Algorithms finalization rejects attempts that do not correspond exactly to
     session: completed,
     attempts: [{ ...attempt, response: { selectedOptionIds: ["b"] } }],
     reviewMutations: [],
-    cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [attempt.occurrenceId] },
+    cleanup: { kind: "training_session_draft", draft, acceptedFinalization: await acceptSimulationFinalizationForTest(active, draft), submittedOccurrenceIds: [attempt.occurrenceId] },
     createdAt: timestamp,
   }));
   assert.deepEqual((await getTrainingAttempts()).value, []);
@@ -110,9 +114,9 @@ test("Algorithms finalization rejects a stale cleanup draft before journal persi
     session: completed,
     attempts: [attempt],
     reviewMutations: [],
-    cleanup: { kind: "training_session_draft", draft: stale, submittedOccurrenceIds: [attempt.occurrenceId] },
+    cleanup: { kind: "training_session_draft", draft: stale, acceptedFinalization: await acceptSimulationFinalizationForTest(active, draft), submittedOccurrenceIds: [attempt.occurrenceId] },
     createdAt: timestamp,
-  }), /does not match the finalization draft/);
+  }), /does not match the active response draft/);
   assert.equal(await getActiveMutationJournal(), null);
   assert.deepEqual((await getTrainingAttempts()).value, []);
   assert.equal((await getTrainingSessions()).value[0]?.status, "active");
@@ -129,7 +133,7 @@ test("force-close replay completes an Algorithms finalization idempotently at th
     session: completed,
     attempts: [attempt],
     reviewMutations: [],
-    cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [attempt.occurrenceId] },
+    cleanup: { kind: "training_session_draft", draft, acceptedFinalization: await acceptSimulationFinalizationForTest(active, draft), submittedOccurrenceIds: [attempt.occurrenceId] },
     createdAt: timestamp,
   }));
   assert.notEqual(await getActiveMutationJournal(), null);
@@ -179,7 +183,7 @@ test("duplicate content occurrences keep distinct attempts and consolidate revie
     reviewMutations: [
       { action: "put", record: secondReview, transitionAttemptId: secondAttempt.id },
     ],
-    cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [firstAttempt.occurrenceId, secondAttempt.occurrenceId] },
+    cleanup: { kind: "training_session_draft", draft, acceptedFinalization: await acceptSimulationFinalizationForTest(active, draft), submittedOccurrenceIds: [firstAttempt.occurrenceId, secondAttempt.occurrenceId] },
     createdAt: timestamp,
   });
   assert.deepEqual((await getTrainingAttempts()).value.map((entry) => entry.occurrenceId).sort(), ["first", "second"]);
@@ -198,7 +202,7 @@ test("finalization can resolve a review through an exact transition attempt", as
     session: completed,
     attempts: [correctAttempt],
     reviewMutations: [{ action: "delete", record: existing, transitionAttemptId: correctAttempt.id }],
-    cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [correctAttempt.occurrenceId] },
+    cleanup: { kind: "training_session_draft", draft, acceptedFinalization: await acceptSimulationFinalizationForTest(active, draft), submittedOccurrenceIds: [correctAttempt.occurrenceId] },
     createdAt: timestamp,
   });
   assert.deepEqual((await getReviewQueueItems()).value, []);
@@ -221,7 +225,7 @@ test("simulation finalization reports a review race while preserving the exact g
     reviewMutations: [{ action: "update", record: proposed, transitionAttemptId: attempt.id }],
     reviewBaseline: [baseline],
     result,
-    cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [attempt.occurrenceId] },
+    cleanup: { kind: "training_session_draft", draft, acceptedFinalization: await acceptSimulationFinalizationForTest(active, draft), submittedOccurrenceIds: [attempt.occurrenceId] },
     createdAt: timestamp,
   });
 
@@ -242,7 +246,7 @@ test("journaled transition delete rejects a same-id review conflict before outco
   await addReviewQueueItems([existing]);
   const exactExistingReviewBytes = storage.getString(STORAGE_KEYS.reviewEntry(existing.id));
   storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.trainingAttempt(correctAttempt.id) });
-  await assert.rejects(commitTrainingSessionFinalization({ session: completed, attempts: [correctAttempt], reviewMutations: [{ action: "delete", record: existing, transitionAttemptId: correctAttempt.id }], cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [correctAttempt.occurrenceId] }, createdAt: timestamp }));
+  await assert.rejects(commitTrainingSessionFinalization({ session: completed, attempts: [correctAttempt], reviewMutations: [{ action: "delete", record: existing, transitionAttemptId: correctAttempt.id }], cleanup: { kind: "training_session_draft", draft, acceptedFinalization: await acceptSimulationFinalizationForTest(active, draft), submittedOccurrenceIds: [correctAttempt.occurrenceId] }, createdAt: timestamp }));
   storage.setFailurePlan(null);
   writeCanonicalJson(STORAGE_KEYS.reviewEntry(existing.id), { ...existing, dueAt: "2026-07-16T10:00:00.000Z" });
   await assert.rejects(recoverPendingMutation(), /materialize/);
@@ -258,7 +262,7 @@ test("journaled transition delete rejects a same-id review conflict before outco
   await saveTrainingSessionDraft(second.draft);
   await addReviewQueueItems([existing]);
   const absentAttempt = createTrainingAttempt({ ...second.attempt, id: "absent-delete-transition", result: { kind: "correct", earnedPoints: 1, maxPoints: 1 } });
-  const absentCommand = commitTrainingSessionFinalization({ session: second.completed, attempts: [absentAttempt], reviewMutations: [{ action: "delete", record: existing, transitionAttemptId: absentAttempt.id }], cleanup: { kind: "training_session_draft", draft: second.draft, submittedOccurrenceIds: [absentAttempt.occurrenceId] }, createdAt: timestamp });
+  const absentCommand = commitTrainingSessionFinalization({ session: second.completed, attempts: [absentAttempt], reviewMutations: [{ action: "delete", record: existing, transitionAttemptId: absentAttempt.id }], cleanup: { kind: "training_session_draft", draft: second.draft, acceptedFinalization: await acceptSimulationFinalizationForTest(second.active, second.draft), submittedOccurrenceIds: [absentAttempt.occurrenceId] }, createdAt: timestamp });
   await removeReviewQueueEntry(existing.id);
   await absentCommand;
   assert.deepEqual((await getReviewQueueItems()).value, []);
@@ -281,7 +285,8 @@ test("Algorithms finalization recovers idempotently across every canonical write
     await saveTrainingSession(active);
     await saveTrainingSessionDraft(draft);
     storage.setFailurePlan(failurePlan);
-    const command = () => commitTrainingSessionFinalization({ session: completed, attempts: [attempt], reviewMutations: [{ action: "put", record: reviewRecord, transitionAttemptId: attempt.id }], cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [attempt.occurrenceId] }, createdAt: timestamp });
+    const acceptedFinalization = await acceptSimulationFinalizationForTest(active, draft);
+    const command = () => commitTrainingSessionFinalization({ session: completed, attempts: [attempt], reviewMutations: [{ action: "put", record: reviewRecord, transitionAttemptId: attempt.id }], cleanup: { kind: "training_session_draft", draft, acceptedFinalization, submittedOccurrenceIds: [attempt.occurrenceId] }, createdAt: timestamp });
     await assert.rejects(command());
     storage.setFailurePlan(null);
     if (failurePlan.key === STORAGE_KEYS.ACTIVE_JOURNAL && failurePlan.kind === "fail_on_key_write") await command();
@@ -301,7 +306,7 @@ test("persisted finalization journal preflights a stale durable draft before rep
   await saveTrainingSession(active);
   await saveTrainingSessionDraft(draft);
   storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.trainingAttempt(attempt.id) });
-  await assert.rejects(commitTrainingSessionFinalization({ session: completed, attempts: [attempt], reviewMutations: [], cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [attempt.occurrenceId] }, createdAt: timestamp }));
+  await assert.rejects(commitTrainingSessionFinalization({ session: completed, attempts: [attempt], reviewMutations: [], cleanup: { kind: "training_session_draft", draft, acceptedFinalization: await acceptSimulationFinalizationForTest(active, draft), submittedOccurrenceIds: [attempt.occurrenceId] }, createdAt: timestamp }));
   storage.setFailurePlan(null);
   const stale = createTrainingSessionDraft({ ...draft, responsesByOccurrenceId: { "occurrence-1": { selectedOptionIds: ["b"] } }, updatedAt: "2026-07-15T10:01:00.000Z" });
   writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, stale);
@@ -317,30 +322,61 @@ test("draft saves are locked as soon as a finalization journal is pending", asyn
   await saveTrainingSession(active);
   await saveTrainingSessionDraft(draft);
   storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.trainingAttempt(attempt.id) });
-  await assert.rejects(commitTrainingSessionFinalization({ session: completed, attempts: [attempt], reviewMutations: [], cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [attempt.occurrenceId] }, createdAt: timestamp }));
+  await assert.rejects(commitTrainingSessionFinalization({ session: completed, attempts: [attempt], reviewMutations: [], cleanup: { kind: "training_session_draft", draft, acceptedFinalization: await acceptSimulationFinalizationForTest(active, draft), submittedOccurrenceIds: [attempt.occurrenceId] }, createdAt: timestamp }));
   storage.setFailurePlan(null);
   const edited = createTrainingSessionDraft({ ...draft, responsesByOccurrenceId: {}, updatedAt: "2026-07-15T10:01:00.000Z" });
   await assert.rejects(saveTrainingSessionDraft(edited), /durable mutation is pending/);
   assert.deepEqual(await getActiveTrainingSessionDraft(), draft);
 });
 
-test("a draft save started before journal persistence rechecks immediately before writing", async () => {
+test("ordinary draft saves are locked immediately after exact finalization acceptance", async () => {
   installMemoryStorage();
-  const { active, completed, draft, attempt } = setup();
+  const { active, draft } = setup();
   await saveTrainingSession(active);
   await saveTrainingSessionDraft(draft);
   const edited = createTrainingSessionDraft({ ...draft, responsesByOccurrenceId: {}, updatedAt: "2026-07-15T10:01:00.000Z" });
-  const save = saveTrainingSessionDraft(edited);
-  const persist = persistMutationJournal(journal([
-    { kind: "put_attempt", record: attempt },
-    { kind: "put_session", record: completed },
-    { kind: "clear_active_session", sessionId: completed.id },
-    { kind: "delete_active_session_draft", record: draft, submittedOccurrenceIds: [attempt.occurrenceId] },
-  ], "finalize_training_session"));
-  const [saveResult, persistResult] = await Promise.allSettled([save, persist]);
-  assert.equal(persistResult.status, "fulfilled");
-  assert.equal(saveResult.status, "rejected");
-  assert.deepEqual(await getActiveTrainingSessionDraft(), draft);
+  const accepted = await acceptSimulationFinalizationForTest(active, draft);
+  await assert.rejects(saveTrainingSessionDraft(edited), /accepted for finalization/u);
+  const after = readActiveTrainingSessionDraftStateProof();
+  assert.deepEqual(after?.state, accepted);
+});
+
+test("accepted finalization journals bind command identity and reject a re-fingerprinted full-wrapper forgery before J", async () => {
+  const storage = installMemoryStorage();
+  const { active, completed, draft, attempt } = setup();
+  await saveTrainingSession(active);
+  await saveTrainingSessionDraft(draft);
+  const accepted = await acceptSimulationFinalizationForTest(active, draft);
+  const writes = [
+    { kind: "put_attempt" as const, record: attempt },
+    { kind: "put_session" as const, record: completed },
+    { kind: "clear_active_session" as const, sessionId: active.id },
+    { kind: "delete_active_session_draft" as const, record: accepted, submittedOccurrenceIds: [attempt.occurrenceId] },
+  ];
+  const record = await buildMutationJournal({ operation: "finalize_training_session", sessionId: active.id, trackId: active.trackId, identity: accepted.acceptance, writes, createdAt: timestamp });
+  assert.equal(isMutationJournalRecord(record), true);
+
+  const changedCommandIdentity = { ...record.commandIdentity, fingerprint: "f".repeat(64) };
+  const identityPlan = { ...record, commandIdentity: changedCommandIdentity };
+  const wrongIdentityRecord = { ...identityPlan, journalId: `journal:${changedCommandIdentity.fingerprint}`, planFingerprint: createMutationPlanFingerprint(identityPlan) };
+  assert.equal(isMutationJournalRecord(wrongIdentityRecord), false, "a recomputed journal fingerprint cannot detach commandIdentity from the accepted commandId");
+
+  const forgedAccepted = { ...accepted, responseDraft: createTrainingSessionDraft({ ...accepted.responseDraft, updatedAt: "2026-07-16T10:00:00.000Z" }) };
+  const forgedWrites = writes.map((write) => write.kind === "delete_active_session_draft" ? { ...write, record: forgedAccepted } : write);
+  const forgedPhysicalWrites = record.physicalWrites.map((step) => {
+    if (step.target !== "active_session_draft" || step.before.kind !== "present" || !step.before.envelope) return step;
+    const envelope = { ...step.before.envelope, payload: forgedAccepted };
+    return { ...step, before: { ...step.before, envelope, digest: sha256Utf8(JSON.stringify(envelope)), payloadDigest: sha256Utf8(JSON.stringify(forgedAccepted)) } };
+  });
+  const expectedRevisions = captureMutationExpectedRevisions(forgedWrites);
+  const forgedPlan = { ...record, expectedRevisions, physicalWrites: forgedPhysicalWrites, writes: forgedWrites };
+  const forgedRecord = { ...forgedPlan, planFingerprint: createMutationPlanFingerprint(forgedPlan) };
+  assert.equal(isMutationJournalRecord(forgedRecord), false, "closed typed-write derivation rejects a recomputed physical plan carrying a different full D wrapper");
+  const acceptedBytes = storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
+  assert.ok(acceptedBytes);
+  await assert.rejects(persistMutationJournal(forgedRecord));
+  assert.equal(storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT), acceptedBytes, "forged cleanup cannot replace or clear the real accepted wrapper");
+  assert.equal(await getActiveMutationJournal(), null, "the conflicting J was not written");
 });
 
 test("verified finalization refuses a reappearing draft and retains the journal", async () => {
@@ -348,12 +384,15 @@ test("verified finalization refuses a reappearing draft and retains the journal"
   const { active, completed, draft, attempt } = setup();
   await saveTrainingSession(active);
   await saveTrainingSessionDraft(draft);
-  const record = journal([
+  const acceptedFinalization = await acceptSimulationFinalizationForTest(active, draft);
+  const writes = [
     { kind: "put_attempt", record: attempt },
     { kind: "put_session", record: completed },
     { kind: "clear_active_session", sessionId: completed.id },
-    { kind: "delete_active_session_draft", record: draft, submittedOccurrenceIds: [attempt.occurrenceId] },
-  ], "finalize_training_session");
+    { kind: "delete_active_session_draft", record: acceptedFinalization, submittedOccurrenceIds: [attempt.occurrenceId] },
+  ] as const;
+  const record = await buildMutationJournal({ operation: "finalize_training_session", sessionId: completed.id, trackId: completed.trackId,
+    identity: acceptedFinalization.acceptance, writes, createdAt: timestamp });
   await persistMutationJournal(record);
   await materializeMutation(record);
   const materialized = await updateMutationJournalPhase(record, "materialized");

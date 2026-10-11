@@ -1,9 +1,9 @@
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { createForegroundTimerState, getTrackRegistration, initialForegroundTimerForSession, type ForegroundTimerState, type TrainingSession } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
-import { applyCanonicalPhysicalWrite, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
+import { applyCanonicalPhysicalWrite, readCanonicalJson, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
-import { isForegroundTimerState } from "./trainingModelGuards";
+import { isAcceptedSimulationFinalization, isForegroundTimerState, isTrainingSessionDraftState } from "./trainingModelGuards";
 
 /** Pure canonical read used by snapshot consumers; performs no checkpoint or migration. */
 export function readActiveForegroundTimer(): ForegroundTimerState | null {
@@ -21,6 +21,10 @@ export async function saveActiveForegroundTimer(
   expectedPreviousCheckpointRevision: number | null,
 ): Promise<ForegroundTimerState> {
   if (!isForegroundTimerState(timer)) throw new Error("Foreground timer is invalid.");
+  const accepted = readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, isTrainingSessionDraftState);
+  if (accepted && isAcceptedSimulationFinalization(accepted) && accepted.acceptance.sessionId === timer.sessionId) {
+    throw new Error("An accepted simulation finalization freezes its session timer until recovery completes.");
+  }
   const active = await getActiveTrainingSession();
   if (!active || active.status !== "active") throw new Error("An active training session is required to save a foreground timer.");
   if (timer.sessionId !== active.id || timer.trackId !== active.trackId) throw new Error("Foreground timer scope does not match the active session.");
@@ -31,15 +35,18 @@ export async function saveActiveForegroundTimer(
   const previous = existing?.checkpointRevision ?? null;
   if (previous !== expectedPreviousCheckpointRevision) throw new Error("Foreground timer expected checkpoint revision is stale.");
   const durable = createForegroundTimerState({ ...timer, checkpointRevision: (previous ?? 0) + 1 });
+  assertNoAcceptedSimulationFinalization(timer.sessionId);
   writeCanonicalJson(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER, durable);
   const verified = await getActiveForegroundTimer();
   if (!verified || canonicalSerialize(verified) !== canonicalSerialize(durable)) throw new Error("Foreground timer durable write could not be verified.");
   return durable;
 }
 
-export async function clearActiveForegroundTimer(sessionId: string): Promise<void> {
-  const timer = await getActiveForegroundTimer();
-  if (timer?.sessionId === sessionId) removeCanonicalValue(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER);
+function assertNoAcceptedSimulationFinalization(sessionId: string): void {
+  const accepted = readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, isTrainingSessionDraftState);
+  if (accepted && isAcceptedSimulationFinalization(accepted) && accepted.acceptance.sessionId === sessionId) {
+    throw new Error("An accepted simulation finalization freezes its session timer until recovery completes.");
+  }
 }
 
 /** Exact journal-owned timer removal; terminal verification requires absence. */

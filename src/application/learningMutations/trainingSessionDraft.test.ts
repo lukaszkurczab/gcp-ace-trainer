@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createTrainingSessionDraft, type TrainingSessionDraft } from "../../domain";
+import { createTrainingSession, createTrainingSessionDraft, getTrackRegistration, initialForegroundTimerForSession, type AcceptedSimulationFinalization, type TrainingSessionDraft } from "../../domain";
 import { clearPatternlyLocalHistory } from "../../features/home/localReset";
 import { installLearningStateResetBarrier } from "./commitLearningStateReset";
 import { STORAGE_KEYS } from "../../storage/keys";
@@ -20,6 +20,10 @@ import {
 import { openProfileStorageRouter } from "../../infrastructure/storage/profileStorageRouter";
 import type { StorageManifestStore } from "../../infrastructure/storage/encryptedStorageBootstrap";
 import type { CanonicalWriteAttempt } from "../../storage/repositories/canonicalRecordCodec";
+import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { sha256Utf8 } from "../../infrastructure/identity/sha256";
+import { readTrainingSessionEnvelopeProof } from "../../storage/repositories/trainingSessionRepository";
+import { acceptSimulationFinalization, readActiveTrainingSessionDraftStateProof, reconcileAcceptedSimulationFinalization } from "../../storage/repositories/trainingSessionDraftRepository";
 import {
   getActiveTrainingSessionDraft,
   captureTrainingSessionDraftLease,
@@ -27,9 +31,10 @@ import {
   getTrainingAttempts,
   reconcileTrainingSessionDraftWrite,
   saveTrainingSession,
+  saveActiveForegroundTimer,
   saveTrainingSessionDraft as persistTrainingSessionDraft,
 } from "../../storage/repositories";
-import { installMemoryStorage, session, timestamp } from "../../testing/journalTestSupport";
+import { acceptSimulationFinalizationForTest, installMemoryStorage, session, timestamp } from "../../testing/journalTestSupport";
 
 installLearningStateResetBarrier(async (reset) => reset());
 
@@ -361,4 +366,129 @@ test("clear local history removes the resumable draft", async () => {
   await saveTrainingSessionDraft(createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp }));
   await clearPatternlyLocalHistory();
   assert.equal(await getActiveTrainingSessionDraft(), null);
+});
+
+test("D owner accepts and reads the exact tagged finalization envelope with one revision bump", async () => {
+  const storage = installMemoryStorage();
+  const active = { ...session("active", "accepted-d-owner-probe"), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
+  await saveTrainingSession(active);
+  const draft = createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: { "occurrence-1": { z: 1, a: 2 } }, updatedAt: timestamp });
+  await persistTrainingSessionDraft(draft, null);
+  const draftBefore = readActiveTrainingSessionDraftStateProof();
+  const sessionBefore = readTrainingSessionEnvelopeProof(active.id);
+  assert.ok(draftBefore && !(("kind" in draftBefore.state) && draftBefore.state.kind === "accepted_simulation_finalization"));
+  assert.ok(sessionBefore);
+  const acceptanceIdentity = {
+    sessionId: active.id,
+    trackId: active.trackId,
+    familyId: getTrackRegistration(active.trackId).familyId,
+    trigger: "manual" as const,
+    capturedAt: timestamp,
+    semanticsVersion: "simulation-finalization-v1" as const,
+    sessionRevision: sessionBefore.revision,
+    sessionDigest: sessionBefore.digest,
+    priorDraftEnvelopeRevision: draftBefore.revision,
+    priorDraftEnvelopeDigest: draftBefore.digest,
+    reviewProofs: [],
+  };
+  const accepted: AcceptedSimulationFinalization = {
+    kind: "accepted_simulation_finalization", version: 1, responseDraft: draft,
+    acceptance: { ...acceptanceIdentity, commandId: sha256Utf8(canonicalSerialize(acceptanceIdentity)) },
+  };
+  const outcome = await acceptSimulationFinalization(accepted, { revision: draftBefore.revision, digest: draftBefore.digest }, captureTrainingSessionDraftLease(), []);
+  assert.equal(outcome.kind, "verified");
+  const after = readActiveTrainingSessionDraftStateProof();
+  assert.ok(after && "kind" in after.state && after.state.kind === "accepted_simulation_finalization");
+  assert.equal(after.revision, draftBefore.revision + 1);
+  assert.equal(canonicalSerialize(after.state), canonicalSerialize(accepted));
+  assert.equal(await reconcileAcceptedSimulationFinalization(accepted, outcome.attempt), "verified");
+  const exactAcceptedBytes = storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
+  assert.ok(exactAcceptedBytes);
+  assert.equal(await reconcileAcceptedSimulationFinalization(accepted), "verified", "cold reconciliation verifies the exact accepted envelope");
+  MemoryKeyValueStorage.prototype.setString.call(storage, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, JSON.stringify(JSON.parse(exactAcceptedBytes), null, 2));
+  assert.equal(await reconcileAcceptedSimulationFinalization(accepted), "conflict", "whitespace-only raw-byte changes do not prove the accepted write");
+  const envelope = JSON.parse(exactAcceptedBytes) as Record<string, unknown>;
+  const reorderedEnvelope = { payload: envelope.payload, revision: envelope.revision, schemaIdentity: envelope.schemaIdentity };
+  MemoryKeyValueStorage.prototype.setString.call(storage, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, JSON.stringify(reorderedEnvelope));
+  assert.equal(await reconcileAcceptedSimulationFinalization(accepted), "conflict", "a reordered raw envelope is not the canonical exact accepted-after state");
+});
+
+test("ordinary session and timer writers recheck accepted D after their awaited preflight", async () => {
+  for (const writer of ["session", "timer"] as const) {
+    const storage = installMemoryStorage();
+    const active = {
+      ...session("active", `accepted-writer-race-${writer}`),
+      modeId: "coding-interview-simulation",
+      configurationSnapshot: draftConfiguration,
+    };
+    await saveTrainingSession(active);
+    const draft = createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp });
+    await persistTrainingSessionDraft(draft, null);
+    const timer = initialForegroundTimerForSession(active, getTrackRegistration(active.trackId).familyId);
+    assert.ok(timer);
+    await saveActiveForegroundTimer(timer, null);
+
+    const plainDraftBytes = storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
+    assert.ok(plainDraftBytes);
+    await acceptSimulationFinalizationForTest(active, draft);
+    const acceptedBytes = storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
+    assert.ok(acceptedBytes && JSON.parse(acceptedBytes).payload.kind === "accepted_simulation_finalization");
+    MemoryKeyValueStorage.prototype.setString.call(storage, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, plainDraftBytes);
+
+    const triggerKey = writer === "session" ? STORAGE_KEYS.TRAINING_SESSION_INDEX : STORAGE_KEYS.ACTIVE_TRAINING_SESSION;
+    const originalGetString = storage.getString.bind(storage);
+    let acceptanceWonDuringAwait = false;
+    storage.getString = (key) => {
+      if (!acceptanceWonDuringAwait && key === triggerKey) {
+        acceptanceWonDuringAwait = true;
+        MemoryKeyValueStorage.prototype.setString.call(storage, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, acceptedBytes);
+      }
+      return originalGetString(key);
+    };
+
+    if (writer === "session") {
+      const before = storage.snapshot().get(STORAGE_KEYS.trainingSession(active.id));
+      await assert.rejects(saveTrainingSession(createTrainingSession({ ...active, activeForegroundMs: active.activeForegroundMs + 1 })), /accepted simulation finalization owns/u);
+      assert.equal(storage.snapshot().get(STORAGE_KEYS.trainingSession(active.id)), before, "session bytes remain untouched when acceptance wins during session preflight");
+    } else {
+      const before = storage.snapshot().get(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER);
+      await assert.rejects(saveActiveForegroundTimer({ ...timer, accumulatedForegroundMs: timer.accumulatedForegroundMs + 1 }, timer.checkpointRevision), /accepted simulation finalization freezes/u);
+      assert.equal(storage.snapshot().get(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER), before, "timer bytes remain untouched when acceptance wins during timer preflight");
+    }
+    assert.equal(acceptanceWonDuringAwait, true, `${writer} preflight reached its awaited storage boundary`);
+    assert.equal(storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT), acceptedBytes, "the accepted wrapper remains exact after the ordinary writer is refused");
+  }
+});
+
+test("D owner rejects recomputed semantic and source-proof forgeries before changing bytes", async () => {
+  for (const forgedField of ["commandId", "responseDraft", "responseEncoding", "sessionDigest", "semanticsVersion"] as const) {
+    const storage = installMemoryStorage();
+    const active = { ...session("active", `accepted-forgery-${forgedField}`), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
+    await saveTrainingSession(active);
+    const draft = createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp });
+    await persistTrainingSessionDraft(draft, null);
+    const prior = readActiveTrainingSessionDraftStateProof();
+    assert.ok(prior && !("kind" in prior.state));
+    const priorBytes = storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
+    assert.ok(priorBytes);
+    const accepted = await acceptSimulationFinalizationForTest(active, draft);
+    MemoryKeyValueStorage.prototype.setString.call(storage, STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, priorBytes);
+    let forged: AcceptedSimulationFinalization;
+    if (forgedField === "commandId") {
+      forged = { ...accepted, acceptance: { ...accepted.acceptance, commandId: "f".repeat(64) } };
+    } else if (forgedField === "responseDraft") {
+      forged = { ...accepted, responseDraft: createTrainingSessionDraft({ ...accepted.responseDraft, updatedAt: "2026-07-16T10:00:00.000Z" }) };
+    } else if (forgedField === "responseEncoding") {
+      forged = { ...accepted, responseDraft: { ...accepted.responseDraft, responsesByOccurrenceId: { "occurrence-1": { a: 2, z: 1 } } } };
+    } else if (forgedField === "semanticsVersion") {
+      forged = { ...accepted, acceptance: { ...accepted.acceptance, semanticsVersion: "simulation-finalization-v2" as AcceptedSimulationFinalization["acceptance"]["semanticsVersion"] } };
+    } else {
+      const identity = { ...accepted.acceptance, sessionDigest: "a".repeat(64) };
+      const { commandId: _oldCommandId, ...preimage } = identity;
+      forged = { ...accepted, acceptance: { ...identity, commandId: sha256Utf8(canonicalSerialize(preimage)) } };
+    }
+    const outcome = await acceptSimulationFinalization(forged, { revision: prior.revision, digest: prior.digest }, captureTrainingSessionDraftLease(), []);
+    assert.notEqual(outcome.kind, "verified", `${forgedField} forgery must fail its owner check`);
+    assert.equal(storage.snapshot().get(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT), priorBytes, `${forgedField} forgery leaves the exact prior D bytes unchanged`);
+  }
 });

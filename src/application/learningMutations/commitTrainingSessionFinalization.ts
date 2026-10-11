@@ -1,17 +1,17 @@
-import type { ResolvedContentRef, ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
+import type { AcceptedSimulationFinalization, ResolvedContentRef, ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
 import { getTrainingSessionFinalizationCleanupKind } from "../../domain";
 import { resolvedContentRefKey, resolvedContentRefsEqual } from "../../domain/learning/resolvedContentRef";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
-import { getActiveTrainingSessionDraft } from "../../storage/repositories";
+import { getActiveTrainingSessionDraft, readActiveTrainingSessionDraftStateProof } from "../../storage/repositories";
 import { getReviewQueueSnapshot } from "../../storage/repositories/reviewQueueRepository";
-import { StaleMutationRevisionError } from "../../storage/repositories/mutationJournalRepository";
+import { StaleMutationRevisionError, type ActiveProfileStorageLease } from "../../storage/repositories/mutationJournalRepository";
 import { JournalWriteError } from "../../storage/errors";
 import { MutationCommitFailure } from "../mutationBoundary";
 import { buildMutationJournal } from "./mutationJournalBuilder";
 import { commitMutationAfterPreflight } from "./commitMutation";
 
 export type TrainingSessionFinalizationCleanup =
-  Readonly<{ kind: "training_session_draft"; draft: TrainingSessionDraft; submittedOccurrenceIds: readonly string[] }>;
+  Readonly<{ kind: "training_session_draft"; draft: TrainingSessionDraft; acceptedFinalization: AcceptedSimulationFinalization; submittedOccurrenceIds: readonly string[] }>;
 
 export type TrainingSessionFinalizationReviewMutation = Readonly<{
   action: "put" | "update" | "delete";
@@ -27,6 +27,7 @@ export async function commitTrainingSessionFinalization(input: {
   result?: TrainingSessionResult;
   cleanup: TrainingSessionFinalizationCleanup;
   createdAt: string;
+  expectedLease?: ActiveProfileStorageLease | null;
 }): Promise<boolean> {
   if (input.session.status !== "completed") throw new Error("Training session finalization requires a completed session.");
   const expectedCleanup = getTrainingSessionFinalizationCleanupKind(input.session);
@@ -35,8 +36,12 @@ export async function commitTrainingSessionFinalization(input: {
   }
   if (input.cleanup.kind === "training_session_draft") {
     const currentDraft = await getActiveTrainingSessionDraft();
-    if (!currentDraft || canonicalSerialize(currentDraft) !== canonicalSerialize(input.cleanup.draft)) {
-      throw new Error("The active training session draft does not match the finalization draft.");
+    const currentState = readActiveTrainingSessionDraftStateProof();
+    if (!currentDraft || canonicalSerialize(currentDraft) !== canonicalSerialize(input.cleanup.draft) || !currentState ||
+      canonicalSerialize(currentState.state) !== canonicalSerialize(input.cleanup.acceptedFinalization) ||
+      canonicalSerialize(input.cleanup.acceptedFinalization.responseDraft) !== canonicalSerialize(input.cleanup.draft) ||
+      input.cleanup.acceptedFinalization.acceptance.sessionId !== input.session.id || input.cleanup.acceptedFinalization.acceptance.trackId !== input.session.trackId) {
+      throw new Error("The exact accepted simulation finalization does not match the active response draft.");
     }
     const submitted = new Set(input.cleanup.submittedOccurrenceIds);
     if (submitted.size !== input.cleanup.submittedOccurrenceIds.length || submitted.size !== input.attempts.length || input.attempts.some((attempt) => !submitted.has(attempt.occurrenceId))) {
@@ -82,7 +87,7 @@ export async function commitTrainingSessionFinalization(input: {
       ...(input.result ? [{ kind: "put_session_result", record: input.result } as const] : []),
       { kind: "put_session", record: input.session } as const,
       { kind: "clear_active_session", sessionId: input.session.id } as const,
-      { kind: "delete_active_session_draft", record: input.cleanup.draft, submittedOccurrenceIds: [...input.cleanup.submittedOccurrenceIds] } as const,
+      { kind: "delete_active_session_draft", record: input.cleanup.acceptedFinalization, submittedOccurrenceIds: [...input.cleanup.submittedOccurrenceIds] } as const,
     ];
     const reviewTargets = new Set(accepted.map(({ record }) => `review:${record.id}`));
     const expectedRevisionOverrides = [
@@ -98,7 +103,7 @@ export async function commitTrainingSessionFinalization(input: {
       createdAt: input.createdAt,
       expectedRevisionOverrides,
     });
-  });
+  }, undefined, undefined, input.expectedLease);
   try { await execute(true); }
   catch (error) {
     if (!isStaleReviewRevision(error)) throw error;

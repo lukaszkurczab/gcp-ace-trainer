@@ -24,10 +24,16 @@ import {
   type TrainingLifecyclePorts,
   type PremiumSessionAdmissionPort,
 } from "../trainingLifecycle";
-import { getTrackRegistration, type ReviewMutationCommand, type ReviewQueueEntry, type TrainingSession, type TrainingSessionDraft } from "../../domain";
+import { getTrackRegistration, type AcceptedSimulationFinalization, type ReviewMutationCommand, type ReviewQueueEntry, type TrainingSession, type TrainingSessionDraft, type TrainingSessionDraftState } from "../../domain";
 import {
   getActiveTrainingSession,
   getActiveTrainingSessionDraft,
+  readActiveTrainingSessionDraftStateProof,
+  readTrainingSessionEnvelopeProof,
+  readReviewQueueFinalizationProofs,
+  acceptSimulationFinalization,
+  isExactAcceptedFinalizationEnvelopeProof,
+  reconcileAcceptedSimulationFinalization,
   reconcileTrainingSessionDraftWrite,
   getReviewQueueItems,
   getTrainingAttempts,
@@ -100,6 +106,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
   const sessionIds = dependencies.sessionIds ?? (developmentAuditability ? developmentAuditSessionIdentity : trainingSessionIdentity);
   const draftLeaseByHandle = new WeakMap<object, ActiveProfileStorageLease>();
   const draftAttemptByReceipt = new WeakMap<object, CanonicalWriteAttempt<TrainingSessionDraft>>();
+  const finalizationAttemptByCommand = new WeakMap<object, CanonicalWriteAttempt<TrainingSessionDraftState>>();
   const retryCommandByHandle = new WeakMap<object, ExactMutationRetrySeed>();
   const projectRetryableFailure = (error: unknown): unknown => {
     if (!(error instanceof MutationCommitFailure) || error.retrySeed === undefined) return error;
@@ -153,6 +160,30 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
         const draft = await getActiveTrainingSessionDraft();
         return draft?.sessionId === sessionId ? draft : null;
       },
+      async getDraftStateProof() { return readActiveTrainingSessionDraftStateProof(); },
+      verifyAcceptedFinalizationProof(accepted, proof) { return isExactAcceptedFinalizationEnvelopeProof(accepted, proof); },
+      isDraftStorageLeaseCurrent(handle) {
+        const resolved = resolveDraftLease(handle);
+        return resolved.valid && isTrainingSessionDraftLeaseCurrent(resolved.lease);
+      },
+      async getSessionEnvelopeProof(sessionId) { return readTrainingSessionEnvelopeProof(sessionId); },
+      async getFinalizationReviews(refs) { return readReviewQueueFinalizationProofs(refs); },
+      async acceptFinalization(accepted, expected, handle, reviewRefs) {
+        const resolved = resolveDraftLease(handle);
+        if (!resolved.valid || !isTrainingSessionDraftLeaseCurrent(resolved.lease)) return "not_applied";
+        const result = await acceptSimulationFinalization(accepted, expected, resolved.lease, reviewRefs);
+        if (result.attempt) finalizationAttemptByCommand.set(accepted, result.attempt);
+        return result.kind === "verified" ? "verified" : result.kind === "unknown" ? "unknown" : result.kind === "conflict" ? "conflict" : "not_applied";
+      },
+      async reconcileAcceptedFinalization(accepted) {
+        const attempt = finalizationAttemptByCommand.get(accepted);
+        if (attempt) {
+          const result = await reconcileAcceptedSimulationFinalization(accepted, attempt);
+          if (result === "verified" || result === "not_applied") finalizationAttemptByCommand.delete(accepted);
+          return result;
+        }
+        return reconcileAcceptedSimulationFinalization(accepted);
+      },
       async getResult(sessionId) { return getTrainingSessionResult(sessionId); },
       captureDraftStorageLease: captureDraftLease,
       captureDraftWriteReceipt: captureDraftReceipt,
@@ -186,7 +217,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
           commandFingerprint: pending.commandIdentity.fingerprint, planFingerprint: pending.planFingerprint,
           ...(attempt ? { practiceOutcome: Object.freeze({ attempt: attempt.record, submittedResponse: attempt.record.response, reviewMutations: Object.freeze(reviews) }) } : {}),
           ...(pending.operation === "complete_training_session" && result ? { practiceCompletion: Object.freeze({ resultId: result.record.id }) } : {}),
-          ...(frozenDraft && result ? { simulationFinalization: Object.freeze({ frozenDraftRevision: frozenDraft.record.revision, resultId: result.record.id }) } : {}),
+          ...(frozenDraft && result ? { simulationFinalization: Object.freeze({ frozenDraftRevision: "responseDraft" in frozenDraft.record ? frozenDraft.record.responseDraft.revision : frozenDraft.record.revision, resultId: result.record.id }) } : {}),
         });
       },
       async reconcilePendingMutationWrite(proof) {
@@ -214,7 +245,11 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
       },
       async advance(session) { await commitTrainingSessionAdvance(session, wallClock.now()); },
       async completeWithResult(input) { await commitSessionCompletion(input.session, input.result, input.session.completedAt ?? wallClock.now()); },
-      async finalize(input) { return commitFinalization(input, wallClock); },
+      async finalize(input, accepted, handle) {
+        const resolved = resolveDraftLease(handle ?? null);
+        if (!resolved.valid || !isTrainingSessionDraftLeaseCurrent(resolved.lease)) throw new Error("The finalization profile lease is unavailable or stale.");
+        return commitFinalization(input, accepted, wallClock, resolved.lease);
+      },
       async abandon(session, preflight) {
         try { await commitSessionAbandonment(session, session.completedAt ?? wallClock.now(), preflight); }
         catch (error) { throw projectRetryableFailure(error); }
@@ -234,7 +269,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     wallClock,
     schedule: (callback) => setInterval(callback, 1_000),
     cancel: (handle) => clearInterval(handle),
-    finalize: async (_session, authorization) => lifecycle.finalizeSimulation(authorization),
+    finalize: async (_session, authorization, cause) => lifecycle.finalizeSimulation(authorization, cause),
     getActiveSession: getActiveTrainingSession,
     ...(developmentAuditability ? {
       advanceMonotonicClockBy(milliseconds: number) {
@@ -267,7 +302,8 @@ const developmentAuditSessionIdentity: TrainingSessionIdentityPort = Object.free
   },
 });
 
-async function commitFinalization(input: SimulationFinalization, wallClock: WallClock): Promise<boolean> {
+async function commitFinalization(input: SimulationFinalization, accepted: AcceptedSimulationFinalization | undefined, wallClock: WallClock, expectedLease: ActiveProfileStorageLease | null): Promise<boolean> {
+  if (!accepted) throw new Error("A simulation outcome cannot finalize without its durable acceptance record.");
   const existingById = new Map((await getReviewQueueItems()).value.map((review) => [review.id, review]));
   return commitTrainingSessionFinalization({
     session: input.session,
@@ -279,8 +315,9 @@ async function commitFinalization(input: SimulationFinalization, wallClock: Wall
     })),
     reviewBaseline: input.reviewBaseline,
     result: input.result,
-    cleanup: { kind: "training_session_draft", draft: input.frozenDraft, submittedOccurrenceIds: input.attempts.map((attempt) => attempt.occurrenceId) },
+    cleanup: { kind: "training_session_draft", draft: input.frozenDraft, acceptedFinalization: accepted, submittedOccurrenceIds: input.attempts.map((attempt) => attempt.occurrenceId) },
     createdAt: input.session.completedAt ?? wallClock.now(),
+    expectedLease,
   });
 }
 

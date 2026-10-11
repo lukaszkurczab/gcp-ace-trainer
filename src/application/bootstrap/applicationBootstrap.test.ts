@@ -18,7 +18,7 @@ import { writeCanonicalJson } from "../../storage/repositories/canonicalRecordCo
 import { captureLearningStateResetTargetPlan } from "../../storage/repositories/learningStateResetRepository";
 import { persistMutationJournal } from "../../storage/repositories/mutationJournalRepository";
 import { saveSettings } from "../../storage/repositories/settingsRepository";
-import { installMemoryStorage, attempt, review, session, timestamp } from "../../testing/journalTestSupport";
+import { acceptSimulationFinalizationForTest, installMemoryStorage, attempt, review, session, timestamp } from "../../testing/journalTestSupport";
 import { createContentIdentityUnavailableActiveRecord, saveUnavailableActiveRecord } from "../../storage/repositories/contentIdentityUnavailableRepository";
 import { CanonicalRepositoryBootstrapStep } from "../../storage/repositories/canonicalRepositories";
 import { initializeStorageMetadata } from "../../storage/repositories/storageMetadataRepository";
@@ -626,7 +626,7 @@ test("bootstrap recovers completion and finalization interrupted at active-point
       await assert.rejects(() => (async () => {
         testStorage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION });
         await commitTrainingSessionFinalization({ session: completed, attempts: [], reviewMutations: [], result,
-          cleanup: { kind: "training_session_draft", draft: cleanupDraft!, submittedOccurrenceIds: [] }, createdAt: completed.completedAt! });
+          cleanup: { kind: "training_session_draft", draft: cleanupDraft!, acceptedFinalization: await acceptSimulationFinalizationForTest(active, cleanupDraft!), submittedOccurrenceIds: [] }, createdAt: completed.completedAt! });
       })());
     }
     assert.equal(testStorage.getString(STORAGE_KEYS.ACTIVE_JOURNAL) !== undefined, true, `${workflow}: terminal clear failure retains the journal`);

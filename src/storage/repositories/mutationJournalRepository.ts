@@ -1,4 +1,4 @@
-import type { ForegroundTimerState, GoalRecord, LearningPlan, ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
+import type { AcceptedSimulationFinalization, ForegroundTimerState, GoalRecord, LearningPlan, ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionDraftState, TrainingSessionResult } from "../../domain";
 import { acceptedTargetFromGoal, getTrackRegistration, getTrainingSessionFinalizationCleanupKind, initialForegroundTimerForSession, isArtifactSha256, isLearningPlanV1ForTrack, isRegisteredTrackId, normalizeLearningPlan } from "../../domain";
 import { isGoalRecordShapeForTrack, normalizeGoalRecord } from "../../domain/goals/goalContracts";
 import { resolvedContentRefKey, resolvedContentRefsEqual } from "../../domain/learning/resolvedContentRef";
@@ -8,7 +8,7 @@ import { STORAGE_KEYS } from "../keys";
 import { canonicalPhysicalWriteRelation, captureCanonicalPhysicalWrite, isCanonicalWriteAttemptCurrent, readCanonicalEnvelope, readCanonicalJson, reconcileCanonicalWriteAttempt, removeCanonicalValue, writeCanonicalJson, writeCanonicalJsonWithOutcome, type CanonicalPhysicalAfter, type CanonicalPhysicalState, type CanonicalPhysicalWrite, type CanonicalRecordEnvelope, type CanonicalWriteAttempt } from "./canonicalRecordCodec";
 import { CanonicalWriteOutcomeError, JournalWriteError } from "../errors";
 import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
-import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionDraft, isTrainingSessionResult } from "./trainingModelGuards";
+import { isAcceptedSimulationFinalization, isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionDraft, isTrainingSessionDraftState, isTrainingSessionResult } from "./trainingModelGuards";
 import { isForegroundTimerState } from "./trainingModelGuards";
 import { getReviewQueueItems } from "./reviewQueueRepository";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
@@ -34,7 +34,7 @@ export type JournalWrite =
   | { kind: "clear_active_session"; sessionId: string }
   | { kind: "clear_active_session_draft"; sessionId: string }
   | { kind: "put_active_session_draft"; record: TrainingSessionDraft }
-  | { kind: "delete_active_session_draft"; record: TrainingSessionDraft; submittedOccurrenceIds: readonly string[] }
+  | { kind: "delete_active_session_draft"; record: TrainingSessionDraftState; submittedOccurrenceIds: readonly string[] }
   | { kind: "clear_learning_state"; targetPlan: LearningStateResetTargetPlan };
 
 export type TrainingMutationOperation = "start_training_session" | "advance_training_session" | "submit_training_outcome" | "complete_training_session" | "abandon_training_session" | "finalize_training_session" | "set_review_entry" | "remove_review_entry" | "reset_learning_state";
@@ -122,7 +122,7 @@ function isJournalWrite(value: unknown): value is JournalWrite {
     case "clear_active_session_draft": return hasExactKeys(value, ["kind", "sessionId"]) && isNonEmptyString(value.sessionId);
     case "clear_learning_state": return hasExactKeys(value, ["kind", "targetPlan"]) && isLearningStateResetTargetPlan(value.targetPlan);
     case "put_active_session_draft": return hasExactKeys(value, ["kind", "record"]) && isTrainingSessionDraft(value.record);
-    case "delete_active_session_draft": return hasExactKeys(value, ["kind", "record", "submittedOccurrenceIds"]) && isTrainingSessionDraft(value.record) && Array.isArray(value.submittedOccurrenceIds) && value.submittedOccurrenceIds.every(isNonEmptyString) && new Set(value.submittedOccurrenceIds).size === value.submittedOccurrenceIds.length;
+    case "delete_active_session_draft": return hasExactKeys(value, ["kind", "record", "submittedOccurrenceIds"]) && isTrainingSessionDraftState(value.record) && Array.isArray(value.submittedOccurrenceIds) && value.submittedOccurrenceIds.every(isNonEmptyString) && new Set(value.submittedOccurrenceIds).size === value.submittedOccurrenceIds.length;
     default: return false;
   }
 }
@@ -345,7 +345,17 @@ function physicalWriteSpecs(writes: readonly JournalWrite[]): readonly PhysicalS
         specs.push({ target: "active_session_draft", retainBeforeEnvelope: true, desired: (before) => readPriorScopedSessionId(before, "active_session_draft") === write.sessionId ? { kind: "remove" } : preservePriorValue(before) });
         break;
       case "delete_active_session_draft":
-        specs.push({ target: "active_session_draft", retainBeforeEnvelope: true, desired: (before) => readPriorScopedSessionId(before, "active_session_draft") === write.record.sessionId ? { kind: "remove" } : preservePriorValue(before) });
+        specs.push({ target: "active_session_draft", retainBeforeEnvelope: true, desired: (before) => {
+          const record = write.record;
+          if (isAcceptedSimulationFinalization(record)) {
+            if (before.kind !== "present" || !before.envelope || before.envelope.revision !== before.revision ||
+              canonicalSerialize(before.envelope.payload) !== canonicalSerialize(record)) {
+              throw new Error("Accepted finalization cleanup must carry the entire exact durable D state.");
+            }
+            return { kind: "remove" };
+          }
+          return readPriorScopedSessionId(before, "active_session_draft") === record.sessionId ? { kind: "remove" } : preservePriorValue(before);
+        } });
         break;
       default: break;
     }
@@ -545,13 +555,15 @@ function hasValidOperationPlan(record: MutationJournalPlan): boolean {
   const immediateAttemptMatchesCurrentOccurrence = attemptWrites.length === 1 &&
     sessionWrite?.record.itemOrder[sessionWrite.record.currentItemIndex]?.occurrenceId === attemptWrites[0]?.record.occurrenceId;
   const draftDelete = record.writes.find((write): write is Extract<JournalWrite, { kind: "delete_active_session_draft" }> => write.kind === "delete_active_session_draft");
+  const deletedDraft = draftDelete ? draftPayload(draftDelete.record) : undefined;
   const draftResponsesMatchAttempts = !draftDelete || (
-    draftDelete.record.sessionId === sessionWrite?.record.id &&
-    draftDelete.record.trackId === sessionWrite.record.trackId &&
+    deletedDraft?.sessionId === sessionWrite?.record.id &&
+    deletedDraft?.trackId === sessionWrite?.record.trackId &&
     draftDelete.submittedOccurrenceIds.length === attemptWrites.length &&
-    draftDelete.submittedOccurrenceIds.every((occurrenceId) => Object.prototype.hasOwnProperty.call(draftDelete.record.responsesByOccurrenceId, occurrenceId)) &&
+    draftDelete.submittedOccurrenceIds.every((occurrenceId) => Object.prototype.hasOwnProperty.call(deletedDraft!.responsesByOccurrenceId, occurrenceId)) &&
     attemptWrites.every((write) => draftDelete.submittedOccurrenceIds.includes(write.record.occurrenceId) &&
-      canonicalSerialize(draftDelete.record.responsesByOccurrenceId[write.record.occurrenceId]) === canonicalSerialize(write.record.response))
+      canonicalSerialize(deletedDraft!.responsesByOccurrenceId[write.record.occurrenceId]) === canonicalSerialize(write.record.response)) &&
+    (!isAcceptedSimulationFinalization(draftDelete.record) || draftDelete.record.acceptance.commandId.length === 64)
   );
   const draftPut = record.writes.find((write): write is Extract<JournalWrite, { kind: "put_active_session_draft" }> => write.kind === "put_active_session_draft");
 
@@ -617,6 +629,17 @@ function hasConsistentScope(record: MutationJournalPlan): boolean {
   if (record.operation === "reset_learning_state") return record.artifactSha256 === null && record.writes.length === 1
     && record.writes[0]?.kind === "clear_learning_state" && isLearningStateResetTargetPlan(record.writes[0].targetPlan);
   if (!isArtifactSha256(record.artifactSha256)) return false;
+  if (record.operation === "finalize_training_session") {
+    const cleanup = record.writes.find((write): write is Extract<JournalWrite, { kind: "delete_active_session_draft" }> => write.kind === "delete_active_session_draft");
+    // Existing pending finalization journals remain replayable. New accepted
+    // finalizations bind the journal's stable command identity to the exact
+    // acceptance preimage, while the plan fingerprint continues to bind the
+    // full physical plan.
+    if (cleanup && isAcceptedSimulationFinalization(cleanup.record)) {
+      const { commandId, ...identity } = cleanup.record.acceptance;
+      if (commandId !== sha256Utf8(canonicalSerialize(identity)) || record.commandIdentity.fingerprint !== commandId) return false;
+    }
+  }
   const artifactSha256 = record.artifactSha256;
   return record.writes.every((write) => {
     if (write.kind === "put_session") return write.record.id === record.sessionId && write.record.trackId === record.trackId && write.record.artifactSha256 === artifactSha256;
@@ -626,10 +649,19 @@ function hasConsistentScope(record: MutationJournalPlan): boolean {
     if (write.kind === "put_review_entry" || write.kind === "put_review_entry_for_attempt") return write.record.sourceSessionId === record.sessionId && write.record.trackId === record.trackId && write.record.sourceItem.artifactSha256 === artifactSha256;
     if (write.kind === "update_review_entry" || write.kind === "delete_review_entry" || write.kind === "delete_review_entry_for_attempt") return write.record.trackId === record.trackId && write.record.sourceItem.artifactSha256 === artifactSha256;
     if (write.kind === "clear_active_session" || write.kind === "clear_active_session_draft") return write.sessionId === record.sessionId;
-    if (write.kind === "put_active_session_draft" || write.kind === "delete_active_session_draft") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId;
+    if (write.kind === "put_active_session_draft") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId;
+    if (write.kind === "delete_active_session_draft") {
+      const draft = draftPayload(write.record);
+      return draft.sessionId === record.sessionId && draft.trackId === record.trackId &&
+        (!isAcceptedSimulationFinalization(write.record) || write.record.acceptance.commandId.length === 64);
+    }
     if (write.kind === "clear_learning_state") return record.sessionId === "learning-state-reset";
     return true;
   });
+}
+
+function draftPayload(record: TrainingSessionDraftState): TrainingSessionDraft {
+  return isAcceptedSimulationFinalization(record) ? record.responseDraft : record;
 }
 
 export function createMutationPlanFingerprint(plan: MutationJournalPlan): string {
@@ -728,6 +760,17 @@ export async function persistMutationJournal(record: MutationJournalRecord, expe
       return current;
     }
     if (!current) {
+      const draftEnvelope = readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, isTrainingSessionDraftState);
+      const acceptedDraft = draftEnvelope && isAcceptedSimulationFinalization(draftEnvelope.payload) ? draftEnvelope.payload : null;
+      if (record.operation === "finalize_training_session") {
+        const cleanup = record.writes.find((write): write is Extract<JournalWrite, { kind: "delete_active_session_draft" }> => write.kind === "delete_active_session_draft");
+        if (!acceptedDraft || !cleanup || !isAcceptedSimulationFinalization(cleanup.record) ||
+          canonicalSerialize(cleanup.record) !== canonicalSerialize(acceptedDraft)) {
+          throw new Error("A new finalization journal requires the exact accepted D state and cannot finalize a legacy draft implicitly.");
+        }
+      } else if (acceptedDraft && record.operation !== "reset_learning_state") {
+        throw new Error("An accepted simulation finalization blocks other session mutations until its exact journal is materialized.");
+      }
       // A new journal cannot legitimize pre-existing orphan evidence. Existing
       // durable journals instead use the narrower journal-aware replay gate.
       if (record.operation === "reset_learning_state") {

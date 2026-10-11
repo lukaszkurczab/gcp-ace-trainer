@@ -39,7 +39,7 @@ export type ForegroundSessionTimerDependencies = Readonly<{
   wallClock: WallClock;
   schedule(callback: () => void): ReturnType<typeof setInterval>;
   cancel(handle: ReturnType<typeof setInterval>): void;
-  finalize(session: TrainingSession, authorization?: SimulationCommandAuthorization): Promise<void>;
+  finalize(session: TrainingSession, authorization?: SimulationCommandAuthorization, cause?: "manual" | "expiry"): Promise<void>;
   getActiveSession?(): Promise<TrainingSession | null>;
   advanceMonotonicClockBy?(milliseconds: number): void;
 }>;
@@ -389,7 +389,7 @@ export class ForegroundSessionTimerFacade {
   private async finalizeOnce(session: TrainingSession, cause: "manual" | "expiry", authorization: SimulationCommandAuthorization): Promise<void> {
     const existing = this.finalizations.get(session.id);
     if (existing) return existing;
-    const operation = this.dependencies.finalize(session, authorization).then(() => {
+    const operation = this.dependencies.finalize(session, authorization, cause).then(() => {
       if (cause === "expiry") this.notify({ kind: "expired", sessionId: session.id });
     }).finally(() => this.stopPeriodicCheckpoint(session.id));
     this.finalizations.set(session.id, operation);

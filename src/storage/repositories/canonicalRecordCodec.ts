@@ -96,6 +96,16 @@ export function readCanonicalEnvelope<T>(key: string, guard: StorageValueGuard<T
   return value as CanonicalRecordEnvelope<T>;
 }
 
+/** Reads one typed envelope together with the digest of the exact stored bytes. */
+export function readCanonicalEnvelopeProof<T>(key: string, guard: StorageValueGuard<T>): Readonly<{ envelope: CanonicalRecordEnvelope<T>; digest: string }> | null {
+  let raw: string | undefined;
+  try { raw = getKeyValueStorage().getString(key); } catch (error) { throw new StorageReadError(key, error); }
+  if (raw === undefined) return null;
+  const envelope = parseEnvelope(raw, key);
+  if (!envelope || !guard(envelope.payload)) throw new UnsupportedStoredRecordError(key);
+  return Object.freeze({ envelope: envelope as CanonicalRecordEnvelope<T>, digest: sha256Utf8(raw) });
+}
+
 /** Capture an immutable physical write description at command preflight. */
 export function captureCanonicalPhysicalWrite(
   target: string,
@@ -303,6 +313,15 @@ export function writeCanonicalJsonWithOutcome<T>(key: string, value: T, expected
 
 /** Read-only reconciliation of one exact prior attempt; it never reconstructs or rewrites the target. */
 export function reconcileCanonicalWriteAttempt<T>(attempt: CanonicalWriteAttempt<T>): CanonicalWriteOutcome<T> {
+  return reconcileWriteAttempt(attempt, false);
+}
+
+/** Reconciles a D acceptance attempt while preserving exact prior-vs-conflict knowledge. */
+export function reconcileCanonicalWriteAttemptWithPrior<T>(attempt: CanonicalWriteAttempt<T>): CanonicalWriteOutcome<T> {
+  return reconcileWriteAttempt(attempt, true);
+}
+
+function reconcileWriteAttempt<T>(attempt: CanonicalWriteAttempt<T>, provePrior: boolean): CanonicalWriteOutcome<T> {
   try {
     return withCanonicalWriteLocks([attempt.key], () => {
       if (!isWriteContextCurrent(attempt.storage, attempt.lease)) return { kind: "unknown", cause: new Error("Canonical write owner or lease changed before reconciliation."), attempt } as const;
@@ -311,6 +330,7 @@ export function reconcileCanonicalWriteAttempt<T>(attempt: CanonicalWriteAttempt
       catch (cause) { return { kind: "unknown", cause, attempt } as const; }
       if (!isWriteContextCurrent(attempt.storage, attempt.lease)) return { kind: "unknown", cause: new Error("Canonical write owner or lease changed during reconciliation."), attempt } as const;
       if (observedRaw === attempt.afterRaw) return { kind: "verified", envelope: attempt.envelope, attempt } as const;
+      if (provePrior && observedRaw === attempt.priorRaw) return { kind: "provenNotApplied", cause: new Error("Canonical storage still contains the exact prior bytes."), attempt } as const;
       return { kind: "conflict", cause: new Error("Canonical storage no longer contains the exact attempted envelope."), attempt } as const;
     });
   } catch (cause) { return { kind: "unknown", cause, attempt }; }

@@ -1,7 +1,7 @@
-import type { ReviewQueueEntry, TrackId } from "../../domain";
-import { resolvedContentRefKey } from "../../domain/learning/resolvedContentRef";
+import type { ResolvedContentRef, ReviewQueueEntry, TrackId } from "../../domain";
+import { resolvedContentRefKey, resolvedContentRefsEqual } from "../../domain/learning/resolvedContentRef";
 import { STORAGE_KEYS } from "../keys";
-import { applyCanonicalPhysicalWrite, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
+import { applyCanonicalPhysicalWrite, readCanonicalEnvelopeProof, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
 import { isReviewQueueEntry } from "./trainingModelGuards";
 import type { StorageRepositoryResult } from "./result";
 import { isActiveReviewQueueEntry } from "../../domain/learning/reviewQueueEntry";
@@ -15,6 +15,18 @@ export function readReviewQueueSnapshot(): StorageRepositoryResult<ReviewQueueSn
   const entries = result.value;
   validateActiveReviewIdentity(entries);
   return { ok: true, value: Object.freeze({ entries: Object.freeze(entries), revisions, indexRevision }) };
+}
+
+export function readReviewQueueFinalizationProofs(refs: readonly ResolvedContentRef[]): Readonly<{ entries: readonly ReviewQueueEntry[]; proofs: readonly Readonly<{ id: string; revision: number; digest: string }>[] }> {
+  const snapshot = readReviewQueueSnapshot().value;
+  const selected = snapshot.entries.filter((entry) => refs.some((ref) => resolvedContentRefsEqual(ref, entry.sourceItem)));
+  const proofs = selected.map((entry) => {
+    const proof = readCanonicalEnvelopeProof(STORAGE_KEYS.reviewEntry(entry.id), isReviewQueueEntry);
+    if (!proof || proof.envelope.revision !== snapshot.revisions[entry.id] || resolvedContentRefsEqual(proof.envelope.payload.sourceItem, entry.sourceItem) === false ||
+      JSON.stringify(proof.envelope.payload) !== JSON.stringify(entry)) throw new Error("The exact review evidence changed while its finalization baseline was captured.");
+    return Object.freeze({ id: entry.id, revision: proof.envelope.revision, digest: proof.digest });
+  }).sort((left, right) => left.id.localeCompare(right.id));
+  return Object.freeze({ entries: Object.freeze(selected), proofs: Object.freeze(proofs) });
 }
 export function readReviewQueueItems(): StorageRepositoryResult<ReviewQueueEntry[]> { return { ok: true, value: [...readReviewQueueSnapshot().value.entries] }; }
 export async function getReviewQueueItems(): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { return readReviewQueueItems(); }

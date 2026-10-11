@@ -9,6 +9,8 @@ import {
   assertTrainingSessionJournalWrite,
   assertTrainingSessionResultJournalWrite,
 } from "../../storage/repositories";
+import { readActiveTrainingSessionDraftStateProof } from "../../storage/repositories/trainingSessionDraftRepository";
+import { isAcceptedSimulationFinalization } from "../../storage/repositories/trainingModelGuards";
 import { assertValidMutationJournal, readActiveMutationJournal, type MutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
 import { assertTrainingEvidenceJournalPreflight } from "../../storage/repositories/trainingEvidenceIntegrityRepository";
 import { assertLearningStateResetReplayState, materializeLearningStateReset } from "../../storage/repositories/learningStateResetRepository";
@@ -97,14 +99,15 @@ async function assertReviewDeletePreflight(record: MutationJournalRecord): Promi
 async function assertDraftDeletePreflight(record: MutationJournalRecord): Promise<void> {
   const draftDelete = record.writes.find((write) => write.kind === "delete_active_session_draft");
   if (!draftDelete) return;
-  const activeDraft = await getActiveTrainingSessionDraft();
-  if (activeDraft) {
-    if (canonicalSerialize(activeDraft) !== canonicalSerialize(draftDelete.record)) throw new Error(`Active draft for ${draftDelete.record.sessionId} does not match the journaled finalization draft.`);
+  const state = readActiveTrainingSessionDraftStateProof();
+  if (state) {
+    if (canonicalSerialize(state.state) !== canonicalSerialize(draftDelete.record)) throw new Error("Active D state does not match the exact journaled finalization cleanup.");
     return;
   }
   const completedWrite = record.writes.find((write) => write.kind === "put_session");
   const durableSession = completedWrite ? readTrainingSessionForJournal(completedWrite.record) ?? undefined : undefined;
   if (!completedWrite || !durableSession || canonicalSerialize(durableSession) !== canonicalSerialize(completedWrite.record)) {
-    throw new Error(`Journaled draft deletion for ${draftDelete.record.sessionId} cannot replay before its completed session is durable.`);
+    const draft = isAcceptedSimulationFinalization(draftDelete.record) ? draftDelete.record.responseDraft : draftDelete.record;
+    throw new Error(`Journaled draft deletion for ${draft.sessionId} cannot replay before its completed session is durable.`);
   }
 }

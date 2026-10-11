@@ -17,6 +17,7 @@ import {
   type TrainingAttempt,
   type TrainingSession,
   type TrainingSessionDraft,
+  type AcceptedSimulationFinalization,
   type TrainingSessionDraftResponse,
   type TrainingSessionResult,
   type ForegroundTimerState,
@@ -60,6 +61,33 @@ export function isTrainingSessionDraft(value: unknown): value is TrainingSession
     return false;
   }
 }
+
+export function isAcceptedSimulationFinalization(value: unknown): value is AcceptedSimulationFinalization {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["kind", "version", "responseDraft", "acceptance"]) ||
+    value.kind !== "accepted_simulation_finalization" || value.version !== 1 || !isTrainingSessionDraft(value.responseDraft) || !isRecord(value.acceptance) ||
+    !hasOnlyKeys(value.acceptance, ["commandId", "sessionId", "trackId", "familyId", "trigger", "capturedAt", "semanticsVersion", "sessionRevision", "sessionDigest", "priorDraftEnvelopeRevision", "priorDraftEnvelopeDigest", "reviewProofs"])) return false;
+  const acceptance = value.acceptance;
+  if (!isSha256(acceptance.commandId) || !isNonEmptyString(acceptance.sessionId) || typeof acceptance.trackId !== "string" || !isRegisteredTrackId(acceptance.trackId) ||
+    !isNonEmptyString(acceptance.familyId) || !["manual", "countdown-expiry", "absolute-deadline"].includes(String(acceptance.trigger)) ||
+    !isTimestamp(acceptance.capturedAt) || acceptance.semanticsVersion !== "simulation-finalization-v1" ||
+    !isPositiveSafeInteger(acceptance.sessionRevision) || !isSha256(acceptance.sessionDigest) ||
+    !isPositiveSafeInteger(acceptance.priorDraftEnvelopeRevision) || !isSha256(acceptance.priorDraftEnvelopeDigest) ||
+    !Array.isArray(acceptance.reviewProofs) || !acceptance.reviewProofs.every(isAcceptedSimulationReviewProof) ||
+    new Set(acceptance.reviewProofs.map((proof) => proof.id)).size !== acceptance.reviewProofs.length ||
+    acceptance.sessionId !== value.responseDraft.sessionId || acceptance.trackId !== value.responseDraft.trackId) return false;
+  return true;
+}
+
+export function isTrainingSessionDraftState(value: unknown): value is TrainingSessionDraft | AcceptedSimulationFinalization {
+  return isTrainingSessionDraft(value) || isAcceptedSimulationFinalization(value);
+}
+
+function isAcceptedSimulationReviewProof(value: unknown): value is AcceptedSimulationFinalization["acceptance"]["reviewProofs"][number] {
+  return isRecord(value) && hasOnlyKeys(value, ["id", "revision", "digest"]) && isNonEmptyString(value.id) && isPositiveSafeInteger(value.revision) && isSha256(value.digest);
+}
+
+function isPositiveSafeInteger(value: unknown): value is number { return Number.isSafeInteger(value) && Number(value) > 0; }
+function isSha256(value: unknown): value is string { return typeof value === "string" && /^[a-f0-9]{64}$/u.test(value); }
 
 export function isForegroundTimerState(value: unknown): value is ForegroundTimerState {
   if (!isRecord(value) || !hasOnlyKeys(value, ["schemaVersion", "timerVersion", "familyId", "sessionId", "trackId", "accumulatedForegroundMs", "checkpointRevision", "lastCheckpointAt", "running"])) return false;

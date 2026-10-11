@@ -1,16 +1,22 @@
 import type { TrainingSession } from "../../domain";
 import { STORAGE_KEYS } from "../keys";
-import { applyCanonicalPhysicalWrite, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
+import { applyCanonicalPhysicalWrite, readCanonicalEnvelopeProof, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalPhysicalWrite } from "./canonicalRecordCodec";
 import { isTrainingSession } from "./trainingModelGuards";
 import { clearTrainingSessionResults } from "./trainingSessionResultRepository";
 import { clearContentIdentityUnavailableRecords } from "./contentIdentityUnavailableRepository";
 import type { StorageRepositoryResult } from "./result";
 import { readTrainingSessionsStrict } from "./trainingEvidenceIntegrityRepository";
+import { isAcceptedSimulationFinalization, isTrainingSessionDraftState } from "./trainingModelGuards";
 
 const isIds = (value: unknown): value is string[] => Array.isArray(value) && value.every((id) => typeof id === "string" && id.trim().length > 0);
 export function readTrainingSessions(): StorageRepositoryResult<TrainingSession[]> { return readTrainingSessionsStrict(); }
 export function readActiveTrainingSession(): TrainingSession | null { const id = readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, (value): value is string => typeof value === "string"); if (!id) return null; const session = readCanonicalJson(STORAGE_KEYS.trainingSession(id), isTrainingSession); if (!session) throw new Error(`Active session pointer references missing session ${id}.`); if (session.status !== "active") throw new Error(`Active session pointer references terminal session ${id}.`); return session; }
 export async function getTrainingSessions(): Promise<StorageRepositoryResult<TrainingSession[]>> { return readTrainingSessions(); }
+export function readTrainingSessionEnvelopeProof(sessionId: string): Readonly<{ session: TrainingSession; revision: number; digest: string }> | null {
+  const proof = readCanonicalEnvelopeProof(STORAGE_KEYS.trainingSession(sessionId), isTrainingSession);
+  if (!proof || proof.envelope.payload.id !== sessionId) return null;
+  return Object.freeze({ session: proof.envelope.payload, revision: proof.envelope.revision, digest: proof.digest });
+}
 export async function getActiveTrainingSession(): Promise<TrainingSession | null> { return readActiveTrainingSession(); }
 export async function getActiveTrainingSessionId(): Promise<string | null> { return readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, (value): value is string => typeof value === "string"); }
 export async function clearActiveTrainingSession(sessionId: string): Promise<void> { const activeSessionId = await getActiveTrainingSessionId(); if (activeSessionId === sessionId) removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION); }
@@ -32,12 +38,21 @@ export function materializeTrainingSessionJournalSteps(sessionIds: readonly stri
 }
 
 async function writeTrainingSession(session: TrainingSession): Promise<void> {
+  assertNoAcceptedSimulationFinalization();
   const { active, existing } = await validateTrainingSessionWrite(session, true);
+  // Validation awaits the active-session owner; acceptance may have won while
+  // that check was pending, so fence again in the same synchronous write lane.
+  assertNoAcceptedSimulationFinalization();
   if (!existing || JSON.stringify(existing) !== JSON.stringify(session)) writeCanonicalJson(STORAGE_KEYS.trainingSession(session.id), session);
   const ids = readCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, isIds) ?? [];
   if (!ids.includes(session.id)) writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [session.id, ...ids]);
   if (session.status === "active") writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, session.id);
   else if (active?.id === session.id) removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION);
+}
+
+function assertNoAcceptedSimulationFinalization(): void {
+  const state = readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, isTrainingSessionDraftState);
+  if (state && isAcceptedSimulationFinalization(state)) throw new Error("An accepted simulation finalization owns the active session until its exact journal is applied.");
 }
 
 async function validateTrainingSessionWrite(session: TrainingSession, requireStrictRead: boolean): Promise<{ active: TrainingSession | null; existing: TrainingSession | null }> {

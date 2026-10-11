@@ -21,6 +21,35 @@ export type TrainingSessionDraft = Readonly<{
   updatedAt: string;
 }>;
 
+export type AcceptedSimulationReviewProof = Readonly<{
+  id: string;
+  revision: number;
+  digest: string;
+}>;
+
+/** The existing D record's explicit, durable finalization-acceptance state. */
+export type AcceptedSimulationFinalization = Readonly<{
+  kind: "accepted_simulation_finalization";
+  version: 1;
+  responseDraft: TrainingSessionDraft;
+  acceptance: Readonly<{
+    commandId: string;
+    sessionId: string;
+    trackId: TrackId;
+    familyId: string;
+    trigger: "manual" | "countdown-expiry" | "absolute-deadline";
+    capturedAt: string;
+    semanticsVersion: "simulation-finalization-v1";
+    sessionRevision: number;
+    sessionDigest: string;
+    priorDraftEnvelopeRevision: number;
+    priorDraftEnvelopeDigest: string;
+    reviewProofs: readonly AcceptedSimulationReviewProof[];
+  }>;
+}>;
+
+export type TrainingSessionDraftState = TrainingSessionDraft | AcceptedSimulationFinalization;
+
 export function createTrainingSessionDraft(
   draft: Omit<TrainingSessionDraft, "schemaVersion" | "familyId" | "draftVersion" | "revision" | "flaggedOccurrenceIds"> &
     Partial<Pick<TrainingSessionDraft, "schemaVersion" | "familyId" | "draftVersion" | "revision" | "flaggedOccurrenceIds">>,
