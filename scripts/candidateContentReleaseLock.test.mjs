@@ -5,11 +5,18 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { execFileSync } from "node:child_process";
-import { createCandidateContentReleaseLock, readCandidateContentProducerPin, readHistoricalContentProducerPin } from "./candidateContentReleaseLock.mjs";
+import { createCandidateContentReleaseLock, parseCandidateContentReleaseLockArgs, readCandidateContentProducerPin, readHistoricalContentProducerPin } from "./candidateContentReleaseLock.mjs";
 import { historicalTrainingProjection } from "./syncBundledContentRelease.mjs";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
 const contentRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(appRoot, "../patternly-content"));
+
+test("candidate lock CLI accepts one explicit producer root and rejects duplicates", () => {
+  assert.deepEqual(parseCandidateContentReleaseLockArgs(["write", "--content-root", "/tmp/patternly-content"]), {
+    mode: "write", contentRoot: path.resolve("/tmp/patternly-content"),
+  });
+  assert.throws(() => parseCandidateContentReleaseLockArgs(["--content-root", "/tmp/one", "--content-root", "/tmp/two"]), /Usage:/u);
+});
 
 test("candidate lock binds the exact nine current v2 artifacts and raw bundled lock", async () => {
   const lock = await createCandidateContentReleaseLock({ appRoot, contentRoot });

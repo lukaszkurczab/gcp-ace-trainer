@@ -29,8 +29,8 @@ import {
 import { canonicalHash, validateRuntimeReceipt } from "./releaseEvidence.mjs";
 
 const root = process.cwd();
-const contentRoot = resolve(root, "../patternly-content");
-const backendRoot = resolve(root, "../patternly-backend");
+const contentRoot = resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? resolve(root, "../patternly-content"));
+const backendRoot = resolve(process.env.PATTERNLY_BACKEND_ROOT ?? resolve(root, "../patternly-backend"));
 const HISTORICAL_APPLICATION_COMMIT = "e889b05d033d4cc4b7676d0ca3f224efc3fac115";
 const HISTORICAL_CONTENT_COMMIT = "8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03";
 const HISTORICAL_CANDIDATE_ID = "946d3589abf9bfb205b382e7ebb9205786c3e42e18fe733c3607ad836a6a80a4";

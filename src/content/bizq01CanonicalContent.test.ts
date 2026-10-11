@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 import { loadCanonicalRuntimeCatalog, scoreCanonicalQuestion, type Question } from "./canonical";
 import { toCanonicalQuestionViewModel } from "../features/practice/canonicalQuestionViewModel";
@@ -11,7 +12,7 @@ import { composeCanonicalFeedback, projectCanonicalChoiceFeedbackControls, proje
 import type { ReviewQueueEntry } from "../domain";
 
 const trackId = "backend-system-design-interview";
-const appRoot = path.resolve(import.meta.dirname, "../..");
+const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const contentRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(appRoot, "../patternly-content"));
 const BESD_COHORT_PROOF_PATH = path.join(contentRoot, "evidence/business-quality/bizq-01-besd-cohort-15.json");
 const BESD_COHORT_PROOF_SHA256 = "548e65b0ec000419d719f7ba5da3ae7c3e1225fe5bb09917a11edef803af4cb3";
@@ -22,7 +23,7 @@ const changed = [
 
 test("BIZQ-01 bundled loader and pre-submit projection preserve the corrected source contract", async () => {
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(trackId);
-  assert.notEqual(track.trainingIdentity?.contentVersion, track.contentVersion);
+  assert.notDeepEqual(track.trainingIdentity, { contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 });
   assert.equal(track.planningPolicyIdentity?.contentVersion, track.contentVersion);
   for (const expected of changed) {
     assert.equal(track.getQuestion(expected.replacedId), undefined, "replaced IDs must not resolve to new meanings");
@@ -145,7 +146,7 @@ test("BESD B02-B09 cohort of 134 questions scores and presents feedback by stabl
 
 test("BIZQ-01 replaced identities from an old package do not enter current due retrieval", async () => {
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(trackId);
-  assert.notEqual(track.trainingIdentity?.contentVersion, track.contentVersion);
+  assert.notDeepEqual(track.trainingIdentity, { contentVersion: track.contentVersion, artifactSha256: track.artifactSha256 });
   const now = "2026-10-02T12:00:00.000Z";
   const reviews: ReviewQueueEntry[] = changed.map((item, index) => ({
     id: `bizq-old-review-${index}`, trackId, sourceAttemptId: `old-attempt-${index}`, sourceSessionId: "old-session",

@@ -10,6 +10,11 @@ const BESD_TRAINING_PREDECESSOR = Object.freeze({
   contentVersion: "backend-system-design-interview-authoring-v2026.10.03-bizq01-14-bizq02-v2",
   artifactSha256: "d7f2762e8cc71e41addb775a5221cf1b79cd5ef2e885a7cef8fce914069d1481",
 });
+const CLAUDE_TRAINING_PREDECESSOR = Object.freeze({
+  trackId: "claude-certified-architect-professional-certification",
+  contentVersion: "ccarp-2026.10.07-bizq02-v2",
+  artifactSha256: "b71ec4df1c1aeade75e29981defd731b4bdd9032fec48721723710284d787c5f",
+});
 
 before(async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
@@ -85,6 +90,28 @@ test("an existing BESD session keeps its exact predecessor pin and reports it un
     artifactSha256: current.trainingIdentity!.artifactSha256,
   });
   assert.equal(resolved.track.trackId, BESD_TRAINING_PREDECESSOR.trackId);
+  assert.deepEqual(resolved.track.trainingIdentity, current.trainingIdentity);
+});
+
+test("a Claude session from before the published targeted repair keeps its exact predecessor pin", async () => {
+  const current = contentPackageRuntimeOwner.getPreparedDiscovery(CLAUDE_TRAINING_PREDECESSOR.trackId).track;
+  assert.notDeepEqual(current.trainingIdentity, {
+    contentVersion: CLAUDE_TRAINING_PREDECESSOR.contentVersion,
+    artifactSha256: CLAUDE_TRAINING_PREDECESSOR.artifactSha256,
+  }, "the published Claude repair must not impersonate its previous training identity");
+  await assert.rejects(
+    contentPackageRuntimeOwner.resolveExactArtifact(CLAUDE_TRAINING_PREDECESSOR),
+    (error: unknown) => error instanceof ExactContentArtifactUnavailableError
+      && error.identity.trackId === CLAUDE_TRAINING_PREDECESSOR.trackId
+      && error.identity.contentVersion === CLAUDE_TRAINING_PREDECESSOR.contentVersion
+      && error.identity.artifactSha256 === CLAUDE_TRAINING_PREDECESSOR.artifactSha256,
+  );
+  const resolved = await contentPackageRuntimeOwner.resolveExactArtifact({
+    trackId: current.trackId,
+    contentVersion: current.trainingIdentity!.contentVersion,
+    artifactSha256: current.trainingIdentity!.artifactSha256,
+  });
+  assert.equal(resolved.track.trackId, CLAUDE_TRAINING_PREDECESSOR.trackId);
   assert.deepEqual(resolved.track.trainingIdentity, current.trainingIdentity);
 });
 
