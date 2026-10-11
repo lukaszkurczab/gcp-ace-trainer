@@ -135,12 +135,11 @@ test("explicit local admitted-source projection preserves the admitted questions
   ]);
 });
 
-test("local admitted-source parity requires the same exact sample and current Free pool, not a matching whole-track version", async () => {
+test("local admitted-source parity requires the same exact sample and current Free pool", async () => {
   const selection = contentSelections[0];
   const base = await historicalFixture(selection);
   const { track: currentTrack, runtime } = await contentPackageRuntimeOwner.resolveForDiscovery(selection.trackId, selection.familyId);
   const valid = { selection, historicalQuestion: base.question, currentTrack, currentFamilyId: runtime.familyId };
-  assert.notEqual(base.track.artifactSha256, currentTrack.trainingIdentity.artifactSha256, "the historical admission owns the sample while the current track has a separate training identity");
   assert.equal(assertHistoricalDemoMatchesCurrentRuntime(valid), undefined);
   assert.throws(() => assertHistoricalDemoMatchesCurrentRuntime({ ...valid, currentFamilyId: "certification" }), /canonical track family/u);
   assert.throws(() => assertHistoricalDemoMatchesCurrentRuntime({ ...valid, historicalQuestion: { ...base.question, prompt: `${base.question.prompt} changed` } }), /differs from the current canonical training question/u);
@@ -148,14 +147,31 @@ test("local admitted-source parity requires the same exact sample and current Fr
   assert.throws(() => assertHistoricalDemoMatchesCurrentRuntime({ ...valid, currentTrack: outsidePool }), /outside the current ordinary Free practice pool/u);
 });
 
-test("current draft cannot reuse the historical admission and fails its current app-lock precondition", async () => {
+test("current admitted v2 candidate exports while the historical proof remains pinned separately", async () => {
   const releaseLock = readAppJson("integration/contracts/content-release/release.lock.json");
   const admission = readContentJson("evidence/admissions/candidate-admission-v3.json");
   const candidateManifest = readContentJson(admission.candidatePath);
   assert.equal(releaseLock.candidateId, candidateManifest.candidateId);
-  assert.equal(candidateManifest.status, "draft_not_admitted");
-  assert.notEqual(candidateManifest.candidateId, admission.candidateId);
-  await assert.rejects(createPublicDemoCatalog(), (error) => error instanceof Error && error.message === "Public demo artifact does not match the current app content lock.");
+  assert.equal(admission.runtimeAdmission, "granted");
+  assert.equal(candidateManifest.candidateId, admission.candidateId);
+  assert.notEqual(candidateManifest.candidateId, HISTORICAL_CANDIDATE_ID);
+
+  const currentCatalog = await createPublicDemoCatalog();
+  assert.equal(currentCatalog.demos.length, 2);
+  assert.deepEqual(currentCatalog.demos.map((demo) => demo.provenance.questionId), contentSelections.map(({ questionId }) => questionId));
+  for (const demo of currentCatalog.demos) {
+    const appTrack = readAppJson("src/content/generated/canonical-content/content-lock.json").tracks.find((entry) => entry.trackId === demo.provenance.trackId);
+    const releaseTrack = releaseLock.artifacts.find((entry) => entry.trackId === demo.provenance.trackId);
+    assert.equal(demo.provenance.candidateId, candidateManifest.candidateId);
+    assert.equal(demo.provenance.artifactSha256, appTrack.sha256);
+    assert.equal(demo.provenance.contentVersion, appTrack.contentVersion);
+    assert.equal(demo.provenance.artifactSha256, releaseTrack.checksumSha256);
+    assert.equal(demo.provenance.contentVersion, releaseTrack.contentVersion);
+  }
+
+  const historical = await historicalFixture(contentSelections[0]);
+  assert.equal(historical.admission.candidateId, HISTORICAL_CANDIDATE_ID);
+  assert.notEqual(historical.admission.candidateId, candidateManifest.candidateId);
 });
 
 /* Historical 946d proof above intentionally reads the immutable commits that own
