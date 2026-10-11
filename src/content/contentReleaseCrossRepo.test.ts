@@ -157,7 +157,7 @@ test("current canonical builder adds the planning policy while preserving the ex
     const awsNodeQuestions = awsQuestions.filter((question) => question.nodeId === "aws_secure_architecture_foundations");
     assert.equal(aws.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.10.11-saa-fixes-v1-bizq03-planning-v2");
     assert.equal(aws.planningPolicy?.policyVersion, awsSuccessor.planningPolicy.policyVersion);
-    assert.equal(awsSuccessor.training.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.10.11-saa-fixes-v1");
+    assert.equal(awsSuccessor.training.contentVersion, "aws-certified-solutions-architect-associate-authoring-v2026.10.11-saa-fixes-v1-bizq03-planning-v2-training");
     assert.equal(awsSuccessor.training.questionCount, awsQuestions.length);
     const emittedAws = JSON.parse(readFileSync(join(outputRoot, "aws-certified-solutions-architect-associate.json"), "utf8")) as { schemaVersion: string; contentVersion: string; planningPolicy?: unknown } & Record<string, unknown>;
     const trainingProjection = structuredClone(emittedAws);
