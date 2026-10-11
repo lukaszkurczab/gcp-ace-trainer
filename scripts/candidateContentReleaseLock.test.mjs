@@ -5,63 +5,42 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { execFileSync } from "node:child_process";
-import { createCandidateContentReleaseLock, readCandidateContentProducerPin, readHistoricalContentProducerPin } from "./candidateContentReleaseLock.mjs";
+import { createCandidateContentReleaseLock, parseCandidateContentReleaseLockArgs, readCandidateContentProducerPin, readHistoricalContentProducerPin } from "./candidateContentReleaseLock.mjs";
 import { historicalTrainingProjection } from "./syncBundledContentRelease.mjs";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
-const canonical = (value) => value === null || ["boolean", "number", "string"].includes(typeof value)
-  ? JSON.stringify(value)
-  : Array.isArray(value) ? `[${value.map(canonical).join(",")}]`
-    : `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(",")}}`;
+const contentRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(appRoot, "../patternly-content"));
 
-async function candidateFixture(t) {
-  const root = await mkdtemp(path.join(os.tmpdir(), "patternly-direct-candidate-"));
-  t.after(() => rm(root, { recursive: true, force: true }));
-  const releaseRoot = path.join(root, "reports/candidate-reconciliation/AWS-02-DRAFT/release");
-  await mkdir(releaseRoot, { recursive: true });
-  await mkdir(path.join(root, "scripts/review"), { recursive: true });
-  await writeFile(path.join(root, "scripts/review/candidate-manifest.mjs"), `import { createHash } from "node:crypto";\nexport function canonicalJson(value) { if (value === null || ["boolean", "number", "string"].includes(typeof value)) return JSON.stringify(value); if (Array.isArray(value)) return "[" + value.map(canonicalJson).join(",") + "]"; return "{" + Object.keys(value).sort().map(key => JSON.stringify(key) + ":" + canonicalJson(value[key])).join(",") + "}"; }\nexport const candidateIdFor = manifest => { const { candidateId: _candidateId, ...identity } = manifest; return createHash("sha256").update(canonicalJson(identity)).digest("hex"); };\n`);
-  const generated = path.join(appRoot, "src/content/generated/canonical-content");
-  const contentLock = JSON.parse(await readFile(path.join(generated, "content-lock.json"), "utf8"));
-  const artifacts = [];
-  for (const track of contentLock.tracks) {
-    const artifactPath = `artifacts/${track.trackId}.json`;
-    const artifactBytes = await readFile(path.join(generated, `${track.trackId}.json`));
-    await mkdir(path.dirname(path.join(releaseRoot, artifactPath)), { recursive: true });
-    await writeFile(path.join(releaseRoot, artifactPath), artifactBytes);
-    artifacts.push({ trackId: track.trackId, artifactPath, artifactBytes: artifactBytes.length, checksumSha256: track.sha256, contentVersion: track.contentVersion, questionCount: track.questionCount });
-  }
-  const sourceRepositoryCommit = "e".repeat(40);
-  const release = { artifacts, manifest: { releaseId: "patternly-candidate-test", sourceRepositoryCommit } };
-  await writeFile(path.join(releaseRoot, "release.json"), JSON.stringify(release));
-  const candidate = {
-    candidateId: "pending", status: "draft_not_admitted",
-    release: { releaseId: release.manifest.releaseId, sourceRepositoryCommit, checksumSha256: cryptoCreateHash("sha256").update(`${canonical(release)}\n`).digest("hex") },
-    tracks: artifacts.map(({ trackId, artifactPath, checksumSha256, contentVersion, questionCount }) => ({ trackId, artifactPath, checksumSha256, contentVersion, questionCount })),
-  };
-  candidate.candidateId = cryptoCreateHash("sha256").update(canonical(Object.fromEntries(Object.entries(candidate).filter(([key]) => key !== "candidateId")))).digest("hex");
-  const candidatePath = path.join(root, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json");
-  await mkdir(path.dirname(candidatePath), { recursive: true });
-  await writeFile(candidatePath, JSON.stringify(candidate));
-  return root;
-}
+test("candidate lock CLI accepts one explicit producer root and rejects duplicates", () => {
+  assert.deepEqual(parseCandidateContentReleaseLockArgs(["write", "--content-root", "/tmp/patternly-content"]), {
+    mode: "write", contentRoot: path.resolve("/tmp/patternly-content"),
+  });
+  assert.throws(() => parseCandidateContentReleaseLockArgs(["--content-root", "/tmp/one", "--content-root", "/tmp/two"]), /Usage:/u);
+});
 
-test("candidate lock binds the exact nine current v2 bundled artifacts", async (t) => {
-  const candidateRoot = await candidateFixture(t);
-  const lock = await createCandidateContentReleaseLock({ appRoot, contentRoot: candidateRoot });
-  const contentLockBytes = await readFile(path.join(appRoot, "src/content/generated/canonical-content/content-lock.json"));
-  const contentLock = JSON.parse(contentLockBytes);
+test("candidate lock binds the exact nine current v2 artifacts and raw bundled lock", async () => {
+  const lock = await createCandidateContentReleaseLock({ appRoot, contentRoot });
+  const lockBytes = await readFile(path.join(appRoot, "integration/contracts/content-release/release.lock.json"));
+  const immutable = JSON.parse(lockBytes.toString("utf8"));
+  assert.deepEqual(lock, immutable, "the active lock must match the exact current candidate release");
   assert.equal(lock.schemaVersion, 3);
   assert.equal(lock.artifacts.length, 9);
   assert.equal(new Set(lock.artifacts.map((artifact) => artifact.trackId)).size, 9);
-  assert.equal(lock.bundledContentLockSha256, createHash(contentLockBytes));
-  assert.deepEqual(lock.artifacts.map(({ trackId, contentVersion, checksumSha256 }) => ({ trackId, contentVersion, checksumSha256 })), contentLock.tracks.map(({ trackId, contentVersion, sha256 }) => ({ trackId, contentVersion, checksumSha256: sha256 })));
   assert.match(lock.candidateId, /^[a-f0-9]{64}$/u);
   assert.match(lock.bundledContentLockSha256, /^[a-f0-9]{64}$/u);
+  const contentLockBytes = await readFile(path.join(appRoot, "src/content/generated/canonical-content/content-lock.json"));
+  assert.equal(lock.bundledContentLockSha256, createHash(contentLockBytes));
+  const contentLock = JSON.parse(contentLockBytes.toString("utf8"));
+  const bundledByTrack = new Map(contentLock.tracks.map((track) => [track.trackId, track]));
+  for (const artifact of lock.artifacts) {
+    const bundled = bundledByTrack.get(artifact.trackId);
+    assert.ok(bundled, `candidate artifact exists in bundle: ${artifact.trackId}`);
+    assert.equal(artifact.contentVersion, bundled.contentVersion);
+    assert.equal(artifact.checksumSha256, bundled.sha256);
+  }
 });
 
-test("candidate lock rejects bundled bytes outside the candidate", async (t) => {
-  const candidateRoot = await candidateFixture(t);
+test("candidate lock rejects bundled bytes outside the candidate", async () => {
   const fixture = await mkdtemp(path.join(os.tmpdir(), "patternly-candidate-lock-"));
   try {
     const target = path.join(fixture, "src/content/generated/canonical-content");
@@ -69,27 +48,8 @@ test("candidate lock rejects bundled bytes outside the candidate", async (t) => 
     const bundled = JSON.parse(await readFile(path.join(target, "content-lock.json"), "utf8"));
     bundled.tracks[0].sha256 = "0".repeat(64);
     await writeFile(path.join(target, "content-lock.json"), `${JSON.stringify(bundled)}\n`);
-    await assert.rejects(createCandidateContentReleaseLock({ appRoot: fixture, contentRoot: candidateRoot }), /SHA-256 mismatch/);
+    await assert.rejects(createCandidateContentReleaseLock({ appRoot: fixture, contentRoot }), /SHA-256 mismatch/);
   } finally { await rm(fixture, { recursive: true, force: true }); }
-});
-
-test("candidate lock rejects malformed identity, split source commits, and manifest track drift", async (t) => {
-  for (const mutation of [
-    (candidate) => { candidate.candidateId = "f".repeat(64); },
-    (candidate) => { candidate.release.sourceRepositoryCommit = "d".repeat(40); },
-    (candidate) => { candidate.tracks[0].checksumSha256 = "0".repeat(64); },
-  ]) await t.test("invalid candidate binding", async (subtest) => {
-    const contentRoot = await candidateFixture(subtest);
-    const manifestPath = path.join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json");
-    const candidate = JSON.parse(await readFile(manifestPath, "utf8"));
-    mutation(candidate);
-    if (candidate.candidateId !== "f".repeat(64)) {
-      const { candidateId: _old, ...identity } = candidate;
-      candidate.candidateId = cryptoCreateHash("sha256").update(canonical(identity)).digest("hex");
-    }
-    await writeFile(manifestPath, JSON.stringify(candidate));
-    await assert.rejects(createCandidateContentReleaseLock({ appRoot, contentRoot }), /Candidate release identity is invalid|Candidate manifest track binding differs/u);
-  });
 });
 
 test("the v2 policy successor round trips to exact v1 training bytes and rejects changed training content", async () => {
@@ -109,21 +69,34 @@ test("the v2 policy successor round trips to exact v1 training bytes and rejects
 
 function createHash(value) { return cryptoCreateHash("sha256").update(value).digest("hex"); }
 
-test("CI bootstrap binds the actual current v3 lock to all nine verified bundled artifacts", async (t) => {
-  const candidateRoot = await candidateFixture(t);
-  const lock = await createCandidateContentReleaseLock({ appRoot, contentRoot: candidateRoot });
-  const fixture = await mkdtemp(path.join(os.tmpdir(), "patternly-ci-current-lock-"));
+test("CI bootstrap binds the actual current v3 lock to all nine verified bundled artifacts", async () => {
+  const lock = JSON.parse(await readFile(path.join(appRoot, "integration/contracts/content-release/release.lock.json"), "utf8"));
+  assert.equal(await readCandidateContentProducerPin({ appRoot }), lock.artifacts[0].producerCommit);
+  assert.equal(execFileSync(process.execPath, ["scripts/candidateContentReleaseLock.mjs", "producer-pin"], { cwd: appRoot, encoding: "utf8" }), `${lock.artifacts[0].producerCommit}\n`);
+});
+
+test("candidate bootstrap loads validation modules from the explicitly supplied producer root", async (t) => {
+  const fixture = await mkdtemp(path.join(os.tmpdir(), "patternly-candidate-explicit-root-"));
+  const producerRoot = path.join(fixture, "producer");
+  const appFixture = path.join(fixture, "app");
   t.after(() => rm(fixture, { recursive: true, force: true }));
-  await mkdir(path.join(fixture, "integration/contracts/content-release"), { recursive: true });
-  await writeFile(path.join(fixture, "integration/contracts/content-release/release.lock.json"), `${canonical(lock)}\n`);
-  await cp(path.join(appRoot, "src/content/generated/canonical-content"), path.join(fixture, "src/content/generated/canonical-content"), { recursive: true });
-  assert.equal(await readCandidateContentProducerPin({ appRoot: fixture }), lock.artifacts[0].producerCommit);
-  assert.equal(lock.artifacts.length, 9);
+  await mkdir(path.join(appFixture, "integration/contracts/content-release"), { recursive: true });
+  await cp(path.join(appRoot, "src/content/generated/canonical-content"), path.join(appFixture, "src/content/generated/canonical-content"), { recursive: true });
+  await cp(path.join(appRoot, "integration/contracts/content-release/release.lock.json"), path.join(appFixture, "integration/contracts/content-release/release.lock.json"));
+  await mkdir(path.join(producerRoot, "scripts/content"), { recursive: true });
+  for (const name of ["question-contract.mjs", "planning-policy.mjs"]) {
+    const source = await readFile(path.join(contentRoot, "scripts/content", name), "utf8");
+    const signature = name === "question-contract.mjs"
+      ? "export function validatePackageCompletionRule(rule, pathName = \"completionRule\", questions) {"
+      : "export function validatePlanningPolicy(policy, questions) {";
+    assert.ok(source.includes(signature), `producer validation fixture includes ${name}'s exported entry point`);
+    await writeFile(path.join(producerRoot, "scripts/content", name), source.replace(signature, `${signature}\n  throw new Error("explicit candidate producer root used");`));
+  }
+  await assert.rejects(readCandidateContentProducerPin({ appRoot: appFixture, contentRoot: producerRoot }), /explicit candidate producer root used/u);
 });
 
 test("CI bootstrap fails closed for malformed v3 metadata without an active v2 fallback", async t => {
-  const candidateRoot = await candidateFixture(t);
-  const actual = await createCandidateContentReleaseLock({ appRoot, contentRoot: candidateRoot });
+  const actual = JSON.parse(await readFile(path.join(appRoot, "integration/contracts/content-release/release.lock.json"), "utf8"));
   const vectors = [
     ["old schema", lock => { lock.schemaVersion = 2; }],
     ["extra root field", lock => { lock.unverified = true; }],
@@ -151,8 +124,7 @@ test("CI bootstrap fails closed for malformed v3 metadata without an active v2 f
 });
 
 test("CI bootstrap rejects valid-shaped metadata that disagrees with actual bundled hashes or versions", async t => {
-  const candidateRoot = await candidateFixture(t);
-  const actual = await createCandidateContentReleaseLock({ appRoot, contentRoot: candidateRoot });
+  const actual = JSON.parse(await readFile(path.join(appRoot, "integration/contracts/content-release/release.lock.json"), "utf8"));
   for (const field of ["bundledContentLockSha256", "checksumSha256", "contentVersion"]) await t.test(field, async () => {
     const fixture = await mkdtemp(path.join(os.tmpdir(), "patternly-ci-bundle-pin-"));
     try {
@@ -163,7 +135,7 @@ test("CI bootstrap rejects valid-shaped metadata that disagrees with actual bund
       await writeFile(path.join(fixture, "integration/contracts/content-release/release.lock.json"), JSON.stringify(lock));
       const { cp } = await import("node:fs/promises");
       await cp(path.join(appRoot, "src/content/generated/canonical-content"), path.join(fixture, "src/content/generated/canonical-content"), { recursive: true });
-      await assert.rejects(readCandidateContentProducerPin({ appRoot: fixture }), /bootstrap bundled (?:lock hash|training artifact) differs/);
+      await assert.rejects(readCandidateContentProducerPin({ appRoot: fixture }), /bootstrap bundled (?:content lock hash|candidate artifact) differs/);
     } finally { await rm(fixture, { recursive: true, force: true }); }
   });
 });

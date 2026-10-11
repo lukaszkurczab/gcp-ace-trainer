@@ -102,7 +102,7 @@ test("historical content release lock remains covered by frozen release manifest
   }
 });
 
-test("bundled canonical release matches the current producer builder", async () => {
+test("current producer remains buildable while app artifacts stay pinned to the admitted candidate", async () => {
   const appRoot = process.cwd();
   const currentContentRoot = contentRoot("PATTERNLY_CONTENT_CURRENT_ROOT");
   const expectedCurrentSha = expectedCurrentContentSha();
@@ -113,10 +113,30 @@ test("bundled canonical release matches the current producer builder", async () 
     const built = await builder.buildAll({ rootDirectory: currentContentRoot, outputRoot });
     const catalog = await loadCanonicalRuntimeCatalog();
     const generatedLock = JSON.parse(readFileSync(join(appRoot, "src/content/generated/canonical-content/content-lock.json"), "utf8")) as { schemaVersion: string; tracks: readonly { trackId: string; sha256: string; contentVersion: string; questionCount: number }[] };
+    const releaseLock = JSON.parse(readFileSync(join(appRoot, "integration/contracts/content-release/release.lock.json"), "utf8")) as {
+      releaseManifestPath: string;
+      artifacts: readonly { trackId: string; contentVersion: string; checksumSha256: string }[];
+    };
     assert.equal(generatedLock.schemaVersion, "patternly-content-lock-v1");
     assert.deepEqual([...catalog.tracks].sort(), [...built.lock.tracks.map((track) => track.trackId)].sort());
-    assert.deepEqual(generatedLock.tracks, built.lock.tracks);
-    for (const entry of built.lock.tracks) {
+    const candidateLockApi = await import(pathToFileURL(join(appRoot, "scripts/candidateContentReleaseLock.mjs")).href) as unknown as {
+      updateCandidateContentReleaseLock(options: { mode: "check"; appRoot: string; contentRoot: string }): Promise<void>;
+    };
+    await candidateLockApi.updateCandidateContentReleaseLock({ mode: "check", appRoot, contentRoot: currentContentRoot });
+    const candidateRelease = JSON.parse(readFileSync(join(currentContentRoot, releaseLock.releaseManifestPath), "utf8")) as {
+      artifacts: readonly { trackId: string; contentVersion: string; checksumSha256: string; questionCount: number }[];
+    };
+    assert.deepEqual(
+      generatedLock.tracks.map(({ trackId, contentVersion, questionCount, sha256 }) => ({ trackId, contentVersion, questionCount, sha256 })),
+      candidateRelease.artifacts.map(({ trackId, contentVersion, questionCount, checksumSha256 }) => ({
+        trackId,
+        contentVersion,
+        questionCount,
+        sha256: checksumSha256,
+      })),
+      "app artifacts must exactly match all nine artifacts in the active candidate release, including counts",
+    );
+    for (const entry of generatedLock.tracks) {
       const track = catalog.getTrack(entry.trackId);
       assert.equal(track.artifactSha256, entry.sha256);
       assert.equal(track.contentVersion, entry.contentVersion);

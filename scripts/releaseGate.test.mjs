@@ -2,11 +2,12 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import test from "node:test";
 
 const root = process.cwd();
+const sourceContentRoot = resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? join(root, "..", "patternly-content"));
 const HISTORICAL_APPLICATION_COMMIT = "e889b05d033d4cc4b7676d0ca3f224efc3fac115";
 const HISTORICAL_CONTENT_COMMIT = "8bb27fa2bd4f1af58fb8c1b49e5314a1691bbb03";
 const HISTORICAL_CANDIDATE_ID = "946d3589abf9bfb205b382e7ebb9205786c3e42e18fe733c3607ad836a6a80a4";
@@ -15,7 +16,7 @@ function run(enforce = false) {
   try {
     return {
       status: 0,
-      output: execFileSync("node", ["scripts/releaseGate.mjs", ...(enforce ? ["--enforce"] : [])], { cwd: root, encoding: "utf8" }),
+      output: execFileSync("node", ["scripts/releaseGate.mjs", ...(enforce ? ["--enforce"] : [])], { cwd: root, encoding: "utf8", env: { ...process.env, PATTERNLY_CONTENT_ROOT: sourceContentRoot } }),
     };
   } catch (error) {
     return { status: error.status, output: error.stdout };
@@ -24,7 +25,7 @@ function run(enforce = false) {
 
 function runArgs(args, env = {}) {
   try {
-    return { status: 0, output: execFileSync("node", ["scripts/releaseGate.mjs", ...args], { cwd: root, encoding: "utf8", env: { ...process.env, ...env }, stdio: ["ignore", "pipe", "pipe"] }) };
+    return { status: 0, output: execFileSync("node", ["scripts/releaseGate.mjs", ...args], { cwd: root, encoding: "utf8", env: { ...process.env, PATTERNLY_CONTENT_ROOT: sourceContentRoot, ...env }, stdio: ["ignore", "pipe", "pipe"] }) };
   } catch (error) {
     return { status: error.status, output: error.stdout, error: error.stderr };
   }
@@ -45,7 +46,7 @@ function runWithReleaseLock(releaseLockPath) {
   try {
     return {
       status: 0,
-      output: execFileSync("node", ["scripts/releaseGate.mjs"], { cwd: root, encoding: "utf8", env: { ...process.env, PATTERNLY_RELEASE_LOCK_PATH: releaseLockPath } }),
+      output: execFileSync("node", ["scripts/releaseGate.mjs"], { cwd: root, encoding: "utf8", env: { ...process.env, PATTERNLY_CONTENT_ROOT: sourceContentRoot, PATTERNLY_RELEASE_LOCK_PATH: releaseLockPath } }),
     };
   } catch (error) {
     return { status: error.status, output: error.stdout };
@@ -56,7 +57,7 @@ function runWithApplicationRoot(applicationRoot) {
   try {
     return {
       status: 0,
-      output: execFileSync("node", ["scripts/releaseGate.mjs"], { cwd: root, encoding: "utf8", env: { ...process.env, PATTERNLY_APPLICATION_ROOT: applicationRoot } }),
+      output: execFileSync("node", ["scripts/releaseGate.mjs"], { cwd: root, encoding: "utf8", env: { ...process.env, PATTERNLY_CONTENT_ROOT: sourceContentRoot, PATTERNLY_APPLICATION_ROOT: applicationRoot } }),
     };
   } catch (error) {
     return { status: error.status, output: error.stdout };
@@ -67,7 +68,7 @@ function runWithEvidenceRoot(evidenceRoot) {
   try {
     return {
       status: 0,
-      output: execFileSync("node", ["scripts/releaseGate.mjs"], { cwd: root, encoding: "utf8", env: { ...process.env, PATTERNLY_RELEASE_EVIDENCE_ROOT: evidenceRoot } }),
+      output: execFileSync("node", ["scripts/releaseGate.mjs"], { cwd: root, encoding: "utf8", env: { ...process.env, PATTERNLY_CONTENT_ROOT: sourceContentRoot, PATTERNLY_RELEASE_EVIDENCE_ROOT: evidenceRoot } }),
     };
   } catch (error) {
     return { status: error.status, output: error.stdout };
@@ -120,7 +121,6 @@ function createRepositoryAt(name, sourceRoot, revision = null) {
 }
 
 function createHistoricalAdmittedContentRoot({ mutateReadiness = null, mutateCandidate = null, mutateAdmission = null } = {}) {
-  const sourceContentRoot = join(root, "..", "patternly-content");
   const contentRoot = createRepositoryAt("content-admitted", sourceContentRoot, HISTORICAL_CONTENT_COMMIT);
   if (!mutateReadiness && !mutateCandidate && !mutateAdmission) return contentRoot;
   const candidatePath = join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json");
@@ -241,7 +241,6 @@ test("launch readiness report is deterministic and exposes the unresolved releas
 });
 
 test("immutable historical admission cannot be reused against the current app content lock", () => {
-  const sourceContentRoot = join(root, "..", "patternly-content");
   const contentRoot = createRepositoryAt("content-historical-admission", sourceContentRoot, HISTORICAL_CONTENT_COMMIT);
   const applicationRoot = createCurrentLockApplicationRoot();
   try {
@@ -260,7 +259,6 @@ test("immutable historical admission cannot be reused against the current app co
 });
 
 test("current reviewed candidate matches the current app content lock", () => {
-  const sourceContentRoot = join(root, "..", "patternly-content");
   const contentRoot = createRepositoryAt("content-current-reviewed", sourceContentRoot);
   const applicationRoot = createCurrentLockApplicationRoot();
   try {
@@ -454,7 +452,7 @@ test("CLI rejects malformed arguments and physical output paths inside either wo
     ["duplicate output", ["--output", join(tmpdir(), "one.json"), "--output", join(tmpdir(), "two.json")]],
     ["unknown argument", ["--unknown"]],
     ["inside application", ["--output", join(root, "report.json")]],
-    ["inside content", ["--output", join(root, "..", "patternly-content", "report.json")]],
+    ["inside content", ["--output", join(sourceContentRoot, "report.json")]],
     ["symlink alias into application", ["--output", join(appAlias, "report.json")]],
     ["dangling final symlink into application", ["--output", danglingOutput]],
     ["missing parent", ["--output", join(aliasRoot, "missing", "report.json")]],

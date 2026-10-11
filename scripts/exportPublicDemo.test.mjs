@@ -12,7 +12,7 @@ const require = createRequire(import.meta.url);
 const { buildCanonicalRuntimeCatalog } = require("../src/content/canonical/runtimeCatalog.ts");
 const { contentPackageRuntimeOwner } = require("../src/application/contentPackageRuntimeOwner.ts");
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const contentRoot = resolve(root, "../patternly-content");
+const contentRoot = resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? resolve(root, "../patternly-content"));
 const readAppJson = (path) => JSON.parse(readFileSync(resolve(root, path), "utf8"));
 const readContentJson = (path) => JSON.parse(readFileSync(resolve(contentRoot, path), "utf8"));
 const hashBytes = (value) => createHash("sha256").update(value).digest("hex");
