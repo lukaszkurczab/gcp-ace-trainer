@@ -6,9 +6,11 @@ import { installLearningStateResetBarrier } from "../learningMutations/commitLea
 import { MutationCommitFailure } from "../mutationBoundary";
 import { clearPatternlyLocalHistory } from "../../features/home/localReset";
 import {
+  getActiveTrainingSession,
   getActiveMutationJournal,
   getActiveTrainingSessionDraft,
   getGuestInstallation,
+  getTrainingAttempts,
   getTrainingSessions,
   provisionGuestInstallation,
 } from "../../storage/repositories";
@@ -18,6 +20,23 @@ import { seedPersist13ResetFixtureState } from "./persist13ResetFixtureSeed";
 import { installMemoryStorage } from "../../testing/journalTestSupport";
 
 installLearningStateResetBarrier(async (reset) => reset());
+
+test("PERSIST-13 journal baseline keeps completed history without pre-seeding an active session", async () => {
+  const storage = installMemoryStorage();
+  const runId = "33333333-3333-4333-8333-333333333333";
+  await provisionGuestInstallation({ async create() { return Object.freeze({ installationId: "44444444-4444-4444-8444-444444444444", localDatasetId: runId }); } });
+  const plan = await seedPersist13ResetFixtureState(runId, { includeActiveSession: false });
+  const sessions = (await getTrainingSessions()).value;
+  const attempts = (await getTrainingAttempts()).value;
+  assert.ok(sessions.some((session) => session.status === "completed"));
+  assert.ok(attempts.some((attempt) => sessions.some((session) => session.id === attempt.sessionId && session.status === "completed")));
+  assert.equal(await getActiveTrainingSession(), null);
+  assert.equal(await getActiveTrainingSessionDraft(), null);
+  assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), undefined);
+  assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT), undefined);
+  assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER), undefined);
+  assert.ok(plan.targets.length > 0);
+});
 
 test("PERSIST-13 seed uses the registered Coding simulation draft and pauses after reset materialization", async () => {
   const storage = installMemoryStorage();

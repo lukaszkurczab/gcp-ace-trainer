@@ -193,6 +193,7 @@ export async function submitAlgorithmsPracticeResponse(response: AlgorithmRespon
   await getForegroundSessionTimerFacade().checkpointForResponseSave(session);
   await getTrainingLifecycleUseCases().submitPracticeResponse(toCanonicalPracticeResponse(question, response));
 }
+export async function retryAlgorithmsPracticeResponse(): Promise<void> { await getTrainingLifecycleUseCases().retryPracticeSubmission(); }
 
 export function toCanonicalPracticeResponse(question: Question, response: AlgorithmResponse): CanonicalQuestionResponse {
   if (response.kind === "choice") {
@@ -485,6 +486,22 @@ async function recoverAlgorithmsSimulationSaveAndContinueAuthorized(initialSessi
 /** Restores response editing only after the lifecycle proves that the failed save made no durable draft change. */
 export async function resumeAlgorithmsSimulationEditingAfterSaveFailure(): Promise<void> {
   await getTrainingLifecycleUseCases().resumeEditableSimulationAfterSaveFailure();
+}
+
+/** Retries the exact D command previously proven not applied; it never rebuilds from current storage. */
+export async function retryAlgorithmsSimulationSave(): Promise<void> {
+  await getTrainingLifecycleUseCases().retrySimulationDraftSave();
+}
+
+export async function resumeAlgorithmsSimulationEditingAfterStaleConflict(): Promise<void> {
+  await getTrainingLifecycleUseCases().resumeEditableSimulationAfterStaleConflict();
+}
+
+/** Read-only confirmation of the exact draft write whose acknowledgement was lost. */
+export async function reconcileAlgorithmsSimulationSave(): Promise<"verified" | "conflict" | "unknown"> {
+  const session = await requireAlgorithmsSession();
+  if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new TrainingApplicationFailure("invalid_response", "Only an Interview Simulation can reconcile a draft save.");
+  return getTrainingLifecycleUseCases().reconcileSimulationDraftSave(session.id);
 }
 
 /** Replays only the exact durable Simulation operation that the lifecycle exposes as recoverable. */

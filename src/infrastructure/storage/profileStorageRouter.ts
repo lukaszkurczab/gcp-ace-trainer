@@ -5,7 +5,8 @@ import { installationIdentity, type GuestInstallationIdentityPort } from "../ide
 import { sha256Utf8 } from "../identity/sha256";
 import { inspectQ13LocalLogoutControl } from "./localLogoutControl";
 
-const ROOT_KEYS = Object.freeze(["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"] as const);
+export const PROFILE_STORAGE_REGISTRY_CONTROL_KEYS = Object.freeze(["patternly.profile-root.v1.a", "patternly.profile-root.v1.b"] as const);
+const ROOT_KEYS = PROFILE_STORAGE_REGISTRY_CONTROL_KEYS;
 const ACCOUNT_BINDING_KEYS = Object.freeze(["patternly.account-binding.v1.a", "patternly.account-binding.v1.b"] as const);
 const ACCOUNT_BINDING_SCHEMA = "patternly.account-binding.v1" as const;
 const GUEST_REMOVAL_JOURNAL_KEY = "patternly.profile-removal.v1";

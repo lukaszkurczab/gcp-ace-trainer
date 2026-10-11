@@ -1,0 +1,19 @@
+appId: com.lkurczab.patternly
+name: Patternly PERSIST-04/08 — D preservation and idempotence
+tags:
+  - persist04-08
+---
+- extendedWaitUntil:
+    visible:
+      text: "Stage: complete"
+    timeout: 60000
+- assertVisible: "PERSIST-13 draft recover: observed"
+- assertVisible:
+    id: "persist13-fixture-journal"
+    text: "Journal absent: true"
+- assertVisible:
+    id: "persist13-fixture-bootstrap"
+    text: "Bootstrap ready: false"
+- assertVisible:
+    id: "persist13-fixture-cleanup"
+    text: "Fixture cleanup: true"

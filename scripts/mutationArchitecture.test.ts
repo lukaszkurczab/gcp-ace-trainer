@@ -252,11 +252,11 @@ test("Certification durable Practice state has one exact projection, recovery co
   assert.doesNotMatch(certification, /function noticeForPracticeOperation/);
   assert.match(algorithms, /noticeForPracticeOperation\(renderedCompletionOperation \?\? projection\.operation\)/);
   assert.match(certification, /noticeForPracticeOperation\(renderedCompletionOperation \?\? projection\.operation\)/);
-  assert.match(certification, /const editable = !exitFailure && !completionFailure && allowsPracticeResponseEditing\(projection\.operation\.kind\)/);
+  assert.match(certification, /const editable = !exitFailure && !completionFailure && !frozenPracticeResponse && allowsPracticeResponseEditing\(phase\)/);
   assert.match(presentation, /function allowsPracticeResponseEditing[\s\S]*?return phase === "unanswered" \|\| phase === "submit_journal_failed";/);
   assert.match(certification, /reconcilePracticeChoiceSelection\(/);
   assert.match(certification, /"error" in projection\.operation && projection\.operation\.error\.allowedAction === "recover"/);
-  assert.match(certification, /if \(actionPending\.current \|\| !editable\) return;/);
+  assert.match(certification, /if \(actionPending\.current \|\| \(!editable && !retryFrozenResponse\)\) return;/);
   assert.match(certification, /if \(!canRecover(?: \|\| recoveryInFlight\.current)?\) return;/);
   assert.match(certification, /if \(actionPending\.current \|\| !canAdvance\) return;/);
   const advanceRetry = certification.slice(certification.indexOf('if (projection.operation.kind === "advance_failed")'), certification.indexOf("if (projection.ordinal === projection.total)"));

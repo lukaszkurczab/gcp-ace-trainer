@@ -5,7 +5,7 @@ import { AppState, StyleSheet, Text, TextInput, View } from "react-native";
 import { useTranslation } from "react-i18next";
 
 import { Button, EmptyState, Screen } from "../../components";
-import { DesignInterviewSimulationExpiredError, getDesignInterviewSimulationResult, getDesignInterviewSimulationProjection, openDesignInterviewSimulation, saveDesignInterviewSimulationStage, finishDesignInterviewSimulation, recoverDesignInterviewSimulationOperation, type DesignSimulationProjection, type DesignSimulationResultProjection, type DesignSimulationStage } from "../../application/design-interview";
+import { DesignInterviewSimulationExpiredError, getDesignInterviewSimulationResult, getDesignInterviewSimulationProjection, openDesignInterviewSimulation, saveDesignInterviewSimulationStage, finishDesignInterviewSimulation, recoverDesignInterviewSimulationOperation, reconcileDesignInterviewSimulationSave, retryDesignInterviewSimulationSave, resumeDesignInterviewSimulationAfterStaleConflict, type DesignSimulationProjection, type DesignSimulationResultProjection, type DesignSimulationStage } from "../../application/design-interview";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
@@ -91,8 +91,31 @@ export function DesignInterviewSimulationScreen({ navigation, route }: RunnerPro
     void drain.request(stageId, value).catch((cause) => setError(describeOperationalFailure(cause, t("Your response could not be saved."))));
   }
   function retrySave() {
+    if (projection?.operation.kind !== "save_failed" || projection.operation.error.allowedAction !== "retry_same_command") return;
     setError(null);
-    void drain.flush().catch((cause) => setError(describeOperationalFailure(cause, t("Your response could not be saved."))));
+    void retryDesignInterviewSimulationSave().then(async () => {
+      const next = await getDesignInterviewSimulationProjection();
+      setProjection(next);
+      setResponses({ ...next.responsesByStage, ...drain.getDirtyValues() });
+      drain.acceptReconciled(next.responsesByStage);
+      setError(null);
+    }).catch((cause) => setError(describeOperationalFailure(cause, t("Your response could not be saved."))));
+  }
+  function useResponseAsNewSave() {
+    if (projection?.operation.kind !== "stale_revision") return;
+    drain.releaseAfterExplicitNewCommand();
+    void resumeDesignInterviewSimulationAfterStaleConflict().then(refresh).catch((cause) => setError(describeOperationalFailure(cause, t("The saved response changed."))));
+  }
+  async function reconcileSave() {
+    try {
+      const result = await reconcileDesignInterviewSimulationSave();
+      if (result !== "verified") throw new Error("The exact saved response could not be confirmed.");
+      const next = await getDesignInterviewSimulationProjection();
+      setProjection(next);
+      setResponses({ ...next.responsesByStage, ...drain.getDirtyValues() });
+      drain.acceptReconciled(next.responsesByStage);
+      setError(null);
+    } catch (cause) { setError(describeOperationalFailure(cause, t("The exact saved response could not be confirmed."))); }
   }
   async function finish() {
     try {
@@ -110,6 +133,10 @@ export function DesignInterviewSimulationScreen({ navigation, route }: RunnerPro
   if (!projection) return <Screen><Text style={styles.title}>{t("Design Interview Simulation")}</Text><Text>{t("Loading simulation…")}</Text></Screen>;
   const complete = STAGES.every((stage) => (responses[stage] ?? "").trim().length > 0);
   const saving = drain.isSaving();
+  const uncertainSave = projection.operation.kind === "save_failed" && projection.operation.error.allowedAction === "reconcile";
+  const retryableSave = projection.operation.kind === "save_failed" && projection.operation.error.allowedAction === "retry_same_command";
+  const staleConflict = projection.operation.kind === "stale_revision";
+  const editingLocked = uncertainSave || staleConflict || drain.isBlocked();
   return <Screen scroll edges={["top", "bottom"]}>
     <View style={styles.header}><Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB, { trackId: route.params.trackId })} variant="ghost">{t("Leave")}</Button><Text style={styles.timer}>{formatRemaining(projection.remainingMs)}</Text></View>
     <Text style={styles.title} testID={runtimeSelectors.designSimulation.root(projection.session.id)}>{projection.profile.familyConfig.title}</Text>
@@ -118,14 +145,17 @@ export function DesignInterviewSimulationScreen({ navigation, route }: RunnerPro
       const stage = projection.profile.familyConfig.stages.find((candidate) => candidate.stageId === stageId)!;
       return <View key={stageId} style={styles.stage}>
         <Text style={styles.stageTitle}>{stage.title}</Text>
-        <TextInput accessibilityLabel={stage.title} multiline onChangeText={(value) => change(stageId, value)} onEndEditing={() => void drain.flush().catch((cause) => setError(describeOperationalFailure(cause, t("Your response could not be saved."))))} placeholder={t("Your response")} style={styles.input} testID={runtimeSelectors.designSimulation.stageResponse(projection.session.id, stageId)} textAlignVertical="top" value={responses[stageId] ?? ""} />
+        <TextInput accessibilityLabel={stage.title} editable={!editingLocked} multiline onChangeText={(value) => change(stageId, value)} onEndEditing={() => void drain.flush().catch((cause) => setError(describeOperationalFailure(cause, t("Your response could not be saved."))))} placeholder={t("Your response")} style={styles.input} testID={runtimeSelectors.designSimulation.stageResponse(projection.session.id, stageId)} textAlignVertical="top" value={responses[stageId] ?? ""} />
         <Text style={styles.completeness}>{(responses[stageId] ?? "").trim() ? t("Complete") : t("Required")}</Text>
       </View>;
     })}
-    <Text accessibilityLiveRegion="polite" testID={runtimeSelectors.designSimulation.saveStatus(projection.session.id, saving ? "saving" : drain.isSaved(responses) ? "saved" : "pending")}>{saving ? t("Saving…") : drain.isSaved(responses) ? t("Saved") : t("Unsaved changes")}</Text>
+    <Text accessibilityLiveRegion="polite" testID={runtimeSelectors.designSimulation.saveStatus(projection.session.id, saving ? "saving" : uncertainSave ? "pending" : drain.isSaved(responses) ? "saved" : "pending")}>{saving ? t("Saving…") : uncertainSave ? t("The saved response could not be confirmed.") : drain.isSaved(responses) ? t("Saved") : t("Unsaved changes")}</Text>
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
-    {error ? <Button onPress={retrySave} testID={runtimeSelectors.designSimulation.retrySave(projection.session.id)} variant="secondary">{t("Retry save")}</Button> : null}
-    <Button disabled={!complete || saving || !drain.isSaved(responses)} loading={saving} onPress={() => void finish()} testID={runtimeSelectors.designSimulation.finish(projection.session.id)}>{t("Finish simulation")}</Button>
+    {staleConflict ? <Text accessibilityRole="alert" style={styles.error}>{t("The saved response changed.")} {t("Your answer is still here. Review it before saving it as a new response.")}</Text> : null}
+    {uncertainSave ? <Button onPress={() => void reconcileSave()} testID={runtimeSelectors.designSimulation.retrySave(projection.session.id)} variant="secondary">{t("Check saved response")}</Button> : null}
+    {retryableSave ? <Button onPress={retrySave} testID={runtimeSelectors.designSimulation.retrySave(projection.session.id)} variant="secondary">{t("Retry save")}</Button> : null}
+    {staleConflict ? <Button onPress={useResponseAsNewSave} variant="secondary">{t("Keep editing")}</Button> : null}
+    <Button disabled={!complete || saving || editingLocked || !drain.isSaved(responses)} loading={saving} onPress={() => void finish()} testID={runtimeSelectors.designSimulation.finish(projection.session.id)}>{t("Finish simulation")}</Button>
     <Button onPress={() => void recoverDesignInterviewSimulationOperation().then(refresh).catch((cause) => setError(describeOperationalFailure(cause, t("Simulation recovery is unavailable."))))} variant="ghost">{t("Refresh saved responses")}</Button>
   </Screen>;
 }

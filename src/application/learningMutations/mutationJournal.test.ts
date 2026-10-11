@@ -3,14 +3,134 @@ import test, { beforeEach } from "node:test";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../../infrastructure/storage/mmkvClient";
 import { createTrainingSession } from "../../domain";
 import { clearMutationJournal, getActiveMutationJournal, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, persistMutationJournal, saveTrainingSession, updateMutationJournalPhase, addReviewQueueItems } from "../../storage";
-import { writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
+import { readCanonicalEnvelope, writeCanonicalJson } from "../../storage/repositories/canonicalRecordCodec";
 import { STORAGE_KEYS } from "../../storage/keys";
 import { buildMutationJournal, commitTrainingOutcome, recoverPendingMutation } from "./";
+import { commitMutation } from "./commitMutation";
+import { MutationCommitFailure } from "../mutationBoundary";
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
 const artifactSha256 = "a".repeat(64);
 const session = createTrainingSession({ id: "s", trackId: "coding-interview-dsa-problem-solving", modeId: "m", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: { trackId: "coding-interview-dsa-problem-solving", questionId: "i", contentVersion: "v", artifactSha256 } }], optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "v", artifactSha256, status: "active" as const, startedAt: "2026-01-01T00:00:00.000Z" });
 const attempt = { id: "a", sessionId: "s", trackId: "coding-interview-dsa-problem-solving", modeId: "m", occurrenceId: "occurrence-1", item: session.itemOrder[0]!.item, response: { ids: ["x"] }, result: { kind: "correct" as const, earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: session.itemOrder[0]!.item, taxonomyOrSkillRefs: [] }, answeredAt: session.startedAt, committedAt: session.startedAt };
 test("journal durability precedes idempotent materialization and recovery", async () => { const record = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: "coding-interview-dsa-problem-solving", identity: attempt.response, writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt }); await persistMutationJournal(record); assert.equal((await getTrainingAttempts()).value.length, 0); await recoverPendingMutation(); assert.equal((await getActiveMutationJournal()), null); assert.equal((await getTrainingAttempts()).value.length, 1); assert.equal((await getTrainingSessions()).value.length, 1); await recoverPendingMutation(); assert.equal((await getTrainingAttempts()).value.length, 1); });
+test("same journal command and exact plan reuses its original envelope without a revision bump", async () => {
+  const record = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: session.trackId, identity: attempt.response, writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt });
+  const first = await persistMutationJournal(record);
+  const before = readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_JOURNAL, (_value): _value is typeof record => true);
+  const second = await persistMutationJournal(record);
+  const after = readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_JOURNAL, (_value): _value is typeof record => true);
+  assert.deepEqual(second, first);
+  assert.equal(after?.revision, before?.revision);
+  const differentPlan = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: session.trackId, identity: attempt.response, writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: { ...session, activeForegroundMs: 1 } }], createdAt: session.startedAt });
+  assert.equal(differentPlan.commandIdentity.fingerprint, record.commandIdentity.fingerprint);
+  await assert.rejects(persistMutationJournal(differentPlan), (error: unknown) => error instanceof Error && error.cause instanceof Error && /different immutable plan/.test(error.cause.message));
+});
+
+test("a transient journal prerequisite read can retry only the same frozen record", async () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  const record = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: session.trackId, identity: attempt.response, writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt });
+  const getString = storage.getString.bind(storage);
+  let failOnce = true;
+  storage.getString = (key: string) => {
+    if (key === STORAGE_KEYS.ACTIVE_JOURNAL && failOnce) { failOnce = false; throw new Error("temporary journal read unavailable"); }
+    return getString(key);
+  };
+  const setString = storage.setString.bind(storage);
+  let journalWrites = 0;
+  storage.setString = (key: string, value: string) => { if (key === STORAGE_KEYS.ACTIVE_JOURNAL) journalWrites += 1; setString(key, value); };
+
+  await assert.rejects(persistMutationJournal(record), (error: unknown) => error instanceof Error && error.cause instanceof Error && error.cause.name === "StorageReadError");
+  assert.equal(journalWrites, 0);
+  const retried = await persistMutationJournal(record);
+  assert.equal(retried.commandIdentity.fingerprint, record.commandIdentity.fingerprint);
+  assert.equal(retried.planFingerprint, record.planFingerprint);
+  assert.equal(readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_JOURNAL, (_value): _value is typeof record => true)?.revision, 1);
+  assert.equal(journalWrites, 1);
+});
+test("commit freezes the exact built journal and retries it with the original lease after a transient prewrite read", async () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  await saveTrainingSession(session);
+  const getString = storage.getString.bind(storage);
+  let failuresRemaining = 2;
+  storage.getString = (key: string) => {
+    if (key === STORAGE_KEYS.ACTIVE_JOURNAL && failuresRemaining > 0) { failuresRemaining -= 1; throw new Error("temporary journal preflight read failure"); }
+    return getString(key);
+  };
+  let journalWrites = 0;
+  const journalWritePhases: unknown[] = [];
+  const setString = storage.setString.bind(storage);
+  storage.setString = (key: string, value: string) => {
+    if (key === STORAGE_KEYS.ACTIVE_JOURNAL) {
+      journalWrites += 1;
+      journalWritePhases.push(JSON.parse(value).payload?.status);
+    }
+    setString(key, value);
+  };
+  let retrySeed: Readonly<{ record: import("../../storage/repositories/mutationJournalRepository").MutationJournalRecord; lease: import("../../storage/repositories/mutationJournalRepository").ActiveProfileStorageLease | null }> | undefined;
+  await assert.rejects(commitTrainingOutcome({ attempt, session: { ...session, activeForegroundMs: 1 }, reviews: [], createdAt: session.startedAt }), (error: unknown) => {
+    assert.ok(error instanceof MutationCommitFailure);
+    assert.equal(error.durableState, "not_durable");
+    retrySeed = error.retrySeed as typeof retrySeed;
+    return Boolean(retrySeed?.record);
+  });
+  assert.ok(retrySeed?.record);
+  assert.equal(Object.isFrozen(retrySeed.record), true);
+  assert.equal(Object.isFrozen(retrySeed.record.writes), true);
+  assert.equal(journalWrites, 0);
+  let secondSeed: Readonly<{ record: import("../../storage/repositories/mutationJournalRepository").MutationJournalRecord; lease: import("../../storage/repositories/mutationJournalRepository").ActiveProfileStorageLease | null }> | undefined;
+  await assert.rejects(commitMutation(retrySeed.record, retrySeed.lease), (error: unknown) => {
+    assert.ok(error instanceof MutationCommitFailure);
+    secondSeed = error.retrySeed as typeof secondSeed;
+    return Boolean(secondSeed?.record);
+  });
+  assert.equal(journalWrites, 0);
+  assert.equal(secondSeed?.record?.commandIdentity.fingerprint, retrySeed.record.commandIdentity.fingerprint);
+  await commitMutation(secondSeed!.record, secondSeed!.lease);
+  assert.equal((await getActiveMutationJournal()), null);
+  assert.deepEqual((await getTrainingAttempts()).value, [attempt]);
+  assert.equal((await getTrainingSessions()).value[0]?.activeForegroundMs, 1);
+  assert.deepEqual(journalWritePhases, ["journal_durable", "materialized", "verified_pending_clear"]);
+});
+test("corrupt journal preconditions stay blocked and preserve their bytes", async () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  const record = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: session.trackId, identity: attempt.response, writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt });
+  const corrupt = "{";
+  storage.setString(STORAGE_KEYS.ACTIVE_JOURNAL, corrupt);
+  let journalWrites = 0;
+  const setString = storage.setString.bind(storage);
+  storage.setString = (key: string, value: string) => { if (key === STORAGE_KEYS.ACTIVE_JOURNAL) journalWrites += 1; setString(key, value); };
+  await assert.rejects(persistMutationJournal(record), (error: unknown) => error instanceof Error && error.cause instanceof Error && error.cause.name === "CorruptStoredRecordError");
+  assert.equal(journalWrites, 0);
+  assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), corrupt);
+  await assert.rejects(commitMutation(record, null), (error: unknown) => {
+    assert.ok(error instanceof MutationCommitFailure);
+    assert.equal(error.durableState, "not_durable");
+    assert.equal(error.commandProof, undefined);
+    return true;
+  });
+  assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), corrupt);
+  assert.equal(journalWrites, 0);
+});
+
+test("a different pending journal blocks a new command without relabeling it as retry-safe", async () => {
+  const storage = new MemoryKeyValueStorage();
+  installKeyValueStorageForTests(storage);
+  const pending = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: session.trackId, identity: "existing-command", writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt });
+  await persistMutationJournal(pending);
+  const originalRaw = storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL);
+  const next = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: session.trackId, identity: attempt.response, writes: [{ kind: "put_attempt", record: { ...attempt, id: "next-attempt" } }, { kind: "put_session", record: { ...session, activeForegroundMs: 1 } }], createdAt: session.startedAt });
+  await assert.rejects(commitMutation(next, null), (error: unknown) => {
+    assert.ok(error instanceof MutationCommitFailure);
+    assert.equal(error.durableState, "not_durable");
+    assert.equal(error.commandProof, undefined);
+    return true;
+  });
+  assert.equal(storage.getString(STORAGE_KEYS.ACTIVE_JOURNAL), originalRaw);
+});
+
 test("journal phase advances only one immutable step at a time", async () => {
   const record = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: "coding-interview-dsa-problem-solving", identity: attempt.response, writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt });
   const initial = await persistMutationJournal(record);
@@ -30,6 +150,13 @@ test("journal has a versioned SHA-256 command identity and rejects stale expecte
   assert.ok(record.expectedRevisions.some((condition) => condition.target === "session:s" && condition.revision === null));
   await saveTrainingSession(session);
   await assert.rejects(persistMutationJournal(record), (error: Error & { cause?: unknown }) => error.cause instanceof Error && /expected revisions are stale/.test(error.cause.message));
+  await assert.rejects(commitMutation(record, null), (error: unknown) => {
+    assert.ok(error instanceof MutationCommitFailure);
+    assert.equal(error.durableState, "not_durable");
+    assert.equal(error.commandProof, undefined);
+    return true;
+  });
+  assert.equal(await getActiveMutationJournal(), null);
 });
 test("journal construction rejects writes that cross exact resolved artifact identities", async () => {
   const otherArtifactSha256 = "b".repeat(64);

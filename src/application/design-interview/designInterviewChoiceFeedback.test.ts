@@ -6,6 +6,7 @@ import { prepareCanonicalOptionOrder } from "../canonical/canonicalOptionOrder";
 import { projectCanonicalChoiceFeedbackControls, projectCanonicalChoiceFeedbackMessages } from "../canonical/canonicalInteractionPresentation";
 import { composeTrainingLifecycleUseCases } from "../bootstrap/trainingLifecycleComposition";
 import {
+  retryDesignInterviewAbandonmentCommand,
   getDesignInterviewPracticeProjection,
   submitDesignInterviewPracticeResponse,
 } from "./designInterviewSessionFacade";
@@ -136,7 +137,9 @@ test("Design choice diagnostics stay hidden for a failed journal write and commi
     const storage = installMemoryStorage();
     const { session } = await startPinnedSession(track, question, "bizq01-design-choice-journal-failure");
     await getForegroundSessionTimerFacade().checkpointForResponseSave(session);
-    storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_JOURNAL });
+    await getTrainingLifecycleUseCases().getPracticeOperationState(session, false);
+    const journalReadsBeforeSubmit = storage.operations.filter((operation) => operation.kind === "read" && operation.key === STORAGE_KEYS.ACTIVE_JOURNAL).length;
+    storage.setFailurePlan({ kind: "fail_on_key_read_occurrence", key: STORAGE_KEYS.ACTIVE_JOURNAL, occurrence: journalReadsBeforeSubmit + 2 });
     await assert.rejects(() => getTrainingLifecycleUseCases().submitPracticeResponse(response), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "submit_journal_failed");
     storage.setFailurePlan(null);
     const projection = await getDesignInterviewPracticeProjection();
@@ -145,6 +148,13 @@ test("Design choice diagnostics stay hidden for a failed journal write and commi
     assert.equal((await getTrainingAttempts()).value.length, 0);
     assert.equal((await getReviewQueueItems()).value.length, 0);
     assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false);
+    const failedOperation = await getTrainingLifecycleUseCases().getPracticeOperationState(session, false);
+    assert.equal("error" in failedOperation ? failedOperation.error.allowedAction : null, "retry_same_command");
+    await getTrainingLifecycleUseCases().retryPracticeSubmission();
+    const retried = await getDesignInterviewPracticeProjection();
+    assert.deepEqual(retried.response, { source: "materialized", value: response });
+    assert.deepEqual(retried.feedback?.messages, projectCanonicalChoiceFeedbackMessages(question, response) ?? []);
+    assert.equal((await getTrainingAttempts()).value.length, 1);
   }
 
   {
@@ -172,4 +182,28 @@ test("Design choice diagnostics stay hidden for a failed journal write and commi
     assert.equal((await getTrainingAttempts()).value.length, 1);
     assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false);
   }
+});
+
+test("Design exact abandonment retry routes a later durable phase failure to recovery", async () => {
+  const storage = installMemoryStorage();
+  const resolved = await contentPackageRuntimeOwner.resolveForDiscovery(TRACK_IDS[0], "design_interview");
+  const track = resolved.track;
+  const question = track.getPool(MODE_ID).find(choiceQuestion);
+  assert.ok(question && choiceQuestion(question));
+  const { session } = await startPinnedSession(track, question, "bizq01-design-abandonment-later-phase");
+  const lifecycle = getTrainingLifecycleUseCases();
+
+  const journalReadsBefore = storage.operations.filter((operation) => operation.kind === "read" && operation.key === STORAGE_KEYS.ACTIVE_JOURNAL).length;
+  storage.setFailurePlan({ kind: "fail_on_key_read_occurrence", key: STORAGE_KEYS.ACTIVE_JOURNAL, occurrence: journalReadsBefore + 2 });
+  await assert.rejects(lifecycle.abandonActiveSession());
+  storage.setFailurePlan(null);
+  const initial = await lifecycle.getPracticeOperationState(session, false);
+  assert.equal("error" in initial ? initial.error.allowedAction : null, "retry_same_command");
+  assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), false);
+
+  storage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION });
+  const result = await retryDesignInterviewAbandonmentCommand(session.id);
+  storage.setFailurePlan(null);
+  assert.deepEqual(result, { expectedSessionId: session.id, kind: "recovery_required", recovery: "abandonment" });
+  assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_JOURNAL), true, "the exact retry durably wrote its journal before the later phase fault");
 });

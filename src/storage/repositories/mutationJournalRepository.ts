@@ -5,8 +5,9 @@ import { resolvedContentRefKey, resolvedContentRefsEqual } from "../../domain/le
 import { canonicalFingerprintPayload, canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, writeCanonicalJson, type CanonicalRecordEnvelope } from "./canonicalRecordCodec";
-import { JournalWriteError } from "../errors";
+import { isCanonicalWriteAttemptCurrent, readCanonicalEnvelope, readCanonicalJson, reconcileCanonicalWriteAttempt, removeCanonicalValue, writeCanonicalJson, writeCanonicalJsonWithOutcome, type CanonicalRecordEnvelope, type CanonicalWriteAttempt } from "./canonicalRecordCodec";
+import { CanonicalWriteOutcomeError, JournalWriteError } from "../errors";
+import { captureActiveProfileStorageLease, isActiveProfileStorageLeaseCurrent, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
 import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionDraft, isTrainingSessionResult } from "./trainingModelGuards";
 import { getReviewQueueItems } from "./reviewQueueRepository";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
@@ -14,6 +15,8 @@ import { isCanonicalAccountSyncState, type AccountSyncState } from "./accountDat
 import { assertTrainingEvidenceIntegrity } from "./trainingEvidenceIntegrityRepository";
 import { assertContentIdentityRecordIntegrity } from "./contentIdentityUnavailableRepository";
 import { assertLearningStateResetPlanBeforeJournal, isLearningStateResetTargetPlan, type LearningStateResetTargetPlan } from "./learningStateResetRepository";
+
+export type { ActiveProfileStorageLease };
 
 export type JournalWrite =
   | { kind: "accept_goal_plan"; record: GoalPlanAcceptanceRecord }
@@ -471,6 +474,30 @@ export function assertMutationJournalIntegrity(value: unknown): asserts value is
 export function assertValidMutationJournal(value: unknown): asserts value is MutationJournalRecord { if (!isMutationJournalRecord(value)) throw new Error("Mutation journal record is unsupported."); }
 export function readActiveMutationJournal(): MutationJournalRecord | null { return readCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, isMutationJournalRecord); }
 export async function getActiveMutationJournal(): Promise<MutationJournalRecord | null> { return readActiveMutationJournal(); }
+export function reconcileMutationJournalWriteAttempt(value: unknown, expected: Readonly<{ commandFingerprint: string; planFingerprint: string }>): "verified" | "conflict" | "unknown" {
+  if (!isMutationJournalWriteAttempt(value)) return "unknown";
+  const attempt = value;
+  if (attempt.envelope.payload.commandIdentity.fingerprint !== expected.commandFingerprint ||
+    attempt.envelope.payload.planFingerprint !== expected.planFingerprint) return "conflict";
+  const exact = reconcileCanonicalWriteAttempt(attempt);
+  if (exact.kind !== "verified") return exact.kind === "provenNotApplied" ? "unknown" : exact.kind;
+  try {
+    if (!isCanonicalWriteAttemptCurrent(attempt)) return "unknown";
+    const current = readActiveMutationJournal();
+    if (!isCanonicalWriteAttemptCurrent(attempt)) return "unknown";
+    return current?.journalId === attempt.envelope.payload.journalId &&
+      current.commandIdentity.fingerprint === expected.commandFingerprint && current.planFingerprint === expected.planFingerprint
+      ? "verified" : "conflict";
+  } catch { return "unknown"; }
+}
+function isMutationJournalWriteAttempt(value: unknown): value is CanonicalWriteAttempt<MutationJournalRecord> {
+  if (!value || typeof value !== "object") return false;
+  const attempt = value as Partial<CanonicalWriteAttempt<MutationJournalRecord>>;
+  return attempt.key === STORAGE_KEYS.ACTIVE_JOURNAL && typeof attempt.afterRaw === "string" &&
+    typeof attempt.storage === "object" && attempt.storage !== null &&
+    (attempt.lease === null || (typeof attempt.lease === "object" && attempt.lease !== null)) &&
+    typeof attempt.envelope === "object" && attempt.envelope !== null && isMutationJournalRecord(attempt.envelope.payload);
+}
 export class GoalPlanAcceptanceRecoveryRequiredError extends Error {
   constructor() { super("Goal-plan acceptance must recover before canonical reads."); this.name = "GoalPlanAcceptanceRecoveryRequiredError"; }
 }
@@ -486,7 +513,11 @@ async function inJournalCriticalSection<T>(operation: () => Promise<T>): Promise
   await previous;
   try { return await operation(); } finally { release(); }
 }
-export async function persistMutationJournal(record: MutationJournalRecord): Promise<MutationJournalRecord> {
+/** Captures the current journal write owner before application preflight begins. */
+export function captureMutationJournalLease(): ActiveProfileStorageLease | null { return captureActiveProfileStorageLease(); }
+export function isMutationJournalLeaseCurrent(lease: ActiveProfileStorageLease | null): boolean { return isJournalLeaseCurrent(lease); }
+
+export async function persistMutationJournal(record: MutationJournalRecord, expectedLease: ActiveProfileStorageLease | null = captureActiveProfileStorageLease()): Promise<MutationJournalRecord> {
   return inJournalCriticalSection(async () => { try {
     assertValidMutationJournal(record);
     const reviewUpdates = record.writes.filter((write): write is Extract<JournalWrite, { kind: "update_review_entry" }> => write.kind === "update_review_entry");
@@ -496,6 +527,11 @@ export async function persistMutationJournal(record: MutationJournalRecord): Pro
     }
     const current = await getActiveMutationJournal();
     if (current && current.commandIdentity.fingerprint !== record.commandIdentity.fingerprint) throw new Error("A different mutation is already pending.");
+    if (current) {
+      if (current.journalId !== record.journalId || current.planFingerprint !== record.planFingerprint) throw new Error("The existing mutation command has a different immutable plan.");
+      if (!isJournalLeaseCurrent(expectedLease)) throw new Error("The active profile changed while the mutation command was being checked.");
+      return current;
+    }
     if (!current) {
       // A new journal cannot legitimize pre-existing orphan evidence. Existing
       // durable journals instead use the narrower journal-aware replay gate.
@@ -517,13 +553,18 @@ export async function persistMutationJournal(record: MutationJournalRecord): Pro
         throw new JournalWriteError(new Error(message), message);
       }
     }
-    const prepared = current ?? record;
-    writeCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, prepared);
-    return prepared;
+    const outcome = writeCanonicalJsonWithOutcome(STORAGE_KEYS.ACTIVE_JOURNAL, record, null, expectedLease);
+    if (outcome.kind !== "verified") throw new JournalWriteError(new CanonicalWriteOutcomeError(STORAGE_KEYS.ACTIVE_JOURNAL, outcome));
+    return outcome.envelope.payload;
   } catch (error) {
     if (error instanceof JournalWriteError) throw error;
     throw new JournalWriteError(error);
   } });
+}
+
+function isJournalLeaseCurrent(lease: ActiveProfileStorageLease | null): boolean {
+  try { return lease ? isActiveProfileStorageLeaseCurrent(lease) : captureActiveProfileStorageLease() === null; }
+  catch { return false; }
 }
 
 export async function updateMutationJournalPhase(record: MutationJournalRecord, status: MutationJournalRecord["status"]): Promise<MutationJournalRecord> {

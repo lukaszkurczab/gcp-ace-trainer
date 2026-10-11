@@ -16,9 +16,13 @@ import {
   recoverDesignInterviewPracticeCompletion,
   recoverDesignInterviewPracticeCompletionCheckpoint,
   recoverDesignInterviewPracticeOperation,
+  reconcileDesignInterviewPracticeResponse,
+  reconcileDesignInterviewAbandonment,
   recoverDesignInterviewPreAbandonmentCheckpoint,
   retryDesignInterviewAbandonmentAfterCheckpointFailure,
+  retryDesignInterviewAbandonmentCommand,
   retryDesignInterviewPracticeCompletionCheckpoint,
+  retryDesignInterviewPracticeResponse,
   subscribeDesignInterviewPracticeOperation,
   subscribeDesignInterviewPracticeProjectionRefresh,
   submitDesignInterviewPracticeResponse,
@@ -52,7 +56,7 @@ import type { PracticeSessionRouteParams } from "./sessionConfig";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
 type CompletionFailure = Exclude<Awaited<ReturnType<typeof completeDesignInterviewPracticeSession>>, { kind: "verified" }>;
-type ExitFailure = "pause" | "retry_abandon" | "retry_checkpoint" | "recover_abandon" | "recover_operation";
+type ExitFailure = "pause" | "retry_abandon" | "retry_checkpoint" | "recover_abandon" | "recover_operation" | "reconcile_abandon";
 
 /** Design Interview runner. The renderer handles all authored interaction types through the shared durable session surface. */
 export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
@@ -187,13 +191,16 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
   });
   const effectiveResponse = resolvePracticeLocalResponse(responseForProjection, responseControl);
   const renderedCompletionOperation = completionFailure?.kind === "retry_completion" || completionFailure?.kind === "recover_completion" ? completionFailure.operation : completionOperation;
+  const uncertainResponse = projection.operation.kind === "submit_journal_failed" && projection.operation.error.allowedAction === "reconcile";
+  const retryFrozenResponse = projection.operation.kind === "submit_journal_failed" && projection.operation.error.allowedAction === "retry_same_command";
+  const frozenPracticeResponse = projection.operation.kind === "submit_journal_failed" && projection.operation.error.allowedAction !== "submit_again";
   const phase: PracticeSurfacePhase = exitFailure === "retry_abandon" || exitFailure === "retry_checkpoint"
     ? "abandonment_failed_before_journal"
     : exitFailure === "recover_abandon" || exitFailure === "recover_operation"
       ? "abandonment_recovery_required"
-      : renderedCompletionOperation?.kind ?? projection.operation.kind;
-  const editable = !exitFailure && !completionFailure && allowsPracticeResponseEditing(projection.operation.kind);
-  const canSubmit = editable && hasCompleteDesignResponse(projection, effectiveResponse);
+      : uncertainResponse ? "submit_outcome_unknown" : renderedCompletionOperation?.kind ?? projection.operation.kind;
+  const editable = !exitFailure && !completionFailure && !frozenPracticeResponse && allowsPracticeResponseEditing(phase);
+  const canSubmit = (editable || retryFrozenResponse) && hasCompleteDesignResponse(projection, effectiveResponse);
   const canRecover = !exitFailure && !completionFailure && "error" in projection.operation && projection.operation.error.allowedAction === "recover";
   const canAdvance = !exitFailure && !completionFailure && (projection.operation.kind === "feedback" || projection.operation.kind === "advance_failed");
   const operationNotice = noticeForPracticeOperation(renderedCompletionOperation ?? projection.operation);
@@ -205,6 +212,8 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
         ? { message: t(exitFailure === "retry_checkpoint" ? "We couldn't save the session time. Try again to end the session." : "We couldn't end the session. Try again."), tone: "error" as const }
       : exitFailure === "recover_abandon"
           ? { message: t("We couldn't end the session yet. Restore the session to continue."), tone: "error" as const }
+          : exitFailure === "reconcile_abandon"
+            ? { message: t("The session ending is not confirmed. Check its status before continuing."), tone: "error" as const }
           : exitFailure === "recover_operation"
             ? { message: t("We couldn't finish updating the session time. Restore it before ending the session."), tone: "error" as const }
             : completionFailure?.kind === "retry_final_checkpoint"
@@ -217,7 +226,10 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
     if (actionPending.current || !canSubmit || !effectiveResponse) return;
     actionPending.current = true;
     try {
-      try { await submitDesignInterviewPracticeResponse(toDesignResponse(effectiveResponse)); }
+      try {
+        if (retryFrozenResponse) await retryDesignInterviewPracticeResponse();
+        else await submitDesignInterviewPracticeResponse(toDesignResponse(effectiveResponse));
+      }
       catch (cause) { setResponseError(describeOperationalFailure(cause, t("We couldn't save your answer. Try again."))); }
       await refreshAfterCommand("We couldn't display your answer. Try again.");
     } catch {
@@ -255,6 +267,14 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
     try { await recoverDesignInterviewPracticeOperation(); } catch { /* Refresh shows the exact durable state. */ }
     await refreshAfterCommand("We couldn't restore the session. Try again.");
   };
+  const reconcileResponse = async () => {
+    try {
+      const result = await reconcileDesignInterviewPracticeResponse();
+      if (result !== "verified") { setResponseError(t("The saved response could not be confirmed.")); return; }
+      await refresh();
+      setResponseError(null);
+    } catch (cause) { setResponseError(describeOperationalFailure(cause, t("The saved response could not be confirmed."))); }
+  };
   const applyCompletionResult = async (result: Awaited<ReturnType<typeof completeDesignInterviewPracticeSession>>) => {
     if (result.kind !== "verified") { setCompletionFailure(result); return; }
     permitRouteExit.current = true;
@@ -290,6 +310,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
       const result = await abandonDesignInterviewSession(projection.session.id);
       if (result.kind === "retry_same_command") { setExitFailure(result.retry === "foreground_checkpoint" ? "retry_checkpoint" : "retry_abandon"); return; }
       if (result.kind === "recovery_required") { setExitFailure(result.recovery === "abandonment" ? "recover_abandon" : "recover_operation"); return; }
+      if (result.kind === "reconcile_required") { setExitFailure("reconcile_abandon"); return; }
       permitRouteExit.current = true;
       navigation.replace(ROUTES.PRACTICE_HUB);
     } catch (cause) { setError(describeOperationalFailure(cause, t("We couldn't end the session. Try again."))); }
@@ -304,18 +325,46 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
     setExitFailure(null);
     await refreshAfterCommand("We couldn't display the updated session time. Try again.");
   };
+  const reconcileAbandonment = async () => {
+    try {
+      const result = await reconcileDesignInterviewAbandonment(projection.session.id);
+      if (result === "verified") {
+        permitRouteExit.current = true;
+        navigation.replace(ROUTES.PRACTICE_HUB);
+        return;
+      }
+      setExitFailure("reconcile_abandon");
+      await refreshAfterCommand("The session ending is not confirmed. Check its status before continuing.");
+    } catch {
+      setExitFailure("reconcile_abandon");
+    }
+  };
   const retryCheckpointAndEnd = async () => {
     try {
       const result = await retryDesignInterviewAbandonmentAfterCheckpointFailure(projection.session.id);
       if (result.kind === "retry_same_command") { setExitFailure(result.retry === "foreground_checkpoint" ? "retry_checkpoint" : "retry_abandon"); return; }
       if (result.kind === "recovery_required") { setExitFailure(result.recovery === "abandonment" ? "recover_abandon" : "recover_operation"); return; }
+      if (result.kind === "reconcile_required") { setExitFailure("reconcile_abandon"); return; }
       permitRouteExit.current = true;
       navigation.replace(ROUTES.PRACTICE_HUB);
     } catch (cause) { setError(describeOperationalFailure(cause, t("We couldn't save the session time. Try again."))); }
   };
-  const retry = exitFailure === "retry_abandon" ? endSession : exitFailure === "retry_checkpoint" ? retryCheckpointAndEnd : exitFailure === "recover_abandon" ? recoverAbandonment : exitFailure === "recover_operation" ? recoverOperationBeforeAbandonment : completionFailure ? retryOrRecoverCompletion : canRecover ? recover : undefined;
+  const retryFrozenAbandonment = async () => {
+    try {
+      const result = await retryDesignInterviewAbandonmentCommand(projection.session.id);
+      if (result.kind === "retry_same_command") { setExitFailure(result.retry === "foreground_checkpoint" ? "retry_checkpoint" : "retry_abandon"); return; }
+      if (result.kind === "recovery_required") { setExitFailure(result.recovery === "abandonment" ? "recover_abandon" : "recover_operation"); return; }
+      if (result.kind === "reconcile_required") { setExitFailure("reconcile_abandon"); return; }
+      permitRouteExit.current = true;
+      navigation.replace(ROUTES.PRACTICE_HUB);
+    } catch (cause) {
+      setExitFailure(null);
+      setError(describeOperationalFailure(cause, t("We couldn't end the session. Try again.")));
+    }
+  };
+  const retry = exitFailure === "retry_abandon" ? retryFrozenAbandonment : exitFailure === "retry_checkpoint" ? retryCheckpointAndEnd : exitFailure === "recover_abandon" ? recoverAbandonment : exitFailure === "recover_operation" ? recoverOperationBeforeAbandonment : exitFailure === "reconcile_abandon" ? reconcileAbandonment : completionFailure ? retryOrRecoverCompletion : uncertainResponse ? reconcileResponse : canRecover ? recover : undefined;
   const primaryAction = completionFailure ? undefined
-    : getPracticePrimaryAction({ feedbackTiming: "afterEachAnswer", hasLocalResponse: editable ? canSubmit : false, isFinalPosition: projection.ordinal === projection.total, phase }) ?? undefined;
+    : getPracticePrimaryAction({ feedbackTiming: "afterEachAnswer", hasLocalResponse: editable || retryFrozenResponse ? canSubmit : false, isFinalPosition: projection.ordinal === projection.total, phase }) ?? undefined;
 
   return <PracticeSessionSurface
     allowLeave={!completionFailure}
@@ -352,7 +401,7 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
         sessionId: projection.session.id,
       }));
     }}
-    onPrimaryAction={() => void (editable ? submit() : next())}
+    onPrimaryAction={() => void (retryFrozenResponse ? submit() : frozenPracticeResponse ? undefined : editable ? submit() : next())}
     onRequestLeave={() => { pendingRouteAction.current = null; setExit("leave"); }}
     onRetry={retry ? () => void retry() : undefined}
     phase={phase}
@@ -360,7 +409,8 @@ export function DesignInterviewPracticeScreen({ navigation, route }: Props) {
     primaryAction={primaryAction}
     progress={projection.ordinal / projection.total}
     question={{ constraints: projection.question.constraints ?? [], itemId: projection.question.questionId, prompt: projection.question.prompt, responseControl }}
-    retryLabel={exitFailure === "retry_abandon" ? "Try ending session again" : exitFailure === "retry_checkpoint" ? "Retry saving time" : exitFailure === "recover_abandon" ? "Restore session" : exitFailure === "recover_operation" ? "Restore session time" : completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : canRecover ? "Restore session" : undefined}
+    responseEditable={editable}
+    retryLabel={exitFailure === "retry_abandon" ? "Try ending session again" : exitFailure === "retry_checkpoint" ? "Retry saving time" : exitFailure === "recover_abandon" ? "Restore session" : exitFailure === "recover_operation" ? "Restore session time" : exitFailure === "reconcile_abandon" ? "Check session status" : completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : uncertainResponse ? "Check saved response" : canRecover ? "Restore session" : undefined}
     retryVariant={completionFailure || canRecover ? "primary" : "secondary"}
     runtimeIdentity={{ actualLength: projection.session.actualLength, feedbackTiming: "afterEachAnswer", itemId: projection.question.questionId, modeId: projection.session.modeId, ordinal: projection.ordinal, roadmapNodeId: projection.question.nodeId, sessionId: projection.session.id, trackId: projection.session.trackId }}
     timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatElapsed(projection.elapsedForegroundMs)}`, label: formatElapsed(projection.elapsedForegroundMs) }}

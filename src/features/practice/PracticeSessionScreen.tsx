@@ -16,6 +16,7 @@ import {
   recoverAlgorithmsPracticeCompletion,
   recoverAlgorithmsPracticeCompletionCheckpoint,
   retryAlgorithmsPracticeCompletionCheckpoint,
+  retryAlgorithmsPracticeResponse,
   startAlgorithmsSession,
   subscribeAlgorithmsPracticeOperation,
   subscribeAlgorithmsPracticeProjectionRefresh,
@@ -187,6 +188,8 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   if (state.kind === "unavailable") return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Practice session unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   const sessionState = state;
   const projection = sessionState.projection;
+  const retryFrozenResponse = projection.operation.kind === "submit_journal_failed" && projection.operation.error.allowedAction === "retry_same_command";
+  const frozenPracticeResponse = projection.operation.kind === "submit_journal_failed" && projection.operation.error.allowedAction !== "submit_again";
   const renderedCompletionOperation = completionFailure?.kind === "retry_completion" || completionFailure?.kind === "recover_completion" ? completionFailure.operation : completionOperation;
   const phase = renderedCompletionOperation ? toPracticeSurfacePhase(renderedCompletionOperation.kind) : pendingPhase ?? toPracticeSurfacePhase(projection.operation.kind);
   const notice = submissionError
@@ -203,7 +206,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     renderer: projection.interaction.renderer,
   });
   const effectiveLocalResponse = resolvePracticeLocalResponse(localResponse, responseControl);
-  const primaryAction = completionFailure ? null : getPracticePrimaryAction({ feedbackTiming: feedbackTiming(projection.session.configurationSnapshot.feedbackMode), hasLocalResponse: effectiveLocalResponse !== null, isFinalPosition: projection.position.current === projection.position.total, phase });
+  const primaryAction = completionFailure ? null : getPracticePrimaryAction({ feedbackTiming: feedbackTiming(projection.session.configurationSnapshot.feedbackMode), hasLocalResponse: effectiveLocalResponse !== null && (!frozenPracticeResponse || retryFrozenResponse), isFinalPosition: projection.position.current === projection.position.total, phase });
 
   async function refresh() {
     const next = await getAlgorithmsPracticeProjection();
@@ -220,7 +223,8 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     setPendingPhase("submitting_before_journal");
     setSubmissionError(null);
     try {
-      await submitAlgorithmsPracticeResponse(effectiveLocalResponse);
+      if (retryFrozenResponse) await retryAlgorithmsPracticeResponse();
+      else await submitAlgorithmsPracticeResponse(effectiveLocalResponse);
       await refresh();
     } catch (error) {
       setSubmissionError(describePracticeSubmissionFailure(error, t));
@@ -364,7 +368,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       onConfirmLeave={leave}
       onDismissExit={() => { pendingRouteAction.current = null; setExit("none"); }}
       onOrderingMove={(elementId, direction) => { setSubmissionError(null); setLocalResponse((current) => moveOrderingElement(current, elementId, direction, responseControl)); }}
-      onPrimaryAction={() => void ((phase === "unanswered" || phase === "submit_journal_failed") ? submit() : advanceOrFinish())}
+      onPrimaryAction={() => void (retryFrozenResponse ? submit() : frozenPracticeResponse ? undefined : (phase === "unanswered" || phase === "submit_journal_failed") ? submit() : advanceOrFinish())}
       onRequestLeave={() => { pendingRouteAction.current = null; setExit("leave"); }}
       onRetry={completionFailure ? () => void retryOrRecoverCompletion() : "error" in projection.operation && projection.operation.error.allowedAction === "recover" ? () => void recover() : undefined}
       phase={phase}
@@ -372,6 +376,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       primaryAction={primaryAction ?? undefined}
       progress={projection.position.current / projection.position.total}
       question={{ constraints: projection.constraints, itemId: projection.item.questionId, prompt: projection.prompt, responseControl }}
+      responseEditable={!frozenPracticeResponse}
       retryLabel={completionFailure ? completionFailure.kind === "retry_completion" ? "Finish session" : completionFailure.kind === "recover_completion" ? "Restore session result" : completionFailure.kind === "retry_final_checkpoint" ? "Retry saving time" : "Restore session time" : "error" in projection.operation && projection.operation.error.allowedAction === "recover" ? "Restore session" : undefined}
       retryVariant={completionFailure || ("error" in projection.operation && projection.operation.error.allowedAction === "recover") ? "primary" : "secondary"}
       runtimeIdentity={{

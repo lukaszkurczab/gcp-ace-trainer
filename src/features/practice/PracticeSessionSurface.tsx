@@ -77,6 +77,7 @@ export type PracticeSessionSurfaceProps = Readonly<{
   progress?: number;
   question?: PracticeQuestionPresentation;
   retryLabel?: string;
+  responseEditable?: boolean;
   retryVariant?: "primary" | "secondary";
   runtimeIdentity?: PracticeRuntimeIdentity;
   timer?: SessionMetricPresentation;
@@ -90,7 +91,7 @@ export type PracticeSessionSurfaceProps = Readonly<{
 export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
   const lastPrimaryActionActivation = useRef<PracticePrimaryActionActivation | null>(null);
   const styles = useThemedStyles(createStyles);
-  const editable = allowsPracticeResponseEditing(props.phase);
+  const editable = props.responseEditable ?? allowsPracticeResponseEditing(props.phase);
   const visibleFeedback = allowsPracticeFeedback(props.phase) ? props.feedback : undefined;
   // These UI-only IDs are explicitly mapped from the canonical questionId by each screen.
   const displayedQuestionId = props.runtimeIdentity?.itemId ?? props.question?.itemId;

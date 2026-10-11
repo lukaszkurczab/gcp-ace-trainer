@@ -8,6 +8,7 @@ export default function App() {
   const entry = resolvePersist13Entry({
     mode: process.env.EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE,
     runId: process.env.EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE_RUN_ID,
+    scenario: process.env.EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE_SCENARIO,
   });
   if (entry.kind === "regular") {
     const RegularApplicationRoot = (require("./src/RegularApplicationRoot") as { default: () => ReactElement }).default;

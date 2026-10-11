@@ -1,9 +1,9 @@
 /** Application-owned facts. Presentation may render them but never infer them. */
 export type DurableOperationError = Readonly<{
   operation: "practice_submit" | "practice_advance" | "practice_complete" | "practice_abandon" | "practice_resume" | "simulation_save" | "simulation_navigation" | "simulation_save_and_continue" | "simulation_finalization" | "simulation_abandon" | "simulation_resume";
-  durableState: "not_durable" | "journal_durable" | "materialized" | "verified_pending_clear" | "verified";
+  durableState: "not_durable" | "unknown" | "journal_durable" | "materialized" | "verified_pending_clear" | "verified";
   retrySafety: "safe_retry" | "recovery_only" | "retry_forbidden";
-  allowedAction: "submit_again" | "recover" | "retry_same_command" | "return_to_summary" | "none";
+  allowedAction: "submit_again" | "recover" | "retry_same_command" | "reconcile" | "return_to_summary" | "none";
   prohibitedFallback: string;
 }>;
 

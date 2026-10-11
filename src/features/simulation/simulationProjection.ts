@@ -59,7 +59,7 @@ export type SimulationAction = Readonly<{
 export type SimulationOperationPresentation = Readonly<{
   auxiliaryAction?: SimulationAction;
   description: string;
-  kind: "saving-response" | "save-failed" | "response-saved-navigation-failed" | "navigating" | "finalizing" | "finalization-recovery-required";
+  kind: "saving-response" | "save-failed" | "save-outcome-unknown" | "response-saved-navigation-failed" | "navigating" | "finalizing" | "finalization-recovery-required";
   lockMessage: string;
   noticeMessage?: string;
   title: string;

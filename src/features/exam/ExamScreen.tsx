@@ -7,6 +7,9 @@ import {
   CertificationExamExpiredError,
   finalizeCertificationExam,
   getCertificationExamProjection,
+  recoverCertificationExamOperation,
+  reconcileCertificationExamOperation,
+  retryCertificationExamDraftSave,
   navigateCertificationExamTo,
   resumeExpectedCertificationExam,
   saveCertificationExamResponse,
@@ -28,6 +31,7 @@ import type { SimulationNavigatorSelectionResult } from "../simulation/simulatio
 import { createExamActionLane, type ExamActionLane } from "./examActionLane";
 import { settleCommittedExamNavigation } from "./examNavigationRefresh";
 import { createExamReadOwner, type ExamReadOwner, type ExamReadOwnerOutcome, type ExamReadOwnerToken } from "./examReadOwner";
+import { shouldClearPendingExamWrite, type PendingExamWrite } from "./examPendingWrite";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.EXAM>;
 type ExamReadState =
@@ -78,6 +82,7 @@ export function ExamScreen({ navigation, route }: Props) {
   const [actionPending, setActionPending] = useState(false);
   const [navigatorVisible, setNavigatorVisible] = useState(false);
   const [finishVisible, setFinishVisible] = useState(false);
+  const [pendingExamWrite, setPendingExamWrite] = useState<PendingExamWrite | null>(null);
   const readOwnerRef = useRef<ExamReadOwner<CertificationExamProjection> | null>(null);
   const actionLaneRef = useRef<ExamActionLane | null>(null);
   const activeTokenRef = useRef<ExamReadOwnerToken | null>(null);
@@ -102,6 +107,7 @@ export function ExamScreen({ navigation, route }: Props) {
     if (!isCurrent(token) || outcome.kind === "stale") return;
     if (outcome.kind === "ready") {
       setOperationError(null);
+      if (pendingExamWrite && shouldClearPendingExamWrite(pendingExamWrite, outcome)) setPendingExamWrite(null);
       setReadState({ kind: "ready", projection: outcome.projection, requestKey: token.requestKey });
       return;
     }
@@ -182,23 +188,31 @@ export function ExamScreen({ navigation, route }: Props) {
 
   async function selectOption(optionId: string) {
     const token = currentToken();
-    if (!token || readState.kind !== "ready") return;
+    if (!token || readState.kind !== "ready" || isExamResolutionRequired(readState.projection)) return;
     const projection = readState.projection;
     if (projection.question.interaction.type !== "choice_single") return;
+    const attempted: PendingExamWrite = { kind: "response", occurrenceId: projection.occurrenceId, response: { type: "choice_single", optionId } };
+    setPendingExamWrite(attempted);
     await performAction(async () => {
       setOperationError(null);
       try {
         await saveCertificationExamResponse({ occurrenceId: projection.occurrenceId, response: { type: "choice_single", optionId } });
+        setPendingExamWrite(null);
         if (isCurrent(token)) await refreshAfterAction(token);
       } catch (cause) {
-        if (isCurrent(token)) setOperationError(describeOperationalFailure(cause, t("Answer could not be saved.")));
+        if (isCurrent(token)) {
+          const refreshed = await readOwner.refresh(token, "interval");
+          publishReadOutcome(token, refreshed);
+          if (shouldClearPendingExamWrite(attempted, refreshed)) setPendingExamWrite(null);
+          setOperationError(describeOperationalFailure(cause, t("Answer could not be saved.")));
+        }
       }
     });
   }
 
   async function goToIndex(index: number): Promise<SimulationNavigatorSelectionResult> {
     const token = currentToken();
-    if (!token || readState.kind !== "ready") return "save_failed";
+    if (!token || readState.kind !== "ready" || isExamResolutionRequired(readState.projection)) return "save_failed";
     const targetIndex = Math.max(0, Math.min(readState.projection.total - 1, index));
     const result = await performAction(async (): Promise<SimulationNavigatorSelectionResult> => {
       setOperationError(null);
@@ -253,22 +267,30 @@ export function ExamScreen({ navigation, route }: Props) {
 
   async function toggleFlag() {
     const token = currentToken();
-    if (!token || readState.kind !== "ready") return;
+    if (!token || readState.kind !== "ready" || isExamResolutionRequired(readState.projection)) return;
     const occurrenceId = readState.projection.occurrenceId;
+    const attempted: PendingExamWrite = { kind: "flag", occurrenceId, flagged: !readState.projection.flaggedOccurrenceIds.includes(occurrenceId) };
+    setPendingExamWrite(attempted);
     await performAction(async () => {
       setOperationError(null);
       try {
         await toggleCertificationExamFlag(occurrenceId);
+        setPendingExamWrite(null);
         if (isCurrent(token)) await refreshAfterAction(token);
       } catch (cause) {
-        if (isCurrent(token)) setOperationError(describeOperationalFailure(cause, t("Question flag could not be saved.")));
+        if (isCurrent(token)) {
+          const refreshed = await readOwner.refresh(token, "interval");
+          publishReadOutcome(token, refreshed);
+          if (shouldClearPendingExamWrite(attempted, refreshed)) setPendingExamWrite(null);
+          setOperationError(describeOperationalFailure(cause, t("Question flag could not be saved.")));
+        }
       }
     });
   }
 
   async function finishExam() {
     const token = currentToken();
-    if (!token) return;
+    if (!token || (readState.kind === "ready" && isExamResolutionRequired(readState.projection))) return;
     await performAction(async () => {
       setOperationError(null);
       try {
@@ -289,6 +311,62 @@ export function ExamScreen({ navigation, route }: Props) {
     });
   }
 
+  async function reconcileExamSave() {
+    const token = currentToken();
+    if (!token || readState.kind !== "ready" || !isExamOperationUnconfirmed(readState.projection)) return;
+    await performAction(async () => {
+      const outcome = await reconcileCertificationExamOperation();
+      if (!isCurrent(token)) return;
+      if (outcome !== "verified") {
+        setOperationError(t("The saved response could not be confirmed."));
+        return;
+      }
+      const refreshed = await readOwner.refresh(token, "interval");
+      if (refreshed.kind === "ready" && pendingExamWrite) {
+        if (shouldClearPendingExamWrite(pendingExamWrite, refreshed)) setPendingExamWrite(null);
+        else {
+          setOperationError(t("The saved response could not be confirmed."));
+          publishReadOutcome(token, refreshed);
+          return;
+        }
+      }
+      publishReadOutcome(token, refreshed);
+    });
+  }
+
+  async function retryExamSave() {
+    const token = currentToken();
+    if (!token || readState.kind !== "ready" || !pendingExamWrite || readState.projection.operation.kind !== "save_failed" || readState.projection.operation.error.allowedAction !== "retry_same_command") return;
+    await performAction(async () => {
+      try {
+        await retryCertificationExamDraftSave();
+        setPendingExamWrite(null);
+        if (isCurrent(token)) await refreshAfterAction(token);
+      } catch (cause) {
+        if (isCurrent(token)) {
+          const refreshed = await readOwner.refresh(token, "interval");
+          publishReadOutcome(token, refreshed);
+          setOperationError(describeOperationalFailure(cause, t("Answer could not be saved.")));
+        }
+      }
+    });
+  }
+
+  async function recoverExamOperation() {
+    const token = currentToken();
+    if (!token || readState.kind !== "ready") return;
+    await performAction(async () => {
+      const completedSessionId = await recoverCertificationExamOperation();
+      if (!isCurrent(token)) return;
+      if (completedSessionId) {
+        readOwner.invalidate(token);
+        navigation.replace(ROUTES.RESULT, { sessionId: completedSessionId });
+        return;
+      }
+      await refreshAfterAction(token);
+    });
+  }
+
   if (readState.requestKey !== requestKey || readState.kind === "pending") return <ExamLoadingSkeleton />;
   if (readState.kind === "conflict") {
     return <Screen edges={["top", "bottom"]}><EmptyState title={t("Another session is active")} description={t("The expected Cloud exam is no longer the active session.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
@@ -304,6 +382,8 @@ export function ExamScreen({ navigation, route }: Props) {
   }
 
   const { projection } = readState;
+  const saveUnconfirmed = isExamSaveUnconfirmed(projection);
+  const resolutionRequired = isExamResolutionRequired(projection);
   const deadline = projection.session.configurationSnapshot.timerDeadlineAt;
   if (typeof deadline !== "string") {
     return <Screen edges={["top", "bottom"]}><EmptyState title={t("Exam unavailable")} description={t("The immutable exam deadline is unavailable.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
@@ -316,7 +396,8 @@ export function ExamScreen({ navigation, route }: Props) {
     accessibilityLabel: `${t("Time remaining")}: ${remainingLabel}`,
     label: `${t("Time remaining")}: ${remainingLabel}`,
   };
-  const selectedOptionId = projection.response?.type === "choice_single" ? projection.response.optionId : null;
+  const pendingResponse = pendingExamWrite?.kind === "response" && pendingExamWrite.occurrenceId === projection.occurrenceId ? pendingExamWrite.response : null;
+  const selectedOptionId = pendingResponse?.type === "choice_single" ? pendingResponse.optionId : projection.response?.type === "choice_single" ? projection.response.optionId : null;
   const answered = new Set(Object.keys(projection.draft.responsesByOccurrenceId));
   const unansweredCount = projection.session.itemOrder.filter((item) => !answered.has(item.occurrenceId)).length;
   const interaction = projection.question.interaction;
@@ -330,14 +411,14 @@ export function ExamScreen({ navigation, route }: Props) {
         actionBar={(
           <View style={styles.actionBar}>
             <View style={styles.examActions}>
-              <Button disabled={actionPending} onPress={() => setNavigatorVisible(true)} testID={runtimeSelectors.simulation.action(projection.session.id, "navigator")} variant="secondary">{t("Question navigator")}</Button>
-              <Button disabled={actionPending} onPress={() => void toggleFlag()} testID={runtimeSelectors.simulation.action(projection.session.id, "flag")} variant="secondary">{t(projection.flaggedOccurrenceIds.includes(projection.occurrenceId) ? "Remove flag" : "Flag question")}</Button>
+              <Button disabled={actionPending || resolutionRequired} onPress={() => setNavigatorVisible(true)} testID={runtimeSelectors.simulation.action(projection.session.id, "navigator")} variant="secondary">{t("Question navigator")}</Button>
+              <Button disabled={actionPending || resolutionRequired} onPress={() => void toggleFlag()} testID={runtimeSelectors.simulation.action(projection.session.id, "flag")} variant="secondary">{t((pendingExamWrite?.kind === "flag" && pendingExamWrite.occurrenceId === projection.occurrenceId ? pendingExamWrite.flagged : projection.flaggedOccurrenceIds.includes(projection.occurrenceId)) ? "Remove flag" : "Flag question")}</Button>
             </View>
             <View style={styles.navigationActions}>
-              <Button disabled={actionPending || projection.ordinal === 1} onPress={() => void goToIndex(projection.ordinal - 2)} style={styles.navigationButton} testID={runtimeSelectors.simulation.action(projection.session.id, "previous")} variant="secondary">{t("Previous")}</Button>
-              <Button disabled={actionPending || projection.ordinal === projection.total} onPress={() => void goToIndex(projection.ordinal)} style={styles.navigationButton} testID={runtimeSelectors.simulation.action(projection.session.id, "next")} variant="secondary">{t("Next")}</Button>
+              <Button disabled={actionPending || resolutionRequired || projection.ordinal === 1} onPress={() => void goToIndex(projection.ordinal - 2)} style={styles.navigationButton} testID={runtimeSelectors.simulation.action(projection.session.id, "previous")} variant="secondary">{t("Previous")}</Button>
+              <Button disabled={actionPending || resolutionRequired || projection.ordinal === projection.total} onPress={() => void goToIndex(projection.ordinal)} style={styles.navigationButton} testID={runtimeSelectors.simulation.action(projection.session.id, "next")} variant="secondary">{t("Next")}</Button>
             </View>
-            <Button disabled={actionPending} onPress={() => setFinishVisible(true)} testID={runtimeSelectors.simulation.action(projection.session.id, "finish")}>{t("Finish exam")}</Button>
+            <Button disabled={actionPending || resolutionRequired} onPress={() => setFinishVisible(true)} testID={runtimeSelectors.simulation.action(projection.session.id, "finish")}>{t("Finish exam")}</Button>
           </View>
         )}
         layout="practice"
@@ -349,7 +430,10 @@ export function ExamScreen({ navigation, route }: Props) {
         timer={timer}
         timerTestID={runtimeSelectors.session.timer(projection.session.id)}
       >
-        {operationError ? <View accessible accessibilityLabel={operationError} accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.errorNotice}><Text maxFontSizeMultiplier={2} style={styles.errorText}>{operationError}</Text></View> : null}
+        {isExamOperationUnconfirmed(projection) ? <View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.errorNotice}><Text maxFontSizeMultiplier={2} style={styles.errorText}>{t(saveUnconfirmed ? "The saved response could not be confirmed." : "The saved exam action could not be confirmed.")}</Text><Button disabled={actionPending} onPress={() => void reconcileExamSave()} variant="secondary">{t(saveUnconfirmed ? "Check saved response" : "Check saved exam action")}</Button></View> : null}
+        {projection.operation.kind === "save_failed" && projection.operation.error.allowedAction === "retry_same_command" && pendingExamWrite ? <View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.errorNotice}><Text maxFontSizeMultiplier={2} style={styles.errorText}>{t("Couldn't save this response. Your current answer is still here.")}</Text><Button disabled={actionPending} onPress={() => void retryExamSave()} variant="secondary">{t("Retry save")}</Button></View> : null}
+        {!isExamOperationUnconfirmed(projection) && resolutionRequired ? <View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.errorNotice}><Text maxFontSizeMultiplier={2} style={styles.errorText}>{t("The saved exam action needs to be restored before continuing.")}</Text><Button disabled={actionPending} onPress={() => void recoverExamOperation()} variant="secondary">{t("Restore saved exam action")}</Button></View> : null}
+        {operationError && !saveUnconfirmed ? <View accessible accessibilityLabel={operationError} accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.errorNotice}><Text maxFontSizeMultiplier={2} style={styles.errorText}>{operationError}</Text></View> : null}
         <PracticeQuestionCard question={{ constraints: projection.question.constraints, itemId: projection.question.questionId, prompt: projection.question.prompt }} />
         <View style={styles.options}>
           {interaction.options.map((option, index) => {
@@ -357,8 +441,8 @@ export function ExamScreen({ navigation, route }: Props) {
             return <AnswerOption
               accessibilityLabel={option.text}
               accessibilityRole="radio"
-              accessibilityState={{ checked: selected, disabled: actionPending }}
-              disabled={actionPending}
+              accessibilityState={{ checked: selected, disabled: actionPending || resolutionRequired }}
+              disabled={actionPending || resolutionRequired}
               key={option.optionId}
               letter={String.fromCharCode(65 + index)}
               onPress={() => void selectOption(option.optionId)}
@@ -378,7 +462,7 @@ export function ExamScreen({ navigation, route }: Props) {
           state: index === projection.session.currentItemIndex ? "current" : answered.has(item.occurrenceId) ? "answered" : "unanswered",
           flagged: projection.flaggedOccurrenceIds.includes(item.occurrenceId),
         }))}
-        visible={navigatorVisible}
+        visible={navigatorVisible && !resolutionRequired}
       />
       <SettingsDialog
         closeLabel={t("Continue simulation")}
@@ -388,10 +472,24 @@ export function ExamScreen({ navigation, route }: Props) {
         primaryActionLabel={t("Finish exam")}
         secondaryActionLabel={t("Continue simulation")}
         title={t("Finish with unanswered questions?")}
-        visible={finishVisible}
+        visible={finishVisible && !resolutionRequired}
       />
     </>
   );
+}
+
+function isExamSaveUnconfirmed(projection: CertificationExamProjection): boolean {
+  return projection.operation.kind === "save_failed" && projection.operation.error.allowedAction === "reconcile";
+}
+
+function isExamOperationUnconfirmed(projection: CertificationExamProjection): boolean {
+  return "error" in projection.operation && projection.operation.error.allowedAction === "reconcile";
+}
+
+function isExamResolutionRequired(projection: CertificationExamProjection): boolean {
+  if (isExamOperationUnconfirmed(projection)) return true;
+  if ("error" in projection.operation && projection.operation.error.allowedAction === "recover") return true;
+  return projection.operation.kind === "materializing" || projection.operation.kind === "verifying" || projection.operation.kind === "verified_pending_clear" || projection.operation.kind === "frozen";
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({

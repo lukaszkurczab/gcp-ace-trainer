@@ -14,7 +14,7 @@ export function describeSessionPreparationFailure(error: unknown, translate: (me
   return describeOperationalFailure(error, fallback);
 }
 
-export type PracticeSurfacePhase = "preparing" | PracticeDurableOperationState["kind"];
+export type PracticeSurfacePhase = "preparing" | "submit_outcome_unknown" | PracticeDurableOperationState["kind"];
 
 export const PRACTICE_ACTION_GESTURE_CARRY_OVER_MS = 400;
 
@@ -142,6 +142,7 @@ export function formatPracticeElapsedTime(milliseconds: number): string {
 export function noticeForPracticeOperation(operation: PracticeDurableOperationState): PracticeNotice | undefined {
   if (operation.kind === "feedback" && operation.reviewConflict) return { tone: "error", message: REVIEW_CYCLE_CONFLICT_MESSAGE };
   if (operation.kind === "submitting_before_journal") return { tone: "neutral", message: "Saving your answer…" };
+  if (operation.kind === "submit_journal_failed" && operation.error.allowedAction === "reconcile") return { tone: "error", message: "We couldn't confirm whether your answer was saved. Check the saved response before continuing." };
   if (operation.kind === "submit_journal_failed") return { tone: "error", message: "We couldn't save your response. Your current answer is still here." };
   if (operation.kind === "commit_pending" || operation.kind === "commit_materialization_failed" || operation.kind === "commit_verification_failed" || operation.kind === "verified_pending_clear") return { tone: "error", message: "Your answer is saved on this device. Restore this question to continue." };
   if (operation.kind === "recovery_required") return { tone: "error", message: "Restore the session before submitting another answer." };

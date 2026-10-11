@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
 
 import { DesignSimulationDraftDrain } from "./designSimulationDraftDrain";
 import type { DesignSimulationStage } from "../../application/design-interview";
@@ -52,7 +53,7 @@ test("one drain preserves dirty values for multiple stages", async () => {
   assert.equal(drain.isSaved({ requirements: "scope", architecture: "queue" }), true);
 });
 
-test("failure retains dirty data and a later flush retries it", async () => {
+test("failure retains dirty data and stays blocked until the exact command is resolved", async () => {
   let attempts = 0;
   const drain = new DesignSimulationDraftDrain(async () => {
     attempts += 1;
@@ -62,9 +63,53 @@ test("failure retains dirty data and a later flush retries it", async () => {
   await assert.rejects(drain.request(requirements, "response"), /storage unavailable/);
   assert.equal(drain.hasDirty(), true);
   assert.equal(drain.isSaved({ requirements: "response" }), false);
-  await drain.flush();
-  assert.equal(attempts, 2);
+  assert.equal(drain.isBlocked(), true);
+  await assert.rejects(drain.flush(), /must be resolved/u);
+  assert.equal(attempts, 1);
+  drain.acceptReconciled({ requirements: "response" });
+  assert.equal(attempts, 1);
   assert.equal(drain.isSaved({ requirements: "response" }), true);
+});
+
+test("an uncertain write cannot be retried or replaced until exact reconciliation clears the draft", async () => {
+  let attempts = 0;
+  const drain = new DesignSimulationDraftDrain(async () => { attempts += 1; throw new Error("acknowledgement missing"); }, async () => undefined, () => undefined);
+  await assert.rejects(drain.request(requirements, "submitted response"), /acknowledgement missing/u);
+  await assert.rejects(drain.request(requirements, "new response"), /must be resolved/u);
+  assert.equal(drain.isBlocked(), true);
+  assert.equal(attempts, 1);
+
+  drain.acceptReconciled({ requirements: "submitted response" });
+  assert.equal(drain.isBlocked(), false);
+  assert.equal(drain.hasDirty(), false);
+  assert.equal(drain.isSaved({ requirements: "submitted response" }), true);
+});
+
+test("reconciliation preserves edits made while the attempted draft write was in flight", async () => {
+  const attempted = deferred<void>();
+  const writes: Array<[DesignSimulationStage, string]> = [];
+  const drain = new DesignSimulationDraftDrain(async (stage, value) => {
+    writes.push([stage, value]);
+    await attempted.promise;
+    throw new Error("acknowledgement missing");
+  }, async () => undefined, () => undefined, 60_000);
+  const first = drain.request(requirements, "attempted");
+  const flushing = drain.flush();
+  const newer = drain.request(requirements, "newer edit");
+  const otherStage = drain.request(architecture, "another edit");
+  attempted.resolve();
+  await assert.rejects(first, /acknowledgement missing/u);
+  await assert.rejects(flushing, /acknowledgement missing/u);
+  await assert.rejects(newer, /acknowledgement missing/u);
+  await assert.rejects(otherStage, /acknowledgement missing/u);
+
+  drain.acceptReconciled({ requirements: "attempted" });
+  assert.equal(drain.hasDirty(), true);
+  assert.deepEqual(drain.getDirtyValues(), { requirements: "newer edit", architecture: "another edit" });
+  assert.equal(drain.isSaved({ requirements: "newer edit", architecture: "another edit" }), false);
+  assert.deepEqual(writes, [[requirements, "attempted"]]);
+  const screen = readFileSync("src/features/simulation/DesignInterviewSimulationScreens.tsx", "utf8");
+  assert.match(screen, /setResponses\(\{ \.\.\.next\.responsesByStage, \.\.\.drain\.getDirtyValues\(\) \}\)/);
 });
 
 test("flush waits for the latest in-flight edit before resolving", async () => {

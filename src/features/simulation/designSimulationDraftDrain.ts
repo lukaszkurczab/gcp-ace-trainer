@@ -6,6 +6,7 @@ export class DesignSimulationDraftDrain {
   private readonly dirty = new Map<DesignSimulationStage, string>();
   private readonly durable = new Map<DesignSimulationStage, string>();
   private running: Promise<void> | null = null;
+  private blocked = false;
   private scheduled: { promise: Promise<void>; resolve: () => void; reject: (cause: unknown) => void } | null = null;
   private timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -25,6 +26,7 @@ export class DesignSimulationDraftDrain {
   }
 
   request(stage: DesignSimulationStage, value: string): Promise<void> {
+    if (this.blocked) return Promise.reject(new Error("The previous draft write must be resolved before editing."));
     this.dirty.set(stage, value);
     this.emit();
     if (this.running) return this.running;
@@ -38,6 +40,7 @@ export class DesignSimulationDraftDrain {
   }
 
   flush(): Promise<void> {
+    if (this.blocked) return Promise.reject(new Error("The previous draft write must be resolved before another write."));
     if (this.scheduled) {
       if (this.timer) clearTimeout(this.timer);
       this.timer = null;
@@ -47,7 +50,9 @@ export class DesignSimulationDraftDrain {
   }
 
   isSaving(): boolean { return this.running !== null; }
+  isBlocked(): boolean { return this.blocked; }
   hasDirty(): boolean { return this.dirty.size > 0; }
+  getDirtyValues(): DesignSimulationResponses { return Object.freeze(Object.fromEntries(this.dirty)); }
 
   isSaved(values: DesignSimulationResponses): boolean {
     if (this.running || this.dirty.size) return false;
@@ -55,6 +60,19 @@ export class DesignSimulationDraftDrain {
       if (value !== undefined && this.durable.get(stage as DesignSimulationStage) !== value) return false;
     }
     return true;
+  }
+
+  releaseAfterExplicitNewCommand(): void {
+    this.blocked = false;
+    this.emit();
+  }
+
+  acceptReconciled(values: DesignSimulationResponses): void {
+    this.blocked = false;
+    for (const [stage, value] of this.dirty) {
+      if (values[stage] === value) this.dirty.delete(stage);
+    }
+    this.seedDurable(values);
   }
 
   private ensureDrain(): Promise<void> {
@@ -82,7 +100,8 @@ export class DesignSimulationDraftDrain {
     while (this.dirty.size) {
       const batch = [...this.dirty.entries()];
       for (const [stage, value] of batch) {
-        await this.save(stage, value);
+        try { await this.save(stage, value); }
+        catch (error) { this.blocked = true; this.emit(); throw error; }
         this.durable.set(stage, value);
         if (this.dirty.get(stage) === value) this.dirty.delete(stage);
         this.emit();

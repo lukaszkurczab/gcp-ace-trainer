@@ -1,7 +1,7 @@
 import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { type AttemptResultKind, type CompletedTrainingSession, type TrackId, type TrainingSession, type TrainingSessionDraft } from "../../domain";
 import { getTrackRegistration } from "../../domain";
-import { loadActiveTrainingSession, loadActiveTrainingSessionDraft, loadTrainingAttempts } from "../learningReadModels";
+import { loadActiveTrainingSession, loadActiveTrainingSessionDraft, loadTrainingAttempts, loadTrainingSession, loadTrainingSessionResult } from "../learningReadModels";
 import {
   getForegroundSessionTimerFacade,
   getTrainingLifecycleUseCases,
@@ -11,6 +11,7 @@ import {
   type ForegroundSessionTimerEvent,
   type ForegroundTimeProjection,
   type PracticeDurableOperationState,
+  type SimulationDurableOperationState,
   type PracticeCompletionCommandResult,
   type PracticeFinalization,
   type PreparedSession,
@@ -32,6 +33,7 @@ export type CertificationExamResumeResult = Readonly<{ kind: "ready"; projection
 export type CertificationAbandonmentResult =
   | Readonly<{ kind: "abandoned"; session: TrainingSession }>
   | Readonly<{ kind: "retry_same_command"; retry: "abandonment" | "foreground_checkpoint"; session: TrainingSession }>
+  | Readonly<{ expectedSessionId: string; kind: "reconcile_required" }>
   | Readonly<{ expectedSessionId: string; kind: "recovery_required"; recovery: "abandonment" | "active_operation" }>;
 
 export type CertificationPracticeProjection = Readonly<{
@@ -71,6 +73,7 @@ export type CertificationExamProjection = Readonly<{
   response: CanonicalQuestionResponse | null;
   flaggedOccurrenceIds: readonly string[];
   now: string;
+  operation: SimulationDurableOperationState;
 }>;
 
 /** A terminal Exam is a valid outcome, not a request to start a replacement session. */
@@ -153,6 +156,7 @@ export async function submitCertificationPracticeResponse(response: CanonicalQue
   await getForegroundSessionTimerFacade().checkpointForResponseSave(await requireCertificationPractice());
   await getTrainingLifecycleUseCases().submitPracticeResponse(response);
 }
+export async function retryCertificationPracticeResponse(): Promise<void> { await getTrainingLifecycleUseCases().retryPracticeSubmission(); }
 
 /** Reads complete, exact evidence only after verified Certification Practice completion. */
 export async function getCertificationPracticeReviewProjection(sessionId: string): Promise<CertificationPracticeReviewProjection> {
@@ -306,6 +310,22 @@ export async function retryCertificationAbandonmentAfterCheckpointFailure(expect
   await getForegroundSessionTimerFacade().retryLeaveForegroundAfterCheckpointFailure(session);
   return abandonCertificationSessionAfterTimerLeave(getTrainingLifecycleUseCases(), expectedSessionId);
 }
+export async function retryCertificationAbandonmentCommand(expectedSessionId: string): Promise<CertificationAbandonmentResult> {
+  const lifecycle = getTrainingLifecycleUseCases();
+  try { return Object.freeze({ kind: "abandoned", session: await lifecycle.retryExpectedSessionAbandonment(expectedSessionId) }); }
+  catch (cause) {
+    const pending = await lifecycle.getPendingMutationProjection(expectedSessionId);
+    if (pending?.operation === "abandon_training_session") return Object.freeze({ expectedSessionId, kind: "recovery_required", recovery: "abandonment" });
+    const active = await loadActiveTrainingSession();
+    if (active?.id === expectedSessionId) {
+      const operation = await lifecycle.getPracticeOperationState(active, false);
+      if (operation.kind === "abandonment_recovery_required" && operation.error.allowedAction === "reconcile") return Object.freeze({ expectedSessionId, kind: "reconcile_required" });
+      if (operation.kind === "abandonment_recovery_required" && operation.error.allowedAction === "recover") return Object.freeze({ expectedSessionId, kind: "recovery_required", recovery: "abandonment" });
+      if (operation.kind === "abandonment_failed_before_journal" && operation.error.allowedAction === "retry_same_command") return Object.freeze({ kind: "retry_same_command", retry: "abandonment", session: active });
+    }
+    throw cause;
+  }
+}
 
 export async function recoverCertificationPreAbandonmentCheckpoint(expectedSessionId: string): Promise<void> {
   const lifecycle = getTrainingLifecycleUseCases();
@@ -329,12 +349,16 @@ async function abandonCertificationSessionAfterTimerLeave(lifecycle: ReturnType<
         recovery: pending.operation === "abandon_training_session" ? "abandonment" : "active_operation",
       });
     }
+    const active = await loadActiveTrainingSession();
+    if (active?.id === expectedSessionId) {
+      const operation = await lifecycle.getPracticeOperationState(active, false);
+      if (operation.kind === "abandonment_recovery_required" && operation.error.allowedAction === "reconcile") return Object.freeze({ expectedSessionId, kind: "reconcile_required" });
+    }
     try {
       return Object.freeze({ kind: "abandoned", session: await lifecycle.recoverExpectedSessionAbandonment(expectedSessionId) });
     } catch {
       // A non-durable failure must still be classified from the exact active session below.
     }
-    const active = await loadActiveTrainingSession();
     if (active?.id === expectedSessionId) {
       const operation = await lifecycle.getPracticeOperationState(active, false);
       if (operation.kind === "abandonment_failed_before_journal" && operation.error.allowedAction === "retry_same_command") {
@@ -347,6 +371,16 @@ async function abandonCertificationSessionAfterTimerLeave(lifecycle: ReturnType<
 
 export async function recoverCertificationPracticeAbandonment(expectedSessionId: string): Promise<TrainingSession> {
   return getTrainingLifecycleUseCases().recoverExpectedSessionAbandonment(expectedSessionId);
+}
+
+export async function reconcileCertificationPracticeAbandonment(expectedSessionId: string): Promise<"verified" | "conflict" | "unknown"> {
+  const session = await requireActive();
+  if (session.id !== expectedSessionId || !isCertificationPracticeModeId(session.modeId)) throw new TrainingApplicationFailure("resume_unavailable", `Certification practice session ${expectedSessionId} is not the exact active session.`);
+  const lifecycle = getTrainingLifecycleUseCases();
+  const result = await lifecycle.reconcileUncertainMutation(session.id);
+  if (result !== "verified") return result;
+  try { await lifecycle.recoverExpectedSessionAbandonment(session.id); return "verified"; }
+  catch { return "unknown"; }
 }
 
 export async function enterCertificationPracticeForeground(): Promise<ForegroundTimeProjection> {
@@ -362,13 +396,33 @@ export function subscribeCertificationPracticeProjectionRefresh(listener: (event
 }
 
 export async function getCertificationExamProjection(): Promise<CertificationExamProjection> {
-  await assertCertificationExamIsActive();
+  const lifecycle = getTrainingLifecycleUseCases();
+  const initial = await requireActive();
+  const initialOperation = await lifecycle.getSimulationOperationState(initial);
+  const unresolved = initialOperation.kind !== "editable";
+  if (!unresolved) await assertCertificationExamIsActive();
   const [session, draft] = await Promise.all([requireActive(), loadActiveTrainingSessionDraft()]);
   if (session.modeId !== "certification-exam-simulation" || !draft || draft.sessionId !== session.id) throw new Error("The active Cloud exam draft is unavailable.");
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new Error("Cloud exam occurrence is unavailable.");
   const raw = draft.responsesByOccurrenceId[occurrence.occurrenceId] ?? null;
-  return Object.freeze({ session, draft, question: await contentPackageRuntimeOwner.resolveItem(occurrence.item), occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, response: raw as CanonicalQuestionResponse | null, flaggedOccurrenceIds: draft.flaggedOccurrenceIds, now: getTrainingLifecycleUseCases().currentTime() });
+  return Object.freeze({ session, draft, question: await contentPackageRuntimeOwner.resolveItem(occurrence.item), occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, response: raw as CanonicalQuestionResponse | null, flaggedOccurrenceIds: draft.flaggedOccurrenceIds, now: lifecycle.currentTime(), operation: await lifecycle.getSimulationOperationState(session) });
+}
+
+export async function reconcileCertificationExamOperation(): Promise<"verified" | "conflict" | "unknown"> {
+  const session = await requireActive();
+  if (session.modeId !== "certification-exam-simulation") throw new TrainingApplicationFailure("invalid_response", "Only the active Certification Exam can reconcile its draft save.");
+  return getTrainingLifecycleUseCases().reconcileSimulationDraftSave(session.id);
+}
+export async function retryCertificationExamDraftSave(): Promise<void> {
+  await getTrainingLifecycleUseCases().retrySimulationDraftSave();
+}
+export async function recoverCertificationExamOperation(): Promise<string | null> {
+  const session = await requireActive();
+  if (session.modeId !== "certification-exam-simulation") throw new TrainingApplicationFailure("invalid_response", "Only the active Certification Exam can recover its pending operation.");
+  await getTrainingLifecycleUseCases().recoverActiveTrainingOperation();
+  const [active, completed, result] = await Promise.all([loadActiveTrainingSession(), loadTrainingSession(session.id), loadTrainingSessionResult(session.id)]);
+  return !active && completed?.status === "completed" && result?.sessionId === session.id ? session.id : null;
 }
 export async function saveCertificationExamResponse(input: Readonly<{ occurrenceId: string; response: CanonicalQuestionResponse }>): Promise<void> {
   await assertCertificationExamIsActive();
@@ -376,6 +430,12 @@ export async function saveCertificationExamResponse(input: Readonly<{ occurrence
   if (projection.occurrenceId !== input.occurrenceId) throw new Error("Cloud exam response does not belong to the active occurrence.");
   const draft = { ...projection.draft, revision: projection.draft.revision + 1, updatedAt: getTrainingLifecycleUseCases().currentTime(), responsesByOccurrenceId: { ...projection.draft.responsesByOccurrenceId, [input.occurrenceId]: input.response } } as TrainingSessionDraft;
   await getTrainingLifecycleUseCases().saveSimulationDraft({ draft, expectedPreviousRevision: projection.draft.revision });
+}
+
+export async function reconcileCertificationPracticeResponse(): Promise<"verified" | "conflict" | "unknown"> {
+  const session = await requireActive();
+  if (!isCertificationPracticeModeId(session.modeId)) throw new TrainingApplicationFailure("invalid_response", "Only active Certification Practice can reconcile a submitted response.");
+  return getTrainingLifecycleUseCases().reconcileUncertainMutation(session.id);
 }
 export async function toggleCertificationExamFlag(occurrenceId: string): Promise<void> {
   await assertCertificationExamIsActive();

@@ -9,7 +9,7 @@ import type { SimulationOperationPresentation } from "../simulationProjection";
 type SimulationOperationPanelProps = Readonly<{ operation: SimulationOperationPresentation }>;
 
 export function isSimulationOperationNotice(operation: SimulationOperationPresentation): boolean {
-  return operation.kind === "save-failed" || operation.kind === "response-saved-navigation-failed";
+  return operation.kind === "save-failed" || operation.kind === "save-outcome-unknown" || operation.kind === "response-saved-navigation-failed";
 }
 
 /** Renders only the normalized operation state and CTA facts supplied by the screen projection. */

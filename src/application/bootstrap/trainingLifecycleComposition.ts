@@ -11,6 +11,7 @@ import {
   commitTrainingSessionStart,
   recoverPendingMutation,
 } from "../learningMutations";
+import { commitMutation, commitMutationAfterPreflight, type ExactMutationRetrySeed } from "../learningMutations/commitMutation";
 import {
   installTrainingLifecycleUseCases,
   ForegroundSessionTimerFacade,
@@ -23,20 +24,31 @@ import {
   type TrainingLifecyclePorts,
   type PremiumSessionAdmissionPort,
 } from "../trainingLifecycle";
-import { getTrackRegistration, type ReviewMutationCommand, type ReviewQueueEntry, type TrainingSession } from "../../domain";
+import { getTrackRegistration, type ReviewMutationCommand, type ReviewQueueEntry, type TrainingSession, type TrainingSessionDraft } from "../../domain";
 import {
   getActiveTrainingSession,
   getActiveTrainingSessionDraft,
+  reconcileTrainingSessionDraftWrite,
   getReviewQueueItems,
   getTrainingAttempts,
   getTrainingSessionResult,
   getTrainingSessions,
   getActiveForegroundTimer,
   getActiveMutationJournal,
+  reconcileMutationJournalWriteAttempt,
   saveActiveForegroundTimer,
   saveTrainingSessionDraft,
+  captureTrainingSessionDraftLease,
 } from "../../storage/repositories";
+import type { CanonicalWriteAttempt } from "../../storage/repositories/canonicalRecordCodec";
+import type { ActiveProfileStorageLease, MutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
+import { assertValidMutationJournal, isMutationJournalLeaseCurrent } from "../../storage/repositories/mutationJournalRepository";
+import { isTrainingSessionDraft } from "../../storage/repositories/trainingModelGuards";
+import { isTrainingSessionDraftLeaseCurrent } from "../../storage/repositories/trainingSessionDraftRepository";
 import { trainingSessionIdentity } from "../../infrastructure/identity/trainingSessionIdentity";
+import { MutationCommitFailure, type RetryMutationCommandHandle, type RetryableMutationOperation } from "../mutationBoundary";
+import type { DraftStorageLeaseHandle, DraftWriteReceipt } from "../trainingLifecycle/contracts";
+import { STORAGE_KEYS } from "../../storage/keys";
 
 export type WallClock = Readonly<{ now(): string }>;
 export type AdjustableWallClock = WallClock & Readonly<{ advanceBy(milliseconds: number): string }>;
@@ -86,6 +98,45 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
   let monotonicAuditOffsetMs = 0;
   const monotonicNow = () => (globalThis.performance?.now?.() ?? Date.now()) + monotonicAuditOffsetMs;
   const sessionIds = dependencies.sessionIds ?? (developmentAuditability ? developmentAuditSessionIdentity : trainingSessionIdentity);
+  const draftLeaseByHandle = new WeakMap<object, ActiveProfileStorageLease>();
+  const draftAttemptByReceipt = new WeakMap<object, CanonicalWriteAttempt<TrainingSessionDraft>>();
+  const retryCommandByHandle = new WeakMap<object, ExactMutationRetrySeed>();
+  const projectRetryableFailure = (error: unknown): unknown => {
+    if (!(error instanceof MutationCommitFailure) || error.retrySeed === undefined) return error;
+    const seed = retrySeedFromUnknown(error.retrySeed);
+    if (!seed || !isRetryableMutationOperation(seed.record.operation) || !isMutationJournalLeaseCurrent(seed.lease)
+      || seed.record.commandIdentity.fingerprint !== error.commandProof?.commandFingerprint
+      || seed.record.planFingerprint !== error.commandProof?.planFingerprint) {
+      return new MutationCommitFailure(error.phase, error.durableState, error.cause, error.commandProof);
+    }
+    const handle = Object.freeze({ kind: "retry_mutation_command" }) as RetryMutationCommandHandle;
+    retryCommandByHandle.set(handle, seed);
+    return new MutationCommitFailure(error.phase, error.durableState, error.cause, Object.freeze({
+      operation: seed.record.operation,
+      commandFingerprint: error.commandProof?.commandFingerprint ?? seed.record.commandIdentity.fingerprint,
+      planFingerprint: error.commandProof?.planFingerprint ?? seed.record.planFingerprint,
+      ...(error.commandProof?.attempt !== undefined ? { attempt: error.commandProof.attempt } : {}),
+      retryCommand: handle,
+    }));
+  };
+  const captureDraftLease = (): DraftStorageLeaseHandle | null => {
+    const lease = captureTrainingSessionDraftLease();
+    if (!lease) return null;
+    const handle = Object.freeze({ kind: "draft_storage_lease" }) as DraftStorageLeaseHandle;
+    draftLeaseByHandle.set(handle, lease);
+    return handle;
+  };
+  const resolveDraftLease = (handle: DraftStorageLeaseHandle | null): Readonly<{ valid: boolean; lease: ActiveProfileStorageLease | null }> => {
+    if (handle === null) return { valid: true, lease: null };
+    const lease = draftLeaseByHandle.get(handle);
+    return lease ? { valid: true, lease } : { valid: false, lease: null };
+  };
+  const captureDraftReceipt = (value: unknown): DraftWriteReceipt | null => {
+    if (!isCanonicalDraftWriteAttempt(value)) return null;
+    const receipt = Object.freeze({ kind: "draft_write_receipt" }) as DraftWriteReceipt;
+    draftAttemptByReceipt.set(receipt, value);
+    return receipt;
+  };
   const ports: TrainingLifecyclePorts = {
     clock: wallClock,
     sessionIds,
@@ -103,7 +154,18 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
         return draft?.sessionId === sessionId ? draft : null;
       },
       async getResult(sessionId) { return getTrainingSessionResult(sessionId); },
-      async saveDraft(input) { await saveTrainingSessionDraft(input.draft, input.expectedPreviousRevision); },
+      captureDraftStorageLease: captureDraftLease,
+      captureDraftWriteReceipt: captureDraftReceipt,
+      async saveDraft(input) {
+        const resolved = resolveDraftLease(input.lease);
+        if (!resolved.valid) throw new Error("The original draft storage lease is unknown.");
+        if (!isTrainingSessionDraftLeaseCurrent(resolved.lease)) throw new Error("The original draft storage lease is stale.");
+        await saveTrainingSessionDraft(input.draft, input.expectedPreviousRevision, resolved.lease);
+      },
+      async reconcileDraftWrite(receipt) {
+        const attempt = draftAttemptByReceipt.get(receipt);
+        return attempt ? reconcileTrainingSessionDraftWrite(attempt) : "conflict";
+      },
       async getPendingMutation() {
         const pending = await getActiveMutationJournal();
         if (!pending || pending.operation === "accept_goal_plan" || pending.operation === "resolve_account_sync_conflict") return null;
@@ -127,18 +189,36 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
           ...(frozenDraft && result ? { simulationFinalization: Object.freeze({ frozenDraftRevision: frozenDraft.record.revision, resultId: result.record.id }) } : {}),
         });
       },
+      async reconcilePendingMutationWrite(proof) {
+        if (!proof.attempt || typeof proof.attempt !== "object") return "unknown";
+        return reconcileMutationJournalWriteAttempt(proof.attempt, proof);
+      },
     },
     mutations: {
       async start(input) { await commitTrainingSessionStart({ session: input.session, draft: input.draft, createdAt: input.session.startedAt }); },
       async submitPractice(input) {
         const reviews = input.reviewMutations.filter((mutation) => mutation.kind === "upsert").map((mutation) => mutation.entry);
         const resolvedReviews = input.reviewMutations.filter((mutation) => mutation.kind === "remove").map((mutation) => mutation.entry);
-        return commitTrainingOutcome({ attempt: input.attempt, session: input.session, reviews, resolvedReviews, reviewBaseline: input.reviewBaseline, reviewSnapshotConflict: input.reviewSnapshotConflict, createdAt: input.attempt.committedAt });
+        try {
+          return await commitTrainingOutcome({ attempt: input.attempt, session: input.session, reviews, resolvedReviews, reviewBaseline: input.reviewBaseline, reviewSnapshotConflict: input.reviewSnapshotConflict, createdAt: input.attempt.committedAt });
+        } catch (error) { throw projectRetryableFailure(error); }
+      },
+      async retryMutationCommand(command, expectedOperation) {
+        const seed = retryCommandByHandle.get(command);
+        if (!seed || seed.record.operation !== expectedOperation || !isMutationJournalLeaseCurrent(seed.lease)) throw new Error("The exact retry command, expected operation, or its original profile lease is unavailable.");
+        try {
+          if (seed.preflight) await commitMutationAfterPreflight(() => Promise.resolve(seed.record), seed.preflight, undefined, seed.lease);
+          else await commitMutation(seed.record, seed.lease);
+        }
+        catch (error) { throw projectRetryableFailure(error); }
       },
       async advance(session) { await commitTrainingSessionAdvance(session, wallClock.now()); },
       async completeWithResult(input) { await commitSessionCompletion(input.session, input.result, input.session.completedAt ?? wallClock.now()); },
       async finalize(input) { return commitFinalization(input, wallClock); },
-      async abandon(session, preflight) { await commitSessionAbandonment(session, session.completedAt ?? wallClock.now(), preflight); },
+      async abandon(session, preflight) {
+        try { await commitSessionAbandonment(session, session.completedAt ?? wallClock.now(), preflight); }
+        catch (error) { throw projectRetryableFailure(error); }
+      },
       async recover() { await recoverPendingMutation(); },
       async reset() { await commitLearningStateReset(wallClock.now()); },
     },
@@ -210,6 +290,41 @@ function isDevelopmentRuntimeAuditabilityBuild(): boolean {
 
 function isAdjustableWallClock(value: WallClock): value is AdjustableWallClock {
   return "advanceBy" in value && typeof value.advanceBy === "function";
+}
+
+function isCanonicalDraftWriteAttempt(value: unknown): value is CanonicalWriteAttempt<TrainingSessionDraft> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const attempt = value as Partial<CanonicalWriteAttempt<unknown>>;
+  if (attempt.key !== STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT || typeof attempt.afterRaw !== "string"
+    || !(attempt.priorRaw === undefined || typeof attempt.priorRaw === "string")
+    || !attempt.envelope || typeof attempt.envelope !== "object" || Array.isArray(attempt.envelope)
+    || !attempt.storage || typeof attempt.storage !== "object") return false;
+  const envelope = attempt.envelope as Partial<CanonicalWriteAttempt<unknown>["envelope"]>;
+  return envelope.schemaIdentity === "patternly:canonical:v1" && Number.isSafeInteger(envelope.revision)
+    && (envelope.revision ?? 0) > 0 && isTrainingSessionDraft(envelope.payload);
+}
+
+function retrySeedFromUnknown(value: unknown): ExactMutationRetrySeed | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const seed = value as Readonly<{ record?: unknown; lease?: unknown; preflight?: unknown }>;
+  if (!seed.record || typeof seed.record !== "object" || Array.isArray(seed.record)
+    || !(seed.lease === null || (seed.lease && typeof seed.lease === "object"))
+    || !(seed.preflight === undefined || typeof seed.preflight === "function")) return null;
+  try {
+    assertValidMutationJournal(seed.record);
+    if (!isDeepFrozen(seed.record)) return null;
+    return { record: seed.record as MutationJournalRecord, lease: seed.lease as ActiveProfileStorageLease | null, ...(typeof seed.preflight === "function" ? { preflight: seed.preflight as () => Promise<void> } : {}) };
+  } catch { return null; }
+}
+
+function isRetryableMutationOperation(value: unknown): value is RetryableMutationOperation {
+  return value === "submit_training_outcome" || value === "abandon_training_session";
+}
+
+function isDeepFrozen(value: unknown): boolean {
+  if (!value || typeof value !== "object") return true;
+  if (!Object.isFrozen(value)) return false;
+  return Object.values(value).every(isDeepFrozen);
 }
 
 export async function resumePersistedTrainingSession(): Promise<TrainingSession> {

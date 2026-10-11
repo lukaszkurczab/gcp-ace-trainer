@@ -9,7 +9,9 @@ const facade = readFileSync("src/application/coding-interview/codingInterviewSes
 
 test("simulation operation surface renders only declared state actions and never a generic retry", () => {
   assert.match(screen, /operation\.kind === "saving"/);
-  assert.match(screen, /operation\.kind === "save_failed" \|\| operation\.kind === "stale_revision"/);
+  assert.match(screen, /operation\.kind === "stale_revision"/);
+  assert.match(screen, /operation\.error\.allowedAction === "retry_same_command"/);
+  assert.match(screen, /callbacks\.onResolveStaleConflict/);
   assert.match(screen, /operation\.kind === "navigation_failed" \|\| operation\.kind === "save_and_continue_advance_recovery"/);
   assert.match(screen, /operation\.kind === "finalization_journal_failed" \|\| operation\.kind === "materialization_failed"/);
   assert.match(screen, /id: "simulation-keep-editing", label: "Keep editing"/);
@@ -25,7 +27,9 @@ test("simulation operation surface renders only declared state actions and never
   assert.match(readFileSync("src/features/practice/PracticeSessionSurface.tsx", "utf8"), /noticeError:\s*\{[\s\S]*?borderRadius:\s*radius\.lg[\s\S]*?gap:\s*spacing\.md[\s\S]*?padding:\s*spacing\.lg/);
   assert.match(panel, /ActivityIndicator/);
   assert.match(lifecycle, /resumeEditableSimulationAfterSaveFailure/);
-  assert.match(lifecycle, /operation\.kind !== "save_failed" && operation\.kind !== "stale_revision"/);
+  assert.match(lifecycle, /operation\.kind !== "save_failed" \|\| operation\.error\.allowedAction !== "retry_same_command"/);
+  assert.match(lifecycle, /retrySimulationDraftSave/);
+  assert.match(lifecycle, /expectedPreviousRevision: input\.expectedPreviousRevision/);
   assert.match(facade, /operation\.error\.allowedAction !== "recover"/);
   assert.match(readFileSync("src/features/simulation/SimulationSessionSurface.tsx", "utf8"), /isSimulationOperationNotice\(projection\.operation\)/);
   const surface = readFileSync("src/features/simulation/SimulationSessionSurface.tsx", "utf8");

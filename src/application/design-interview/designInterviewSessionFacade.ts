@@ -33,7 +33,7 @@ export type DesignInterviewPracticeProjection = Readonly<{
   feedback: Readonly<{ controls: ReturnType<typeof projectCanonicalChoiceFeedbackControls>; result: AttemptResultKind; reason: string; details: Question["feedback"]["details"]; sources: readonly CanonicalSourceLink[]; messages?: readonly Readonly<{ kind: string; targetId: string; text: string }>[] }> | null;
 }>;
 export type DesignInterviewOpenResult = Readonly<{ kind: "ready"; projection: DesignInterviewPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
-export type DesignInterviewAbandonmentResult = Readonly<{ kind: "abandoned"; session: TrainingSession }> | Readonly<{ kind: "retry_same_command"; retry: "abandonment" | "foreground_checkpoint"; session: TrainingSession }> | Readonly<{ kind: "recovery_required"; recovery: "abandonment" | "active_operation"; expectedSessionId: string }>;
+export type DesignInterviewAbandonmentResult = Readonly<{ kind: "abandoned"; session: TrainingSession }> | Readonly<{ kind: "retry_same_command"; retry: "abandonment" | "foreground_checkpoint"; session: TrainingSession }> | Readonly<{ kind: "reconcile_required"; expectedSessionId: string }> | Readonly<{ kind: "recovery_required"; recovery: "abandonment" | "active_operation"; expectedSessionId: string }>;
 
 export async function openDesignInterviewPracticeSession(input: DesignOpenInput): Promise<DesignInterviewOpenResult> {
   const active = await loadActiveTrainingSession();
@@ -94,6 +94,13 @@ export async function submitDesignInterviewPracticeResponse(response: CanonicalQ
   await getForegroundSessionTimerFacade().checkpointForResponseSave(await requireActiveDesignSession());
   await getTrainingLifecycleUseCases().submitPracticeResponse(response);
 }
+export async function retryDesignInterviewPracticeResponse(): Promise<void> { await getTrainingLifecycleUseCases().retryPracticeSubmission(); }
+
+export async function reconcileDesignInterviewPracticeResponse(): Promise<"verified" | "conflict" | "unknown"> {
+  const active = await loadActiveTrainingSession();
+  if (!active || active.status !== "active" || !isDesignMode(active.modeId)) throw new TrainingApplicationFailure("no_active_session", "An active Design Interview Practice session is required to reconcile its response.");
+  return getTrainingLifecycleUseCases().reconcileUncertainMutation(active.id);
+}
 export async function advanceDesignInterviewPracticeSession(): Promise<TrainingSession> { return getTrainingLifecycleUseCases().advancePracticeSession(); }
 export async function recoverDesignInterviewPracticeOperation(): Promise<void> { await getTrainingLifecycleUseCases().recoverActiveTrainingOperation(); }
 export function subscribeDesignInterviewPracticeOperation(sessionId: string, listener: (operation: PracticeDurableOperationState) => void): () => void { return getTrainingLifecycleUseCases().subscribeOperationProjection(sessionId, (operation) => { if (operation.family === "practice") listener(operation); }); }
@@ -149,6 +156,10 @@ export async function abandonDesignInterviewSession(expectedSessionId: string): 
   } catch (cause) {
     const pending = await lifecycle.getPendingMutationProjection(expectedSessionId);
     if (pending) return Object.freeze({ expectedSessionId, kind: "recovery_required", recovery: pending.operation === "abandon_training_session" ? "abandonment" : "active_operation" });
+    const operation = await lifecycle.getPracticeOperationState(session, false);
+    if (operation.kind === "abandonment_recovery_required" && operation.error.allowedAction === "reconcile") return Object.freeze({ expectedSessionId, kind: "reconcile_required" });
+    if (operation.kind === "abandonment_failed_before_journal" && operation.error.allowedAction === "retry_same_command") return Object.freeze({ kind: "retry_same_command", retry: "abandonment", session });
+    if (operation.kind === "abandonment_failed_before_journal") throw cause;
     const active = await loadActiveTrainingSession();
     if (active?.id === expectedSessionId) return Object.freeze({ kind: "retry_same_command", retry: "foreground_checkpoint", session: active });
     throw cause;
@@ -159,6 +170,22 @@ export async function retryDesignInterviewAbandonmentAfterCheckpointFailure(expe
   await getForegroundSessionTimerFacade().retryLeaveForegroundAfterCheckpointFailure(session);
   return abandonDesignInterviewSessionAfterTimerLeave(expectedSessionId);
 }
+export async function retryDesignInterviewAbandonmentCommand(expectedSessionId: string): Promise<DesignInterviewAbandonmentResult> {
+  const lifecycle = getTrainingLifecycleUseCases();
+  try { return Object.freeze({ kind: "abandoned", session: await lifecycle.retryExpectedSessionAbandonment(expectedSessionId) }); }
+  catch (cause) {
+    const pending = await lifecycle.getPendingMutationProjection(expectedSessionId);
+    if (pending?.operation === "abandon_training_session") return Object.freeze({ expectedSessionId, kind: "recovery_required", recovery: "abandonment" });
+    const active = await loadActiveTrainingSession();
+    if (active?.id === expectedSessionId) {
+      const operation = await lifecycle.getPracticeOperationState(active, false);
+      if (operation.kind === "abandonment_recovery_required" && operation.error.allowedAction === "reconcile") return Object.freeze({ expectedSessionId, kind: "reconcile_required" });
+      if (operation.kind === "abandonment_recovery_required" && operation.error.allowedAction === "recover") return Object.freeze({ expectedSessionId, kind: "recovery_required", recovery: "abandonment" });
+      if (operation.kind === "abandonment_failed_before_journal" && operation.error.allowedAction === "retry_same_command") return Object.freeze({ kind: "retry_same_command", retry: "abandonment", session: active });
+    }
+    throw cause;
+  }
+}
 export async function recoverDesignInterviewPreAbandonmentCheckpoint(expectedSessionId: string): Promise<void> {
   const lifecycle = getTrainingLifecycleUseCases();
   await lifecycle.recoverActiveTrainingOperation();
@@ -167,6 +194,14 @@ export async function recoverDesignInterviewPreAbandonmentCheckpoint(expectedSes
   await lifecycle.reconstructOperationProjection(session);
 }
 export async function recoverDesignInterviewAbandonment(expectedSessionId: string): Promise<TrainingSession> { return getTrainingLifecycleUseCases().recoverExpectedSessionAbandonment(expectedSessionId); }
+export async function reconcileDesignInterviewAbandonment(expectedSessionId: string): Promise<"verified" | "conflict" | "unknown"> {
+  const session = await requireExactDesignSession(expectedSessionId);
+  const lifecycle = getTrainingLifecycleUseCases();
+  const result = await lifecycle.reconcileUncertainMutation(session.id);
+  if (result !== "verified") return result;
+  try { await lifecycle.recoverExpectedSessionAbandonment(session.id); return "verified"; }
+  catch { return "unknown"; }
+}
 
 async function requireActiveDesignSession(): Promise<TrainingSession> {
   const session = await loadActiveTrainingSession();
@@ -185,9 +220,13 @@ async function abandonDesignInterviewSessionAfterTimerLeave(expectedSessionId: s
   } catch (cause) {
     const pending = await lifecycle.getPendingMutationProjection(expectedSessionId);
     if (pending) return Object.freeze({ expectedSessionId, kind: "recovery_required" as const, recovery: pending.operation === "abandon_training_session" ? "abandonment" as const : "active_operation" as const });
+    const active = await loadActiveTrainingSession();
+    if (active?.id === expectedSessionId) {
+      const operation = await lifecycle.getPracticeOperationState(active, false);
+      if (operation.kind === "abandonment_recovery_required" && operation.error.allowedAction === "reconcile") return Object.freeze({ expectedSessionId, kind: "reconcile_required" as const });
+    }
     try { return Object.freeze({ kind: "abandoned", session: await lifecycle.recoverExpectedSessionAbandonment(expectedSessionId) }); }
     catch { /* Classify the exact active state below. */ }
-    const active = await loadActiveTrainingSession();
     if (active?.id === expectedSessionId) {
       const operation = await lifecycle.getPracticeOperationState(active, false);
       if (operation.kind === "abandonment_failed_before_journal" && operation.error.allowedAction === "retry_same_command") return Object.freeze({ kind: "retry_same_command" as const, retry: "abandonment" as const, session: active });

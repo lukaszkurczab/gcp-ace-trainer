@@ -1,0 +1,10 @@
+appId: com.lkurczab.patternly
+name: Patternly PERSIST-04/08 — native J write/read uncertainty
+tags:
+  - persist04-08
+---
+- extendedWaitUntil:
+    visible:
+      text: "Stage: journal_unknown"
+    timeout: 60000
+- assertVisible: "PERSIST-13 journal seed: pending"

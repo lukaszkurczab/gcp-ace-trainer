@@ -1,4 +1,4 @@
-import { getKeyValueStorage } from "../../infrastructure/storage/mmkvClient";
+import { captureActiveProfileStorageLease, getKeyValueStorage, isActiveProfileStorageLeaseCurrent, MemoryKeyValueStorage, type ActiveProfileStorageLease } from "../../infrastructure/storage/mmkvClient";
 import { CanonicalWriteConflictError, CorruptStoredRecordError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "../errors";
 import { STORAGE_NAMESPACE } from "../keys";
 
@@ -14,6 +14,25 @@ export type CanonicalRecordEnvelope<T> = Readonly<{
   revision: number;
   payload: T;
 }>;
+
+/**
+ * Write result for the two user-visible operations which must distinguish a
+ * pre-write rejection from an uncertain acknowledgement. Other repositories
+ * continue to use the ordinary canonical write API below.
+ */
+export type CanonicalWriteAttempt<T> = Readonly<{
+  key: string;
+  priorRaw: string | undefined;
+  afterRaw: string;
+  envelope: CanonicalRecordEnvelope<T>;
+  storage: ReturnType<typeof getKeyValueStorage>;
+  lease: ActiveProfileStorageLease | null;
+}>;
+export type CanonicalWriteOutcome<T> =
+  | Readonly<{ kind: "verified"; envelope: CanonicalRecordEnvelope<T>; attempt: CanonicalWriteAttempt<T> }>
+  | Readonly<{ kind: "provenNotApplied"; cause: unknown; attempt?: CanonicalWriteAttempt<T> }>
+  | Readonly<{ kind: "conflict"; cause: unknown; attempt?: CanonicalWriteAttempt<T> }>
+  | Readonly<{ kind: "unknown"; cause: unknown; attempt?: CanonicalWriteAttempt<T> }>;
 
 const activeWrites = new Set<string>();
 
@@ -85,6 +104,107 @@ export function readCanonicalNamespaceEntries(): readonly Readonly<{ key: string
 
 export function writeCanonicalJson<T>(key: string, value: T, expectedRevision?: number | null): CanonicalRecordEnvelope<T> {
   return withCanonicalWriteLocks([key], () => writeCanonicalJsonUnlocked(key, value, expectedRevision));
+}
+
+/**
+ * Attempts one canonical write and only reports it verified when exact bytes
+ * are read back from the same storage owner under the same active profile
+ * lease. This is intentionally opt-in for journal and simulation-draft writes.
+ */
+export function writeCanonicalJsonWithOutcome<T>(key: string, value: T, expectedRevision: number | null, lease: ActiveProfileStorageLease | null): CanonicalWriteOutcome<T> {
+  try {
+    return withCanonicalWriteLocks([key], () => {
+      let storage: ReturnType<typeof getKeyValueStorage>;
+      try { storage = getKeyValueStorage(); }
+      catch (cause) { return { kind: "provenNotApplied", cause } as const; }
+      if (!isWriteContextCurrent(storage, lease)) return { kind: "provenNotApplied", cause: new Error("Canonical write profile lease is unavailable or stale.") } as const;
+
+      let priorRaw: string | undefined;
+      let priorEnvelope: CanonicalRecordEnvelope<unknown> | null;
+      try { priorRaw = storage.getString(key); }
+      catch (cause) { return { kind: "provenNotApplied", cause } as const; }
+      try { priorEnvelope = parseEnvelope(priorRaw, key); }
+      catch (cause) {
+        // Bytes that are corrupt or from an unsupported schema must remain
+        // blocked. They are different from a transport failure before set.
+        return { kind: "conflict", cause } as const;
+      }
+      if ((priorEnvelope?.revision ?? null) !== expectedRevision) {
+        return { kind: "provenNotApplied", cause: new Error("Canonical write expected revision is stale.") } as const;
+      }
+
+      const envelope: CanonicalRecordEnvelope<T> = {
+        schemaIdentity: CANONICAL_RECORD_SCHEMA,
+        revision: (priorEnvelope?.revision ?? 0) + 1,
+        payload: value,
+      };
+      let afterRaw: string;
+      try {
+        afterRaw = JSON.stringify(envelope);
+        if (typeof afterRaw !== "string") throw new TypeError("Canonical write payload could not be serialized.");
+      } catch (cause) {
+        return { kind: "provenNotApplied", cause } as const;
+      }
+      const attempt: CanonicalWriteAttempt<T> = Object.freeze({ key, priorRaw, afterRaw, envelope, storage, lease });
+      if (!isWriteContextCurrent(storage, lease)) return { kind: "provenNotApplied", cause: new Error("Canonical write profile lease changed before write.") } as const;
+
+      let writeFailure: unknown;
+      try { storage.setString(key, afterRaw); }
+      catch (cause) { writeFailure = cause; }
+
+      let observedRaw: string | undefined;
+      try { observedRaw = storage.getString(key); }
+      catch (cause) { return { kind: "unknown", cause, attempt } as const; }
+
+      if (!isWriteContextCurrent(storage, lease)) {
+        return { kind: "conflict", cause: writeFailure ?? new Error("Canonical write profile lease changed after write attempt."), attempt } as const;
+      }
+      if (observedRaw === afterRaw) return { kind: "verified", envelope, attempt } as const;
+      if (observedRaw === priorRaw) return { kind: "conflict", cause: writeFailure ?? new Error("Canonical write remained at its prior bytes after write attempt."), attempt } as const;
+      return { kind: "conflict", cause: writeFailure ?? new Error("Canonical write read-back differs from its exact intended bytes."), attempt } as const;
+    });
+  } catch (cause) {
+    // A held same-key lock prevents the callback from starting, so no write
+    // was attempted and the immutable command can be retried after the lane.
+    return { kind: "provenNotApplied", cause };
+  }
+}
+
+/** Read-only reconciliation of one exact prior attempt; it never reconstructs or rewrites the target. */
+export function reconcileCanonicalWriteAttempt<T>(attempt: CanonicalWriteAttempt<T>): CanonicalWriteOutcome<T> {
+  try {
+    return withCanonicalWriteLocks([attempt.key], () => {
+      if (!isWriteContextCurrent(attempt.storage, attempt.lease)) return { kind: "unknown", cause: new Error("Canonical write owner or lease changed before reconciliation."), attempt } as const;
+      let observedRaw: string | undefined;
+      try { observedRaw = attempt.storage.getString(attempt.key); }
+      catch (cause) { return { kind: "unknown", cause, attempt } as const; }
+      if (!isWriteContextCurrent(attempt.storage, attempt.lease)) return { kind: "unknown", cause: new Error("Canonical write owner or lease changed during reconciliation."), attempt } as const;
+      if (observedRaw === attempt.afterRaw) return { kind: "verified", envelope: attempt.envelope, attempt } as const;
+      return { kind: "conflict", cause: new Error("Canonical storage no longer contains the exact attempted envelope."), attempt } as const;
+    });
+  } catch (cause) { return { kind: "unknown", cause, attempt }; }
+}
+
+export function isCanonicalWriteAttemptCurrent<T>(attempt: CanonicalWriteAttempt<T>): boolean {
+  return isWriteContextCurrent(attempt.storage, attempt.lease);
+}
+
+function parseEnvelope(raw: string | undefined, key: string): CanonicalRecordEnvelope<unknown> | null {
+  if (raw === undefined) return null;
+  let value: unknown;
+  try { value = JSON.parse(raw); } catch { throw new CorruptStoredRecordError(key); }
+  if (!isEnvelope(value)) throw new UnsupportedStoredRecordError(key);
+  return value;
+}
+
+function isWriteContextCurrent(storage: ReturnType<typeof getKeyValueStorage>, lease: ActiveProfileStorageLease | null): boolean {
+  try {
+    if (getKeyValueStorage() !== storage) return false;
+    if (lease) return isActiveProfileStorageLeaseCurrent(lease);
+    // Unprofiled MemoryKeyValueStorage is used only by logical repository
+    // tests. Production storage always requires a captured active lease.
+    return storage instanceof MemoryKeyValueStorage && captureActiveProfileStorageLease() === null;
+  } catch { return false; }
 }
 
 /**

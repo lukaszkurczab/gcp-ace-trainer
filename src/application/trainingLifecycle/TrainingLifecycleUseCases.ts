@@ -3,6 +3,7 @@ import {
   advanceTrainingSession,
   moveTrainingSessionToIndex,
   createTrainingSession,
+  createTrainingSessionDraft,
   type ResolvedContentRef,
   type TrackId,
   type TrainingSession,
@@ -20,11 +21,14 @@ import {
   type TrainingFamilyRuntime,
   type TrainingLifecyclePorts,
   type PendingMutationProjection,
+  type DraftStorageLeaseHandle,
+  type DraftWriteReceipt,
 } from "./contracts";
-import { MutationCommitFailure } from "../mutationBoundary";
+import { MutationCommitFailure, type MutationCommandProof } from "../mutationBoundary";
 import type { DurableOperationError, DurableOperationState, PracticeDurableOperationState, SimulationDurableOperationState } from "./durableOperationState";
 import { OperationProjectionStore } from "./operationProjectionStore";
 import { requiresPremiumProductMode } from "./premiumProductModePolicy";
+import { CanonicalWriteOutcomeError } from "../../storage/errors";
 
 export type SimulationCommandAuthorization = Readonly<{ sessionId: string }>;
 const simulationCommandAuthorizations = new WeakSet<object>();
@@ -35,6 +39,10 @@ export class TrainingLifecycleUseCases {
   private readonly finalizations = new Map<string, Promise<void>>();
   private readonly practiceCompletions = new Map<string, Promise<PracticeFinalization>>();
   private readonly sessionMutationLanes = new Map<string, Promise<unknown>>();
+  private readonly uncertainDraftSaves = new Map<string, DraftWriteReceipt>();
+  private readonly retryableDraftSaves = new Map<string, Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number; lease: DraftStorageLeaseHandle | null }>>();
+  private readonly uncertainMutationCommands = new Map<string, MutationCommandProof>();
+  private readonly retryableMutationCommands = new Map<string, MutationCommandProof>();
   private simulationDraftSaveBoundary: ((session: TrainingSession, authorization: SimulationCommandAuthorization, commit: () => Promise<void>) => Promise<boolean>) | null = null;
 
   constructor(private readonly ports: TrainingLifecyclePorts, operationStore = new OperationProjectionStore()) { this.operationStates = operationStore; }
@@ -72,20 +80,73 @@ export class TrainingLifecycleUseCases {
     if (authorization) this.consumeSimulationAuthorization(authorization, active);
     else await this.authorizePremiumProductMode(active.modeId);
     await this.resolveRuntimeForSession(active);
-    const pending = await this.pendingFor(active.id);
-    await this.reconstructOperationProjection(active);
-    await this.ports.mutations.recover();
-    const verified = await this.ports.repositories.getActiveSession();
-    if (!verified) {
-      this.operationStates.clear(active.id);
-      return;
-    }
-    const simulationSession = verified.configurationSnapshot.submission === "manualOrForegroundTimeout";
-    this.operationStates.publish(verified.id, simulationSession ? simulation("editable") : pending?.operation === "submit_training_outcome" ? practice("feedback") : practice("unanswered"));
+    return this.serializeSessionMutation(active.id, async () => {
+      if (this.retryableMutationCommands.has(active.id)) throw new TrainingApplicationFailure("resume_unavailable", "Retry the same frozen command before recovery can continue.");
+      const proof = this.uncertainMutationCommands.get(active.id);
+      const priorOperation = this.operationStates.get(active.id);
+      if (!proof && priorOperation && "error" in priorOperation && priorOperation.error.durableState === "unknown") {
+        throw new TrainingApplicationFailure("resume_unavailable", "The attempted command has no current canonical evidence to reconcile.");
+      }
+      if (proof) {
+        const reconciled = await this.ports.repositories.reconcilePendingMutationWrite?.(proof) ?? "unknown";
+        if (reconciled !== "verified") throw new TrainingApplicationFailure("resume_unavailable", "The exact pending command could not be confirmed; no recovery was applied.");
+      }
+      const pending = await this.pendingFor(active.id);
+      await this.reconstructOperationProjection(active);
+      await this.ports.mutations.recover();
+      const verified = await this.ports.repositories.getActiveSession();
+      if (!verified) {
+        this.operationStates.clear(active.id);
+        this.uncertainMutationCommands.delete(active.id);
+        return;
+      }
+      this.uncertainMutationCommands.delete(active.id);
+      const simulationSession = verified.configurationSnapshot.submission === "manualOrForegroundTimeout";
+      this.operationStates.publish(verified.id, simulationSession ? simulation("editable") : pending?.operation === "submit_training_outcome" ? practice("feedback") : practice("unanswered"));
+    }, true);
+  }
+
+  async reconcileUncertainMutation(sessionId: string): Promise<"verified" | "conflict" | "unknown"> {
+    return this.serializeSessionMutation(sessionId, async () => {
+      const proof = this.uncertainMutationCommands.get(sessionId);
+      if (!proof || !this.ports.repositories.reconcilePendingMutationWrite) return "unknown";
+      const result = await this.ports.repositories.reconcilePendingMutationWrite(proof);
+      if (result === "verified") {
+        const pending = await this.pendingFor(sessionId);
+        if (pending) this.operationStates.publish(sessionId, pending.operation === "submit_training_outcome" ? practicePendingFor(pending.status) : simulationPendingFor(pending.status));
+      } else if (result === "conflict") {
+        const current = this.operationStates.get(sessionId);
+        if (current?.kind === "abandonment_recovery_required") {
+          const action = "none";
+          const state = current.family === "simulation"
+            ? simulation("abandonment_recovery_required", operationError("simulation_abandon", "unknown", action))
+            : practice("abandonment_recovery_required", operationError("practice_abandon", "unknown", action));
+          this.operationStates.set(sessionId, state);
+        }
+      }
+      return result;
+    }, true);
   }
 
   async recoverExpectedSessionAbandonment(expectedSessionId: string): Promise<TrainingSession> {
     if (!expectedSessionId.trim()) throw new TrainingApplicationFailure("invalid_response", "Expected abandonment recovery requires a session identity.");
+    const proof = this.uncertainMutationCommands.get(expectedSessionId);
+    if (proof) {
+      let reconciled: "verified" | "conflict" | "unknown" = "unknown";
+      try { reconciled = await this.ports.repositories.reconcilePendingMutationWrite?.(proof) ?? "unknown"; }
+      catch { reconciled = "unknown"; }
+      if (reconciled !== "verified") {
+        const active = await this.ports.repositories.getActiveSession();
+        if (active?.id === expectedSessionId) {
+          const isSimulation = active.configurationSnapshot.submission === "manualOrForegroundTimeout";
+          const action = reconciled === "unknown" ? "reconcile" : "none";
+          const operation = isSimulation ? "simulation_abandon" : "practice_abandon";
+          const state = isSimulation ? simulation("abandonment_recovery_required", operationError(operation, "unknown", action)) : practice("abandonment_recovery_required", operationError(operation, "unknown", action));
+          this.operationStates.set(expectedSessionId, state);
+        }
+        throw new TrainingApplicationFailure("verification_failure", "The exact abandonment journal could not be confirmed; no recovery was applied.");
+      }
+    }
     const pending = await this.run("persistence_failure", () => this.ports.repositories.getPendingMutation?.() ?? Promise.resolve(null));
     if (pending) {
       if (pending.sessionId !== expectedSessionId || pending.operation !== "abandon_training_session") {
@@ -101,6 +162,7 @@ export class TrainingLifecycleUseCases {
       throw new TrainingApplicationFailure("verification_failure", `Session ${expectedSessionId} is not a verified non-resumable abandonment.`);
     }
     this.operationStates.clear(expectedSessionId);
+    this.uncertainMutationCommands.delete(expectedSessionId);
     return session;
   }
 
@@ -158,9 +220,22 @@ export class TrainingLifecycleUseCases {
     await this.authorizePremiumProductMode(active.modeId);
     await this.resolveRuntimeForSession(active);
     const operation = await this.getSimulationOperationState(active);
-    if ((operation.kind !== "save_failed" && operation.kind !== "stale_revision") || operation.error.allowedAction !== "retry_same_command") {
+    if (operation.kind !== "save_failed" || operation.error.allowedAction !== "retry_same_command") {
       throw new TrainingApplicationFailure("invalid_response", "Simulation editing may resume only after an unpersisted save failure.");
     }
+    this.retryableDraftSaves.delete(active.id);
+    this.operationStates.publish(active.id, simulation("editable"));
+  }
+
+  /** A stale revision is a known conflict. The caller must explicitly confirm a new command after reviewing latest storage. */
+  async resumeEditableSimulationAfterStaleConflict(): Promise<void> {
+    const active = await this.requireActive();
+    if (active.configurationSnapshot.submission !== "manualOrForegroundTimeout") throw new TrainingApplicationFailure("invalid_response", "Only an Interview Simulation can resolve a stale draft conflict.");
+    await this.authorizePremiumProductMode(active.modeId);
+    await this.resolveRuntimeForSession(active);
+    const operation = await this.getSimulationOperationState(active);
+    if (operation.kind !== "stale_revision") throw new TrainingApplicationFailure("invalid_response", "There is no stale simulation draft conflict to resolve.");
+    this.retryableDraftSaves.delete(active.id);
     this.operationStates.publish(active.id, simulation("editable"));
   }
 
@@ -195,6 +270,11 @@ export class TrainingLifecycleUseCases {
   private async submitPracticeResponseInLane(response: unknown): Promise<void> {
     const session = await this.requireActive();
     const prior = await this.getPracticeOperationState(session, false);
+    if (prior.kind === "submit_journal_failed" && prior.error.allowedAction !== "submit_again") {
+      throw new TrainingApplicationFailure("submit_journal_failed", prior.error.allowedAction === "retry_same_command"
+        ? "Retry the saved response command before submitting or editing this answer."
+        : "The previous response save has an uncertain result. Check it before submitting again.");
+    }
     if (prior.kind === "commit_pending" || prior.kind === "commit_materialization_failed" || prior.kind === "commit_verification_failed") {
       throw new TrainingApplicationFailure("commit_verification_failed", "A durable practice command must recover before another response can be submitted.");
     }
@@ -217,6 +297,72 @@ export class TrainingLifecycleUseCases {
       this.operationStates.set(session.id, state);
       throw applicationFailureForPracticeMutation(error);
     }
+  }
+
+  /** Retries only the journal record frozen before a typed prewrite transport failure. */
+  async retryPracticeSubmission(): Promise<void> {
+    const active = await this.requireActive();
+    const proof = this.retryableMutationCommands.get(active.id);
+    const retryCommand = proof?.retryCommand;
+    if (!proof || proof.operation !== "submit_training_outcome" || !retryCommand) {
+      throw new TrainingApplicationFailure("invalid_response", "There is no exact frozen command safe to retry.");
+    }
+    return this.serializeSessionMutation(active.id, async () => {
+      const current = await this.requireActive();
+      if (current.id !== active.id || current.status !== "active") throw new TrainingApplicationFailure("active_session_conflict", "The frozen response no longer belongs to the active session.");
+      try {
+        await this.ports.mutations.retryMutationCommand(retryCommand, "submit_training_outcome");
+        this.retryableMutationCommands.delete(active.id);
+        this.uncertainMutationCommands.delete(active.id);
+        this.operationStates.publish(active.id, practice("feedback"));
+      } catch (error) {
+        const failure = mutationCommitFailureFrom(error);
+        if (failure && failure.phase !== "journal_write") {
+          this.retryableMutationCommands.delete(active.id);
+          this.operationStates.publish(active.id, practiceStateForMutationFailure(error));
+        } else if (failure?.commandProof?.attempt) {
+          this.retryableMutationCommands.delete(active.id);
+          this.operationStates.publish(active.id, practiceStateForMutationFailure(error));
+        } else if (failure?.commandProof?.retryCommand) {
+          this.retryableMutationCommands.set(active.id, failure.commandProof);
+          this.operationStates.publish(active.id, practiceStateForMutationFailure(error));
+        } else {
+          // A fresh preflight found corruption, a different journal, or a
+          // changed lease. Keep the user's frozen response but do not offer a
+          // new submission or another blind retry.
+          this.operationStates.publish(active.id, practice("submit_journal_failed", operationError("practice_submit", "not_durable", "none")));
+        }
+        throw applicationFailureForPracticeMutation(error);
+      }
+    }, true);
+  }
+
+  /** Retries only the exact frozen abandonment journal after a typed pre-write transport failure. */
+  async retryExpectedSessionAbandonment(expectedSessionId: string): Promise<TrainingSession> {
+    const active = await this.requireActive();
+    if (active.id !== expectedSessionId || active.status !== "active") throw new TrainingApplicationFailure("active_session_conflict", "The frozen abandonment no longer belongs to the active session.");
+    const proof = this.retryableMutationCommands.get(active.id);
+    if (proof?.operation !== "abandon_training_session" || !proof.retryCommand) throw new TrainingApplicationFailure("resume_unavailable", "There is no exact abandonment command safe to retry.");
+    return this.serializeSessionMutation(active.id, async () => {
+      const current = await this.requireActive();
+      if (current.id !== active.id || current.status !== "active") throw new TrainingApplicationFailure("active_session_conflict", "The frozen abandonment no longer belongs to the active session.");
+      const isSimulation = current.configurationSnapshot.submission === "manualOrForegroundTimeout";
+      this.operationStates.set(active.id, isSimulation ? simulation("abandoning") : practice("abandoning"));
+      try {
+        await this.ports.mutations.retryMutationCommand(proof.retryCommand!, "abandon_training_session");
+        this.retryableMutationCommands.delete(active.id);
+        this.uncertainMutationCommands.delete(active.id);
+        return await this.recoverExpectedSessionAbandonment(active.id);
+      } catch (error) {
+        const failure = mutationCommitFailureFrom(error);
+        if (!failure?.commandProof?.retryCommand) this.retryableMutationCommands.delete(active.id);
+        this.publishAbandonmentFailure(current, isSimulation, error);
+        if (!failure?.commandProof?.attempt && (failure === null || failure.durableState === "not_durable")) {
+          try { await this.reconstructOperationProjection(current); } catch { /* Keep the explicit blocked failure if canonical state is unavailable. */ }
+        }
+        throw error;
+      }
+    }, true);
   }
 
   async advancePracticeSession(): Promise<TrainingSession> {
@@ -246,6 +392,7 @@ export class TrainingLifecycleUseCases {
     const initial = await this.requireActive();
     return this.serializeSessionMutation(initial.id, async () => {
     const session = await this.requireActive();
+    this.assertDraftSaveResolved(session.id);
     if (session.configurationSnapshot.navigation !== "free" || session.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
       throw new TrainingApplicationFailure("invalid_response", "Only a free-navigation simulation can change its active occurrence.");
     }
@@ -320,26 +467,47 @@ export class TrainingLifecycleUseCases {
   }
 
   async saveSimulationDraft(input: Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number; authorization?: SimulationCommandAuthorization }>): Promise<void> {
+    const lease = this.ports.repositories.captureDraftStorageLease();
+    return this.saveSimulationDraftWithLease(input, lease);
+  }
+
+  private async saveSimulationDraftWithLease(
+    input: Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number; authorization?: SimulationCommandAuthorization }>,
+    lease: DraftStorageLeaseHandle | null,
+  ): Promise<void> {
     const initial = await this.requireActive();
     if (initial.id !== input.draft.sessionId) throw new TrainingApplicationFailure("no_active_session", "The simulation draft does not belong to the active session.");
+    if (this.uncertainDraftSaves.has(initial.id)) throw new TrainingApplicationFailure("persistence_failure", "The previous draft save has an uncertain result. Check it before saving again.");
     const authorization = input.authorization ?? await this.authorizeActiveSimulationCommand(initial.id);
     this.assertSimulationAuthorization(authorization, initial);
     const commit = () => this.serializeSessionMutation(initial.id, async () => {
       const session = await this.requireActive();
       if (session.id !== initial.id) throw new TrainingApplicationFailure("active_session_conflict", "The active simulation changed before its draft could be saved.");
+      this.assertDraftSaveResolved(session.id);
       this.operationStates.set(session.id, simulation("saving"));
       this.consumeSimulationAuthorization(authorization, session);
       const runtime = await this.resolveRuntimeForSession(session);
       try {
         await this.run("invalid_response", () => runtime.validateDraftCommand({ session, ...input }));
-        await this.ports.repositories.saveDraft(input);
+        await this.ports.repositories.saveDraft({ ...input, lease });
+        this.uncertainDraftSaves.delete(session.id);
+        this.retryableDraftSaves.delete(session.id);
         this.operationStates.set(session.id, simulation("editable"));
       } catch (error) {
         const stale = error instanceof StaleDraftRevisionError;
+        const receipt = error instanceof CanonicalWriteOutcomeError && (error.outcome.kind === "unknown" || error.outcome.kind === "conflict") && error.attempt !== undefined
+          ? this.ports.repositories.captureDraftWriteReceipt?.(error.attempt) ?? null
+          : null;
+        const uncertain = receipt !== null;
+        const unresolved = error instanceof CanonicalWriteOutcomeError && (error.outcome.kind === "unknown" || error.outcome.kind === "conflict");
+        const retryable = error instanceof CanonicalWriteOutcomeError && error.outcome.kind === "provenNotApplied";
+        if (receipt) this.uncertainDraftSaves.set(session.id, receipt);
+        if (retryable) this.retryableDraftSaves.set(session.id, Object.freeze({ draft: createTrainingSessionDraft(input.draft), expectedPreviousRevision: input.expectedPreviousRevision, lease }));
+        else this.retryableDraftSaves.delete(session.id);
         this.operationStates.set(session.id, stale
-          ? simulation("stale_revision", operationError("simulation_save", "not_durable", "retry_same_command"))
-          : simulation("save_failed", operationError("simulation_save", "not_durable", "retry_same_command")));
-        throw error instanceof TrainingApplicationFailure ? error : new TrainingApplicationFailure(stale ? "stale_revision" : "persistence_failure", stale ? "The simulation draft revision is stale." : "Simulation draft save failed without changing the durable draft.", error);
+          ? simulation("stale_revision", operationError("simulation_save", "not_durable", "none"))
+          : simulation("save_failed", operationError("simulation_save", unresolved ? "unknown" : "not_durable", uncertain ? "reconcile" : retryable ? "retry_same_command" : "none")));
+        throw error instanceof TrainingApplicationFailure ? error : new TrainingApplicationFailure(stale ? "stale_revision" : "persistence_failure", stale ? "The simulation draft revision is stale." : uncertain ? "The draft save result is uncertain. Check the saved response before trying again." : unresolved ? "The draft save could not be safely reconciled. Editing remains blocked." : "Simulation draft save failed before it changed the durable draft.", error);
       }
     });
     const expired = this.simulationDraftSaveBoundary
@@ -349,6 +517,28 @@ export class TrainingLifecycleUseCases {
       this.operationStates.set(initial.id, simulation("completed"));
       throw new TrainingApplicationFailure("invalid_response", "The Interview Simulation countdown expired before the response could be saved.");
     }
+  }
+
+  /** Retries only the exact immutable draft command proven not applied before setString. */
+  async retrySimulationDraftSave(): Promise<void> {
+    const active = await this.requireActive();
+    const command = this.retryableDraftSaves.get(active.id);
+    if (!command) throw new TrainingApplicationFailure("invalid_response", "There is no exact simulation draft command safe to retry.");
+    await this.saveSimulationDraftWithLease(command, command.lease);
+  }
+
+  async reconcileSimulationDraftSave(sessionId: string): Promise<"verified" | "conflict" | "unknown"> {
+    const receipt = this.uncertainDraftSaves.get(sessionId);
+    if (!receipt) return this.reconcileUncertainMutation(sessionId);
+    if (!this.ports.repositories.reconcileDraftWrite) return "unknown";
+    const result = await this.ports.repositories.reconcileDraftWrite(receipt);
+    if (result === "verified") {
+      this.uncertainDraftSaves.delete(sessionId);
+      this.operationStates.publish(sessionId, simulation("editable"));
+    } else {
+      this.operationStates.publish(sessionId, simulation("save_failed", operationError("simulation_save", "unknown", "reconcile")));
+    }
+    return result;
   }
 
   async authorizeActiveSimulationCommand(sessionId: string): Promise<SimulationCommandAuthorization> {
@@ -402,7 +592,10 @@ export class TrainingLifecycleUseCases {
   private async finalizeSimulationFor(session: TrainingSession): Promise<void> {
     const inFlight = this.finalizations.get(session.id);
     if (inFlight) return inFlight;
-    const operation = this.finalizeSimulationSnapshot(session);
+    const operation = this.serializeSessionMutation(session.id, async () => {
+      this.assertDraftSaveResolved(session.id);
+      await this.finalizeSimulationSnapshot(session);
+    });
     this.finalizations.set(session.id, operation);
     try { await operation; }
     finally { this.finalizations.delete(session.id); }
@@ -426,6 +619,19 @@ export class TrainingLifecycleUseCases {
       this.operationStates.set(session.id, state);
       throw applicationFailureForSimulationMutation(error);
     }
+  }
+
+  private assertDraftSaveResolved(sessionId: string): void {
+    if (this.uncertainDraftSaves.has(sessionId)) throw new TrainingApplicationFailure("persistence_failure", "A draft save has an uncertain result and must be checked before this action.");
+  }
+
+  private hasUnresolvedSessionOperation(sessionId: string): boolean {
+    const operation = this.operationStates.get(sessionId);
+    const blockedWithoutRecovery = operation && "error" in operation && operation.error.allowedAction === "none" &&
+      ((operation.family === "practice" && operation.kind === "submit_journal_failed") ||
+        (operation.family === "simulation" && (operation.kind === "save_failed" || operation.kind === "finalization_journal_failed")));
+    return this.uncertainDraftSaves.has(sessionId) || this.uncertainMutationCommands.has(sessionId) || this.retryableMutationCommands.has(sessionId) ||
+      Boolean(blockedWithoutRecovery || (operation && "error" in operation && operation.error.durableState === "unknown"));
   }
 
   async resumeActiveSession(authorization?: SimulationCommandAuthorization): Promise<TrainingSession> {
@@ -475,12 +681,14 @@ export class TrainingLifecycleUseCases {
       await this.run("persistence_failure", () => this.ports.mutations.abandon(abandoned, async () => {
         const fresh = await this.requireActive();
         assertUnavailableSessionIdentity(fresh, input.sessionId, input.identity);
+        if (!sameSessionSnapshot(fresh, active)) throw new TrainingApplicationFailure("active_session_conflict", "The frozen abandonment no longer matches the exact active session.");
         if (!await input.isCurrent()) throw new TrainingApplicationFailure("resume_unavailable", "The unavailable-session confirmation no longer belongs to the current account and profile.");
         await this.authorizePremiumProductMode(fresh.modeId);
         await this.assertNoPendingMutation();
         await this.assertExactArtifactStillUnavailable(fresh, input.identity);
         const afterResolution = await this.requireActive();
         assertUnavailableSessionIdentity(afterResolution, input.sessionId, input.identity);
+        if (!sameSessionSnapshot(afterResolution, active)) throw new TrainingApplicationFailure("active_session_conflict", "The frozen abandonment changed during eligibility checks.");
         await this.assertNoPendingMutation();
         if (!await input.isCurrent()) throw new TrainingApplicationFailure("resume_unavailable", "The unavailable-session confirmation no longer belongs to the current account and profile.");
       }));
@@ -494,12 +702,7 @@ export class TrainingLifecycleUseCases {
       this.operationStates.clear(active.id);
       return persisted;
     } catch (error) {
-      const mutationFailure = mutationCommitFailureFrom(error);
-      const afterJournal = mutationFailure !== null && mutationFailure.durableState !== "not_durable";
-      const operation = isSimulation ? "simulation_abandon" : "practice_abandon";
-      const state = afterJournal ? "abandonment_recovery_required" : "abandonment_failed_before_journal";
-      const detail = operationError(operation, mutationFailure?.durableState ?? "not_durable", afterJournal ? "recover" : "retry_same_command");
-      this.operationStates.set(active.id, isSimulation ? simulation(state, detail) : practice(state, detail));
+      this.publishAbandonmentFailure(active, isSimulation, error);
       throw error;
     }
   }
@@ -523,26 +726,47 @@ export class TrainingLifecycleUseCases {
 
   private async abandonActiveSessionInLane(): Promise<TrainingSession> {
     const active = await this.requireActive();
+    const prior = this.operationStates.get(active.id);
+    if (prior?.kind === "abandonment_failed_before_journal" && "error" in prior && prior.error.allowedAction === "none") {
+      this.retryableMutationCommands.delete(active.id);
+    }
     await this.authorizePremiumProductMode(active.modeId);
     await this.resolveRuntimeForSession(active);
     const abandoned = this.runSync("persistence_failure", () => abandonTrainingSession(active, this.ports.clock.now()));
     const isSimulation = active.configurationSnapshot.submission === "manualOrForegroundTimeout";
     this.operationStates.set(active.id, isSimulation ? simulation("abandoning") : practice("abandoning"));
+    const preflight = async (): Promise<void> => {
+      const fresh = await this.requireActive();
+      if (!sameSessionSnapshot(fresh, active)) throw new TrainingApplicationFailure("active_session_conflict", "The frozen abandonment no longer matches the exact active session.");
+      await this.authorizePremiumProductMode(fresh.modeId);
+      await this.resolveRuntimeForSession(fresh);
+      await this.assertNoPendingMutation();
+      const afterResolution = await this.requireActive();
+      if (!sameSessionSnapshot(afterResolution, active)) throw new TrainingApplicationFailure("active_session_conflict", "The frozen abandonment changed during eligibility checks.");
+    };
     try {
-      await this.run("persistence_failure", () => this.ports.mutations.abandon(abandoned));
+      await this.run("persistence_failure", () => this.ports.mutations.abandon(abandoned, preflight));
       const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
       if (verified) throw new TrainingApplicationFailure("verification_failure", "Abandoned session remains resumable.");
       this.operationStates.set(active.id, isSimulation ? simulation("abandoned") : practice("abandoned"));
       this.operationStates.clear(active.id);
       return abandoned;
     } catch (error) {
-      const afterJournal = error instanceof MutationCommitFailure && error.durableState !== "not_durable";
-      const operation = isSimulation ? "simulation_abandon" : "practice_abandon";
-      const state = afterJournal ? "abandonment_recovery_required" : "abandonment_failed_before_journal";
-      const detail = operationError(operation, error instanceof MutationCommitFailure ? error.durableState : "not_durable", afterJournal ? "recover" : "retry_same_command");
-      this.operationStates.set(active.id, isSimulation ? simulation(state, detail) : practice(state, detail));
+      this.publishAbandonmentFailure(active, isSimulation, error);
       throw error;
     }
+  }
+
+  private publishAbandonmentFailure(active: TrainingSession, isSimulation: boolean, error: unknown): void {
+    const failure = mutationCommitFailureFrom(error);
+    const unresolvedAttempt = failure?.phase === "journal_write" && failure.durableState === "unknown" && failure.commandProof?.attempt !== undefined;
+    const durableState = failure?.durableState ?? "not_durable";
+    const operation = isSimulation ? "simulation_abandon" : "practice_abandon";
+    const retryableExactCommand = failure?.phase === "journal_write" && durableState === "not_durable" && failure.commandProof?.retryCommand !== undefined;
+    const state = unresolvedAttempt || durableState !== "not_durable" ? "abandonment_recovery_required" : "abandonment_failed_before_journal";
+    const action = unresolvedAttempt ? "reconcile" : retryableExactCommand ? "retry_same_command" : durableState === "journal_durable" || durableState === "materialized" || durableState === "verified_pending_clear" ? "recover" : "none";
+    const detail = operationError(operation, durableState, action);
+    this.operationStates.set(active.id, isSimulation ? simulation(state, detail) : practice(state, detail));
   }
 
   async recoverPendingJournal(): Promise<void> { await this.run("persistence_failure", () => this.ports.mutations.recover()); }
@@ -690,9 +914,20 @@ export class TrainingLifecycleUseCases {
     });
   }
 
-  private serializeSessionMutation<T>(sessionId: string, operation: () => Promise<T>): Promise<T> {
+  private serializeSessionMutation<T>(sessionId: string, operation: () => Promise<T>, allowUncertain = false): Promise<T> {
     const previous = this.sessionMutationLanes.get(sessionId) ?? Promise.resolve();
-    const result = previous.catch(() => undefined).then(operation);
+    const result = previous.catch(() => undefined).then(async () => {
+      if (!allowUncertain && this.hasUnresolvedSessionOperation(sessionId)) {
+        throw new TrainingApplicationFailure("persistence_failure", "A save result is uncertain. Check it before changing or finishing this session.");
+      }
+      try { return await operation(); }
+      catch (error) {
+        const mutationFailure = mutationCommitFailureFrom(error);
+        if (mutationFailure?.phase === "journal_write" && mutationFailure.durableState === "unknown" && mutationFailure.commandProof?.attempt) this.uncertainMutationCommands.set(sessionId, mutationFailure.commandProof);
+        if (mutationFailure?.phase === "journal_write" && mutationFailure.durableState === "not_durable" && mutationFailure.commandProof?.retryCommand) this.retryableMutationCommands.set(sessionId, mutationFailure.commandProof);
+        throw error;
+      }
+    });
     this.sessionMutationLanes.set(sessionId, result);
     return result.finally(() => {
       if (this.sessionMutationLanes.get(sessionId) === result) this.sessionMutationLanes.delete(sessionId);
@@ -732,6 +967,10 @@ function sameSessionContentIdentity(left: TrainingSession, right: TrainingSessio
   return left.id === right.id && left.trackId === right.trackId && left.contentVersion === right.contentVersion && left.artifactSha256 === right.artifactSha256;
 }
 
+function sameSessionSnapshot(left: TrainingSession, right: TrainingSession): boolean {
+  return left.status === "active" && right.status === "active" && JSON.stringify(left) === JSON.stringify(right);
+}
+
 function practice<K extends PracticeDurableOperationState["kind"]>(kind: K, error?: DurableOperationError, reviewConflict = false): Extract<PracticeDurableOperationState, { kind: K }> {
   return Object.freeze({ family: "practice", kind, ...(error ? { error } : {}), ...(reviewConflict ? { reviewConflict: true as const } : {}) }) as Extract<PracticeDurableOperationState, { kind: K }>;
 }
@@ -740,7 +979,7 @@ function simulation<K extends SimulationDurableOperationState["kind"]>(kind: K, 
 }
 
 function operationError(operation: DurableOperationError["operation"], durableState: DurableOperationError["durableState"], allowedAction: DurableOperationError["allowedAction"]): DurableOperationError {
-  return Object.freeze({ operation, durableState, retrySafety: durableState === "not_durable" ? "safe_retry" : allowedAction === "recover" ? "recovery_only" : "retry_forbidden", allowedAction, prohibitedFallback: "The application will not recreate a response, draft, outcome, or result from UI state." });
+  return Object.freeze({ operation, durableState, retrySafety: allowedAction === "none" ? "retry_forbidden" : durableState === "not_durable" ? "safe_retry" : allowedAction === "recover" ? "recovery_only" : "retry_forbidden", allowedAction, prohibitedFallback: "The application will not recreate a response, draft, outcome, or result from UI state." });
 }
 
 function practiceRecovery(kind: "submit_journal_failed" | "commit_pending" | "commit_materialization_failed" | "commit_verification_failed"): Extract<PracticeDurableOperationState, { kind: typeof kind }> {
@@ -770,15 +1009,25 @@ function simulationPendingFor(status: "journal_durable" | "materialized" | "veri
 }
 
 function practiceStateForMutationFailure(error: unknown): PracticeDurableOperationState {
-  if (!(error instanceof MutationCommitFailure)) return practiceRecovery("submit_journal_failed");
-  if (error.phase === "journal_write") return practiceRecovery("submit_journal_failed");
-  if (error.phase === "materialization") return practiceRecovery("commit_materialization_failed");
+  const failure = mutationCommitFailureFrom(error);
+  if (!failure) return practiceRecovery("submit_journal_failed");
+  if (failure.phase === "journal_write") {
+    if (failure.commandProof?.retryCommand) return practice("submit_journal_failed", operationError("practice_submit", "not_durable", "retry_same_command"));
+    return failure.durableState === "unknown" && failure.commandProof?.attempt !== undefined
+      ? practice("submit_journal_failed", operationError("practice_submit", "unknown", "reconcile"))
+      : practice("submit_journal_failed", operationError("practice_submit", failure.durableState, "none"));
+  }
+  if (failure.phase === "materialization") return practiceRecovery("commit_materialization_failed");
   return practiceRecovery("commit_verification_failed");
 }
 
 function simulationStateForMutationFailure(error: unknown): SimulationDurableOperationState {
-  if (!(error instanceof MutationCommitFailure) || error.phase === "journal_write") return simulationRecovery("finalization_journal_failed");
-  if (error.phase === "materialization") return simulationRecovery("materialization_failed");
+  const failure = mutationCommitFailureFrom(error);
+  if (!failure) return simulationRecovery("finalization_journal_failed");
+  if (failure.phase === "journal_write") return failure.durableState === "unknown" && failure.commandProof?.attempt !== undefined
+    ? simulation("finalization_journal_failed", operationError("simulation_finalization", "unknown", "reconcile"))
+    : simulation("finalization_journal_failed", operationError("simulation_finalization", failure.durableState, "none"));
+  if (failure.phase === "materialization") return simulationRecovery("materialization_failed");
   return simulationRecovery("verification_failed");
 }
 

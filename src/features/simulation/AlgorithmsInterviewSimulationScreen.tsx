@@ -6,9 +6,9 @@ import { AppState } from "react-native";
 import {
   abandonAlgorithmsSession, enterAlgorithmsSimulationForeground, finalizeAlgorithmsSimulation,
   getAlgorithmsSimulationScreenProjection, leaveAlgorithmsSimulationForeground,
-  navigateAlgorithmsSimulationTo, recoverAlgorithmsSimulationOperation, recoverAlgorithmsSimulationSaveAndContinue, resumeAlgorithmsSimulationEditingAfterSaveFailure, saveAlgorithmsSimulationResponse, saveAlgorithmsSimulationResponseAndContinue, saveAlgorithmsSimulationResponseAndNavigate, startAlgorithmsSession,
+  navigateAlgorithmsSimulationTo, recoverAlgorithmsSimulationOperation, recoverAlgorithmsSimulationSaveAndContinue, resumeAlgorithmsSimulationEditingAfterSaveFailure, resumeAlgorithmsSimulationEditingAfterStaleConflict, retryAlgorithmsSimulationSave, saveAlgorithmsSimulationResponse, saveAlgorithmsSimulationResponseAndContinue, saveAlgorithmsSimulationResponseAndNavigate, startAlgorithmsSession,
   subscribeAlgorithmsSimulationProjectionRefresh, toggleAlgorithmsSimulationFlag, type AlgorithmsSimulationProjection,
-  type AlgorithmsSimulationScreenProjection,
+  reconcileAlgorithmsSimulationSave, type AlgorithmsSimulationScreenProjection,
 } from "../../application/coding-interview";
 import { subscribeTrainingOperationProjection, type SimulationDurableOperationState } from "../../application/trainingLifecycle";
 import { ROUTES } from "../../constants";
@@ -107,6 +107,9 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
   }
   async function abandon() { try { await abandonAlgorithmsSession(); navigation.goBack(); } catch { await load(); } }
   async function resumeEditingAfterSaveFailure() { try { await resumeAlgorithmsSimulationEditingAfterSaveFailure(); } catch { /* The application keeps the operation state when resume-editing is invalid. */ } await load(); }
+  async function retryExactSave() { try { await retryAlgorithmsSimulationSave(); } catch { /* Lifecycle retains the exact command and its durable state. */ } await load(); }
+  async function useResponseAsNewSave() { try { await resumeAlgorithmsSimulationEditingAfterStaleConflict(); } catch { /* A stale command stays blocked until explicit conflict resolution. */ } await load(); }
+  async function reconcileSave() { try { await reconcileAlgorithmsSimulationSave(); } catch { /* The application keeps unresolved state until exact bytes are confirmed. */ } await load(); }
   async function recoverOperation() { try { await recoverAlgorithmsSimulationOperation(); } catch { /* Recovery remains exclusively application-owned. */ } await load(); }
   async function continueAfterNavigationFailure(operation: SimulationDurableOperationState) {
     if (screen?.kind !== "ready") return;
@@ -134,8 +137,10 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
       onLeave: () => navigation.goBack(),
       onRecover: () => { void recoverOperation(); },
       onResumeEditing: () => { void resumeEditingAfterSaveFailure(); },
+      onResolveStaleConflict: () => { void useResponseAsNewSave(); },
       onRetryFinalization: () => { void finish(); },
-      onRetrySave: () => { void save(); },
+      onRetrySave: () => { void retryExactSave(); },
+      onReconcileSave: () => { void reconcileSave(); },
     });
     const changed = !sameResponse(response, responseFromProjection(projection));
     return {
@@ -162,12 +167,15 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
 }
 
 function base(projection: AlgorithmsSimulationProjection) { return { title: "Interview Simulation", modeLabel: "Interview Simulation", position: simulationPosition(projection), progress: projection.position.current / projection.position.total, runtimeIdentity: { itemId: projection.item.questionId, sessionId: projection.session.id }, timer: simulationTimer(projection.remainingForegroundMs), navigator: frozenNavigator(projection) }; }
-type SimulationActionHandlers = Readonly<{ onClose: () => void; onContinueNavigation: () => void; onLeave: () => void; onRecover: () => void; onResumeEditing: () => void; onRetryFinalization: () => void; onRetrySave: () => void }>;
+type SimulationActionHandlers = Readonly<{ onClose: () => void; onContinueNavigation: () => void; onLeave: () => void; onRecover: () => void; onResumeEditing: () => void; onResolveStaleConflict: () => void; onRetryFinalization: () => void; onRetrySave: () => void; onReconcileSave: () => void }>;
 function operationSurface(projection: AlgorithmsSimulationProjection, operation: SimulationDurableOperationState, callbacks: SimulationActionHandlers): SimulationSurfaceProjection {
   const lockedLeave: SimulationAction = { id: "simulation-leave-resumable", label: "Leave and resume later", disabled: true, onPress: noop, variant: "secondary" };
   if (operation.kind === "saving") return operationProjection(projection, "saving", savingOperation(), { primary: { id: "simulation-save", label: "Saving response…", disabled: true, loading: true, onPress: noop }, secondary: lockedLeave });
   if (operation.kind === "navigating") return operationProjection(projection, "navigating", navigatingOperation(), { secondary: lockedLeave });
-  if (operation.kind === "save_failed" || operation.kind === "stale_revision") return operationProjection(projection, operation.kind === "save_failed" ? "save_failed" : "stale_revision", saveFailureOperation(), { primary: { id: "simulation-save", label: "Try again", onPress: callbacks.onRetrySave }, secondary: { id: "simulation-keep-editing", label: "Keep editing", onPress: callbacks.onResumeEditing, variant: "secondary" }, tertiary: { id: "simulation-leave-resumable", label: "Leave simulation", onPress: callbacks.onLeave, variant: "ghost" } });
+  if (operation.kind === "save_failed" && operation.error.allowedAction === "reconcile") return operationProjection(projection, "save_failed", uncertainSaveOperation(), { primary: { id: "simulation-reconcile-save", label: "Check saved response", onPress: callbacks.onReconcileSave } });
+  if (operation.kind === "stale_revision") return operationProjection(projection, "stale_revision", staleDraftOperation(), { primary: { id: "simulation-keep-editing", label: "Keep editing", onPress: callbacks.onResolveStaleConflict }, secondary: { id: "simulation-leave-resumable", label: "Leave simulation", onPress: callbacks.onLeave, variant: "secondary" } });
+  if (operation.kind === "save_failed" && operation.error.allowedAction === "retry_same_command") return operationProjection(projection, "save_failed", saveFailureOperation(), { primary: { id: "simulation-save", label: "Retry save", onPress: callbacks.onRetrySave }, secondary: { id: "simulation-keep-editing", label: "Keep editing", onPress: callbacks.onResumeEditing, variant: "secondary" }, tertiary: { id: "simulation-leave-resumable", label: "Leave simulation", onPress: callbacks.onLeave, variant: "ghost" } });
+  if (operation.kind === "save_failed") return operationProjection(projection, "save_failed", unavailableSaveOperation(), { secondary: { id: "close", label: "Close", onPress: callbacks.onClose, variant: "secondary" } });
   if (operation.kind === "navigation_failed" || operation.kind === "save_and_continue_advance_recovery") return operationProjection(projection, "recovering", navigationFailureOperation(operation.error.allowedAction === "recover"), { primary: { id: operation.error.allowedAction === "recover" ? "simulation-recover" : "simulation-navigator-jump", label: "Continue", onPress: callbacks.onContinueNavigation }, secondary: { id: "simulation-leave-resumable", label: "Leave simulation", onPress: callbacks.onLeave, variant: "ghost" } });
   if (["frozen", "finalization_journal_pending", "materializing", "verifying", "verified_pending_clear"].includes(operation.kind)) return operationProjection(projection, operation.kind === "frozen" ? "frozen" : "finalizing", finalizingOperation(), { secondary: lockedLeave });
   if (operation.kind === "finalization_journal_failed" || operation.kind === "materialization_failed" || operation.kind === "verification_failed" || operation.kind === "recovery_required") {
@@ -181,6 +189,9 @@ function operationProjection(projection: AlgorithmsSimulationProjection, state: 
 function savingOperation(): SimulationOperationPresentation { return { kind: "saving-response", title: "Saving response", description: "Please wait while your response is saved.", lockMessage: "Editing and navigation are locked until save completes." }; }
 function navigatingOperation(): SimulationOperationPresentation { return { kind: "navigating", title: "Opening question", description: "Your saved response is safe. Opening the selected question.", lockMessage: "Answer editing and navigation are locked until the question opens." }; }
 function saveFailureOperation(): SimulationOperationPresentation { return { kind: "save-failed", title: "Couldn't save this response.", description: "Your last saved response is unchanged.", lockMessage: "You can keep editing or save again.", noticeMessage: "Couldn't save this response. Your current answer is still here." }; }
+function staleDraftOperation(): SimulationOperationPresentation { return { kind: "save-failed", title: "The saved response changed.", description: "Your answer is still here. Review it before saving it as a new response.", lockMessage: "This older save can't be retried over a newer response.", noticeMessage: "Review the saved response before continuing." }; }
+function uncertainSaveOperation(): SimulationOperationPresentation { return { kind: "save-outcome-unknown", title: "Save not confirmed", description: "We couldn't confirm whether this response was saved.", lockMessage: "Editing, navigation, and finishing are locked until the saved response is checked.", noticeMessage: "Check the saved response before continuing." }; }
+function unavailableSaveOperation(): SimulationOperationPresentation { return { kind: "save-failed", title: "This response could not be saved.", description: "The saved response state is unavailable.", lockMessage: "The response cannot be retried until its state is available.", noticeMessage: "Your current answer is still here." }; }
 function navigationFailureOperation(recoveryRequired: boolean): SimulationOperationPresentation { return { kind: "response-saved-navigation-failed", title: "Response saved", description: recoveryRequired ? "Your response is safe. Resume the verified navigation." : "Your response is safe. Continue to open the next question.", lockMessage: "Answer editing is locked while navigation completes.", noticeMessage: "Navigation restored. Your saved response is ready to continue." }; }
 function finalizingOperation(): SimulationOperationPresentation { return { kind: "finalizing", title: "Finalizing simulation", description: "Your saved responses are being processed. This may take a moment.", lockMessage: "You can't edit answers or navigate while finalization is in progress." }; }
 function finalizationRecoveryOperation(): SimulationOperationPresentation { return { kind: "finalization-recovery-required", title: "Finalization incomplete", description: "Your session is frozen and saved responses are preserved.", lockMessage: "Resume finalization before any results are shown." }; }

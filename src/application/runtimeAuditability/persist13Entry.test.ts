@@ -9,8 +9,18 @@ import {
   fixtureModeAllowsManifest,
   fixtureStoreIds,
   isPersist13Manifest,
+  isPersist13ScenarioSidecar,
+  isPersist13ControlNamespace,
+  PERSIST13_FIXTURE_MANIFEST_KEY,
+  PERSIST13_FIXTURE_OWNER,
+  PERSIST13_SCENARIO_SIDECAR_SCHEMA,
+  PERSIST13_SCENARIO_SIDECAR_KEY,
+  persist13FixturePhysicalKey,
   withPersist13ManifestState,
 } from "./persist13ResetFixtureProtocol";
+import { createProfileScopedStorage } from "../../infrastructure/storage/profileStorageRouter";
+import { STORAGE_KEYS } from "../../storage/keys";
+import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 
 const runId = "2e80bf94-ec48-4c07-a026-95743fb44e1e";
 
@@ -19,7 +29,12 @@ test("PERSIST-13 selects the regular root only when both compiled fixture values
   assert.deepEqual(resolvePersist13Entry({ runId }), { kind: "fixture_invalid", reason: "run_id_without_mode" });
   assert.deepEqual(resolvePersist13Entry({ mode: "other", runId }), { kind: "fixture_invalid", reason: "invalid_mode" });
   assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId: "not-a-uuid" }), { kind: "fixture_invalid", reason: "invalid_run_id" });
-  assert.deepEqual(resolvePersist13Entry({ mode: "recover", runId: runId.toUpperCase() }), { kind: "fixture", mode: "recover", runId });
+  assert.deepEqual(resolvePersist13Entry({ mode: "recover", runId: runId.toUpperCase() }), { kind: "fixture", mode: "recover", scenario: "reset", runId });
+  assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId }), { kind: "fixture", mode: "seed", scenario: "reset", runId });
+  assert.deepEqual(resolvePersist13Entry({ mode: "recover", runId, scenario: "journal" }), { kind: "fixture", mode: "recover", scenario: "journal", runId });
+  assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId, scenario: "draft" }), { kind: "fixture", mode: "seed", scenario: "draft", runId });
+  assert.deepEqual(resolvePersist13Entry({ mode: "seed", runId, scenario: "other" }), { kind: "fixture_invalid", reason: "invalid_scenario" });
+  assert.deepEqual(resolvePersist13Entry({ scenario: "journal" }), { kind: "fixture_invalid", reason: "scenario_without_mode" });
 });
 
 test("PERSIST-13 manifest binds exact run stores, state, profile and closed target lists", () => {
@@ -51,10 +66,106 @@ test("PERSIST-13 physical snapshot equality includes exact key set and raw value
   assert.equal(arePersist13PhysicalSnapshotsEqual(baseline, Object.freeze([["b", undefined], ["a", "raw-envelope"]] as const)), false);
 });
 
+test("scenario fault key is the exact modern physical key produced by the profile router", () => {
+  const values = new Map<string, string>();
+  const base = {
+    getString(key: string) { return values.get(key); },
+    setString(key: string, value: string) { values.set(key, value); },
+    remove(key: string) { values.delete(key); },
+    contains(key: string) { return values.has(key); },
+    getAllKeys() { return [...values.keys()]; },
+  };
+  const profile = { id: runId, kind: "guest" as const, accountId: null };
+  createProfileScopedStorage(base, profile).setString(STORAGE_KEYS.ACTIVE_JOURNAL, "test-only");
+  const exact = persist13FixturePhysicalKey(runId, STORAGE_KEYS.ACTIVE_JOURNAL);
+  assert.deepEqual([...values.keys()], [exact]);
+  assert.equal(exact, `patternly:profile:v1:${runId}:${encodeURIComponent(STORAGE_KEYS.ACTIVE_JOURNAL)}`);
+});
+
+test("control namespace permits only the manifest, scenario sidecar and canonical router registry slots", () => {
+  const registryA = "patternly.profile-root.v1.a";
+  const registryB = "patternly.profile-root.v1.b";
+  assert.equal(isPersist13ControlNamespace([PERSIST13_FIXTURE_MANIFEST_KEY, registryA], "reset"), true);
+  assert.equal(isPersist13ControlNamespace([PERSIST13_FIXTURE_MANIFEST_KEY, registryA, registryB, PERSIST13_SCENARIO_SIDECAR_KEY], "journal"), true);
+  assert.equal(isPersist13ControlNamespace([PERSIST13_FIXTURE_MANIFEST_KEY, PERSIST13_SCENARIO_SIDECAR_KEY, "foreign-control-key"], "journal"), false);
+  assert.equal(isPersist13ControlNamespace([PERSIST13_FIXTURE_MANIFEST_KEY, PERSIST13_SCENARIO_SIDECAR_KEY], "draft"), false);
+  assert.equal(isPersist13ControlNamespace([PERSIST13_FIXTURE_MANIFEST_KEY, registryA, PERSIST13_SCENARIO_SIDECAR_KEY], "reset"), false);
+});
+
+test("scenario sidecar is closed, run-bound and records only exact-key hashes", () => {
+  const logicalKey = STORAGE_KEYS.ACTIVE_JOURNAL;
+  const physicalKey = persist13FixturePhysicalKey(runId, logicalKey);
+  const settingsKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.SETTINGS);
+  const sidecar = Object.freeze({
+    schema: PERSIST13_SCENARIO_SIDECAR_SCHEMA,
+    owner: PERSIST13_FIXTURE_OWNER,
+    runId,
+    scenario: "journal" as const,
+    phase: "faulted" as const,
+    ...fixtureStoreIds(runId),
+    fixtureProfileId: runId,
+    faultLogicalKey: logicalKey,
+    faultPhysicalKey: physicalKey,
+    before: Object.freeze([{ key: settingsKey, sha256: sha256Utf8("settings") }]),
+    after: Object.freeze([
+      { key: physicalKey, sha256: sha256Utf8("journal") },
+      { key: settingsKey, sha256: sha256Utf8("settings") },
+    ].sort((left, right) => left.key < right.key ? -1 : left.key > right.key ? 1 : 0)),
+    sessionIdSha256: sha256Utf8("session-id"),
+    occurrenceIdSha256: sha256Utf8("occurrence-id"),
+    responseSha256: sha256Utf8("expected-response"),
+    expectedAttemptSha256: sha256Utf8("whole-attempt-record"),
+    expectedSessionSha256: sha256Utf8("whole-session-record"),
+    expectedReviewSha256: Object.freeze([sha256Utf8("whole-review-record")]),
+    baselineAttemptCount: 0,
+    baselineSessionIndex: 0,
+  });
+  assert.equal(isPersist13ScenarioSidecar(sidecar, runId, "journal"), true);
+  const { before: _before, ...missingBefore } = sidecar;
+  assert.equal(isPersist13ScenarioSidecar(missingBefore, runId, "journal"), false);
+  assert.equal(isPersist13ScenarioSidecar({ ...sidecar, faultPhysicalKey: `${physicalKey}:suffix` }, runId, "journal"), false);
+  assert.equal(isPersist13ScenarioSidecar({ ...sidecar, sessionId: "raw-session-id" }, runId, "journal"), false);
+  assert.equal(isPersist13ScenarioSidecar({ ...sidecar, expectedAttemptSha256: "raw-attempt" }, runId, "journal"), false);
+  assert.equal(isPersist13ScenarioSidecar({ ...sidecar, expectedReviewSha256: ["raw-review"] }, runId, "journal"), false);
+  assert.equal(isPersist13ScenarioSidecar(sidecar, "b6d6c87c-8103-4b4c-9af9-77a0d7f002bf", "journal"), false);
+});
+
+test("draft sidecar binds the expected canonical payload and codec-prepared envelope by hash", () => {
+  const logicalKey = STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT;
+  const physicalKey = persist13FixturePhysicalKey(runId, logicalKey);
+  const unrelatedKey = persist13FixturePhysicalKey(runId, STORAGE_KEYS.SETTINGS);
+  const sidecar = Object.freeze({
+    schema: PERSIST13_SCENARIO_SIDECAR_SCHEMA,
+    owner: PERSIST13_FIXTURE_OWNER,
+    runId,
+    scenario: "draft" as const,
+    phase: "faulted" as const,
+    ...fixtureStoreIds(runId),
+    fixtureProfileId: runId,
+    faultLogicalKey: logicalKey,
+    faultPhysicalKey: physicalKey,
+    before: Object.freeze([{ key: unrelatedKey, sha256: sha256Utf8("settings") }]),
+    after: Object.freeze([
+      { key: physicalKey, sha256: sha256Utf8("expected-envelope") },
+      { key: unrelatedKey, sha256: sha256Utf8("settings") },
+    ].sort((left, right) => left.key < right.key ? -1 : left.key > right.key ? 1 : 0)),
+    sessionIdSha256: sha256Utf8("session-id"),
+    baselineAttemptCount: 0,
+    baselineSessionIndex: 0,
+    expectedDraftRevision: 2,
+    expectedDraftPayloadSha256: sha256Utf8("expected-payload"),
+    expectedDraftEnvelopeSha256: sha256Utf8("expected-envelope"),
+  });
+  assert.equal(isPersist13ScenarioSidecar(sidecar, runId, "draft"), true);
+  assert.equal(isPersist13ScenarioSidecar({ ...sidecar, expectedDraftPayloadSha256: "raw-response" }, runId, "draft"), false);
+  assert.equal(isPersist13ScenarioSidecar({ ...sidecar, expectedDraftEnvelopeSha256: undefined }, runId, "draft"), false);
+});
+
 test("fixture selector keeps ordinary providers behind a dynamic import boundary", () => {
   const selector = readFileSync("App.tsx", "utf8");
   const ordinaryRoot = readFileSync("src/RegularApplicationRoot.tsx", "utf8");
   assert.match(selector, /resolvePersist13Entry\(\{[\s\S]*?EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE[\s\S]*?EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE_RUN_ID/u);
+  assert.match(selector, /EXPO_PUBLIC_PATTERNLY_PERSIST13_FIXTURE_SCENARIO/u);
   assert.match(selector, /require\("\.\/src\/RegularApplicationRoot"\)/u);
   assert.match(selector, /require\("\.\/src\/application\/runtimeAuditability\/Persist13ResetFixtureRoot"\)/u);
   assert.doesNotMatch(selector, /from "\.\/src\/(?:application\/account|navigation|content\/application|preferences)/u);

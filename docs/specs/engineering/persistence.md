@@ -7,7 +7,7 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 
 ## PERSIST-01 — P1 — Recovery przed strict active/content reads
 
-**Potwierdzenie w bieżącym kodzie:** applicationBootstrap nadal sprawdza unavailable-active i strict active przed recovery. Repo sesji nadal odrzuca pointer do terminal session. Zacząć od testu rzeczywistego bootstrapu po terminal write/pointer-clear failure.
+**Stan po zmianach PERSIST-02/03, sprawdzenie źródeł 11.10.2026 (`8a591248`):** produkcyjny bootstrap wykonuje inspect/preflight i recovery przed strict active/unavailable/content reads. Istnieją testy terminal S + pointer-clear failure przez produkcyjny bootstrap oraz drugiego uruchomienia bez odtworzenia stanu. Historyczny defekt kolejności opisany niżej został usunięty; pozostają exact-envelope/replay kryteria wspólne z PERSIST-05/06 oraz natywny kill na pointer-clear boundary przez PERSIST-13. To rozpoznanie źródeł, nie pełny odbiór PERSIST-01.
 
 - **Operacje i granica:** ordinary completion, simulation finalization, abandonment; crash po zapisie terminal S, przed usunięciem active pointer. Dodatkowo unavailable-active record współistniejący z pending J (P2 wariant tego samego zadania).
 - **Invariant / expected:** prefix terminal mutation jest legalnym stanem przejściowym; replay i verify J poprzedzają strict active/content resolution. Brak ready przed rozstrzygnięciem.
@@ -40,7 +40,7 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 
 ## PERSIST-04 — P1 — Rozstrzyganie niepewnego zapisu journalu
 
-**Potwierdzenie w bieżącym kodzie:** Journal persistence i commit handling nadal nie rozróżniają pewnego write failure od niepewnego post-write/readback outcome. Trwała faza i recovery-only UI pozostają brakującym kontraktem; nie stwierdzono duplicate evidence.
+**Odbiór zakresu04:** exact attempted J/readback/reconcile, operation-bound retry z pierwotnym rekordem/lease/preflight oraz blokady UI odebrane niezależnie. [Dowody i granice](../../reports/persist04-08-acceptance-2026-10-11.md); rzeczywiste CI dostarczenia osobno. Poniższa reprodukcja opisuje stan historyczny, nie bieżący defekt.
 
 - **Operacje i granica:** każdy commit, szczególnie practice submit; `setString(ACTIVE_JOURNAL)` wykonany, następny read-back rzuca błąd.
 - **Invariant / expected:** istniejący lub niejednoznacznie zapisany J nie jest komunikowany jako pewne `not_durable`; odpowiedź/outcome nie mogą być ponownie edytowane lub oceniane jako nowa komenda.
@@ -84,7 +84,7 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 
 ## PERSIST-08 — P1 — Niepewny draft save nie jest ani Unsaved, ani Saved bez rozstrzygnięcia
 
-**Potwierdzenie w bieżącym kodzie:** Niepewny draft-save nadal wymaga rozstrzygnięcia trwałego wyniku przed komunikatem Saved/Unsaved i dalszą edycją. Weryfikować rzeczywistą gałąź commit/draft, bez twierdzenia o nieodtworzonych duplikatach.
+**Odbiór zakresu08:** exact D receipt/readback/reconcile, zachowanie pierwotnego lease, blokady edycji/finalizacji i zachowanie input odebrane niezależnie. [Dowody i granice](../../reports/persist04-08-acceptance-2026-10-11.md); pełna macierz13 i native PremiumUI pozostają osobno. Poniższa reprodukcja jest historyczna.
 
 - **Operacje i granica:** simulation save → write nowego D zakończony, odczyt kontrolny zawodzi → timer expiry/manual finish/restart.
 - **Invariant / expected:** ostatnia zweryfikowana rewizja pozostaje authority; nie wolno przedstawiać odpowiedzi jako niezapisanej, a później bez wyjaśnienia włączyć jej do score. Niepewny efekt wymaga rozstrzygnięcia albo jawnego recovery block.
@@ -166,6 +166,6 @@ Porównano źródła i testy 07.10.2026: app `e889b05d033d4cc4b7676d0ca3f224efc3
 
 ### PERSIST.5 Kolejność, ocena podejścia i niezależny review
 
-Wszystkie PERSIST-01–14: **planned**; audit jest zakończony, implementacja nie rozpoczęta. Praktyczna kolejność: 01 → 14 oraz 02 → 03; równolegle przygotowanie 13 → 04/08 → 07/05/06 → 09/10 → 11/12 → końcowa macierz 13 i odpowiedni zakres AUD-06. Nie blokować niezależnych napraw pracą nad czasomierzem; limit utraty 5 sekund został zatwierdzony. Żadnego „fix persistence” zbierającego całość w jeden nieograniczony task.
+Historyczny stan audytu z 07.10.2026: PERSIST-01–14 były **planned**, bez rozpoczętej implementacji. Bieżący zakres pozostały i statusy należą wyłącznie do planu głównego; odebrane PERSIST-02/03 mają dowody w raporcie eksportu Gościa, a pierwotna kolejność bootstrapu PERSIST-01 została poprawiona. Historyczna kolejność zależności: 01 → 14 oraz 02 → 03; równolegle przygotowanie 13 → 04/08 → 07/05/06 → 09/10 → 11/12 → końcowa macierz 13 i odpowiedni zakres AUD-06. Nie blokować niezależnych napraw pracą nad czasomierzem; limit utraty 5 sekund został zatwierdzony. Żadnego „fix persistence” zbierającego całość w jeden nieograniczony task.
 
 Audit wykonał controller oraz trzej niezależni reviewerzy `gpt-6-luna`, high: journal/practice/review; draft/finalization/timers; bootstrap/reset/profile. Wszyscy na tym samym snapshotcie, bez zmian implementacji. Niezależny końcowy review tej sekcji przez reviewerów bootstrap/reset i journal uznał zadania za bounded i zgodne z dowodami; nie jest to odbiór runtime napraw. Dodatkowy 14 otrzymał osobny source/test/design review timera. Konflikty rozstrzygnięto względem docs i prób: recovery loss to prawie 14s, nie 1s; brak native testu nie jest dowodem safe; current wrapper poprawny nie zastępuje persisted plan validation; corruption po verified marker jest w zadanym scope, więc brak ponownej weryfikacji jest defektem, nie opcjonalnym hardeningiem.

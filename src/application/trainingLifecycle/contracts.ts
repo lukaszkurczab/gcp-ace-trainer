@@ -11,6 +11,11 @@ import type {
   JournalOperation,
 } from "../../domain";
 import type { CanonicalTrackRuntime } from "../../content/canonical";
+import type { RetryMutationCommandHandle, RetryableMutationOperation } from "../mutationBoundary";
+
+/** Opaque application handles. The canonical repository adapter validates each handle by identity. */
+export type DraftStorageLeaseHandle = Readonly<{ kind: "draft_storage_lease" }>;
+export type DraftWriteReceipt = Readonly<{ kind: "draft_write_receipt" }>;
 
 export const APPLICATION_FAILURE_CODES = [
   "unknown_track",
@@ -130,7 +135,11 @@ export interface TrainingLifecycleRepositoryPort {
   getReviews(): Promise<readonly ReviewQueueEntry[]>;
   getDraft(sessionId: string): Promise<TrainingSessionDraft | null>;
   getResult(sessionId: string): Promise<TrainingSessionResult | null>;
-  saveDraft(input: Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number }>): Promise<void>;
+  captureDraftStorageLease(): DraftStorageLeaseHandle | null;
+  captureDraftWriteReceipt?(attempt: unknown): DraftWriteReceipt | null;
+  saveDraft(input: Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number; lease: DraftStorageLeaseHandle | null }>): Promise<void>;
+  reconcileDraftWrite?(receipt: DraftWriteReceipt): Promise<"verified" | "conflict" | "unknown">;
+  reconcilePendingMutationWrite?(proof: Readonly<{ commandFingerprint: string; planFingerprint: string; attempt?: unknown }>): Promise<"verified" | "conflict" | "unknown">;
   getPendingMutation?(): Promise<PendingMutationProjection | null>;
 }
 
@@ -155,6 +164,7 @@ export type PendingMutationProjection = Readonly<{
 export interface TrainingMutationCoordinatorPort {
   start(input: PreparedSession): Promise<void>;
   submitPractice(input: PracticeSubmission): Promise<boolean>;
+  retryMutationCommand(command: RetryMutationCommandHandle, expectedOperation: RetryableMutationOperation): Promise<void>;
   advance(session: TrainingSession): Promise<void>;
   completeWithResult(input: PracticeFinalization): Promise<void>;
   finalize(input: SimulationFinalization): Promise<boolean>;

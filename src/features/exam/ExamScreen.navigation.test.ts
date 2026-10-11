@@ -4,6 +4,8 @@ import test from "node:test";
 
 import { createExamActionLane } from "./examActionLane";
 import { settleCommittedExamNavigation } from "./examNavigationRefresh";
+import { shouldClearPendingExamWrite, type PendingExamWrite } from "./examPendingWrite";
+import type { CertificationExamProjection } from "../../application/certification";
 
 const screen = readFileSync("src/features/exam/ExamScreen.tsx", "utf8");
 
@@ -20,8 +22,23 @@ test("exam response changes persist the canonical choice response before publish
   assert.match(screen, /saveCertificationExamResponse\(\{ occurrenceId: projection\.occurrenceId, response: \{ type: "choice_single", optionId \} \}\)/);
   assert.match(screen, /await refreshAfterAction\(token\)/);
   assert.match(screen, /accessibilityRole="radio"/);
-  assert.match(screen, /accessibilityState=\{\{ checked: selected, disabled: actionPending \}\}/);
+  assert.match(screen, /accessibilityState=\{\{ checked: selected, disabled: actionPending \|\| resolutionRequired \}\}/);
+  assert.match(screen, /if \(shouldClearPendingExamWrite\(attempted, refreshed\)\) setPendingExamWrite\(null\)/);
+  assert.match(screen, /await retryCertificationExamDraftSave\(\)/);
   assert.match(screen, /<PracticeQuestionCard question=\{\{ constraints: projection\.question\.constraints, itemId: projection\.question\.questionId, prompt: projection\.question\.prompt \}\} \/>/);
+});
+
+test("an unavailable refresh after an uncertain exam save retains the attempted response until exact confirmation", () => {
+  const write: PendingExamWrite = { kind: "response", occurrenceId: "occurrence-1", response: { type: "choice_single", optionId: "option-b" } };
+  const unavailable = { kind: "unavailable", cause: new Error("read failed"), source: "interval" } as const;
+  assert.equal(shouldClearPendingExamWrite(write, unavailable), false);
+
+  const oldProjection = { draft: { responsesByOccurrenceId: {}, flaggedOccurrenceIds: [] }, operation: { kind: "save_failed", error: { allowedAction: "retry_same_command" } } } as unknown as CertificationExamProjection;
+  assert.equal(shouldClearPendingExamWrite(write, { kind: "ready", projection: oldProjection }), false);
+
+  const exactProjection = { draft: { responsesByOccurrenceId: { "occurrence-1": write.response }, flaggedOccurrenceIds: [] }, operation: { kind: "editable" } } as unknown as CertificationExamProjection;
+  assert.equal(shouldClearPendingExamWrite(write, { kind: "ready", projection: exactProjection }), true);
+  assert.match(screen, /pendingExamWrite && shouldClearPendingExamWrite\(pendingExamWrite, outcome\)/);
 });
 
 test("all exam draft writes and navigation share one in-flight action lane", async () => {

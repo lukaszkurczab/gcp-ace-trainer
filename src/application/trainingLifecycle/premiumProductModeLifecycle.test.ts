@@ -1,16 +1,26 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createTrainingSession, getTrackRegistration, type TrackId, type TrainingSession } from "../../domain";
+import { createTrainingSession, createTrainingSessionDraft, getTrackRegistration, type TrackId, type TrainingSession, type TrainingSessionDraft } from "../../domain";
 import { loadCanonicalRuntimeCatalog } from "../../content/canonical/runtimeCatalog";
 import type { CanonicalTrackRuntime } from "../../content/canonical/runtimeCatalog";
 import { TrainingApplicationFailure, TrainingLifecycleUseCases, type TrainingFamilyRuntime, type TrainingLifecyclePorts } from "./";
+import { CanonicalWriteOutcomeError } from "../../storage/errors";
+import { STORAGE_KEYS } from "../../storage/keys";
+import type { CanonicalWriteAttempt } from "../../storage/repositories/canonicalRecordCodec";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving" as TrackId;
 const PROFILE_ID = "algorithms-interview-simulation-v1";
 const NOW = "2026-09-27T00:00:00.000Z";
 
-async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing" = "allowed", requestedTrackId: TrackId = TRACK_ID, finalizedReviewConflict = false) {
+function deferred<T = void>() {
+  let resolve!: (value: T) => void;
+  let reject!: (cause: unknown) => void;
+  const promise = new Promise<T>((res, rej) => { resolve = res; reject = rej; });
+  return { promise, resolve, reject };
+}
+
+async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing" = "allowed", requestedTrackId: TrackId = TRACK_ID, finalizedReviewConflict = false, saveDraftHook?: () => Promise<void>) {
   const track = (await loadCanonicalRuntimeCatalog()).getTrack(requestedTrackId);
   const isDesign = track.trackId !== TRACK_ID;
   const modeId = isDesign ? "design-interview-simulation" : "coding-interview-simulation";
@@ -50,23 +60,26 @@ async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing
     status: "active",
     startedAt: NOW,
   });
+  const events: string[] = [];
+  let finalizationDraft: TrainingSessionDraft | null = null;
   const runtime = {
     familyId: isDesign ? "design_interview" : "coding_interview",
     prepare: async () => { events.push("prepare"); return { session, firstOccurrence: session.itemOrder[0]!.item, draft: null }; },
     validateResume: async () => { events.push("validate-resume"); },
     validateDraftCommand: async () => { events.push("validate-draft"); },
-    finalizeSimulation: async () => {
+    finalizeSimulation: async ({ draft: finalDraft }: { draft: TrainingSessionDraft }) => {
       events.push("finalize-runtime");
+      finalizationDraft = finalDraft;
       return { session: { ...session, status: "completed", completedAt: NOW }, result: { sessionId: session.id } };
     },
   } as unknown as TrainingFamilyRuntime;
-  const events: string[] = [];
-  const draft = { schemaVersion: 1, draftVersion: 1, sessionId: session.id, trackId: requestedTrackId, familyId: isDesign ? "design_interview" : "coding_interview", revision: 1, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: NOW };
+  let draft: TrainingSessionDraft = { schemaVersion: 1, draftVersion: 1, sessionId: session.id, trackId: requestedTrackId, familyId: isDesign ? "design_interview" : "coding_interview", revision: 1, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: NOW };
   let active: TrainingSession | null = null;
   let resolutionCount = 0;
   let startCount = 0;
+  let now = NOW;
   const ports = {
-    clock: { now: () => NOW },
+    clock: { now: () => now },
     sessionIds: { create: async () => "mock-session" },
     tracks: { getTrackRegistration },
     packages: {
@@ -79,7 +92,9 @@ async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing
       getReviews: async () => [],
       getDraft: async () => draft,
       getResult: async () => ({ sessionId: session.id }),
-      saveDraft: async () => { events.push("save-draft"); },
+      captureDraftStorageLease: () => null,
+      captureDraftWriteReceipt: (attempt: unknown) => attempt ? Object.freeze({ kind: "draft_write_receipt" as const }) : null,
+      saveDraft: async (command: { draft: TrainingSessionDraft; expectedPreviousRevision: number; lease: null }) => { events.push("save-draft"); draft = command.draft; await saveDraftHook?.(); },
     },
     mutations: {
       start: async () => { events.push("start"); startCount += 1; active = session; },
@@ -87,7 +102,7 @@ async function fixture(decision: "allowed" | "denied" | "unavailable" | "missing
     },
     ...(decision === "missing" ? {} : { premiumSessionAdmission: { authorize: async () => { events.push("authorize"); return decision; } } }),
   } as unknown as TrainingLifecyclePorts;
-  return { lifecycle: new TrainingLifecycleUseCases(ports), events, session, get active() { return active; }, get resolutionCount() { return resolutionCount; }, get startCount() { return startCount; } };
+  return { lifecycle: new TrainingLifecycleUseCases(ports), events, session, get active() { return active; }, get finalizationDraft() { return finalizationDraft; }, setActive(value: TrainingSession | null) { active = value; }, setNow(value: string) { now = value; }, get resolutionCount() { return resolutionCount; }, get startCount() { return startCount; } };
 }
 
 test("Free and unavailable Coding Mock access fail before package resolution, preparation, or mutation", async () => {
@@ -130,6 +145,48 @@ test("Coding Mock resume, draft save, and finalization each authorize once befor
   setup.events.length = 0;
   await setup.lifecycle.finalizeSimulation();
   assert.deepEqual(setup.events, ["authorize", "resolve-exact", "finalize-runtime", "finalize"]);
+});
+
+test("manual and deadline finalizers queue behind an in-flight D save without nesting the session lane", async () => {
+  const completedSave = deferred();
+  const saveEntered = deferred();
+  const manual = await fixture("allowed", TRACK_ID, false, async () => { saveEntered.resolve(); await completedSave.promise; });
+  manual.setActive(manual.session);
+  const occurrenceId = manual.session.itemOrder[0]!.occurrenceId;
+  const submitted = { kind: "choice", selectedOptionIds: ["verified-after-save"] } as const;
+  const draft = createTrainingSessionDraft({ schemaVersion: 1, draftVersion: 1, sessionId: manual.session.id, trackId: manual.session.trackId, familyId: "coding_interview", revision: 2, responsesByOccurrenceId: { [occurrenceId]: submitted }, flaggedOccurrenceIds: [], updatedAt: NOW });
+  const saving = manual.lifecycle.saveSimulationDraft({ draft, expectedPreviousRevision: 1 });
+  await saveEntered.promise;
+  const finishing = manual.lifecycle.finalizeSimulation();
+  await Promise.resolve();
+  assert.equal(manual.events.includes("finalize-runtime"), false);
+  completedSave.resolve();
+  await saving;
+  await finishing;
+  assert.equal(manual.events.indexOf("finalize-runtime") > manual.events.indexOf("save-draft"), true);
+  assert.deepEqual(manual.finalizationDraft?.responsesByOccurrenceId[occurrenceId], submitted);
+  assert.equal((await manual.lifecycle.getSimulationOperationState(manual.session)).kind, "completed");
+
+  const saveStarted = deferred();
+  const unknownSave = deferred();
+  const deadline = await fixture("allowed", "object-oriented-design-interview", false, async () => { saveStarted.resolve(); await unknownSave.promise; });
+  deadline.setActive(deadline.session);
+  deadline.setNow("2026-09-27T00:46:00.000Z");
+  const designOccurrenceId = deadline.session.itemOrder[0]!.occurrenceId;
+  const designDraft = createTrainingSessionDraft({ schemaVersion: 1, draftVersion: 1, sessionId: deadline.session.id, trackId: deadline.session.trackId, familyId: "design_interview", revision: 2, responsesByOccurrenceId: { [designOccurrenceId]: "attempted design answer" }, flaggedOccurrenceIds: [], updatedAt: NOW });
+  const attempt = { key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, priorRaw: "prior", afterRaw: "attempted", envelope: { schemaIdentity: "patternly:canonical:v1", revision: 2, payload: designDraft }, storage: {}, lease: null } as unknown as CanonicalWriteAttempt<TrainingSessionDraft>;
+  const savingUnknown = deadline.lifecycle.saveSimulationDraft({ draft: designDraft, expectedPreviousRevision: 1 }).catch(() => undefined);
+  await saveStarted.promise;
+  const expiring = deadline.lifecycle.finalizeExpiredSimulationIfDue();
+  await Promise.resolve();
+  assert.equal(deadline.events.includes("finalize-runtime"), false);
+  unknownSave.reject(new CanonicalWriteOutcomeError(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, { kind: "unknown", cause: new Error("readback unavailable"), attempt }));
+  await savingUnknown;
+  await assert.rejects(expiring, /uncertain/u);
+  assert.equal(deadline.events.includes("finalize-runtime"), false);
+  const operation = await deadline.lifecycle.getSimulationOperationState(deadline.session);
+  assert.equal(operation.kind, "save_failed");
+  assert.equal("error" in operation ? operation.error.allowedAction : null, "reconcile");
 });
 
 test("completed simulation operation exposes the canonical finalization review conflict", async () => {

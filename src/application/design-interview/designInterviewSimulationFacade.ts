@@ -107,6 +107,19 @@ export async function finishDesignInterviewSimulation(): Promise<void> {
 
 export async function recoverDesignInterviewSimulationOperation(): Promise<void> { await getTrainingLifecycleUseCases().recoverActiveTrainingOperation(); }
 
+export async function reconcileDesignInterviewSimulationSave(): Promise<"verified" | "conflict" | "unknown"> {
+  const session = await requireActiveSimulation();
+  return getTrainingLifecycleUseCases().reconcileSimulationDraftSave(session.id);
+}
+
+export async function retryDesignInterviewSimulationSave(): Promise<void> {
+  await getTrainingLifecycleUseCases().retrySimulationDraftSave();
+}
+
+export async function resumeDesignInterviewSimulationAfterStaleConflict(): Promise<void> {
+  await getTrainingLifecycleUseCases().resumeEditableSimulationAfterStaleConflict();
+}
+
 export async function getDesignInterviewSimulationResult(sessionId: string): Promise<DesignSimulationResultProjection> {
   const [session, result] = await Promise.all([loadTrainingSession(sessionId), loadTrainingSessionResult(sessionId)]);
   if (!session || session.modeId !== "design-interview-simulation" || session.status !== "completed" || !result || result.sessionId !== session.id || result.evidence.familyId !== "design_interview") throw new Error("Completed Design Interview simulation result is unavailable.");

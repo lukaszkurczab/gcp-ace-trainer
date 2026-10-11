@@ -1,7 +1,7 @@
 import { canPersistTrainingSessionDraft, type TrainingSession, type TrainingSessionResult } from "../../domain";
 import { getActiveTrainingSessionDraft } from "../../storage/repositories";
 import { buildMutationJournal } from "./mutationJournalBuilder";
-import { commitMutation, commitMutationAfterPreflight } from "./commitMutation";
+import { commitMutation, commitMutationAfterPreflight, retainMutationRetryPreflight } from "./commitMutation";
 export async function commitSessionCompletion(session: TrainingSession, result: TrainingSessionResult, createdAt: string): Promise<void> { await commitMutation(await buildMutationJournal({ operation: "complete_training_session", sessionId: session.id, trackId: session.trackId, identity: [session.id, result.id], writes: [{ kind: "put_session_result", record: result }, { kind: "put_session", record: session }, { kind: "clear_active_session", sessionId: session.id }], createdAt })); }
 export async function commitSessionAbandonment(session: TrainingSession, createdAt: string, preflight?: () => Promise<void>): Promise<void> {
   const buildRecord = async () => {
@@ -23,9 +23,11 @@ export async function commitSessionAbandonment(session: TrainingSession, created
       createdAt,
     });
   };
-  if (preflight) await commitMutationAfterPreflight(async () => {
-    await preflight();
-    return buildRecord();
-  });
-  else await commitMutation(await buildRecord());
+  try {
+    if (preflight) await commitMutationAfterPreflight(async () => {
+      await preflight();
+      return buildRecord();
+    });
+    else await commitMutation(await buildRecord());
+  } catch (error) { throw retainMutationRetryPreflight(error, preflight); }
 }

@@ -23,7 +23,7 @@ import {
   saveTrainingSessionResult,
 } from "../../storage/repositories";
 
-export async function seedPersist13ResetFixtureState(runId: string) {
+export async function seedPersist13ResetFixtureState(runId: string, options: Readonly<{ includeActiveSession?: boolean }> = {}) {
   const trackId = "coding-interview-dsa-problem-solving" as TrackId;
   const resolved = await contentPackageRuntimeOwner.resolveForPreparation({
     trackId,
@@ -48,19 +48,21 @@ export async function seedPersist13ResetFixtureState(runId: string) {
     now,
   });
   if (!prepared.draft || prepared.session.status !== "active") throw new Error("persist13_registered_simulation_draft_unavailable");
-  await saveTrainingSession(prepared.session);
-  await saveTrainingSessionDraft(prepared.draft, null);
-  await saveActiveForegroundTimer(createForegroundTimerState({
-    schemaVersion: 1,
-    timerVersion: 1,
-    familyId: "coding_interview",
-    sessionId: prepared.session.id,
-    trackId,
-    accumulatedForegroundMs: 4_000,
-    checkpointRevision: 1,
-    lastCheckpointAt: now,
-    running: false,
-  }), null);
+  if (options.includeActiveSession !== false) {
+    await saveTrainingSession(prepared.session);
+    await saveTrainingSessionDraft(prepared.draft, null);
+    await saveActiveForegroundTimer(createForegroundTimerState({
+      schemaVersion: 1,
+      timerVersion: 1,
+      familyId: "coding_interview",
+      sessionId: prepared.session.id,
+      trackId,
+      accumulatedForegroundMs: 4_000,
+      checkpointRevision: 1,
+      lastCheckpointAt: now,
+      running: false,
+    }), null);
+  }
 
   const completedAt = new Date(Date.now() - 60_000).toISOString();
   const occurrenceId = `persist13-${runId}`;

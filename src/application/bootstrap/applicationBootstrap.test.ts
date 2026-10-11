@@ -703,6 +703,7 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
     attempts: (await getTrainingAttempts()).value,
     draft: await getActiveTrainingSessionDraft(),
   };
+  const beforeBytes = testStorage.snapshot();
   assert.deepEqual(before.session, session);
   assert.deepEqual(before.attempts, [attempt]);
   assert.deepEqual(before.draft?.responsesByOccurrenceId["q13-ood-v23-resume-repro:0"], { text: "Incorrect relay_actor answer preserved for resume reproduction." });
@@ -789,13 +790,29 @@ test("current OOD v24 verifies, exact OOD v23 resume becomes typed unavailable, 
   await assert.rejects(lifecycle.abandonUnavailableExactActiveSession({ sessionId: session.id, identity: oldRef, isCurrent: () => true }));
   testStorage.setFailurePlan(null);
   const beforeJournalState = lifecycle.getOperationProjection(session.id);
-  assert.ok(beforeJournalState?.kind === "abandonment_failed_before_journal");
-  assert.equal(beforeJournalState.error.allowedAction, "retry_same_command");
+  assert.ok(beforeJournalState?.kind === "abandonment_recovery_required");
+  assert.equal(beforeJournalState.error.durableState, "unknown");
+  assert.equal(beforeJournalState.error.allowedAction, "reconcile");
+  const blockedBytes = testStorage.snapshot();
   assert.deepEqual({
     session: await getActiveTrainingSession(),
     attempts: (await getTrainingAttempts()).value,
     draft: await getActiveTrainingSessionDraft(),
   }, before);
+  assert.deepEqual(testStorage.snapshot(), beforeBytes, "the failed journal attempt leaves canonical bytes unchanged");
+  assert.equal(await lifecycle.reconcileUncertainMutation(session.id), "conflict", "the unchanged prior journal bytes do not confirm this attempted abandonment");
+  await assert.rejects(lifecycle.recoverExpectedSessionAbandonment(session.id), /exact abandonment journal could not be confirmed/u);
+  const blockedOperation = lifecycle.getOperationProjection(session.id);
+  assert.ok(blockedOperation?.kind === "abandonment_recovery_required");
+  assert.equal(blockedOperation.error.allowedAction, "none", "a conflict cannot be retried or replayed as a new command");
+  assert.deepEqual(testStorage.snapshot(), blockedBytes, "read-only reconciliation leaves the blocked fixture bytes unchanged");
+
+  // Exercise the later durable-journal recovery boundary on a distinct fresh fixture.
+  const recoveryFixture = new MemoryKeyValueStorage();
+  for (const [key, value] of blockedBytes) recoveryFixture.setString(key, value);
+  testStorage = recoveryFixture;
+  installKeyValueStorageForTests(recoveryFixture);
+  lifecycle = composeTrainingLifecycleUseCases({ packages: owner, premiumSessionAdmission: { authorize: async () => "allowed" } });
 
   testStorage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION });
   await assert.rejects(lifecycle.abandonUnavailableExactActiveSession({ sessionId: session.id, identity: oldRef, isCurrent: () => true }));
