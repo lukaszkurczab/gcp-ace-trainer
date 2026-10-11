@@ -9,17 +9,28 @@ import { createCandidateContentReleaseLock, readCandidateContentProducerPin, rea
 import { historicalTrainingProjection } from "./syncBundledContentRelease.mjs";
 
 const appRoot = path.resolve(import.meta.dirname, "..");
-const contentRoot = path.resolve(appRoot, "../patternly-content");
+const contentRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(appRoot, "../patternly-content"));
 
-test("candidate lock binds the exact nine bundled artifacts", async () => {
+test("candidate lock binds the exact nine current v2 artifacts and raw bundled lock", async () => {
   const lock = await createCandidateContentReleaseLock({ appRoot, contentRoot });
-  const immutable = JSON.parse(await readFile(path.join(appRoot, "integration/contracts/content-release/release.lock.json"), "utf8"));
-  assert.deepEqual(lock, immutable, "a policy-only v2 successor keeps the exact immutable v1 candidate lock");
+  const lockBytes = await readFile(path.join(appRoot, "integration/contracts/content-release/release.lock.json"));
+  const immutable = JSON.parse(lockBytes.toString("utf8"));
+  assert.deepEqual(lock, immutable, "the active lock must match the exact current candidate release");
   assert.equal(lock.schemaVersion, 3);
   assert.equal(lock.artifacts.length, 9);
   assert.equal(new Set(lock.artifacts.map((artifact) => artifact.trackId)).size, 9);
   assert.match(lock.candidateId, /^[a-f0-9]{64}$/u);
   assert.match(lock.bundledContentLockSha256, /^[a-f0-9]{64}$/u);
+  const contentLockBytes = await readFile(path.join(appRoot, "src/content/generated/canonical-content/content-lock.json"));
+  assert.equal(lock.bundledContentLockSha256, createHash(contentLockBytes));
+  const contentLock = JSON.parse(contentLockBytes.toString("utf8"));
+  const bundledByTrack = new Map(contentLock.tracks.map((track) => [track.trackId, track]));
+  for (const artifact of lock.artifacts) {
+    const bundled = bundledByTrack.get(artifact.trackId);
+    assert.ok(bundled, `candidate artifact exists in bundle: ${artifact.trackId}`);
+    assert.equal(artifact.contentVersion, bundled.contentVersion);
+    assert.equal(artifact.checksumSha256, bundled.sha256);
+  }
 });
 
 test("candidate lock rejects bundled bytes outside the candidate", async () => {
@@ -97,7 +108,7 @@ test("CI bootstrap rejects valid-shaped metadata that disagrees with actual bund
       await writeFile(path.join(fixture, "integration/contracts/content-release/release.lock.json"), JSON.stringify(lock));
       const { cp } = await import("node:fs/promises");
       await cp(path.join(appRoot, "src/content/generated/canonical-content"), path.join(fixture, "src/content/generated/canonical-content"), { recursive: true });
-      await assert.rejects(readCandidateContentProducerPin({ appRoot: fixture }), /bootstrap bundled (?:training lock hash|training artifact) differs/);
+      await assert.rejects(readCandidateContentProducerPin({ appRoot: fixture }), /bootstrap bundled (?:content lock hash|candidate artifact) differs/);
     } finally { await rm(fixture, { recursive: true, force: true }); }
   });
 });

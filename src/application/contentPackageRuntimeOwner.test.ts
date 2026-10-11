@@ -5,6 +5,11 @@ import { ContentPackageRuntimeOwner, contentPackageRuntimeOwner } from "./conten
 import { ExactContentArtifactUnavailableError } from "./trainingLifecycle/contracts";
 
 const TRACK_ID = "coding-interview-dsa-problem-solving";
+const BESD_TRAINING_PREDECESSOR = Object.freeze({
+  trackId: "backend-system-design-interview",
+  contentVersion: "backend-system-design-interview-authoring-v2026.10.03-bizq01-14-bizq02-v2",
+  artifactSha256: "d7f2762e8cc71e41addb775a5221cf1b79cd5ef2e885a7cef8fce914069d1481",
+});
 
 before(async () => {
   await contentPackageRuntimeOwner.verifyBundledPackages();
@@ -59,6 +64,28 @@ test("verified current OOD v24 does not resolve an absent exact OOD v23 pin when
       && error.identity.contentVersion === "object-oriented-design-interview-authoring-v2026.10.05-bizq01-23",
   );
   assert.equal(retainedPackageLoads, 1);
+});
+
+test("an existing BESD session keeps its exact predecessor pin and reports it unavailable after the approved successor", async () => {
+  const current = contentPackageRuntimeOwner.getPreparedDiscovery(BESD_TRAINING_PREDECESSOR.trackId).track;
+  assert.notDeepEqual(current.trainingIdentity, {
+    contentVersion: BESD_TRAINING_PREDECESSOR.contentVersion,
+    artifactSha256: BESD_TRAINING_PREDECESSOR.artifactSha256,
+  }, "the BESD successor must not impersonate the previous training identity");
+  await assert.rejects(
+    contentPackageRuntimeOwner.resolveExactArtifact(BESD_TRAINING_PREDECESSOR),
+    (error: unknown) => error instanceof ExactContentArtifactUnavailableError
+      && error.identity.trackId === BESD_TRAINING_PREDECESSOR.trackId
+      && error.identity.contentVersion === BESD_TRAINING_PREDECESSOR.contentVersion
+      && error.identity.artifactSha256 === BESD_TRAINING_PREDECESSOR.artifactSha256,
+  );
+  const resolved = await contentPackageRuntimeOwner.resolveExactArtifact({
+    trackId: current.trackId,
+    contentVersion: current.trainingIdentity!.contentVersion,
+    artifactSha256: current.trainingIdentity!.artifactSha256,
+  });
+  assert.equal(resolved.track.trackId, BESD_TRAINING_PREDECESSOR.trackId);
+  assert.deepEqual(resolved.track.trainingIdentity, current.trainingIdentity);
 });
 
 test("malformed runtime identities never become typed exact-artifact absence", async () => {

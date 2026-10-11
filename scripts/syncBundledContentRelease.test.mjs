@@ -9,15 +9,67 @@ import {
   EXPECTED_TRACK_IDS,
   GENERATED_DIRECTORY,
   SUCCESSOR_LEDGER_FILE_NAME,
+  historicalTrainingProjection,
+  readApprovedBESDSuccessorProof,
   syncCanonicalContent,
   validateBuiltContent,
+  verifyApprovedTrainingSuccessor,
 } from "./syncBundledContentRelease.mjs";
 
 const SMALL_INVENTORY = Object.freeze({ trackCount: 9, nodeCount: 9, mentalUnitCount: 9, questionCount: 48 });
 const HEAD = "1".repeat(40);
 const DESIGN_TRACK_IDS = ["backend-system-design-interview", "frontend-system-design-interview", "object-oriented-design-interview"];
+const TEST_BESD_DESCRIPTOR_BASE = Object.freeze({
+  path: "evidence/business-quality/test-besd-successor.json",
+  schemaVersion: "patternly-bizq-semantic-replacement-v1",
+  trackId: "backend-system-design-interview",
+  beforeProducerCommit: "0".repeat(40),
+  beforeContentVersion: "besd-source-v1",
+  contentVersion: "besd-successor-v2",
+  replacementCount: 1,
+  questionCount: 2,
+});
 
 function sha256(bytes) { return createHash("sha256").update(bytes).digest("hex"); }
+
+function besdMigrationFixture() {
+  const oldVersion = "besd-training-v1";
+  const previousArtifact = {
+    schemaVersion: "patternly-content-artifact-v2",
+    trackId: TEST_BESD_DESCRIPTOR_BASE.trackId,
+    contentVersion: "besd-source-v1",
+    questions: [
+      { questionId: "besd-b02-i001", mentalUnitId: "BESD-N02-B02", prompt: "Old cohort question" },
+      { questionId: "besd-b02-i002", mentalUnitId: "BESD-N02-B02", prompt: "Unchanged question" },
+    ],
+    planningPolicy: { schemaVersion: "patternly-learning-planning-policy-v1", policyVersion: "policy-v1" },
+  };
+  const currentArtifact = structuredClone(previousArtifact);
+  currentArtifact.contentVersion = TEST_BESD_DESCRIPTOR_BASE.contentVersion;
+  currentArtifact.questions[0] = { questionId: "besd-b02-i003", mentalUnitId: "BESD-N02-B02", prompt: "Reviewed successor question" };
+  const beforeTrainingProjection = historicalTrainingProjection(previousArtifact, oldVersion);
+  const trainingProjection = historicalTrainingProjection(currentArtifact, TEST_BESD_DESCRIPTOR_BASE.contentVersion);
+  const descriptor = Object.freeze({
+    ...TEST_BESD_DESCRIPTOR_BASE,
+    beforeTraining: Object.freeze({ contentVersion: oldVersion, artifactSha256: sha256(beforeTrainingProjection), questionCount: 2 }),
+    trainingSha256: sha256(trainingProjection),
+  });
+  const proof = {
+    schemaVersion: descriptor.schemaVersion,
+    trackId: descriptor.trackId,
+    beforeProducerCommit: descriptor.beforeProducerCommit,
+    beforeContentVersion: descriptor.beforeContentVersion,
+    contentVersion: descriptor.contentVersion,
+    replacements: [{
+      beforeQuestionId: previousArtifact.questions[0].questionId,
+      questionId: currentArtifact.questions[0].questionId,
+      mentalUnitId: currentArtifact.questions[0].mentalUnitId,
+      beforeQuestion: structuredClone(previousArtifact.questions[0]),
+      currentQuestion: structuredClone(currentArtifact.questions[0]),
+    }],
+  };
+  return { descriptor, proof, previousArtifact, currentArtifact };
+}
 
 function validGcpSimulationProfile(contentVersion, nodeId, evidenceVersion = "gcp-published-2026.08.01") {
   return {
@@ -185,9 +237,15 @@ async function fixture() {
   const producerOutput = path.join(root, "producer-output");
   const predecessorOutput = path.join(root, "predecessor-output");
   const targetDirectory = path.join(appRoot, GENERATED_DIRECTORY);
+  const contractRoot = path.resolve(process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(appRoot, "../patternly-content"));
   await mkdir(path.dirname(targetDirectory), { recursive: true });
   await mkdir(path.join(producerRoot, "scripts"), { recursive: true });
   await writeFile(path.join(producerRoot, "scripts", "build.mjs"), "// fixture\n");
+  await mkdir(path.join(producerRoot, "scripts", "content"), { recursive: true });
+  await Promise.all(["question-contract.mjs", "planning-policy.mjs"].map((name) => cp(
+    path.join(contractRoot, "scripts", "content", name),
+    path.join(producerRoot, "scripts", "content", name),
+  )));
   await createBuiltSet(producerOutput);
   await createPredecessorFromBuiltSet(producerOutput, predecessorOutput);
   const runBuild = async ({ outputRoot }) => cp(producerOutput, outputRoot, { recursive: true });
@@ -218,6 +276,18 @@ test("sync replaces the whole generated directory with an exact validated set", 
   assert.equal(result.ledger.tracks.length, 9);
 });
 
+test("sync loads content validation contracts from its explicit producer root", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  const policyPath = path.join(state.producerRoot, "scripts/content/planning-policy.mjs");
+  const policySource = await readFile(policyPath, "utf8");
+  const signature = "export function validatePlanningPolicy(policy, questions) {";
+  assert.ok(policySource.includes(signature), "test producer has its own contract implementation");
+  await writeFile(policyPath, policySource.replace(signature, `${signature}\n  throw new Error("explicit producer contract root used");`));
+  await assert.rejects(syncCanonicalContent(state.options), /explicit producer contract root used/u);
+  assert.equal(await lstat(state.targetDirectory).then(() => true, () => false), false, "invalid producer contracts cannot install staged artifacts");
+});
+
 test("repeated sync and check preserve the validated training predecessor ledger byte-for-byte", async (t) => {
   const state = await fixture();
   t.after(() => rm(state.root, { recursive: true, force: true }));
@@ -233,6 +303,65 @@ test("repeated sync and check preserve the validated training predecessor ledger
   const checked = await syncCanonicalContent({ ...state.options, mode: "check" });
   assert.deepEqual(await readFile(ledgerPath), initialLedger);
   assert.equal(checked.ledger.tracks.length, 9);
+});
+
+test("the fixed BESD proof verifier binds every before/current object and preserves all questions outside its cohort", () => {
+  const fixture = besdMigrationFixture();
+  const successor = verifyApprovedTrainingSuccessor({
+    previousTraining: fixture.descriptor.beforeTraining,
+    previousArtifact: fixture.previousArtifact,
+    currentArtifact: fixture.currentArtifact,
+    proof: fixture.proof,
+    descriptor: fixture.descriptor,
+  });
+  assert.deepEqual(successor, {
+    contentVersion: fixture.descriptor.contentVersion,
+    artifactSha256: fixture.descriptor.trainingSha256,
+    questionCount: fixture.descriptor.questionCount,
+  });
+
+  const missingProof = structuredClone(fixture.proof);
+  missingProof.replacements.pop();
+  assert.throws(() => verifyApprovedTrainingSuccessor({ ...fixture, previousTraining: fixture.descriptor.beforeTraining, proof: missingProof }), /fixed cohort/u);
+
+  const alteredBefore = structuredClone(fixture.proof);
+  alteredBefore.replacements[0].beforeQuestion.prompt += " drift";
+  assert.throws(() => verifyApprovedTrainingSuccessor({ ...fixture, previousTraining: fixture.descriptor.beforeTraining, proof: alteredBefore }), /exact predecessor or current question/u);
+
+  const alteredCurrent = structuredClone(fixture.proof);
+  alteredCurrent.replacements[0].currentQuestion.prompt += " drift";
+  assert.throws(() => verifyApprovedTrainingSuccessor({ ...fixture, previousTraining: fixture.descriptor.beforeTraining, proof: alteredCurrent }), /exact predecessor or current question/u);
+
+  const unrelatedDrift = structuredClone(fixture.currentArtifact);
+  unrelatedDrift.questions[1].prompt += " drift";
+  assert.throws(() => verifyApprovedTrainingSuccessor({ ...fixture, previousTraining: fixture.descriptor.beforeTraining, currentArtifact: unrelatedDrift }), /outside its fixed cohort/u);
+
+  const wrongSuccessorHash = { ...fixture.descriptor, trainingSha256: "f".repeat(64) };
+  assert.throws(() => verifyApprovedTrainingSuccessor({ ...fixture, previousTraining: fixture.descriptor.beforeTraining, descriptor: wrongSuccessorHash }), /exact successor training identity/u);
+});
+
+test("the BESD proof reader fails closed on absence, byte drift, and a symlink path", async (t) => {
+  const state = await fixture();
+  t.after(() => rm(state.root, { recursive: true, force: true }));
+  const migration = besdMigrationFixture();
+  const descriptor = {
+    ...migration.descriptor,
+    path: "evidence/business-quality/test-besd-successor.json",
+    sha256: sha256(Buffer.from(JSON.stringify(migration.proof))),
+  };
+  const proofPath = path.join(state.producerRoot, descriptor.path);
+  await assert.rejects(readApprovedBESDSuccessorProof(state.producerRoot, descriptor), /Cannot inspect approved BESD successor proof/u);
+  await mkdir(path.dirname(proofPath), { recursive: true });
+  const proofBytes = Buffer.from(JSON.stringify(migration.proof));
+  await writeFile(proofPath, proofBytes);
+  assert.deepEqual(await readApprovedBESDSuccessorProof(state.producerRoot, descriptor), migration.proof);
+  await writeFile(proofPath, Buffer.concat([proofBytes, Buffer.from(" ")]));
+  await assert.rejects(readApprovedBESDSuccessorProof(state.producerRoot, descriptor), /proof hash differs/u);
+  await rm(proofPath);
+  const linkedProof = path.join(state.root, "linked-besd-successor.json");
+  await writeFile(linkedProof, proofBytes);
+  await symlink(linkedProof, proofPath);
+  await assert.rejects(readApprovedBESDSuccessorProof(state.producerRoot, descriptor), /Symbolic links are not allowed/u);
 });
 
 test("sync admits a policy-only canonical version while retaining the historical GCP evidence pin", async (t) => {

@@ -5,8 +5,6 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { validatePackageCompletionRule } from "../../patternly-content/scripts/content/question-contract.mjs";
-import { PlanningPolicyError, validatePlanningPolicy } from "../../patternly-content/scripts/content/planning-policy.mjs";
 
 export const EXPECTED_TRACK_IDS = Object.freeze([
   "aws-certified-solutions-architect-associate",
@@ -26,6 +24,24 @@ export const SUCCESSOR_LEDGER_FILE_NAME = "content-successor-ledger.json";
 const LOCK_SCHEMA_VERSION = "patternly-content-lock-v1";
 const ARTIFACT_SCHEMA_VERSION = "patternly-content-artifact-v2";
 const SUCCESSOR_LEDGER_SCHEMA_VERSION = "patternly-content-successor-ledger-v1";
+const BESD_TRACK_ID = "backend-system-design-interview";
+const BESD_SUCCESSOR_PROOF = Object.freeze({
+  path: "evidence/business-quality/bizq-01-besd-cohort-15.json",
+  sha256: "548e65b0ec000419d719f7ba5da3ae7c3e1225fe5bb09917a11edef803af4cb3",
+  schemaVersion: "patternly-bizq-semantic-replacement-v1",
+  trackId: BESD_TRACK_ID,
+  beforeProducerCommit: "0f4e6912d7d0cdb1a1c41b9d7885d7e867f80f34",
+  beforeContentVersion: "backend-system-design-interview-authoring-v2026.10.03-bizq01-14-bizq02-v2-bizq03-planning-v2",
+  beforeTraining: Object.freeze({
+    contentVersion: "backend-system-design-interview-authoring-v2026.10.03-bizq01-14-bizq02-v2",
+    artifactSha256: "d7f2762e8cc71e41addb775a5221cf1b79cd5ef2e885a7cef8fce914069d1481",
+    questionCount: 1569,
+  }),
+  contentVersion: "backend-system-design-interview-authoring-v2026.10.11-bizq01-15-bizq02-v2-bizq03-planning-v2",
+  trainingSha256: "8bcd0856d97fbbd7902461b9e205818e0f806bde7eadf9fb373b339df0469899",
+  questionCount: 1569,
+  replacementCount: 134,
+});
 const HASH = /^[a-f0-9]{64}$/u;
 const TRACK_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
 const SAFE_CONTENT_VERSION = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u;
@@ -42,6 +58,24 @@ const CODING_SELECTION_POLICY_KEYS = Object.freeze([
 ]);
 const execFileAsync = promisify(execFile);
 const scriptRoot = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
+const validationModulesByProducerRoot = new Map();
+
+async function producerValidationModules(producerRoot) {
+  const resolvedRoot = path.resolve(producerRoot ?? process.env.PATTERNLY_CONTENT_CURRENT_ROOT ?? path.resolve(scriptRoot, "../../patternly-content"));
+  let pending = validationModulesByProducerRoot.get(resolvedRoot);
+  if (!pending) {
+    pending = Promise.all([
+      import(pathToFileURL(path.join(resolvedRoot, "scripts/content/question-contract.mjs")).href),
+      import(pathToFileURL(path.join(resolvedRoot, "scripts/content/planning-policy.mjs")).href),
+    ]).then(([questionContract, planningPolicy]) => ({
+      validatePackageCompletionRule: questionContract.validatePackageCompletionRule,
+      PlanningPolicyError: planningPolicy.PlanningPolicyError,
+      validatePlanningPolicy: planningPolicy.validatePlanningPolicy,
+    }));
+    validationModulesByProducerRoot.set(resolvedRoot, pending);
+  }
+  return pending;
+}
 
 export class CanonicalContentSyncError extends Error {
   constructor(message) { super(message); this.name = "CanonicalContentSyncError"; }
@@ -237,7 +271,8 @@ function parseJson(bytes, filePath) {
   try { return JSON.parse(bytes.toString("utf8")); } catch (error) { fail(`Invalid JSON in ${filePath}: ${error.message}`); }
 }
 
-export async function validateBuiltContent(directory, { expectedInventory = EXPECTED_INVENTORY } = {}) {
+export async function validateBuiltContent(directory, { expectedInventory = EXPECTED_INVENTORY, producerRoot } = {}) {
+  const { validatePackageCompletionRule, PlanningPolicyError, validatePlanningPolicy } = await producerValidationModules(producerRoot);
   await inspectDirectory(directory, directory, "built content directory");
   const entries = await readdir(directory, { withFileTypes: true });
   for (const entry of entries) if (entry.isSymbolicLink() || !entry.isFile()) fail(`Built content contains a non-regular entry: ${entry.name}`);
@@ -314,8 +349,15 @@ export async function validateBuiltContent(directory, { expectedInventory = EXPE
       const currentLock = lockByTrack.get(entry.trackId);
       const current = artifact && currentLock ? trackIdentityFromArtifact(artifact, currentLock.sha256) : null;
       if (!current || current.contentVersion !== entry.planningPolicy.contentVersion || current.artifactSha256 !== entry.planningPolicy.artifactSha256 || current.policyVersion !== entry.planningPolicy.policyVersion) fail(`Content successor ledger is stale for ${entry.trackId}`);
+      const isApprovedBESDSuccessor = entry.trackId === BESD_TRACK_ID && sameJsonValue(entry.training, {
+        contentVersion: BESD_SUCCESSOR_PROOF.contentVersion,
+        artifactSha256: BESD_SUCCESSOR_PROOF.trainingSha256,
+        questionCount: BESD_SUCCESSOR_PROOF.questionCount,
+      });
       const reconstructed = historicalTrainingProjection(artifact, entry.training.contentVersion);
-      if (sha256(reconstructed) !== entry.training.artifactSha256 || JSON.parse(reconstructed.toString("utf8")).questions.length !== entry.training.questionCount) fail(`Content successor ledger training pin does not match ${entry.trackId}`);
+      if (isApprovedBESDSuccessor) {
+        if (artifact.contentVersion !== BESD_SUCCESSOR_PROOF.contentVersion || sha256(reconstructed) !== BESD_SUCCESSOR_PROOF.trainingSha256 || JSON.parse(reconstructed.toString("utf8")).questions.length !== BESD_SUCCESSOR_PROOF.questionCount) fail(`Content successor ledger training pin does not match ${entry.trackId}`);
+      } else if (sha256(reconstructed) !== entry.training.artifactSha256 || JSON.parse(reconstructed.toString("utf8")).questions.length !== entry.training.questionCount) fail(`Content successor ledger training pin does not match ${entry.trackId}`);
     }
     files.set(SUCCESSOR_LEDGER_FILE_NAME, ledgerBytes);
   }
@@ -336,7 +378,7 @@ async function producerHead(producerRoot) {
 async function verifyProducerState(producerRoot) {
   const { stdout } = await execFileAsync("git", [
     "-C", producerRoot, "status", "--porcelain", "--untracked-files=all", "--",
-    "content", "schemas", "scripts/build.mjs", "scripts/content",
+    "content", "schemas", "scripts/build.mjs", "scripts/content", "evidence/business-quality/bizq-01-besd-cohort-15.json",
   ], { encoding: "utf8" });
   if (stdout.trim()) fail("Canonical producer inputs differ from patternly-content HEAD");
 }
@@ -373,12 +415,69 @@ export function historicalTrainingProjection(artifact, contentVersion) {
   return Buffer.from(JSON.stringify(projection));
 }
 
+function canonicalJson(value) {
+  if (value === null || ["boolean", "number", "string"].includes(typeof value)) return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (!isRecord(value)) return undefined;
+  return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`;
+}
+
+function sameJsonValue(left, right) { return canonicalJson(left) === canonicalJson(right); }
+
+// The descriptor is passed explicitly only so unit tests can verify the proof contract
+// with synthetic bytes. Production always supplies the module-private fixed descriptor.
+export function verifyApprovedTrainingSuccessor({ previousTraining, previousArtifact, currentArtifact, proof, descriptor }) {
+  if (!descriptor || !isRecord(proof) || !Array.isArray(proof.replacements)) fail("Approved BESD successor proof is missing or malformed");
+  if (!sameJsonValue(previousTraining, descriptor.beforeTraining)) fail("Training material changed for backend-system-design-interview; the v1 training predecessor cannot be silently replaced");
+  for (const [field, expected] of Object.entries({
+    schemaVersion: descriptor.schemaVersion,
+    trackId: descriptor.trackId,
+    beforeProducerCommit: descriptor.beforeProducerCommit,
+    beforeContentVersion: descriptor.beforeContentVersion,
+    contentVersion: descriptor.contentVersion,
+  })) if (proof[field] !== expected) fail(`Approved BESD successor proof ${field} differs from its fixed identity`);
+  if (proof.replacements.length !== descriptor.replacementCount || previousArtifact?.trackId !== descriptor.trackId || currentArtifact?.trackId !== descriptor.trackId) fail("Approved BESD successor proof does not bind the fixed cohort and track");
+
+  const previousById = new Map(previousArtifact.questions.map((question) => [question.questionId, question]));
+  const currentById = new Map(currentArtifact.questions.map((question) => [question.questionId, question]));
+  if (previousById.size !== previousArtifact.questions.length || currentById.size !== currentArtifact.questions.length || previousById.size !== currentById.size) fail("Approved BESD successor changed the question inventory");
+  const beforeIds = new Set();
+  const currentIds = new Set();
+  for (const replacement of proof.replacements) {
+    if (!isRecord(replacement) || typeof replacement.beforeQuestionId !== "string" || typeof replacement.questionId !== "string" || typeof replacement.mentalUnitId !== "string" || !isRecord(replacement.beforeQuestion) || !isRecord(replacement.currentQuestion)) fail("Approved BESD successor proof contains a malformed replacement");
+    if (beforeIds.has(replacement.beforeQuestionId) || currentIds.has(replacement.questionId)) fail("Approved BESD successor proof contains duplicate question identities");
+    beforeIds.add(replacement.beforeQuestionId);
+    currentIds.add(replacement.questionId);
+    const previousQuestion = previousById.get(replacement.beforeQuestionId);
+    const currentQuestion = currentById.get(replacement.questionId);
+    if (!previousQuestion || !currentQuestion || replacement.beforeQuestion.questionId !== replacement.beforeQuestionId || replacement.currentQuestion.questionId !== replacement.questionId || replacement.beforeQuestion.mentalUnitId !== replacement.mentalUnitId || replacement.currentQuestion.mentalUnitId !== replacement.mentalUnitId || !sameJsonValue(previousQuestion, replacement.beforeQuestion) || !sameJsonValue(currentQuestion, replacement.currentQuestion)) fail("Approved BESD successor proof differs from an exact predecessor or current question");
+  }
+  for (const [questionId, previousQuestion] of previousById) {
+    if (beforeIds.has(questionId)) continue;
+    const currentQuestion = currentById.get(questionId);
+    if (!currentQuestion || !sameJsonValue(previousQuestion, currentQuestion)) fail("Approved BESD successor changed a question outside its fixed cohort");
+  }
+  for (const questionId of currentById.keys()) if (!currentIds.has(questionId) && !previousById.has(questionId)) fail("Approved BESD successor introduced a question outside its fixed cohort");
+
+  const projection = historicalTrainingProjection(currentArtifact, descriptor.contentVersion);
+  if (JSON.parse(projection.toString("utf8")).questions.length !== descriptor.questionCount || sha256(projection) !== descriptor.trainingSha256) fail("Approved BESD successor does not match its exact successor training identity");
+  return Object.freeze({ contentVersion: descriptor.contentVersion, artifactSha256: descriptor.trainingSha256, questionCount: descriptor.questionCount });
+}
+
+export async function readApprovedBESDSuccessorProof(producerRoot, descriptor = BESD_SUCCESSOR_PROOF) {
+  if (!HASH.test(descriptor.sha256) || !HASH.test(descriptor.trainingSha256)) fail("Approved BESD successor pins are not finalized");
+  const proofPath = path.join(producerRoot, descriptor.path);
+  const proofBytes = await inspectRegularFile(proofPath, producerRoot, "approved BESD successor proof");
+  if (sha256(proofBytes) !== descriptor.sha256) fail("Approved BESD successor proof hash differs from its fixed pin");
+  return parseJson(proofBytes, descriptor.path);
+}
+
 function trackIdentityFromArtifact(artifact, sha256Value) {
   if (artifact.schemaVersion !== ARTIFACT_SCHEMA_VERSION || !artifact.planningPolicy || artifact.planningPolicy.schemaVersion !== "patternly-learning-planning-policy-v1") fail(`Track ${artifact.trackId} is not a versioned v2 planning-policy successor`);
   return Object.freeze({ contentVersion: artifact.contentVersion, artifactSha256: sha256Value, policyVersion: artifact.planningPolicy.policyVersion });
 }
 
-function deriveSuccessorLedger({ artifacts, lock, previousLedger, predecessor }) {
+function deriveSuccessorLedger({ artifacts, lock, previousLedger, predecessor, previousArtifacts, approvedBESDProof }) {
   const lockByTrack = new Map(lock.tracks.map((entry) => [entry.trackId, entry]));
   const previousByTrack = previousLedger ? new Map(previousLedger.tracks.map((entry) => [entry.trackId, entry])) : null;
   const predecessorByTrack = predecessor ? new Map(predecessor.lock.tracks.map((entry) => [entry.trackId, entry])) : null;
@@ -393,9 +492,17 @@ function deriveSuccessorLedger({ artifacts, lock, previousLedger, predecessor })
       const previous = previousByTrack.get(trackId);
       const projection = historicalTrainingProjection(artifact, previous.training.contentVersion);
       if (sha256(projection) !== previous.training.artifactSha256 || JSON.parse(projection.toString("utf8")).questions.length !== previous.training.questionCount) {
-        fail(`Training material changed for ${trackId}; the v1 training predecessor cannot be silently replaced`);
+        if (trackId !== BESD_TRACK_ID || !approvedBESDProof || !previousArtifacts?.has(`${trackId}.json`)) fail(`Training material changed for ${trackId}; the v1 training predecessor cannot be silently replaced`);
+        training = verifyApprovedTrainingSuccessor({
+          previousTraining: previous.training,
+          previousArtifact: previousArtifacts.get(`${trackId}.json`),
+          currentArtifact: artifact,
+          proof: approvedBESDProof,
+          descriptor: BESD_SUCCESSOR_PROOF,
+        });
+      } else {
+        training = previous.training;
       }
-      training = previous.training;
     } else {
       const oldLock = predecessorByTrack?.get(trackId);
       const oldBytes = predecessor?.artifacts.get(`${trackId}.json`);
@@ -430,18 +537,18 @@ async function pathKind(candidate) {
     return info.isDirectory() ? "directory" : "other";
   } catch (error) { if (error?.code === "ENOENT") return "missing"; throw error; }
 }
-async function recoverTransaction({ targetDirectory, backupDirectory, expectedInventory, remove = rm, move = rename }) {
+async function recoverTransaction({ targetDirectory, backupDirectory, expectedInventory, producerRoot, remove = rm, move = rename }) {
   const [targetKind, backupKind] = await Promise.all([pathKind(targetDirectory), pathKind(backupDirectory)]);
   if (targetKind === "other" || backupKind === "other") fail("Canonical content transaction paths must be directories");
   if (targetKind === "missing" && backupKind === "directory") await move(backupDirectory, targetDirectory);
   else if (targetKind === "directory" && backupKind === "directory") {
-    await validateBuiltContent(targetDirectory, { expectedInventory });
+    await validateBuiltContent(targetDirectory, { expectedInventory, producerRoot });
     await remove(backupDirectory, { recursive: true, force: false });
   }
 }
-async function replaceDirectory({ stagedDirectory, targetDirectory, expectedInventory, remove = rm, move = rename }) {
+async function replaceDirectory({ stagedDirectory, targetDirectory, expectedInventory, producerRoot, remove = rm, move = rename }) {
   const backupDirectory = `${targetDirectory}.backup`;
-  await recoverTransaction({ targetDirectory, backupDirectory, expectedInventory, remove, move });
+  await recoverTransaction({ targetDirectory, backupDirectory, expectedInventory, producerRoot, remove, move });
   const targetKind = await pathKind(targetDirectory);
   let movedOld = false;
   let installedNew = false;
@@ -449,7 +556,7 @@ async function replaceDirectory({ stagedDirectory, targetDirectory, expectedInve
     if (targetKind === "directory") { await move(targetDirectory, backupDirectory); movedOld = true; }
     await move(stagedDirectory, targetDirectory);
     installedNew = true;
-    await validateBuiltContent(targetDirectory, { expectedInventory });
+    await validateBuiltContent(targetDirectory, { expectedInventory, producerRoot });
   } catch (error) {
     const failedDirectory = `${targetDirectory}.failed-${randomUUID()}`;
     try {
@@ -477,19 +584,21 @@ export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot
   const temporaryDirectory = await mkdtemp(path.join(temporaryParent, `.canonical-content-build-${process.pid}-`));
   try {
     await runBuild({ producerRoot: resolvedProducerRoot, outputRoot: temporaryDirectory });
-    const built = await validateBuiltContent(temporaryDirectory, { expectedInventory });
+    const built = await validateBuiltContent(temporaryDirectory, { expectedInventory, producerRoot: resolvedProducerRoot });
     const stagedArtifacts = new Map(EXPECTED_TRACK_IDS.map((trackId) => [`${trackId}.json`, parseJson(built.files.get(`${trackId}.json`), `${trackId}.json`)]));
     const targetKind = await pathKind(resolvedTarget);
     let previousLedger = null;
     let predecessor = null;
+    let previousArtifacts = null;
     if (targetKind === "directory") {
-      const existing = await validateBuiltContent(resolvedTarget, { expectedInventory });
+      const existing = await validateBuiltContent(resolvedTarget, { expectedInventory, producerRoot: resolvedProducerRoot });
       const existingLedgerBytes = existing.files.get(SUCCESSOR_LEDGER_FILE_NAME);
+      previousArtifacts = new Map(EXPECTED_TRACK_IDS.map((trackId) => [`${trackId}.json`, parseJson(existing.files.get(`${trackId}.json`), `${trackId}.json`)]));
       if (existingLedgerBytes) previousLedger = parseSuccessorLedger(parseJson(existingLedgerBytes, path.join(resolvedTarget, SUCCESSOR_LEDGER_FILE_NAME)));
     }
     if (!previousLedger) predecessor = await getBootstrapPredecessor(resolvedAppRoot);
     if (!previousLedger && targetKind === "directory") {
-      const existing = await validateBuiltContent(resolvedTarget, { expectedInventory });
+      const existing = await validateBuiltContent(resolvedTarget, { expectedInventory, producerRoot: resolvedProducerRoot });
       const oldLockByTrack = new Map(predecessor.lock.tracks.map((entry) => [entry.trackId, entry]));
       for (const trackId of EXPECTED_TRACK_IDS) {
         const oldLock = oldLockByTrack.get(trackId);
@@ -502,15 +611,22 @@ export async function syncCanonicalContent({ mode = "sync", appRoot = scriptRoot
         if (!compatible) fail(`Existing bundled content does not match the exact APP HEAD training predecessor for ${trackId}`);
       }
     }
-    const ledger = deriveSuccessorLedger({ artifacts: stagedArtifacts, lock: built.lock, previousLedger, predecessor });
+    let approvedBESDProof;
+    if (previousLedger) {
+      const previousBESD = previousLedger.tracks.find((entry) => entry.trackId === BESD_TRACK_ID);
+      const currentBESD = stagedArtifacts.get(`${BESD_TRACK_ID}.json`);
+      const projection = historicalTrainingProjection(currentBESD, previousBESD.training.contentVersion);
+      if (sha256(projection) !== previousBESD.training.artifactSha256) approvedBESDProof = await readApprovedBESDSuccessorProof(resolvedProducerRoot);
+    }
+    const ledger = deriveSuccessorLedger({ artifacts: stagedArtifacts, lock: built.lock, previousLedger, predecessor, previousArtifacts, approvedBESDProof });
     await writeFile(path.join(temporaryDirectory, SUCCESSOR_LEDGER_FILE_NAME), JSON.stringify(ledger));
-    const staged = await validateBuiltContent(temporaryDirectory, { expectedInventory });
+    const staged = await validateBuiltContent(temporaryDirectory, { expectedInventory, producerRoot: resolvedProducerRoot });
     if (mode === "check") {
-      await compareDirectories(resolvedTarget, temporaryDirectory, { expectedInventory });
+      await compareDirectories(resolvedTarget, temporaryDirectory, { expectedInventory, producerRoot: resolvedProducerRoot });
       return { mode, head, ...staged, ledger };
     }
-    await replaceDirectory({ stagedDirectory: temporaryDirectory, targetDirectory: resolvedTarget, expectedInventory, remove, move });
-    const installed = await validateBuiltContent(resolvedTarget, { expectedInventory });
+    await replaceDirectory({ stagedDirectory: temporaryDirectory, targetDirectory: resolvedTarget, expectedInventory, producerRoot: resolvedProducerRoot, remove, move });
+    const installed = await validateBuiltContent(resolvedTarget, { expectedInventory, producerRoot: resolvedProducerRoot });
     for (const [fileName, bytes] of staged.files) if (!installed.files.get(fileName)?.equals(bytes)) fail(`Installed canonical content differs from staged canonical bytes: ${fileName}`);
     return { mode, head, ...staged, ledger };
   } finally {
