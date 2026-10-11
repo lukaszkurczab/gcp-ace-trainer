@@ -240,21 +240,37 @@ test("launch readiness report is deterministic and exposes the unresolved releas
   }
 });
 
-test("current 9112 draft cannot inherit the immutable historical 946d admission", () => {
+test("immutable historical admission cannot be reused against the current app content lock", () => {
   const sourceContentRoot = join(root, "..", "patternly-content");
-  const contentRoot = createRepositoryAt("content-current-draft", sourceContentRoot);
+  const contentRoot = createRepositoryAt("content-historical-admission", sourceContentRoot, HISTORICAL_CONTENT_COMMIT);
   const applicationRoot = createCurrentLockApplicationRoot();
   try {
     const currentCandidate = JSON.parse(readFileSync(join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"), "utf8"));
     const result = runWithContentRoot(contentRoot, [], applicationRoot);
     assert.equal(result.status, 0);
     const report = JSON.parse(result.output);
-    assert.equal(report.contentReadiness, null);
-    assert.equal(currentCandidate.candidateId, "9112efcc6fd1d0a170a6a6c298291796be1bd650ac8c03a02328dc899c336b6e");
+    assert.equal(report.contentReadiness.candidateId, HISTORICAL_CANDIDATE_ID);
+    assert.equal(currentCandidate.candidateId, HISTORICAL_CANDIDATE_ID);
     assert.equal(report.contentReleaseLock.status, "valid");
-    assert.ok(report.blockers.some((blocker) => blocker.kind === "invalid_content_readiness_report"));
-    assert.notEqual(currentCandidate.candidateId, HISTORICAL_CANDIDATE_ID);
+    assert.ok(report.blockers.some((blocker) => blocker.kind === "content_readiness_artifact_mismatch"));
+  } finally {
+    rmSync(contentRoot, { recursive: true, force: true });
+    rmSync(applicationRoot, { recursive: true, force: true });
+  }
+});
+
+test("current reviewed candidate matches the current app content lock", () => {
+  const sourceContentRoot = join(root, "..", "patternly-content");
+  const contentRoot = createRepositoryAt("content-current-reviewed", sourceContentRoot);
+  const applicationRoot = createCurrentLockApplicationRoot();
+  try {
+    const result = runWithContentRoot(contentRoot, [], applicationRoot);
+    assert.equal(result.status, 0);
+    const report = JSON.parse(result.output);
+    const candidate = JSON.parse(readFileSync(join(contentRoot, "reports/candidate-reconciliation/AWS-02-DRAFT/candidate/manifest.json"), "utf8"));
+    assert.equal(report.contentReadiness.candidateId, candidate.candidateId);
     assert.equal(report.blockers.some((blocker) => blocker.kind === "content_readiness_artifact_mismatch"), false);
+    assert.equal(report.blockers.some((blocker) => blocker.kind === "invalid_content_readiness_report"), false);
   } finally {
     rmSync(contentRoot, { recursive: true, force: true });
     rmSync(applicationRoot, { recursive: true, force: true });
