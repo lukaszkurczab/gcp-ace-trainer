@@ -1,0 +1,51 @@
+appId: com.lkurczab.patternly
+name: PERF-06 isolated canonical Activity 50 - full traversal and details
+---
+# Configure the isolated fixture to activity/50 first; never launch or clear app data here.
+- assertVisible:
+    id: "patternly:activity:unavailable-row:perf06-session-0"
+- tapOn:
+    id: "patternly:activity:unavailable-row:perf06-session-0"
+- scrollUntilVisible:
+    element:
+      id: "patternly:activity:row:perf06-session-25"
+    direction: DOWN
+    timeout: 20000
+    speed: 80
+- scrollUntilVisible:
+    element:
+      id: "patternly:activity:row:perf06-session-49"
+    direction: DOWN
+    timeout: 20000
+    speed: 80
+- assertVisible:
+    id: "patternly:activity:row:perf06-session-49"
+- scrollUntilVisible:
+    element:
+      id: "patternly:activity:unavailable-details:perf06-session-0"
+    direction: DOWN
+    timeout: 20000
+    speed: 80
+- assertVisible: "Preserved result: 6/20"
+- takeScreenshot: activity50-details-after-full-scroll
+- scrollUntilVisible:
+    element:
+      id: "patternly:activity:row:perf06-session-25"
+    direction: UP
+    timeout: 20000
+    speed: 80
+- scrollUntilVisible:
+    element:
+      id: "patternly:activity:filter"
+    direction: UP
+    timeout: 20000
+    speed: 80
+- assertVisible:
+    id: "patternly:activity:unavailable-row:perf06-session-0"
+- tapOn:
+    id: "patternly:activity:filter"
+- assertVisible: "Choose which track appears in Activity."
+- tapOn: "All tracks"
+- assertVisible:
+    id: "patternly:activity:unavailable-row:perf06-session-0"
+- takeScreenshot: activity50-return-and-filter

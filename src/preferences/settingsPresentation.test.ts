@@ -10,6 +10,7 @@ const appearanceSettings = readFileSync("src/features/home/AppearanceSettingsScr
 const languageSettings = readFileSync("src/features/home/LanguageSettingsScreen.tsx", "utf8");
 const languageSettingsModel = readFileSync("src/features/home/languageSettingsModel.ts", "utf8");
 const appPreferencesProvider = readFileSync("src/preferences/AppPreferencesProvider.tsx", "utf8");
+const appPreferencesContext = readFileSync("src/preferences/appPreferencesContext.tsx", "utf8");
 const accountCommand = readFileSync("src/features/account/useAccountCommand.ts", "utf8");
 const informationScreen = readFileSync("src/features/home/SettingsInformationScreen.tsx", "utf8");
 const yourDataScreen = readFileSync("src/features/home/YourDataScreen.tsx", "utf8");
@@ -326,9 +327,10 @@ test("language selection owns the typed accessible radio choice flow", () => {
   assert.match(languageSettings, /const savingRef = useRef<LanguagePreference \| null>\(null\)/);
   assert.match(languageSettings, /if \(value === preferences\.language \|\| savingRef\.current !== null\) return/);
   assert.match(languageSettings, /await preferences\.setLanguage\(value\)/);
-  assert.match(appPreferencesProvider, /deviceLocale: AppLocale/);
-  assert.match(appPreferencesProvider, /const localeResolution = resolveLocale\("system", systemLocale\)/);
-  assert.match(appPreferencesProvider, /const selectedLocaleResolution = settings\.language === "system"/);
+  assert.match(appPreferencesContext, /deviceLocale: AppLocale/);
+  assert.match(appPreferencesContext, /const systemLocaleResolution = resolveLocale\("system", systemLocale\)/);
+  assert.match(appPreferencesContext, /const localeResolution = language === "system"/);
+  assert.match(appPreferencesProvider, /deriveAppPreferencesPresentation\(settings\.appearance, settings\.language, systemColorScheme, systemLocale\)/);
   assert.doesNotMatch(languageSettings, /translation_unavailable|languageSystemUnavailableDetail/);
   assert.match(languageSettingsModel, /detailKey\?: string/);
   assert.match(languageSettingsModel, /\{ detailKey: "languageSystemDetail", labelKey: "languageSystem", value: "system" \}/);

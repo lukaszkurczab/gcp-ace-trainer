@@ -210,7 +210,7 @@ test("the shared header owns accessible back geometry and long-copy reflow witho
   assert.match(screenHeader, /title:\s*\{[\s\S]*\.\.\.typography\.title/);
   assert.match(screenHeader, /maxFontSizeMultiplier=\{2\}/);
   assert.match(screenHeader, /activityContainer:[\s\S]*gap:\s*spacing\.sm/);
-  const activity = source("src/features/home/ActivityScreen.tsx");
+  const activity = source("src/features/home/ActivityView.tsx");
   assert.match(activity, /groupLabel:[\s\S]*fontSize:\s*12[\s\S]*lineHeight:\s*15/);
   assert.doesNotMatch(activity, /groupLabel:[^\n]*textTransform/);
   assert.match(activity, /filterText:\s*\{\s*\.\.\.typography\.bodyStrong/);
@@ -347,7 +347,7 @@ test("Progress follows the current Figma section copy and 200% text contract", (
 });
 
 test("Activity rows preserve the variable-height Figma copy at large text", () => {
-  const activity = source("src/features/home/ActivityScreen.tsx");
+  const activity = source("src/features/home/ActivityView.tsx");
   const row = activity.slice(activity.indexOf("function ActivityRow"), activity.indexOf("function activityCountLabel"));
 
   assert.doesNotMatch(row, /numberOfLines/);

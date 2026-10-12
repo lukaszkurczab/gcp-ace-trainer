@@ -6,7 +6,7 @@ import {
 } from "react-native";
 
 import { radius } from "../theme";
-import { useAppPreferences, useThemedStyles } from "../preferences";
+import { useAppPreferences, useThemedStyles } from "../preferences/appPreferencesContext";
 import type { AppColors } from "../theme";
 import { Icon, type IconName } from "./Icon";
 

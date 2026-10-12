@@ -1,0 +1,306 @@
+{
+  "schema": "patternly.perf06.list-comparison.v1",
+  "scope": "Synthetic canonical UI; existing iPhone 17 and unchanged binary; dev Hermes; sequential scenarios; one 5-second observation each, no timing distribution. JS rAF is not native presentation frames. Sampled JS heap is not native/process peak memory and may miss stall peaks; sequential heap is GC/order sensitive.",
+  "binarySha256": "fd53c0ea77a5ccbae54a3fa59783ef585b98d66eed6688ba191d6e8d33d0cdc7",
+  "beforeSource": {
+    "src/features/home/ActivityView.tsx": "8489577f807c23ca524b22f92c5f892b40196d87cf2fd1764fe4d0e0d70e3250",
+    "src/features/review/MistakesReviewView.tsx": "e6e6e74370df89e852d22f27f849bc412c55c132fe292f654ad34d5568029e32",
+    "src/testing/Perf06ListFixtureRoot.smoke.tsx": "ce3e6d1736229a54a37646c6b4831b7f6026a361a229f2fec511499c41c30e69",
+    "src/testing/perf06PresentationFixtures.ts": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+  },
+  "afterSource": {
+    "src/features/home/ActivityView.tsx": "c58413dcec38cddbffedddc0e8f4ddcc449a3c99dc3cdcbbd606052c80378ac4",
+    "src/features/review/MistakesReviewView.tsx": "bae24fa7a3b3a920d049761d0a9dd878892d1538d5f374600470dcb730d9627a",
+    "src/testing/Perf06ListFixtureRoot.smoke.tsx": "746ae0670f115f070ac75ee02fe10e5f93dab11d5b1fe55e163cf334d8e1f8d0",
+    "src/testing/perf06PresentationFixtures.ts": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+  },
+  "scenarios": [
+    {
+      "screen": "activity",
+      "size": 50,
+      "baseline": {
+        "mountedRows": 50,
+        "peakMountedRows": 50,
+        "commits": 4,
+        "renderDurationMs": 194.02965600974858,
+        "longTaskCount": 1,
+        "maxLongTaskMs": 212.49575,
+        "jsRafGapCount": 292,
+        "maxJsRafGapMs": 23.685833000577986,
+        "sampledPeakHeapBytes": 17917200,
+        "heapSamples": 20,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      },
+      "window": {
+        "mountedRows": 23,
+        "peakMountedRows": 23,
+        "commits": 7,
+        "renderDurationMs": 161.89517899043858,
+        "longTaskCount": 1,
+        "maxLongTaskMs": 120.758625,
+        "jsRafGapCount": 295,
+        "maxJsRafGapMs": 49.560499999672174,
+        "sampledPeakHeapBytes": 13729632,
+        "heapSamples": 20,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      }
+    },
+    {
+      "screen": "activity",
+      "size": 500,
+      "baseline": {
+        "mountedRows": 500,
+        "peakMountedRows": 500,
+        "commits": 4,
+        "renderDurationMs": 1033.6137970006093,
+        "longTaskCount": 1,
+        "maxLongTaskMs": 1320.124375,
+        "jsRafGapCount": 227,
+        "maxJsRafGapMs": 38.131999999284744,
+        "sampledPeakHeapBytes": 66190344,
+        "heapSamples": 19,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      },
+      "window": {
+        "mountedRows": 23,
+        "peakMountedRows": 23,
+        "commits": 7,
+        "renderDurationMs": 99.43496399372816,
+        "longTaskCount": 1,
+        "maxLongTaskMs": 72.658792,
+        "jsRafGapCount": 298,
+        "maxJsRafGapMs": 20.48695799987763,
+        "sampledPeakHeapBytes": 18452280,
+        "heapSamples": 20,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      }
+    },
+    {
+      "screen": "activity",
+      "size": 1000,
+      "baseline": {
+        "mountedRows": 1000,
+        "peakMountedRows": 1000,
+        "commits": 3,
+        "renderDurationMs": 1893.3662329269573,
+        "longTaskCount": 3,
+        "maxLongTaskMs": 2497.433375,
+        "jsRafGapCount": 150,
+        "maxJsRafGapMs": 55.25433300063014,
+        "sampledPeakHeapBytes": 156699168,
+        "heapSamples": 15,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      },
+      "window": {
+        "mountedRows": 23,
+        "peakMountedRows": 23,
+        "commits": 7,
+        "renderDurationMs": 97.42639500647783,
+        "longTaskCount": 1,
+        "maxLongTaskMs": 75.104625,
+        "jsRafGapCount": 298,
+        "maxJsRafGapMs": 20.001875000074506,
+        "sampledPeakHeapBytes": 23841992,
+        "heapSamples": 20,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      }
+    },
+    {
+      "screen": "review-due",
+      "size": 100,
+      "baseline": {
+        "mountedRows": 100,
+        "peakMountedRows": 100,
+        "commits": 4,
+        "renderDurationMs": 194.88322100788355,
+        "longTaskCount": 2,
+        "maxLongTaskMs": 403.441208,
+        "jsRafGapCount": 272,
+        "maxJsRafGapMs": 20.91550000011921,
+        "sampledPeakHeapBytes": 165049520,
+        "heapSamples": 19,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      },
+      "window": {
+        "mountedRows": 20,
+        "peakMountedRows": 20,
+        "commits": 8,
+        "renderDurationMs": 101.72793002333492,
+        "longTaskCount": 1,
+        "maxLongTaskMs": 78.080917,
+        "jsRafGapCount": 298,
+        "maxJsRafGapMs": 44.88137499988079,
+        "sampledPeakHeapBytes": 23912304,
+        "heapSamples": 20,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      }
+    },
+    {
+      "screen": "review-due",
+      "size": 500,
+      "baseline": {
+        "mountedRows": 500,
+        "peakMountedRows": 500,
+        "commits": 4,
+        "renderDurationMs": 748.1963479137048,
+        "longTaskCount": 1,
+        "maxLongTaskMs": 1104.939166,
+        "jsRafGapCount": 246,
+        "maxJsRafGapMs": 20.41629199963063,
+        "sampledPeakHeapBytes": 184210832,
+        "heapSamples": 19,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      },
+      "window": {
+        "mountedRows": 20,
+        "peakMountedRows": 20,
+        "commits": 7,
+        "renderDurationMs": 81.81577798351645,
+        "longTaskCount": 1,
+        "maxLongTaskMs": 68.148458,
+        "jsRafGapCount": 298,
+        "maxJsRafGapMs": 37.65266600064933,
+        "sampledPeakHeapBytes": 18723408,
+        "heapSamples": 20,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      }
+    },
+    {
+      "screen": "review-due",
+      "size": 1000,
+      "baseline": {
+        "mountedRows": 1000,
+        "peakMountedRows": 1000,
+        "commits": 4,
+        "renderDurationMs": 1364.617623930797,
+        "longTaskCount": 2,
+        "maxLongTaskMs": 2083.668958,
+        "jsRafGapCount": 181,
+        "maxJsRafGapMs": 27.964208000339568,
+        "sampledPeakHeapBytes": 121899168,
+        "heapSamples": 14,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      },
+      "window": {
+        "mountedRows": 20,
+        "peakMountedRows": 20,
+        "commits": 7,
+        "renderDurationMs": 82.54232998751104,
+        "longTaskCount": 1,
+        "maxLongTaskMs": 68.886833,
+        "jsRafGapCount": 299,
+        "maxJsRafGapMs": 33.83724999986589,
+        "sampledPeakHeapBytes": 21592832,
+        "heapSamples": 20,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      }
+    },
+    {
+      "screen": "review-upcoming",
+      "size": 100,
+      "baseline": {
+        "mountedRows": 100,
+        "peakMountedRows": 100,
+        "commits": 5,
+        "renderDurationMs": 192.1763499835506,
+        "longTaskCount": 1,
+        "maxLongTaskMs": 349.015459,
+        "jsRafGapCount": 289,
+        "maxJsRafGapMs": 27.034332999959588,
+        "sampledPeakHeapBytes": 131937520,
+        "heapSamples": 20,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      },
+      "window": {
+        "mountedRows": 20,
+        "peakMountedRows": 20,
+        "commits": 8,
+        "renderDurationMs": 103.95638099685311,
+        "longTaskCount": 1,
+        "maxLongTaskMs": 66.8855,
+        "jsRafGapCount": 298,
+        "maxJsRafGapMs": 38.85787499975413,
+        "sampledPeakHeapBytes": 25513544,
+        "heapSamples": 20,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      }
+    },
+    {
+      "screen": "review-upcoming",
+      "size": 1000,
+      "baseline": {
+        "mountedRows": 1000,
+        "peakMountedRows": 1000,
+        "commits": 3,
+        "renderDurationMs": 1392.328172042966,
+        "longTaskCount": 1,
+        "maxLongTaskMs": 2141.218542,
+        "jsRafGapCount": 176,
+        "maxJsRafGapMs": 30.18245800025761,
+        "sampledPeakHeapBytes": 138623104,
+        "heapSamples": 13,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      },
+      "window": {
+        "mountedRows": 20,
+        "peakMountedRows": 20,
+        "commits": 7,
+        "renderDurationMs": 71.53388698492199,
+        "longTaskCount": 1,
+        "maxLongTaskMs": 51.219791,
+        "jsRafGapCount": 299,
+        "maxJsRafGapMs": 37.68054199963808,
+        "sampledPeakHeapBytes": 23356560,
+        "heapSamples": 20,
+        "fixtureSourceSha256": "0f127c9d65ea58eca5a53dbb316a7b81d9c31a187f76c5bc8e0607a8eb8b901d"
+      }
+    }
+  ],
+  "finalGuardedSource": {
+    "schema": "patternly.perf06.final-source.v1",
+    "scope": "Final guarded source; comparative measurements retain original before/after source receipts. Later changes are harness/entry hardening; canonical renderers and data generators unchanged.",
+    "sha256": {
+      "src/features/home/ActivityView.tsx": "c58413dcec38cddbffedddc0e8f4ddcc449a3c99dc3cdcbbd606052c80378ac4",
+      "src/features/review/MistakesReviewView.tsx": "bae24fa7a3b3a920d049761d0a9dd878892d1538d5f374600470dcb730d9627a",
+      "src/testing/Perf06ListFixtureRoot.smoke.tsx": "3ca9c89558fb7542f6f647e8c8bbfcef10209d6ba759cd8bd8fcd92fbfde7e09",
+      "src/testing/perf06PresentationFixtures.ts": "03ecdcf839e590f95fbcc6ad4cd47b40d4491f7e2a76e26eea8a0447b35da6af",
+      "src/testing/perf06Entry.ts": "b71410f3e3263408616084c911a15a42bf64201ea8055c8ae716d2d6bf33372a",
+      "App.tsx": "acd8389b1c0fb038d1edbc902cec1c3b52e3c37b5959eb292870abddc312d4af",
+      "scripts/qa/startNativeListPresentation.mjs": "ca64455e3462e91aa7e24fffcdff339a7a9abd335c3b4d7822bb577e2bf1ae19",
+      "scripts/qa/openNativeListPerformanceMenu.mjs": "247fa71adde3fc70d0c5bddc30f4226eeeaaf2db46d5ef0d93748f91b0cfbc83"
+    }
+  },
+  "finalGuardProbe": {
+    "screen": "activity",
+    "size": 50,
+    "mountedRows": 23,
+    "peakMountedRows": 23,
+    "commits": 7,
+    "heapSamples": 20,
+    "truncated": false
+  },
+  "nativeMonitorCapability": {
+    "stage": "actual show/scroll/screenshot PASS; hide flow EXIT0; monitor restored OFF",
+    "uiFpsSnapshot": 60,
+    "jsFpsSnapshot": 60,
+    "ramMbSnapshot": 326.07,
+    "scope": "Capability only; main-runloop CADisplayLink one-second callback FPS and native memory snapshot, not paired before/after frames, hitch count or peak memory."
+  },
+  "physicalPreservation": {
+    "binaryUnchanged": true,
+    "beforeFiles": 37,
+    "afterFiles": 37,
+    "protectedMmkvFiles": 2,
+    "protectedMmkvByteIdentical": true,
+    "addedFiles": 0,
+    "removedFiles": 0,
+    "changedFiles": 5,
+    "classification": [
+      "React Native development preferences (PerfMonitor false; all keys belong to RN/Expo)",
+      "Firebase heartbeat",
+      "SQLite Cache shared memory",
+      "HTTP storage SQLite WAL/shared memory"
+    ],
+    "scope": "Physical comparison only; reuses previous logical census, not a new profile census."
+  }
+}

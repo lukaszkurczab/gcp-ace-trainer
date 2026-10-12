@@ -1,0 +1,74 @@
+appId: com.lkurczab.patternly
+name: PERF-06 isolated canonical Review 100 - sections and selected details
+---
+# Configure review-due/100 first. No launch, data reset or destructive action.
+- assertVisible: "Review item 2:.*"
+- tapOn: "Review item 2:.*"
+- scrollUntilVisible:
+    element:
+      text: "Review item 50:.*"
+    direction: DOWN
+    speed: 80
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: "Review item 75:.*"
+    direction: DOWN
+    speed: 80
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: "Review item 100:.*"
+    direction: DOWN
+    speed: 80
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: "patternly:review:unavailable-section"
+    direction: DOWN
+    speed: 80
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: "patternly:review:unavailable-row:perf06-review-95"
+    direction: DOWN
+    speed: 80
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: "Review item"
+    direction: DOWN
+    speed: 80
+    timeout: 20000
+- assertVisible: "Synthetic review item 2:.*"
+- takeScreenshot: review100-selected-detail-after-full-scroll
+- scrollUntilVisible:
+    element:
+      id: "patternly:review:unavailable-row:perf06-review-95"
+    direction: UP
+    speed: 80
+    timeout: 20000
+- tapOn:
+    id: "patternly:review:unavailable-row:perf06-review-95"
+- scrollUntilVisible:
+    element:
+      id: "patternly:review:unavailable-details:perf06-review-95"
+    direction: DOWN
+    speed: 80
+    timeout: 20000
+- assertVisible:
+    id: "patternly:review:remove-unavailable:perf06-review-95"
+- takeScreenshot: review100-unavailable-selected-detail
+- tapOn:
+    id: "patternly:review:remove-unavailable:perf06-review-95"
+- assertVisible: "Remove this unavailable review from this device.*"
+- scrollUntilVisible:
+    element:
+      id: "patternly:review:remove-unavailable:perf06-review-95:cancel"
+    direction: DOWN
+    speed: 80
+    timeout: 20000
+- tapOn:
+    id: "patternly:review:remove-unavailable:perf06-review-95:cancel"
+- assertVisible:
+    id: "patternly:review:remove-unavailable:perf06-review-95"

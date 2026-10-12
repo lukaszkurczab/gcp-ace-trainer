@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, AppState, Easing, StyleSheet, View, type AppStateStatus, type LayoutChangeEvent, type StyleProp, type ViewStyle } from "react-native";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 
-import { useAppPreferences } from "../preferences";
+import { useAppPreferences } from "../preferences/appPreferencesContext";
 
 const GLASS_MOTION_DURATION_MS = 1_800;
 

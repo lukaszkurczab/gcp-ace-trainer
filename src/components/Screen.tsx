@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from "re
 import { SafeAreaView, type Edge } from "react-native-safe-area-context";
 
 import { spacing } from "../theme";
-import { useThemedStyles } from "../preferences";
+import { useThemedStyles } from "../preferences/appPreferencesContext";
 import type { AppColors } from "../theme";
 import { AmbientBackdrop } from "./AmbientBackdrop";
 

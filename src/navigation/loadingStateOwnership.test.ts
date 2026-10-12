@@ -20,7 +20,7 @@ const specializedLoadingOwners = [
   "src/features/exam/ExamReviewScreen.tsx#ExamReviewLoadingSkeleton",
   "src/features/exam/ExamScreen.tsx#ExamLoadingSkeleton",
   "src/features/exam/ResultScreen.tsx#ExamResultLoadingSkeleton",
-  "src/features/home/ActivityScreen.tsx#ActivityLoadingSkeleton",
+  "src/features/home/ActivityView.tsx#ActivityLoadingSkeleton",
   "src/features/home/GoalCadenceScreen.tsx#GoalLoadingSkeleton",
   "src/features/home/LearningPlanProposalScreen.tsx#LearningPlanProposalLoadingSkeleton",
   "src/features/home/tabs/HomeTab.tsx#HomeLoadingSkeleton",
@@ -33,7 +33,7 @@ const specializedLoadingOwners = [
   "src/features/practice/PracticeSessionSurface.tsx#PracticeSessionLoadingSkeleton",
   "src/features/practice/PracticeSetupScreen.tsx#PracticeSetupLoadingSkeleton",
   "src/features/practice/TopicRoadmapScreen.tsx#TopicRoadmapLoadingSkeleton",
-  "src/features/review/MistakesReviewScreen.tsx#MistakesLoadingSkeleton",
+  "src/features/review/MistakesReviewView.tsx#MistakesLoadingSkeleton",
   "src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx#SimulationResultLoadingSkeleton",
   "src/features/simulation/SimulationSessionSurface.tsx#SimulationLoadingSkeleton",
 ] as const;
@@ -255,7 +255,7 @@ test("specialized practice sessions share one neutral question and response load
 });
 
 test("Activity owns its glass loading skeleton", () => {
-  const path = "src/features/home/ActivityScreen.tsx";
+  const path = "src/features/home/ActivityView.tsx";
   assertSkeletonSource(path, "ActivityLoadingSkeleton", "Loading activity", ["loadingFilterShape", "loadingGroupCard", "loadingActivityRow"]);
   assert.match(source(path), /state\.kind === "loading"[\s\S]*?<ActivityLoadingSkeleton\s*\/>/);
 });
@@ -287,7 +287,7 @@ test("coding practice result owns its glass loading skeleton", () => {
 });
 
 test("mistakes review owns its glass loading skeleton", () => {
-  const path = "src/features/review/MistakesReviewScreen.tsx";
+  const path = "src/features/review/MistakesReviewView.tsx";
   assertSkeletonSource(path, "MistakesLoadingSkeleton", "Loading review queue", ["mistakesLoadingSection", "mistakesLoadingRow", "mistakesLoadingBadge"]);
   assert.match(source(path), /\{loading \? \(\s*<MistakesLoadingSkeleton\s*\/>/);
   assert.doesNotMatch(source(path), /mistakesLoadingDetailCard/);
@@ -371,7 +371,7 @@ test("the six read owners end rejected reads in explicit unavailable EmptyStates
   ] as const) {
     const file = source(path);
     assert.match(file, new RegExp(`catch \\(error\\) \\{[\\s\\S]*?describeOperationalFailure\\(error, ${escapeForRegExp(defaultArgument)}\\)[\\s\\S]*?${finishPending.replace(/[()]/g, "\\$&")}`), `${path} ends rejected pending state`);
-    assert.match(file, new RegExp(`<EmptyState[\\s\\S]*?title=\\{t\\("${unavailableTitle}"\\)\\}`), `${path} renders unavailable EmptyState`);
+    assert.match(file + source("src/features/review/MistakesReviewView.tsx"), new RegExp(`<EmptyState[\\s\\S]*?title=\\{t\\("${unavailableTitle}"\\)\\}`), `${path} renders unavailable EmptyState`);
   }
   for (const [path, title] of [
     ["src/features/practice/PracticeHubScreen.tsx", "Practice is unavailable"],
@@ -389,7 +389,7 @@ test("the six read owners end rejected reads in explicit unavailable EmptyStates
       assert.match(file, /function renderUnavailable\([\s\S]*?title = t\("Practice is unavailable"\)/);
       assert.match(file, /<EmptyState actionLabel=\{actionLabel\} onActionPress=\{onActionPress\} title=\{title\} description=\{description\} \/>/);
     } else {
-      assert.match(file, new RegExp(`<EmptyState[\\s\\S]*?title=\\{t\\("${title}"\\)\\}`), `${path} renders unavailable EmptyState`);
+      assert.match(file + source("src/features/review/MistakesReviewView.tsx"), new RegExp(`<EmptyState[\\s\\S]*?title=\\{t\\("${title}"\\)\\}`), `${path} renders unavailable EmptyState`);
     }
   }
 });

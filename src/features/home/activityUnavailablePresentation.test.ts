@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const source = readFileSync("src/features/home/ActivityScreen.tsx", "utf8");
+const source = readFileSync("src/features/home/ActivityScreen.tsx", "utf8") + readFileSync("src/features/home/ActivityView.tsx", "utf8");
 
 test("Activity renders unavailable history as an explicit detail surface without runtime navigation", () => {
   assert.match(source, /loadActivityRecords/);

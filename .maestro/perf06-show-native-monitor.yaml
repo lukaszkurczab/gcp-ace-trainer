@@ -1,0 +1,12 @@
+appId: com.lkurczab.patternly
+name: PERF-06 existing native monitor capability
+---
+- assertVisible: "React Native Dev Menu"
+- tapOn: "Show Perf Monitor"
+- assertVisible: "UI"
+- assertVisible: "JS"
+- swipe:
+    start: "50%, 80%"
+    end: "50%, 50%"
+    duration: 500
+- takeScreenshot: native-monitor-after-scroll

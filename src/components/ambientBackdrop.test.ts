@@ -9,7 +9,7 @@ test("route ambient layer is the default shared background for every Screen", ()
   const backdrop = source("src/components/AmbientBackdrop.tsx");
   const selectTrack = source("src/features/home/SelectTrackScreen.tsx");
   const practice = source("src/features/practice/PracticeHubScreen.tsx");
-  const activity = source("src/features/home/ActivityScreen.tsx");
+  const activity = source("src/features/home/ActivityView.tsx");
 
   assert.match(screen, /ambient\?: boolean/);
   assert.match(screen, /ambientVariant\?: "default" \| "activity" \| "goal" \| "auth"/);

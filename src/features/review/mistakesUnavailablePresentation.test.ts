@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const source = readFileSync("src/features/review/MistakesReviewScreen.tsx", "utf8");
+const source = readFileSync("src/features/review/MistakesReviewScreen.tsx", "utf8") + readFileSync("src/features/review/MistakesReviewView.tsx", "utf8");
 
 test("Review presents unavailable entries in a separate section with scoped removal confirmation", () => {
   assert.match(source, /runtimeSelectors\.review\.unavailableSection\(\)/);

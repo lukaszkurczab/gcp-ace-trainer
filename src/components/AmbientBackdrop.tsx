@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, Easing, StyleSheet, View, useWindowDimensions } from "react-native";
 import Svg, { Polyline } from "react-native-svg";
 
-import { useThemedStyles } from "../preferences";
+import { useThemedStyles } from "../preferences/appPreferencesContext";
 import type { AppColors } from "../theme";
 
 type AmbientPoint = Readonly<{ x: number; y: number }>;

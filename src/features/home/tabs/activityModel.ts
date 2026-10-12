@@ -7,7 +7,8 @@ import { calendarDayDifference, isSameCalendarWeek, modeLabel, type ActivityDate
 import { getDomainLabel } from "../../../utils";
 import { getTrackRoadmapCatalog } from "../../practice/trackRoadmapCatalog";
 
-export const ALL_ACTIVITY_TRACKS = "all" as const;
+import { ALL_ACTIVITY_TRACKS } from "./activityPresentation";
+export { ALL_ACTIVITY_TRACKS } from "./activityPresentation";
 export type ActivityFilter = typeof ALL_ACTIVITY_TRACKS | TrackId;
 export type ActivityGroup = "Today" | "Yesterday" | "This week" | "Earlier";
 

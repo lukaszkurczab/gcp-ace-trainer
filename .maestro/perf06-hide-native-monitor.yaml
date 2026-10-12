@@ -1,0 +1,6 @@
+appId: com.lkurczab.patternly
+name: PERF-06 restore native monitor setting
+---
+- assertVisible: "React Native Dev Menu"
+- tapOn: "Hide Perf Monitor"
+- assertNotVisible: "UI"

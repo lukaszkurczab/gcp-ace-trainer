@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleShee
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { radius, spacing, typography } from "../theme";
-import { useThemedStyles } from "../preferences";
+import { useThemedStyles } from "../preferences/appPreferencesContext";
 import type { AppColors } from "../theme";
 import { Button } from "./Button";
 

@@ -52,3 +52,5 @@ export function activityTime(timestamp: string): string {
   const date = new Date(timestamp);
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
+
+export const ALL_ACTIVITY_TRACKS = "all" as const;

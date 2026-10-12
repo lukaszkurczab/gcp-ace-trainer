@@ -45,7 +45,7 @@ import TrashIcon from "../assets/icons/trash.svg";
 import UserIcon from "../assets/icons/user.svg";
 import WarningIcon from "../assets/icons/warning.svg";
 import ZapIcon from "../assets/icons/zap.svg";
-import { useAppPreferences } from "../preferences";
+import { useAppPreferences } from "../preferences/appPreferencesContext";
 
 export type IconName =
   | "alert-triangle"

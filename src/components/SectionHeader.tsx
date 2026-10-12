@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { spacing, typography } from "../theme";
-import { useThemedStyles } from "../preferences";
+import { useThemedStyles } from "../preferences/appPreferencesContext";
 import type { AppColors } from "../theme";
 
 

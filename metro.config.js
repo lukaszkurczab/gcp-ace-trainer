@@ -6,6 +6,7 @@ const localProfileEnvFiles = /^(?:\/|[A-Za-z]:[\\/])(?:.*[\\/])?\.env\.(?:smoke|
 const smokeRuntime = process.env.PATTERNLY_RUNTIME_MODE === "smoke";
 const disableWatchman = process.env.PATTERNLY_METRO_DISABLE_WATCHMAN === "1";
 const buildOnlyModules = new Map([
+  ["./src/testing/Perf06ListFixtureRoot", smokeRuntime ? "src/testing/Perf06ListFixtureRoot.smoke.tsx" : "src/testing/Perf06ListFixtureRoot.disabled.tsx"],
   ["../content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
   ["./premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],
   ["../../src/content/application/premiumNodeOffers", smokeRuntime ? "src/content/application/premiumNodeOffers.smoke.ts" : "src/content/application/premiumNodeOffers.disabled.ts"],

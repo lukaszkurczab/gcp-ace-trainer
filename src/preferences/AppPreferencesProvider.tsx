@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useColorScheme } from "react-native";
 
 import i18n from "../i18n";
@@ -11,33 +11,13 @@ import {
   type LanguagePreference,
   type Settings,
 } from "../application/appPreferences";
-import { colors, type AppColors, type ColorMode } from "../theme";
 import { onKeyValueStorageReady } from "../infrastructure/storage/mmkvClient";
-import { resolveLocale, type AvailableLocale, type LocaleResolution } from "./localeResolver";
-
-export type AppLocale = AvailableLocale;
-
-type AppPreferencesContextValue = Readonly<{
-  appearance: AppearancePreference;
-  colorMode: ColorMode;
-  colors: AppColors;
-  deviceLocale: AppLocale;
-  language: LanguagePreference;
-  locale: AppLocale;
-  localeResolution: LocaleResolution;
-  systemLocaleResolution: LocaleResolution;
-  ready: boolean;
-  setAppearance: (appearance: AppearancePreference) => Promise<void>;
-  setLanguage: (language: LanguagePreference) => Promise<void>;
-}>;
-
-const AppPreferencesContext = createContext<AppPreferencesContextValue | null>(null);
+import { AppPreferencesPresentationProvider, deriveAppPreferencesPresentation, type AppPreferencesContextValue } from "./appPreferencesContext";
+export { useAppPreferences, useThemedStyles, type AppLocale } from "./appPreferencesContext";
 
 export function AppPreferencesProvider({ children }: { children: ReactNode }) {
   const systemColorScheme = useColorScheme();
   const systemLocale = Intl.DateTimeFormat().resolvedOptions().locale;
-  const localeResolution = resolveLocale("system", systemLocale);
-  const deviceLocale = localeResolution.effectiveLocale;
   const [settings, setSettings] = useState<Settings>(DEFAULT_APP_SETTINGS);
   const [ready, setReady] = useState(false);
 
@@ -68,42 +48,16 @@ export function AppPreferencesProvider({ children }: { children: ReactNode }) {
     await persist({ ...settings, language });
   }, [persist, settings]);
 
-  const colorMode: ColorMode = settings.appearance === "system"
-    ? systemColorScheme === "dark" ? "dark" : "light"
-    : settings.appearance;
-  const selectedLocaleResolution = settings.language === "system"
-    ? localeResolution
-    : resolveLocale(settings.language, systemLocale);
-  const locale: AppLocale = selectedLocaleResolution.effectiveLocale;
+  const presentation = useMemo(() => deriveAppPreferencesPresentation(settings.appearance, settings.language, systemColorScheme, systemLocale),
+    [settings.appearance, settings.language, systemColorScheme, systemLocale]);
+  const { locale } = presentation;
 
   useEffect(() => {
     void i18n.changeLanguage(locale);
   }, [locale]);
 
-  const value = useMemo<AppPreferencesContextValue>(() => ({
-    appearance: settings.appearance,
-    colorMode,
-    colors: colors[colorMode] as AppColors,
-    deviceLocale,
-    language: settings.language,
-    locale,
-    localeResolution: selectedLocaleResolution,
-    systemLocaleResolution: localeResolution,
-    ready,
-    setAppearance,
-    setLanguage,
-  }), [colorMode, deviceLocale, locale, localeResolution, ready, setAppearance, setLanguage, settings.appearance, settings.language]);
+  const value = useMemo<AppPreferencesContextValue>(() => ({ ...presentation, ready, setAppearance, setLanguage }),
+    [presentation, ready, setAppearance, setLanguage]);
 
-  return <AppPreferencesContext.Provider value={value}>{children}</AppPreferencesContext.Provider>;
-}
-
-export function useAppPreferences(): AppPreferencesContextValue {
-  const context = useContext(AppPreferencesContext);
-  if (!context) throw new Error("App preferences must be read within AppPreferencesProvider.");
-  return context;
-}
-
-export function useThemedStyles<T>(factory: (colors: AppColors) => T): T {
-  const preferences = useAppPreferences();
-  return useMemo(() => factory(preferences.colors), [factory, preferences.colors]);
+  return <AppPreferencesPresentationProvider value={value}>{children}</AppPreferencesPresentationProvider>;
 }

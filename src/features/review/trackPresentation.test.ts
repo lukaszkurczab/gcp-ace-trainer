@@ -184,7 +184,7 @@ test("dynamic track titles cross the translation boundary and long header copy c
     "utf8",
   );
   const reviewScreen = readFileSync(
-    "src/features/review/MistakesReviewScreen.tsx",
+    "src/features/review/MistakesReviewView.tsx",
     "utf8",
   );
   const practiceSetup = readFileSync(
