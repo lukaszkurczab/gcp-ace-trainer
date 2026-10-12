@@ -50,13 +50,11 @@ AC: mniej dużych unrelated reads przy identycznych postconditions, profile fenc
 
 ## PERF-05 — bounded backend paging
 
-Severity: P2.
+Status: odebrane source/local/hosted CI 13.10.2026, independent Luna High PASS. [Decyzja, pomiar i weryfikacja](../../reports/perf05-bounded-paging-2026-10-12.md), [wyniki](../../reports/perf05-bounded-paging-2026-10-12.json). Backend producer dostarczony przez [PR1](https://github.com/lukaszkurczab/patternly-backend/pull/1); cloud deployment i native acceptance osobno. Severity historyczne: P2.
 
-Pliki: `patternly-backend/src/modules/progress/store.ts` readSnapshot, `src/api/app.ts` GET/v1/progress i pagination tests; app `src/infrastructure/clients/PatternlyApiClientAdapter.ts` plus OpenAPI/restore tests.
+Kanoniczny `FirestoreProgressStore.readPage` czyta najwyżej pageSize+1 progress documents w document-ID order oraz cztery metadata/account documents przez dwa świeże getAll. Default/max pageSize100; opaque tokenv2 wskazuje pierwszy niewysłany lookahead, jest związany z user/revision/generation i wymaga exact cursor. Pre/post-query guards obejmują autoryzację, revision/generation, metadata updateTime i promotion lease. Strict validation obejmuje lookahead. Usunięto pełny snapshot/sort/slice z GET/v1/progress; readSnapshot pozostaje potrzebny adopcji/transferowi. Mobile production runtime już pobiera wszystkie strony przed restore i nie wymagał zmiany.
 
-Current store robi pełne progress collection.get; route czyta snapshot przed pageSize/token, sortuje całość i slice. To nadal koszt pełnej kolekcji na każdej stronie, niezależnie od nowszych guards parsowania.
-
-Poprawka: store zwraca bounded page i cursor z jednym spójnym revision/generation snapshotem; ustalić porządek i opaque-token contract, uwzględniając hashed document IDs względem logical IDs. Nie dodawać zbędnego backfill/projection. AC: pageSize+1 progress documents plus stałe metadata, pełny sweepO(N), brak brakujących/duplicate records; stale/invalid token, account/generation change i zapis pomiędzy metadata/query odrzucane spójnie. Emulator100/1k/10k i producer→consumer pagination/restore tests, policzone query/doc counts i med/p95. Backend contract/query→client jeżeli potrzebny→wspólny odbiór; cloud index/deploy osobno.
+AC: bounded page, pełny sweep O(N), bez braków/duplikatów; stale/invalid token, account/generation change i zapis między metadata/query/readback jawnie odrzucane. Rzeczywisty SDK/emulatorN100/1k/10k: identyczne pełne outputhash; N10k med109,1→7,6s, returned progress docs1M→10099. To nie cloud billing ani UI latency. Actual producer→mobile consumer→application restore zachowuje212records,6requests; wymagany gate jest wersjonowany w backendCI. Exact-head hostedCI38314307054SUCCESS, app qa:static2524PASS/0FAIL/5SKIP (dwie cudze offline próby poza sourcepackage). Lokalny monolityczny błąd emulatora zachowano w raporcie; standardowy Linux/Java21 fullgate przeszedł bez zmian timeoutów, skipów ani writepath.
 
 ## PERF-06 — okno Activity i Review
 

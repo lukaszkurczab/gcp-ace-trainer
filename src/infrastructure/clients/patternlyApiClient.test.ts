@@ -499,3 +499,33 @@ test("client turns removed identity metadata in a response into a schema conflic
   const client = createTestClient({ fetchImplementation: async () => new Response(JSON.stringify({ accountRevision: 1, generation: 0, records: [record], nextPageToken: null }), { status: 200 }) });
   await assert.rejects(client.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "server_error" && error.serverCode === "content_identity_schema_conflict");
 });
+
+test("progress sweep preserves opaque tokens and returns only the complete dataset", async () => {
+  const record = { ...activeTrackMutation(), version: 1, lastMutationId: "mutation-canonical-0001", updatedAt: "2026-10-12T00:00:00.000Z" };
+  const { mutationId: _mutationId, expectedVersion: _expectedVersion, ...first } = record;
+  const second = { ...first, targetId: "other-current" };
+  const urls: string[] = [];
+  const opaque = "cursor/+?=";
+  const client = createTestClient({ fetchImplementation: async (url) => {
+    urls.push(String(url));
+    return new Response(JSON.stringify({ accountRevision: 2, generation: 3, records: urls.length === 1 ? [first] : [second], nextPageToken: urls.length === 1 ? opaque : null }), { status: 200 });
+  } });
+  const response = await client.getProgress();
+  assert.deepEqual(response.records, [first, second]);
+  assert.equal(response.accountRevision, 2);
+  assert.equal(response.generation, 3);
+  assert.deepEqual(urls, [`${API_ORIGIN}/v1/progress?pageSize=100`, `${API_ORIGIN}/v1/progress?pageSize=100&pageToken=${encodeURIComponent(opaque)}`]);
+});
+
+test("progress sweep rejects a later-page conflict instead of returning partial facts", async () => {
+  for (const scenario of ["revision", "generation", "serverConflict"] as const) {
+    let pages = 0;
+    const client = createTestClient({ fetchImplementation: async () => {
+      pages++;
+      if (pages === 2 && scenario === "serverConflict") return new Response(JSON.stringify({ error: { code: "progress_generation_conflict" } }), { status: 409 });
+      return new Response(JSON.stringify({ accountRevision: pages === 2 && scenario === "revision" ? 2 : 1, generation: pages === 2 && scenario === "generation" ? 1 : 0, records: [], nextPageToken: pages === 1 ? "opaque-next-page" : null }), { status: 200 });
+    } });
+    await assert.rejects(client.getProgress(), (error: unknown) => error instanceof PatternlyApiClientError && error.code === "server_error" && error.status === 409 && error.serverCode === "progress_generation_conflict");
+    assert.equal(pages, 2);
+  }
+});
